@@ -288,6 +288,8 @@ void ScreenEdit::InitEditMappings() {
   name_to_edit_button["CUT"] = EDIT_BUTTON_CUT;
   name_to_edit_button["PASTE"] = EDIT_BUTTON_PASTE;
   name_to_edit_button["TOGGLE_WAVEFORM"] = EDIT_BUTTON_TOGGLE_WAVEFORM;
+  name_to_edit_button["CYCLE_DANCING_BOT_POSITION"] =
+      EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION;
 
   name_to_edit_button["ADD_COURSE_MODS"] = EDIT_BUTTON_ADD_COURSE_MODS;
 
@@ -477,7 +479,7 @@ void ScreenEdit::InitEditMappings() {
           DeviceInput(DEVICE_KEYBOARD, KEY_RIGHT);
 
       // k = course playback menu
-      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_COURSE_ATTACK_MENU][0]
+      // edit_mappings_device_input_.button_[EDIT_BUTTON_OPEN_COURSE_ATTACK_MENU][0]
       // = DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
       edit_mappings_device_input_.button_[EDIT_BUTTON_ADD_COURSE_MODS][0] =
           DeviceInput(DEVICE_KEYBOARD, KEY_Co);
@@ -574,9 +576,9 @@ void ScreenEdit::InitEditMappings() {
       edit_mappings_device_input_
           .hold_[EDIT_BUTTON_OPEN_BGCHANGE_LAYER2_MENU][1] =
           DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT);
-      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_ADD_STEP_MODS][0] =
+      // edit_mappings_device_input_.button_[EDIT_BUTTON_ADD_STEP_MODS][0] =
       // DeviceInput(DEVICE_KEYBOARD, KEY_Cc);
-      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_STEP_ATTACK_MENU][0]
+      // edit_mappings_device_input_.button_[EDIT_BUTTON_OPEN_STEP_ATTACK_MENU][0]
       // = DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
 
       edit_mappings_device_input_.button_[EDIT_BUTTON_INSERT_SHIFT_PAUSES][0] =
@@ -765,6 +767,16 @@ void ScreenEdit::InitEditMappings() {
   edit_mappings_device_input_.hold_[EDIT_BUTTON_TOGGLE_WAVEFORM][1] =
       DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
+  for (MapEditToDI* mappings :
+       {&edit_mappings_device_input_, &play_mappings_device_input_}) {
+    mappings->button_[EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION][0] =
+        DeviceInput(DEVICE_KEYBOARD, KEY_Cd);
+    mappings->hold_[EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION][0] =
+        DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+    mappings->hold_[EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION][1] =
+        DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
+  }
+
   // Switch players, if it makes sense to do so.
   edit_mappings_device_input_.button_[EDIT_BUTTON_SWITCH_PLAYERS][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_SLASH);
@@ -848,7 +860,7 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(
         name_to_edit_button.find(attr->first);
     if (name_entry != name_to_edit_button.end()) {
       std::string joined_names;
-      attr->second->GetValue(joined_names);
+      attr->second_->GetValue(joined_names);
       std::vector<std::string> key_names;
       split(joined_names, DEVICE_INPUT_SEPARATOR, key_names, false);
       for (size_t k = 0; k < key_names.size() && k < NUM_EDIT_TO_DEVICE_SLOTS;
@@ -856,7 +868,7 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(
         DeviceInput devi;
         devi.FromString(key_names[k]);
         if (devi.IsValid()) {
-          mappings.button_[name_entry->second][k] = devi;
+          mappings.button_[name_entry->second_][k] = devi;
         }
       }
     }
@@ -1806,14 +1818,16 @@ const float ScreenEdit::kMaxScrollAccelerationMultiplier = 8.0f;
 static float GetMouseScreenX() {
   return SCALE(
       INPUTFILTER->GetCursorX(), 0.0f,
-      (float)(PREFSMAN->display_height_ * PREFSMAN->display_aspect_ratio_),
+      static_cast<float>(
+          PREFSMAN->display_height_ * PREFSMAN->display_aspect_ratio_),
       SCREEN_LEFT, SCREEN_RIGHT);
 }
 
 static float GetMouseScreenY() {
   return SCALE(
-      INPUTFILTER->GetCursorY(), 0.0f, (float)PREFSMAN->display_height_,
-      SCREEN_TOP, SCREEN_BOTTOM);
+      INPUTFILTER->GetCursorY(), 0.0f,
+      static_cast<float>(PREFSMAN->display_height_), SCREEN_TOP,
+      SCREEN_BOTTOM);
 }
 
 float ScreenEdit::MouseYToBeat(float screen_y) {
@@ -1824,7 +1838,7 @@ float ScreenEdit::MouseYToBeat(float screen_y) {
   }
 
   /*
-   * The editor NoteField is drawn using m_fTrailingBeat rather than the
+   * The editor NoteField is drawn using trailing_beat_ rather than the
    * instantaneous editor cursor beat.  This is what gives scrolling its
    * smooth/trailing appearance.
    *
@@ -1949,7 +1963,7 @@ void ScreenEdit::Init() {
   ASSERT(GAMESTATE->cur_steps_[main_player_] != nullptr);
 
   // In TwoPlayersSharedSides (routine/couples) editing, both players share
-  // the same chart. Ensure every enabled player's m_pCurSteps slot points at
+  // the same chart. Ensure every enabled player's cur_steps_ slot points at
   // the master player's Steps
   if (GAMESTATE->GetCurrentStyle(main_player_) != nullptr &&
       GAMESTATE->GetCurrentStyle(main_player_)->style_type_ ==
@@ -2136,6 +2150,11 @@ void ScreenEdit::Init() {
 
   player_manager_.AddPlayers(note_data_edit_);
   player_manager_.AddPlayersToActorFrame(*this);
+  m_DancingBot.SetName("DancingBot");
+  m_iDancingBotPosition =
+      THEME->GetMetricI(m_sName, "DancingBotDefaultPosition");
+  LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_DancingBot);
+  this->AddChild(&m_DancingBot);
   TransitionEditState(STATE_EDITING);
 
   this->AddChild(&foreground_);
@@ -2289,6 +2308,31 @@ void ScreenEdit::Update(float delta_time) {
         seconds, GAMESTATE->cur_song_->song_timing_, tm);
   }
 
+  if (edit_state_ == STATE_PLAYING) {
+    UpdateDancingBot(delta_time);
+    const float second = GAMESTATE->position_.music_seconds_;
+    float beat = 0;
+    if (m_DancingBot.GetStopOnDoublesteps()) {
+      const float start = GetAppropriateTiming().GetElapsedTimeFromBeat(
+          NoteRowToBeat(start_playing_at_));
+      const float end = GetAppropriateTiming().GetElapsedTimeFromBeat(
+          NoteRowToBeat(stop_playing_at_));
+      // Check the crossed interval so a frame can pass a note without
+      // missing it. Exclude lead-in and notes outside the playback selection.
+      if (m_DancingBot.GetDoublestepBeat(
+              std::max(m_fDancingBotPlaybackSecond, start - 0.0001f),
+              std::min(second, end), beat)) {
+        beat_to_return_to_ = beat;
+        TransitionEditState(STATE_EDITING);
+        // Preserve the actual note beat even when the current snap differs.
+        SetBeat(beat);
+        trailing_beat_ = beat;
+        text_info_needs_update_ = true;
+      }
+    }
+    m_fDancingBotPlaybackSecond = second;
+  }
+
   if (edit_state_ == STATE_EDITING) {
     if (IsDirty() && next_autosave_time_ > -1.0f &&
         RageTimer::GetTimeSinceStart() > next_autosave_time_) {
@@ -2402,7 +2446,7 @@ void ScreenEdit::Update(float delta_time) {
     }
   }
 
-  // LOG->Trace( "ScreenEdit::Update(%f)", fDeltaTime );
+  // LOG->Trace( "ScreenEdit::Update(%f)", delta_time );
   if (edit_state_ == STATE_PLAYING) {
     ScreenWithMenuElements::Update(delta_time * rate);
   } else {
@@ -2430,7 +2474,59 @@ void ScreenEdit::Update(float delta_time) {
         catch_up_multiplier * std::abs(delta) * delta_time * 5);
   }
 
+  if (edit_state_ != STATE_PLAYING) {
+    UpdateDancingBot(delta_time);
+  }
   PlayTicks();
+}
+
+void ScreenEdit::InvalidateDancingBot() {
+  m_bDancingBotNeedsReload = true;
+  // Coalesce rapid editing inputs; never rerun the solver just for scrolling.
+  m_fDancingBotReloadDelay = 0.25f;
+}
+
+void ScreenEdit::PositionDancingBot(bool playing) {
+  const int count =
+      std::max(1, THEME->GetMetricI(m_sName, "DancingBotPositionCount"));
+  m_iDancingBotPosition = std::max(1, std::min(count, m_iDancingBotPosition));
+  Message params("Position");
+  params.SetParam("Position", m_iDancingBotPosition);
+  params.SetParam("Playing", playing);
+  params.SetParam("Screen", m_sName);
+  m_DancingBot.PlayCommandNoRecurse(params);
+}
+
+void ScreenEdit::UpdateDancingBot(float delta_time) {
+  const PlayerNumber player = input_player_number_ == PLAYER_INVALID
+                                  ? main_player_
+                                  : input_player_number_;
+  if (player != m_DancingBotPlayer) {
+    InvalidateDancingBot();
+    m_DancingBotPlayer = player;
+  }
+  if ((edit_state_ != STATE_EDITING && edit_state_ != STATE_PLAYING) ||
+      (!m_DancingBot.GetVisible() && !m_DancingBot.GetStopOnDoublesteps())) {
+    return;
+  }
+  if (m_bDancingBotNeedsReload) {
+    m_fDancingBotReloadDelay -= delta_time;
+    if (m_fDancingBotReloadDelay <= 0 || edit_state_ == STATE_PLAYING) {
+      m_DancingBot.Load(
+          note_data_edit_, steps_->steps_type_,
+          GAMESTATE->is_using_step_timing_ ? *steps_->GetTimingData()
+                                          : song_->song_timing_,
+          player);
+      m_bDancingBotNeedsReload = false;
+    }
+  }
+  // Playback uses the audio clock, including stops/delays. Browsing uses the
+  // same trailing beat as the edit field, converted using the active timing.
+  const float second =
+      edit_state_ == STATE_PLAYING
+          ? GAMESTATE->position_.music_seconds_
+          : GetAppropriateTiming().GetElapsedTimeFromBeat(trailing_beat_);
+  m_DancingBot.SetSecond(second);
 }
 
 static std::vector<int> FindAllAttacksAtTime(
@@ -2655,35 +2751,35 @@ void ScreenEdit::UpdateTextInfo() {
     std::pair<int, int> tmp = note_data_edit_.GetNumTapNotesTwoPlayer();
     text += ssprintf(
         NUM_STEPS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        TAP_STEPS.GetValue().c_str(), tmp.first, tmp.second);
+        TAP_STEPS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumJumpsTwoPlayer();
     text += ssprintf(
         NUM_JUMPS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        JUMPS.GetValue().c_str(), tmp.first, tmp.second);
+        JUMPS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumHandsTwoPlayer();
     text += ssprintf(
         NUM_HANDS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        HANDS.GetValue().c_str(), tmp.first, tmp.second);
+        HANDS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumHoldNotesTwoPlayer();
     text += ssprintf(
         NUM_HOLDS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        HOLDS.GetValue().c_str(), tmp.first, tmp.second);
+        HOLDS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumMinesTwoPlayer();
     text += ssprintf(
         NUM_MINES_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        MINES.GetValue().c_str(), tmp.first, tmp.second);
+        MINES.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumRollsTwoPlayer();
     text += ssprintf(
         NUM_ROLLS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        ROLLS.GetValue().c_str(), tmp.first, tmp.second);
+        ROLLS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumLiftsTwoPlayer();
     text += ssprintf(
         NUM_LIFTS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        LIFTS.GetValue().c_str(), tmp.first, tmp.second);
+        LIFTS.GetValue().c_str(), tmp.first, tmp.second_);
     tmp = note_data_edit_.GetNumFakesTwoPlayer();
     text += ssprintf(
         NUM_FAKES_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        FAKES.GetValue().c_str(), tmp.first, tmp.second);
+        FAKES.GetValue().c_str(), tmp.first, tmp.second_);
   } else {
     text += ssprintf(
         NUM_STEPS_FORMAT.GetValue().c_str(), TAP_STEPS.GetValue().c_str(),
@@ -2822,7 +2918,7 @@ void ScreenEdit::FinishMouseDragSelection() {
    * Convert the top and bottom of the physical selection rectangle into
    * the beats actually visible underneath those screen positions.
    *
-   * MouseYToBeat() uses m_fTrailingBeat, so this follows scrolling and
+   * MouseYToBeat() uses trailing_beat_, so this follows scrolling and
    * corresponds to the arrows the user currently sees.
    */
   float start_beat =
@@ -2917,6 +3013,13 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
     return false;
   }
 
+  if ((edit_state_ == STATE_EDITING || edit_state_ == STATE_PLAYING) &&
+      input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT) &&
+      input.type_ == IET_FIRST_PRESS &&
+      m_DancingBot.HandleMousePress(GetMouseScreenX(), GetMouseScreenY())) {
+    return true;
+  }
+
   if (edit_state_ == STATE_EDITING &&
       input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT)) {
     if (input.type_ == IET_FIRST_PRESS) {
@@ -2935,6 +3038,16 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
   EditButton edit_b = DeviceToEdit(input.device_i_);
   if (edit_b == EditButton_Invalid) {
     edit_b = MenuButtonToEditButton(input.menu_i_);
+  }
+
+  if (EditB == EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION) {
+    if (input.type_ == IET_FIRST_PRESS) {
+      const int count =
+          std::max(1, THEME->GetMetricI(m_sName, "DancingBotPositionCount"));
+      m_iDancingBotPosition = m_iDancingBotPosition % count + 1;
+      PositionDancingBot(edit_state_ == STATE_PLAYING);
+    }
+    return true;
   }
 
   // Allow mouse wheel chart navigation in edit mode by mapping to existing
@@ -3439,6 +3552,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
       GAMESTATE->cur_steps_[PLAYER_1].Set(p_steps);
       steps_ = p_steps;
       p_steps->GetNoteData(note_data_edit_);
+      InvalidateDancingBot();
       note_field_edit_.LoadWaveform(p_steps->GetMusicPath());
 
       std::string s = ssprintf(
@@ -4149,6 +4263,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
 
     case EDIT_BUTTON_SWITCH_TIMINGS:
       GAMESTATE->is_using_step_timing_ = !GAMESTATE->is_using_step_timing_;
+      InvalidateDancingBot();
       sound_switch_timing_.Play(true);
       return true;
     default:
@@ -4223,7 +4338,7 @@ bool ScreenEdit::InputRecordPaused(
 
   switch (edit_b) {
     case EDIT_BUTTON_UNDO:
-      /* We've already actually committed changes to m_NoteDataEdit, so all we
+      /* We've already actually committed changes to note_data_edit_, so all we
        * have to do to undo is Undo() as usual, and copy the note data back in.
        */
       Undo();
@@ -4401,7 +4516,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
     }
   }
 
-  // Set up player options for this mode. (EDITING uses m_PlayerStateEdit,
+  // Set up player options for this mode. (EDITING uses player_state_edit_,
   // which we don't need to change.)
   if (em != STATE_EDITING) {
     // Stop displaying course attacks, if any.
@@ -4496,7 +4611,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
       break;
     case STATE_RECORDING:
     case STATE_RECORDING_PAUSED:
-      // initialize m_NoteFieldRecord
+      // initialize note_field_record_
       note_data_record_.CopyAll(note_data_edit_);
 
       // highlight the section being recorded
@@ -4511,6 +4626,10 @@ void ScreenEdit::TransitionEditState(EditState em) {
   // Show/hide depending on edit state (em)
   spr_overlay_->PlayCommand(EditStateToString(em));
   spr_underlay_->PlayCommand(EditStateToString(em));
+  m_DancingBot.PlayCommand(EditStateToString(em));
+  if (em == STATE_EDITING || em == STATE_PLAYING) {
+    PositionDancingBot(em == STATE_PLAYING);
+  }
 
   background_.SetVisible(g_bEditorShowBGChangesPlay && em != STATE_EDITING);
   text_input_tips_.SetVisible(em == STATE_EDITING);
@@ -4529,6 +4648,13 @@ void ScreenEdit::TransitionEditState(EditState em) {
 
   player_manager_.SetVisible(em == STATE_PLAYING);
   foreground_.SetVisible(g_bEditorShowBGChangesPlay && em != STATE_EDITING);
+
+  // Finish pending parity analysis before starting the audio clock.
+  edit_state_ = em;
+  if (em == STATE_PLAYING) {
+    m_fDancingBotPlaybackSecond = GAMESTATE->position_.music_seconds_;
+  }
+  UpdateDancingBot(0);
 
   switch (em) {
     case STATE_PLAYING:
@@ -5224,6 +5350,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
     if (ScreenPrompt::last_answer_ == ANSWER_YES) {
       note_data_edit_.ClearRange(
           note_field_edit_.begin_marker_, note_field_edit_.end_marker_);
+      InvalidateDancingBot();
     }
   } else if (sm == SM_DoEraseStepTiming) {
     if (ScreenPrompt::last_answer_ == ANSWER_YES) {
@@ -5315,7 +5442,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
       if (steps_ == p_steps) {
         steps_ = nullptr;
       }
-      // In routine/couples editing every enabled player's m_pCurSteps are
+      // In routine/couples editing every enabled player's cur_steps_ are
       // pointed at the shared Steps.
       FOREACH_PlayerNumber(pn) {
         if (GAMESTATE->cur_steps_[pn].Get() == p_steps) {
@@ -5332,13 +5459,14 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
   } else if (sm == SM_LoseFocus) {
     // Snap the trailing beat, in case we lose focus while tweening.
     trailing_beat_ =
-        GetBeat();  // GAMESTATE->m_pPlayerState[main_player_]->m_Position.m_fSongBeat;
+        GetBeat();  // GAMESTATE->player_state_[main_player_]->position_.song_beat_;
   }
 
   ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 void ScreenEdit::SetDirty(bool dirty) {
+  InvalidateDancingBot();
   if (EDIT_MODE.GetValue() != EditMode_Full) {
     dirty_ = false;
     next_autosave_time_ = -1.0f;
@@ -5572,6 +5700,7 @@ const TimingData& ScreenEdit::GetAppropriateTiming() const {
 }
 
 TimingData& ScreenEdit::GetAppropriateTimingForUpdate() {
+  InvalidateDancingBot();
   if (GAMESTATE->is_using_step_timing_) {
     // Copy from song if there is no step timing
     if (steps_->timing_.empty()) {
@@ -5616,8 +5745,8 @@ void ScreenEdit::DisplayTimingMenu() {
   int row = GetRow();
   const TimingData& time = GetAppropriateTiming();
   bool has_speed_on_this_row = time.GetSpeedSegmentAtRow(row)->GetRow() == row;
-  // bool bIsSelecting = ( (m_NoteFieldEdit.m_iEndMarker != -1) &&
-  // (m_NoteFieldEdit.m_iBeginMarker != -1) );
+  // bool bIsSelecting = ( (note_field_edit_.m_iEndMarker != -1) &&
+  // (note_field_edit_.m_iBeginMarker != -1) );
 
   g_TimingDataInformation.rows_[beat_0_offset].SetOneUnthemedChoice(
       std::to_string(time.beat0_offset_in_seconds_));
@@ -5653,7 +5782,7 @@ void ScreenEdit::DisplayTimingMenu() {
   g_TimingDataInformation.rows_[fake].SetOneUnthemedChoice(
       std::to_string(time.GetFakeAtRow(row)));
 
-  // g_TimingDataInformation.rows[speed_percent].bEnabled = !bIsSelecting;
+  // g_TimingDataInformation.rows_[speed_percent].bEnabled = !bIsSelecting;
   g_TimingDataInformation.rows_[speed_wait].b_enabled_ = has_speed_on_this_row;
   g_TimingDataInformation.rows_[speed_mode].b_enabled_ = has_speed_on_this_row;
 
@@ -5834,7 +5963,7 @@ void ScreenEdit::HandleMainMenuChoice(
     } break;
     case edit_steps_information: {
       /* XXX: If the difficulty is changed from EDIT, and
-       * pSteps->WasLoadedFromProfile() is true, we should warn that the steps
+       * p_steps->WasLoadedFromProfile() is true, we should warn that the steps
        * will no longer be saved to the profile. */
       Steps* steps = GAMESTATE->cur_steps_[PLAYER_1];
 
@@ -5890,31 +6019,31 @@ void ScreenEdit::HandleMainMenuChoice(
       if (cat == StepsTypeCategory_Couple || cat == StepsTypeCategory_Routine) {
         std::pair<int, int> tmp = note_data_edit_.GetNumTapNotesTwoPlayer();
         g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumJumpsTwoPlayer();
         g_StepsData.rows_[jumps].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumHandsTwoPlayer();
         g_StepsData.rows_[hands].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumQuadsTwoPlayer();
         g_StepsData.rows_[quads].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumHoldNotesTwoPlayer();
         g_StepsData.rows_[holds].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumMinesTwoPlayer();
         g_StepsData.rows_[mines].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumRollsTwoPlayer();
         g_StepsData.rows_[rolls].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumLiftsTwoPlayer();
         g_StepsData.rows_[lifts].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
         tmp = note_data_edit_.GetNumFakesTwoPlayer();
         g_StepsData.rows_[fakes].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second));
+            ssprintf("%d / %d", tmp.first, tmp.second_));
       } else {
         g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumTapNotes()));
@@ -7314,7 +7443,7 @@ void ScreenEdit::RevertFromDisk() {
   id.FromSteps(GAMESTATE->cur_steps_[PLAYER_1]);
   ASSERT(id.IsValid());
 
-  // If m_bInStepEditor is true while the song is reloaded, it screws up
+  // If in_step_editor_ is true while the song is reloaded, it screws up
   // loading and results in the steps being cleared.  -Kyz
   GAMESTATE->in_step_editor_ = false;
   GAMESTATE->cur_song_->ReloadFromSongDir();
@@ -7341,6 +7470,7 @@ void ScreenEdit::RevertFromDisk() {
 }
 
 void ScreenEdit::SaveUndo(const std::string& description) {
+  InvalidateDancingBot();
   UndoState state;
   state.note_data_.CopyAll(note_data_edit_);
   state.description_ = description;
@@ -7362,6 +7492,7 @@ void ScreenEdit::Undo() {
 
     const std::string description = undo_stack_.back().description_;
     note_data_edit_.CopyAll(undo_stack_.back().note_data_);
+    InvalidateDancingBot();
     undo_stack_.pop_back();
 
     redo_stack_.push_back(redo_state);
@@ -7387,6 +7518,7 @@ void ScreenEdit::Redo() {
 
     const std::string description = redo_stack_.back().description_;
     note_data_edit_.CopyAll(redo_stack_.back().note_data_);
+    InvalidateDancingBot();
     redo_stack_.pop_back();
 
     undo_stack_.push_back(undo_state);
@@ -7685,6 +7817,8 @@ static const EditHelpLine g_EditHelpLines[] = {
         "Cut/Copy selection to clipboard", EDIT_BUTTON_CUT, EDIT_BUTTON_COPY),
     EditHelpLine("Paste from clipboard", EDIT_BUTTON_PASTE),
     EditHelpLine("Toggle waveform display", EDIT_BUTTON_TOGGLE_WAVEFORM),
+    EditHelpLine(
+        "Cycle dancing bot position", EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION),
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {

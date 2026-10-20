@@ -53,78 +53,6 @@
 // For hashing hart keys - Mina
 #include "CryptManager.h"
 
-// Constructing a StageLayout pre-generates every foot placement permutation,
-// which is expensive, so each layout is built once on first use.
-// (yes it is thread safe)
-static const StepParity::StageLayout* getLayout(StepsType ty) {
-  switch (ty) {
-    case StepsType_dance_single: {
-      static const StepParity::StageLayout kLayout(
-          StepsType_dance_single,
-          {
-              {0, 1},  // Left
-              {1, 0},  // Down
-              {1, 2},  // Up
-              {2, 1}   // Right
-          },
-          {2}, {1}, {0, 3});
-      return &kLayout;
-    }
-
-    case StepsType_dance_couple: {
-      static const StepParity::StageLayout kLayout(
-          StepsType_dance_couple,
-          {
-              {0, 1},  // Left
-              {1, 0},  // Down
-              {1, 2},  // Up
-              {2, 1}   // Right
-          },
-          {2}, {1}, {0, 3});
-      return &kLayout;
-    }
-
-    case StepsType_dance_double: {
-      static const StepParity::StageLayout kLayout(
-          StepsType_dance_double,
-          {
-              {0, 1},  // P1 Left
-              {1, 0},  // P1 Down
-              {1, 2},  // P1 Up
-              {2, 1},  // P1 Right
-
-              {3, 1},  // P2 Left
-              {4, 0},  // P2 Down
-              {4, 2},  // P2 Up
-              {5, 1}   // P2 Right
-          },
-          {2, 6}, {1, 5}, {0, 3, 4, 7});
-      return &kLayout;
-    }
-
-    case StepsType_dance_routine: {
-      static const StepParity::StageLayout kLayout(
-          StepsType_dance_routine,
-          {
-              {0, 1},  // P1 Left
-              {1, 0},  // P1 Down
-              {1, 2},  // P1 Up
-              {2, 1},  // P1 Right
-
-              {3, 1},  // P2 Left
-              {4, 0},  // P2 Down
-              {4, 2},  // P2 Up
-              {5, 1}   // P2 Right
-          },
-          {2, 6}, {1, 5}, {0, 3, 4, 7});
-      return &kLayout;
-    }
-
-    default:
-      return nullptr;
-  }
-}
-
 static const char* DisplayBPMNames[] = {
     "Actual",
     "Specified",
@@ -243,7 +171,7 @@ bool Steps::GetNoteDataFromSimfile() {
   } else if (extension == "dwi") {
     return DWILoader::LoadNoteDataFromSimfile(step_file, *this);
   } else if (extension == "edit") {
-    // Try SSC, then fallback to SM.
+    // Try SSC, then fallback to sm.
     SSCLoader ssc;
     if (ssc.LoadNoteDataFromSimfile(step_file, *this) != true) {
       SMLoader sm;
@@ -295,7 +223,7 @@ void Steps::SetSMNoteData(const std::string& notes_comp) {
   hash_ = 0;
 }
 
-/* XXX: this function should pull data from m_sFilename, like Decompress() */
+/* XXX: this function should pull data from filename_, like Decompress() */
 void Steps::GetSMNoteData(std::string& notes_comp_out) const {
   if (note_data_compressed_.empty()) {
     if (!note_data_is_filled_) {
@@ -422,7 +350,8 @@ void Steps::CalculateTechCounts(const NoteData& temp_note_data) {
 
   FOREACH_PlayerNumber(pn) tech_counts_[pn].Zero();
 
-  const StepParity::StageLayout* layout = getLayout(this->steps_type_);
+  const StepParity::StageLayout* layout =
+      StepParity::GetStageLayout(this->steps_type_);
   // If we don't have a valid layout for this StepsType, then don't even
   // bother
   if (layout == nullptr) {
@@ -511,7 +440,7 @@ void Steps::Decompress() {
   }
 
   if (parent_) {
-    // get autogen m_pNoteData
+    // get autogen note_data_
     NoteData notedata;
     parent_->GetNoteData(notedata);
 
@@ -579,8 +508,8 @@ void Steps::Compress() const {
     note_data_->Init();
     note_data_is_filled_ = false;
 
-    /* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and
-     * m_sNoteDataCompressed.reserve(0) don't always free the allocated memory.
+    /* Be careful; 'x = ""', note_data_compressed_.clear() and
+     * note_data_compressed_.reserve(0) don't always free the allocated memory.
      */
     note_data_compressed_ = std::string();
     return;
@@ -607,7 +536,7 @@ void Steps::DeAutogen(bool copy_note_data) {
   }
 
   if (copy_note_data) {
-    Decompress();  // fills in m_pNoteData with sliding window transform
+    Decompress();  // fills in note_data_ with sliding window transform
   }
 
   description_ = Real()->description_;
@@ -918,7 +847,7 @@ const std::vector<float>& Steps::GetNpsPerMeasure(PlayerNumber pn) const {
 }
 
 const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
-  // m_NotesPerMeasure will only have separate sets of values per-player if
+  // notes_per_measure_ will only have separate sets of values per-player if
   // the steps type has different steps for each player (eg dance-couples,
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
@@ -933,7 +862,7 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
 }
 
 const StreamBreakdown& Steps::GetStreamBreakdown(PlayerNumber pn) const {
-  // m_StreamBreakdown will only have separate sets of values per-player if
+  // stream_breakdown_ will only have separate sets of values per-player if
   // the steps type has different steps for each player (eg dance-couples,
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
