@@ -84,12 +84,6 @@ set_target_properties("${SM_EXE_NAME}"
                                  MINSIZEREL_OUTPUT_NAME "${SM_NAME_MINSIZEREL}"
                                  RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}")
 
-if(WITH_LTO)
-  include(CheckIPOSupported)
-  check_ipo_supported()
-  set_property(TARGET "${SM_EXE_NAME}" PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
-endif()
-
 if(WITH_PORTABLE_TOMCRYPT)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ASM)
 endif()
