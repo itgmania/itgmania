@@ -6,7 +6,9 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "RageException.h"
 #include "RageFile.h"
@@ -168,18 +170,20 @@ bool RageFileDriverDirect::Remove(const std::string& sPath_) {
   RageFileManager::FileType type = this->GetFileType(sPath);
   switch (type) {
     case RageFileManager::TYPE_FILE:
-      if (DoRemove((m_sRoot + sPath).c_str()) == -1) {
-        WARN("remove failed: " + sPath);
+    case RageFileManager::TYPE_DIR: {
+      std::error_code error;
+      if (!std::filesystem::remove(
+              std::filesystem::u8path(m_sRoot + sPath), error)) {
+        if (error) {
+          WARN(ssprintf(
+              "remove failed for '%s': %s", sPath.c_str(),
+              error.message().c_str()));
+        } else {
+          WARN("remove failed: " + sPath);
+        }
         return false;
       }
-      FDB->DelFile(sPath);
-      return true;
-
-    case RageFileManager::TYPE_DIR:
-      if (DoRmdir((m_sRoot + sPath).c_str()) == -1) {
-        WARN("rmdir failed: " + sPath);
-        return false;
-      }
+    }
       FDB->DelFile(sPath);
       return true;
 

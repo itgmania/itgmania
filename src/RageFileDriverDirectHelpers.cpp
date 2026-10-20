@@ -1,9 +1,10 @@
 #include "RageFileDriverDirectHelpers.h"
 
-#include <cerrno>
-#include <cstring>
+#include <chrono>
+#include <filesystem>
 #include <set>
 #include <string>
+#include <system_error>
 #include <vector>
 
 #include "RageThreads.h"
@@ -15,11 +16,37 @@
 #if defined(_WIN32)
 // clang-format off
 #include <windows.h>
-#include <io.h>
 // clang-format on
-#else
-#include <dirent.h>
 #endif
+
+namespace filesystem = std::filesystem;
+
+static bool GetFileMetadata(
+    const filesystem::path& path, File& file, std::error_code& error) {
+  const filesystem::file_status status = filesystem::status(path, error);
+  if (error || !filesystem::exists(status)) {
+    if (!error) {
+      error = std::make_error_code(std::errc::no_such_file_or_directory);
+    }
+    return false;
+  }
+
+  file.dir = filesystem::is_directory(status);
+  if (filesystem::is_regular_file(status)) {
+    const auto size = filesystem::file_size(path, error);
+    if (!error) {
+      file.size = static_cast<int>(size);
+    }
+  }
+
+  error.clear();
+  const auto writeTime = filesystem::last_write_time(path, error);
+  if (!error) {
+    file.hash = static_cast<int>(writeTime.time_since_epoch().count());
+  }
+  error.clear();
+  return true;
+}
 
 std::string DoPathReplace(const std::string& sPath) {
   std::string TempPath = sPath;
@@ -88,67 +115,20 @@ bool WinMoveFile(std::string sOldPath, std::string sNewPath) {
 
 /* mkdir -p.  Doesn't fail if Path already exists and is a directory. */
 bool CreateDirectories(std::string Path) {
-  // XXX: handle "//foo/bar" paths in Windows
-  std::vector<std::string> parts;
-  std::string curpath;
-
-  // If Path is absolute, add the initial slash ("ignore empty" will remove it).
-  if (Left(Path, 1) == "/") {
-    curpath = "/";
+  namespace fs = std::filesystem;
+  const fs::path path = fs::u8path(Path);
+  std::error_code error;
+  fs::create_directories(path, error);
+  if (!error && fs::is_directory(path, error)) {
+    return true;
   }
 
-  // Ignore empty, so eg. "/foo/bar//baz" doesn't try to create "/foo/bar"
-  // twice.
-  split(Path, "/", parts, true);
-
-  for (unsigned i = 0; i < parts.size(); ++i) {
-    if (i) {
-      curpath += "/";
-    }
-    curpath += parts[i];
-
-#if defined(_WIN32)
-    if (curpath.size() == 2 && curpath[1] == ':') /* C: */
-    {
-      /* Don't try to create the drive letter alone. */
-      continue;
-    }
-#endif
-
-    if (DoMkdir(curpath.c_str(), 0777) == 0) {
-      continue;
-    }
-
-#if defined(_WIN32)
-    /* When creating a directory that already exists over Samba, Windows is
-     * returning ENOENT instead of EEXIST. */
-    /* I can't reproduce this anymore.  If we get ENOENT, log it but keep
-     * going. */
-    if (errno == ENOENT) {
-      WARN(
-          ssprintf("Couldn't create %s: %s", curpath.c_str(), strerror(errno)));
-      errno = EEXIST;
-    }
-#endif
-
-    if (errno == EEXIST) {
-      /* Make sure it's a directory. */
-      struct stat st;
-      if (DoStat(curpath.c_str(), &st) != -1 && !(st.st_mode & S_IFDIR)) {
-        WARN(ssprintf(
-            "Couldn't create %s: path exists and is not a directory",
-            curpath.c_str()));
-        return false;
-      }
-
-      continue;  // we expect to see this error
-    }
-
-    WARN(ssprintf("Couldn't create %s: %s", curpath.c_str(), strerror(errno)));
-    return false;
+  if (!error) {
+    error = std::make_error_code(std::errc::not_a_directory);
   }
-
-  return true;
+  WARN(ssprintf(
+      "Couldn't create %s: %s", Path.c_str(), error.message().c_str()));
+  return false;
 }
 
 DirectFilenameDB::DirectFilenameDB(std::string root_) {
@@ -181,27 +161,10 @@ void DirectFilenameDB::CacheFile(const std::string& sPath) {
     m_Mutex.Wait();
   }
 
-#if defined(_WIN32)
-  WIN32_FIND_DATA fd;
-  HANDLE hFind = DoFindFirstFile((root + sPath).c_str(), &fd);
-  if (hFind == INVALID_HANDLE_VALUE) {
-    m_Mutex.Unlock();  // Locked by GetFileSet()
-    return;
-  }
-  File f(fd.cFileName);
-  f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-  f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
-  f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 |
-           fd.ftLastWriteTime.dwLowDateTime;
-
-  pFileSet->files.insert(f);
-  FindClose(hFind);
-#else
   File f(Basename(sPath));
-
-  struct stat st;
-  if (DoStat((root + sPath).c_str(), &st) == -1) {
-    if (errno != ENOENT) {
+  std::error_code error;
+  if (!GetFileMetadata(filesystem::u8path(root + sPath), f, error)) {
+    if (error != std::errc::no_such_file_or_directory) {
       // Warn in this case since this is unexpected (maybe due to some actual
       // filesystem issues like perms/long paths/etc).
       // ENOENT is expected in some cases (like when we remove the file
@@ -209,21 +172,16 @@ void DirectFilenameDB::CacheFile(const std::string& sPath) {
       // flow, etc) so we don't want to log that as a warning.
       WARN(ssprintf(
           "Couldn't stat '%s' while caching file metadata: %s", sPath.c_str(),
-          strerror(errno)));
+          error.message().c_str()));
     }
     // Remove any old cached records and return early so we con't insert
     // any bad metadata for a file that doesn't exist.
     pFileSet->files.erase(f);
     m_Mutex.Unlock();  // Locked by GetFileSet()
     return;
-  } else {
-    f.dir = S_ISDIR(st.st_mode);
-    f.size = static_cast<int>(st.st_size);
-    f.hash = st.st_mtime;
   }
 
   pFileSet->files.insert(f);
-#endif
   m_Mutex.Unlock();  // Locked by GetFileSet()
 }
 
@@ -236,81 +194,38 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
   fs.age.GetDeltaTime();  // reset
   fs.files.clear();
 
-#if defined(_WIN32)
-  WIN32_FIND_DATA fd;
-
-  if (sPath.size() > 0 && Right(sPath, 1) == "/") {
-    sPath.erase(sPath.size() - 1);
-  }
-
-  HANDLE hFind = DoFindFirstFile((root + sPath + "/*").c_str(), &fd);
-  CHECKPOINT_M(root + sPath + "/*");
-
-  if (hFind == INVALID_HANDLE_VALUE) {
+  const filesystem::path directory = filesystem::u8path(root + sPath);
+  std::error_code iterationError;
+  filesystem::directory_iterator entry(directory, iterationError);
+  if (iterationError) {
     return;
   }
 
-  do {
-    if (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")) {
-      continue;
-    }
-
-    File f;
-    f.SetName(fd.cFileName);
-    f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    f.size = fd.nFileSizeLow;
-    f.hash = fd.ftLastWriteTime.dwLowDateTime;
-
-    fs.files.insert(f);
-  } while (FindNextFile(hFind, &fd));
-  FindClose(hFind);
-#else
-  /* Ugly: POSIX threads are not guaranteed to have per-thread cwds, and only
-   * a few systems have openat() or equivalent; one or the other is needed
-   * to do efficient, thread-safe directory traversal.  Instead, we have to
-   * use absolute paths, which forces the system to re-parse the directory
-   * for each file.  This isn't a major issue, since most large directory
-   * scans are I/O-bound. */
-
-  DIR* pDir = opendir((root + sPath).c_str());
-  if (pDir == nullptr) {
-    return;
-  }
-
-  while (struct dirent* pEnt = readdir(pDir)) {
-    if (!strcmp(pEnt->d_name, ".")) {
-      continue;
-    }
-    if (!strcmp(pEnt->d_name, "..")) {
-      continue;
-    }
-
-    File f(pEnt->d_name);
-
-    struct stat st;
-    if (DoStat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == -1) {
-      int iError = errno;
-      /* If it's a broken symlink, ignore it.  Otherwise, warn. */
-      if (lstat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == 0) {
-        continue;
+  const filesystem::directory_iterator end;
+  while (entry != end) {
+    const filesystem::directory_entry current = *entry;
+    std::error_code statusError;
+    File file(current.path().filename().u8string());
+    if (!GetFileMetadata(current.path(), file, statusError)) {
+      std::error_code linkError;
+      if (!(current.is_symlink(linkError) && !linkError)) {
+        WARN(ssprintf(
+            "Got file '%s' in '%s' from list, but can't stat: %s",
+            current.path().u8string().c_str(), sPath.c_str(),
+            statusError.message().c_str()));
       }
-
-      /* Huh? */
-      WARN(ssprintf(
-          "Got file '%s' in '%s' from list, but can't stat? (%s)", pEnt->d_name,
-          sPath.c_str(), strerror(iError)));
-      continue;
     } else {
-      f.dir = (st.st_mode & S_IFDIR);
-      f.size = (int)st.st_size;
-      f.hash = st.st_mtime;
+      fs.files.insert(file);
     }
 
-    fs.files.insert(f);
+    entry.increment(iterationError);
+    if (iterationError) {
+      WARN(ssprintf(
+          "Couldn't continue listing '%s': %s", directory.u8string().c_str(),
+          iterationError.message().c_str()));
+      break;
+    }
   }
-
-  closedir(pDir);
-#endif
 
   /*
    * Check for any ".ignore" markers.  If a marker exists, hide the marker and
