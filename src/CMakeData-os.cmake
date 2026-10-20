@@ -23,8 +23,7 @@ if(APPLE)
               "archutils/Darwin/KeyboardDevice.h"
               "archutils/Darwin/MouseDevice.h"
               "archutils/Darwin/PumpDevice.h"
-              "archutils/Darwin/SpecialDirs.h"
-              "archutils/Darwin/StepMania.pch")
+              "archutils/Darwin/SpecialDirs.h")
 
   source_group("OS Specific\\\\Darwin"
                FILES
@@ -56,7 +55,6 @@ else()
                 "archutils/Win32/ErrorStrings.cpp"
                 "archutils/Win32/GetFileInformation.cpp"
                 "archutils/Win32/GraphicsWindow.cpp"
-                "archutils/Win32/MessageWindow.cpp"
                 "archutils/Win32/RegistryAccess.cpp"
                 "archutils/Win32/RestartProgram.cpp"
                 "archutils/Win32/SpecialDirs.cpp"
@@ -79,7 +77,6 @@ else()
                 "archutils/Win32/ErrorStrings.h"
                 "archutils/Win32/GetFileInformation.h"
                 "archutils/Win32/GraphicsWindow.h"
-                "archutils/Win32/MessageWindow.h"
                 "archutils/Win32/RegistryAccess.h"
                 "archutils/Win32/RestartProgram.h"
                 "archutils/Win32/SpecialDirs.h"
