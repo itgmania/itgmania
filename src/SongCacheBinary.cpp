@@ -250,7 +250,7 @@ void ReadTiming(Reader& r, TimingData& timing) {
           break;
         }
         case SEGMENT_WARP:
-          segs.push_back(new WarpSegment(row, r.I32()));
+          segs.push_back(new WarpSegment(row, NoteRowToBeat(r.I32())));
           break;
         case SEGMENT_LABEL:
           segs.push_back(new LabelSegment(row, r.Str()));
@@ -278,7 +278,7 @@ void ReadTiming(Reader& r, TimingData& timing) {
           segs.push_back(new ScrollSegment(row, r.F32()));
           break;
         case SEGMENT_FAKE:
-          segs.push_back(new FakeSegment(row, r.I32()));
+          segs.push_back(new FakeSegment(row, NoteRowToBeat(r.I32())));
           break;
         default:
           break;
