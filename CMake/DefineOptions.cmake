@@ -4,11 +4,6 @@
 option(WITH_EXTERNAL_WARNINGS
        "Build with warnings for all components, not just StepMania." OFF)
 
-# This option is not yet working, but will likely default to ON in the future.
-option(WITH_LTO
-       "Build with Link Time Optimization (LTO)/Whole Program Optimization."
-       OFF)
-
 # This option handles if we use SSE2 processing.
 option(WITH_SSE2 "Build with SSE2 Optimizations." ON)
 
