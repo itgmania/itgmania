@@ -477,7 +477,16 @@ bool Song::ReloadFromSongDir(std::string sDir) {
     return false;
   }
   copy.RemoveAutoGenNotes();
+  for (Steps* s : m_UnknownStyleSteps) {
+    RageUtil::SafeDelete(s);
+  }
   *this = copy;
+  // The assignment only copied the pointers to copy's unknown-style steps, so
+  // take them over before copy deletes them.
+  copy.m_UnknownStyleSteps.clear();
+  for (Steps* s : m_UnknownStyleSteps) {
+    s->m_pSong = this;
+  }
 
   if (SONGMAN->GetGroup(this) != nullptr) {
     m_SongTiming.m_fBeat0GroupOffsetInSeconds =
