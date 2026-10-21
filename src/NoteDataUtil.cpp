@@ -46,6 +46,11 @@ NoteType NoteDataUtil::GetSmallestNoteTypeForMeasure(
 
 NoteType NoteDataUtil::GetSmallestNoteTypeInRange(
     const NoteData& n, int iStartIndex, int iEndIndex) {
+  std::vector<int> rows;
+  FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE(n, i, iStartIndex, iEndIndex) {
+    rows.push_back(i);
+  }
+
   // probe to find the smallest note type
   FOREACH_ENUM(NoteType, nt) {
     float fBeatSpacing = NoteTypeToBeat(nt);
@@ -53,7 +58,7 @@ NoteType NoteDataUtil::GetSmallestNoteTypeInRange(
 
     bool bFoundSmallerNote = false;
     // for each index in this measure
-    FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE(n, i, iStartIndex, iEndIndex) {
+    for (int i : rows) {
       if (i % iRowSpacing == 0) {
         continue;  // skip
       }
@@ -401,6 +406,12 @@ void NoteDataUtil::GetSMNoteDataString(
     if (partNum++ != 0) {
       sRet.append("&\n");
     }
+    // Rows are visited in increasing order, so walk each track forward
+    // instead of searching for every row/track cell.
+    std::vector<NoteData::const_iterator> cursors;
+    for (int t = 0; t < nd.GetNumTracks(); ++t) {
+      cursors.push_back(nd.begin(t));
+    }
     for (int m = 0; m <= iLastMeasure; ++m)  // foreach measure
     {
       if (m) {
@@ -425,7 +436,12 @@ void NoteDataUtil::GetSMNoteDataString(
 
       for (int r = iMeasureStartRow; r <= iMeasureLastRow; r += iRowSpacing) {
         for (int t = 0; t < nd.GetNumTracks(); ++t) {
-          const TapNote& tn = nd.GetTapNote(t, r);
+          NoteData::const_iterator& it = cursors[t];
+          while (it != nd.end(t) && it->first < r) {
+            ++it;
+          }
+          const TapNote& tn =
+              (it != nd.end(t) && it->first == r) ? it->second : TAP_EMPTY;
           char c;
           switch (tn.type) {
             case TapNoteType_Empty:
@@ -469,7 +485,7 @@ void NoteDataUtil::GetSMNoteDataString(
               c = '\0';
               FAIL_M(ssprintf("Invalid tap note type: %i", tn.type));
           }
-          sRet.append(1, c);
+          sRet.push_back(c);
 
           if (tn.type == TapNoteType_Attack) {
             sRet.append(ssprintf(
@@ -482,7 +498,7 @@ void NoteDataUtil::GetSMNoteDataString(
           }
         }
 
-        sRet.append(1, '\n');
+        sRet.push_back('\n');
       }
     }
   }

@@ -17,11 +17,8 @@
 #include <cstring>
 #include <ctime>
 #include <functional>
-#include <iomanip>
-#include <ios>
 #include <iterator>
 #include <map>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -296,9 +293,9 @@ std::string FormatNumberAndSuffix(int i) {
 std::string NormalizeDecimal(float num) {
   float mult = 1000.0f;
   float rounded = std::round(num * mult) / mult;
-  std::ostringstream os;
-  os << std::fixed << std::setprecision(3) << rounded;
-  return os.str();
+  char buf[64];
+  const int len = snprintf(buf, sizeof(buf), "%.3f", rounded);
+  return std::string(buf, len);
 }
 
 struct tm GetLocalTime() {
