@@ -15,7 +15,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -55,10 +54,13 @@
 // For hashing hart keys - Mina
 #include "CryptManager.h"
 
-std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
+// Constructing a StageLayout pre-generates every foot placement permutation,
+// which is expensive, so each layout is built once on first use.
+// (yes it is thread safe)
+static const StepParity::StageLayout* getLayout(StepsType ty) {
   switch (ty) {
-    case StepsType_dance_single:
-      return StepParity::StageLayout(
+    case StepsType_dance_single: {
+      static const StepParity::StageLayout layout(
           StepsType_dance_single,
           {
               {0, 1},  // Left
@@ -67,9 +69,11 @@ std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
               {2, 1}   // Right
           },
           {2}, {1}, {0, 3});
+      return &layout;
+    }
 
-    case StepsType_dance_couple:
-      return StepParity::StageLayout(
+    case StepsType_dance_couple: {
+      static const StepParity::StageLayout layout(
           StepsType_dance_couple,
           {
               {0, 1},  // Left
@@ -78,9 +82,11 @@ std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
               {2, 1}   // Right
           },
           {2}, {1}, {0, 3});
+      return &layout;
+    }
 
-    case StepsType_dance_double:
-      return StepParity::StageLayout(
+    case StepsType_dance_double: {
+      static const StepParity::StageLayout layout(
           StepsType_dance_double,
           {
               {0, 1},  // P1 Left
@@ -94,9 +100,11 @@ std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
               {5, 1}   // P2 Right
           },
           {2, 6}, {1, 5}, {0, 3, 4, 7});
+      return &layout;
+    }
 
-    case StepsType_dance_routine:
-      return StepParity::StageLayout(
+    case StepsType_dance_routine: {
+      static const StepParity::StageLayout layout(
           StepsType_dance_routine,
           {
               {0, 1},  // P1 Left
@@ -110,9 +118,11 @@ std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
               {5, 1}   // P2 Right
           },
           {2, 6}, {1, 5}, {0, 3, 4, 7});
+      return &layout;
+    }
 
     default:
-      return std::nullopt;
+      return nullptr;
   }
 }
 
@@ -399,11 +409,10 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
 
   FOREACH_PlayerNumber(pn) m_TechCounts[pn].Zero();
 
-  const std::optional<StepParity::StageLayout> layout =
-      getLayout(this->m_StepsType);
+  const StepParity::StageLayout* layout = getLayout(this->m_StepsType);
   // If we don't have a valid layout for this StepsType, then don't even
   // bother
-  if (!layout) {
+  if (layout == nullptr) {
     return;
   }
   TimingData* timing = this->GetTimingData();
@@ -412,12 +421,12 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
           tempNoteData, splitNoteData, m_StepsType)) {
     FOREACH_PlayerNumber(pn) {
-      StepParity::StepParityGenerator gen{&*layout, timing};
+      StepParity::StepParityGenerator gen{layout, timing};
       gen.analyzeNoteData(splitNoteData[pn]);
 
       std::vector<NoteAnnotation> tempNoteAnnotations;
       TechCounts::CalculateTechCountsFromRows(
-          gen.rows, &*layout, m_TechCounts[pn], tempNoteAnnotations);
+          gen.rows, layout, m_TechCounts[pn], tempNoteAnnotations);
 
       NoteAnnotationCache cachedAnnotations;
       cachedAnnotations.decompressed = tempNoteAnnotations;
@@ -425,12 +434,12 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
       m_NoteAnnotations.push_back(cachedAnnotations);
     }
   } else {
-    StepParity::StepParityGenerator gen{&*layout, timing};
+    StepParity::StepParityGenerator gen{layout, timing};
     gen.analyzeNoteData(tempNoteData);
 
     std::vector<NoteAnnotation> tempNoteAnnotations;
     TechCounts::CalculateTechCountsFromRows(
-        gen.rows, &*layout, m_TechCounts[0], tempNoteAnnotations);
+        gen.rows, layout, m_TechCounts[0], tempNoteAnnotations);
     std::fill_n(m_TechCounts + 1, NUM_PLAYERS - 1, m_TechCounts[0]);
 
     NoteAnnotationCache cachedAnnotations;
