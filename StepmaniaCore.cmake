@@ -105,16 +105,15 @@ if(WIN32)
                NO_DEFAULT_PATH)
   get_filename_component(LIB_AVUTIL ${LIB_AVUTIL} NAME)
 
-  list(APPEND SM_FFMPEG_WIN32_DLLS
+  set(SM_FFMPEG_WIN32_DLLS
     "avcodec-59.dll"
     "avformat-59.dll"
     "avutil-57.dll"
     "swscale-6.dll"
   )
-  foreach(dll ${SM_FFMPEG_WIN32_DLLS})
-    file(REMOVE "${SM_PROGRAM_DIR}/${dll}")
-    file(COPY "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}/${dll}" DESTINATION "${SM_PROGRAM_DIR}/")
-  endforeach()
+  list(TRANSFORM SM_FFMPEG_WIN32_DLLS PREPEND
+       "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}/"
+       OUTPUT_VARIABLE SM_FFMPEG_WIN32_DLL_FILES)
 elseif(MACOSX)
   include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 
