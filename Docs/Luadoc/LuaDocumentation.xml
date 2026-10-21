@@ -2621,7 +2621,7 @@ Def.BitmapText{
 		Updates the feet and panel highlights for the specified song time, in seconds. Supports seeking backwards and looping.
 	</Function>
 	<Function name='SetSteps' return='void' arguments='Steps steps, PlayerNumber player'>
-		Sets the chart to display and which player's footwork to use. Pass <code>nil</code> for <code>steps</code> to clear the bot. Defaults to <code>PLAYER_1</code> if <code>player</code> is omitted.
+		Sets the chart to display and which player's footwork to use. Pass <code>nil</code> for <code>steps</code> to clear the bot. Defaults to the master player if <code>player</code> is omitted.
 	</Function>
 </Class>
 <Class name='CryptManager'>

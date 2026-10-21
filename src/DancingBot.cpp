@@ -6,6 +6,7 @@
 #include <string>
 
 #include "ActorUtil.h"
+#include "GameState.h"
 #include "LuaBinding.h"
 #include "NoteData.h"
 #include "NoteDataUtil.h"
@@ -82,6 +83,9 @@ void DancingBot::SetSteps(Steps* steps, PlayerNumber player) {
     }
     SetSecond(0);
     return;
+  }
+  if (player == PLAYER_INVALID) {
+    player = GAMESTATE->GetMasterPlayerNumber();
   }
   NoteData notes;
   steps->GetNoteData(notes);
@@ -324,9 +328,11 @@ class LunaDancingBot : public Luna<DancingBot> {
  public:
   static int SetSteps(T* p, lua_State* L) {
     Steps* steps = lua_isnoneornil(L, 1) ? nullptr : Luna<Steps>::check(L, 1);
-    const PlayerNumber player =
-        lua_isnoneornil(L, 2) ? PLAYER_1 : Enum::Check<PlayerNumber>(L, 2);
-    p->SetSteps(steps, player);
+    if (lua_isnoneornil(L, 2)) {
+      p->SetSteps(steps);
+    } else {
+      p->SetSteps(steps, Enum::Check<PlayerNumber>(L, 2));
+    }
     COMMON_RETURN_SELF;
   }
   static int SetSecond(T* p, lua_State* L) {
