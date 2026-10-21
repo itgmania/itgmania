@@ -17,8 +17,11 @@ class TimingData;
 /* Provides a Visualization of the suggested footwork for given steps.
  */
 class DancingBot : public ActorFrame {
-  /* TODO: Support controlling which tech the bot can perform and whether
-   * playback should stop when an invalid step occurs. */
+  /* TODO: so ideally we can support controlling which tech the bot can
+     perform. And then separately whether playback should stop when an "invalid"
+     step occurs based on this. This will be super helpful for new charters as
+     by default we can make "twisted" steps and doublesteps flash red on the
+     pad. Removed teh wip of this for now to be explored later */
 
  public:
   DancingBot();
@@ -28,8 +31,10 @@ class DancingBot : public ActorFrame {
   void Load(
       const NoteData& notes, StepsType type, TimingData& timing,
       PlayerNumber player);
-  /* Loads a chart's note data, or clears the bot when steps is null. */
-  void SetSteps(Steps* steps, PlayerNumber player);
+  /* Loads a chart's note data, or clears the bot when steps is null.
+   * The player selects which part of a composite chart (routine) to display.
+   * Uses the master player when player is PLAYER_INVALID. */
+  void SetSteps(Steps* steps, PlayerNumber player = PLAYER_INVALID);
   /* Updates the footprints and panel highlights for an absolute song time. */
   void SetSecond(float second);
   /* Sets the maximum movement anticipation time, clamped to 0–1 seconds. */
