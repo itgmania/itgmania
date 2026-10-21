@@ -2313,27 +2313,6 @@ void ScreenEdit::Update(float fDeltaTime) {
 
   if (m_EditState == STATE_PLAYING) {
     UpdateDancingBot(fDeltaTime);
-    const float second = GAMESTATE->m_Position.m_fMusicSeconds;
-    float beat = 0;
-    if (m_DancingBot.GetStopOnDoublesteps()) {
-      const float start = GetAppropriateTiming().GetElapsedTimeFromBeat(
-          NoteRowToBeat(m_iStartPlayingAt));
-      const float end = GetAppropriateTiming().GetElapsedTimeFromBeat(
-          NoteRowToBeat(m_iStopPlayingAt));
-      // Check the crossed interval so a frame can pass a note without
-      // missing it. Exclude lead-in and notes outside the playback selection.
-      if (m_DancingBot.GetDoublestepBeat(
-              std::max(m_fDancingBotPlaybackSecond, start - 0.0001f),
-              std::min(second, end), beat)) {
-        m_fBeatToReturnTo = beat;
-        TransitionEditState(STATE_EDITING);
-        // Preserve the actual note beat even when the current snap differs.
-        SetBeat(beat);
-        m_fTrailingBeat = beat;
-        m_bTextInfoNeedsUpdate = true;
-      }
-    }
-    m_fDancingBotPlaybackSecond = second;
   }
 
   if (m_EditState == STATE_EDITING) {
@@ -2509,7 +2488,7 @@ void ScreenEdit::UpdateDancingBot(float fDeltaTime) {
     m_DancingBotPlayer = player;
   }
   if ((m_EditState != STATE_EDITING && m_EditState != STATE_PLAYING) ||
-      (!m_DancingBot.GetVisible() && !m_DancingBot.GetStopOnDoublesteps())) {
+      !m_DancingBot.GetVisible()) {
     return;
   }
   if (m_bDancingBotNeedsReload) {
@@ -3014,13 +2993,6 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
 
   if (m_In.IsTransitioning() || m_Out.IsTransitioning()) {
     return false;
-  }
-
-  if ((m_EditState == STATE_EDITING || m_EditState == STATE_PLAYING) &&
-      input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT) &&
-      input.type == IET_FIRST_PRESS &&
-      m_DancingBot.HandleMousePress(GetMouseScreenX(), GetMouseScreenY())) {
-    return true;
   }
 
   if (m_EditState == STATE_EDITING &&
@@ -4646,9 +4618,6 @@ void ScreenEdit::TransitionEditState(EditState em) {
 
   // Finish pending parity analysis before starting the audio clock.
   m_EditState = em;
-  if (em == STATE_PLAYING) {
-    m_fDancingBotPlaybackSecond = GAMESTATE->m_Position.m_fMusicSeconds;
-  }
   UpdateDancingBot(0);
 
   switch (em) {

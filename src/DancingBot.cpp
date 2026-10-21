@@ -5,12 +5,9 @@
 #include <limits>
 #include <string>
 
-#include "ActorUtil.h"
-#include "BitmapText.h"
 #include "LuaBinding.h"
 #include "NoteData.h"
 #include "NoteDataUtil.h"
-#include "Quad.h"
 #include "Sprite.h"
 #include "StepParityGenerator.h"
 #include "Steps.h"
@@ -39,60 +36,6 @@ Sprite* AddSprite(
   return sprite;
 }
 
-/* Apply the same actor transforms used by drawing, including themed controls.
- */
-bool ToLocal(const Actor& actor, float& x, float& y) {
-  const float scaleX = actor.GetZoomX() * actor.GetBaseZoomX();
-  const float scaleY = actor.GetZoomY() * actor.GetBaseZoomY();
-  if (!actor.GetVisible() || std::abs(scaleX) < 0.0001f ||
-      std::abs(scaleY) < 0.0001f) {
-    return false;
-  }
-  const float angle = actor.GetRotationZ() * 3.14159265f / 180;
-  const float dx = x - actor.GetX();
-  const float dy = y - actor.GetY();
-  x = (dx * std::cos(angle) + dy * std::sin(angle)) / scaleX;
-  y = (-dx * std::sin(angle) + dy * std::cos(angle)) / scaleY;
-  return true;
-}
-
-void AddCheckbox(ActorFrame& parent, const std::string& name, float width) {
-  ActorFrame* button = new ActorFrame;
-  button->SetName(name);
-  button->SetWidth(width);
-  button->SetHeight(24);
-  button->DeleteChildrenWhenDone(true);
-  Quad* background = new Quad;
-  background->SetName("Background");
-  background->SetWidth(width);
-  background->SetHeight(24);
-  background->SetDiffuse(RageColor(0.06f, 0.08f, 0.12f, 0.95f));
-  button->AddChild(background);
-  Quad* box = new Quad;
-  box->SetName("Box");
-  box->SetWidth(12);
-  box->SetHeight(12);
-  box->SetX(10 - width / 2);
-  box->SetDiffuse(RageColor(0.65f, 0.7f, 0.75f, 1));
-  button->AddChild(box);
-  Quad* mark = new Quad;
-  mark->SetName("Mark");
-  mark->SetWidth(8);
-  mark->SetHeight(8);
-  mark->SetX(box->GetX());
-  mark->SetDiffuse(RageColor(0.2f, 0.8f, 1, 1));
-  button->AddChild(mark);
-  BitmapText* label = new BitmapText;
-  label->SetName("Label");
-  label->LoadFromFont(THEME->GetPathF("Common", "normal"));
-  label->SetText(THEME->GetString("DancingBot", name));
-  label->SetZoom(0.55f);
-  label->SetX(8);
-  label->SetMaxWidth((width - 28) / 0.55f);
-  button->AddChild(label);
-  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(*button, "DancingBot");
-  parent.AddChild(button);
-}
 } /* namespace */
 
 DancingBot::DancingBot() {
@@ -124,94 +67,7 @@ DancingBot::DancingBot() {
     footprint->SetCustomImageRect(RectF(f * 0.5f, 0, (f + 1) * 0.5f, 1));
     footprint->SetDiffuse(color);
   }
-  ActorFrame* controls = new ActorFrame;
-  controls->SetName("Controls");
-  controls->SetVisible(false);
-  controls->DeleteChildrenWhenDone(true);
-  AddCheckbox(*controls, "FlashDoublesteps", 200);
-  AddCheckbox(*controls, "StopOnDoublesteps", 200);
-  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(*controls, "DancingBot");
-  AddChild(controls);
-  m_bFlashDoublesteps =
-      THEME->GetMetricB("DancingBot", "FlashDoublestepsDefault");
-  m_bStopOnDoublesteps =
-      THEME->GetMetricB("DancingBot", "StopOnDoublestepsDefault");
-  RefreshControls();
   SetSecond(0);
-}
-
-void DancingBot::RefreshControls() {
-  ActorFrame* controls = static_cast<ActorFrame*>(GetChild("Controls"));
-  ActorFrame* flash =
-      static_cast<ActorFrame*>(controls->GetChild("FlashDoublesteps"));
-  ActorFrame* stop =
-      static_cast<ActorFrame*>(controls->GetChild("StopOnDoublesteps"));
-  flash->GetChild("Mark")->SetVisible(m_bFlashDoublesteps);
-  stop->GetChild("Mark")->SetVisible(m_bStopOnDoublesteps);
-}
-
-void DancingBot::SetFlashDoublesteps(bool flash) {
-  m_bFlashDoublesteps = flash;
-  RefreshControls();
-  SetSecond(m_fSecond);
-}
-
-void DancingBot::SetStopOnDoublesteps(bool stop) {
-  m_bStopOnDoublesteps = stop;
-  RefreshControls();
-}
-
-bool DancingBot::GetDoublestepBeat(
-    float afterSecond, float throughSecond, float& beat) const {
-  if (!m_bSupported || throughSecond < afterSecond) {
-    return false;
-  }
-  float firstSecond = std::numeric_limits<float>::infinity();
-  for (const std::vector<PanelContact>& contacts : m_Contacts) {
-    std::vector<PanelContact>::const_iterator contact = std::upper_bound(
-        contacts.begin(), contacts.end(), afterSecond,
-        [](float time, const PanelContact& event) {
-          return time < event.second;
-        });
-    for (; contact != contacts.end() && contact->second <= throughSecond;
-         ++contact) {
-      if (contact->doublestep && contact->second < firstSecond) {
-        firstSecond = contact->second;
-        beat = contact->beat;
-        break;
-      }
-    }
-  }
-  return std::isfinite(firstSecond);
-}
-
-bool DancingBot::HandleMousePress(float screenX, float screenY) {
-  float x = screenX;
-  float y = screenY;
-  if (!ToLocal(*this, x, y)) {
-    return false;
-  }
-  ActorFrame* controls = static_cast<ActorFrame*>(GetChild("Controls"));
-  if (!ToLocal(*controls, x, y)) {
-    return false;
-  }
-  const char* names[] = {"FlashDoublesteps", "StopOnDoublesteps"};
-  for (int i = 0; i < 2; ++i) {
-    Actor* button = controls->GetChild(names[i]);
-    float bx = x;
-    float by = y;
-    if (ToLocal(*button, bx, by) &&
-        std::abs(bx) <= button->GetUnzoomedWidth() / 2 &&
-        std::abs(by) <= button->GetUnzoomedHeight() / 2) {
-      if (i == 0) {
-        SetFlashDoublesteps(!m_bFlashDoublesteps);
-      } else {
-        SetStopOnDoublesteps(!m_bStopOnDoublesteps);
-      }
-      return true;
-    }
-  }
-  return false;
 }
 
 void DancingBot::SetSteps(Steps* steps, PlayerNumber player) {
@@ -297,55 +153,12 @@ void DancingBot::Load(
       SetSecond(m_fSecond);
       return;
     }
-    int previousFoot = -1;
-    int previousColumn = -1;
     for (size_t i = 0; i < generator.rows.size(); ++i) {
       const StepParity::Row& row = generator.rows[i];
       /* Rows annotate notes only. The chosen graph state also includes feet
        * resting on panels and the heel/toe assignments of ongoing holds. */
       const StepParity::State& resultState =
           *generator.nodes[generator.nodes_for_rows[i]]->state;
-      /* Match calcTwistedFootCost locally: backwards heel/toe placement
-       * while not crossed over. Keep the shared parity solver unchanged. */
-      const int leftHeel =
-          resultState.whatNoteTheFootIsHitting[StepParity::Foot_LeftHeel];
-      const int leftToe =
-          resultState.whatNoteTheFootIsHitting[StepParity::Foot_LeftToe];
-      const int rightHeel =
-          resultState.whatNoteTheFootIsHitting[StepParity::Foot_RightHeel];
-      const int rightToe =
-          resultState.whatNoteTheFootIsHitting[StepParity::Foot_RightToe];
-      const StepParity::StagePoint leftPos =
-          layout->averagePoint(leftHeel, leftToe);
-      const StepParity::StagePoint rightPos =
-          layout->averagePoint(rightHeel, rightToe);
-      const bool crossedOver = rightPos.x < leftPos.x;
-      const bool leftBackwards =
-          leftHeel != StepParity::INVALID_COLUMN &&
-          leftToe != StepParity::INVALID_COLUMN &&
-          layout->columns[leftToe].y < layout->columns[leftHeel].y;
-      const bool rightBackwards =
-          rightHeel != StepParity::INVALID_COLUMN &&
-          rightToe != StepParity::INVALID_COLUMN &&
-          layout->columns[rightToe].y < layout->columns[rightHeel].y;
-      const bool twistedFeet[] = {
-          !crossedOver && leftBackwards, !crossedOver && rightBackwards};
-      int currentFoot = -1;
-      int currentColumn = -1;
-      int noteCount = 0;
-      for (int c = 0; c < layout->columnCount; ++c) {
-        if ((row.note_mask & (1 << c)) != 0) {
-          const int part = static_cast<int>(resultState.combinedColumns[c]);
-          currentFoot = part > 0 ? (part - 1) / 2 : -1;
-          currentColumn = c;
-          ++noteCount;
-        }
-      }
-      const bool doublestepped = noteCount == 1 && currentFoot >= 0 &&
-                                 currentFoot == previousFoot &&
-                                 currentColumn != previousColumn;
-      previousFoot = noteCount == 1 ? currentFoot : -1;
-      previousColumn = currentColumn;
       for (int c = 0; c < layout->columnCount; ++c) {
         if ((row.note_mask & (1 << c)) == 0) {
           continue;
@@ -355,10 +168,7 @@ void DancingBot::Load(
             note.type == TapNoteType_HoldHead
                 ? timing.GetElapsedTimeFromBeat(note.beat + note.hold_length)
                 : row.second;
-        const int part = static_cast<int>(resultState.combinedColumns[c]);
-        const bool twisted = part > 0 && twistedFeet[(part - 1) / 2];
-        m_Contacts[c].push_back(
-            {row.second, end, doublestepped, row.beat, twisted});
+        m_Contacts[c].push_back({row.second, end});
       }
       for (int f = 0; f < 2; ++f) {
         const int heel =
@@ -437,12 +247,8 @@ void DancingBot::SetSecond(float second) {
           return time < contact.second;
         });
     float alpha = 0;
-    bool doublestep = false;
-    bool twisted = false;
     if (next != contacts.begin()) {
       const PanelContact& contact = *(next - 1);
-      doublestep = contact.doublestep;
-      twisted = contact.twisted;
       if (second < contact.endSecond) {
         alpha = 0.65f + 0.1f * std::sin((second - contact.second) * 12);
       } else {
@@ -451,10 +257,7 @@ void DancingBot::SetSecond(float second) {
       }
     }
     Actor* panel = pad->GetChild("Panel" + std::to_string(c + 1));
-    panel->SetDiffuse(
-        twisted || (m_bFlashDoublesteps && doublestep)
-            ? RageColor(1, 0.15f, 0.15f, alpha)
-            : RageColor(0.4f, 0.9f, 1, alpha));
+    panel->SetDiffuse(RageColor(0.4f, 0.9f, 1, alpha));
   }
   Actor* steppingFoot = nullptr;
   float latestHit = -std::numeric_limits<float>::infinity();
@@ -513,7 +316,6 @@ void DancingBot::SetSecond(float second) {
    * Draw the stepping foot last so the red foot cannot obscure a blue hit. */
   if (steppingFoot != nullptr) {
     MoveToTail(steppingFoot);
-    MoveToTail(GetChild("Controls"));
   }
 }
 
@@ -534,33 +336,12 @@ class LunaDancingBot : public Luna<DancingBot> {
     p->SetMotionSeconds(FArg(1));
     COMMON_RETURN_SELF;
   }
-  static int SetShowDoublesteps(T* p, lua_State* L) {
-    p->SetShowDoublesteps(BArg(1));
-    COMMON_RETURN_SELF;
-  }
-  static int SetFlashDoublesteps(T* p, lua_State* L) {
-    p->SetFlashDoublesteps(BArg(1));
-    COMMON_RETURN_SELF;
-  }
-  static int SetStopOnDoublesteps(T* p, lua_State* L) {
-    p->SetStopOnDoublesteps(BArg(1));
-    COMMON_RETURN_SELF;
-  }
-  DEFINE_METHOD(GetFlashDoublesteps, GetFlashDoublesteps());
-  DEFINE_METHOD(GetStopOnDoublesteps, GetStopOnDoublesteps());
-  DEFINE_METHOD(GetShowDoublesteps, GetShowDoublesteps());
   DEFINE_METHOD(IsSupported, IsSupported());
   DEFINE_METHOD(GetMotionSeconds, GetMotionSeconds());
   LunaDancingBot() {
     ADD_METHOD(SetSteps);
     ADD_METHOD(SetSecond);
     ADD_METHOD(SetMotionSeconds);
-    ADD_METHOD(SetShowDoublesteps);
-    ADD_METHOD(SetFlashDoublesteps);
-    ADD_METHOD(SetStopOnDoublesteps);
-    ADD_METHOD(GetFlashDoublesteps);
-    ADD_METHOD(GetStopOnDoublesteps);
-    ADD_METHOD(GetShowDoublesteps);
     ADD_METHOD(IsSupported);
     ADD_METHOD(GetMotionSeconds);
   }
