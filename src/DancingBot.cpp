@@ -5,6 +5,7 @@
 #include <limits>
 #include <string>
 
+#include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "NoteData.h"
 #include "NoteDataUtil.h"
