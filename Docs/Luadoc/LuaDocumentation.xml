@@ -2608,23 +2608,11 @@ Def.BitmapText{
 		Supports dance single/double and the selected player's part of couple/routine charts.<br />
 		Call <Link function='SetSteps' /> when the chart changes and <Link function='SetSecond' /> to update the feet and panel highlights.
 	</Description>
-	<Function name='GetFlashDoublesteps' return='bool' arguments=''>
-		Returns <code>true</code> if doublestep flashing is enabled.
-	</Function>
 	<Function name='GetMotionSeconds' return='float' arguments=''>
 		Returns how early the feet can start moving toward the next step, in song seconds.
 	</Function>
-	<Function name='GetShowDoublesteps' return='bool' arguments=''>
-		Equivalent to <Link function='GetFlashDoublesteps' />.
-	</Function>
-	<Function name='GetStopOnDoublesteps' return='bool' arguments=''>
-		Returns <code>true</code> if stopping editor playback on doublesteps is enabled.
-	</Function>
 	<Function name='IsSupported' return='bool' arguments=''>
 		Returns <code>true</code> if the loaded chart can be displayed.
-	</Function>
-	<Function name='SetFlashDoublesteps' return='void' arguments='bool flash'>
-		Sets whether panels flash red when consecutive single-note rows use the same foot on different arrows. Twisted heel/toe placements flash red regardless of this setting.
 	</Function>
 	<Function name='SetMotionSeconds' return='void' arguments='float seconds'>
 		Sets how early the feet can start moving toward the next step, in song seconds, clamped to 0 through 1. Set to 0 to move the feet immediately when each step occurs.
@@ -2632,14 +2620,8 @@ Def.BitmapText{
 	<Function name='SetSecond' return='void' arguments='float seconds'>
 		Updates the feet and panel highlights for the specified song time, in seconds. Supports seeking backwards and looping.
 	</Function>
-	<Function name='SetShowDoublesteps' return='void' arguments='bool show'>
-		Equivalent to <Link function='SetFlashDoublesteps' />.
-	</Function>
 	<Function name='SetSteps' return='void' arguments='Steps steps, PlayerNumber player'>
 		Sets the chart to display and which player's footwork to use. Pass <code>nil</code> for <code>steps</code> to clear the bot. Defaults to <code>PLAYER_1</code> if <code>player</code> is omitted.
-	</Function>
-	<Function name='SetStopOnDoublesteps' return='void' arguments='bool stop'>
-		Sets whether ScreenEdit stops playback at the next doublestep and places the edit cursor on its beat. Has no effect on playback outside ScreenEdit.
 	</Function>
 </Class>
 <Class name='CryptManager'>

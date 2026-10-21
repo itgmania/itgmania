@@ -14,19 +14,17 @@ class NoteData;
 class Steps;
 class TimingData;
 
-/* A top-down view of the parity solver's suggested footwork. All positions
- * are evaluated from song time, so seeking and looping need no special reset.
+/* Provides a Visualization of the suggested footwork for given steps.
  */
 class DancingBot : public ActorFrame {
+  /* TODO: Support controlling which tech the bot can perform and whether
+   * playback should stop when an invalid step occurs. */
+
  public:
-  /* Creates the pad, footprints, and checkbox controls. */
   DancingBot();
-  /* Copies the bot and its owned child actors. */
   DancingBot* Copy() const override;
-  /* Exposes this bot and its methods to Lua. */
   void PushSelf(lua_State* L) override;
 
-  /* Analyzes note data and caches the selected player's footwork. */
   void Load(
       const NoteData& notes, StepsType type, TimingData& timing,
       PlayerNumber player);
@@ -36,23 +34,6 @@ class DancingBot : public ActorFrame {
   void SetSecond(float second);
   /* Sets the maximum movement anticipation time, clamped to 0–1 seconds. */
   void SetMotionSeconds(float seconds);
-  /* Enables red panel flashes for doublesteps. */
-  void SetFlashDoublesteps(bool flash);
-  /* Returns whether doublestep warning flashes are enabled. */
-  bool GetFlashDoublesteps() const { return m_bFlashDoublesteps; }
-  /* Sets whether ScreenEdit should stop playback on a doublestep. */
-  void SetStopOnDoublesteps(bool stop);
-  /* Returns whether stopping playback on doublesteps is enabled. */
-  bool GetStopOnDoublesteps() const { return m_bStopOnDoublesteps; }
-  /* Alias for setting doublestep warning flashes. */
-  void SetShowDoublesteps(bool show) { SetFlashDoublesteps(show); }
-  /* Returns whether red doublestep warnings are enabled. */
-  bool GetShowDoublesteps() const { return m_bFlashDoublesteps; }
-  /* Finds the first doublestep crossed between two song times and its beat. */
-  bool GetDoublestepBeat(
-      float afterSecond, float throughSecond, float& beat) const;
-  /* Toggles a clicked checkbox and returns whether the click was handled. */
-  bool HandleMousePress(float screenX, float screenY);
   /* Returns whether the loaded chart can be displayed by the bot. */
   bool IsSupported() const { return m_bSupported; }
   /* Returns the maximum movement anticipation time in song seconds. */
@@ -74,29 +55,17 @@ class DancingBot : public ActorFrame {
   std::array<std::vector<FootPose>, 2> m_Feet;
   /* Neutral poses used before either foot's first event. */
   std::array<FootPose, 2> m_Rest;
-  /* Stores one step on a panel and its warning/highlight information. */
+  /* Stores the timing of one step on a panel. */
   struct PanelContact {
-    /* Song time at which the panel is struck. */
+    /* Song time at which the panel is stepped on. */
     float second;
     /* Hold release time, or the step time for a tap. */
     float endSecond;
-    /* Whether this step repeats the same foot on a different panel. */
-    bool doublestep;
-    /* Chart beat used to position the editor when playback stops. */
-    float beat;
-    /* Whether the striking foot matches the twisted-foot warning condition. */
-    bool twisted;
   };
-  /* Chronological contact events for each panel. */
+  /* contact events for each panel. */
   std::array<std::vector<PanelContact>, StepParity::MAX_COLUMNS> m_Contacts;
-  /* Whether the current chart has a supported layout and usable analysis. */
+  /* Whether the current chart has a supported layout */
   bool m_bSupported = false;
-  /* Whether doublestep panel warnings flash red. */
-  bool m_bFlashDoublesteps = false;
-  /* Whether ScreenEdit should stop when a doublestep occurs during playback. */
-  bool m_bStopOnDoublesteps = false;
-  /* Updates the checkbox marks to reflect the current options. */
-  void RefreshControls();
   /* Maximum song-time interval used to interpolate an approaching step. */
   float m_fMotionSeconds = 0.18f;
   /* Song time most recently supplied to SetSecond. */

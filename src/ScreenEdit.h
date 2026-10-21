@@ -274,7 +274,6 @@ class ScreenEdit : public ScreenWithMenuElements {
   DancingBot m_DancingBot;
   bool m_bDancingBotNeedsReload = true;
   float m_fDancingBotReloadDelay = 0;
-  float m_fDancingBotPlaybackSecond = 0;
   PlayerNumber m_DancingBotPlayer = PLAYER_INVALID;
 
   // Call this before modifying m_NoteDataEdit.
