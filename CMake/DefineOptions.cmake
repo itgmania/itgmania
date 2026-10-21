@@ -34,14 +34,6 @@ option(
   "Build without the ROLC assembly instructions for tomcrypt."
   OFF)
 
-if(MSVC)
-  # Turn this option on to enable using the Texture Font Generator.
-  option(
-    WITH_TEXTURE_GENERATOR
-    "Build with the Texture Font Generator. Ensure the MFC library is installed."
-    OFF)
-endif()
-
 if(LINUX)
   option(WITH_PROFILING "Build with Profiling Support." OFF)
   option(WITH_GTK3 "Build with GTK3 Support." ON)
