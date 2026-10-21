@@ -1,5 +1,7 @@
 #include "ALSA9Helpers.h"
 
+#include <unistd.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -112,6 +114,29 @@ bool Alsa9Buf::SetSWParams() {
 
   err = dsnd_pcm_sw_params(pcm, swparams);
   ALSA_ASSERT("dsnd_pcm_sw_params");
+
+  /* Timestamp pointer updates, so GetPosition knows when the position it reads
+   * was reached. Separate from the above, so a refusal costs only that. */
+  tstamp_clock = -1;
+  snd_pcm_tstamp_type_t tstamp_type;
+  dsnd_pcm_sw_params_current(pcm, swparams);
+  if (dsnd_pcm_sw_params_get_tstamp_type != nullptr &&
+      dsnd_pcm_sw_params_set_tstamp_mode(
+          pcm, swparams, SND_PCM_TSTAMP_ENABLE) >= 0 &&
+      dsnd_pcm_sw_params(pcm, swparams) >= 0 &&
+      dsnd_pcm_sw_params_get_tstamp_type(swparams, &tstamp_type) >= 0) {
+    switch (tstamp_type) {
+      case SND_PCM_TSTAMP_TYPE_GETTIMEOFDAY:
+        tstamp_clock = CLOCK_REALTIME;
+        break;
+      case SND_PCM_TSTAMP_TYPE_MONOTONIC:
+        tstamp_clock = CLOCK_MONOTONIC;
+        break;
+      case SND_PCM_TSTAMP_TYPE_MONOTONIC_RAW:
+        tstamp_clock = CLOCK_MONOTONIC_RAW;
+        break;
+    }
+  }
 
   err = dsnd_pcm_prepare(pcm);
   ALSA_ASSERT("dsnd_pcm_prepare");
@@ -234,6 +259,8 @@ Alsa9Buf::Alsa9Buf() {
   preferred_writeahead = 8192;
   preferred_chunksize = 1024;
   pcm = nullptr;
+  tstamp_clock = -1;
+  max_extrapolation_ns = 0;
 }
 
 std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
@@ -264,6 +291,11 @@ std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
   }
 
   SetSWParams();
+
+  /* The pointer moves at least once a period; past two, the device is stuck
+   * and the position should stop too. */
+  max_extrapolation_ns =
+      std::max<int64_t>(2000000000LL * chunksize / samplerate, 5000000);
 
   LOG->Info("ALSA: Mixing at %ihz", samplerate);
 
@@ -297,6 +329,10 @@ int Alsa9Buf::GetNumFramesToFill() {
 
   snd_pcm_sframes_t avail_frames = dsnd_pcm_avail_update(pcm);
 
+  if (avail_frames < 0 && Recover(avail_frames)) {
+    avail_frames = dsnd_pcm_avail_update(pcm);
+  }
+
   int total_frames = writeahead;
   if (avail_frames > total_frames) {
     /* underrun */
@@ -312,12 +348,15 @@ int Alsa9Buf::GetNumFramesToFill() {
       /* It's a large skip.  Catch up.  If we fall too far behind, the sound
        * thread will be decoding as fast as it can, which will steal too many
        * cycles from the rendering thread. */
-      dsnd_pcm_forward(pcm, size);
+      std::lock_guard<std::mutex> lock(position_lock);
+      const snd_pcm_sframes_t skipped = dsnd_pcm_forward(pcm, size);
+      if (skipped > 0) {
+        /* The skipped frames count as written, or every later position would
+         * read that far behind the frames Mix() was told it is writing. */
+        last_cursor_pos += skipped;
+        avail_frames -= skipped;
+      }
     }
-  }
-
-  if (avail_frames < 0) {
-    avail_frames = dsnd_pcm_avail_update(pcm);
   }
 
   if (avail_frames < 0) {
@@ -357,44 +396,167 @@ bool Alsa9Buf::WaitUntilFramesCanBeFilled(int timeout_ms) {
   if (err == -EINTR) {
     return false;
   }
-  ALSA_ASSERT("snd_pcm_wait");
+  if (err < 0 && !Recover(err)) {
+    /* Unrecoverable (unplugged?): snd_pcm_wait returns at once, so wait out
+     * the timeout here rather than spin the mixer thread. */
+    static bool warned = false;
+    if (!warned) {
+      warned = true;
+      ALSA_ASSERT("snd_pcm_wait");
+    }
+    usleep(timeout_ms * 1000);
+    return false;
+  }
 
   return err == 1;
 }
 
-void Alsa9Buf::Write(const int16_t* buffer, int frames) {
-  /* We should be able to write it all.  If we don't, treat it as an error. */
-  int wrote;
-  do {
-    wrote = dsnd_pcm_mmap_writei(pcm, (const char*)buffer, frames);
-  } while (wrote == -EAGAIN);
-
-  if (wrote < 0) {
-    LOG->Trace(
-        "RageSoundDriver_ALSA9::GetData: dsnd_pcm_mmap_writei: %s (%i)",
-        dsnd_strerror(wrote), wrote);
-    return;
+/* Restart the stream after an underrun stopped it (XRUN) or a system suspend
+ * (SUSPENDED). Afterwards both device pointers restart at 0, which leaves
+ * positions consistent: they're taken relative to the write pointer. */
+bool Alsa9Buf::Recover(int err) {
+  if (err != -EPIPE && err != -ESTRPIPE) {
+    return false;
   }
+  LOG->Trace(
+      "ALSA: recovering from %s", err == -EPIPE ? "underrun" : "suspend");
+  err = dsnd_pcm_recover(pcm, err, 1);
+  ALSA_ASSERT("dsnd_pcm_recover");
+  return err >= 0;
+}
 
-  last_cursor_pos += wrote;
-  if (wrote < frames) {
-    LOG->Trace("Couldn't write whole buffer? (%i < %i)", wrote, frames);
+void Alsa9Buf::Write(const int16_t* buffer, int frames) {
+  /* We should be able to write it all.  Mix() has already labelled these
+   * frames with the positions at which they'll play, so if writing fails,
+   * restart the stream and write them anyway. */
+  bool recovered = false;
+  while (frames > 0) {
+    snd_pcm_sframes_t wrote;
+    {
+      std::lock_guard<std::mutex> lock(position_lock);
+      wrote = dsnd_pcm_mmap_writei(pcm, (const char*)buffer, frames);
+      if (wrote > 0) {
+        last_cursor_pos += wrote;
+      }
+    }
+
+    if (wrote == -EAGAIN) {
+      dsnd_pcm_wait(pcm, 1);
+      continue;
+    }
+    if (wrote < 0 && !recovered && Recover(wrote)) {
+      recovered = true;
+      continue;
+    }
+    if (wrote <= 0) {
+      LOG->Trace(
+          "RageSoundDriver_ALSA9::GetData: dsnd_pcm_mmap_writei: %s (%i)",
+          dsnd_strerror(wrote), (int)wrote);
+      return;
+    }
+
+    buffer += wrote * 2;
+    frames -= wrote;
   }
 }
 
+static int64_t TimestampNs(const snd_htimestamp_t& ts) {
+  return int64_t(ts.tv_sec) * 1000000000LL + ts.tv_nsec;
+}
+
+static int64_t ClockNs(clockid_t id) {
+  timespec ts;
+  clock_gettime(id, &ts);
+  return int64_t(ts.tv_sec) * 1000000000LL + ts.tv_nsec;
+}
+
+/* GetPosition takes the delay to be live after this many new positions
+ * without a pointer move. */
+static const int kLiveDelayStrikes = 3;
+
 int64_t Alsa9Buf::GetPosition() const {
-  if (dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
-    return last_cursor_pos;
+  std::lock_guard<std::mutex> lock(position_lock);
+  PositionClock& clock = position_clock;
+
+  /* Read before the status: a pointer update that lands while the status is
+   * read must not look older than this look. */
+  const clockid_t clock_id =
+      tstamp_clock != -1 ? tstamp_clock : CLOCK_MONOTONIC;
+  const int64_t before = ClockNs(clock_id);
+
+  snd_pcm_status_t* status;
+  dsnd_pcm_status_alloca(&status);
+  if (dsnd_pcm_status(pcm, status) < 0) {
+    return clock.last_returned;
   }
 
-  dsnd_pcm_hwsync(pcm);
+  const snd_pcm_state_t state = dsnd_pcm_status_get_state(status);
+  if (state != SND_PCM_STATE_RUNNING && state != SND_PCM_STATE_DRAINING) {
+    clock.valid = false;
+    if (state == SND_PCM_STATE_PREPARED) {
+      /* Not started: what has been written is still to play. */
+      const snd_pcm_uframes_t avail = dsnd_pcm_status_get_avail(status);
+      const int64_t queued = avail < writeahead ? writeahead - avail : 0;
+      clock.last_returned =
+          std::max(clock.last_returned, last_cursor_pos - queued);
+    }
+    /* Stopped (XRUN, SUSPENDED, ...): nothing plays, so the position holds. */
+    return clock.last_returned;
+  }
 
-  /* delay is returned in frames */
-  snd_pcm_sframes_t delay;
-  int err = dsnd_pcm_delay(pcm, &delay);
-  ALSA_ASSERT("dsnd_pcm_delay");
+  /* The device's position as of its last pointer update. */
+  const int64_t frame = last_cursor_pos - dsnd_pcm_status_get_delay(status);
+  const int64_t now = ClockNs(clock_id);
 
-  return last_cursor_pos - delay;
+  /* When the pointer last moved (or the stream started). */
+  int64_t moved = 0;
+  if (tstamp_clock != -1) {
+    snd_htimestamp_t updated, triggered;
+    dsnd_pcm_status_get_htstamp(status, &updated);
+    dsnd_pcm_status_get_trigger_htstamp(status, &triggered);
+    moved = std::max(TimestampNs(updated), TimestampNs(triggered));
+  }
+
+  if (!clock.valid || frame != clock.frame) {
+    /* A new position. If the pointer has moved since our last look, it was
+     * reached when the pointer moved. If not, it's current as read, and a
+     * driver doing that repeatedly reports a delay that changes on its own,
+     * so its pointer moves say nothing about its positions. */
+    int64_t reached = now;
+    if (tstamp_clock != -1) {
+      if (moved != clock.last_moved && moved > clock.last_query_ns &&
+          moved <= now) {
+        if (!clock.live_delay) {
+          reached = moved;
+        }
+      } else if (clock.valid) {
+        clock.strikes = std::min(clock.strikes + 1, kLiveDelayStrikes);
+        if (clock.strikes == kLiveDelayStrikes) {
+          clock.live_delay = true;
+        }
+      }
+    }
+    clock.valid = true;
+    clock.frame = frame;
+    clock.time_ns = reached;
+  }
+  clock.last_query_ns = before;
+  clock.last_moved = moved;
+
+  const int64_t elapsed =
+      std::clamp<int64_t>(now - clock.time_ns, 0, max_extrapolation_ns);
+  int64_t position = frame + elapsed * samplerate / 1000000000LL;
+
+  /* Pointer updates land a little late or early; don't let that jitter step
+   * the position backwards. Real jumps back are left to the caller. */
+  const int64_t max_extrapolation_frames =
+      max_extrapolation_ns * samplerate / 1000000000LL;
+  if (position < clock.last_returned &&
+      position >= clock.last_returned - max_extrapolation_frames) {
+    position = clock.last_returned;
+  }
+  clock.last_returned = position;
+  return position;
 }
 
 /*
