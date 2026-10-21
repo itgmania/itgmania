@@ -16,6 +16,68 @@
 
 using namespace StepParity;
 
+std::optional<StepParity::StageLayout> StepParity::GetStageLayout(
+    StepsType ty) {
+  switch (ty) {
+    case StepsType_dance_single:
+      return StepParity::StageLayout(
+          StepsType_dance_single,
+          {
+              {0, 1},  // Left
+              {1, 0},  // Down
+              {1, 2},  // Up
+              {2, 1}   // Right
+          },
+          {2}, {1}, {0, 3});
+
+    case StepsType_dance_couple:
+      return StepParity::StageLayout(
+          StepsType_dance_couple,
+          {
+              {0, 1},  // Left
+              {1, 0},  // Down
+              {1, 2},  // Up
+              {2, 1}   // Right
+          },
+          {2}, {1}, {0, 3});
+
+    case StepsType_dance_double:
+      return StepParity::StageLayout(
+          StepsType_dance_double,
+          {
+              {0, 1},  // P1 Left
+              {1, 0},  // P1 Down
+              {1, 2},  // P1 Up
+              {2, 1},  // P1 Right
+
+              {3, 1},  // P2 Left
+              {4, 0},  // P2 Down
+              {4, 2},  // P2 Up
+              {5, 1}   // P2 Right
+          },
+          {2, 6}, {1, 5}, {0, 3, 4, 7});
+
+    case StepsType_dance_routine:
+      return StepParity::StageLayout(
+          StepsType_dance_routine,
+          {
+              {0, 1},  // P1 Left
+              {1, 0},  // P1 Down
+              {1, 2},  // P1 Up
+              {2, 1},  // P1 Right
+
+              {3, 1},  // P2 Left
+              {4, 0},  // P2 Down
+              {4, 2},  // P2 Up
+              {5, 1}   // P2 Right
+          },
+          {2, 6}, {1, 5}, {0, 3, 4, 7});
+
+    default:
+      return std::nullopt;
+  }
+}
+
 static const char* FootNames[] = {
     "None", "LeftHeel", "LeftToe", "RightHeel", "RightToe"};
 

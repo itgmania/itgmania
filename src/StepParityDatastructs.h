@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -152,6 +153,9 @@ struct StageLayout {
   std::vector<StepParity::FootPlacement> PermuteFootPlacements(
       unsigned int, StepParity::FootPlacement columns, unsigned long column);
 };
+
+// Shared by dancing bot and editor
+std::optional<StageLayout> GetStageLayout(StepsType type);
 
 /// @brief Represents a specific possible state of the player's position
 /// for a given row of the step chart.

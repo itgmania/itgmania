@@ -7,6 +7,7 @@
 #include "AutoKeysounds.h"
 #include "Background.h"
 #include "BitmapText.h"
+#include "DancingBot.h"
 #include "EditModePlayerManager.h"
 #include "EnumHelper.h"
 #include "Foreground.h"
@@ -177,6 +178,7 @@ enum EditButton {
   EDIT_BUTTON_PASTE, /**< Paste the clipboard at the current beat. */
 
   EDIT_BUTTON_TOGGLE_WAVEFORM, /**< Show/hide the song waveform. */
+  EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION,
 
   EDIT_BUTTON_ADD_COURSE_MODS,
 
@@ -264,6 +266,14 @@ class ScreenEdit : public ScreenWithMenuElements {
   void ScrollTo(float fDestinationBeat);
   void PlayTicks();
   void PlayPreviewMusic();
+  void UpdateDancingBot(float fDeltaTime);
+  void InvalidateDancingBot();
+  void PositionDancingBot(bool playing);
+  int m_iDancingBotPosition = 3;
+  DancingBot m_DancingBot;
+  bool m_bDancingBotNeedsReload = true;
+  float m_fDancingBotReloadDelay = 0;
+  PlayerNumber m_DancingBotPlayer = PLAYER_INVALID;
 
   // Call this before modifying m_NoteDataEdit.
   void SaveUndo(const std::string& sDescription = "Edit");
