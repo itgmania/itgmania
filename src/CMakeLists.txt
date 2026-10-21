@@ -1,3 +1,7 @@
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 if(MSVC)
   # Add the mapconv program of the past to allow for debugging information.
   include("CMakeProject-mapconv.cmake")
@@ -72,10 +76,6 @@ else()
   add_executable("${SM_EXE_NAME}" ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 endif()
-
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD 17)
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_EXTENSIONS ON)
 
 set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME "${SM_NAME_RELEASE}"
