@@ -755,6 +755,19 @@
 			<Function name='IsFixedSong'/>
 			<Function name='IsSecret'/>
 		</Class>
+		<Class base='ActorFrame' name='DancingBot'>
+			<Function name='GetFlashDoublesteps'/>
+			<Function name='GetMotionSeconds'/>
+			<Function name='GetShowDoublesteps'/>
+			<Function name='GetStopOnDoublesteps'/>
+			<Function name='IsSupported'/>
+			<Function name='SetFlashDoublesteps'/>
+			<Function name='SetMotionSeconds'/>
+			<Function name='SetSecond'/>
+			<Function name='SetShowDoublesteps'/>
+			<Function name='SetSteps'/>
+			<Function name='SetStopOnDoublesteps'/>
+		</Class>
 		<Class name='CryptManager'>
 			<Function name='GenerateRandomUUID'/>
 			<Function name='MD5File'/>
