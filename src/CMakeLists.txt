@@ -168,6 +168,13 @@ if(WIN32)
                                    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
                                    "${SM_PROGRAM_DIR}")
 
+  add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${SM_FFMPEG_WIN32_DLL_FILES}
+            "$<TARGET_FILE_DIR:${SM_EXE_NAME}>"
+    COMMENT "Copying FFmpeg runtime DLLs"
+    VERBATIM)
+
   if(MSVC)
     # Allow for getting a virtualdub stack trace.
     add_custom_command(
@@ -517,22 +524,16 @@ endif()
 if(WIN32)
   set(SM_FULL_INSTALLATION_PATH_LIST "${SM_INSTALL_DESTINATION}" "Program")
   list(JOIN SM_FULL_INSTALLATION_PATH_LIST "/" SM_FULL_INSTALLATION_PATH)
-  # Hardcoding the values for now since the foreach loop is not working as
-  # intended.
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   if(WITH_FULL_RELEASE OR WITH_TEXTURE_GENERATOR)
     install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   endif()
-  install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  foreach(_ffmpeg_dll IN LISTS SM_FFMPEG_WIN32_DLLS)
+    install(FILES "${SM_PROGRAM_DIR}/${_ffmpeg_dll}"
+            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  endforeach()
   install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
