@@ -3,7 +3,7 @@ if(NOT GTK3_FOUND)
 endif()
 
 add_library("LoadingWindowGtk"
-            OBJECT
+            STATIC
             "arch/LoadingWindow/LoadingWindow_Gtk.cpp"
             "arch/LoadingWindow/LoadingWindow_Gtk.h")
 
@@ -17,7 +17,7 @@ target_include_directories("LoadingWindowGtk" PRIVATE "${SM_SRC_DIR}"
                                                       "${SM_SRC_DIR}/arch/LoadingWindow"
                                                       "${GTK3_INCLUDE_DIRS}")
 
-target_link_libraries("LoadingWindowGtk" ${GTK3_LIBRARIES})
+target_link_libraries("LoadingWindowGtk" PUBLIC ${GTK3_LIBRARIES})
 
 list(APPEND SMDATA_LINK_LIB "LoadingWindowGtk")
 list(APPEND SMDATA_ARCH_LOADING_HPP

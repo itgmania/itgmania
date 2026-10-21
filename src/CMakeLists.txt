@@ -454,10 +454,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
                               ${CMAKE_DL_LIBS}
                               "${OPENGL_LIBRARY}")
 
-  if(GTK3_FOUND)
-    list(APPEND SMDATA_LINK_LIB "${GTK3_LIBRARIES}")
-  endif()
-
   list(APPEND SMDATA_LINK_LIB "${CMAKE_THREAD_LIBS_INIT}")
 
   if(HAS_ALSA)
