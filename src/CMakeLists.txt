@@ -612,3 +612,18 @@ if(WITH_CLUB_FANTASTIC)
             DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
   endif()
 endif()
+
+add_executable(itgmania_unit_tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp")
+
+target_link_libraries(itgmania_unit_tests PRIVATE itgmania_core)
+
+sm_copy_runtime_libraries(itgmania_unit_tests)
+
+add_custom_target(run-tests
+  COMMAND $<TARGET_FILE:itgmania_unit_tests>
+  DEPENDS itgmania_unit_tests
+  USES_TERMINAL)
