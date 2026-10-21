@@ -1,9 +1,6 @@
 if(MSVC)
   # Add the mapconv program of the past to allow for debugging information.
   include("CMakeProject-mapconv.cmake")
-  if(WITH_TEXTURE_GENERATOR OR WITH_FULL_RELEASE)
-    include("CMakeProject-texture.cmake")
-  endif()
 endif()
 
 if(CMAKE_GENERATOR STREQUAL "Xcode")
@@ -524,10 +521,6 @@ if(WIN32)
   # Hardcoding the values for now since the foreach loop is not working as
   # intended.
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  if(WITH_FULL_RELEASE OR WITH_TEXTURE_GENERATOR)
-    install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  endif()
   install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
