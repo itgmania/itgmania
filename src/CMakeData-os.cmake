@@ -1,6 +1,8 @@
 list(APPEND SMDATA_OS_SRC "archutils/Common/HidDevice.cpp")
 list(APPEND SMDATA_OS_HPP "archutils/Common/HidDevice.h")
 
+set(SM_WINDOWS_RESOURCE_SRC "")
+
 if(APPLE)
   list(APPEND SMDATA_OS_DARWIN_SRC
               "archutils/Darwin/Crash.mm"
@@ -11,7 +13,6 @@ if(APPLE)
               "archutils/Darwin/KeyboardDevice.cpp"
               "archutils/Darwin/MouseDevice.cpp"
               "archutils/Darwin/PumpDevice.cpp"
-              "archutils/Darwin/SMMain.mm"
               "archutils/Darwin/SpecialDirs.mm")
   list(APPEND SMDATA_OS_DARWIN_HPP
               "archutils/Darwin/arch_setup.h"
@@ -44,7 +45,6 @@ else()
 
     list(APPEND SMDATA_OS_SRC
                 "archutils/Win32/AppInstance.cpp"
-                "archutils/Win32/arch_setup.cpp"
                 "archutils/Win32/arch_time.cpp"
                 "archutils/Win32/CommandLine.cpp"
                 "archutils/Win32/Crash.cpp"
@@ -63,7 +63,9 @@ else()
                 "archutils/Win32/USB.cpp"
                 "archutils/Win32/VideoDriverInfo.cpp"
                 "archutils/Win32/WindowIcon.cpp"
-                "archutils/Win32/WindowsDialogBox.cpp"
+                "archutils/Win32/WindowsDialogBox.cpp")
+
+    set(SM_WINDOWS_RESOURCE_SRC
                 "${SM_GENERATED_SRC_DIR}/archutils/Win32/StepMania.manifest"
                 "${SM_GENERATED_SRC_DIR}/archutils/Win32/WindowsResources.rc")
 
