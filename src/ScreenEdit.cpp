@@ -7090,11 +7090,16 @@ void ScreenEdit::HandleTimingDataInformationChoice(
       break;
     }
     case paste_full_timing: {
-      if (GAMESTATE->m_bIsUsingStepTiming) {
-        GAMESTATE->m_pCurSteps[PLAYER_1]->m_Timing = clipboardFullTiming;
-      } else {
-        GAMESTATE->m_pCurSong->m_SongTiming = clipboardFullTiming;
-      }
+      TimingData& timing = GAMESTATE->m_bIsUsingStepTiming
+                               ? GAMESTATE->m_pCurSteps[PLAYER_1]->m_Timing
+                               : GAMESTATE->m_pCurSong->m_SongTiming;
+      // The clipboard may come from a song in another pack. Use this song's
+      // group sync offset, which all of its charts share (a chart without
+      // timing of its own may not carry it yet).
+      const float fGroupOffset =
+          GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds;
+      timing = clipboardFullTiming;
+      timing.m_fBeat0GroupOffsetInSeconds = fGroupOffset;
       SetDirty(true);
       break;
     }
