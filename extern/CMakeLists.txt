@@ -15,6 +15,7 @@ include(CMakeProject-stb_image_write.cmake)
 include(CMakeProject-ixwebsocket.cmake)
 include(CMakeProject-miniz.cmake)
 include(CMakeProject-aubio.cmake)
+include(CMakeProject-gtest.cmake)
 
 # External projects
 include(CMakeProject-libusb.cmake)
