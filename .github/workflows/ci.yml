@@ -48,5 +48,7 @@ jobs:
           ccache: 'true'
       - name: Configure
         run: cmake -B build -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ env.CMAKE_FLAGS }}
-      - name: Build
-        run: cmake --build build ${{ env.CMAKE_BUILD_FLAGS }}
+      - name: Build and test
+        run: |
+          cmake --build build --config Debug ${{ env.CMAKE_BUILD_FLAGS }}
+          ctest --test-dir build -C Debug --output-on-failure

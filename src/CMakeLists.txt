@@ -46,10 +46,187 @@ list(APPEND SMDATA_ALL_FILES_HPP
             ${SMDATA_OS_HPP}
             ${SMDATA_FILE_TYPES_HPP})
 
-if(NOT APPLE)
-  list(APPEND SMDATA_ALL_FILES_SRC "Main.cpp")
-  source_group("" FILES "Main.cpp")
+if(APPLE)
+  set(SM_ENTRYPOINT_SRC "archutils/Darwin/SMMain.mm")
+  set(SM_EXECUTABLE_OPTIONS MACOSX_BUNDLE)
+elseif(WIN32)
+  set(SM_ENTRYPOINT_SRC "Main.cpp" "archutils/Win32/arch_setup.cpp")
+  set(SM_EXECUTABLE_OPTIONS "")
+else()
+  set(SM_ENTRYPOINT_SRC "Main.cpp")
+  set(SM_EXECUTABLE_OPTIONS "")
 endif()
+source_group("Entry Point" FILES ${SM_ENTRYPOINT_SRC})
+
+set(SM_EXTRA_COMPILE_OPTIONS "")
+if(WITH_SSE2)
+  if(MSVC)
+    if(SM_WIN32_ARCH MATCHES "x86")
+      list(APPEND SM_EXTRA_COMPILE_OPTIONS /arch:SSE2)
+    endif()
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
+    list(APPEND SM_EXTRA_COMPILE_OPTIONS -msse2)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    list(APPEND SM_EXTRA_COMPILE_OPTIONS -mtune=cortex-a72)
+  else()
+    message("Unrecognized host processor type")
+  endif()
+endif()
+
+if(MSVC)
+  # TODO: Find a way to do this cleanly for non MSVC users.
+  list(APPEND SM_EXTRA_COMPILE_OPTIONS /MP /permissive- /utf-8)
+endif()
+
+# Applies the configuration shared by the game and test executables.
+function(sm_configure_target target)
+  set_property(TARGET "${target}" PROPERTY CXX_STANDARD 17)
+  set_property(TARGET "${target}" PROPERTY CXX_STANDARD_REQUIRED ON)
+  set_property(TARGET "${target}" PROPERTY CXX_EXTENSIONS ON)
+
+  if(WITH_PORTABLE_TOMCRYPT)
+    target_compile_definitions("${target}" PRIVATE LTC_NO_ASM)
+  endif()
+  if(WITH_NO_ROLC_TOMCRYPT)
+    target_compile_definitions("${target}" PRIVATE LTC_NO_ROLC)
+  endif()
+
+  # Compilation flags per project here.
+  target_compile_definitions("${target}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+  target_compile_definitions("${target}" PRIVATE $<$<CONFIG:Release>:RELEASE>)
+  target_compile_definitions("${target}" PRIVATE $<$<CONFIG:MinSizeRel>:MINSIZEREL>)
+  target_compile_definitions("${target}" PRIVATE
+                             $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
+
+  target_compile_options("${target}" PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Werror=type-limits>
+    $<$<CXX_COMPILER_ID:Clang>:
+      -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
+    $<$<CXX_COMPILER_ID:AppleClang>:
+      -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument>
+    $<$<CXX_COMPILER_ID:MSVC>:
+      /W4 /wd4100 /wd4189 /wd4201 /wd4244 /wd4267 /wd4702>
+    ${SM_EXTRA_COMPILE_OPTIONS}
+  )
+
+  if(WIN32)
+    target_compile_definitions("${target}" PRIVATE WINDOWS)
+    target_compile_definitions("${target}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
+    target_compile_definitions("${target}" PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("${target}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+    target_compile_definitions("${target}" PRIVATE NOMINMAX)
+    target_compile_definitions("${target}" PRIVATE WIN32_LEAN_AND_MEAN)
+    target_compile_definitions("${target}" PRIVATE VC_EXTRALEAN)
+  elseif(APPLE)
+    # Use generic Unix backtrace for all Apple architectures
+    target_compile_definitions("${target}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
+    target_compile_definitions("${target}" PRIVATE BACKTRACE_METHOD_TEXT="generic unix backtrace")
+    target_compile_definitions("${target}" PRIVATE BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
+    target_compile_definitions("${target}" PRIVATE BACKTRACE_LOOKUP_METHOD_DLADDR)
+    target_compile_definitions("${target}" PRIVATE MACOSX)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+      target_compile_definitions("${target}" PRIVATE CPU_X86_64)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
+      target_compile_definitions("${target}" PRIVATE CPU_X86)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+      target_compile_definitions("${target}" PRIVATE CPU_AARCH64)
+    endif()
+    target_compile_definitions("${target}" PRIVATE _XOPEN_SOURCE)
+  else()
+    if(${WITH_CRASH_HANDLER})
+      if(LINUX)
+        # used only in the ArchHooks_Unix.cpp file
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+          target_compile_definitions("${target}" PRIVATE BACKTRACE_METHOD_X86_LINUX)
+          target_compile_definitions("${target}" PRIVATE
+                                     BACKTRACE_METHOD_TEXT="x86 custom backtrace")
+        elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+          target_compile_definitions("${target}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
+          target_compile_definitions("${target}" PRIVATE
+                                     BACKTRACE_METHOD_TEXT="generic unix backtrace")
+        else()
+          target_compile_definitions("${target}" PRIVATE
+                                     BACKTRACE_METHOD_TEXT="no backtrace")
+        endif()
+        target_compile_definitions("${target}" PRIVATE
+                                   BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
+        target_compile_definitions("${target}" PRIVATE
+                                   BACKTRACE_LOOKUP_METHOD_DLADDR)
+      endif()
+    endif()
+    if(${HAS_PTHREAD})
+      target_compile_definitions("${target}" PRIVATE HAVE_LIBPTHREAD)
+
+      if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+        target_compile_definitions("${target}" PRIVATE CPU_X86_64)
+      elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86"
+             OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
+        target_compile_definitions("${target}" PRIVATE CPU_X86)
+      elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        target_compile_definitions("${target}" PRIVATE CPU_AARCH64)
+      else()
+        message("Unrecognized host processor type")
+      endif()
+    endif()
+    if(${HAS_XINERAMA})
+      target_compile_definitions("${target}" PRIVATE HAVE_XINERAMA)
+    endif()
+
+    if(BSD)
+      target_compile_definitions("${target}" PRIVATE BSD)
+    endif()
+
+    if(GTK3_FOUND)
+      target_compile_definitions("${target}" PRIVATE HAVE_GTK)
+    endif()
+
+    target_compile_definitions("${target}" PRIVATE UNIX)
+    if("${CMAKE_SYSTEM}" MATCHES "Linux")
+      target_compile_definitions("${target}" PRIVATE LINUX)
+    endif()
+  endif()
+
+  target_link_libraries("${target}" PRIVATE ${SMDATA_LINK_LIB})
+  target_include_directories("${target}" PUBLIC ${SM_INCLUDE_DIRS})
+
+  # ffmpeg generates headers needed while compiling the core library.
+  if(TARGET ffmpeg)
+    add_dependencies("${target}" ffmpeg)
+  endif()
+
+  get_target_property(_target_type "${target}" TYPE)
+  if(NOT _target_type STREQUAL "EXECUTABLE")
+    return()
+  endif()
+
+  # libusb is only needed at link time.
+  if(TARGET libusb)
+    add_dependencies("${target}" libusb)
+  endif()
+
+  if(WIN32)
+    target_link_directories("${target}" PRIVATE
+      "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}")
+    sm_add_link_flag("${target}"
+                     "/LIBPATH:\"$(WindowsSdkDir)Lib\\um\\${SM_WIN32_ARCH}\"")
+    sm_add_link_flag("${target}" "/ERRORREPORT:SEND")
+    sm_add_link_flag("${target}" "/SAFESEH:NO")
+    sm_add_link_flag("${target}" "/NOLOGO")
+    sm_add_link_flag("${target}" "/NODEFAULTLIB:wininet.lib")
+    sm_add_link_flag("${target}" "/NODEFAULTLIB:msimg32.lib")
+    sm_add_link_flag("${target}" "/NODEFAULTLIB:libci.lib")
+    set_target_properties("${target}"
+                          PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib")
+
+    add_custom_command(TARGET "${target}" POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${SM_FFMPEG_WIN32_DLL_FILES}
+              "$<TARGET_FILE_DIR:${target}>"
+      COMMENT "Copying FFmpeg runtime DLLs"
+      VERBATIM)
+  endif()
+endfunction()
 
 if(MSVC OR APPLE)
   set(SM_NAME_RELEASE "ITGmania")
@@ -63,19 +240,14 @@ else()
   set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
 endif()
 
-if(APPLE)
-  add_executable("${SM_EXE_NAME}"
-                 MACOSX_BUNDLE
-                 ${SMDATA_ALL_FILES_SRC}
-                 ${SMDATA_ALL_FILES_HPP})
-else()
-  add_executable("${SM_EXE_NAME}" ${SMDATA_ALL_FILES_SRC}
-                 ${SMDATA_ALL_FILES_HPP})
-endif()
+add_library(itgmania_core OBJECT
+            ${SMDATA_ALL_FILES_SRC}
+            ${SMDATA_ALL_FILES_HPP})
 
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD 17)
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_EXTENSIONS ON)
+add_executable("${SM_EXE_NAME}" ${SM_EXECUTABLE_OPTIONS}
+               ${SM_ENTRYPOINT_SRC}
+               ${SM_WINDOWS_RESOURCE_SRC}
+               $<TARGET_OBJECTS:itgmania_core>)
 
 set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME "${SM_NAME_RELEASE}"
@@ -84,63 +256,14 @@ set_target_properties("${SM_EXE_NAME}"
                                  MINSIZEREL_OUTPUT_NAME "${SM_NAME_MINSIZEREL}"
                                  RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}")
 
-if(WITH_PORTABLE_TOMCRYPT)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ASM)
-endif()
-if(WITH_NO_ROLC_TOMCRYPT)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ROLC)
-endif()
-
 if(CMAKE_GENERATOR STREQUAL "Xcode")
   target_compile_options(mbedcrypto PRIVATE -Wno-shorten-64-to-32)
 endif()
-
-# Compilation flags per project here.
-target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
-target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>)
-target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:MinSizeRel>:MINSIZEREL>)
-target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                           $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
 
 # For Apple Clang, CMAKE_<LANG>_COMPILER_ID will be set to AppleClang instead of Clang.
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW)
 endif()
-
-target_compile_options("${SM_EXE_NAME}" PRIVATE
-  $<$<CXX_COMPILER_ID:GNU>:
-  -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Werror=type-limits>
-  $<$<CXX_COMPILER_ID:Clang>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
-  $<$<CXX_COMPILER_ID:AppleClang>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument>
-  $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /wd4100 /wd4189 /wd4201 /wd4244 /wd4267 /wd4702>
-)
-
-set(SM_COMPILE_FLAGS "")
-
-if(WITH_SSE2)
-  if(MSVC)
-    if(SM_WIN32_ARCH MATCHES "x86")
-      set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /arch:SSE2")
-    endif()
-  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
-    set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} -msse2")
-  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-    set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} -mtune=cortex-a72")
-  else()
-    message("Unrecognized host processor type")
-  endif()
-endif()
-
-if(MSVC)
-  # TODO: Find a way to do this cleanly for non MSVC users.
-  set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP /permissive- /utf-8")
-endif()
-
-set_target_properties("${SM_EXE_NAME}"
-                      PROPERTIES COMPILE_FLAGS "${SM_COMPILE_FLAGS}")
 
 set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME_DEBUG "${SM_NAME_DEBUG}"
@@ -148,14 +271,6 @@ set_target_properties("${SM_EXE_NAME}"
                                  OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}")
 
 if(WIN32)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINDOWS)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
-
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                                    "${SM_PROGRAM_DIR}"
@@ -169,6 +284,8 @@ if(WIN32)
                                    "${SM_PROGRAM_DIR}")
 
   if(MSVC)
+    add_dependencies("${SM_EXE_NAME}" mapconv)
+
     # Allow for getting a virtualdub stack trace.
     add_custom_command(
       TARGET "${SM_EXE_NAME}" POST_BUILD
@@ -179,19 +296,6 @@ if(WIN32)
       COMMENT "Generating file to allow for easier stack traces.")
   endif()
 elseif(APPLE)
-  # Use generic Unix backtrace for all Apple architectures
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_TEXT="generic unix backtrace")
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_LOOKUP_METHOD_DLADDR)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE MACOSX)
-  if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86_64)
-  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86)
-  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_AARCH64)
-  endif()
   set_target_properties(
     "${SM_EXE_NAME}"
     PROPERTIES
@@ -220,8 +324,6 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Scripts"
     "${SM_ROOT_DIR}/Themes"
   )
-
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
   if(NOT WITH_MACOS_PORTABLE_APP)
     set(_SM_BUNDLE_RESOURCES_DIR "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources")
@@ -314,61 +416,6 @@ else() # Linux
                                    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
                                    "${SM_ROOT_DIR}")
 
-  if(${WITH_CRASH_HANDLER})
-    if(LINUX)
-      # used only in the ArchHooks_Unix.cpp file
-      if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_LINUX)
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                   BACKTRACE_METHOD_TEXT="x86 custom backtrace")
-      elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                   BACKTRACE_METHOD_TEXT="generic unix backtrace")
-      else()
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                   BACKTRACE_METHOD_TEXT="no backtrace")
-      endif()
-      target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                 BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
-      target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                 BACKTRACE_LOOKUP_METHOD_DLADDR)
-    endif()
-  endif()
-  if(${HAS_PTHREAD})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_LIBPTHREAD)
-
-    message("Host processor is ${CMAKE_SYSTEM_PROCESSOR}")
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-      message("Host processor is 64bit X86")
-      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86_64)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86"
-           OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
-      message("Host processor is 32bit X86")
-      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-      message("Host processor is 64bit ARM")
-      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_AARCH64)
-    else()
-      message("Unrecognized host processor type")
-    endif()
-  endif()
-  if(${HAS_XINERAMA})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XINERAMA)
-  endif()
-
-  if(BSD)
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE BSD)
-  endif()
-
-  if(GTK3_FOUND)
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_GTK)
-  endif()
-
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE UNIX)
-  if("${CMAKE_SYSTEM}" MATCHES "Linux")
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE LINUX)
-  endif()
 endif()
 
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
@@ -403,19 +450,8 @@ if(WIN32)
               "setupapi.lib"
               "hid.lib")
 
-  sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}\"")
-  sm_add_link_flag("${SM_EXE_NAME}"
-                   "/LIBPATH:\"$(WindowsSdkDir)Lib\\um\\${SM_WIN32_ARCH}\"")
-  sm_add_link_flag("${SM_EXE_NAME}" "/ERRORREPORT:SEND")
   sm_add_link_flag("${SM_EXE_NAME}" "/MAPINFO:EXPORTS")
-  sm_add_link_flag("${SM_EXE_NAME}" "/SAFESEH:NO")
-  sm_add_link_flag("${SM_EXE_NAME}" "/NOLOGO")
   sm_add_link_flag("${SM_EXE_NAME}" "/MAP")
-  sm_add_link_flag("${SM_EXE_NAME}" "/NODEFAULTLIB:wininet.lib")
-  sm_add_link_flag("${SM_EXE_NAME}" "/NODEFAULTLIB:msimg32.lib")
-  sm_add_link_flag("${SM_EXE_NAME}" "/NODEFAULTLIB:libci.lib")
-  set_target_properties("${SM_EXE_NAME}"
-                        PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib")
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
   set_target_properties("${SM_EXE_NAME}"
@@ -483,21 +519,16 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   list(REMOVE_DUPLICATES SMDATA_LINK_LIB)
 endif()
 
-target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
-
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_GENERATED_SRC_DIR}")
 
 if(APPLE)
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
-
-  add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 else()
   if(MSVC)
     list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg-w32/include")
   else()
-    add_dependencies("${SM_EXE_NAME}" "ffmpeg")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
     list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
@@ -508,7 +539,10 @@ else()
   endif()
 endif()
 
-target_include_directories("${SM_EXE_NAME}" PUBLIC ${SM_INCLUDE_DIRS})
+sm_configure_target(itgmania_core)
+sm_configure_target("${SM_EXE_NAME}")
+
+set_property(TARGET itgmania_core PROPERTY FOLDER "Internal Libraries")
 
 if(WIN32)
   set(SM_INSTALL_DESTINATION ".")
@@ -521,22 +555,16 @@ endif()
 if(WIN32)
   set(SM_FULL_INSTALLATION_PATH_LIST "${SM_INSTALL_DESTINATION}" "Program")
   list(JOIN SM_FULL_INSTALLATION_PATH_LIST "/" SM_FULL_INSTALLATION_PATH)
-  # Hardcoding the values for now since the foreach loop is not working as
-  # intended.
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   if(WITH_FULL_RELEASE OR WITH_TEXTURE_GENERATOR)
     install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   endif()
-  install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  foreach(_ffmpeg_dll IN LISTS SM_FFMPEG_WIN32_DLLS)
+    install(FILES "${SM_PROGRAM_DIR}/${_ffmpeg_dll}"
+            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  endforeach()
   install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
@@ -600,4 +628,17 @@ if(WITH_CLUB_FANTASTIC)
     install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
             DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
   endif()
+endif()
+
+if(BUILD_TESTING)
+  add_executable(itgmania_unit_tests
+    $<TARGET_OBJECTS:itgmania_core>
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp")
+
+  sm_configure_target(itgmania_unit_tests)
+
+  add_test(NAME itgmania_unit_tests COMMAND itgmania_unit_tests)
 endif()
