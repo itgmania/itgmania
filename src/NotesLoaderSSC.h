@@ -39,6 +39,7 @@ struct SSCLoader : public SMLoader {
    * @return its success or failure.
    */
   virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
+  bool LoadAdditionalChartsFromSimfile(const std::string& sPath, Song& out);
 
   /**
    * @brief Attempt to load an edit from the hard drive.
@@ -70,7 +71,8 @@ struct SSCLoader : public SMLoader {
    * @param path the path to the simfile.
    * @param out the Steps to receive just the particular notedata.
    * @return true if successful, false otherwise. */
-  virtual bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
+  virtual bool LoadNoteDataFromSimfile(
+      const std::string& cachePath, Steps& out);
 
   void ProcessBPMs(TimingData&, const std::string);
   void ProcessStops(TimingData&, const std::string);
@@ -78,6 +80,10 @@ struct SSCLoader : public SMLoader {
   void ProcessLabels(TimingData&, const std::string);
   virtual void ProcessCombos(TimingData&, const std::string, const int = -1);
   void ProcessScrolls(TimingData&, const std::string);
+
+ private:
+  bool LoadFromSimfileInternal(
+      const std::string& sPath, Song& out, bool bAdditionalCharts);
 };
 
 #endif
