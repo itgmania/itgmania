@@ -73,6 +73,21 @@ function ComboTransformCommand( self, params )
 	self:y( y )
 end
 
+function DancingBotPositionCommand( self, params )
+	local screen = params.Screen
+	local mode = params.Playing and "Playing" or "Edit"
+	local heights = { "Low", "Middle", "High" }
+	local position = params.Position
+	local side = position <= 3 and "Left" or "Right"
+	local height = heights[(position - 1) % 3 + 1]
+	local prefix = "DancingBot" .. mode
+
+	self:xy(
+		THEME:GetMetric(screen, prefix .. side .. "X"),
+		THEME:GetMetric(screen, prefix .. height .. "Y")
+	):zoom(THEME:GetMetric(screen, prefix .. "Zoom"))
+end
+
 function GetEditModeSubScreens()
 	return
 		"ScreenMiniMenuEditHelp," ..
