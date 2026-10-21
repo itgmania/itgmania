@@ -614,12 +614,10 @@ if(WITH_CLUB_FANTASTIC)
 endif()
 
 add_executable(itgmania_unit_tests
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_test.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp")
 
-target_link_libraries(itgmania_unit_tests PRIVATE itgmania_core)
+target_link_libraries(itgmania_unit_tests
+  PRIVATE itgmania_core GTest::gtest_main)
 
 sm_copy_runtime_libraries(itgmania_unit_tests)
 

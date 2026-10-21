@@ -49,3 +49,7 @@
 [submodule "extern/aubio"]
 	path = extern/aubio
 	url = https://github.com/aubio/aubio.git
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = https://github.com/google/googletest.git
+	shallow = true
