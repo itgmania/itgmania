@@ -5,7 +5,6 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -192,7 +191,7 @@ struct IntermediateNoteData {
 /// given row of a step chart. 'notes' and 'holds' will always have
 /// 'columnCount' entries. "Empty" columns will have a type of
 /// TapNoteType_Empty. This shouldn't be confused with the idea of "rows"
-/// elsewhere in sm. Here, we only use these Rows to represent a row that isn't
+/// elsewhere in SM. Here, we only use these Rows to represent a row that isn't
 /// empty.
 struct Row {
   // notes for the given row

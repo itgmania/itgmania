@@ -479,7 +479,7 @@ void ScreenEdit::InitEditMappings() {
           DeviceInput(DEVICE_KEYBOARD, KEY_RIGHT);
 
       // k = course playback menu
-      // edit_mappings_device_input_.button_[EDIT_BUTTON_OPEN_COURSE_ATTACK_MENU][0]
+      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_COURSE_ATTACK_MENU][0]
       // = DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
       edit_mappings_device_input_.button_[EDIT_BUTTON_ADD_COURSE_MODS][0] =
           DeviceInput(DEVICE_KEYBOARD, KEY_Co);
@@ -576,9 +576,9 @@ void ScreenEdit::InitEditMappings() {
       edit_mappings_device_input_
           .hold_[EDIT_BUTTON_OPEN_BGCHANGE_LAYER2_MENU][1] =
           DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT);
-      // edit_mappings_device_input_.button_[EDIT_BUTTON_ADD_STEP_MODS][0] =
+      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_ADD_STEP_MODS][0] =
       // DeviceInput(DEVICE_KEYBOARD, KEY_Cc);
-      // edit_mappings_device_input_.button_[EDIT_BUTTON_OPEN_STEP_ATTACK_MENU][0]
+      // m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_STEP_ATTACK_MENU][0]
       // = DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
 
       edit_mappings_device_input_.button_[EDIT_BUTTON_INSERT_SHIFT_PAUSES][0] =
@@ -860,7 +860,7 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(
         name_to_edit_button.find(attr->first);
     if (name_entry != name_to_edit_button.end()) {
       std::string joined_names;
-      attr->second_->GetValue(joined_names);
+      attr->second->GetValue(joined_names);
       std::vector<std::string> key_names;
       split(joined_names, DEVICE_INPUT_SEPARATOR, key_names, false);
       for (size_t k = 0; k < key_names.size() && k < NUM_EDIT_TO_DEVICE_SLOTS;
@@ -868,7 +868,7 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(
         DeviceInput devi;
         devi.FromString(key_names[k]);
         if (devi.IsValid()) {
-          mappings.button_[name_entry->second_][k] = devi;
+          mappings.button_[name_entry->second][k] = devi;
         }
       }
     }
@@ -1826,8 +1826,7 @@ static float GetMouseScreenX() {
 static float GetMouseScreenY() {
   return SCALE(
       INPUTFILTER->GetCursorY(), 0.0f,
-      static_cast<float>(PREFSMAN->display_height_), SCREEN_TOP,
-      SCREEN_BOTTOM);
+      static_cast<float>(PREFSMAN->display_height_), SCREEN_TOP, SCREEN_BOTTOM);
 }
 
 float ScreenEdit::MouseYToBeat(float screen_y) {
@@ -1838,7 +1837,7 @@ float ScreenEdit::MouseYToBeat(float screen_y) {
   }
 
   /*
-   * The editor NoteField is drawn using trailing_beat_ rather than the
+   * The editor NoteField is drawn using m_fTrailingBeat rather than the
    * instantaneous editor cursor beat.  This is what gives scrolling its
    * smooth/trailing appearance.
    *
@@ -1963,7 +1962,7 @@ void ScreenEdit::Init() {
   ASSERT(GAMESTATE->cur_steps_[main_player_] != nullptr);
 
   // In TwoPlayersSharedSides (routine/couples) editing, both players share
-  // the same chart. Ensure every enabled player's cur_steps_ slot points at
+  // the same chart. Ensure every enabled player's m_pCurSteps slot points at
   // the master player's Steps
   if (GAMESTATE->GetCurrentStyle(main_player_) != nullptr &&
       GAMESTATE->GetCurrentStyle(main_player_)->style_type_ ==
@@ -2425,7 +2424,7 @@ void ScreenEdit::Update(float delta_time) {
     }
   }
 
-  // LOG->Trace( "ScreenEdit::Update(%f)", delta_time );
+  // LOG->Trace( "ScreenEdit::Update(%f)", fDeltaTime );
   if (edit_state_ == STATE_PLAYING) {
     ScreenWithMenuElements::Update(delta_time * rate);
   } else {
@@ -2494,7 +2493,7 @@ void ScreenEdit::UpdateDancingBot(float delta_time) {
       m_DancingBot.Load(
           note_data_edit_, steps_->steps_type_,
           GAMESTATE->is_using_step_timing_ ? *steps_->GetTimingData()
-                                          : song_->song_timing_,
+                                           : song_->song_timing_,
           player);
       m_bDancingBotNeedsReload = false;
     }
@@ -2730,35 +2729,35 @@ void ScreenEdit::UpdateTextInfo() {
     std::pair<int, int> tmp = note_data_edit_.GetNumTapNotesTwoPlayer();
     text += ssprintf(
         NUM_STEPS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        TAP_STEPS.GetValue().c_str(), tmp.first, tmp.second_);
+        TAP_STEPS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumJumpsTwoPlayer();
     text += ssprintf(
         NUM_JUMPS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        JUMPS.GetValue().c_str(), tmp.first, tmp.second_);
+        JUMPS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumHandsTwoPlayer();
     text += ssprintf(
         NUM_HANDS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        HANDS.GetValue().c_str(), tmp.first, tmp.second_);
+        HANDS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumHoldNotesTwoPlayer();
     text += ssprintf(
         NUM_HOLDS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        HOLDS.GetValue().c_str(), tmp.first, tmp.second_);
+        HOLDS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumMinesTwoPlayer();
     text += ssprintf(
         NUM_MINES_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        MINES.GetValue().c_str(), tmp.first, tmp.second_);
+        MINES.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumRollsTwoPlayer();
     text += ssprintf(
         NUM_ROLLS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        ROLLS.GetValue().c_str(), tmp.first, tmp.second_);
+        ROLLS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumLiftsTwoPlayer();
     text += ssprintf(
         NUM_LIFTS_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        LIFTS.GetValue().c_str(), tmp.first, tmp.second_);
+        LIFTS.GetValue().c_str(), tmp.first, tmp.second);
     tmp = note_data_edit_.GetNumFakesTwoPlayer();
     text += ssprintf(
         NUM_FAKES_FORMAT_TWO_PLAYER.GetValue().c_str(),
-        FAKES.GetValue().c_str(), tmp.first, tmp.second_);
+        FAKES.GetValue().c_str(), tmp.first, tmp.second);
   } else {
     text += ssprintf(
         NUM_STEPS_FORMAT.GetValue().c_str(), TAP_STEPS.GetValue().c_str(),
@@ -2897,7 +2896,7 @@ void ScreenEdit::FinishMouseDragSelection() {
    * Convert the top and bottom of the physical selection rectangle into
    * the beats actually visible underneath those screen positions.
    *
-   * MouseYToBeat() uses trailing_beat_, so this follows scrolling and
+   * MouseYToBeat() uses m_fTrailingBeat, so this follows scrolling and
    * corresponds to the arrows the user currently sees.
    */
   float start_beat =
@@ -4310,7 +4309,7 @@ bool ScreenEdit::InputRecordPaused(
 
   switch (edit_b) {
     case EDIT_BUTTON_UNDO:
-      /* We've already actually committed changes to note_data_edit_, so all we
+      /* We've already actually committed changes to m_NoteDataEdit, so all we
        * have to do to undo is Undo() as usual, and copy the note data back in.
        */
       Undo();
@@ -4488,7 +4487,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
     }
   }
 
-  // Set up player options for this mode. (EDITING uses player_state_edit_,
+  // Set up player options for this mode. (EDITING uses m_PlayerStateEdit,
   // which we don't need to change.)
   if (em != STATE_EDITING) {
     // Stop displaying course attacks, if any.
@@ -4583,7 +4582,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
       break;
     case STATE_RECORDING:
     case STATE_RECORDING_PAUSED:
-      // initialize note_field_record_
+      // initialize m_NoteFieldRecord
       note_data_record_.CopyAll(note_data_edit_);
 
       // highlight the section being recorded
@@ -4643,8 +4642,6 @@ void ScreenEdit::TransitionEditState(EditState em) {
     default:
       break;
   }
-
-  edit_state_ = em;
 }
 
 void ScreenEdit::ScrollTo(float destination_beat) {
@@ -5411,7 +5408,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
       if (steps_ == p_steps) {
         steps_ = nullptr;
       }
-      // In routine/couples editing every enabled player's cur_steps_ are
+      // In routine/couples editing every enabled player's m_pCurSteps are
       // pointed at the shared Steps.
       FOREACH_PlayerNumber(pn) {
         if (GAMESTATE->cur_steps_[pn].Get() == p_steps) {
@@ -5714,8 +5711,8 @@ void ScreenEdit::DisplayTimingMenu() {
   int row = GetRow();
   const TimingData& time = GetAppropriateTiming();
   bool has_speed_on_this_row = time.GetSpeedSegmentAtRow(row)->GetRow() == row;
-  // bool bIsSelecting = ( (note_field_edit_.m_iEndMarker != -1) &&
-  // (note_field_edit_.m_iBeginMarker != -1) );
+  // bool bIsSelecting = ( (m_NoteFieldEdit.m_iEndMarker != -1) &&
+  // (m_NoteFieldEdit.m_iBeginMarker != -1) );
 
   g_TimingDataInformation.rows_[beat_0_offset].SetOneUnthemedChoice(
       std::to_string(time.beat0_offset_in_seconds_));
@@ -5751,7 +5748,7 @@ void ScreenEdit::DisplayTimingMenu() {
   g_TimingDataInformation.rows_[fake].SetOneUnthemedChoice(
       std::to_string(time.GetFakeAtRow(row)));
 
-  // g_TimingDataInformation.rows_[speed_percent].bEnabled = !bIsSelecting;
+  // g_TimingDataInformation.rows[speed_percent].bEnabled = !bIsSelecting;
   g_TimingDataInformation.rows_[speed_wait].b_enabled_ = has_speed_on_this_row;
   g_TimingDataInformation.rows_[speed_mode].b_enabled_ = has_speed_on_this_row;
 
@@ -5932,7 +5929,7 @@ void ScreenEdit::HandleMainMenuChoice(
     } break;
     case edit_steps_information: {
       /* XXX: If the difficulty is changed from EDIT, and
-       * p_steps->WasLoadedFromProfile() is true, we should warn that the steps
+       * pSteps->WasLoadedFromProfile() is true, we should warn that the steps
        * will no longer be saved to the profile. */
       Steps* steps = GAMESTATE->cur_steps_[PLAYER_1];
 
@@ -5988,31 +5985,31 @@ void ScreenEdit::HandleMainMenuChoice(
       if (cat == StepsTypeCategory_Couple || cat == StepsTypeCategory_Routine) {
         std::pair<int, int> tmp = note_data_edit_.GetNumTapNotesTwoPlayer();
         g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumJumpsTwoPlayer();
         g_StepsData.rows_[jumps].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumHandsTwoPlayer();
         g_StepsData.rows_[hands].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumQuadsTwoPlayer();
         g_StepsData.rows_[quads].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumHoldNotesTwoPlayer();
         g_StepsData.rows_[holds].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumMinesTwoPlayer();
         g_StepsData.rows_[mines].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumRollsTwoPlayer();
         g_StepsData.rows_[rolls].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumLiftsTwoPlayer();
         g_StepsData.rows_[lifts].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumFakesTwoPlayer();
         g_StepsData.rows_[fakes].SetOneUnthemedChoice(
-            ssprintf("%d / %d", tmp.first, tmp.second_));
+            ssprintf("%d / %d", tmp.first, tmp.second));
       } else {
         g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumTapNotes()));
@@ -7412,7 +7409,7 @@ void ScreenEdit::RevertFromDisk() {
   id.FromSteps(GAMESTATE->cur_steps_[PLAYER_1]);
   ASSERT(id.IsValid());
 
-  // If in_step_editor_ is true while the song is reloaded, it screws up
+  // If m_bInStepEditor is true while the song is reloaded, it screws up
   // loading and results in the steps being cleared.  -Kyz
   GAMESTATE->in_step_editor_ = false;
   GAMESTATE->cur_song_->ReloadFromSongDir();

@@ -171,7 +171,7 @@ bool Steps::GetNoteDataFromSimfile() {
   } else if (extension == "dwi") {
     return DWILoader::LoadNoteDataFromSimfile(step_file, *this);
   } else if (extension == "edit") {
-    // Try SSC, then fallback to sm.
+    // Try SSC, then fallback to SM.
     SSCLoader ssc;
     if (ssc.LoadNoteDataFromSimfile(step_file, *this) != true) {
       SMLoader sm;
@@ -223,7 +223,7 @@ void Steps::SetSMNoteData(const std::string& notes_comp) {
   hash_ = 0;
 }
 
-/* XXX: this function should pull data from filename_, like Decompress() */
+/* XXX: this function should pull data from m_sFilename, like Decompress() */
 void Steps::GetSMNoteData(std::string& notes_comp_out) const {
   if (note_data_compressed_.empty()) {
     if (!note_data_is_filled_) {
@@ -440,7 +440,7 @@ void Steps::Decompress() {
   }
 
   if (parent_) {
-    // get autogen note_data_
+    // get autogen m_pNoteData
     NoteData notedata;
     parent_->GetNoteData(notedata);
 
@@ -508,8 +508,8 @@ void Steps::Compress() const {
     note_data_->Init();
     note_data_is_filled_ = false;
 
-    /* Be careful; 'x = ""', note_data_compressed_.clear() and
-     * note_data_compressed_.reserve(0) don't always free the allocated memory.
+    /* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and
+     * m_sNoteDataCompressed.reserve(0) don't always free the allocated memory.
      */
     note_data_compressed_ = std::string();
     return;
@@ -847,7 +847,7 @@ const std::vector<float>& Steps::GetNpsPerMeasure(PlayerNumber pn) const {
 }
 
 const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
-  // notes_per_measure_ will only have separate sets of values per-player if
+  // m_NotesPerMeasure will only have separate sets of values per-player if
   // the steps type has different steps for each player (eg dance-couples,
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
@@ -862,7 +862,7 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
 }
 
 const StreamBreakdown& Steps::GetStreamBreakdown(PlayerNumber pn) const {
-  // stream_breakdown_ will only have separate sets of values per-player if
+  // m_StreamBreakdown will only have separate sets of values per-player if
   // the steps type has different steps for each player (eg dance-couples,
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).

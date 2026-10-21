@@ -102,8 +102,7 @@ void DancingBot::Load(
   for (std::vector<PanelContact>& contacts : m_Contacts) {
     contacts.clear();
   }
-  const StepParity::StageLayout* layout =
-      StepParity::GetStageLayout(type);
+  const StepParity::StageLayout* layout = StepParity::GetStageLayout(type);
   if (!layout || player < PLAYER_1 || player >= NUM_PLAYERS) {
     SetSecond(m_fSecond);
     return;
@@ -141,12 +140,12 @@ void DancingBot::Load(
   for (int f = 0; f < 2; ++f) {
     const StepParity::StagePoint p =
         DrawPosition(layout->columns_[f == 0 ? 0 : 3], centerX);
-    m_Rest[f].second_ = -std::numeric_limits<float>::infinity();
+    m_Rest[f].second = -std::numeric_limits<float>::infinity();
     m_Rest[f].points = {{{p.x_, p.y_ + 6}, {p.x_, p.y_ - 6}}};
-    m_Rest[f].release.fill(m_Rest[f].second_);
+    m_Rest[f].release.fill(m_Rest[f].second);
   }
 
-  StepParity::StepParityGenerator generator(&*layout, &timing);
+  StepParity::StepParityGenerator generator(layout, &timing);
   if (generator.analyzeNoteData(*input)) {
     /* Binary search requires chronological events. Do not invent a dance for
      * timing that the parity solver cannot represent as a forward timeline. */
@@ -188,7 +187,7 @@ void DancingBot::Load(
         const FootPose& previous =
             m_Feet[f].empty() ? m_Rest[f] : m_Feet[f].back();
         FootPose pose = previous;
-        pose.second_ = row.second_;
+        pose.second = row.second_;
         bool hit = false;
         for (int part = 0; part < 2; ++part) {
           const int c = columns[part] >= 0 ? columns[part] : columns[1 - part];
@@ -249,13 +248,13 @@ void DancingBot::SetSecond(float second) {
     const std::vector<PanelContact>::const_iterator next = std::upper_bound(
         contacts.begin(), contacts.end(), second,
         [](float time, const PanelContact& contact) {
-          return time < contact.second_;
+          return time < contact.second;
         });
     float alpha = 0;
     if (next != contacts.begin()) {
       const PanelContact& contact = *(next - 1);
       if (second < contact.endSecond) {
-        alpha = 0.65f + 0.1f * std::sin((second - contact.second_) * 12);
+        alpha = 0.65f + 0.1f * std::sin((second - contact.second) * 12);
       } else {
         alpha =
             0.85f * std::max(0.0f, 1 - (second - contact.endSecond) / 0.18f);
@@ -275,7 +274,7 @@ void DancingBot::SetSecond(float second) {
     const std::vector<FootPose>& events = m_Feet[f];
     const std::vector<FootPose>::const_iterator next = std::upper_bound(
         events.begin(), events.end(), second,
-        [](float time, const FootPose& pose) { return time < pose.second_; });
+        [](float time, const FootPose& pose) { return time < pose.second; });
     const FootPose& previous = next == events.begin() ? m_Rest[f] : *(next - 1);
     if (previous.lastHit >= latestHit) {
       latestHit = previous.lastHit;
@@ -285,10 +284,10 @@ void DancingBot::SetSecond(float second) {
     if (next != events.end() && m_fMotionSeconds > 0) {
       for (int part = 0; part < 2; ++part) {
         const float start =
-            std::max(previous.release[part], next->second_ - m_fMotionSeconds);
-        if (start < next->second_) {
+            std::max(previous.release[part], next->second - m_fMotionSeconds);
+        if (start < next->second) {
           float t = std::max(
-              0.0f, std::min(1.0f, (second - start) / (next->second_ - start)));
+              0.0f, std::min(1.0f, (second - start) / (next->second - start)));
           t = t * t * (3 - 2 * t);
           points[part].x_ += (next->points[part].x_ - points[part].x_) * t;
           points[part].y_ += (next->points[part].y_ - points[part].y_) * t;

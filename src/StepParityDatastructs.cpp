@@ -88,7 +88,6 @@ const StepParity::StageLayout* StepParity::GetStageLayout(StepsType ty) {
   }
 }
 
-
 static const char* FootNames[] = {
     "None", "LeftHeel", "LeftToe", "RightHeel", "RightToe"};
 
