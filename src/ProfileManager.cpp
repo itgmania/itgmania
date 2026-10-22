@@ -240,6 +240,12 @@ ProfileLoadResult ProfileManager::LoadProfile(
       prof->m_sDisplayName = PlayerNumberToLocalizedString(pn);
     }
     prof->LoadCustomFunction(sProfileDir, pn);
+
+    // LoadSongsFromDir stops starting songs after this limit. Allow time to
+    // finish the last one.
+    const float fLastSongSeconds = 3;
+    MEMCARDMAN->SetCardAccessTimeLimit(
+        pn, PREFSMAN->m_custom_songs_load_timeout + fLastSongSeconds);
     prof->LoadSongsFromDir(sProfileDir, ProfileSlot(pn));
   }
 

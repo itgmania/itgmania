@@ -12,6 +12,7 @@
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "RageFileDriver.h"
+#include "RageFileDriverTimeout.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageSound.h"
@@ -601,6 +602,9 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int iTimeout) {
 
   m_bMounted[pn] = true;
 
+  // Limit the whole access, in case the card responds, but very slowly.
+  SetCardAccessTimeLimit(pn, (float)iTimeout);
+
   RageFileDriver* pDriver =
       FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
   if (pDriver == nullptr) {
@@ -644,6 +648,8 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn, int iTimeout) {
     return;
   }
 
+  SetCardAccessTimeLimit(pn, -1);
+
   // Leave our own filesystem drivers mounted.  Unmount the kernel mount.
   if (!g_pWorker->Unmount(&m_Device[pn], (float)iTimeout)) {
     LOG->Warn("MemoryCardManager::UnmountCard: unmount failed");
@@ -668,6 +674,22 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn, int iTimeout) {
     m_Device[pn] = UsbStorageDevice();
     CheckStateChanges();
   }
+}
+
+void MemoryCardManager::SetCardAccessTimeLimit(
+    PlayerNumber pn, float fSeconds) {
+  RageFileDriver* pDriver = FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT[pn]);
+  if (pDriver == nullptr) {
+    return;
+  }
+
+  RageFileDriverTimeout* pTimeoutDriver =
+      dynamic_cast<RageFileDriverTimeout*>(pDriver);
+  if (pTimeoutDriver != nullptr) {
+    pTimeoutDriver->SetDeadline(fSeconds);
+  }
+
+  FILEMAN->ReleaseFileDriver(pDriver);
 }
 
 bool MemoryCardManager::IsNameAvailable(PlayerNumber pn) const {
