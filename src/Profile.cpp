@@ -29,7 +29,6 @@
 #include "HighScore.h"
 #include "IniFile.h"
 #include "LuaManager.h"
-#include "MemoryCardManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -1249,10 +1248,6 @@ void Profile::LoadSongsFromDir(
       break;
     }
 
-    // Each song gets a fresh memory card timeout. song_load_start_time limits
-    // the total custom song loading time.
-    MEMCARDMAN->RefreshCardAccessTimeout();
-
     auto song = std::make_unique<Song>();
     if (!song->LoadFromSongDir(song_dir, false, prof_slot)) {
       LOG->Trace("Song %s failed to load.", song_dir.c_str());
@@ -1275,11 +1270,6 @@ void Profile::LoadSongsFromDir(
   if (m_songs.empty()) {
     m_groups.clear();
     LOG->Trace("No valid songs were loaded.");
-
-    // Don't make subsequent profile work inherit the time
-    // used by the last song.
-    MEMCARDMAN->RefreshCardAccessTimeout();
-
     return;
   }
 
@@ -1292,10 +1282,6 @@ void Profile::LoadSongsFromDir(
       m_groups.erase(m_groups.begin() + i);
     }
   }
-
-  // Don't make subsequent profile work inherit the time
-  // used by the last song.
-  MEMCARDMAN->RefreshCardAccessTimeout();
 }
 
 ProfileLoadResult Profile::LoadStatsFromDir(
