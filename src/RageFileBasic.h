@@ -143,7 +143,7 @@ class RageFileObj : public RageFileBasic {
    * in order to avoid reads being passed through several buffers, which is only
    * a waste of memory.
    */
-  enum { BSIZE = 1024 };
+  enum { BSIZE = 1024 * 16 };
   char* m_pReadBuffer;
   char* m_pReadBuf;
   int m_iReadBufAvail;
