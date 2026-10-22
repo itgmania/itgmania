@@ -158,8 +158,12 @@ void RageWorkerThread::WorkerMain() {
 
         RequestTimedOut();
 
-        /* Clear the time-out flag, indicating that we can work again. */
+        /* Clear the time-out flag, indicating that we can work again.  Wake
+         * up StopThread, which may be waiting for this. */
+        m_WorkerEvent.Lock();
         m_bTimedOut = false;
+        m_WorkerEvent.Broadcast();
+        m_WorkerEvent.Unlock();
       } else {
         CHECKPOINT_M(ssprintf("HandleRequest(%i) OK", iRequest));
 
