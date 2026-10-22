@@ -32,6 +32,9 @@
  * a separate driver for each device, so if one device fails, others continue
  * to function.)
  *
+ * Callers can also set a deadline for a whole task, for devices that respond,
+ * but very slowly.
+ *
  * All operations must run in the thread, including retrieving directory lists,
  * Open() and closing files.  Operations own everything they use, such as read
  * and write buffers, so we don't clobber stuff if the operation times out, the
@@ -42,6 +45,7 @@
 
 #include "RageFileDriverTimeout.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <condition_variable>
@@ -86,6 +90,8 @@ class ThreadedFileWorker {
   /* Runs fn in the worker, not rejected or dropped on timeout. */
   void RunEventually(std::function<void()> fn);
 
+  void SetDeadline(std::chrono::steady_clock::time_point deadline);
+
  private:
   struct Operation {
     std::function<void()> fn;
@@ -100,7 +106,8 @@ class ThreadedFileWorker {
   std::shared_ptr<Operation> Queue(std::function<void()> fn, bool bMustRun);
   bool Wait(
       std::unique_lock<std::mutex>& lock, Operation& op,
-      std::chrono::seconds timeout);
+      std::chrono::seconds timeout,
+      std::chrono::steady_clock::time_point deadline);
 
   static int StartWorkerMain(void* pThis) {
     static_cast<ThreadedFileWorker*>(pThis)->WorkerMain();
@@ -117,6 +124,8 @@ class ThreadedFileWorker {
   std::deque<std::shared_ptr<Operation>> m_Queue;
   /* An operation timed out, and the worker hasn't been idle since. */
   bool m_bTimedOut = false;
+  std::chrono::steady_clock::time_point m_Deadline =
+      std::chrono::steady_clock::time_point::max();
   bool m_bShutdown = false;
 };
 
@@ -195,14 +204,18 @@ std::shared_ptr<ThreadedFileWorker::Operation> ThreadedFileWorker::Queue(
 
 bool ThreadedFileWorker::Wait(
     std::unique_lock<std::mutex>& lock, Operation& op,
-    std::chrono::seconds timeout) {
-  op.Changed.wait(
-      lock, [&] { return op.bStarted || op.bCancelled || m_bTimedOut; });
+    std::chrono::seconds timeout,
+    std::chrono::steady_clock::time_point deadline) {
+  op.Changed.wait_until(lock, deadline, [&] {
+    return op.bStarted || op.bCancelled || m_bTimedOut;
+  });
   if (!op.bStarted) {
+    op.bCancelled = !op.bMustRun;
     return false;
   }
 
-  if (op.Changed.wait_for(lock, timeout, [&op] { return op.bFinished; })) {
+  deadline = std::min(std::chrono::steady_clock::now() + timeout, deadline);
+  if (op.Changed.wait_until(lock, deadline, [&op] { return op.bFinished; })) {
     return true;
   }
 
@@ -221,18 +234,27 @@ bool ThreadedFileWorker::Wait(
 bool ThreadedFileWorker::Run(
     std::function<void()> fn, std::chrono::seconds timeout) {
   std::unique_lock<std::mutex> lock(m_Mutex);
-  if (m_pChildDriver == nullptr || m_bTimedOut) {
+  if (m_pChildDriver == nullptr || m_bTimedOut ||
+      std::chrono::steady_clock::now() >= m_Deadline) {
     return false;
   }
 
   std::shared_ptr<Operation> pOp = Queue(std::move(fn), false);
-  return Wait(lock, *pOp, timeout);
+  return Wait(lock, *pOp, timeout, m_Deadline);
+}
+
+void ThreadedFileWorker::SetDeadline(
+    std::chrono::steady_clock::time_point deadline) {
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  m_Deadline = deadline;
 }
 
 void ThreadedFileWorker::RunEventually(std::function<void()> fn) {
   std::unique_lock<std::mutex> lock(m_Mutex);
   std::shared_ptr<Operation> pOp = Queue(std::move(fn), true);
-  Wait(lock, *pOp, OPERATION_TIMEOUT);
+  Wait(
+      lock, *pOp, OPERATION_TIMEOUT,
+      std::chrono::steady_clock::time_point::max());
 }
 
 class RageFileObjTimeout : public RageFileObj {
@@ -445,6 +467,16 @@ RageFileBasic* RageFileDriverTimeout::Open(
 
   return new RageFileObjTimeout(
       m_pWorker, pResult->pFile, pResult->iSize, iMode);
+}
+
+void RageFileDriverTimeout::SetDeadline(float fSeconds) {
+  auto deadline = std::chrono::steady_clock::time_point::max();
+  if (fSeconds >= 0) {
+    deadline = std::chrono::steady_clock::now() +
+               std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                   std::chrono::duration<float>(fSeconds));
+  }
+  m_pWorker->SetDeadline(deadline);
 }
 
 void RageFileDriverTimeout::FlushDirCache(const std::string& sPath) {
