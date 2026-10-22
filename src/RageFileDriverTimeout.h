@@ -19,6 +19,8 @@ class RageFileDriverTimeout : public RageFileDriver {
   bool Move(const std::string& sOldPath, const std::string& sNewPath);
   bool Remove(const std::string& sPath);
 
+  void SetDeadline(float fSeconds);
+
  private:
   ThreadedFileWorker* m_pWorker;
 };
