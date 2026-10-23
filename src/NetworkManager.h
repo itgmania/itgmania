@@ -9,7 +9,10 @@
 #include <atomic>
 #include <condition_variable>
 #include <cstddef>
+#include <cstdint>
+#include <deque>
 #include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -124,6 +127,65 @@ class WebSocketHandle {
 
 typedef std::shared_ptr<WebSocketHandle> WebSocketHandlePtr;
 
+// Runs HTTP requests on up to maxThreads threads at once. Each thread sends
+// one request at a time over an ix::HttpClient (and so a connection) of its
+// own, taking the next request from a queue the threads share, so requests
+// start in the order they were made. Threads are started as the queue needs
+// them and run until Stop().
+//
+// An ordered pool hands its results on in the order the requests were made,
+// whichever finishes first, the way a single connection did: Lua written
+// against one request at a time can rely on that order without knowing it.
+class HttpRequestPool {
+ public:
+  // Sends a request on the given client and returns what to do with the
+  // result; the pool runs that, in order if the pool is ordered.
+  typedef std::function<std::function<void()>(ix::HttpClient& client)> Task;
+
+  HttpRequestPool(
+      int maxThreads, bool ordered, const ix::SocketTLSOptions& tlsOptions);
+  ~HttpRequestPool();
+
+  // Runs task on a pool thread with that thread's client. request is the
+  // request task sends; it is cancelled if the pool stops while it runs.
+  void Enqueue(const ix::HttpRequestArgsPtr& request, Task task);
+
+  // Drops the queued requests, cancels the running ones and waits for every
+  // thread to finish.
+  void Stop();
+
+ private:
+  struct Job {
+    ix::HttpRequestArgsPtr request;
+    Task task;
+    std::uint64_t sequence;
+  };
+
+  void Run(std::size_t slot);
+  void Finish(std::uint64_t sequence, std::function<void()> result);
+
+  const int maxThreads;
+  const bool ordered;
+  const ix::SocketTLSOptions tlsOptions;
+
+  std::mutex mutex;
+  std::condition_variable cv;
+  std::deque<Job> queue;
+  std::vector<std::thread> threads;
+  // The request each thread is sending, if any; indexed like threads.
+  std::vector<ix::HttpRequestArgsPtr> running;
+  int idleThreads = 0;
+  bool stopping = false;
+
+  // Ordered pools: the next sequence number to hand out and to hand on, and
+  // the results that finished ahead of their turn.
+  std::uint64_t nextSequence = 0;
+  std::uint64_t nextResult = 0;
+  std::map<std::uint64_t, std::function<void()>> waitingResults;
+  // Held while results are handed on, so two threads never run them at once.
+  std::mutex resultMutex;
+};
+
 class NetworkManager {
  public:
   NetworkManager();
@@ -143,26 +205,31 @@ class NetworkManager {
   void PushSelf(lua_State* L);
 
  private:
-  void RunHttpWorker();
   void RunWebSocketWorker();
   void StopWorkers();
 
   std::string GetUserAgent();
   void ClearDownloads();
 
-  ix::HttpClient httpClient;
-  ix::HttpClient downloadClient;
+  // Builds requests and encodes URLs; never sends anything itself.
+  ix::HttpClient helperClient;
   ix::SocketTLSOptions tlsOptions;
 
   static Preference<bool> httpEnabled;
   static Preference<std::string> httpAllowHosts;
+  static Preference<int> httpMaxConcurrentRequests;
+  static Preference<int> httpMaxConcurrentDownloads;
 
   std::atomic<bool> shutdownWorkers{false};
 
-  std::thread httpWorker;
-  std::mutex httpWorkerMutex;
-  std::condition_variable httpWorkerCv;
-  std::queue<std::function<void()>> httpWorkerQueue;
+  // Requests that keep their response in memory, and requests that write it
+  // to a downloadFile. Downloads get a pool of their own so that a large one
+  // never holds up a small API request. In-memory responses reach Lua in the
+  // order the requests were made, as they did over one connection; downloads
+  // finish in whatever order they come in, so a small file never waits on a
+  // large one.
+  std::unique_ptr<HttpRequestPool> requestPool;
+  std::unique_ptr<HttpRequestPool> downloadPool;
 
   std::thread webSocketWorker;
   std::mutex webSocketWorkerMutex;
