@@ -14,6 +14,7 @@
 #include "RadarValues.h"
 #include "RageUtil.h"
 #include "RageUtil_AutoPtr.h"
+#include "StreamBreakdown.h"
 #include "TechCounts.h"
 #include "TimingData.h"
 
@@ -170,6 +171,7 @@ class Steps {
   void SetTechCounts(const TechCounts ts[NUM_PLAYERS]);
   void SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
   void SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
+  void SetStreamBreakdown(std::vector<StreamBreakdown>& streamBreakdown);
   void SetNoteAnnotations(std::vector<NoteAnnotationCache>& noteAnnotations);
   void SetPeakNps(std::vector<float>& peakNps);
   void SetGrooveStatsHash(const std::string& key);
@@ -221,6 +223,10 @@ class Steps {
     return Real()->m_NotesPerMeasure;
   };
   const std::vector<int>& GetNotesPerMeasure(PlayerNumber pn) const;
+  const std::vector<StreamBreakdown>& GetAllStreamBreakdowns() const {
+    return Real()->m_StreamBreakdown;
+  }
+  const StreamBreakdown& GetStreamBreakdown(PlayerNumber pn) const;
 
   float GetPeakNps(PlayerNumber pn) const;
   const std::vector<float>& GetAllPeakNps() const { return Real()->m_PeakNps; }
@@ -329,6 +335,7 @@ class Steps {
 
   std::vector<std::vector<float>> m_NpsPerMeasure;
   std::vector<std::vector<int>> m_NotesPerMeasure;
+  std::vector<StreamBreakdown> m_StreamBreakdown;
 
   std::vector<NoteAnnotationCache> m_NoteAnnotations;
   std::vector<float> m_PeakNps;

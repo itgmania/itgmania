@@ -505,6 +505,16 @@ void WriteSteps(Writer& w, const Steps& steps) {
     w.F32(v);
   }
 
+  const std::vector<StreamBreakdown>& breakdowns =
+      steps.GetAllStreamBreakdowns();
+  for (const StreamBreakdown& breakdown : breakdowns) {
+    for (const std::string& text : breakdown.texts) {
+      w.Str(text);
+    }
+    w.I32(breakdown.totalStreamMeasures);
+    w.I32(breakdown.totalBreakMeasures);
+  }
+
   const std::vector<NoteAnnotationCache>& annotations =
       steps.GetNoteAnnotationCaches();
   w.U32(static_cast<uint32_t>(annotations.size()));
@@ -585,6 +595,17 @@ void ReadSteps(Reader& r, Song& song) {
     peakNps.push_back(r.F32());
   }
   steps->SetPeakNps(peakNps);
+
+  std::vector<StreamBreakdown> breakdowns(notes.size());
+  for (size_t i = 0; i < notes.size() && r.Ok(); ++i) {
+    StreamBreakdown& breakdown = breakdowns[i];
+    for (std::string& text : breakdown.texts) {
+      text = r.Str();
+    }
+    breakdown.totalStreamMeasures = r.I32();
+    breakdown.totalBreakMeasures = r.I32();
+  }
+  steps->SetStreamBreakdown(breakdowns);
 
   const uint32_t annotationCount = r.Count();
   std::vector<NoteAnnotationCache> annotations;
