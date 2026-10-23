@@ -170,7 +170,19 @@ void Steps::GetDisplayBpms(DisplayBpms& AddTo) const {
   }
 }
 
-bool Steps::HasAttacks() const { return !this->m_Attacks.empty(); }
+bool Steps::HasAttacks() const {
+  return !this->m_Attacks.empty() ||
+         (this->m_pSong != nullptr && this->m_pSong->HasAttacks());
+}
+
+AttackArray Steps::GetAttacks() const {
+  AttackArray attacks;
+  if (this->m_pSong != nullptr) {
+    attacks = this->m_pSong->m_Attacks;
+  }
+  attacks.insert(attacks.end(), this->m_Attacks.begin(), this->m_Attacks.end());
+  return attacks;
+}
 
 unsigned Steps::GetHash() const {
   if (parent) {

@@ -554,8 +554,9 @@ void SetStepsLabels(StepsTagInfo& info) {
 }
 void SetStepsAttacks(StepsTagInfo& info) {
   if (info.song->m_fVersion >= VERSION_SPLIT_TIMING || info.for_load_edit) {
-    info.loader->ProcessAttackString(info.steps->m_sAttackString, *info.params);
-    info.loader->ProcessAttacks(info.steps->m_Attacks, *info.params);
+    info.loader->ProcessAttackString(
+        info.steps->GetStepsAttackStrings(), *info.params);
+    info.loader->ProcessAttacks(info.steps->GetStepsAttacks(), *info.params);
   }
 }
 void SetStepsOffset(StepsTagInfo& info) {
