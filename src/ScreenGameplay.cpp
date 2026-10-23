@@ -956,9 +956,10 @@ void ScreenGameplay::InitSongQueues() {
       const PlayerOptions& p =
           pi->GetPlayerState()->m_PlayerOptions.GetCurrent();
 
-      if (p.m_fNoAttack == 0 && p.m_fRandAttack == 0 &&
-          pSteps->m_Attacks.size() > 0) {
-        pi->m_asModifiersQueue.push_back(pSteps->m_Attacks);
+      AttackArray attacks = pSteps->GetAttacks();
+
+      if (p.m_fNoAttack == 0 && p.m_fRandAttack == 0 && !attacks.empty()) {
+        pi->m_asModifiersQueue.push_back(attacks);
       } else {
         AttackArray aa;
         pi->m_asModifiersQueue.push_back(aa);

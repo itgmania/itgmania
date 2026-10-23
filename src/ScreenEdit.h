@@ -1,6 +1,7 @@
 #ifndef SCREEN_EDIT_H
 #define SCREEN_EDIT_H
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -792,13 +793,6 @@ class ScreenEdit : public ScreenWithMenuElements {
     NUM_CourseAttackChoice
   };
 
-  enum StepAttackChoice {
-    sa_duration,
-    sa_set_mods,
-    sa_remove,
-    NUM_StepAttackChoice
-  };
-
   void InitEditMappings();
   EditButton DeviceToEdit(const DeviceInput& DeviceI) const;
   EditButton MenuButtonToEditButton(GameButton MenuI) const;
@@ -824,10 +818,21 @@ class ScreenEdit : public ScreenWithMenuElements {
       const MenuDef* pDef, ScreenMessage SM_SendOnOK = SM_None,
       ScreenMessage SM_SendOnCancel = SM_None);
 
-  int attackInProcess;
+ private:
   int modInProcess;
 
- private:
+  enum class AttackSource { Song, Steps };
+  struct SelectedAttack {
+    AttackSource source;
+    int index;
+  };
+  std::optional<SelectedAttack> selectedAttack;
+
+  AttackArray GetAttacksForEditing() const;
+  AttackArray& GetAttackArray(AttackSource source);
+  AttackArray& GetSelectedAttackArray();
+  Attack& GetSelectedAttack();
+  SelectedAttack ResolveAttackIndex(int combinedIndex) const;
   /**
    * @brief Retrieve the appropriate TimingData based on GAMESTATE.
    * @return the proper TimingData. */

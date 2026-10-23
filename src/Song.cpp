@@ -65,7 +65,7 @@
  * @brief The internal version of the cache for StepMania.
  *
  * Increment this value to invalidate the current cache. */
-const int FILE_CACHE_VERSION = 233;
+const int FILE_CACHE_VERSION = 234;
 
 /** @brief How long does a song sample last by default? */
 const float DEFAULT_MUSIC_SAMPLE_LENGTH = 12.f;
@@ -218,8 +218,6 @@ Steps* Song::CreateSteps() {
 
 void Song::InitSteps(Steps* pSteps) {
   // TimingData is initially empty (i.e. defaults to song timing)
-  pSteps->m_sAttackString = this->m_sAttackString;
-  pSteps->m_Attacks = this->m_Attacks;
   pSteps->SetDisplayBPM(this->m_DisplayBPMType);
   pSteps->SetMinBPM(this->m_fSpecifiedBPMMin);
   pSteps->SetMaxBPM(this->m_fSpecifiedBPMMax);

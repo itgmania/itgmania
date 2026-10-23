@@ -443,17 +443,8 @@ static std::string GetSSCNoteData(const Song& song, const Steps& in) {
   }
 
   // todo: get this to output similar to course mods -aj
-  std::string songAttacks = song.GetAttackString();
-  std::string stepAttacks = in.GetAttackString();
-  if (stepAttacks != songAttacks) {
-    // When loading, Steps::m_Attacks are set to the song attacks followed
-    // by the step attacks. We need to omit the song attacks when saving.
-    // Otherwise, a second copy of the song attacks would be added on the
-    // next load.
-    if (Left(stepAttacks, songAttacks.size() + 1) == songAttacks + ":") {
-      stepAttacks =
-          Right(stepAttacks, stepAttacks.size() - songAttacks.size() - 1);
-    }
+  std::string stepAttacks = in.GetStepsAttackString();
+  if (!stepAttacks.empty()) {
     lines.push_back(ssprintf("#ATTACKS:%s;", stepAttacks.c_str()));
   }
 

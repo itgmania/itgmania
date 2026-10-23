@@ -518,7 +518,7 @@ void WriteSteps(Writer& w, const Steps& steps) {
   w.F32(steps.GetMinBPM());
   w.F32(steps.GetMaxBPM());
 
-  WriteAttacks(w, steps.m_sAttackString, steps.m_Attacks);
+  WriteAttacks(w, steps.GetStepsAttackStrings(), steps.GetStepsAttacks());
 
   w.Bool(!steps.m_Timing.empty());
   if (!steps.m_Timing.empty()) {
@@ -602,7 +602,7 @@ void ReadSteps(Reader& r, Song& song) {
   steps->SetMinBPM(r.F32());
   steps->SetMaxBPM(r.F32());
 
-  ReadAttacks(r, steps->m_sAttackString, steps->m_Attacks);
+  ReadAttacks(r, steps->GetStepsAttackStrings(), steps->GetStepsAttacks());
 
   if (r.Bool()) {
     ReadTiming(r, steps->m_Timing);

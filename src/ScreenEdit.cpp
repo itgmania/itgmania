@@ -1724,18 +1724,6 @@ static MenuDef g_InsertCourseAttack(
         ScreenEdit::remove, "Remove", true, EditMode_Practice, true, true, 0,
         "Press Start"));
 
-static MenuDef g_InsertStepAttack(
-    "ScreenMiniMenuInsertCourseAttack",
-    MenuRowDef(
-        ScreenEdit::sa_duration, "Duration seconds", true, EditMode_Practice,
-        true, false, 3, "5", "10", "15", "20", "25", "30", "35", "40", "45"),
-    MenuRowDef(
-        ScreenEdit::sa_set_mods, "Set modifiers", true, EditMode_Practice, true,
-        true, 0, "Press Start"),
-    MenuRowDef(
-        ScreenEdit::sa_remove, "Remove", true, EditMode_Practice, true, true, 0,
-        "Press Start"));
-
 static MenuDef g_CourseMode(
     "ScreenMiniMenuCourseDisplay",
     MenuRowDef(
@@ -2008,7 +1996,7 @@ void ScreenEdit::Init() {
   m_iStartPlayingAt = -1;
   m_iStopPlayingAt = -1;
 
-  attackInProcess = -1;
+  selectedAttack.reset();
   modInProcess = -1;
 
   this->AddChild(&m_Background);
@@ -2642,8 +2630,8 @@ void ScreenEdit::UpdateTextInfo() {
         TAP_NOTE_TYPE_FORMAT.GetValue().c_str(),
         TAP_NOTE_TYPE.GetValue().c_str(), tapnoteType.c_str());
 
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
+    AttackArray attacks =
+        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->GetAttacks()
                                          : m_pSong->m_Attacks);
     float beat = GetAppropriateTiming().GetElapsedTimeFromBeat(GetBeat());
     sText += ssprintf(
@@ -3604,7 +3592,8 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       GetAppropriateTimingForUpdate().m_fBeat0OffsetInSeconds += fDelta;
       (fDelta > 0 ? m_soundValueIncrease : m_soundValueDecrease).Play(true);
       if (GAMESTATE->m_bIsUsingStepTiming) {
-        GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks.UpdateStartTimes(fDelta);
+        GAMESTATE->m_pCurSteps[PLAYER_1]->GetStepsAttacks().UpdateStartTimes(
+            fDelta);
       } else {
         GAMESTATE->m_pCurSong->m_Attacks.UpdateStartTimes(fDelta);
         GAMESTATE->m_pCurSong->m_fMusicSampleStartSeconds += fDelta;
@@ -3914,6 +3903,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       float start = -1;
       float end = -1;
       PlayerOptions po;
+      selectedAttack.reset();
 
       if (m_NoteFieldEdit.m_iBeginMarker == -1)  // not highlighted
       {
@@ -3922,13 +3912,12 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
         const TimingData& timing = GetAppropriateTiming();
         start = timing.GetElapsedTimeFromBeat(
             NoteRowToBeat(m_NoteFieldEdit.m_iBeginMarker));
-        AttackArray& attacks =
-            (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                             : m_pSong->m_Attacks);
+        AttackArray attacks = GetAttacksForEditing();
         int index = FindAttackAtTime(attacks, start);
 
         if (index >= 0) {
           po.FromString("");
+          selectedAttack = ResolveAttackIndex(index);
         }
         if (m_NoteFieldEdit.m_iEndMarker == -1) {
           end = m_pSong->m_fMusicLengthSeconds;
@@ -4735,7 +4724,8 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     float delta = timing.m_fBeat0OffsetInSeconds - old;
 
     if (GAMESTATE->m_bIsUsingStepTiming) {
-      GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks.UpdateStartTimes(delta);
+      GAMESTATE->m_pCurSteps[PLAYER_1]->GetStepsAttacks().UpdateStartTimes(
+          delta);
     } else {
       GAMESTATE->m_pCurSong->m_Attacks.UpdateStartTimes(delta);
       GAMESTATE->m_pCurSong->m_fMusicSampleStartSeconds += delta;
@@ -5002,20 +4992,14 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
       SM == SM_BackFromEditingAttackStart &&
       !ScreenTextEntry::s_bCancelledLast) {
     float time = StringToFloat(ScreenTextEntry::s_sLastAnswer);
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                         : m_pSong->m_Attacks);
-    Attack& attack = attacks[attackInProcess];
+    Attack& attack = GetSelectedAttack();
     attack.fStartSecond = time;
     SetDirty(true);
   } else if (
       SM == SM_BackFromEditingAttackLength &&
       !ScreenTextEntry::s_bCancelledLast) {
     float time = StringToFloat(ScreenTextEntry::s_sLastAnswer);
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                         : m_pSong->m_Attacks);
-    Attack& attack = attacks[attackInProcess];
+    Attack& attack = GetSelectedAttack();
     attack.fSecsRemaining = time;
     SetDirty(true);
   } else if (
@@ -5024,10 +5008,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     std::string mod = ScreenTextEntry::s_sLastAnswer;
     Trim(mod);
     if (mod.length() > 0) {
-      AttackArray& attacks =
-          (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                           : m_pSong->m_Attacks);
-      Attack& attack = attacks[attackInProcess];
+      Attack& attack = GetSelectedAttack();
       attack.sModifiers += "," + mod;
       SetDirty(true);
     }
@@ -5035,10 +5016,8 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
   } else if (
       SM == SM_BackFromEditingModToExistingAttack &&
       !ScreenTextEntry::s_bCancelledLast) {
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                         : m_pSong->m_Attacks);
-    Attack& attack = attacks[attackInProcess];
+    AttackArray& attacks = GetSelectedAttackArray();
+    Attack& attack = GetSelectedAttack();
     std::vector<std::string> mods;
     split(attack.sModifiers, ",", mods);
     std::string mod = ScreenTextEntry::s_sLastAnswer;
@@ -5051,15 +5030,13 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     if (mods.size() > 0) {
       attack.sModifiers = join(",", mods);
     } else {
-      attacks.erase(attacks.begin() + attackInProcess);
+      attacks.erase(attacks.begin() + selectedAttack->index);
+      selectedAttack.reset();
     }
     SetDirty(true);
   } else if (SM == SM_BackFromInsertStepAttack) {
     unsigned option = ScreenMiniMenu::s_iLastRowCode;
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                         : m_pSong->m_Attacks);
-    Attack& attack = attacks[attackInProcess];
+    Attack& attack = GetSelectedAttack();
     std::vector<std::string> mods;
     split(attack.sModifiers, ",", mods);
     modInProcess = option;
@@ -5089,9 +5066,9 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     std::string mod = ScreenTextEntry::s_sLastAnswer;
     Trim(mod);
     if (mod.length() > 0) {
-      AttackArray& attacks =
-          (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                           : m_pSong->m_Attacks);
+      AttackArray& attacks = GetAttackArray(
+          GAMESTATE->m_bIsUsingStepTiming ? AttackSource::Steps
+                                          : AttackSource::Song);
       Attack attack;
       attack.fStartSecond =
           GetAppropriateTiming().GetElapsedTimeFromBeat(GetBeat());
@@ -5105,22 +5082,22 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     int attackDecision = ScreenMiniMenu::s_viLastAnswers[attackChoice];
     const TimingData& timing = GetAppropriateTiming();
     float startTime = timing.GetElapsedTimeFromBeat(GetBeat());
-    AttackArray& attacks =
-        (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                         : m_pSong->m_Attacks);
+    AttackArray attacks = GetAttacksForEditing();
     std::vector<int> points = FindAllAttacksAtTime(attacks, startTime);
     if (attackChoice == (int)points.size()) {
       // TODO: Add attack code.
       ScreenTextEntry::TextEntry(
           SM_BackFromAddingAttackToChart, ADD_NEW_ATTACK, "", 64);
     } else {
-      attackInProcess = points[attackChoice];
+      selectedAttack = ResolveAttackIndex(points[attackChoice]);
+      AttackArray& sourceAttacks = GetAttackArray(selectedAttack->source);
       if (attackDecision == 1)  // remove
       {
-        attacks.erase(attacks.begin() + attackInProcess);
+        sourceAttacks.erase(sourceAttacks.begin() + selectedAttack->index);
+        selectedAttack.reset();
         SetDirty(true);
       } else {
-        Attack& attack = attacks[attackInProcess];
+        Attack& attack = sourceAttacks[selectedAttack->index];
         g_IndividualAttack.rows.clear();
 
         g_IndividualAttack.rows.push_back(MenuRowDef(
@@ -5150,36 +5127,6 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
         EditMiniMenu(&g_IndividualAttack, SM_BackFromInsertStepAttack);
       }
     }
-  } else if (SM == SM_BackFromInsertStepAttack) {
-    int iDurationChoice = ScreenMiniMenu::s_viLastAnswers[0];
-    const TimingData& timing = GetAppropriateTiming();
-    g_fLastInsertAttackPositionSeconds =
-        timing.GetElapsedTimeFromBeat(GetBeat());
-    g_fLastInsertAttackDurationSeconds =
-        StringToFloat(g_InsertStepAttack.rows[0].choices[iDurationChoice]);
-    AttackArray& attacks = GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                                           : m_pSong->m_Attacks;
-    int iAttack = FindAttackAtTime(attacks, g_fLastInsertAttackPositionSeconds);
-
-    if (ScreenMiniMenu::s_iLastRowCode == ScreenEdit::remove) {
-      if (iAttack > 0) {
-        attacks.erase(attacks.begin() + iAttack);
-      }
-    } else {
-      ModsGroup<PlayerOptions>& toEdit =
-          GAMESTATE->m_pPlayerState[main_player_]->m_PlayerOptions;
-      this->originalPlayerOptions.Assign(
-          ModsLevel_Preferred, toEdit.GetPreferred());
-      PlayerOptions po;
-      if (iAttack >= 0) {
-        po.FromString(attacks[iAttack].sModifiers);
-      }
-
-      toEdit.Assign(ModsLevel_Preferred, po);
-      SCREENMAN->AddNewScreenToTop(
-          SET_MOD_SCREEN, SM_BackFromInsertStepAttackPlayerOptions);
-    }
-    SetDirty(true);
   } else if (SM == SM_BackFromInsertCourseAttack) {
     int iDurationChoice = ScreenMiniMenu::s_viLastAnswers[0];
     Course* pCourse = GAMESTATE->m_pCurCourse;
@@ -5220,14 +5167,13 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
       Attack a(
           ATTACK_LEVEL_1, g_fLastInsertAttackPositionSeconds,
           g_fLastInsertAttackDurationSeconds, mods, false, false);
-      AttackArray& attacks = GAMESTATE->m_bIsUsingStepTiming
-                                 ? m_pSteps->m_Attacks
-                                 : m_pSong->m_Attacks;
-      int index = FindAttackAtTime(attacks, g_fLastInsertAttackPositionSeconds);
-      if (index >= 0) {
-        attacks[index] = a;
+      if (selectedAttack.has_value()) {
+        GetSelectedAttack() = a;
       } else {
-        attacks.push_back(a);
+        GetAttackArray(
+            GAMESTATE->m_bIsUsingStepTiming ? AttackSource::Steps
+                                            : AttackSource::Song)
+            .push_back(a);
       }
     }
     toRestore.Assign(
@@ -5410,9 +5356,10 @@ void ScreenEdit::PerformSave(bool autosave) {
   // don't forget the attacks.
   m_pSong->m_Attacks = GAMESTATE->m_pCurSong->m_Attacks;
   m_pSong->m_sAttackString = GAMESTATE->m_pCurSong->m_Attacks.ToVectorString();
-  m_pSteps->m_Attacks = GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks;
-  m_pSteps->m_sAttackString =
-      GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks.ToVectorString();
+  m_pSteps->GetStepsAttacks() =
+      GAMESTATE->m_pCurSteps[PLAYER_1]->GetStepsAttacks();
+  m_pSteps->GetStepsAttackStrings() =
+      GAMESTATE->m_pCurSteps[PLAYER_1]->GetStepsAttacks().ToVectorString();
 
   // If one of the charts uses split timing, then it cannot be accurately
   // saved in the .sm format.  So saving the .sm is disabled.
@@ -6526,10 +6473,9 @@ void ScreenEdit::HandleAlterMenuChoice(
       start = timing.GetElapsedTimeFromBeat(startBeat);
       length = timing.GetElapsedTimeFromBeat(endBeat) - start;
 
-      AttackArray& attacks = GAMESTATE->m_bIsUsingStepTiming
-                                 ? m_pSteps->m_Attacks
-                                 : m_pSong->m_Attacks;
+      AttackArray attacks = GetAttacksForEditing();
       int iAttack = FindAttackAtTime(attacks, start);
+      selectedAttack.reset();
 
       ModsGroup<PlayerOptions>& toEdit =
           GAMESTATE->m_pPlayerState[main_player_]->m_PlayerOptions;
@@ -6538,6 +6484,7 @@ void ScreenEdit::HandleAlterMenuChoice(
       PlayerOptions po;
       if (iAttack >= 0) {
         po.FromString(attacks[iAttack].sModifiers);
+        selectedAttack = ResolveAttackIndex(iAttack);
       }
 
       toEdit.Assign(ModsLevel_Preferred, po);
@@ -7307,9 +7254,9 @@ void ScreenEdit::SetupCourseAttacks() {
     const PlayerOptions& p =
         GAMESTATE->m_pPlayerState[main_player_]->m_PlayerOptions.GetCurrent();
     if (GAMESTATE->m_pCurSong && p.m_fNoAttack == 0 && p.m_fRandAttack == 0) {
-      AttackArray& attacks = GAMESTATE->m_bIsUsingStepTiming
-                                 ? GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks
-                                 : GAMESTATE->m_pCurSong->m_Attacks;
+      AttackArray attacks = GAMESTATE->m_bIsUsingStepTiming
+                                ? GAMESTATE->m_pCurSteps[PLAYER_1]->GetAttacks()
+                                : GAMESTATE->m_pCurSong->m_Attacks;
 
       if (attacks.size() > 0) {
         for (Attack& attack : attacks) {
@@ -7791,12 +7738,44 @@ static std::string GetDeviceButtonsLocalized(
   return s;
 }
 
+AttackArray ScreenEdit::GetAttacksForEditing() const {
+  if (GAMESTATE->m_bIsUsingStepTiming) {
+    return m_pSteps->GetAttacks();
+  }
+  return m_pSong->m_Attacks;
+}
+
+AttackArray& ScreenEdit::GetAttackArray(AttackSource source) {
+  return source == AttackSource::Song ? m_pSong->m_Attacks
+                                      : m_pSteps->GetStepsAttacks();
+}
+
+AttackArray& ScreenEdit::GetSelectedAttackArray() {
+  ASSERT(selectedAttack.has_value());
+  return GetAttackArray(selectedAttack->source);
+}
+
+Attack& ScreenEdit::GetSelectedAttack() {
+  return GetSelectedAttackArray()[selectedAttack->index];
+}
+
+ScreenEdit::SelectedAttack ScreenEdit::ResolveAttackIndex(
+    int combinedIndex) const {
+  if (!GAMESTATE->m_bIsUsingStepTiming) {
+    return {AttackSource::Song, combinedIndex};
+  }
+
+  const int songAttackCount = m_pSong->m_Attacks.size();
+  if (combinedIndex < songAttackCount) {
+    return {AttackSource::Song, combinedIndex};
+  }
+  return {AttackSource::Steps, combinedIndex - songAttackCount};
+}
+
 void ScreenEdit::DoStepAttackMenu() {
   const TimingData& timing = GetAppropriateTiming();
   float startTime = timing.GetElapsedTimeFromBeat(GetBeat());
-  AttackArray& attacks =
-      (GAMESTATE->m_bIsUsingStepTiming ? m_pSteps->m_Attacks
-                                       : m_pSong->m_Attacks);
+  AttackArray attacks = GetAttacksForEditing();
   std::vector<int> points = FindAllAttacksAtTime(attacks, startTime);
 
   g_AttackAtTimeMenu.rows.clear();
