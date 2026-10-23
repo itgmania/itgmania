@@ -154,8 +154,6 @@ class HttpRequestPool {
   // thread to finish.
   void Stop();
 
-  int GetMaxThreads() const { return maxThreads; }
-
  private:
   struct Job {
     ix::HttpRequestArgsPtr request;
@@ -202,9 +200,6 @@ class NetworkManager {
   std::string UrlEncode(const std::string& value);
   std::string EncodeQueryParameters(
       const std::unordered_map<std::string, std::string>& query);
-  // How many requests without and with a downloadFile can run at once.
-  int GetMaxConcurrentRequests() const;
-  int GetMaxConcurrentDownloads() const;
 
   // Lua
   void PushSelf(lua_State* L);

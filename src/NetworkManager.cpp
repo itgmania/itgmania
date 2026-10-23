@@ -569,14 +569,6 @@ std::string NetworkManager::EncodeQueryParameters(
   return this->helperClient.serializeHttpParameters(query);
 }
 
-int NetworkManager::GetMaxConcurrentRequests() const {
-  return this->requestPool->GetMaxThreads();
-}
-
-int NetworkManager::GetMaxConcurrentDownloads() const {
-  return this->downloadPool->GetMaxThreads();
-}
-
 std::string NetworkManager::GetUserAgent() {
   std::stringstream ss;
   ss << PRODUCT_FAMILY << "/" << product_version;
@@ -1079,19 +1071,12 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     return 1;
   }
 
-  static int GetHttpConcurrency(T* p, lua_State* L) {
-    lua_pushinteger(L, p->GetMaxConcurrentRequests());
-    lua_pushinteger(L, p->GetMaxConcurrentDownloads());
-    return 2;
-  }
-
   LunaNetworkManager() {
     ADD_METHOD(IsUrlAllowed);
     ADD_METHOD(HttpRequest);
     ADD_METHOD(WebSocket);
     ADD_METHOD(UrlEncode);
     ADD_METHOD(EncodeQueryParameters);
-    ADD_METHOD(GetHttpConcurrency);
   }
 
  private:

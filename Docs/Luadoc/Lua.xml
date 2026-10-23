@@ -1147,7 +1147,6 @@
 		</Class>
 		<Class name='NetworkManager'>
 			<Function name='EncodeQueryParameters'/>
-			<Function name='GetHttpConcurrency'/>
 			<Function name='HttpRequest'/>
 			<Function name='IsUrlAllowed'/>
 			<Function name='UrlEncode'/>
