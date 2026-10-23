@@ -126,11 +126,6 @@ class Steps {
    */
   std::string GetCredit() const { return Real()->m_sCredit; }
 
-  /** @brief The list of attacks. */
-  AttackArray m_Attacks;
-  /** @brief The stringified list of attacks. */
-  std::vector<std::string> m_sAttackString;
-
   std::string GetChartName() const {
     return parent ? Real()->GetChartName() : this->chartName;
   }
@@ -252,9 +247,19 @@ class Steps {
   bool HasSignificantTimingChanges() const;
 
   /**
-   * @brief Determine if the Steps have any attacks.
-   * @return true if it does, or false otherwise. */
+   * @brief Determine if the Steps or their Song have any attacks.
+   * @return true if they do, false otherwise. */
   bool HasAttacks() const;
+  /** @brief The attacks that belong to these Steps, excluding the Song's. */
+  const AttackArray& GetStepsAttacks() const { return m_Attacks; }
+  AttackArray& GetStepsAttacks() { return m_Attacks; }
+  /** @brief The stringified attacks that belong to these Steps. */
+  const std::vector<std::string>& GetStepsAttackStrings() const {
+    return m_sAttackString;
+  }
+  std::vector<std::string>& GetStepsAttackStrings() { return m_sAttackString; }
+  /** @brief The Song's attacks followed by these Steps' attacks. */
+  AttackArray GetAttacks() const;
 
   const std::string GetMusicPath() const;  // Returns the path for loading.
   const std::string& GetMusicFile()
@@ -279,10 +284,18 @@ class Steps {
   float GetMaxBPM() const { return this->specifiedBPMMax; }
   void GetDisplayBpms(DisplayBpms& addTo) const;
 
-  std::string GetAttackString() const {
+  std::string GetStepsAttackString() const {
     return join(":", this->m_sAttackString);
   }
 
+ private:
+  /** @brief The list of attacks that belong to these Steps, excluding the
+   * Song's. */
+  AttackArray m_Attacks;
+  /** @brief The stringified list of attacks that belong to these Steps. */
+  std::vector<std::string> m_sAttackString;
+
+ public:
   std::vector<ColumnCue> GetColumnCues(PlayerNumber pn, float minDuration);
 
  private:

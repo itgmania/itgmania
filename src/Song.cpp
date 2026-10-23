@@ -218,8 +218,6 @@ Steps* Song::CreateSteps() {
 
 void Song::InitSteps(Steps* pSteps) {
   // TimingData is initially empty (i.e. defaults to song timing)
-  pSteps->m_sAttackString = this->m_sAttackString;
-  pSteps->m_Attacks = this->m_Attacks;
   pSteps->SetDisplayBPM(this->m_DisplayBPMType);
   pSteps->SetMinBPM(this->m_fSpecifiedBPMMin);
   pSteps->SetMaxBPM(this->m_fSpecifiedBPMMax);

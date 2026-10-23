@@ -1214,16 +1214,20 @@ void NoteField::DrawPrimitives() {
         }
       }
     } else {
-      AttackArray& attacks = GAMESTATE->m_bIsUsingStepTiming
-                                 ? GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks
-                                 : GAMESTATE->m_pCurSong->m_Attacks;
-      for (const Attack& a : attacks) {
-        float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
-        if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
-            BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
-            IS_ON_SCREEN(fBeat)) {
-          this->DrawAttackText(fBeat, a, text_glow);
+      auto draw_attacks = [&](const AttackArray& attacks) {
+        for (const Attack& a : attacks) {
+          float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
+          if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
+              BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
+              IS_ON_SCREEN(fBeat)) {
+            this->DrawAttackText(fBeat, a, text_glow);
+          }
         }
+      };
+
+      draw_attacks(GAMESTATE->m_pCurSong->m_Attacks);
+      if (GAMESTATE->m_bIsUsingStepTiming) {
+        draw_attacks(GAMESTATE->m_pCurSteps[PLAYER_1]->GetStepsAttacks());
       }
     }
 
