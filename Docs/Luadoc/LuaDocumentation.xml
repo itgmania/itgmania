@@ -3760,7 +3760,7 @@ NETWORK:HttpRequest{
 		If the <code>downloadFile</code> parameter is set, the response body is not accumulated in memory, but written to <code>/Downloads/${downloadFile}</code>.
 		The file is available in the <code>onResponse</code> callback where it can be unzipped/copied to another location using <code>FILEMAN:Unzip()</code>/<code>FILEMAN:Copy()</code> respectively.
 		The file is deleted once the callback returns.<br />
-		Requests run concurrently: up to <code>HttpMaxConcurrentRequests</code> requests without a <code>downloadFile</code>, and separately up to <code>HttpMaxConcurrentDownloads</code> requests with one, are in flight at once (both preferences default to 6). Further requests wait and start in the order they were made. Requests without a <code>downloadFile</code> still get their <code>onResponse</code> calls in the order the requests were made, as when they ran one at a time; requests with a <code>downloadFile</code> get theirs as each finishes. See <code>GetHttpConcurrency()</code>.
+		Requests run concurrently: up to <code>HttpMaxConcurrentRequests</code> requests without a <code>downloadFile</code>, and separately up to <code>HttpMaxConcurrentDownloads</code> requests with one, are in flight at once (both preferences default to 6, are read at startup and are kept between 1 and 32). Further requests wait and start in the order they were made. Requests without a <code>downloadFile</code> still get their <code>onResponse</code> calls in the order the requests were made, as when they ran one at a time; requests with a <code>downloadFile</code> get theirs as each finishes.
 	</Function>
 	<Function name='WebSocket' return='WebSocketHandle' arguments='table params' since='ITGmania 0.5.1'>
 		Open a WebSocket connection.<br />
@@ -3824,9 +3824,6 @@ NETWORK:WebSocket{
 	</Function>
 	<Function name='EncodeQueryParameters' return='string' arguments='table query' since='ITGmania 0.5.1'>
 		Returns the <code>query</code> encoded as a query string. Keys and values are automatically URL encoded.
-	</Function>
-	<Function name='GetHttpConcurrency' return='int, int' arguments='' since='ITGmania 1.4.0'>
-		Returns how many HTTP requests can be in flight at once: first those without a <code>downloadFile</code> (the <code>HttpMaxConcurrentRequests</code> preference), then those with one (<code>HttpMaxConcurrentDownloads</code>). Both preferences default to 6 and are read at startup.
 	</Function>
 </Class>
 <Class name='NoteSkinManager'>
