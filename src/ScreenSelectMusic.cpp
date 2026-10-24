@@ -1516,6 +1516,15 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
     } break;
   }
 
+  const bool bFinalizing =
+      GetNextSelectionState() == SelectionState_Finalized ||
+      (TWO_PART_CONFIRMS_ONLY && m_MenuTimer->GetSeconds() < 1);
+  if (bFinalizing && !GAMESTATE->IsCourseMode() &&
+      GAMESTATE->prepare_song_for_gameplay() != 0) {
+    SCREENMAN->PlayInvalidSound();
+    return true;
+  }
+
   FOREACH_ENUM(PlayerNumber, p) {
     if (!TWO_PART_SELECTION ||
         m_SelectionState == SelectionState_SelectingSteps) {
@@ -1558,7 +1567,6 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
     // Now that Steps have been chosen, set a Style that can play them.
     GAMESTATE->SetCompatibleStylesForPlayers();
     GAMESTATE->ForceSharedSidesMatch();
-    GAMESTATE->prepare_song_for_gameplay();
 
     /* If we're currently waiting on song assets, abort all except the music
      * and start the music, so if we make a choice quickly before background
