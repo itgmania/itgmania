@@ -36,7 +36,6 @@
 #include "PlayerNumber.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageUtil/Regex.h"
 #include "Song.h"
 #include "SongManager.h"
 #include "StdString.h"
@@ -814,7 +813,6 @@ std::string Steps::MinimizedChartString(const NoteData& noteData) {
   std::string minimizedNoteData = "";
 
   std::vector<std::string> measures;
-  Regex anyNote("[^0]");
 
   split(smNoteData, ",", measures, true);
   for (unsigned m = 0; m < measures.size(); m++) {
@@ -827,23 +825,18 @@ std::string Steps::MinimizedChartString(const NoteData& noteData) {
       // If every other line is all 0s, we can minimize the measure
       for (unsigned i = 1; i < lines.size(); i += 2) {
         Trim(lines[i]);
-        if (anyNote.Compare(lines[i]) == true) {
+        if (lines[i].find_first_not_of('0') != std::string::npos) {
           allZeroes = false;
           break;
         }
       }
 
       if (allZeroes) {
-        // Iterate through lines, removing every other item.
-        // Note that we're removing the odd indices, so we
-        // call `++it;` and then erase the following line
-        auto it = lines.begin();
-        while (it != lines.end()) {
-          ++it;
-          if (it != lines.end()) {
-            it = lines.erase(it);
-          }
+        // Keep the even indices, dropping every other line.
+        for (size_t i = 1; i * 2 < lines.size(); ++i) {
+          lines[i] = std::move(lines[i * 2]);
         }
+        lines.resize(lines.size() / 2);
       } else {
         minimal = true;
       }
