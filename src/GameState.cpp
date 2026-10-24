@@ -1451,6 +1451,7 @@ int GameState::prepare_song_for_gameplay() {
   for (size_t i = 0; i < files_in_dir.size(); ++i) {
     std::string& fname = files_in_dir[i];
     if (!FileCopy(from_dir + fname, to_dir + fname)) {
+      MEMCARDMAN->UnmountCard(slot_as_pn);
       return 3;
     }
   }
