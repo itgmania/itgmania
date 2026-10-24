@@ -31,16 +31,17 @@ class MemoryCardManager {
   void LockCard(
       PlayerNumber pn);  // prevent removing or changing of memory card
   void UnlockCard(PlayerNumber pn);
-  bool MountCard(PlayerNumber pn, int iTimeout = 10);
-  bool MountCard(PlayerNumber pn, const UsbStorageDevice& d, int iTimeout = 10);
-  void UnmountCard(PlayerNumber pn);
+  bool MountCard(PlayerNumber pn, int iTimeout = 15);
+  bool MountCard(PlayerNumber pn, const UsbStorageDevice& d, int iTimeout = 15);
+  void UnmountCard(PlayerNumber pn, int iTimeout = 10);
 
-  void RefreshCardAccessTimeout(float fTimeout = 10.0f);
+  void SetCardAccessTimeLimit(PlayerNumber pn, float fSeconds);
+
   bool IsMounted(PlayerNumber pn) const { return m_bMounted[pn]; }
 
   // When paused, no changes in memory card state will be noticed until
   // unpaused.
-  void PauseMountingThread(int iTimeout = 20);
+  void PauseMountingThread();
   void UnPauseMountingThread();
 
   bool GetCardLocked(PlayerNumber pn) const { return m_bCardLocked[pn]; }

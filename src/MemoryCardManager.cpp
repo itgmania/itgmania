@@ -93,8 +93,8 @@ class ThreadedMemoryCardWorker : public RageWorkerThread {
   void SetMountThreadState(MountThreadState mts);
 
   // These functions may time out.
-  bool Mount(const UsbStorageDevice* pDevice);
-  bool Unmount(const UsbStorageDevice* pDevice);
+  bool Mount(const UsbStorageDevice* pDevice, float fTimeout);
+  bool Unmount(const UsbStorageDevice* pDevice, float fTimeout);
 
   // This function will not time out.
   bool StorageDevicesChanged(std::vector<UsbStorageDevice>& aOut);
@@ -226,36 +226,34 @@ void ThreadedMemoryCardWorker::DoHeartbeat() {
   UsbStorageDevicesMutex.Unlock();
 }
 
-bool ThreadedMemoryCardWorker::Mount(const UsbStorageDevice* pDevice) {
-  ASSERT(TimeoutEnabled());
-
+bool ThreadedMemoryCardWorker::Mount(
+    const UsbStorageDevice* pDevice, float fTimeout) {
   // If we're currently in a timed-out state, fail.
   if (IsTimedOut()) {
     return false;
   }
 
   m_RequestDevice = *pDevice;
-  if (!DoRequest(REQ_MOUNT)) {
-    return false;
-  }
+  SetTimeout(fTimeout);
+  const bool bFinished = DoRequest(REQ_MOUNT);
+  SetTimeout(-1);
 
-  return m_bResult;
+  return bFinished && m_bResult;
 }
 
-bool ThreadedMemoryCardWorker::Unmount(const UsbStorageDevice* pDevice) {
-  ASSERT(TimeoutEnabled());
-
+bool ThreadedMemoryCardWorker::Unmount(
+    const UsbStorageDevice* pDevice, float fTimeout) {
   // If we're currently in a timed-out state, fail.
   if (IsTimedOut()) {
     return false;
   }
 
   m_RequestDevice = *pDevice;
-  if (!DoRequest(REQ_UNMOUNT)) {
-    return false;
-  }
+  SetTimeout(fTimeout);
+  const bool bFinished = DoRequest(REQ_UNMOUNT);
+  SetTimeout(-1);
 
-  return true;
+  return bFinished;
 }
 
 static ThreadedMemoryCardWorker* g_pWorker = nullptr;
@@ -590,10 +588,10 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int iTimeout) {
       false;  // already did
   if (bStartingMemoryCardAccess) {
     // We're starting to do stuff to the memory cards.
-    this->PauseMountingThread(iTimeout);
+    this->PauseMountingThread();
   }
 
-  if (!g_pWorker->Mount(&m_Device[pn])) {
+  if (!g_pWorker->Mount(&m_Device[pn], (float)iTimeout)) {
     LOG->Trace("MemoryCardManager::MountCard: mount failed");
     if (bStartingMemoryCardAccess) {
       this->UnPauseMountingThread();
@@ -603,6 +601,9 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int iTimeout) {
   }
 
   m_bMounted[pn] = true;
+
+  // Limit the whole access, in case the card responds, but very slowly.
+  SetCardAccessTimeLimit(pn, (float)iTimeout);
 
   RageFileDriver* pDriver =
       FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
@@ -636,7 +637,7 @@ bool MemoryCardManager::MountCard(
 
 /* Called when finished accessing a memory card.  If writes have been performed,
  * will block until flushed. */
-void MemoryCardManager::UnmountCard(PlayerNumber pn) {
+void MemoryCardManager::UnmountCard(PlayerNumber pn, int iTimeout) {
   LOG->Trace(
       "MemoryCardManager::UnmountCard(%i) (mounted: %i)", pn, m_bMounted[pn]);
   if (m_Device[pn].IsBlank()) {
@@ -647,12 +648,10 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn) {
     return;
   }
 
-  // Give unmounting a fresh timeout instead of inheriting time spent accessing
-  // the card.
-  this->RefreshCardAccessTimeout();
+  SetCardAccessTimeLimit(pn, -1);
 
   // Leave our own filesystem drivers mounted.  Unmount the kernel mount.
-  if (!g_pWorker->Unmount(&m_Device[pn])) {
+  if (!g_pWorker->Unmount(&m_Device[pn], (float)iTimeout)) {
     LOG->Warn("MemoryCardManager::UnmountCard: unmount failed");
   }
 
@@ -677,6 +676,22 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn) {
   }
 }
 
+void MemoryCardManager::SetCardAccessTimeLimit(
+    PlayerNumber pn, float fSeconds) {
+  RageFileDriver* pDriver = FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT[pn]);
+  if (pDriver == nullptr) {
+    return;
+  }
+
+  RageFileDriverTimeout* pTimeoutDriver =
+      dynamic_cast<RageFileDriverTimeout*>(pDriver);
+  if (pTimeoutDriver != nullptr) {
+    pTimeoutDriver->SetDeadline(fSeconds);
+  }
+
+  FILEMAN->ReleaseFileDriver(pDriver);
+}
+
 bool MemoryCardManager::IsNameAvailable(PlayerNumber pn) const {
   return m_Device[pn].bIsNameAvailable;
 }
@@ -685,31 +700,16 @@ std::string MemoryCardManager::GetName(PlayerNumber pn) const {
   return m_Device[pn].sName;
 }
 
-void MemoryCardManager::PauseMountingThread(int iTimeout) {
+void MemoryCardManager::PauseMountingThread() {
   LOG->Trace("MemoryCardManager::PauseMountingThread");
 
   g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::paused);
-
-  // Start the timeout period.
-  this->RefreshCardAccessTimeout((float)iTimeout);
-}
-
-// The timeout prevents a bad memory card from indefinitely stalling the game.
-// Possibly each successful file system operation could adjust the
-// timeout by some amount, but that requires a more thoughtful implementation.
-void MemoryCardManager::RefreshCardAccessTimeout(float fTimeout) {
-  g_pWorker->SetTimeout(fTimeout);
-  RageFileDriverTimeout::SetTimeout(fTimeout);
 }
 
 void MemoryCardManager::UnPauseMountingThread() {
   LOG->Trace("MemoryCardManager::UnPauseMountingThread");
 
   g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::detect_and_mount);
-
-  // End the timeout period.
-  g_pWorker->SetTimeout(-1);
-  RageFileDriverTimeout::SetTimeout(-1);
 }
 
 // lua start
