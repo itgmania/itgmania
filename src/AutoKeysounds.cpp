@@ -28,6 +28,7 @@
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
+#include "RageLog.h"
 #include "RageSoundManager.h"
 #include "RageSoundReader_Chain.h"
 #include "RageSoundReader_Extend.h"
@@ -128,6 +129,11 @@ void AutoKeysounds::LoadTracks(RageSoundReader*& pShared) {
   std::string sError;
   RageSoundReader* pSongReader =
       RageSoundReader_FileReader::OpenFile(sMusicPath, sError);
+  if (pSongReader == nullptr) {
+    LOG->Warn(
+        "Couldn't open music file %s: %s", sMusicPath.c_str(), sError.c_str());
+    return;
+  }
 
   // Load the buffering filter before the effects filters, so effects aren't
   // delayed.
