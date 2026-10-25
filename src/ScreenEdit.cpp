@@ -4613,16 +4613,10 @@ static LocalizedString NEW_KEYSOUND_FILE(
 
 void ScreenEdit::HandleMessage(const Message& msg) {
   if (msg == "Judgment") {
-    PlayerNumber pn;
-    msg.GetParam("Player", pn);
-
     if (GAMESTATE->m_pPlayerState[main_player_]
             ->m_PlayerOptions.GetCurrent()
             .m_bMuteOnError) {
-      RageSoundReader* pSoundReader = m_AutoKeysounds.GetPlayerSound(pn);
-      if (pSoundReader == nullptr) {
-        pSoundReader = m_AutoKeysounds.GetSharedSound();
-      }
+      RageSoundReader* pSoundReader = m_AutoKeysounds.GetSharedSound();
 
       HoldNoteScore hns;
       msg.GetParam("HoldNoteScore", hns);

@@ -1390,12 +1390,11 @@ void ScreenGameplay::LoadNextSong() {
 
   /* Give SoundEffectControls the new RageSoundReaders. */
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
-    RageSoundReader* pPlayerSound = m_AutoKeysounds.GetPlayerSound(pi->m_pn);
-    if (pPlayerSound == nullptr &&
-        pi->m_pn == GAMESTATE->GetMasterPlayerNumber()) {
-      pPlayerSound = m_AutoKeysounds.GetSharedSound();
-    }
-    pi->m_SoundEffectControl.SetSoundReader(pPlayerSound);
+    RageSoundReader* pSoundReader =
+        pi->m_pn == GAMESTATE->GetMasterPlayerNumber()
+            ? m_AutoKeysounds.GetSharedSound()
+            : nullptr;
+    pi->m_SoundEffectControl.SetSoundReader(pSoundReader);
   }
 
   MESSAGEMAN->Broadcast("DoneLoadingNextSong");
@@ -3031,10 +3030,7 @@ void ScreenGameplay::HandleMessage(const Message& msg) {
         continue;
       }
 
-      RageSoundReader* pSoundReader = m_AutoKeysounds.GetPlayerSound(pn);
-      if (pSoundReader == nullptr) {
-        pSoundReader = m_AutoKeysounds.GetSharedSound();
-      }
+      RageSoundReader* pSoundReader = m_AutoKeysounds.GetSharedSound();
 
       HoldNoteScore hns;
       msg.GetParam("HoldNoteScore", hns);

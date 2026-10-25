@@ -592,11 +592,6 @@ void Player::Init(
     this->AddChild(m_pNoteField);
   }
 
-  m_vbFretIsDown.resize(
-      GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)
-          ->m_iColsPerPlayer);
-  std::fill_n(m_vbFretIsDown.begin(), m_vbFretIsDown.size(), false);
-
   m_fActiveRandomAttackStart = -1.0f;
 }
 /**

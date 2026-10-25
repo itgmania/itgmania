@@ -273,13 +273,6 @@ static void WriteGlobalTags(RageFile& f, const Song& out) {
     f.PutLine(ssprintf("#PREVIEW:%s;", SmEscape(out.m_PreviewFile).c_str()));
   }
 
-  {
-    std::vector<std::string> vs = out.GetInstrumentTracksToVectorString();
-    if (!vs.empty()) {
-      std::string s = join(",", vs);
-      f.PutLine("#INSTRUMENTTRACK:" + s + ";\n");
-    }
-  }
   f.PutLine(
       ssprintf("#OFFSET:%.6f;", out.m_SongTiming.m_fBeat0OffsetInSeconds));
   f.PutLine(ssprintf("#SAMPLESTART:%.6f;", out.m_fMusicSampleStartSeconds));

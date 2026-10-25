@@ -134,9 +134,6 @@ void SetMusic(SongTagInfo& info) {
 void SetPreview(SongTagInfo& info) {
   info.song->m_PreviewFile = (*info.params)[1];
 }
-void SetInstrumentTrack(SongTagInfo& info) {
-  info.loader->ProcessInstrumentTracks(*info.song, (*info.params)[1]);
-}
 void SetLastSecondHint(SongTagInfo& info) {
   info.song->SetSpecifiedLastSecond(StringToFloat((*info.params)[1]));
 }
@@ -612,7 +609,6 @@ struct ssc_parser_helper_t {
     song_tag_handlers["CDTITLE"] = &SetCDTitle;
     song_tag_handlers["MUSIC"] = &SetMusic;
     song_tag_handlers["PREVIEW"] = &SetPreview;
-    song_tag_handlers["INSTRUMENTTRACK"] = &SetInstrumentTrack;
     song_tag_handlers["LASTSECONDHINT"] = &SetLastSecondHint;
     song_tag_handlers["SAMPLESTART"] = &SetSampleStart;
     song_tag_handlers["SAMPLELENGTH"] = &SetSampleLength;

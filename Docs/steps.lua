@@ -56,15 +56,6 @@ local MetaData = {
 	CDTitle = "",
 	DisplayBPM = { 150, 300 }, -- can be either an array of two values to cycle or 'Random'
 	FormatRevision = 2,
-	InstrumentTracks = {
-		-- guitar hero/rock band
-		Guitar = "guitar.ogg",
-		Rhythm = "rhythm.ogg",
-		Bass = "bass.ogg",
-		-- dj hero
-		LeftDeck = "left.ogg",
-		RightDeck = "right.ogg",
-	},
 	Keysounds = {}, -- I forget exactly how the SM format does this, but it'll be similar here.
 	LeadOut = 3,
 	Warps = { 5 = 4, 10 = 4 },

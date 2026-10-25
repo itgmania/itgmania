@@ -111,9 +111,6 @@ void SMSetTimeSignatures(SMSongTagInfo& info) {
 void SMSetTickCounts(SMSongTagInfo& info) {
   info.loader->ProcessTickcounts(info.song->m_SongTiming, (*info.params)[1]);
 }
-void SMSetInstrumentTrack(SMSongTagInfo& info) {
-  info.loader->ProcessInstrumentTracks(*info.song, (*info.params)[1]);
-}
 void SMSetSampleStart(SMSongTagInfo& info) {
   info.song->m_fMusicSampleStartSeconds = HHMMSSToSeconds((*info.params)[1]);
 }
@@ -213,7 +210,6 @@ struct sm_parser_helper_t {
     song_tag_handlers["DELAYS"] = &SMSetDelays;
     song_tag_handlers["TIMESIGNATURES"] = &SMSetTimeSignatures;
     song_tag_handlers["TICKCOUNTS"] = &SMSetTickCounts;
-    song_tag_handlers["INSTRUMENTTRACK"] = &SMSetInstrumentTrack;
     song_tag_handlers["SAMPLESTART"] = &SMSetSampleStart;
     song_tag_handlers["SAMPLELENGTH"] = &SMSetSampleLength;
     song_tag_handlers["DISPLAYBPM"] = &SMSetDisplayBPM;
@@ -401,21 +397,6 @@ void SMLoader::ProcessAttacks(AttackArray& attacks, MsdFile::value_t params) {
       }
 
       attacks.push_back(attack);
-    }
-  }
-}
-
-void SMLoader::ProcessInstrumentTracks(Song& out, const std::string& sParam) {
-  std::vector<std::string> vs1;
-  split(sParam, ",", vs1);
-  for (const std::string& s : vs1) {
-    std::vector<std::string> vs2;
-    split(s, "=", vs2);
-    if (vs2.size() >= 2) {
-      InstrumentTrack it = StringToInstrumentTrack(vs2[0]);
-      if (it != InstrumentTrack_Invalid) {
-        out.m_sInstrumentTrackFile[it] = vs2[1];
-      }
     }
   }
 }

@@ -228,8 +228,6 @@ class Player : public ActorFrame {
 
   float m_fActiveRandomAttackStart;
 
-  std::vector<bool> m_vbFretIsDown;
-
   std::vector<RageSound> m_vKeysounds;
 
   ThemeMetric<float> GRAY_ARROWS_Y_STANDARD;
