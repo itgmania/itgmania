@@ -1,8 +1,6 @@
 #ifndef AUTO_KEYSOUNDS_H
 #define AUTO_KEYSOUNDS_H
 
-#include <vector>
-
 #include "NoteData.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"
@@ -13,7 +11,6 @@ class RageSoundReader_Chain;
 class AutoKeysounds {
  public:
   void Load(PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly);
-  void Update(float fDelta);
   /** @brief Finish loading the main sounds, and setup the auto keysounds if
    * any. */
   void FinishLoading();
@@ -25,7 +22,6 @@ class AutoKeysounds {
   static void LoadTracks(RageSoundReader*& pShared);
 
   NoteData m_ndAutoKeysoundsOnly[NUM_PLAYERS];
-  std::vector<RageSound> m_vKeysounds;
   RageSound m_sSound;
   RageSoundReader* m_pSharedSound;  // owned by m_sSound
 };

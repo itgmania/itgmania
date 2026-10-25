@@ -173,45 +173,6 @@ void AutoKeysounds::FinishLoading() {
   m_sSound.LoadSoundReader(m_pSharedSound);
 }
 
-void AutoKeysounds::Update(float fDelta) {
-  // Play keysounds for crossed rows.
-  /*
-          bool bCrossedABeat = false;
-          {
-                  float fPositionSeconds = GAMESTATE->m_fMusicSeconds;
-                  float fSongBeat =
-     GAMESTATE->m_pCurSong->GetBeatFromElapsedTime( fPositionSeconds );
-
-                  int iRowNow = BeatToNoteRowNotRounded( fSongBeat );
-                  iRowNow = std::max( 0, iRowNow );
-                  static int iRowLastCrossed = 0;
-
-                  float fBeatLast = std::round(NoteRowToBeat(iRowLastCrossed));
-                  float fBeatNow = std::round(NoteRowToBeat(iRowNow));
-
-                  bCrossedABeat = fBeatLast != fBeatNow;
-
-                  FOREACH_EnabledPlayer( pn )
-                  {
-                          const NoteData &nd = m_ndAutoKeysoundsOnly[pn];
-
-                          for( int t=0; t<nd.GetNumTracks(); t++ )
-                          {
-                                  FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE( nd, t, r,
-     iRowLastCrossed+1, iRowNow )
-                                  {
-                                          const TapNote &tn = nd.GetTapNote( t,
-     r ); ASSERT( tn.type == TapNoteType_AutoKeysound ); if( tn.bKeysound )
-                                                  m_vKeysounds[tn.iKeysoundIndex].Play();
-                                  }
-                          }
-                  }
-
-                  iRowLastCrossed = iRowNow;
-          }
-  */
-}
-
 /*
  * (c) 2004 Chris Danford, Glenn Maynard
  * All rights reserved.
