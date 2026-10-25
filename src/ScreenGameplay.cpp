@@ -1730,7 +1730,6 @@ void ScreenGameplay::Update(float fDeltaTime) {
   // m_Music.GetPositionSeconds = %f", m_fOffsetInBeats, m_fBeatsPerSecond,
   // m_Music.GetPositionSeconds() );
 
-  m_AutoKeysounds.Update(fDeltaTime);
   const Style* pStyle =
       GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
   const bool bSharedSides =
