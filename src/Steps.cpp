@@ -499,9 +499,6 @@ void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
 
 void Steps::ChangeFilenamesForCustomSong() {
   m_sFilename = custom_songify_path(m_sFilename);
-  if (!m_MusicFile.empty()) {
-    m_MusicFile = custom_songify_path(m_MusicFile);
-  }
 }
 
 void Steps::Decompress() const { const_cast<Steps*>(this)->Decompress(); }
