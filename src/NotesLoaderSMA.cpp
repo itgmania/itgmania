@@ -237,10 +237,6 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
       out.m_sMusicFile = sParams[1];
     }
 
-    else if (sValueName == "INSTRUMENTTRACK") {
-      SMLoader::ProcessInstrumentTracks(out, sParams[1]);
-    }
-
     else if (sValueName == "MUSICLENGTH") {
       continue;
     }

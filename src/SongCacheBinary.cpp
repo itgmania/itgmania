@@ -392,8 +392,6 @@ void WriteSong(Writer& w, const Song& song) {
   w.F32(song.GetLastSecondNoOffset());
   w.F32(song.GetSpecifiedLastSecond());
 
-  FOREACH_ENUM(InstrumentTrack, it) { w.Str(song.m_sInstrumentTrackFile[it]); }
-
   w.U32(static_cast<uint32_t>(song.m_vsKeysoundFile.size()));
   for (const std::string& s : song.m_vsKeysoundFile) {
     w.Str(s);
@@ -438,10 +436,6 @@ void ReadSong(Reader& r, Song& song) {
   song.SetFirstSecondNoOffset(r.F32());
   song.SetLastSecondNoOffset(r.F32());
   song.SetSpecifiedLastSecond(r.F32());
-
-  FOREACH_ENUM(InstrumentTrack, it) {
-    song.m_sInstrumentTrackFile[it] = r.Str();
-  }
 
   const uint32_t keysoundCount = r.Count();
   song.m_vsKeysoundFile.reserve(keysoundCount);

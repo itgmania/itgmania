@@ -46,17 +46,6 @@ enum BackgroundLayer {
 /** @brief A custom foreach loop for the different background layers. */
 #define FOREACH_BackgroundLayer(bl) FOREACH_ENUM(BackgroundLayer, bl)
 
-/** @brief Different instrument tracks for band type games. */
-enum InstrumentTrack {
-  InstrumentTrack_Guitar,
-  InstrumentTrack_Rhythm,
-  InstrumentTrack_Bass,
-  NUM_InstrumentTrack,
-  InstrumentTrack_Invalid
-};
-const std::string& InstrumentTrackToString(InstrumentTrack it);
-InstrumentTrack StringToInstrumentTrack(const std::string& s);
-
 /** @brief The collection of lyrics for the Song. */
 struct LyricSegment {
   float m_fStartTime;   /** @brief When does the lyric show up? */
@@ -240,7 +229,6 @@ class Song {
 
   std::string m_sMusicFile;
   std::string m_PreviewFile;
-  std::string m_sInstrumentTrackFile[NUM_InstrumentTrack];
 
   /** @brief The length of the music file. */
   float m_fMusicLengthSeconds;
@@ -267,7 +255,6 @@ class Song {
   static std::string GetSongAssetPath(
       std::string sPath, const std::string& sSongPath);
   std::string GetMusicPath() const;
-  std::string GetInstrumentTrackPath(InstrumentTrack it) const;
   std::string GetBannerPath() const;
   std::string GetJacketPath() const;
   std::string GetCDImagePath() const;
@@ -285,7 +272,6 @@ class Song {
   bool m_bHasMusic, m_bHasBanner, m_bHasBackground;
 
   bool HasMusic() const;
-  bool HasInstrumentTrack(InstrumentTrack it) const;
   /**
    * @brief Does this song have a banner?
    * @return true if it does, false otherwise. */
@@ -360,8 +346,6 @@ class Song {
   std::vector<BackgroundChange>& GetBackgroundChanges(BackgroundLayer bl);
   const std::vector<BackgroundChange>& GetForegroundChanges() const;
   std::vector<BackgroundChange>& GetForegroundChanges();
-
-  std::vector<std::string> GetInstrumentTracksToVectorString() const;
 
   /**
    * @brief The list of LyricSegments.

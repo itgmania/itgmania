@@ -169,7 +169,6 @@ struct SMLoader {
    * @param attacks the attacks array.
    * @param params the params from the simfile. */
   void ProcessAttacks(AttackArray& attacks, MsdFile::value_t params);
-  void ProcessInstrumentTracks(Song& out, const std::string& sParam);
 
   /**
    * @brief Convert a row value to the proper beat value.

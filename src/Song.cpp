@@ -65,7 +65,7 @@
  * @brief The internal version of the cache for StepMania.
  *
  * Increment this value to invalidate the current cache. */
-const int FILE_CACHE_VERSION = 233;
+const int FILE_CACHE_VERSION = 234;
 
 /** @brief How long does a song sample last by default? */
 const float DEFAULT_MUSIC_SAMPLE_LENGTH = 12.f;
@@ -74,14 +74,6 @@ static Preference<float> g_fLongVerSongSeconds("LongVerSongSeconds", 60 * 2.5f);
 static Preference<float> g_fMarathonVerSongSeconds(
     "MarathonVerSongSeconds", 60 * 5.f);
 static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
-
-static const char* InstrumentTrackNames[] = {
-    "Guitar",
-    "Rhythm",
-    "Bass",
-};
-XToString(InstrumentTrack);
-StringToX(InstrumentTrack);
 
 Song::Song() {
   FOREACH_BackgroundLayer(i) m_BackgroundChanges[i] =
@@ -657,11 +649,6 @@ void Song::TidyUpData(
   ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir);  // meaningless
   FixupPath(m_sSongDir, "");
   FixupPath(m_sMusicFile, m_sSongDir);
-  FOREACH_ENUM(InstrumentTrack, i) {
-    if (!m_sInstrumentTrackFile[i].empty()) {
-      FixupPath(m_sInstrumentTrackFile[i], m_sSongDir);
-    }
-  }
   FixupPath(m_sBannerFile, m_sSongDir);
   FixupPath(m_sJacketFile, m_sSongDir);
   FixupPath(m_sCDFile, m_sSongDir);
@@ -1567,10 +1554,6 @@ bool Song::HasMusic() const {
 bool Song::HasBanner() const {
   return m_sBannerFile != "" && IsAFile(GetBannerPath());
 }
-bool Song::HasInstrumentTrack(InstrumentTrack it) const {
-  return m_sInstrumentTrackFile[it] != "" &&
-         IsAFile(GetInstrumentTrackPath(it));
-}
 bool Song::HasLyrics() const {
   return m_sLyricsFile != "" && IsAFile(GetLyricsPath());
 }
@@ -1641,17 +1624,6 @@ std::string Song::GetCacheFile(std::string sType) {
   return "";
 }
 
-std::vector<std::string> Song::GetInstrumentTracksToVectorString() const {
-  std::vector<std::string> ret;
-  FOREACH_ENUM(InstrumentTrack, it) {
-    if (this->HasInstrumentTrack(it)) {
-      ret.push_back(
-          InstrumentTrackToString(it) + "=" + this->m_sInstrumentTrackFile[it]);
-    }
-  }
-  return ret;
-}
-
 std::string Song::GetSongAssetPath(
     std::string sPath, const std::string& sSongPath) {
   if (sPath == "") {
@@ -1691,10 +1663,6 @@ std::string Song::GetSongAssetPath(
  * compatibility with DWI. We prefer paths relative to the song directory. */
 std::string Song::GetMusicPath() const {
   return GetSongAssetPath(m_sMusicFile, m_sSongDir);
-}
-
-std::string Song::GetInstrumentTrackPath(InstrumentTrack it) const {
-  return GetSongAssetPath(m_sInstrumentTrackFile[it], m_sSongDir);
 }
 
 std::string Song::GetBannerPath() const {
