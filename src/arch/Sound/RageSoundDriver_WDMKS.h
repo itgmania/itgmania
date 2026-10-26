@@ -26,13 +26,16 @@ class RageSoundDriver_WDMKS : public RageSoundDriver {
   static int MixerThread_start(void* p);
   void MixerThread();
   bool Fill(int iPacket, std::string& sError);
-  void Read(void* pData, int iFrames, int iLastCursorPos, int iCurrentFrame);
+  void Read(
+      void* pData, int iFrames, int64_t iLastCursorPos, int64_t iCurrentFrame);
 
   RageThread MixingThread;
   void SetupDecodingThread();
 
   bool m_bShutdown;
-  int m_iLastCursorPos;
+  // Frames submitted since the stream started. 64-bit: the mixer writes
+  // nonstop, so an int ran out after 12-13 hours of uptime.
+  int64_t m_iLastCursorPos;
 
   HANDLE m_hSignal;
   WinWdmStream* m_pStream;

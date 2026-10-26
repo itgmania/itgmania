@@ -1171,7 +1171,7 @@ void MapSampleFormatFromInt16(
 }  // namespace
 
 void RageSoundDriver_WDMKS::Read(
-    void* pData, int iFrames, int iLastCursorPos, int iCurrentFrame) {
+    void* pData, int iFrames, int64_t iLastCursorPos, int64_t iCurrentFrame) {
   /* If we need conversion, read into a temporary buffer.  Otherwise, read
    * directly into the target buffer. */
   int iChannels = 2;
@@ -1212,7 +1212,7 @@ void RageSoundDriver_WDMKS::Read(
 }
 
 bool RageSoundDriver_WDMKS::Fill(int iPacket, std::string& sError) {
-  uint64_t iCurrentFrame = GetPosition();
+  const int64_t iCurrentFrame = GetPosition();
   //	if( iCurrentFrame == m_iLastCursorPos )
   //		LOG->Trace( "underrun" );
 
