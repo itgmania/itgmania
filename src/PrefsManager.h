@@ -322,6 +322,8 @@ class PrefsManager {
   Preference<std::string> m_sAdditionalFoldersReadOnly;
   Preference<std::string> m_sAdditionalFoldersWritable;
 
+  // First song selected when entering the Select Music Screen.
+  Preference<std::string> m_sDefaultSong;
   // failsafe
   Preference<std::string> m_sDefaultTheme;
 
