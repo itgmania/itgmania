@@ -1,4 +1,5 @@
 #include "RageSoundDriver_WASAPI.h"
+
 #include "RageSoundDriver_WASAPI_SubDriver.h"
 
 // clang-format off
@@ -11,9 +12,9 @@
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "arch/arch_default.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
-#include "arch/arch_default.h"
 #include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
@@ -91,12 +92,14 @@ bool RageSoundDriver_WASAPI::TrySubDriver(
   std::unique_ptr<WasapiSubDriver> pCandidateSubDriver =
       CreateWasapiSubDriverByName(sSubDriverName);
   if (!pCandidateSubDriver) {
-    LOG->Warn("WASAPI: Unknown subdriver '%s'; skipping", sSubDriverName.c_str());
+    LOG->Warn(
+        "WASAPI: Unknown subdriver '%s'; skipping", sSubDriverName.c_str());
     return false;
   }
 
-  LOG->Info("WASAPI: Attempting to initialize `%s` mode",
-            pCandidateSubDriver->GetModeName());
+  LOG->Info(
+      "WASAPI: Attempting to initialize `%s` mode",
+      pCandidateSubDriver->GetModeName());
 
   HRESULT hrSub = pCandidateSubDriver->InitializeStream(params);
   if (SUCCEEDED(hrSub)) {
@@ -106,12 +109,13 @@ bool RageSoundDriver_WASAPI::TrySubDriver(
   }
 
   if (hrSub == S_FALSE) {
-    LOG->Info("WASAPI: %s mode unavailable; trying fallback mode",
-              pCandidateSubDriver->GetModeName());
+    LOG->Info(
+        "WASAPI: %s mode unavailable; trying fallback mode",
+        pCandidateSubDriver->GetModeName());
   } else {
-    LOG->Warn(hr_ssprintf(hrSub,
-                          "WASAPI: %s mode unsuccessful; trying fallback mode",
-                          pCandidateSubDriver->GetModeName())
+    LOG->Warn(hr_ssprintf(
+                  hrSub, "WASAPI: %s mode unsuccessful; trying fallback mode",
+                  pCandidateSubDriver->GetModeName())
                   .c_str());
   }
 
@@ -160,8 +164,9 @@ void RageSoundDriver_WASAPI::BuildSubDriverTryOrder(
     }
   }
 
-  LOG->Info("WASAPI: Resolved WASAPISubDriverOrder: %s",
-            join(",", asSubDriverNames).c_str());
+  LOG->Info(
+      "WASAPI: Resolved WASAPISubDriverOrder: %s",
+      join(",", asSubDriverNames).c_str());
 }
 
 bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
@@ -306,9 +311,8 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   LOG->Info("WASAPI: Reported audio play latency: %f", reportedPlayLatency);
   LOG->Info(
       "WASAPI: %s mode, %d channels, %d Hz, %s, buffer size %d frames",
-      m_pSubDriver ? m_pSubDriver->GetModeName() : "Unknown",
-      iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
-      m_iBufferSizeFrames);
+      m_pSubDriver ? m_pSubDriver->GetModeName() : "Unknown", iChannels,
+      m_iSampleRate, m_bFloat ? "Float" : "Int16", m_iBufferSizeFrames);
 
   return true;
 }
@@ -425,7 +429,8 @@ void RageSoundDriver_WASAPI::MixerThread() {
     }
 
     int64_t iCurrentFrame = GetPosition();
-    if (!WriteFrames(framesAvailable, iHardwareFrame, iCurrentFrame, "streaming")) {
+    if (!WriteFrames(
+            framesAvailable, iHardwareFrame, iCurrentFrame, "streaming")) {
       continue;
     }
     iHardwareFrame += framesAvailable;

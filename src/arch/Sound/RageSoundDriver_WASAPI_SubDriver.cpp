@@ -1,12 +1,11 @@
+#include "RageSoundDriver_WASAPI_SubDriver.h"
+
 #include <map>
 
-#include "RageSoundDriver_WASAPI_SubDriver.h"
 #include "RageUtil.h"
 
-
 namespace {
-using WasapiSubDriverRegistry =
-    std::map<std::string, WasapiSubDriverFactory>;
+using WasapiSubDriverRegistry = std::map<std::string, WasapiSubDriverFactory>;
 
 WasapiSubDriverRegistry& GetWasapiSubDriverRegistry() {
   static WasapiSubDriverRegistry registry;

@@ -9,7 +9,6 @@ REFERENCE_TIME FramesToHnsDuration(UINT32 iFrames, int iSampleRate) {
   return (REFERENCE_TIME)iFrames * 10000000ULL / iSampleRate;
 }
 
-
 class WasapiSharedSubDriver : public WasapiSubDriver {
  public:
   const char* GetModeName() const override { return "Shared"; }
@@ -28,6 +27,3 @@ class WasapiSharedSubDriver : public WasapiSubDriver {
 };
 REGISTER_WASAPI_SUBDRIVER("Shared", WasapiSharedSubDriver);
 }  // namespace
-
-
-

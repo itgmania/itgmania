@@ -1,5 +1,5 @@
-#include "RageSoundDriver_WASAPI_SubDriver.h"
 #include "RageLog.h"
+#include "RageSoundDriver_WASAPI_SubDriver.h"
 
 namespace {
 class WasapiSharedLLSubDriver : public WasapiSubDriver {
@@ -24,8 +24,7 @@ class WasapiSharedLLSubDriver : public WasapiSubDriver {
         params.pWaveFormat, &iDefaultPeriodFrames, &iFundamentalPeriodFrames,
         &iMinPeriodFrames, &iMaxPeriodFrames);
     if (FAILED(hr)) {
-      LOG->Warn(
-          "WASAPI: Shared LowLatency - GetSharedModeEnginePeriod failed");
+      LOG->Warn("WASAPI: Shared LowLatency - GetSharedModeEnginePeriod failed");
       pAudioClient3->Release();
       return S_FALSE;
     }
@@ -51,8 +50,8 @@ class WasapiSharedLLSubDriver : public WasapiSubDriver {
     LOG->Info(
         "WASAPI: Shared LowLatency attempting to initialize using parameters "
         "(period=%u, min=%u, default=%u, max=%u, fundamental=%u)",
-        iPeriodFrames, iMinPeriodFrames, iDefaultPeriodFrames,
-        iMaxPeriodFrames, iFundamentalPeriodFrames);
+        iPeriodFrames, iMinPeriodFrames, iDefaultPeriodFrames, iMaxPeriodFrames,
+        iFundamentalPeriodFrames);
 
     hr = pAudioClient3->InitializeSharedAudioStream(
         AUDCLNT_STREAMFLAGS_EVENTCALLBACK, iPeriodFrames, params.pWaveFormat,
@@ -81,5 +80,3 @@ class WasapiSharedLLSubDriver : public WasapiSubDriver {
 };
 REGISTER_WASAPI_SUBDRIVER("LowestLatency", WasapiSharedLLSubDriver);
 }  // namespace
-
-
