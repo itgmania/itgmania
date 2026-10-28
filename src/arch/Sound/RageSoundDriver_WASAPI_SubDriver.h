@@ -16,6 +16,9 @@ struct WasapiInitParams {
   int iWriteAheadFrames;
 };
 
+#define REGISTER_WASAPI_SUBDRIVER(name, x) \
+  static WasapiSubDriverRegistration<x> register_wasapi_subdriver_##x(name)
+
 class WasapiSubDriver {
  public:
   virtual ~WasapiSubDriver() = default;
@@ -26,11 +29,20 @@ class WasapiSubDriver {
   virtual bool RequiresInitialFill() const = 0;
 };
 
-std::unique_ptr<WasapiSubDriver> CreateWasapiSharedSubDriver();
-std::unique_ptr<WasapiSubDriver> CreateWasapiSharedLLSubDriver();
-std::unique_ptr<WasapiSubDriver> CreateWasapiExclusiveSubDriver();
+using WasapiSubDriverFactory = std::unique_ptr<WasapiSubDriver> (*)();
+void RegisterWasapiSubDriver(
+    const std::string& sName, WasapiSubDriverFactory pFactory);
+
+template <class T>
+class WasapiSubDriverRegistration {
+ public:
+  explicit WasapiSubDriverRegistration(const char* sName) {
+    RegisterWasapiSubDriver(sName, []() -> std::unique_ptr<WasapiSubDriver> {
+      return std::make_unique<T>();
+    });
+  }
+};
+
 std::unique_ptr<WasapiSubDriver> CreateWasapiSubDriverByName(
     const std::string& sName);
-const char* GetWasapiSubDriverValidNames();
-
 #endif

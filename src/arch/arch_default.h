@@ -28,6 +28,26 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
   return soundDriverList;
 }
 
+inline const std::vector<std::string>& GetDefaultWASAPISubDriverList() {
+  static const std::vector<std::string> wasapiSubDriverList = {
+      "LowestLatency", "Shared", "Exclusive"};
+  return wasapiSubDriverList;
+}
+
+inline const std::string& GetDefaultWASAPISubDriverOrder() {
+  static const std::string soundSubDriverOrder = []() {
+    std::string csv;
+    for (const std::string& name : GetDefaultWASAPISubDriverList()) {
+      if (!csv.empty()) {
+        csv += ',';
+      }
+      csv += name;
+    }
+    return csv;
+  }();
+  return soundSubDriverOrder;
+}
+
 #elif defined(MACOSX)
 #include "ArchHooks/ArchHooks_MacOSX.h"
 #include "LoadingWindow/LoadingWindow_MacOSX.h"
