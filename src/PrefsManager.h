@@ -332,7 +332,9 @@ class PrefsManager {
   Preference<int> m_iSoundWriteAhead;
   Preference<std::string> m_iSoundDevice;
   Preference<int> m_iSoundPreferredSampleRate;
+#if defined(_WIN32)
   Preference<std::string> m_sWASAPISubDriverOrder;
+#endif
   Preference<std::string> m_sLightsStepsDifficulty;
   Preference<bool> m_bLightsSimplifyBass;
   Preference<bool> m_bLightsBassParallel;

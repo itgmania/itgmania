@@ -11,7 +11,6 @@
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "StdString.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
@@ -26,7 +25,7 @@ const std::string* MatchCanonicalName(
   Trim(sTrimmed);
 
   for (const std::string& sCanonicalName : asCanonicalNames) {
-    if (EqualsNoCase(sTrimmed, sCanonicalName)) {
+    if (sTrimmed == sCanonicalName) {
       return &sCanonicalName;
     }
   }

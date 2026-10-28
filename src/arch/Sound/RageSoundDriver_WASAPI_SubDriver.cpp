@@ -1,10 +1,9 @@
 #include "RageSoundDriver_WASAPI_SubDriver.h"
 
 #include "RageUtil.h"
-#include "StdString.h"
 
 namespace {
-const char* const kWasapiSubDriverSharedLL = "SharedLL";
+const char* const kWasapiSubDriverSharedLowLatency = "LowestLatency";
 const char* const kWasapiSubDriverShared = "Shared";
 const char* const kWasapiSubDriverExclusive = "Exclusive";
 }  // namespace
@@ -14,15 +13,15 @@ std::unique_ptr<WasapiSubDriver> CreateWasapiSubDriverByName(
   std::string sCanonicalName = sName;
   Trim(sCanonicalName);
 
-  if (EqualsNoCase(sCanonicalName, kWasapiSubDriverSharedLL)) {
+  if (sCanonicalName == kWasapiSubDriverSharedLowLatency) {
     return CreateWasapiSharedLLSubDriver();
   }
 
-  if (EqualsNoCase(sCanonicalName, kWasapiSubDriverShared)) {
+  if (sCanonicalName == kWasapiSubDriverShared) {
     return CreateWasapiSharedSubDriver();
   }
 
-  if (EqualsNoCase(sCanonicalName, kWasapiSubDriverExclusive)) {
+  if (sCanonicalName == kWasapiSubDriverExclusive) {
     return CreateWasapiExclusiveSubDriver();
   }
 
@@ -30,5 +29,9 @@ std::unique_ptr<WasapiSubDriver> CreateWasapiSubDriverByName(
 }
 
 const char* GetWasapiSubDriverValidNames() {
-  return "SharedLL,Shared,Exclusive";
+  static const std::string names =
+      std::string(kWasapiSubDriverSharedLowLatency) + "," +
+      kWasapiSubDriverShared + "," +
+      kWasapiSubDriverExclusive;
+  return names.c_str();
 }
