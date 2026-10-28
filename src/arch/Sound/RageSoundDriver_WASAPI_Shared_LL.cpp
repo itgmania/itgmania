@@ -1,5 +1,4 @@
 #include "RageSoundDriver_WASAPI_SubDriver.h"
-
 #include "RageLog.h"
 
 namespace {
@@ -80,8 +79,7 @@ class WasapiSharedLLSubDriver : public WasapiSubDriver {
   bool UsesPaddingFrames() const override { return true; }
   bool RequiresInitialFill() const override { return false; }
 };
+REGISTER_WASAPI_SUBDRIVER("LowestLatency", WasapiSharedLLSubDriver);
 }  // namespace
 
-std::unique_ptr<WasapiSubDriver> CreateWasapiSharedLLSubDriver() {
-  return std::make_unique<WasapiSharedLLSubDriver>();
-}
+

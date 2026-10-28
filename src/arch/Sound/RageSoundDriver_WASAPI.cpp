@@ -13,6 +13,7 @@
 #include "RageUtil.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
+#include "arch/arch_default.h"
 #include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
@@ -133,11 +134,10 @@ void RageSoundDriver_WASAPI::BuildSubDriverTryOrder(
     std::vector<std::string>& asSubDriverNames) const {
   asSubDriverNames.clear();
 
-  std::vector<std::string> asDefaultOrder;
-  split(GetWasapiSubDriverValidNames(), ",", asDefaultOrder, true);
+  std::vector<std::string> asDefaultOrder = GetDefaultWASAPISubDriverList();
 
   std::vector<std::string> asPreferredNames;
-  split(PREFSMAN->m_sWASAPISubDriverOrder.Get(), ",", asPreferredNames, true);
+  split(PREFSMAN->m_sSoundSubDriverOrder.Get(), ",", asPreferredNames, true);
 
   for (const std::string& sPreferredName : asPreferredNames) {
     const std::string* psCanonicalName =

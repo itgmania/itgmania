@@ -1,7 +1,5 @@
 #include "RageSoundDriver_WASAPI_SubDriver.h"
 
-#include "PrefsManager.h"
-
 namespace {
 REFERENCE_TIME FramesToHnsDuration(UINT32 iFrames, int iSampleRate) {
   if (iFrames == 0 || iSampleRate <= 0) {
@@ -10,6 +8,7 @@ REFERENCE_TIME FramesToHnsDuration(UINT32 iFrames, int iSampleRate) {
 
   return (REFERENCE_TIME)iFrames * 10000000ULL / iSampleRate;
 }
+
 
 class WasapiSharedSubDriver : public WasapiSubDriver {
  public:
@@ -27,8 +26,8 @@ class WasapiSharedSubDriver : public WasapiSubDriver {
   bool UsesPaddingFrames() const override { return true; }
   bool RequiresInitialFill() const override { return false; }
 };
+REGISTER_WASAPI_SUBDRIVER("Shared", WasapiSharedSubDriver);
 }  // namespace
 
-std::unique_ptr<WasapiSubDriver> CreateWasapiSharedSubDriver() {
-  return std::make_unique<WasapiSharedSubDriver>();
-}
+
+

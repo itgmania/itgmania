@@ -17,8 +17,8 @@
 #include "XmlFile.h"
 #include "global.h"
 
-#if defined(_WIN32)
-#include "arch/Sound/RageSoundDriver_WASAPI_SubDriver.h"
+#if defined(WINDOWS)
+#include "arch/arch_default.h"
 #endif
 
 // DEFAULTS_INI_PATH	= "Data/Defaults.ini";		// these can be
@@ -315,9 +315,9 @@ PrefsManager::PrefsManager()
       m_iSoundWriteAhead("SoundWriteAhead", 0),
       m_iSoundDevice("SoundDevice", ""),
       m_iSoundPreferredSampleRate("SoundPreferredSampleRate", 0),
-#if defined(_WIN32)
-      m_sWASAPISubDriverOrder(
-          "WASAPISubDriverOrder", GetWasapiSubDriverValidNames()),
+#if defined(WINDOWS)
+      m_sSoundSubDriverOrder(
+          "SoundSubDriverOrder", GetDefaultWASAPISubDriverOrder()),
 #endif
       m_sLightsStepsDifficulty("LightsStepsDifficulty", "hard,medium"),
       m_bLightsSimplifyBass("LightsSimplifyBass", false),

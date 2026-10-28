@@ -36,11 +36,12 @@ class WasapiExclusiveSubDriver : public WasapiSubDriver {
       selectedFormat.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
       selectedFormat.Format.wBitsPerSample = 16;
       selectedFormat.Samples.wValidBitsPerSample = 16;
-      selectedFormat.Format.nBlockAlign =
-          selectedFormat.Format.nChannels *
-          selectedFormat.Format.wBitsPerSample / 8;
+      selectedFormat.Format.nBlockAlign = selectedFormat.Format.nChannels *
+                                          selectedFormat.Format.wBitsPerSample /
+                                          8;
       selectedFormat.Format.nAvgBytesPerSec =
-          selectedFormat.Format.nSamplesPerSec * selectedFormat.Format.nBlockAlign;
+          selectedFormat.Format.nSamplesPerSec *
+          selectedFormat.Format.nBlockAlign;
 
       hr = params.pAudioClient->IsFormatSupported(
           AUDCLNT_SHAREMODE_EXCLUSIVE, pSelectedFormat, nullptr);
@@ -62,7 +63,8 @@ class WasapiExclusiveSubDriver : public WasapiSubDriver {
       hnsRequestedDuration =
           hnsMinimumPeriod ? hnsMinimumPeriod : hnsDefaultPeriod;
       LOG->Info(
-          "WASAPI: Exclusive hnsDuration: (Requested:%lld), (Min:%lld), (Default:%lld)",
+          "WASAPI: Exclusive hnsDuration: (Requested:%lld), (Min:%lld), "
+          "(Default:%lld)",
           hnsRequestedDuration, hnsMinimumPeriod, hnsDefaultPeriod);
     }
 
@@ -73,7 +75,8 @@ class WasapiExclusiveSubDriver : public WasapiSubDriver {
       return hr;
     }
 
-    // set params.pWaveFormat to the actual format we are using, since we succeeded.
+    // set params.pWaveFormat to the actual format we are using, since we
+    // succeeded.
     *reinterpret_cast<WAVEFORMATEXTENSIBLE*>(params.pWaveFormat) =
         selectedFormat;
     return S_OK;
@@ -82,8 +85,5 @@ class WasapiExclusiveSubDriver : public WasapiSubDriver {
   bool UsesPaddingFrames() const override { return false; }
   bool RequiresInitialFill() const override { return true; }
 };
+REGISTER_WASAPI_SUBDRIVER("Exclusive", WasapiExclusiveSubDriver);
 }  // namespace
-
-std::unique_ptr<WasapiSubDriver> CreateWasapiExclusiveSubDriver() {
-  return std::make_unique<WasapiExclusiveSubDriver>();
-}
