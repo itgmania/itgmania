@@ -81,41 +81,103 @@ static int g_iDemandRefcount = 0;
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
 static RageMutex g_ImageCacheMutex("ImageCache");
 
+// Helpers for IMGCACHE_LOW_RES_LOAD_ON_DEMAND (FIFO with a memory limit).
+namespace {
+struct OnDemandUse {
+  RageTextureID id;  // the ID the image's texture is registered under
+  uint64_t lastUsed;
+};
+
+// Keyed like g_ImagePathToImage. Only holds entries for on-demand images.
+std::map<std::string, OnDemandUse> g_OnDemandUse;
+uint64_t g_iOnDemandUseSequence = 0;
+
+bool IsOnDemandMode() {
+  return PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_LOAD_ON_DEMAND;
+}
+
+size_t SurfaceBytes(const RageSurface* pImage) {
+  return static_cast<size_t>(pImage->pitch) * pImage->h;
+}
+
+// Reads the cache file into g_ImagePathToImage. Returns false if not in
+// on-demand mode or if the cache file couldn't be loaded.
+// The caller must hold g_ImageCacheMutex.
+bool LoadOnDemandImage(
+    const std::string& sCachePath, const std::string& sImagePath) {
+  if (!IsOnDemandMode()) {
+    return false;
+  }
+
+  RageSurface* pImage = RageSurfaceUtils::LoadSurface(sCachePath);
+  if (pImage == nullptr) {
+    return false;
+  }
+
+  g_ImagePathToImage[sImagePath] = pImage;
+  return true;
+}
+
+void TouchOnDemandImage(
+    const std::string& sImagePath, const RageTextureID& id) {
+  if (IsOnDemandMode()) {
+    g_OnDemandUse[sImagePath] = {id, ++g_iOnDemandUseSequence};
+  }
+}
+
+// The caller must hold g_ImageCacheMutex.
+void TrimOnDemandImages() {
+  if (!IsOnDemandMode()) {
+    return;
+  }
+
+  const uint64_t maxMemory =
+      static_cast<uint64_t>(
+          std::max(0, PREFSMAN->m_iMaxOnDemandImageMemoryMB.Get())) *
+      1024 * 1024;
+  size_t totalSize = 0;
+  for (auto it = g_OnDemandUse.begin(); it != g_OnDemandUse.end();) {
+    const auto image = g_ImagePathToImage.find(it->first);
+    if (image == g_ImagePathToImage.end()) {
+      it = g_OnDemandUse.erase(it);  // image was freed elsewhere
+      continue;
+    }
+    totalSize += SurfaceBytes(image->second);
+    ++it;
+  }
+
+  while (static_cast<uint64_t>(totalSize) > maxMemory) {
+    auto oldest = g_OnDemandUse.end();
+    for (auto it = g_OnDemandUse.begin(); it != g_OnDemandUse.end(); ++it) {
+      if (TEXTUREMAN->IsTextureRegistered(it->second.id)) {
+        continue;
+      }
+      if (oldest == g_OnDemandUse.end() ||
+          it->second.lastUsed < oldest->second.lastUsed) {
+        oldest = it;
+      }
+    }
+
+    if (oldest == g_OnDemandUse.end()) {
+      break;  // everything left is in use
+    }
+
+    const auto image = g_ImagePathToImage.find(oldest->first);
+    totalSize -= SurfaceBytes(image->second);
+    delete image->second;
+    g_ImagePathToImage.erase(image);
+    g_OnDemandUse.erase(oldest);
+  }
+}
+}  // namespace
+
 std::string ImageCache::GetImageCachePath(
     std::string sImageDir, std::string sImagePath) {
   return SongCacheIndex::GetCacheFilePath(sImageDir, sImagePath);
 }
 
-/* If in on-demand mode, load all cached images.  This must be fast, so
- * cache files will not be created if they don't exist; that should be done
- * by CacheImage or LoadImage on startup. */
-void ImageCache::Demand(std::string sImageDir) {
-  ++g_iDemandRefcount;
-  if (g_iDemandRefcount > 1) {
-    return;
-  }
-
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
-    return;
-  }
-
-  LockMut(g_ImageCacheMutex);
-  FOREACH_CONST_Child(&ImageData, p) {
-    std::string sImagePath = p->GetName();
-
-    if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
-      continue; /* already loaded */
-    }
-
-    const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
-    RageSurface* pImage = RageSurfaceUtils::LoadSurface(sCachePath);
-    if (pImage == nullptr) {
-      continue; /* doesn't exist */
-    }
-
-    g_ImagePathToImage[sImagePath] = pImage;
-  }
-}
+// LoadCachedImage lazy loads images when we're in on-demand mode
+void ImageCache::Demand(std::string sImageDir) { ++g_iDemandRefcount; }
 
 /* Release images loaded on demand. */
 void ImageCache::Undemand(std::string sImageDir) {
@@ -141,6 +203,13 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
   }
   if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_PRELOAD &&
       PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    return;
+  }
+
+  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    if (!DoesFileExist(GetImageCachePath(sImageDir, sImagePath))) {
+      CacheImageInternal(sImageDir, sImagePath);
+    }
     return;
   }
 
@@ -195,6 +264,7 @@ void ImageCache::UnloadAllImages() {
   }
 
   g_ImagePathToImage.clear();
+  g_OnDemandUse.clear();
 }
 
 ImageCache::ImageCache() : delay_save_cache(false) { ReadFromDisk(); }
@@ -343,13 +413,17 @@ RageTextureID ImageCache::LoadCachedImage(
   }
 
   /* It's not in a texture.  Do we have it loaded? */
-  if (g_ImagePathToImage.find(sImagePath) == g_ImagePathToImage.end()) {
+  if (g_ImagePathToImage.find(sImagePath) == g_ImagePathToImage.end() &&
+      !LoadOnDemandImage(
+          GetImageCachePath(sImageDir, sImagePath), sImagePath)) {
     /* Oops, the image is missing.  Warn and continue. */
     if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
     }
     return ID;
   }
+
+  TouchOnDemandImage(sImagePath, ID);
 
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
@@ -379,6 +453,7 @@ RageTextureID ImageCache::LoadCachedImage(
   ID.Policy = RageTextureID::TEX_VOLATILE;
   TEXTUREMAN->RegisterTexture(ID, pTexture);
   TEXTUREMAN->UnloadTexture(pTexture);
+  TrimOnDemandImages();
 
   return ID;
 }
