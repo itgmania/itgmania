@@ -27,6 +27,7 @@
 #include "PrefsManager.h"
 #include "Quad.h"
 #include "RageDisplay.h"
+#include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageTypes.h"
@@ -34,6 +35,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "ScreenDimensions.h"
 #include "Song.h"
+#include "Sprite.h"
 #include "StatsManager.h"
 #include "Steps.h"
 #include "ThemeManager.h"
@@ -97,6 +99,7 @@ class BackgroundImpl : public ActorFrame {
 
   virtual void LoadFromSong(const Song* pSong);
   virtual void Unload();
+  void SeekToCurrentTime();
 
   virtual void Update(float fDeltaTime);
   virtual void DrawPrimitives();
@@ -897,6 +900,36 @@ void BackgroundImpl::Update(float fDeltaTime) {
   m_fLastMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 }
 
+static void SeekBackgroundMovies(Actor* actor, float seconds) {
+  if (auto* sprite = dynamic_cast<Sprite*>(actor)) {
+    RageTexture* texture = sprite->GetTexture();
+    if (texture && texture->IsAMovie()) {
+      texture->SetPosition(seconds);
+    }
+  }
+  if (auto* frame = dynamic_cast<ActorFrame*>(actor)) {
+    for (Actor* child : frame->GetChildren()) {
+      SeekBackgroundMovies(child, seconds);
+    }
+  }
+}
+
+void BackgroundImpl::SeekToCurrentTime() {
+  // Select the active segments and run On/GainFocus before positioning movies.
+  Update(0);
+  for (auto& layer : m_Layer) {
+    if (layer.m_iCurBGChangeIndex < 0 || !layer.m_pCurrentBGA) {
+      continue;
+    }
+    const auto& change = layer.m_aBGChanges[layer.m_iCurBGChangeIndex];
+    const float start =
+        m_pSong->m_SongTiming.GetElapsedTimeFromBeat(change.m_fStartBeat);
+    const float elapsed =
+        std::max(GAMESTATE->m_Position.m_fMusicSeconds - start, 0.0f);
+    SeekBackgroundMovies(layer.m_pCurrentBGA, elapsed * change.m_fRate);
+  }
+}
+
 void BackgroundImpl::DrawPrimitives() {
   if (g_fBGBrightness == 0.0f) {
     return;
@@ -1051,6 +1084,7 @@ void Background::LoadFromSong(const Song* pSong) {
   m_pImpl->LoadFromSong(pSong);
 }
 void Background::Unload() { m_pImpl->Unload(); }
+void Background::SeekToCurrentTime() { m_pImpl->SeekToCurrentTime(); }
 void Background::FadeToActualBrightness() { m_pImpl->FadeToActualBrightness(); }
 void Background::SetBrightness(float fBrightness) {
   m_pImpl->SetBrightness(fBrightness);
