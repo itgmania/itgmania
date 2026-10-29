@@ -190,10 +190,23 @@ void AdjustSync::HandleSongEnd() {
 }
 
 void AdjustSync::AutosyncOffset() {
-  const float mean =
+  // Sort the offsets in descending order by their absolute difference
+  // from the mean. The first OFFSET_SAMPLE_OUTLIER_DISCARD_COUNT will
+  // be discarded when calculating the final mean and stddev below.
+  const float initialMean =
       calc_mean(s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
-  const float stddev =
-      calc_stddev(s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
+  std::sort(
+      s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT,
+      [initialMean](float a, float b) {
+        return std::abs(a - initialMean) > std::abs(b - initialMean);
+      });
+
+  const float mean = calc_mean(
+      s_fAutosyncOffset + OFFSET_SAMPLE_OUTLIER_DISCARD_COUNT,
+      s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
+  const float stddev = calc_stddev(
+      s_fAutosyncOffset + OFFSET_SAMPLE_OUTLIER_DISCARD_COUNT,
+      s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
 
   AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
 
