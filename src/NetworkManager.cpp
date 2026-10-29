@@ -20,12 +20,16 @@
 #include "EnumHelper.h"
 #include "LuaManager.h"
 #include "Preference.h"
+#include "PrefsManager.h"
 #include "ProductInfo.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenPrompt.h"
+#include "ScreenTextEntry.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
 #include "ixwebsocket/IXHttp.h"
@@ -83,6 +87,19 @@ static constexpr float kMaxMainThreadTaskSecondsPerUpdate = 0.001f;
 
 // The most requests either pool runs at once, whatever the preferences say.
 static constexpr int kMaxConcurrencyLimit = 32;
+static bool GetNetworkHost(const std::string& url, std::string& host) {
+  std::string protocol;
+  std::string path;
+  std::string query;
+  int port;
+  if (!ix::UrlParser::parse(url, protocol, host, path, query, port) ||
+      (protocol != "http" && protocol != "https" && protocol != "ws" &&
+       protocol != "wss")) {
+    return false;
+  }
+  MakeLower(host);
+  return !host.empty() && host.find_first_of(",* \t\r\n") == std::string::npos;
+}
 
 XToString(WebSocketMessageType);
 StringToX(WebSocketMessageType);
@@ -277,9 +294,13 @@ void NetworkManager::CloseAllWebSockets() {
     webSocketHandlesCopy = this->webSocketHandles;
   }
 
-  for (auto& handle : webSocketHandlesCopy) {
+  for (const WebSocketHandlePtr& handle : webSocketHandlesCopy) {
+    const bool wasClosed = handle->closed.exchange(true);
     handle->webSocket.disableAutomaticReconnection();
     handle->webSocket.stop();
+    if (!wasClosed && handle->onClose) {
+      handle->onClose();
+    }
   }
 }
 
@@ -357,6 +378,92 @@ void NetworkManager::Update() {
       break;
     }
   }
+  ShowPermissionPrompt();
+}
+
+void NetworkManager::RequestPermission(
+    const std::string& url, std::function<void(bool)> onDecision,
+    std::function<bool()> isCancelled) {
+  EnqueueMainThreadTask([this, url, onDecision, isCancelled]() {
+    if (isCancelled()) {
+      onDecision(false);
+      return;
+    }
+    if (IsUrlAllowed(url)) {
+      onDecision(true);
+      return;
+    }
+    std::string host;
+    if (!httpEnabled.Get() || !GetNetworkHost(url, host) ||
+        sessionDeniedHosts.count(host) != 0) {
+      onDecision(false);
+      return;
+    }
+    pendingPermissions.push_back({host, onDecision, isCancelled});
+  });
+}
+
+void NetworkManager::ShowPermissionPrompt() {
+  if (!permissionHost.empty()) {
+    return;
+  }
+  std::vector<PendingPermission> requests;
+  requests.swap(pendingPermissions);
+  for (const PendingPermission& request : requests) {
+    if (request.isCancelled() || !httpEnabled.Get()) {
+      request.onDecision(false);
+    } else {
+      pendingPermissions.push_back(request);
+    }
+  }
+  if (pendingPermissions.empty() || SCREENMAN == nullptr) {
+    return;
+  }
+  Screen* screen = SCREENMAN->GetTopScreen();
+  ScreenWithMenuElements* menu = dynamic_cast<ScreenWithMenuElements*>(screen);
+  if (screen == nullptr || (menu != nullptr && menu->IsTransitioning()) ||
+      dynamic_cast<ScreenPrompt*>(screen) != nullptr ||
+      dynamic_cast<ScreenTextEntry*>(screen) != nullptr) {
+    return;
+  }
+  permissionHost = pendingPermissions.front().host;
+  SCREENMAN->AddNewScreenToTop("ScreenNetworkPermission");
+}
+
+void NetworkManager::ResolvePermission(
+    const std::string& host, bool allow, bool remember) {
+  if (host.empty() || host != permissionHost) {
+    return;
+  }
+  permissionHost.clear();
+  const bool hasRequests = std::any_of(
+      pendingPermissions.begin(), pendingPermissions.end(),
+      [&host](const PendingPermission& request) {
+        return request.host == host && !request.isCancelled();
+      });
+  allow = allow && httpEnabled.Get() && hasRequests;
+  if (allow) {
+    sessionAllowedHosts.insert(host);
+    if (remember) {
+      std::string hosts = httpAllowHosts.Get();
+      if (!hosts.empty()) {
+        hosts += ",";
+      }
+      httpAllowHosts.Set(hosts + host);
+      PREFSMAN->SavePrefsToDisk();
+    }
+  } else if (hasRequests) {
+    sessionDeniedHosts.insert(host);
+  }
+  std::vector<PendingPermission> requests;
+  requests.swap(pendingPermissions);
+  for (const PendingPermission& request : requests) {
+    if (request.host == host) {
+      request.onDecision(allow && !request.isCancelled());
+    } else {
+      pendingPermissions.push_back(request);
+    }
+  }
 }
 
 bool NetworkManager::IsUrlAllowed(const std::string& url) {
@@ -364,24 +471,13 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
     return false;
   }
 
-  std::string protocol;
   std::string host;
-  std::string path;
-  std::string query;
-  int port;
-
-  bool valid = ix::UrlParser::parse(url, protocol, host, path, query, port);
-
-  if (!valid) {
+  if (!GetNetworkHost(url, host)) {
     return false;
   }
-
-  if (protocol != "http" && protocol != "https" && protocol != "ws" &&
-      protocol != "wss") {
-    return false;
+  if (sessionAllowedHosts.count(host) != 0) {
+    return true;
   }
-
-  MakeLower(host);
 
   std::string allowedHostsStr = this->httpAllowHosts.Get();
   MakeLower(allowedHostsStr);
@@ -389,7 +485,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
   std::vector<std::string> allowedHosts;
   split(allowedHostsStr, ",", allowedHosts);
 
-  for (const auto& allowedHost : allowedHosts) {
+  for (const std::string& allowedHost : allowedHosts) {
     // subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain"
     // does
     if (allowedHost.substr(0, 2) == "*." &&
@@ -410,7 +506,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
 }
 
 HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
-  auto downloadFile = std::make_shared<RageFile>();
+  std::shared_ptr<RageFile> downloadFile = std::make_shared<RageFile>();
   std::string downloadFilename;
 
   ix::HttpRequestArgsPtr req =
@@ -425,17 +521,14 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
 
   if (!args.downloadFile.empty()) {
     downloadFilename = std::string("/Downloads/") + args.downloadFile;
-    if (!downloadFile->Open(
-            downloadFilename, RageFile::WRITE | RageFile::STREAMED)) {
-      req->cancel = true;
-    }
 
     // A weak reference: the request owns this callback, and a strong one would
     // keep the request and its file object alive forever.
     std::weak_ptr<ix::HttpRequestArgs> weakReq = req;
     req->onChunkCallback = [downloadFile, weakReq](const std::string& data) {
       if (downloadFile->Write(data.c_str(), data.size()) < 0) {
-        if (auto request = weakReq.lock()) {
+        ix::HttpRequestArgsPtr request = weakReq.lock();
+        if (request) {
           request->cancel = true;
         }
       }
@@ -458,48 +551,74 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
     req->onProgressCallback = args.onProgress;
   }
 
-  HttpRequestPool& pool =
-      args.downloadFile.empty() ? *this->requestPool : *this->downloadPool;
-
-  pool.Enqueue(
-      req,
-      [this, req, args, downloadFile,
-       downloadFilename](ix::HttpClient& client) -> std::function<void()> {
-        if (this->shutdownWorkers.load()) {
-          return nullptr;
-        }
-
-        ix::HttpResponsePtr response =
-            client.request(req->url, req->verb, req->body, req);
-
-        if (!args.downloadFile.empty()) {
-          std::string error = downloadFile->GetError();
-          downloadFile->Close();
-
-          if (!error.empty()) {
-            std::string errorMessage =
-                "could not write to " + downloadFile->GetPath() + ": " + error;
-            FILEMAN->Remove(downloadFilename);
-            return [args, errorMessage]() {
-              if (args.onFileError) {
-                args.onFileError(errorMessage);
-              }
-            };
-          }
-        }
-
-        return [args, response]() {
+  RequestPermission(
+      args.url,
+      [this, req, args, downloadFile, downloadFilename](bool allowed) {
+        if (req->cancel.load()) {
           if (args.onResponse) {
-            args.onResponse(response);
+            args.onResponse(
+                std::make_shared<ix::HttpResponse>(
+                    0, "", ix::HttpErrorCode::Cancelled));
           }
-        };
-      });
+          return;
+        }
+        if (!allowed) {
+          req->cancel = true;
+          if (args.onBlocked) {
+            args.onBlocked();
+          }
+          return;
+        }
+        if (!args.downloadFile.empty() &&
+            !downloadFile->Open(
+                downloadFilename, RageFile::WRITE | RageFile::STREAMED)) {
+          req->cancel = true;
+        }
+
+        HttpRequestPool& pool = args.downloadFile.empty() ? *this->requestPool
+                                                          : *this->downloadPool;
+        pool.Enqueue(
+            req,
+            [this, req, args, downloadFile, downloadFilename](
+                ix::HttpClient& client) -> std::function<void()> {
+              if (this->shutdownWorkers.load()) {
+                return nullptr;
+              }
+
+              ix::HttpResponsePtr response =
+                  client.request(req->url, req->verb, req->body, req);
+
+              if (!args.downloadFile.empty()) {
+                std::string error = downloadFile->GetError();
+                downloadFile->Close();
+
+                if (!error.empty()) {
+                  std::string errorMessage = "could not write to " +
+                                             downloadFile->GetPath() + ": " +
+                                             error;
+                  FILEMAN->Remove(downloadFilename);
+                  return [args, errorMessage]() {
+                    if (args.onFileError) {
+                      args.onFileError(errorMessage);
+                    }
+                  };
+                }
+              }
+
+              return [args, response]() {
+                if (args.onResponse) {
+                  args.onResponse(response);
+                }
+              };
+            });
+      },
+      [req]() { return req->cancel.load(); });
 
   return std::make_shared<HttpRequestFuture>(req);
 }
 
 WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
-  auto handle = std::make_shared<WebSocketHandle>();
+  WebSocketHandlePtr handle = std::make_shared<WebSocketHandle>();
   handle->onClose = args.onClose;
 
   handle->webSocket.setUrl(args.url);
@@ -539,18 +658,30 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
     handle->webSocket.disableAutomaticReconnection();
   }
 
-  {
-    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    this->webSocketWorkerQueue.push([this, handle]() {
-      if (this->shutdownWorkers.load()) {
-        return;
-      }
+  RequestPermission(
+      args.url,
+      [this, handle, args](bool allowed) {
+        if (handle->closed.load()) {
+          return;
+        }
+        if (!allowed) {
+          handle->closed = true;
+          if (args.onBlocked) {
+            args.onBlocked();
+          }
+          return;
+        }
+        std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
+        this->webSocketWorkerQueue.push([this, handle]() {
+          if (this->shutdownWorkers.load() || handle->closed.load()) {
+            return;
+          }
 
-      handle->webSocket.start();
-    });
-  }
-
-  this->webSocketWorkerCv.notify_one();
+          handle->webSocket.start();
+        });
+        this->webSocketWorkerCv.notify_one();
+      },
+      [handle]() { return handle->closed.load(); });
 
   {
     std::lock_guard<std::mutex> lock(this->webSocketHandlesMutex);
@@ -615,6 +746,9 @@ int WebSocketHandle::Close(lua_State* L) {
   void* udata = luaL_checkudata(L, 1, "WebSocketHandle");
   auto handle = *static_cast<WebSocketHandlePtr*>(udata);
 
+  if (handle->closed.exchange(true)) {
+    return 1;
+  }
   LUA->YieldLua();
   handle->webSocket.stop();
   LUA->UnyieldLua();
@@ -868,22 +1002,22 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       });
     };
 
-    if (p->IsUrlAllowed(args.url)) {
-      auto fut = p->HttpRequest(args);
-
-      void* vp = lua_newuserdata(L, sizeof(std::shared_ptr<HttpRequestFuture>));
-      new (vp) std::shared_ptr<::HttpRequestFuture>(fut);
-      luaL_getmetatable(L, "HttpRequestFuture");
-      lua_setmetatable(L, -2);
-      return 1;
-    } else {
-      LOG->Warn("blocked access to %s", args.url.c_str());
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-      if (onResponseRef != LUA_NOREF) {
-        handleUrlForbidden(L, args.url, onResponseRef);
-      }
-      return 0;
-    }
+    args.onBlocked = [p, url = args.url, onProgressRef, onResponseRef]() {
+      p->EnqueueMainThreadTask([url, onProgressRef, onResponseRef]() {
+        Lua* L = LUA->Get();
+        luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+        if (onResponseRef != LUA_NOREF) {
+          handleUrlForbidden(L, url, onResponseRef);
+        }
+        LUA->Release(L);
+      });
+    };
+    HttpRequestFuturePtr future = p->HttpRequest(args);
+    void* vp = lua_newuserdata(L, sizeof(HttpRequestFuturePtr));
+    new (vp) HttpRequestFuturePtr(future);
+    luaL_getmetatable(L, "HttpRequestFuture");
+    lua_setmetatable(L, -2);
+    return 1;
   }
 
   static int WebSocket(T* p, lua_State* L) {
@@ -1014,21 +1148,21 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       });
     };
 
-    if (p->IsUrlAllowed(args.url)) {
-      auto handle = p->WebSocket(args);
-
-      void* vp = lua_newuserdata(L, sizeof(std::shared_ptr<WebSocketHandle>));
-      new (vp) std::shared_ptr<::WebSocketHandle>(handle);
-      luaL_getmetatable(L, "WebSocketHandle");
-      lua_setmetatable(L, -2);
-      return 1;
-    } else {
-      LOG->Warn("blocked access to %s", args.url.c_str());
-      if (onMessageRef != LUA_NOREF) {
-        handleWebSocketUrlForbidden(L, args.url, onMessageRef);
-      }
-      return 0;
-    }
+    args.onBlocked = [p, url = args.url, onMessageRef]() {
+      p->EnqueueMainThreadTask([url, onMessageRef]() {
+        Lua* L = LUA->Get();
+        if (onMessageRef != LUA_NOREF) {
+          handleWebSocketUrlForbidden(L, url, onMessageRef);
+        }
+        LUA->Release(L);
+      });
+    };
+    WebSocketHandlePtr handle = p->WebSocket(args);
+    void* vp = lua_newuserdata(L, sizeof(WebSocketHandlePtr));
+    new (vp) WebSocketHandlePtr(handle);
+    luaL_getmetatable(L, "WebSocketHandle");
+    lua_setmetatable(L, -2);
+    return 1;
   }
 
   static int UrlEncode(T* p, lua_State* L) {
@@ -1080,7 +1214,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
  private:
-  static void handleUrlForbidden(Lua* L, std::string& url, int onResponseRef) {
+  static void handleUrlForbidden(
+      Lua* L, const std::string& url, int onResponseRef) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
     luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);
 
@@ -1216,7 +1351,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleWebSocketUrlForbidden(
-      Lua* L, std::string& url, int onMessageRef) {
+      Lua* L, const std::string& url, int onMessageRef) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
     luaL_unref(L, LUA_REGISTRYINDEX, onMessageRef);
 

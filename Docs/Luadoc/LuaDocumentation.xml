@@ -3725,13 +3725,16 @@ end
 <Class name='NetworkManager'>
 	<Description>
 		This singleton is accessible to Lua via <code>NETWORK</code>.<br />
-		By default, access to the network is disabled for all target hosts. It can be enabled by setting <code>HttpEnabled=1</code> in the preferences. Individual hosts have to be added to <code>HttpAllowHosts</code> as a comma separated list to allow access.
+		Network access requires <code>HttpEnabled=1</code> in the preferences. Hosts listed in <code>HttpAllowHosts</code> are allowed without prompting.<br />
+		Requests to other hosts wait for the user to deny access, allow it for this session, or always allow it. Always allowing a host adds its exact name to <code>HttpAllowHosts</code>. Denied hosts are not prompted again during the session.<br />
+		Setting <code>HttpEnabled=0</code> blocks requests without prompting. These preferences cannot be changed through Lua. Redirects continue to follow automatically without a separate permission check.
 	</Description>
 	<Function name='IsUrlAllowed' return='bool' arguments='string url' since='ITGmania 0.5.1'>
-		Returns true if access to <code>url</code> is allowed.
+		Returns true if access to <code>url</code> is allowed by the preferences or a session permission. Does not display a permission prompt.
 	</Function>
 	<Function name='HttpRequest' return='HttpRequestFuture' arguments='table params' since='ITGmania 0.5.1'>
 		Performs an HTTP request.<br />
+		Returns a future while waiting for host permission. Denied requests call <code>onResponse</code> with <code>HttpErrorCode_Blocked</code>. Cancelling the future before approval prevents the request from starting.<br />
 		Usage example:
 <pre><code>
 NETWORK:HttpRequest{
@@ -3783,6 +3786,7 @@ NETWORK:HttpRequest{
 	</Function>
 	<Function name='WebSocket' return='WebSocketHandle' arguments='table params' since='ITGmania 0.5.1'>
 		Open a WebSocket connection.<br />
+		Returns a handle while waiting for host permission. Denied connections call <code>onMessage</code> with an error. Closing the handle before approval prevents the connection from starting.<br />
 		Usage example:
 <pre><code>
 NETWORK:WebSocket{
