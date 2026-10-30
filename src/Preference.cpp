@@ -31,6 +31,11 @@ IPreference* IPreference::GetPreferenceByName(const std::string& sName) {
   return nullptr;
 }
 
+std::vector<IPreference*> IPreference::GetAllPreferences() {
+  const std::set<IPreference*>& preferences = m_Subscribers.Get();
+  return std::vector<IPreference*>(preferences.begin(), preferences.end());
+}
+
 void IPreference::LoadAllDefaults() {
   for (IPreference* p : *m_Subscribers.m_pSubscribers) {
     p->LoadDefault();
