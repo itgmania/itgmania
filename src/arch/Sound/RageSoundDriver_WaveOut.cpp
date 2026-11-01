@@ -19,7 +19,7 @@
 #include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
 
-REGISTER_SOUND_DRIVER_CLASS(WaveOut);
+REGISTER_SOUND_DRIVER_CLASS2("WaveOut-legacy", WaveOut);
 
 namespace {
 // We want to target a specific latency (118 ms) to ensure a consistent
