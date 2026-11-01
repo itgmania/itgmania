@@ -24,7 +24,7 @@ inline const std::vector<std::string>& GetDefaultMovieDriverList() {
 
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
   static const std::vector<std::string> kSoundDriverList = {
-      "WASAPI", "DirectSound-sw", "WaveOut", "Null"};
+      "WASAPI", "DirectSound-sw-legacy", "WaveOut-legacy", "Null"};
   return kSoundDriverList;
 }
 

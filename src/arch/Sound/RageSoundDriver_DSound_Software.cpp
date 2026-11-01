@@ -11,7 +11,7 @@
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
 
-REGISTER_SOUND_DRIVER_CLASS2("DirectSound-sw", DSound_Software);
+REGISTER_SOUND_DRIVER_CLASS2("DirectSound-sw-legacy", DSound_Software);
 
 static const int channels = 2;
 static const int bytes_per_frame = channels * 2; /* 16-bit */
