@@ -614,7 +614,8 @@ if(WITH_CLUB_FANTASTIC)
 endif()
 
 add_executable(itgmania_unit_tests
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_timing_data.cpp")
 
 target_link_libraries(itgmania_unit_tests
   PRIVATE itgmania_core GTest::gtest_main)

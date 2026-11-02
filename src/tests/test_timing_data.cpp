@@ -1,155 +1,227 @@
-#include "PrefsManager.h"
-#include "RageFile.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil_FileDB.h"
+#include <gtest/gtest.h>
+
+#include "NoteTypes.h"
 #include "TimingData.h"
-#include "global.h"
+#include "TimingSegments.h"
 
-void run() {
-#define CHECK(call, exp)                                             \
-  {                                                                  \
-    float ret = call;                                                \
-    if (call != exp) {                                               \
-      LOG->Warn("Line %i: Got %f, expected %f", __LINE__, ret, exp); \
-      return;                                                        \
-    }                                                                \
-  }
+namespace {
 
-  TimingData test;
-  test.AddBPMSegment(BPMSegment(0, 60));
+constexpr float kEpsilon = 1e-4f;
 
-  /* First, trivial sanity checks. */
-  CHECK(test.GetBeatFromElapsedTime(60), 60.0f);
-  CHECK(test.GetElapsedTimeFromBeat(60), 60.0f);
-
-  /* The first BPM segment extends backwards in time. */
-  CHECK(test.GetBeatFromElapsedTime(-60), -60.0f);
-  CHECK(test.GetElapsedTimeFromBeat(-60), -60.0f);
-
-  CHECK(test.GetBeatFromElapsedTime(100000), 100000.0f);
-  CHECK(test.GetElapsedTimeFromBeat(100000), 100000.0f);
-  CHECK(test.GetBeatFromElapsedTime(-100000), -100000.0f);
-  CHECK(test.GetElapsedTimeFromBeat(-100000), -100000.0f);
-
-  CHECK(test.GetBPMAtBeat(0), 60.0f);
-  CHECK(test.GetBPMAtBeat(100000), 60.0f);
-  CHECK(test.GetBPMAtBeat(-100000), 60.0f);
-
-  /* 120BPM at beat 10: */
-  test.AddBPMSegment(BPMSegment(10, 120));
-  CHECK(test.GetBPMAtBeat(9.99), 60.0f);
-  CHECK(test.GetBPMAtBeat(10), 120.0f);
-
-  CHECK(test.GetBeatFromElapsedTime(9), 9.0f);
-  CHECK(test.GetBeatFromElapsedTime(10), 10.0f);
-  CHECK(test.GetBeatFromElapsedTime(10.5), 11.0f);
-
-  CHECK(test.GetElapsedTimeFromBeat(9), 9.0f);
-  CHECK(test.GetElapsedTimeFromBeat(10), 10.0f);
-  CHECK(test.GetElapsedTimeFromBeat(11), 10.5f);
-
-  /* Add a 5-second stop at beat 10. */
-  test.AddStopSegment(StopSegment(10, 5));
-
-  /* The stop shouldn't affect GetBPMAtBeat at all. */
-  CHECK(test.GetBPMAtBeat(9.99), 60.0f);
-  CHECK(test.GetBPMAtBeat(10), 120.0f);
-
-  CHECK(test.GetBeatFromElapsedTime(9), 9.0f);
-  CHECK(test.GetBeatFromElapsedTime(10), 10.0f);
-  CHECK(test.GetBeatFromElapsedTime(12), 10.0f);
-  CHECK(test.GetBeatFromElapsedTime(14), 10.0f);
-  CHECK(test.GetBeatFromElapsedTime(15), 10.0f);
-  CHECK(test.GetBeatFromElapsedTime(15.5), 11.0f);
-
-  CHECK(test.GetElapsedTimeFromBeat(9), 9.0f);
-  CHECK(test.GetElapsedTimeFromBeat(10), 10.0f);
-  CHECK(test.GetElapsedTimeFromBeat(11), 15.5f);
-
-  /* Add a 2-second stop at beat 5 and a 5-second stop at beat 15. */
-  test.m_StopSegments.clear();
-  test.AddStopSegment(StopSegment(5, 2));
-  test.AddStopSegment(StopSegment(15, 5));
-  CHECK(test.GetBPMAtBeat(9.99), 60.0f);
-  CHECK(test.GetBPMAtBeat(10), 120.0f);
-
-  CHECK(test.GetBeatFromElapsedTime(1), 1.0f);
-  CHECK(test.GetBeatFromElapsedTime(2), 2.0f);
-  CHECK(test.GetBeatFromElapsedTime(5), 5.0f);  // stopped
-  CHECK(test.GetBeatFromElapsedTime(6), 5.0f);  // stopped
-  CHECK(test.GetBeatFromElapsedTime(7), 5.0f);  // stop finished
-  CHECK(test.GetBeatFromElapsedTime(8), 6.0f);
-  CHECK(test.GetBeatFromElapsedTime(12), 10.0f);  // bpm changes to 120
-  CHECK(test.GetBeatFromElapsedTime(13), 12.0f);
-  CHECK(test.GetBeatFromElapsedTime(14), 14.0f);
-  CHECK(test.GetBeatFromElapsedTime(14.5f), 15.0f);  // stopped
-  CHECK(test.GetBeatFromElapsedTime(15), 15.0f);     // stopped
-  CHECK(test.GetBeatFromElapsedTime(17), 15.0f);     // stopped
-  CHECK(test.GetBeatFromElapsedTime(19.5f), 15.0f);  // stop finished
-  CHECK(test.GetBeatFromElapsedTime(20), 16.0f);
-
-  CHECK(test.GetElapsedTimeFromBeat(1), 1.0f);
-  CHECK(test.GetElapsedTimeFromBeat(2), 2.0f);
-  CHECK(test.GetElapsedTimeFromBeat(5), 5.0f);  // stopped
-  CHECK(test.GetElapsedTimeFromBeat(6), 8.0f);
-  CHECK(test.GetElapsedTimeFromBeat(10), 12.0f);  // bpm changes to 120
-  CHECK(test.GetElapsedTimeFromBeat(12), 13.0f);
-  CHECK(test.GetElapsedTimeFromBeat(14), 14.0f);
-  CHECK(test.GetElapsedTimeFromBeat(15.0f), 14.5f);  // stopped
-  CHECK(test.GetElapsedTimeFromBeat(16), 20.0f);
-
-  // todo: add warp tests -aj
-
-  RageTimer foobar;
-  /* We can look up the time of any given beat, then look up the beat of that
-   * time and get the original value.  (We can't do this in reverse; the beat
-   * doesn't move during stop segments.) */
-  int q = 0;
-  for (float f = -10; f < 250; f += 0.002) {
-    ++q;
-    //		const float t = test.GetElapsedTimeFromBeat( f );
-    const float b = test.GetBeatFromElapsedTime(f);
-
-    /* b == f */
-
-    //		if( std::abs(b-f) > 0.001 )
-    //		{
-    //			LOG->Warn( "%f != %f", b, f );
-    //			return;
-    //		}
-  }
-  LOG->Trace("... %i in %f", q, foobar.GetDeltaTime());
-
-  TimingData test2;
-  test2.AddBPMSegment(BPMSegment(0, 60));
-  test2.AddStopSegment(StopSegment(0, 1));
-  // test2.AddWarpSegment( WarpSegment() );
-  CHECK(test2.GetBeatFromElapsedTime(-1), -1.0f);
-  CHECK(test2.GetBeatFromElapsedTime(0), 0.0f);
-  CHECK(test2.GetBeatFromElapsedTime(1), 0.0f);
-  CHECK(test2.GetBeatFromElapsedTime(2), 1.0f);
-  CHECK(test2.GetElapsedTimeFromBeat(-1), -1.0f);
-  CHECK(test2.GetElapsedTimeFromBeat(0), 0.0f);
-  CHECK(test2.GetElapsedTimeFromBeat(1), 2.0f);
-  CHECK(test2.GetElapsedTimeFromBeat(2), 3.0f);
+void AddBpm(TimingData& td, float beat, float bpm) {
+  td.AddSegment(BPMSegment(BeatToNoteRow(beat), bpm));
 }
 
-int main(int argc, char* argv[]) {
-  FILEMAN = new RageFileManager(argv[0]);
-  FILEMAN->Mount("dir", ".", "");
-  LOG = new RageLog();
-  PREFSMAN =
-      new PrefsManager;  // TimingData needs PREFSMAN; it probably shouldn't
-  LOG->SetShowLogOutput(true);
-  LOG->SetFlushing(true);
+void AddStop(TimingData& td, float beat, float seconds) {
+  td.AddSegment(StopSegment(BeatToNoteRow(beat), seconds));
+}
 
-  run();
+void AddDelay(TimingData& td, float beat, float seconds) {
+  td.AddSegment(DelaySegment(BeatToNoteRow(beat), seconds));
+}
 
-  delete PREFSMAN;
-  delete LOG;
-  delete FILEMAN;
+void AddWarp(TimingData& td, float beat, float length) {
+  td.AddSegment(WarpSegment(BeatToNoteRow(beat), length));
+}
 
-  exit(0);
+void ExpectBeat(TimingData& td, float time, float beat) {
+  EXPECT_NEAR(td.GetBeatFromElapsedTimeNoOffset(time), beat, kEpsilon)
+      << "time " << time;
+}
+
+void ExpectTime(TimingData& td, float beat, float time) {
+  EXPECT_NEAR(td.GetElapsedTimeFromBeatNoOffset(beat), time, kEpsilon)
+      << "beat " << beat;
+}
+
+struct TimeBeatCase {
+  float time;
+  float beat;
+};
+
+struct BeatTimeCase {
+  float beat;
+  float time;
+};
+
+}  // namespace
+
+TEST(TimingDataTest, ConstantBpm) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+
+  ExpectBeat(td, 60.0f, 120.0f);
+  ExpectBeat(td, -60.0f, -120.0f);
+  ExpectBeat(td, 100000.0f, 200000.0f);
+  ExpectBeat(td, -100000.0f, -200000.0f);
+
+  ExpectTime(td, 60.0f, 30.0f);
+  ExpectTime(td, -60.0f, -30.0f);
+  ExpectTime(td, 100000.0f, 50000.0f);
+  ExpectTime(td, -100000.0f, -50000.0f);
+
+  EXPECT_FLOAT_EQ(td.GetBPMAtBeat(0.0f), 120.0f);
+  EXPECT_FLOAT_EQ(td.GetBPMAtBeat(100000.0f), 120.0f);
+}
+
+TEST(TimingDataTest, BpmChange) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+  AddBpm(td, 10.0f, 60.0f);
+
+  EXPECT_FLOAT_EQ(td.GetBPMAtBeat(9.9f), 120.0f);
+  EXPECT_FLOAT_EQ(td.GetBPMAtBeat(10.0f), 60.0f);
+
+  ExpectBeat(td, 4.0f, 8.0f);
+  ExpectBeat(td, 5.0f, 10.0f);
+  ExpectBeat(td, 5.5f, 10.5f);
+
+  ExpectTime(td, 9.0f, 4.5f);
+  ExpectTime(td, 10.0f, 5.0f);
+  ExpectTime(td, 11.0f, 6.0f);
+}
+
+TEST(TimingDataTest, Stops) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+  AddBpm(td, 10.0f, 60.0f);
+  AddStop(td, 5.0f, 2.0f);
+  AddStop(td, 15.0f, 5.0f);
+
+  const TimeBeatCase timeToBeat[] = {
+      {1.0f, 2.0f},   {2.5f, 5.0f},   {3.0f, 5.0f},   {4.5f, 5.0f},
+      {5.0f, 6.0f},   {7.0f, 10.0f},  {8.0f, 11.0f},  {12.0f, 15.0f},
+      {14.0f, 15.0f}, {17.0f, 15.0f}, {18.0f, 16.0f},
+  };
+  for (const TimeBeatCase& c : timeToBeat) {
+    SCOPED_TRACE(c.time);
+    ExpectBeat(td, c.time, c.beat);
+  }
+
+  const BeatTimeCase beatToTime[] = {
+      {1.0f, 0.5f},  {2.0f, 1.0f},  {5.0f, 2.5f},   {6.0f, 5.0f},
+      {10.0f, 7.0f}, {12.0f, 9.0f}, {15.0f, 12.0f}, {16.0f, 18.0f},
+  };
+  for (const BeatTimeCase& c : beatToTime) {
+    SCOPED_TRACE(c.beat);
+    ExpectTime(td, c.beat, c.time);
+  }
+
+  TimingData::GetBeatArgs args;
+  args.elapsed_time = 3.0f;
+  td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
+  EXPECT_FLOAT_EQ(args.beat, 5.0f);
+  EXPECT_FLOAT_EQ(args.bps_out, 2.0f);
+  EXPECT_TRUE(args.freeze_out);
+  EXPECT_FALSE(args.delay_out);
+}
+
+TEST(TimingDataTest, StopAtBeatZero) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+  AddStop(td, 0.0f, 1.0f);
+
+  ExpectBeat(td, -1.0f, -2.0f);
+  ExpectBeat(td, 0.0f, 0.0f);
+  ExpectBeat(td, 0.5f, 0.0f);
+  ExpectBeat(td, 1.0f, 0.0f);
+  ExpectBeat(td, 2.0f, 2.0f);
+
+  ExpectTime(td, -1.0f, -0.5f);
+  ExpectTime(td, 0.0f, 0.0f);
+  ExpectTime(td, 1.0f, 1.5f);
+  ExpectTime(td, 2.0f, 2.0f);
+
+  TimingData::GetBeatArgs args;
+  args.elapsed_time = 0.5f;
+  td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
+  EXPECT_FLOAT_EQ(args.beat, 0.0f);
+  EXPECT_TRUE(args.freeze_out);
+  EXPECT_FALSE(args.delay_out);
+}
+
+TEST(TimingDataTest, DelayAndStopOnSameRow) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+  AddDelay(td, 5.0f, 1.0f);
+  AddStop(td, 5.0f, 2.0f);
+
+  ExpectBeat(td, 2.0f, 4.0f);
+  ExpectBeat(td, 2.5f, 5.0f);
+  ExpectBeat(td, 3.0f, 5.0f);
+  ExpectBeat(td, 3.5f, 5.0f);
+  ExpectBeat(td, 4.0f, 5.0f);
+  ExpectBeat(td, 5.5f, 5.0f);
+  ExpectBeat(td, 6.0f, 6.0f);
+
+  ExpectTime(td, 4.0f, 2.0f);
+  ExpectTime(td, 5.0f, 3.5f);
+  ExpectTime(td, 6.0f, 6.0f);
+
+  TimingData::GetBeatArgs delayArgs;
+  delayArgs.elapsed_time = 3.0f;
+  td.GetBeatAndBPSFromElapsedTimeNoOffset(delayArgs);
+  EXPECT_FLOAT_EQ(delayArgs.beat, 5.0f);
+  EXPECT_FALSE(delayArgs.freeze_out);
+  EXPECT_TRUE(delayArgs.delay_out);
+
+  TimingData::GetBeatArgs stopArgs;
+  stopArgs.elapsed_time = 4.0f;
+  td.GetBeatAndBPSFromElapsedTimeNoOffset(stopArgs);
+  EXPECT_FLOAT_EQ(stopArgs.beat, 5.0f);
+  EXPECT_TRUE(stopArgs.freeze_out);
+  EXPECT_FALSE(stopArgs.delay_out);
+}
+
+TEST(TimingDataTest, Warps) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+  AddWarp(td, 2.0f, 2.0f);
+
+  ExpectBeat(td, 0.5f, 1.0f);
+  ExpectBeat(td, 0.75f, 1.5f);
+  ExpectBeat(td, 1.0f, 4.0f);
+  ExpectBeat(td, 1.25f, 4.5f);
+  ExpectBeat(td, 1.5f, 5.0f);
+
+  ExpectTime(td, 1.0f, 0.5f);
+  ExpectTime(td, 1.5f, 0.75f);
+  ExpectTime(td, 2.0f, 1.0f);
+  ExpectTime(td, 3.0f, 1.0f);
+  ExpectTime(td, 4.0f, 1.0f);
+  ExpectTime(td, 5.0f, 1.5f);
+  ExpectTime(td, 6.0f, 2.0f);
+
+  TimingData::GetBeatArgs args;
+  args.elapsed_time = 1.25f;
+  td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
+  EXPECT_FLOAT_EQ(args.beat, 4.5f);
+  EXPECT_EQ(args.warp_begin_out, BeatToNoteRow(2.0f));
+  EXPECT_FLOAT_EQ(args.warp_dest_out, 4.0f);
+}
+
+TEST(TimingDataTest, LookupInvalidation) {
+  TimingData td;
+  td.AddSegment(BPMSegment(0, 120.0f));
+
+  ExpectBeat(td, 6.0f, 12.0f);
+
+  AddBpm(td, 10.0f, 60.0f);
+
+  ExpectBeat(td, 6.0f, 11.0f);
+  ExpectTime(td, 11.0f, 6.0f);
+  ExpectBeat(td, 6.0f, 11.0f);
+}
+
+TEST(TimingDataTest, BeatZeroOffset) {
+  TimingData td(0.5f);
+  td.AddSegment(BPMSegment(0, 120.0f));
+
+  ExpectTime(td, 0.0f, -0.5f);
+  ExpectTime(td, 1.0f, 0.0f);
+  ExpectTime(td, 2.0f, 0.5f);
+
+  ExpectBeat(td, -0.5f, 0.0f);
+  ExpectBeat(td, 0.0f, 1.0f);
+  ExpectBeat(td, 0.5f, 2.0f);
 }
