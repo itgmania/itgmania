@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "GameManager.h"
 #include "LuaManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -15,9 +16,12 @@ void InitTestEnvironment(const std::string& argv0) {
   LOG->SetFlushing(true);
   FILEMAN = new RageFileManager(argv0);
   FILEMAN->Mount("dir", ".", "/");
+  GAMEMAN = new GameManager;
 }
 
 void ShutdownTestEnvironment() {
+  delete GAMEMAN;
+  GAMEMAN = nullptr;
   delete FILEMAN;
   FILEMAN = nullptr;
   delete LOG;

@@ -75,6 +75,12 @@ static Preference<float> g_fMarathonVerSongSeconds(
     "MarathonVerSongSeconds", 60 * 5.f);
 static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
 
+static std::vector<std::string> GetImageCacheDirs() {
+  std::vector<std::string> image_dirs;
+  split(CommonMetrics::IMAGES_TO_CACHE, ",", image_dirs);
+  return image_dirs;
+}
+
 Song::Song() {
   FOREACH_BackgroundLayer(i) m_BackgroundChanges[i] =
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
@@ -98,7 +104,6 @@ Song::Song() {
   m_bHasBanner = false;
   m_bHasBackground = false;
   m_loaded_from_autosave = false;
-  split(CommonMetrics::IMAGES_TO_CACHE, ",", ImageDir);
 }
 
 Song::~Song() {
@@ -434,7 +439,7 @@ bool Song::LoadFromSongDir(
 
   // Load the cached Images, if it's not loaded already.
   if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
-    for (const std::string& Image : ImageDir) {
+    for (const std::string& Image : GetImageCacheDirs()) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
     }
   }
@@ -708,7 +713,7 @@ void Song::TidyUpData(
     m_bHasBanner = HasBanner();
     m_bHasBackground = HasBackground();
 
-    for (const std::string& Image : ImageDir) {
+    for (const std::string& Image : GetImageCacheDirs()) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
     }
 

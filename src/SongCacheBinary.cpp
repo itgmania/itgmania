@@ -533,8 +533,9 @@ void WriteSteps(Writer& w, const Steps& steps) {
 void ReadSteps(Reader& r, Song& song) {
   Steps* steps = song.CreateSteps();
   steps->m_StepsTypeStr = r.Str();
-  // StepsType_Invalid (== NUM_StepsType) is written for unknown-style steps.
-  steps->m_StepsType = CheckRange<StepsType>(r, r.U32(), NUM_StepsType + 1);
+  // StepsType_Invalid is written for unknown-style steps.
+  steps->m_StepsType = CheckRange<StepsType>(
+      r, r.U32(), static_cast<uint32_t>(StepsType_Invalid) + 1);
   steps->SetChartName(r.Str());
   steps->SetDescription(r.Str());
   steps->SetChartStyle(r.Str());
@@ -651,7 +652,7 @@ bool Write(const Song& song, const std::string& path) {
   return f.Flush() != -1;
 }
 
-bool Read(Song& song, const std::string& path) {
+bool Read(Song& song, const std::string& path, bool tidy_up_data) {
   RageFile f;
   if (!f.Open(path, RageFile::READ)) {
     return false;
@@ -675,7 +676,9 @@ bool Read(Song& song, const std::string& path) {
     return false;
   }
 
-  song.TidyUpData(true);
+  if (tidy_up_data) {
+    song.TidyUpData(true);
+  }
   return true;
 }
 

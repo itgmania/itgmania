@@ -247,7 +247,6 @@ class Song {
   std::string m_sBackgroundFile;
   std::string m_sCDTitleFile;
   std::string m_sPreviewVidFile;
-  std::vector<std::string> ImageDir;
 
   AttackArray m_Attacks;
   std::vector<std::string> m_sAttackString;
