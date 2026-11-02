@@ -113,7 +113,9 @@ RageFileBasic* RageFileDriverDirect::Open(
   if (iMode & RageFile::WRITE) {
     const std::string dir = Dirname(sPath);
     if (this->GetFileType(dir) != RageFileManager::TYPE_DIR) {
-      CreateDirectories(m_sRoot + dir);
+      if (CreateDirectories(m_sRoot + dir)) {
+        FDB->AddFile(dir, 0, 0);
+      }
     }
   }
 
