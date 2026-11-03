@@ -73,7 +73,6 @@ SetMessage(
 	Song
 	Course
 	Index
-	HasFocus
 	SongGroup
 )
 
