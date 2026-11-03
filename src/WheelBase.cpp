@@ -445,7 +445,7 @@ void WheelBase::RebuildWheelItems(int dist) {
     wrap(index, data.size());
     const WheelItemBaseData* p_data = data[index];
     WheelItemBase* display = items[i];
-    display->LoadFromWheelItemData(p_data, index, selection_ == index, i);
+    display->LoadFromWheelItemData(p_data, index, i);
   }
 }
 
