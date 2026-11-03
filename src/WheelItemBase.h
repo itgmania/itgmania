@@ -47,7 +47,7 @@ class WheelItemBase : public ActorFrame {
   void DrawGrayBar(Actor& bar);
 
   virtual void LoadFromWheelItemData(
-      const WheelItemBaseData* wid, int index, bool has_focus, int draw_index);
+      const WheelItemBaseData* wid, int index, int draw_index);
 
   RageColor color_locked_;
 

@@ -186,8 +186,8 @@ MusicWheelItem::~MusicWheelItem() {
 }
 
 void MusicWheelItem::LoadFromWheelItemData(
-    const WheelItemBaseData* data, int index, bool has_focus, int draw_index) {
-  WheelItemBase::LoadFromWheelItemData(data, index, has_focus, draw_index);
+    const WheelItemBaseData* data, int index, int draw_index) {
+  WheelItemBase::LoadFromWheelItemData(data, index, draw_index);
 
   const MusicWheelItemData* wid = dynamic_cast<const MusicWheelItemData*>(data);
 
@@ -332,7 +332,6 @@ void MusicWheelItem::LoadFromWheelItemData(
     msg.SetParam("Song", wid->song_);
     msg.SetParam("Course", wid->course_);
     msg.SetParam("Index", index);
-    msg.SetParam("HasFocus", has_focus);
     msg.SetParam("Text", wid->text_);
     msg.SetParam("DrawIndex", draw_index);
     msg.SetParam("Type", MusicWheelItemTypeToString(type));
