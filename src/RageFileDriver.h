@@ -12,7 +12,7 @@ class RageFileBasic;
 class FilenameDB;
 class RageFileDriver {
  public:
-  RageFileDriver(FilenameDB* pDB) { FDB = pDB; }
+  RageFileDriver(FilenameDB* pDB) { fdb_ = pDB; }
   virtual ~RageFileDriver();
   virtual RageFileBasic* Open(
       const std::string& sPath, int iMode, int& iError) = 0;
@@ -39,7 +39,7 @@ class RageFileDriver {
    */
   enum { ERROR_WRITING_NOT_SUPPORTED = -1 };
   // protected:
-  FilenameDB* FDB;
+  FilenameDB* fdb_;
 };
 
 /* This is used to register the driver, so RageFileManager can see it. */
@@ -48,8 +48,8 @@ struct FileDriverEntry {
   virtual ~FileDriverEntry();
   virtual RageFileDriver* Create(const std::string& sRoot) const = 0;
 
-  std::string m_sType;
-  const FileDriverEntry* m_pLink;
+  std::string type_;
+  const FileDriverEntry* link_;
 };
 RageFileDriver* MakeFileDriver(
     const std::string& Type, const std::string& Root);

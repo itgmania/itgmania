@@ -20,13 +20,13 @@ class InputHandler_DInput : public InputHandler {
   void WindowReset();
 
  private:
-  RageThread m_InputThread;
-  bool m_bShutdown;
+  RageThread input_thread_;
+  bool shutdown_;
 
-  int m_iLastSeenNumHidDevices;  // This changes first on plug/unplug
-  int m_iNumTimesLeftToPollForJoysticksChanged;
-  int m_iLastSeenNumJoysticks;  // This changes sometime after
-                                // m_iLastSeenNumHidDevices
+  int last_seen_num_hid_devices_;  // This changes first on plug/unplug
+  int num_times_left_to_poll_for_joysticks_changed_;
+  int last_seen_num_joysticks_;  // This changes sometime after
+                                 // last_seen_num_hid_devices_
 
   void UpdatePolled(DIDevice& device, const RageTimer& tm);
   void UpdateBuffered(DIDevice& device, const RageTimer& tm);

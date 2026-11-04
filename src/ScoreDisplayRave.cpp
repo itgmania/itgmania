@@ -13,16 +13,16 @@
 ScoreDisplayRave::ScoreDisplayRave() {
   LOG->Trace("ScoreDisplayRave::ScoreDisplayRave()");
 
-  m_lastLevelSeen = ATTACK_LEVEL_1;
+  last_level_seen_ = ATTACK_LEVEL_1;
 
   for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-    m_sprMeter[i].Load(
+    spr_meter_[i].Load(
         THEME->GetPathG("ScoreDisplayRave", ssprintf("stream level%d", i + 1)));
-    m_sprMeter[i].SetCropRight(1.f);
+    spr_meter_[i].SetCropRight(1.f);
   }
 
-  m_textLevel.LoadFromFont(THEME->GetPathF("ScoreDisplayRave", "level"));
-  m_textLevel.SetText("1");
+  text_level_.LoadFromFont(THEME->GetPathF("ScoreDisplayRave", "level"));
+  text_level_.SetText("1");
 }
 
 void ScoreDisplayRave::Init(
@@ -30,45 +30,45 @@ void ScoreDisplayRave::Init(
     const PlayerStageStats* pPlayerStageStats) {
   ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
 
-  PlayerNumber pn = pPlayerState->m_PlayerNumber;
+  PlayerNumber pn = pPlayerState->player_number_;
 
-  m_sprFrameBase.Load(
+  spr_frame_base_.Load(
       THEME->GetPathG("ScoreDisplayRave", ssprintf("frame base p%d", pn + 1)));
-  m_sprFrameBase->SetName(ssprintf("FrameBaseP%d", pn + 1));
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_sprFrameBase);
-  this->AddChild(m_sprFrameBase);
+  spr_frame_base_->SetName(ssprintf("FrameBaseP%d", pn + 1));
+  LOAD_ALL_COMMANDS_AND_SET_XY(spr_frame_base_);
+  this->AddChild(spr_frame_base_);
 
   for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-    m_sprMeter[i].SetName(ssprintf("MeterP%d", pn + 1));
-    LOAD_ALL_COMMANDS_AND_SET_XY(m_sprMeter[i]);
-    this->AddChild(&m_sprMeter[i]);
+    spr_meter_[i].SetName(ssprintf("MeterP%d", pn + 1));
+    LOAD_ALL_COMMANDS_AND_SET_XY(spr_meter_[i]);
+    this->AddChild(&spr_meter_[i]);
   }
 
-  m_textLevel.SetName(ssprintf("LevelP%d", pn + 1));
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_textLevel);
-  this->AddChild(&m_textLevel);
+  text_level_.SetName(ssprintf("LevelP%d", pn + 1));
+  LOAD_ALL_COMMANDS_AND_SET_XY(text_level_);
+  this->AddChild(&text_level_);
 
-  m_sprFrameOverlay.Load(THEME->GetPathG(
+  spr_frame_overlay_.Load(THEME->GetPathG(
       "ScoreDisplayRave", ssprintf("frame overlay p%d", pn + 1)));
-  m_sprFrameOverlay->SetName(ssprintf("FrameOverP%d", pn + 1));
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_sprFrameOverlay);
-  this->AddChild(m_sprFrameOverlay);
+  spr_frame_overlay_->SetName(ssprintf("FrameOverP%d", pn + 1));
+  LOAD_ALL_COMMANDS_AND_SET_XY(spr_frame_overlay_);
+  this->AddChild(spr_frame_overlay_);
 }
 
 void ScoreDisplayRave::Update(float fDelta) {
   ScoreDisplay::Update(fDelta);
 
-  float fLevel = m_pPlayerState->m_fSuperMeter;
+  float fLevel = player_state_->super_meter_;
   AttackLevel level = (AttackLevel)(int)fLevel;
 
-  if (level != m_lastLevelSeen) {
-    m_sprMeter[m_lastLevelSeen].SetCropRight(1.f);
-    m_lastLevelSeen = level;
-    m_textLevel.SetText(ssprintf("%d", level + 1));
+  if (level != last_level_seen_) {
+    spr_meter_[last_level_seen_].SetCropRight(1.f);
+    last_level_seen_ = level;
+    text_level_.SetText(ssprintf("%d", level + 1));
   }
 
   float fPercent = fLevel - Enum::to_integral(level);
-  m_sprMeter[level].SetCropRight(1 - fPercent);
+  spr_meter_[level].SetCropRight(1 - fPercent);
 }
 
 /*

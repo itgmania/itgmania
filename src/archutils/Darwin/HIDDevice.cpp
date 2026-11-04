@@ -4,25 +4,25 @@
 #include "RageUtil.h"
 
 HIDDevice::HIDDevice()
-    : m_Interface(nullptr), m_Queue(nullptr), m_bRunning(false) {}
+    : interface_(nullptr), queue_(nullptr), running_(false) {}
 
 HIDDevice::~HIDDevice() {
-  if (m_Queue) {
+  if (queue_) {
     CFRunLoopSourceRef runLoopSource;
 
-    if (m_bRunning) {
-      CALL(m_Queue, stop);
-      runLoopSource = CALL(m_Queue, getAsyncEventSource);
+    if (running_) {
+      CALL(queue_, stop);
+      runLoopSource = CALL(queue_, getAsyncEventSource);
       CFRunLoopSourceInvalidate(runLoopSource);
       CFRelease(runLoopSource);
     }
 
-    CALL(m_Queue, dispose);
-    CALL(m_Queue, Release);
+    CALL(queue_, dispose);
+    CALL(queue_, Release);
   }
-  if (m_Interface) {
-    CALL(m_Interface, close);
-    CALL(m_Interface, Release);
+  if (interface_) {
+    CALL(interface_, close);
+    CALL(interface_, Release);
   }
 }
 
@@ -61,12 +61,12 @@ bool HIDDevice::Open(io_object_t device) {
   if (object && CFGetTypeID(object) == CFStringGetTypeID()) {
     const char* str =
         CFStringGetCStringPtr(CFStringRef(object), CFStringGetSystemEncoding());
-    m_sDescription = str ? str : "";
+    description_ = str ? str : "";
   }
-  if (m_sDescription == "") {
-    m_sDescription = ssprintf("%04x:%04x", vid, pid);
+  if (description_ == "") {
+    description_ = ssprintf("%04x:%04x", vid, pid);
   }
-  LOG->Trace("\t\tDevice description: %s", m_sDescription.c_str());
+  LOG->Trace("\t\tDevice description: %s", description_.c_str());
 
   object = CFDictionaryGetValue(properties, CFSTR(kIOHIDElementKey));
   if (!object || CFGetTypeID(object) != CFArrayGetTypeID()) {
@@ -98,37 +98,37 @@ bool HIDDevice::Open(io_object_t device) {
   // Call a method of the plugin to create the device interface
   CFUUIDBytes bytes = CFUUIDGetUUIDBytes(kIOHIDDeviceInterfaceID);
 
-  hresult = CALL(plugInInterface, QueryInterface, bytes, (void**)&m_Interface);
+  hresult = CALL(plugInInterface, QueryInterface, bytes, (void**)&interface_);
 
   CALL(plugInInterface, Release);
 
   if (hresult != S_OK) {
     LOG->Warn("Couldn't get device interface from plugin interface.");
-    m_Interface = nullptr;
+    interface_ = nullptr;
     return false;
   }
 
   // open the interface
-  if ((ret = CALL(m_Interface, open, 0)) != kIOReturnSuccess) {
+  if ((ret = CALL(interface_, open, 0)) != kIOReturnSuccess) {
     PrintIOErr(ret, "Failed to open the interface.");
-    CALL(m_Interface, Release);
-    m_Interface = nullptr;
+    CALL(interface_, Release);
+    interface_ = nullptr;
     return false;
   }
 
   // alloc/create queue
-  m_Queue = CALL(m_Interface, allocQueue);
-  if (!m_Queue) {
+  queue_ = CALL(interface_, allocQueue);
+  if (!queue_) {
     LOG->Warn("Couldn't allocate a queue.");
     return false;
   }
 
-  if ((ret = CALL(m_Queue, create, 0, 32)) != kIOReturnSuccess) {
+  if ((ret = CALL(queue_, create, 0, 32)) != kIOReturnSuccess) {
     PrintIOErr(ret, "Failed to create the queue.");
-    CALL(m_Queue, Release);
-    m_Queue = nullptr;
-    CALL(m_Interface, Release);
-    m_Interface = nullptr;
+    CALL(queue_, Release);
+    queue_ = nullptr;
+    CALL(interface_, Release);
+    interface_ = nullptr;
     return false;
   }
 
@@ -141,7 +141,7 @@ void HIDDevice::StartQueue(
     CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void* target) {
   CFRunLoopSourceRef runLoopSource;
   // This creates a run loop source. It is released in the dtor.
-  IOReturn ret = CALL(m_Queue, createAsyncEventSource, &runLoopSource);
+  IOReturn ret = CALL(queue_, createAsyncEventSource, &runLoopSource);
 
   if (ret != kIOReturnSuccess) {
     PrintIOErr(ret, "Failed to create async event source.");
@@ -152,7 +152,7 @@ void HIDDevice::StartQueue(
     CFRunLoopAddSource(loopRef, runLoopSource, kCFRunLoopDefaultMode);
   }
 
-  ret = CALL(m_Queue, setEventCallout, callback, target, this);
+  ret = CALL(queue_, setEventCallout, callback, target, this);
 
   if (ret != kIOReturnSuccess) {
     PrintIOErr(ret, "Failed to set the call back.");
@@ -160,7 +160,7 @@ void HIDDevice::StartQueue(
   }
 
   // start the queue
-  ret = CALL(m_Queue, start);
+  ret = CALL(queue_, start);
 
   if (ret != kIOReturnSuccess) {
     CFRunLoopSourceInvalidate(runLoopSource);
@@ -169,7 +169,7 @@ void HIDDevice::StartQueue(
     PrintIOErr(ret, "Failed to start the queue.");
     return;
   }
-  m_bRunning = true;
+  running_ = true;
 }
 
 void HIDDevice::AddLogicalDevice(const void* value, void* context) {

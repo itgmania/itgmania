@@ -24,22 +24,22 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-#define CHOICE_NAMES THEME->GetMetric(m_sName, "ChoiceNames")
-#define CHOICE(s) THEME->GetMetric(m_sName, ssprintf("Choice%s", s.c_str()))
-#define IDLE_TIMEOUT_SCREEN THEME->GetMetric(m_sName, "IdleTimeoutScreen")
-#define UPDATE_ON_MESSAGE THEME->GetMetric(m_sName, "UpdateOnMessage")
+#define CHOICE_NAMES THEME->GetMetric(name_, "ChoiceNames")
+#define CHOICE(s) THEME->GetMetric(name_, ssprintf("Choice%s", s.c_str()))
+#define IDLE_TIMEOUT_SCREEN THEME->GetMetric(name_, "IdleTimeoutScreen")
+#define UPDATE_ON_MESSAGE THEME->GetMetric(name_, "UpdateOnMessage")
 
 void ScreenSelect::Init() {
-  IDLE_COMMENT_SECONDS.Load(m_sName, "IdleCommentSeconds");
-  IDLE_TIMEOUT_SECONDS.Load(m_sName, "IdleTimeoutSeconds");
-  ALLOW_DISABLED_PLAYER_INPUT.Load(m_sName, "AllowDisabledPlayerInput");
+  IDLE_COMMENT_SECONDS.Load(name_, "IdleCommentSeconds");
+  IDLE_TIMEOUT_SECONDS.Load(name_, "IdleTimeoutSeconds");
+  ALLOW_DISABLED_PLAYER_INPUT.Load(name_, "AllowDisabledPlayerInput");
 
   ScreenWithMenuElements::Init();
 
   // Load messages to update on
-  split(UPDATE_ON_MESSAGE, ",", m_asSubscribedMessages);
-  for (unsigned i = 0; i < m_asSubscribedMessages.size(); ++i) {
-    MESSAGEMAN->Subscribe(this, m_asSubscribedMessages[i]);
+  split(UPDATE_ON_MESSAGE, ",", subscribed_messages_);
+  for (unsigned i = 0; i < subscribed_messages_.size(); ++i) {
+    MESSAGEMAN->Subscribe(this, subscribed_messages_[i]);
   }
   // Subscribe to PlayerJoined, if not already.
   if (!MESSAGEMAN->IsSubscribedToMessage(this, Message_PlayerJoined)) {
@@ -52,10 +52,10 @@ void ScreenSelect::Init() {
   if (Left(choice_names, 4) == "lua,") {
     std::string command = Right(choice_names, choice_names.size() - 4);
     Lua* L = LUA->Get();
-    if (LuaHelpers::RunExpression(L, command, m_sName + "::ChoiceNames")) {
+    if (LuaHelpers::RunExpression(L, command, name_ + "::ChoiceNames")) {
       if (!lua_istable(L, 1)) {
         LuaHelpers::ReportScriptError(
-            m_sName +
+            name_ +
             "::ChoiceNames expression did not return a table of gamecommands.");
       } else {
         size_t len = lua_objlen(L, 1);
@@ -63,17 +63,16 @@ void ScreenSelect::Init() {
           lua_rawgeti(L, 1, i);
           if (!lua_isstring(L, -1)) {
             LuaHelpers::ReportScriptErrorFmt(
-                (m_sName + "::ChoiceNames element %zu is not a string.")
-                    .c_str(),
+                (name_ + "::ChoiceNames element %zu is not a string.").c_str(),
                 i);
           } else {
             std::string com = SArg(-1);
             GameCommand mc;
             mc.ApplyCommitsScreens(false);
-            mc.m_sName = ssprintf("%zu", i);
+            mc.name_ = ssprintf("%zu", i);
             Commands cmd = ParseCommands(com);
             mc.Load(i, cmd);
-            m_aGameCommands.push_back(mc);
+            game_commands_.push_back(mc);
           }
           lua_pop(L, 1);
         }
@@ -94,45 +93,45 @@ void ScreenSelect::Init() {
 
       GameCommand mc;
       mc.ApplyCommitsScreens(false);
-      mc.m_sName = sChoiceName;
+      mc.name_ = sChoiceName;
       Commands cmd = ParseCommands(CHOICE(sChoiceName));
       mc.Load(c, cmd);
-      m_aGameCommands.push_back(mc);
+      game_commands_.push_back(mc);
     }
   }
 
-  if (m_aGameCommands.empty()) {
+  if (game_commands_.empty()) {
     LuaHelpers::ReportScriptErrorFmt(
-        "Screen \"%s\" does not set any choices.", m_sName.c_str());
+        "Screen \"%s\" does not set any choices.", name_.c_str());
   }
 }
 
 void ScreenSelect::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 
-  m_timerIdleComment.GetDeltaTime();
-  m_timerIdleTimeout.GetDeltaTime();
+  timer_idle_comment_.GetDeltaTime();
+  timer_idle_timeout_.GetDeltaTime();
 }
 
 ScreenSelect::~ScreenSelect() {
   LOG->Trace("ScreenSelect::~ScreenSelect()");
-  for (unsigned i = 0; i < m_asSubscribedMessages.size(); ++i) {
-    MESSAGEMAN->Unsubscribe(this, m_asSubscribedMessages[i]);
+  for (unsigned i = 0; i < subscribed_messages_.size(); ++i) {
+    MESSAGEMAN->Unsubscribe(this, subscribed_messages_[i]);
   }
 }
 
 void ScreenSelect::Update(float fDelta) {
   if (!IsTransitioning()) {
     if (IDLE_COMMENT_SECONDS > 0 &&
-        m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS) {
-      SOUND->PlayOnceFromAnnouncer(m_sName + " IdleComment");
-      m_timerIdleComment.GetDeltaTime();
+        timer_idle_comment_.Ago() >= IDLE_COMMENT_SECONDS) {
+      SOUND->PlayOnceFromAnnouncer(name_ + " IdleComment");
+      timer_idle_comment_.GetDeltaTime();
     }
 
     if (IDLE_TIMEOUT_SECONDS > 0 &&
-        m_timerIdleTimeout.Ago() >= IDLE_TIMEOUT_SECONDS) {
+        timer_idle_timeout_.Ago() >= IDLE_TIMEOUT_SECONDS) {
       SCREENMAN->SetNewScreen(IDLE_TIMEOUT_SCREEN);
-      m_timerIdleTimeout.GetDeltaTime();
+      timer_idle_timeout_.GetDeltaTime();
       return;
     }
   }
@@ -144,16 +143,16 @@ bool ScreenSelect::Input(const InputEventPlus& input) {
   //	LOG->Trace( "ScreenSelect::Input()" );
 
   /* Reset the announcer timers when a key is pressed. */
-  m_timerIdleComment.GetDeltaTime();
-  m_timerIdleTimeout.GetDeltaTime();
+  timer_idle_comment_.GetDeltaTime();
+  timer_idle_timeout_.GetDeltaTime();
 
   /* Choices may change when more coins are inserted. */
-  if (input.MenuI == GAME_BUTTON_COIN && input.type == IET_FIRST_PRESS) {
+  if (input.menu_i_ == GAME_BUTTON_COIN && input.type_ == IET_FIRST_PRESS) {
     this->UpdateSelectableChoices();
   }
 
-  if (input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS &&
-      GAMESTATE->JoinInput(input.pn)) {
+  if (input.menu_i_ == GAME_BUTTON_START && input.type_ == IET_FIRST_PRESS &&
+      GAMESTATE->JoinInput(input.pn_)) {
     // HACK: Only play start sound for the 2nd player who joins. The
     // start sound for the 1st player will be played by ScreenTitleMenu
     // when the player makes a selection on the screen.
@@ -166,7 +165,7 @@ bool ScreenSelect::Input(const InputEventPlus& input) {
     }
   }
 
-  if (!GAMESTATE->IsPlayerEnabled(input.pn)) {
+  if (!GAMESTATE->IsPlayerEnabled(input.pn_)) {
     // block input of disabled players
     if (!ALLOW_DISABLED_PLAYER_INPUT) {
       return false;
@@ -177,7 +176,7 @@ bool ScreenSelect::Input(const InputEventPlus& input) {
      * let a non-joined player start, we might start the game with no
      * players joined (eg. if ScreenTitleJoin is started in pay with no
      * credits). */
-    if (input.MenuI == GAME_BUTTON_START) {
+    if (input.menu_i_ == GAME_BUTTON_START) {
       return false;
     }
   }
@@ -205,19 +204,19 @@ void ScreenSelect::HandleScreenMessage(const ScreenMessage SM) {
       }
     }
 
-    if (!m_aGameCommands.empty()) {
+    if (!game_commands_.empty()) {
       if (bAllPlayersChoseTheSame) {
-        const GameCommand& gc = m_aGameCommands[iMastersIndex];
-        m_sNextScreen = gc.m_sScreen;
-        if (!gc.m_bInvalid) {
+        const GameCommand& gc = game_commands_[iMastersIndex];
+        next_screen_ = gc.screen_;
+        if (!gc.invalid_) {
           gc.ApplyToAllPlayers();
         }
       } else {
         FOREACH_HumanPlayer(p) {
           int iIndex = this->GetSelectionIndex(p);
-          const GameCommand& gc = m_aGameCommands[iIndex];
-          m_sNextScreen = gc.m_sScreen;
-          if (!gc.m_bInvalid) {
+          const GameCommand& gc = game_commands_[iIndex];
+          next_screen_ = gc.screen_;
+          if (!gc.invalid_) {
             gc.Apply(p);
           }
         }
@@ -242,8 +241,8 @@ void ScreenSelect::HandleScreenMessage(const ScreenMessage SM) {
 
 void ScreenSelect::HandleMessage(const Message& msg) {
   if (find(
-          m_asSubscribedMessages.begin(), m_asSubscribedMessages.end(),
-          msg.GetName()) != m_asSubscribedMessages.end()) {
+          subscribed_messages_.begin(), subscribed_messages_.end(),
+          msg.GetName()) != subscribed_messages_.end()) {
     this->UpdateSelectableChoices();
   }
 

@@ -45,19 +45,19 @@ const std::string GAME_BASE_NOTESKIN_NAME = "default";
 static std::map<std::string, std::string> g_PathCache;
 
 struct VariantNoteSkinData {
-  std::string sName;
-  std::string sParentNoteSkin;
+  std::string name_;
+  std::string parent_note_skin_;
 };
 
 struct NoteSkinData {
-  std::string sName;
-  IniFile metrics;
-  VariantNoteSkinData variant_data;
-  bool bIsVariant;
+  std::string name_;
+  IniFile metrics_;
+  VariantNoteSkinData variant_data_;
+  bool is_variant_;
   // When looking for an element, search these dirs from head to tail.
-  std::vector<std::string> vsDirSearchOrder;
+  std::vector<std::string> dir_search_order_;
 
-  LuaReference m_Loader;
+  LuaReference loader_;
 };
 
 namespace {
@@ -67,9 +67,9 @@ static std::map<std::string, std::vector<std::string>>
 };  // namespace
 
 NoteSkinManager::NoteSkinManager() {
-  m_pCurGame = nullptr;
-  m_PlayerNumber = PlayerNumber_Invalid;
-  m_GameController = GameController_Invalid;
+  cur_game_ = nullptr;
+  player_number_ = PlayerNumber_Invalid;
+  game_controller_ = GameController_Invalid;
 
   // Register with Lua.
   {
@@ -89,13 +89,13 @@ NoteSkinManager::~NoteSkinManager() {
 }
 
 void NoteSkinManager::RefreshNoteSkinData(const Game* pGame) {
-  m_pCurGame = pGame;
+  cur_game_ = pGame;
 
   // clear path cache
   g_PathCache.clear();
 
   std::string sBaseSkinFolder =
-      SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
+      SpecialFiles::NOTESKINS_DIR + pGame->name_ + "/";
   std::vector<std::string> asNoteSkinNames;
   GetDirListing(sBaseSkinFolder + "*", asNoteSkinNames, true);
 
@@ -132,9 +132,9 @@ void NoteSkinManager::RefreshNoteSkinData(const Game* pGame) {
           // Name in map should be parent name _<variant>
           std::string sVariantKey = sName + "_" + sVariantName;
           g_mapParentNameToVariantNames[sName].push_back(sVariantKey);
-          g_mapNameToData[sVariantKey].variant_data.sParentNoteSkin = sName;
-          g_mapNameToData[sVariantKey].variant_data.sName = sVariantName;
-          g_mapNameToData[sVariantKey].bIsVariant = true;
+          g_mapNameToData[sVariantKey].variant_data_.parent_note_skin_ = sName;
+          g_mapNameToData[sVariantKey].variant_data_.name_ = sVariantName;
+          g_mapNameToData[sVariantKey].is_variant_ = true;
           if (!LoadNoteSkinData(sVariantKey, g_mapNameToData[sVariantKey])) {
             std::map<std::string, NoteSkinData>::iterator entry =
                 g_mapNameToData.find(sVariantKey);
@@ -149,9 +149,9 @@ void NoteSkinManager::RefreshNoteSkinData(const Game* pGame) {
 
 bool NoteSkinManager::LoadNoteSkinData(
     const std::string& sNoteSkinName, NoteSkinData& data_out) {
-  data_out.sName = sNoteSkinName;
-  data_out.metrics.Clear();
-  data_out.vsDirSearchOrder.clear();
+  data_out.name_ = sNoteSkinName;
+  data_out.metrics_.Clear();
+  data_out.dir_search_order_.clear();
 
   // Read the current NoteSkin and all of its fallbacks
   return LoadNoteSkinDataRecursive(sNoteSkinName, data_out);
@@ -172,23 +172,24 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive(
       return false;
     }
     bool bIsVariant = false;
-    std::string sDir = SpecialFiles::NOTESKINS_DIR + m_pCurGame->m_szName +
-                       "/" + sNoteSkinName + "/";
+    std::string sDir = SpecialFiles::NOTESKINS_DIR + cur_game_->name_ + "/" +
+                       sNoteSkinName + "/";
     if (!FILEMAN->IsADirectory(sDir)) {
       sDir = GLOBAL_BASE_DIR + sNoteSkinName + "/";
       if (!FILEMAN->IsADirectory(sDir)) {
         // Check if it's a variant
         if (g_mapNameToData.find(sNoteSkinName) != g_mapNameToData.end()) {
-          bIsVariant = g_mapNameToData[sNoteSkinName].bIsVariant;
+          bIsVariant = g_mapNameToData[sNoteSkinName].is_variant_;
         }
         if (bIsVariant) {
-          sDir = SpecialFiles::NOTESKINS_DIR + m_pCurGame->m_szName + "/" +
-                 g_mapNameToData[sNoteSkinName].variant_data.sParentNoteSkin +
-                 "/variants/" +
-                 g_mapNameToData[sNoteSkinName].variant_data.sName + "/";
+          sDir =
+              SpecialFiles::NOTESKINS_DIR + cur_game_->name_ + "/" +
+              g_mapNameToData[sNoteSkinName].variant_data_.parent_note_skin_ +
+              "/variants/" +
+              g_mapNameToData[sNoteSkinName].variant_data_.name_ + "/";
           if (!FILEMAN->IsADirectory(sDir)) {
             LuaHelpers::ReportScriptError(
-                "NoteSkin \"" + data_out.sName +
+                "NoteSkin \"" + data_out.name_ +
                     "\" references variant skin \"" + sNoteSkinName +
                     "\" that is not present",
                 "NOTESKIN_ERROR");
@@ -211,23 +212,24 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive(
       if (bIsVariant) {
         // Read the metrics.ini from the parent Noteskin
         if (!g_mapNameToData[sNoteSkinName]
-                 .variant_data.sParentNoteSkin.empty()) {
+                 .variant_data_.parent_note_skin_.empty()) {
           if (!ini.ReadFile(
-                  SpecialFiles::NOTESKINS_DIR + m_pCurGame->m_szName + "/" +
-                  g_mapNameToData[sNoteSkinName].variant_data.sParentNoteSkin +
+                  SpecialFiles::NOTESKINS_DIR + cur_game_->name_ + "/" +
+                  g_mapNameToData[sNoteSkinName]
+                      .variant_data_.parent_note_skin_ +
                   "/metrics.ini")) {
             LuaHelpers::ReportScriptError(
-                "Failed to read metrics.ini for NoteSkin \"" + data_out.sName +
+                "Failed to read metrics.ini for NoteSkin \"" + data_out.name_ +
                     "\" and its parent skin \"" +
                     g_mapNameToData[sNoteSkinName]
-                        .variant_data.sParentNoteSkin +
+                        .variant_data_.parent_note_skin_ +
                     "\".",
                 "NOTESKIN_ERROR");
             return false;
           }
         } else {
           LuaHelpers::ReportScriptError(
-              "Failed to read metrics.ini for NoteSkin \"" + data_out.sName +
+              "Failed to read metrics.ini for NoteSkin \"" + data_out.name_ +
                   "\".",
               "NOTESKIN_ERROR");
           return false;
@@ -251,13 +253,13 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive(
       }
     }
 
-    XmlFileUtil::MergeIniUnder(&ini, &data_out.metrics);
+    XmlFileUtil::MergeIniUnder(&ini, &data_out.metrics_);
 
-    data_out.vsDirSearchOrder.push_back(sDir);
+    data_out.dir_search_order_.push_back(sDir);
     if (bIsVariant) {
-      data_out.vsDirSearchOrder.push_back(
-          SpecialFiles::NOTESKINS_DIR + m_pCurGame->m_szName + "/" +
-          g_mapNameToData[sNoteSkinName].variant_data.sParentNoteSkin + "/");
+      data_out.dir_search_order_.push_back(
+          SpecialFiles::NOTESKINS_DIR + cur_game_->name_ + "/" +
+          g_mapNameToData[sNoteSkinName].variant_data_.parent_note_skin_ + "/");
     }
 
     if (sFallback.empty()) {
@@ -268,8 +270,8 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive(
 
   LuaReference refScript;
   for (std::vector<std::string>::reverse_iterator dir =
-           data_out.vsDirSearchOrder.rbegin();
-       dir != data_out.vsDirSearchOrder.rend(); ++dir) {
+           data_out.dir_search_order_.rbegin();
+       dir != data_out.dir_search_order_.rend(); ++dir) {
     std::string sFile = *dir + "NoteSkin.lua";
     std::string sScript;
     if (!FILEMAN->IsAFile(sFile)) {
@@ -292,13 +294,13 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive(
     }
     LUA->Release(L);
   }
-  data_out.m_Loader = refScript;
+  data_out.loader_ = refScript;
   return true;
 }
 
 void NoteSkinManager::GetNoteSkinNames(
     std::vector<std::string>& AddTo, bool bIncludeVariants) {
-  GetNoteSkinNames(GAMESTATE->m_pCurGame, AddTo, bIncludeVariants);
+  GetNoteSkinNames(GAMESTATE->cur_game_, AddTo, bIncludeVariants);
 }
 
 void NoteSkinManager::GetNoteSkinNames(
@@ -310,7 +312,7 @@ void NoteSkinManager::GetNoteSkinNames(
 
 void NoteSkinManager::GetVariantNamesForNoteSkin(
     const std::string& sNoteSkin, std::vector<std::string>& AddTo) {
-  GetVariantNamesForNoteSkin(GAMESTATE->m_pCurGame, sNoteSkin, AddTo);
+  GetVariantNamesForNoteSkin(GAMESTATE->cur_game_, sNoteSkin, AddTo);
 }
 
 void NoteSkinManager::GetVariantNamesForNoteSkin(
@@ -342,12 +344,12 @@ bool NoteSkinManager::HasVariants(const std::string& sNoteSkin) {
 bool NoteSkinManager::IsNoteSkinVariant(const std::string& sNoteSkin) {
   std::map<std::string, NoteSkinData>::const_iterator it =
       g_mapNameToData.find(sNoteSkin);
-  return it != g_mapNameToData.end() && it->second.bIsVariant;
+  return it != g_mapNameToData.end() && it->second.is_variant_;
 }
 
 bool NoteSkinManager::DoesNoteSkinExist(const std::string& sSkinName) {
   std::vector<std::string> asSkinNames;
-  GetAllNoteSkinNamesForGame(GAMESTATE->m_pCurGame, asSkinNames);
+  GetAllNoteSkinNamesForGame(GAMESTATE->cur_game_, asSkinNames);
   return NoteSkinNameInList(sSkinName, asSkinNames);
 }
 
@@ -360,7 +362,7 @@ bool NoteSkinManager::DoNoteSkinsExistForGame(const Game* pGame) {
 std::string NoteSkinManager::GetDefaultNoteSkinName() {
   std::string name = THEME->GetMetric("Common", "DefaultNoteSkinName");
   std::vector<std::string> all_names;
-  GetAllNoteSkinNamesForGame(GAMESTATE->m_pCurGame, all_names);
+  GetAllNoteSkinNamesForGame(GAMESTATE->cur_game_, all_names);
   if (all_names.empty()) {
     return "";
   }
@@ -383,19 +385,19 @@ void NoteSkinManager::ValidateNoteSkinName(std::string& name) {
 
 void NoteSkinManager::GetAllNoteSkinNamesForGame(
     const Game* pGame, std::vector<std::string>& AddTo, bool bIncludeVariants) {
-  if (pGame == m_pCurGame) {
+  if (pGame == cur_game_) {
     // Faster:
     for (std::map<std::string, NoteSkinData>::const_iterator iter =
              g_mapNameToData.begin();
          iter != g_mapNameToData.end(); ++iter) {
-      if (!bIncludeVariants && iter->second.bIsVariant) {
+      if (!bIncludeVariants && iter->second.is_variant_) {
         continue;
       }
-      AddTo.push_back(iter->second.sName);
+      AddTo.push_back(iter->second.name_);
     }
   } else {
     std::string sBaseSkinFolder =
-        SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
+        SpecialFiles::NOTESKINS_DIR + pGame->name_ + "/";
     GetDirListing(sBaseSkinFolder + "*", AddTo, true);
     StripCvsAndSvn(AddTo);
     StripMacResourceForks(AddTo);
@@ -409,7 +411,7 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
   }
   // If the styletype is TwoPlayersSharedSides then filter noteskins where the
   // metric "TwoPlayersSharedSides" is not "true"
-  if (pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+  if (pStyle->style_type_ == StyleType_TwoPlayersSharedSides) {
     for (std::vector<std::string>::iterator iter = AddTo.begin();
          iter != AddTo.end();) {
       std::string sNoteSkinName = *iter;
@@ -422,7 +424,7 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
       const NoteSkinData& data = it->second;
 
       std::string sIsRoutine;
-      if (!data.metrics.GetValue("Global", "IsRoutineNoteSkin", sIsRoutine)) {
+      if (!data.metrics_.GetValue("Global", "IsRoutineNoteSkin", sIsRoutine)) {
         // If the metric doesn't exist, then it's not a TwoPlayersSharedSides
         // noteskin.
         iter = AddTo.erase(iter);
@@ -451,7 +453,7 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
       const NoteSkinData& data = it->second;
 
       std::string bIsRoutine;
-      if (data.metrics.GetValue("Global", "IsRoutineNoteSkin", bIsRoutine)) {
+      if (data.metrics_.GetValue("Global", "IsRoutineNoteSkin", bIsRoutine)) {
         if (bIsRoutine == "true") {
           // If the metric exists but isn't "true", then it's not a
           // TwoPlayersSharedSides noteskin.
@@ -466,12 +468,12 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
 
 std::string NoteSkinManager::GetMetric(
     const std::string& sButtonName, const std::string& sValue) {
-  if (m_sCurrentNoteSkin.empty()) {
+  if (current_note_skin_.empty()) {
     LuaHelpers::ReportScriptError(
         "NOTESKIN:GetMetric: No noteskin currently set.", "NOTESKIN_ERROR");
     return "";
   }
-  std::string sNoteSkinName = m_sCurrentNoteSkin;
+  std::string sNoteSkinName = current_note_skin_;
   MakeLower(sNoteSkinName);
   std::map<std::string, NoteSkinData>::const_iterator it =
       g_mapNameToData.find(sNoteSkinName);
@@ -481,10 +483,10 @@ std::string NoteSkinManager::GetMetric(
   const NoteSkinData& data = it->second;
 
   std::string sReturn;
-  if (data.metrics.GetValue(sButtonName, sValue, sReturn)) {
+  if (data.metrics_.GetValue(sButtonName, sValue, sReturn)) {
     return sReturn;
   }
-  if (!data.metrics.GetValue("NoteDisplay", sValue, sReturn)) {
+  if (!data.metrics_.GetValue("NoteDisplay", sValue, sReturn)) {
     LuaHelpers::ReportScriptError(
         "Could not read metric \"" + sButtonName + "::" + sValue +
             "\" or \"NoteDisplay::" + sValue + "\" in \"" + sNoteSkinName +
@@ -519,19 +521,19 @@ apActorCommands NoteSkinManager::GetMetricA(
 std::string NoteSkinManager::GetPath(
     const std::string& sButtonName, const std::string& sElement) {
   const std::string CacheString =
-      m_sCurrentNoteSkin + "/" + sButtonName + "/" + sElement;
+      current_note_skin_ + "/" + sButtonName + "/" + sElement;
   std::map<std::string, std::string>::iterator it =
       g_PathCache.find(CacheString);
   if (it != g_PathCache.end()) {
     return it->second;
   }
 
-  if (m_sCurrentNoteSkin.empty()) {
+  if (current_note_skin_.empty()) {
     LuaHelpers::ReportScriptError(
         "NOTESKIN:GetPath: No noteskin currently set.", "NOTESKIN_ERROR");
     return "";
   }
-  std::string sNoteSkinName = m_sCurrentNoteSkin;
+  std::string sNoteSkinName = current_note_skin_;
   MakeLower(sNoteSkinName);
   std::map<std::string, NoteSkinData>::const_iterator iter =
       g_mapNameToData.find(sNoteSkinName);
@@ -540,7 +542,7 @@ std::string NoteSkinManager::GetPath(
   const NoteSkinData& data = iter->second;
 
   std::string sPath;  // fill this in below
-  for (const std::string& directory : data.vsDirSearchOrder) {
+  for (const std::string& directory : data.dir_search_order_) {
     if (sButtonName.empty()) {
       sPath = GetPathFromDirAndFile(directory, sElement);
     } else {
@@ -552,7 +554,7 @@ std::string NoteSkinManager::GetPath(
   }
 
   if (sPath.empty()) {
-    for (const std::string& directory : data.vsDirSearchOrder) {
+    for (const std::string& directory : data.dir_search_order_) {
       if (!sButtonName.empty()) {
         sPath = GetPathFromDirAndFile(directory, "Fallback " + sElement);
       }
@@ -566,7 +568,7 @@ std::string NoteSkinManager::GetPath(
     std::string sPaths;
 
     // TODO: Find a more elegant way of doing this.
-    for (const std::string& dir : data.vsDirSearchOrder) {
+    for (const std::string& dir : data.dir_search_order_) {
       if (!sPaths.empty()) {
         sPaths += ", ";
       }
@@ -581,7 +583,7 @@ std::string NoteSkinManager::GetPath(
 
     switch (LuaHelpers::ReportScriptError(message, "NOTESKIN_ERROR", true)) {
       case Dialog::retry:
-        for (const std::string& dir : data.vsDirSearchOrder) {
+        for (const std::string& dir : data.dir_search_order_) {
           FILEMAN->FlushDirCache(dir);
         }
         g_PathCache.clear();
@@ -609,7 +611,7 @@ std::string NoteSkinManager::GetPath(
     GetFileContents(sPath, sNewFileName, true);
     std::string sRealPath;
 
-    for (const std::string& directory : data.vsDirSearchOrder) {
+    for (const std::string& directory : data.dir_search_order_) {
       sRealPath = GetPathFromDirAndFile(directory, sNewFileName);
       if (!sRealPath.empty()) {
         break;  // done searching
@@ -625,7 +627,7 @@ std::string NoteSkinManager::GetPath(
 
       switch (LuaHelpers::ReportScriptError(message, "NOTESKIN_ERROR", true)) {
         case Dialog::retry:
-          for (const std::string& dir : data.vsDirSearchOrder) {
+          for (const std::string& dir : data.dir_search_order_) {
             FILEMAN->FlushDirCache(dir);
           }
           g_PathCache.clear();
@@ -650,26 +652,26 @@ bool NoteSkinManager::PushActorTemplate(
     Lua* L, const std::string& sButton, const std::string& sElement,
     bool bSpriteOnly, const std::string& sColor) {
   std::map<std::string, NoteSkinData>::const_iterator iter =
-      g_mapNameToData.find(m_sCurrentNoteSkin);
+      g_mapNameToData.find(current_note_skin_);
   if (iter == g_mapNameToData.end()) {
     LuaHelpers::ReportScriptError("No current noteskin set!", "NOTESKIN_ERROR");
     return false;
   }
   const NoteSkinData& data = iter->second;
 
-  LuaThreadVariable varPlayer("Player", LuaReference::Create(m_PlayerNumber));
+  LuaThreadVariable varPlayer("Player", LuaReference::Create(player_number_));
   LuaThreadVariable varController(
-      "Controller", LuaReference::Create(m_GameController));
+      "Controller", LuaReference::Create(game_controller_));
   LuaThreadVariable varButton("Button", sButton);
   LuaThreadVariable varElement("Element", sElement);
   LuaThreadVariable varSpriteOnly(
       "SpriteOnly", LuaReference::Create(bSpriteOnly));
   LuaThreadVariable varColor("Color", sColor);
-  if (data.m_Loader.IsNil()) {
+  if (data.loader_.IsNil()) {
     LuaHelpers::ReportScriptError("No loader for noteskin!", "NOTESKIN_ERROR");
     return false;
   }
-  data.m_Loader.PushSelf(L);
+  data.loader_.PushSelf(L);
   lua_remove(L, -2);
   lua_getfield(L, -1, "Load");
 
@@ -703,7 +705,7 @@ Actor* NoteSkinManager::LoadActor(
     Sprite* pSprite = dynamic_cast<Sprite*>(pRet);
     if (pSprite == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
-          "%s: %s %s must be a Sprite", m_sCurrentNoteSkin.c_str(),
+          "%s: %s %s must be a Sprite", current_note_skin_.c_str(),
           sButton.c_str(), sElement.c_str());
       delete pRet;
       return Sprite::NewBlankSprite();

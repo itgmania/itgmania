@@ -83,19 +83,19 @@ static void ZoomSurface(const RageSurface* src, RageSurface* dst) {
   std::vector<int> esx0, esx1, esy0, esy1;
   std::vector<uint32_t> ex0, ey0;
 
-  InitVectors(esx0, esx1, ex0, src->w, dst->w);
-  InitVectors(esy0, esy1, ey0, src->h, dst->h);
+  InitVectors(esx0, esx1, ex0, src->w_, dst->w_);
+  InitVectors(esy0, esy1, ey0, src->h_, dst->h_);
 
   // This is where all of the real work is done.
-  const uint8_t* sp = (uint8_t*)src->pixels;
-  const int height = dst->h;
-  const int width = dst->w;
+  const uint8_t* sp = (uint8_t*)src->pixels_;
+  const int height = dst->h_;
+  const int width = dst->w_;
   for (int y = 0; y < height; y++) {
-    uint8_t* dp = (uint8_t*)(dst->pixels + dst->pitch * y);
+    uint8_t* dp = (uint8_t*)(dst->pixels_ + dst->pitch_ * y);
     /* current source pointer and next source pointer (first and second
      * rows sampled for this row): */
-    const uint8_t* csp = sp + esy0[y] * src->pitch;
-    const uint8_t* ncsp = sp + esy1[y] * src->pitch;
+    const uint8_t* csp = sp + esy0[y] * src->pitch_;
+    const uint8_t* ncsp = sp + esy1[y] * src->pitch_;
 
     for (int x = 0; x < width; x++) {
       // Grab pointers to the sampled pixels:
@@ -130,20 +130,20 @@ void RageSurfaceUtils::Zoom(RageSurface*& src, int dstwidth, int dstheight) {
     return;
   }
 
-  if (src->w == dstwidth && src->h == dstheight) {
+  if (src->w_ == dstwidth && src->h_ == dstheight) {
     return;
   }
 
   // resize currently only does RGBA8888
-  if (src->fmt.BytesPerPixel != 4) {
+  if (src->fmt_.bytes_per_pixel_ != 4) {
     RageSurfaceUtils::ConvertSurface(
-        src, src->w, src->h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000,
+        src, src->w_, src->h_, 32, 0x000000FF, 0x0000FF00, 0x00FF0000,
         0xFF000000);
   }
 
-  while (src->w != dstwidth || src->h != dstheight) {
-    float xscale = float(dstwidth) / src->w;
-    float yscale = float(dstheight) / src->h;
+  while (src->w_ != dstwidth || src->h_ != dstheight) {
+    float xscale = float(dstwidth) / src->w_;
+    float yscale = float(dstheight) / src->h_;
 
     /* Our filter is a simple linear filter, so it can't scale to less than
      * 1:2 or more than 2:1 very well. If we need to go beyond that, do it
@@ -151,12 +151,12 @@ void RageSurfaceUtils::Zoom(RageSurface*& src, int dstwidth, int dstheight) {
     xscale = std::clamp(xscale, .5f, 2.0f);
     yscale = std::clamp(yscale, .5f, 2.0f);
 
-    int target_width = std::lrint(src->w * xscale);
-    int target_height = std::lrint(src->h * yscale);
+    int target_width = std::lrint(src->w_ * xscale);
+    int target_height = std::lrint(src->h_ * yscale);
 
     RageSurface* dst = CreateSurface(
-        target_width, target_height, 32, src->format->Rmask, src->format->Gmask,
-        src->format->Bmask, src->format->Amask);
+        target_width, target_height, 32, src->format_->rmask_,
+        src->format_->gmask_, src->format_->bmask_, src->format_->amask_);
 
     ZoomSurface(src, dst);
 

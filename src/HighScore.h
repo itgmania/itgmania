@@ -118,7 +118,7 @@ struct HighScore {
   void PushSelf(lua_State* L);
 
  private:
-  HiddenPtr<HighScoreImpl> m_Impl;
+  HiddenPtr<HighScoreImpl> impl_;
 };
 
 /** @brief The list of high scores */
@@ -129,19 +129,19 @@ struct HighScoreList {
    *
    * This used to call Init(), but it's better to be explicit here. */
   HighScoreList()
-      : vHighScores(),
-        HighGrade(Grade_NoData),
-        iNumTimesPlayed(0),
-        dtLastPlayed() {}
+      : high_scores_(),
+        high_grade_(Grade_NoData),
+        num_times_played_(0),
+        last_played_() {}
 
   void Init();
 
-  int GetNumTimesPlayed() const { return iNumTimesPlayed; }
+  int GetNumTimesPlayed() const { return num_times_played_; }
   DateTime GetLastPlayed() const {
     ASSERT(
-        iNumTimesPlayed >
+        num_times_played_ >
         0);  // don't call this unless the song has been played
-    return dtLastPlayed;
+    return last_played_;
   }
   const HighScore& GetTopScore() const;
 
@@ -155,34 +155,34 @@ struct HighScoreList {
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
 
-  std::vector<HighScore> vHighScores;
-  Grade HighGrade;
+  std::vector<HighScore> high_scores_;
+  Grade high_grade_;
 
   // Lua
   void PushSelf(lua_State* L);
 
  private:
-  int iNumTimesPlayed;
-  DateTime dtLastPlayed;  // meaningless if iNumTimesPlayed == 0
+  int num_times_played_;
+  DateTime last_played_;  // meaningless if iNumTimesPlayed == 0
 };
 
 /** @brief the picture taken of the high score. */
 struct Screenshot {
   /** @brief the filename of the screen shot. There is no directory part. */
-  std::string sFileName;
+  std::string file_name_;
   /** @brief The MD5 hash of the screen shot file above. */
-  std::string sMD5;
+  std::string md5_;
   /** @brief The actual high score in question. */
-  HighScore highScore;
+  HighScore high_score_;
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
   bool operator<(const Screenshot& rhs) const {
-    return highScore.GetDateTime() < rhs.highScore.GetDateTime();
+    return high_score_.GetDateTime() < rhs.high_score_.GetDateTime();
   }
 
   bool operator==(const Screenshot& rhs) const {
-    return sFileName == rhs.sFileName;
+    return file_name_ == rhs.file_name_;
   }
 };
 

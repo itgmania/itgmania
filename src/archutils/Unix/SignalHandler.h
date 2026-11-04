@@ -7,7 +7,7 @@
 #include <vector>
 
 class SaveSignals {
-  std::vector<struct sigaction> old_handlers;
+  std::vector<struct sigaction> old_handlers_;
 
  public:
   SaveSignals();  /* save signals */

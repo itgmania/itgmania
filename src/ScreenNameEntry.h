@@ -27,35 +27,35 @@ class ScreenNameEntry : public ScreenWithMenuElements {
  private:
   class ScrollingText : public Actor {
    public:
-    ScrollingText() : m_bDone(true) {}
-    inline void SetDone() { m_bDone = true; }
+    ScrollingText() : done_(true) {}
+    inline void SetDone() { done_ = true; }
     void Init(const std::string& sName, const std::vector<float>& xs);
-    virtual bool EarlyAbortDraw() const { return m_bDone; }
+    virtual bool EarlyAbortDraw() const { return done_; }
     virtual void DrawPrimitives();
     char GetClosestChar(float fFakeBeat) const;
 
    private:
     float GetClosestCharYOffset(float fFakeBeat) const;
 
-    std::vector<float> m_Xs;
-    bool m_bDone;
-    BitmapText m_Stamp;
+    std::vector<float> xs_;
+    bool done_;
+    BitmapText stamp_;
   };
 
   enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
   bool AnyStillEntering() const;
 
-  ReceptorArrowRow m_ReceptorArrowRow[NUM_PLAYERS];
-  BitmapText m_textSelectedChars[NUM_PLAYERS][ABS_MAX_RANKING_NAME_LENGTH];
-  BitmapText m_textCategory[NUM_PLAYERS];
-  RageSound m_soundStep;
+  ReceptorArrowRow receptor_arrow_row_[NUM_PLAYERS];
+  BitmapText text_selected_chars_[NUM_PLAYERS][ABS_MAX_RANKING_NAME_LENGTH];
+  BitmapText text_category_[NUM_PLAYERS];
+  RageSound sound_step_;
 
-  float m_fFakeBeat;
-  std::string m_sSelectedName[NUM_PLAYERS];
-  bool m_bStillEnteringName[NUM_PLAYERS];
+  float fake_beat_;
+  std::string selected_name_[NUM_PLAYERS];
+  bool still_entering_name_[NUM_PLAYERS];
 
-  ScrollingText m_Text[NUM_PLAYERS];
-  std::vector<int> m_ColToStringIndex[NUM_PLAYERS];
+  ScrollingText text_[NUM_PLAYERS];
+  std::vector<int> col_to_string_index_[NUM_PLAYERS];
 };
 
 #endif

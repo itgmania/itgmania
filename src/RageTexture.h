@@ -28,15 +28,15 @@ class RageTexture {
   virtual bool IsAMovie() const { return false; }
   virtual void SetLooping(bool) {}
 
-  int GetSourceWidth() const { return m_iSourceWidth; }
-  int GetSourceHeight() const { return m_iSourceHeight; }
-  int GetTextureWidth() const { return m_iTextureWidth; }
-  int GetTextureHeight() const { return m_iTextureHeight; }
-  int GetImageWidth() const { return m_iImageWidth; }
-  int GetImageHeight() const { return m_iImageHeight; }
+  int GetSourceWidth() const { return source_width_; }
+  int GetSourceHeight() const { return source_height_; }
+  int GetTextureWidth() const { return texture_width_; }
+  int GetTextureHeight() const { return texture_height_; }
+  int GetImageWidth() const { return image_width_; }
+  int GetImageHeight() const { return image_height_; }
 
-  int GetFramesWide() const { return m_iFramesWide; }
-  int GetFramesHigh() const { return m_iFramesHigh; }
+  int GetFramesWide() const { return frames_wide_; }
+  int GetFramesHigh() const { return frames_high_; }
 
   int GetSourceFrameWidth() const { return GetSourceWidth() / GetFramesWide(); }
   int GetSourceFrameHeight() const {
@@ -60,16 +60,16 @@ class RageTexture {
   }
 
   const RectF* GetTextureCoordRect(int frameNo) const;
-  int GetNumFrames() const { return m_iFramesWide * m_iFramesHigh; }
+  int GetNumFrames() const { return frames_wide_ * frames_high_; }
 
   // Used by RageTextureManager. Order is important; see RageTextureManager.cpp.
-  const RageTextureID::TexPolicy& GetPolicy() const { return m_ID.Policy; }
-  RageTextureID::TexPolicy& GetPolicy() { return m_ID.Policy; }
-  int m_iRefCount;
-  bool m_bWasUsed;
+  const RageTextureID::TexPolicy& GetPolicy() const { return id_.policy_; }
+  RageTextureID::TexPolicy& GetPolicy() { return id_.policy_; }
+  int ref_count_;
+  bool was_used_;
 
   // The ID that we were asked to load:
-  const RageTextureID& GetID() const { return m_ID; }
+  const RageTextureID& GetID() const { return id_; }
 
   static void GetFrameDimensionsFromFileName(
       std::string sPath, int* puFramesWide, int* puFramesHigh,
@@ -81,17 +81,17 @@ class RageTexture {
  private:
   /* We might change settings when loading (due to hints, hardware
    * limitations, etc). The data actually loaded is here: */
-  RageTextureID m_ID;
+  RageTextureID id_;
 
  protected:
-  int m_iSourceWidth,
-      m_iSourceHeight;  // dimensions of the original image loaded from disk
-  int m_iTextureWidth, m_iTextureHeight;  // dimensions of the texture in memory
-  int m_iImageWidth, m_iImageHeight;  // dimensions of the image in the texture
-  int m_iFramesWide, m_iFramesHigh;   // The number of frames of animation in
-                                      // each row and column of this texture
+  int source_width_,
+      source_height_;  // dimensions of the original image loaded from disk
+  int texture_width_, texture_height_;  // dimensions of the texture in memory
+  int image_width_, image_height_;  // dimensions of the image in the texture
+  int frames_wide_, frames_high_;   // The number of frames of animation in
+                                    // each row and column of this texture
   std::vector<RectF>
-      m_TextureCoordRects;  // size = m_iFramesWide * m_iFramesHigh
+      texture_coord_rects_;  // size = m_iFramesWide * m_iFramesHigh
 
   virtual void CreateFrameRects();
 };

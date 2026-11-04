@@ -26,11 +26,11 @@ class ScreenStatsOverlay : public Screen {
   void AddTimestampLine(const std::string& txt, const RageColor& color);
   void UpdateSkips();
 
-  BitmapText m_textStats;
-  Quad m_quadSkipBackground;
-  std::array<BitmapText, NUM_SKIPS_TO_SHOW> m_textSkips;
-  RageTimer m_timerSkip;
-  int m_LastSkip;
+  BitmapText text_stats_;
+  Quad quad_skip_background_;
+  std::array<BitmapText, NUM_SKIPS_TO_SHOW> text_skips_;
+  RageTimer timer_skip_;
+  int last_skip_;
 
   ThemeMetric<bool> SHOW_SKIPS;
   ThemeMetric<float> SKIP_X;

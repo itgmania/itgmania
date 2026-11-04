@@ -95,12 +95,12 @@ void ImageCache::Demand(std::string sImageDir) {
     return;
   }
 
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+  if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
     return;
   }
 
   LockMut(g_ImageCacheMutex);
-  FOREACH_CONST_Child(&ImageData, p) {
+  FOREACH_CONST_Child(&image_data_, p) {
     std::string sImagePath = p->GetName();
 
     if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
@@ -124,7 +124,7 @@ void ImageCache::Undemand(std::string sImageDir) {
     return;
   }
 
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+  if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
     return;
   }
 
@@ -139,8 +139,8 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
   if (sImagePath == "") {
     return;  // nothing to do
   }
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_PRELOAD &&
-      PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+  if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_PRELOAD &&
+      PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
     return;
   }
 
@@ -197,7 +197,7 @@ void ImageCache::UnloadAllImages() {
   g_ImagePathToImage.clear();
 }
 
-ImageCache::ImageCache() : delay_save_cache(false) { ReadFromDisk(); }
+ImageCache::ImageCache() : delay_save_cache_(false) { ReadFromDisk(); }
 
 ImageCache::~ImageCache() { UnloadAllImages(); }
 
@@ -216,10 +216,10 @@ static void EmptyDir(std::string dir) {
 
 void ImageCache::ReadFromDisk() {
   LockMut(g_ImageCacheMutex);
-  ImageData.ReadFile(IMAGE_CACHE_INDEX);  // don't care if this fails
+  image_data_.ReadFile(IMAGE_CACHE_INDEX);  // don't care if this fails
 
   int iCacheVersion = -1;
-  ImageData.GetValue("Cache", "CacheVersion", iCacheVersion);
+  image_data_.GetValue("Cache", "CacheVersion", iCacheVersion);
   if (iCacheVersion == IMAGE_CACHE_VERSION) {
     return;
   }
@@ -231,38 +231,35 @@ void ImageCache::ReadFromDisk() {
     EmptyDir(SpecialFiles::CACHE_DIR + ImageDir[i] + "/");
   }
 
-  ImageData.Clear();
-  ImageData.SetValue("Cache", "CacheVersion", IMAGE_CACHE_VERSION);
-  ImageData.WriteFile(IMAGE_CACHE_INDEX);
+  image_data_.Clear();
+  image_data_.SetValue("Cache", "CacheVersion", IMAGE_CACHE_VERSION);
+  image_data_.WriteFile(IMAGE_CACHE_INDEX);
 }
 
 struct ImageTexture : public RageTexture {
-  uintptr_t m_uTexHandle;
+  uintptr_t tex_handle_;
   uintptr_t GetTexHandle() const {
-    return m_uTexHandle;
+    return tex_handle_;
   };  // accessed by RageDisplay
   /* This is a reference to a pointer in g_ImagePathToImage. */
-  RageSurface*& m_pImage;
-  int m_iWidth, m_iHeight;
+  RageSurface*& image_;
+  int width_, height_;
 
   ImageTexture(RageTextureID id, RageSurface*& pImage, int iWidth, int iHeight)
-      : RageTexture(id),
-        m_pImage(pImage),
-        m_iWidth(iWidth),
-        m_iHeight(iHeight) {
+      : RageTexture(id), image_(pImage), width_(iWidth), height_(iHeight) {
     Create();
   }
 
   ~ImageTexture() { Destroy(); }
 
   void Create() {
-    ASSERT(m_pImage != nullptr);
+    ASSERT(image_ != nullptr);
 
     /* The image is preprocessed; do as little work as possible. */
 
     /* The source width is the width of the original file. */
-    m_iSourceWidth = m_iWidth;
-    m_iSourceHeight = m_iHeight;
+    source_width_ = width_;
+    source_height_ = height_;
 
     // To avoid the overhead of querying the hardware's maximum texture size
     // every time a texture is loaded, we can cache the value returned by
@@ -274,24 +271,24 @@ struct ImageTexture : public RageTexture {
     /* The image width (within the texture) is always the entire texture.
      * Only resize if the max texture size requires it; since these images
      * are already scaled down, this shouldn't happen often. */
-    if (m_pImage->w > iMaxTextureSize || m_pImage->h > iMaxTextureSize) {
-      LOG->Warn("Converted %s at runtime", GetID().filename.c_str());
-      int iWidth = std::min(m_pImage->w, iMaxTextureSize);
-      int iHeight = std::min(m_pImage->h, iMaxTextureSize);
-      RageSurfaceUtils::Zoom(m_pImage, iWidth, iHeight);
+    if (image_->w_ > iMaxTextureSize || image_->h_ > iMaxTextureSize) {
+      LOG->Warn("Converted %s at runtime", GetID().filename_.c_str());
+      int iWidth = std::min(image_->w_, iMaxTextureSize);
+      int iHeight = std::min(image_->h_, iMaxTextureSize);
+      RageSurfaceUtils::Zoom(image_, iWidth, iHeight);
     }
 
     /* We did this when we cached it. */
-    ASSERT(m_pImage->w == power_of_two(m_pImage->w));
-    ASSERT(m_pImage->h == power_of_two(m_pImage->h));
+    ASSERT(image_->w_ == power_of_two(image_->w_));
+    ASSERT(image_->h_ == power_of_two(image_->h_));
 
-    m_iTextureWidth = m_iImageWidth = m_pImage->w;
-    m_iTextureHeight = m_iImageHeight = m_pImage->h;
+    texture_width_ = image_width_ = image_->w_;
+    texture_height_ = image_height_ = image_->h_;
 
     /* Find a supported texture format. If it happens to match the stored
      * file, we won't have to do any conversion here, and that'll happen
      * often with paletted images. */
-    RagePixelFormat pf = m_pImage->format->BitsPerPixel == 8
+    RagePixelFormat pf = image_->format_->bits_per_pixel_ == 8
                              ? RagePixelFormat_PAL
                              : RagePixelFormat_RGB5A1;
     if (!DISPLAY->SupportsTextureFormat(pf)) {
@@ -300,17 +297,17 @@ struct ImageTexture : public RageTexture {
 
     ASSERT(DISPLAY->SupportsTextureFormat(pf));
 
-    ASSERT(m_pImage != nullptr);
-    m_uTexHandle = DISPLAY->CreateTexture(pf, m_pImage, false);
+    ASSERT(image_ != nullptr);
+    tex_handle_ = DISPLAY->CreateTexture(pf, image_, false);
 
     CreateFrameRects();
   }
 
   void Destroy() {
-    if (m_uTexHandle) {
-      DISPLAY->DeleteTexture(m_uTexHandle);
+    if (tex_handle_) {
+      DISPLAY->DeleteTexture(tex_handle_);
     }
-    m_uTexHandle = 0;
+    tex_handle_ = 0;
   }
 
   void Reload() {
@@ -318,7 +315,7 @@ struct ImageTexture : public RageTexture {
     Create();
   }
 
-  void Invalidate() { m_uTexHandle = 0; /* don't Destroy() */ }
+  void Invalidate() { tex_handle_ = 0; /* don't Destroy() */ }
 };
 
 /* If a image is cached, get its ID for use. */
@@ -345,7 +342,7 @@ RageTextureID ImageCache::LoadCachedImage(
   /* It's not in a texture.  Do we have it loaded? */
   if (g_ImagePathToImage.find(sImagePath) == g_ImagePathToImage.end()) {
     /* Oops, the image is missing.  Warn and continue. */
-    if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
+    if (PREFSMAN->image_cache_ != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
     }
     return ID;
@@ -358,8 +355,8 @@ RageTextureID ImageCache::LoadCachedImage(
   ASSERT(pImage != nullptr);
 
   int iSourceWidth = 0, iSourceHeight = 0;
-  ImageData.GetValue(sImagePath, "Width", iSourceWidth);
-  ImageData.GetValue(sImagePath, "Height", iSourceHeight);
+  image_data_.GetValue(sImagePath, "Width", iSourceWidth);
+  image_data_.GetValue(sImagePath, "Height", iSourceHeight);
   if (iSourceWidth == 0 || iSourceHeight == 0) {
     LOG->UserLog("Cache file", sImagePath, "couldn't be loaded.");
     return ID;
@@ -376,7 +373,7 @@ RageTextureID ImageCache::LoadCachedImage(
   RageTexture* pTexture =
       new ImageTexture(ID, pImage, iSourceWidth, iSourceHeight);
 
-  ID.Policy = RageTextureID::TEX_VOLATILE;
+  ID.policy_ = RageTextureID::TEX_VOLATILE;
   TEXTUREMAN->RegisterTexture(ID, pTexture);
   TEXTUREMAN->UnloadTexture(pTexture);
 
@@ -386,8 +383,8 @@ RageTextureID ImageCache::LoadCachedImage(
 /* Create or update the image cache file as necessary.  If in preload mode,
  * load the cache file, too.  (This is done at startup.) */
 void ImageCache::CacheImage(std::string sImageDir, std::string sImagePath) {
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_PRELOAD &&
-      PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+  if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_PRELOAD &&
+      PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
     return;
   }
 
@@ -401,13 +398,13 @@ void ImageCache::CacheImage(std::string sImageDir, std::string sImagePath) {
   /* Check the full file hash.  If it's the loaded and identical, don't recache.
    */
   if (DoesFileExist(sCachePath)) {
-    bool bCacheUpToDate = PREFSMAN->m_bFastLoad;
+    bool bCacheUpToDate = PREFSMAN->fast_load_;
     if (!bCacheUpToDate) {
       unsigned CurFullHash;
       const unsigned FullHash = GetHashForFile(sImagePath);
       {
         LockMut(g_ImageCacheMutex);
-        if (ImageData.GetValue(sImagePath, "FullHash", CurFullHash) &&
+        if (image_data_.GetValue(sImagePath, "FullHash", CurFullHash) &&
             CurFullHash == FullHash) {
           bCacheUpToDate = true;
         }
@@ -416,7 +413,7 @@ void ImageCache::CacheImage(std::string sImageDir, std::string sImagePath) {
 
     if (bCacheUpToDate) {
       /* It's identical.  Just load it, if in preload. */
-      if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
+      if (PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_PRELOAD) {
         LoadImage(sImageDir, sImagePath);
       }
 
@@ -439,7 +436,7 @@ void ImageCache::CacheImageInternal(
     return;
   }
 
-  const int iSourceWidth = pImage->w, iSourceHeight = pImage->h;
+  const int iSourceWidth = pImage->w_, iSourceHeight = pImage->h_;
 
   /* Halve each dimension, round to the nearest power of two */
   int iWidth = nearest_power_of_two(iSourceWidth / 2);
@@ -469,14 +466,14 @@ void ImageCache::CacheImageInternal(
    * speed hit may not matter on newer ATI cards.  RGBA is safer, though.
    */
   if (g_bPalettedImageCache) {
-    if (pImage->fmt.BytesPerPixel != 1) {
+    if (pImage->fmt_.bytes_per_pixel_ != 1) {
       RageSurfaceUtils::Palettize(pImage);
     }
   } else {
     /* Dither to the final format.  We use A1RGB5, since that's usually
      * supported natively by both OpenGL and D3D. */
-    RageSurface* dst =
-        CreateSurface(pImage->w, pImage->h, 16, 0x7C00, 0x03E0, 0x001F, 0x8000);
+    RageSurface* dst = CreateSurface(
+        pImage->w_, pImage->h_, 16, 0x7C00, 0x03E0, 0x001F, 0x8000);
 
     /* OrderedDither is still faster than ErrorDiffusionDither, and
      * these images are very small and only displayed briefly. */
@@ -498,7 +495,7 @@ void ImageCache::CacheImageInternal(
       g_ImagePathToImage.erase(sImagePath);
     }
 
-    if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
+    if (PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_PRELOAD) {
       /* Keep it; we're just going to load it anyway. */
       g_ImagePathToImage[sImagePath] = pImage;
     } else {
@@ -506,20 +503,20 @@ void ImageCache::CacheImageInternal(
     }
 
     /* Remember the original size. */
-    ImageData.SetValue(sImagePath, "Path", sCachePath);
-    ImageData.SetValue(sImagePath, "Width", iSourceWidth);
-    ImageData.SetValue(sImagePath, "Height", iSourceHeight);
-    ImageData.SetValue(sImagePath, "FullHash", GetHashForFile(sImagePath));
+    image_data_.SetValue(sImagePath, "Path", sCachePath);
+    image_data_.SetValue(sImagePath, "Width", iSourceWidth);
+    image_data_.SetValue(sImagePath, "Height", iSourceHeight);
+    image_data_.SetValue(sImagePath, "FullHash", GetHashForFile(sImagePath));
   }
 
-  if (!delay_save_cache) {
+  if (!delay_save_cache_) {
     WriteToDisk();
   }
 }
 
 void ImageCache::WriteToDisk() {
   LockMut(g_ImageCacheMutex);
-  ImageData.WriteFile(IMAGE_CACHE_INDEX);
+  image_data_.WriteFile(IMAGE_CACHE_INDEX);
 }
 
 /*

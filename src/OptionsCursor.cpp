@@ -10,34 +10,34 @@
 #include "Tween.h"
 
 OptionsCursor::OptionsCursor() {
-  m_iOriginalLeftX = 0;
-  m_iOriginalRightX = 0;
-  m_iOriginalCanGoLeftX = 0;
-  m_iOriginalCanGoRightX = 0;
+  original_left_x_ = 0;
+  original_right_x_ = 0;
+  original_can_go_left_x_ = 0;
+  original_can_go_right_x_ = 0;
 }
 
 OptionsCursor::OptionsCursor(const OptionsCursor& cpy)
     : ActorFrame(cpy),
-      m_sprMiddle(cpy.m_sprMiddle),
-      m_sprLeft(cpy.m_sprLeft),
-      m_sprRight(cpy.m_sprRight),
-      m_sprCanGoLeft(cpy.m_sprCanGoLeft),
-      m_sprCanGoRight(cpy.m_sprCanGoRight),
-      m_iOriginalLeftX(cpy.m_iOriginalLeftX),
-      m_iOriginalRightX(cpy.m_iOriginalRightX),
-      m_iOriginalCanGoLeftX(cpy.m_iOriginalCanGoLeftX),
-      m_iOriginalCanGoRightX(cpy.m_iOriginalCanGoRightX) {
+      spr_middle_(cpy.spr_middle_),
+      spr_left_(cpy.spr_left_),
+      spr_right_(cpy.spr_right_),
+      spr_can_go_left_(cpy.spr_can_go_left_),
+      spr_can_go_right_(cpy.spr_can_go_right_),
+      original_left_x_(cpy.original_left_x_),
+      original_right_x_(cpy.original_right_x_),
+      original_can_go_left_x_(cpy.original_can_go_left_x_),
+      original_can_go_right_x_(cpy.original_can_go_right_x_) {
   // Re-add children, or m_SubActors will point to cpy's children and not our
   // own.
-  m_SubActors.clear();
-  this->AddChild(m_sprMiddle);
-  this->AddChild(m_sprLeft);
-  this->AddChild(m_sprRight);
-  if (m_sprCanGoLeft) {
-    this->AddChild(m_sprCanGoLeft);
+  sub_actors_.clear();
+  this->AddChild(spr_middle_);
+  this->AddChild(spr_left_);
+  this->AddChild(spr_right_);
+  if (spr_can_go_left_) {
+    this->AddChild(spr_can_go_left_);
   }
-  if (m_sprCanGoRight) {
-    this->AddChild(m_sprCanGoRight);
+  if (spr_can_go_right_) {
+    this->AddChild(spr_can_go_right_);
   }
 }
 
@@ -48,33 +48,33 @@ void OptionsCursor::Load(const std::string& sMetricsGroup, bool bLoadCanGos) {
   ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(spr, sMetricsGroup); \
   this->AddChild(spr);
 
-  LOAD_SPR(m_sprMiddle, "Middle");
-  LOAD_SPR(m_sprLeft, "Left");
-  LOAD_SPR(m_sprRight, "Right");
+  LOAD_SPR(spr_middle_, "Middle");
+  LOAD_SPR(spr_left_, "Left");
+  LOAD_SPR(spr_right_, "Right");
   if (bLoadCanGos) {
-    LOAD_SPR(m_sprCanGoLeft, "CanGoLeft");
-    LOAD_SPR(m_sprCanGoRight, "CanGoRight");
+    LOAD_SPR(spr_can_go_left_, "CanGoLeft");
+    LOAD_SPR(spr_can_go_right_, "CanGoRight");
   }
 #undef LOAD_SPR
 
-  m_iOriginalLeftX = static_cast<int>(m_sprLeft->GetX());
-  m_iOriginalRightX = static_cast<int>(m_sprRight->GetX());
+  original_left_x_ = static_cast<int>(spr_left_->GetX());
+  original_right_x_ = static_cast<int>(spr_right_->GetX());
   if (bLoadCanGos) {
-    m_iOriginalCanGoLeftX = static_cast<int>(m_sprCanGoLeft->GetX());
-    m_iOriginalCanGoRightX = static_cast<int>(m_sprCanGoRight->GetX());
+    original_can_go_left_x_ = static_cast<int>(spr_can_go_left_->GetX());
+    original_can_go_right_x_ = static_cast<int>(spr_can_go_right_->GetX());
   }
 
   SetCanGo(false, false);
 }
 
 void OptionsCursor::SetCanGo(bool bCanGoLeft, bool bCanGoRight) {
-  if (m_sprCanGoLeft) {
-    m_sprCanGoLeft->EnableAnimation(bCanGoLeft);
-    m_sprCanGoRight->EnableAnimation(bCanGoRight);
+  if (spr_can_go_left_) {
+    spr_can_go_left_->EnableAnimation(bCanGoLeft);
+    spr_can_go_right_->EnableAnimation(bCanGoRight);
 
-    m_sprCanGoLeft->SetDiffuse(
+    spr_can_go_left_->SetDiffuse(
         bCanGoLeft ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
-    m_sprCanGoRight->SetDiffuse(
+    spr_can_go_right_->SetDiffuse(
         bCanGoRight ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
   }
 }
@@ -82,26 +82,26 @@ void OptionsCursor::SetCanGo(bool bCanGoLeft, bool bCanGoRight) {
 void OptionsCursor::StopTweening() {
   ActorFrame::StopTweening();
 
-  m_sprMiddle->StopTweening();
-  m_sprLeft->StopTweening();
-  m_sprRight->StopTweening();
+  spr_middle_->StopTweening();
+  spr_left_->StopTweening();
+  spr_right_->StopTweening();
 
-  if (m_sprCanGoLeft) {
-    m_sprCanGoLeft->StopTweening();
-    m_sprCanGoRight->StopTweening();
+  if (spr_can_go_left_) {
+    spr_can_go_left_->StopTweening();
+    spr_can_go_right_->StopTweening();
   }
 }
 
 void OptionsCursor::BeginTweening(float fSecs, TweenType tt) {
   ActorFrame::BeginTweening(fSecs);
 
-  m_sprMiddle->BeginTweening(fSecs);
-  m_sprLeft->BeginTweening(fSecs);
-  m_sprRight->BeginTweening(fSecs);
+  spr_middle_->BeginTweening(fSecs);
+  spr_left_->BeginTweening(fSecs);
+  spr_right_->BeginTweening(fSecs);
 
-  if (m_sprCanGoLeft) {
-    m_sprCanGoLeft->BeginTweening(fSecs);
-    m_sprCanGoRight->BeginTweening(fSecs);
+  if (spr_can_go_left_) {
+    spr_can_go_left_->BeginTweening(fSecs);
+    spr_can_go_right_->BeginTweening(fSecs);
   }
 }
 
@@ -109,18 +109,18 @@ void OptionsCursor::SetBarWidth(int iWidth) {
   float fWidth =
       std::ceil(iWidth / 2.0f) * 2.0f;  // round up to nearest even number
 
-  m_sprMiddle->ZoomToWidth(fWidth);
+  spr_middle_->ZoomToWidth(fWidth);
 
-  m_sprLeft->SetX(m_iOriginalLeftX - fWidth / 2);
-  m_sprRight->SetX(m_iOriginalRightX + fWidth / 2);
-  if (m_sprCanGoLeft) {
-    m_sprCanGoLeft->SetX(m_iOriginalCanGoLeftX - fWidth / 2);
-    m_sprCanGoRight->SetX(m_iOriginalCanGoRightX + fWidth / 2);
+  spr_left_->SetX(original_left_x_ - fWidth / 2);
+  spr_right_->SetX(original_right_x_ + fWidth / 2);
+  if (spr_can_go_left_) {
+    spr_can_go_left_->SetX(original_can_go_left_x_ - fWidth / 2);
+    spr_can_go_right_->SetX(original_can_go_right_x_ + fWidth / 2);
   }
 }
 
 int OptionsCursor::GetBarWidth() const {
-  float fWidth = m_sprMiddle->GetZoomX() * m_sprMiddle->GetUnzoomedWidth();
+  float fWidth = spr_middle_->GetZoomX() * spr_middle_->GetUnzoomedWidth();
   return (int)fWidth;
 }
 

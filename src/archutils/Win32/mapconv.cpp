@@ -16,8 +16,8 @@
 #define MAX_GROUPS (64)
 
 struct RVAEnt {
-  uintptr_t rva;
-  char* line;
+  uintptr_t rva_;
+  char* line_;
 };
 
 std::vector<RVAEnt> rvabuf;
@@ -110,7 +110,7 @@ void parsename(uintptr_t rva, char* func_name) {
 
 struct RVASorter {
   bool operator()(const RVAEnt& e1, const RVAEnt& e2) {
-    return e1.rva < e2.rva;
+    return e1.rva_ < e2.rva_;
   }
 };
 
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
       char symname[4096];
 
       if (sscanf(
-              rvabuf[i].line, "%" SCNx16 ":%" SCNx32 " %s %" SCNxPTR, &grp,
+              rvabuf[i].line_, "%" SCNx16 ":%" SCNx32 " %s %" SCNxPTR, &grp,
               &start, symname, &rva) != 4) {
         break;
       }
@@ -279,11 +279,11 @@ int main(int argc, char** argv) {
     std::vector<RVAEnt>::iterator itRVA = rvabuf.begin(),
                                   itRVAEnd = rvabuf.end();
     std::vector<char> rvaout;
-    uintptr_t firstrva = (*itRVA++).rva;
+    uintptr_t firstrva = (*itRVA++).rva_;
     uintptr_t lastrva = firstrva;
 
     for (; itRVA != itRVAEnd; ++itRVA) {
-      std::ptrdiff_t rvadiff = (*itRVA).rva - lastrva;
+      std::ptrdiff_t rvadiff = (*itRVA).rva_ - lastrva;
 
       lastrva += rvadiff;
 

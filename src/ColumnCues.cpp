@@ -21,38 +21,38 @@ void CalculateColumnCuesOnePlayer(
 
   while (!curr_note.IsAtEnd()) {
     if (curr_note.Row() != curr_row) {
-      if (currentCue.startTime != -1) {
+      if (currentCue.start_time_ != -1) {
         allColumnCues.push_back(currentCue);
       }
       currentCue = ColumnCue();
-      currentCue.startTime =
+      currentCue.start_time_ =
           timing->GetElapsedTimeFromBeat(NoteRowToBeat(curr_note.Row()));
       curr_row = curr_note.Row();
     }
 
-    if (curr_note->type == TapNoteType_Tap ||
-        curr_note->type == TapNoteType_HoldHead ||
-        curr_note->type == TapNoteType_Mine ||
-        curr_note->type == TapNoteType_Lift) {
-      currentCue.columns.emplace_back(curr_note.Track() + 1, curr_note->type);
+    if (curr_note->type_ == TapNoteType_Tap ||
+        curr_note->type_ == TapNoteType_HoldHead ||
+        curr_note->type_ == TapNoteType_Mine ||
+        curr_note->type_ == TapNoteType_Lift) {
+      currentCue.columns_.emplace_back(curr_note.Track() + 1, curr_note->type_);
     }
 
     ++curr_note;
   }
 
   // If there's a remaining columnCue from the last row, add it
-  if (currentCue.startTime != -1) {
+  if (currentCue.start_time_ != -1) {
     allColumnCues.push_back(currentCue);
   }
 
   float previousCueTime = 0;
   out.clear();
   for (ColumnCue columnCue : allColumnCues) {
-    float duration = columnCue.startTime - previousCueTime;
+    float duration = columnCue.start_time_ - previousCueTime;
     if (duration > minDuration || previousCueTime == 0) {
-      out.emplace_back(previousCueTime, duration, columnCue.columns);
+      out.emplace_back(previousCueTime, duration, columnCue.columns_);
     }
-    previousCueTime = columnCue.startTime;
+    previousCueTime = columnCue.start_time_;
   }
 }
 }  // namespace

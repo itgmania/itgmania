@@ -28,23 +28,23 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   void SetupDecodingThread() override;
 
  private:
-  int m_iSampleRate;
-  UINT32 m_iBufferSizeFrames;
-  bool m_bFloat;  // true if we are using float, false if 16-bit PCM
+  int sample_rate_;
+  UINT32 buffer_size_frames_;
+  bool float_;  // true if we are using float, false if 16-bit PCM
 
-  IAudioClient* m_pAudioClient;
-  IAudioRenderClient* m_pRenderClient;
-  IAudioClock* m_pAudioClock;
-  UINT64 m_iAudioClockFreq;  // device units per second, from GetFrequency
+  IAudioClient* audio_client_;
+  IAudioRenderClient* render_client_;
+  IAudioClock* audio_clock_;
+  UINT64 audio_clock_freq_;  // device units per second, from GetFrequency
 
-  HANDLE m_hAudioEvent;
+  HANDLE audio_event_;
 
-  std::atomic<bool> m_bShutdownMixerThread;
-  bool m_bOwnsComInit;
+  std::atomic<bool> shutdown_mixer_thread_;
+  bool owns_com_init_;
 
   static int MixerThread_start(void* p);
   void MixerThread();
-  RageThread m_MixingThread;
+  RageThread mixing_thread_;
 
   bool InitWASAPI(std::string& sError);
   void FreeWASAPI();

@@ -72,8 +72,8 @@ class InputHandler_Win32_ddrio : public InputHandler {
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
  private:
-  RageThread InputThread;
-  bool m_bShutdown;
+  RageThread input_thread_;
+  bool shutdown_;
 
   bool LoadDLL();
   bool MapFunctions();

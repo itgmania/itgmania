@@ -17,20 +17,20 @@ class DancingCharacters : public ActorFrame {
 
   virtual void Update(float fDelta);
   virtual void DrawPrimitives();
-  bool m_bDrawDangerLight;
+  bool draw_danger_light_;
 
  protected:
-  std::array<Model*, NUM_PLAYERS> m_pCharacter;
+  std::array<Model*, NUM_PLAYERS> character_;
 
   /** @brief How far away is the camera from the dancer? */
-  float m_CameraDistance;
-  float m_CameraPanYStart;
-  float m_CameraPanYEnd;
-  float m_fLookAtHeight;
-  float m_fCameraHeightStart;
-  float m_fCameraHeightEnd;
-  float m_fThisCameraStartBeat;
-  float m_fThisCameraEndBeat;
+  float camera_distance_;
+  float camera_pan_y_start_;
+  float camera_pan_y_end_;
+  float look_at_height_;
+  float camera_height_start_;
+  float camera_height_end_;
+  float this_camera_start_beat_;
+  float this_camera_end_beat_;
 };
 
 #endif

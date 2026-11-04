@@ -35,11 +35,11 @@ class FadingBanner : public ActorFrame {
 
   bool LoadFromCachedBanner(const std::string& path);
 
-  void SetMovingFast(bool fast) { m_bMovingFast = fast; }
+  void SetMovingFast(bool fast) { moving_fast_ = fast; }
   virtual void UpdateInternal(float fDeltaTime);
   virtual void DrawPrimitives();
 
-  int GetLatestIndex() { return m_iIndexLatest; }
+  int GetLatestIndex() { return index_latest_; }
 
   // Lua
   void PushSelf(lua_State* L);
@@ -47,12 +47,12 @@ class FadingBanner : public ActorFrame {
  protected:
   void BeforeChange(bool bLowResToHighRes = false);
 
-  static const int NUM_BANNERS = 5;
-  Banner m_Banner[NUM_BANNERS];
-  int m_iIndexLatest;
+  static const int kNumBanners = 5;
+  Banner banner_[kNumBanners];
+  int index_latest_;
 
-  bool m_bMovingFast;
-  bool m_bSkipNextBannerUpdate;
+  bool moving_fast_;
+  bool skip_next_banner_update_;
 };
 
 #endif

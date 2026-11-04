@@ -17,7 +17,7 @@ class RageSoundReader_Pan : public RageSoundReader_Filter {
   virtual bool SetProperty(const std::string& sProperty, float fValue);
 
  private:
-  float m_fPan;
+  float pan_;
 };
 
 #endif

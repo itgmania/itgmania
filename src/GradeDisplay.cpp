@@ -15,11 +15,11 @@
 REGISTER_ACTOR_CLASS(GradeDisplay);
 
 void GradeDisplay::Load(std::string sMetricsGroup) {
-  ASSERT(m_vSpr.empty());
-  m_vSpr.resize(NUM_POSSIBLE_GRADES);
+  ASSERT(spr_.empty());
+  spr_.resize(NUM_POSSIBLE_GRADES);
   int i = 0;
   FOREACH_PossibleGrade(g) {
-    AutoActor& spr = m_vSpr[i];
+    AutoActor& spr = spr_[i];
     spr.Load(THEME->GetPathG(sMetricsGroup, GradeToString(g)));
     spr->SetVisible(false);
     this->AddChild(spr);
@@ -30,12 +30,12 @@ void GradeDisplay::Load(std::string sMetricsGroup) {
 void GradeDisplay::SetGrade(Grade grade) {
   size_t i = 0;
   FOREACH_PossibleGrade(g) {
-    if (i >= m_vSpr.size()) {
+    if (i >= spr_.size()) {
       LuaHelpers::ReportScriptError(
           "GradeDisplay:SetGrade: No actor loaded for grade " +
           GradeToString(g));
     } else {
-      m_vSpr[i]->SetVisible(g == grade);
+      spr_[i]->SetVisible(g == grade);
       i++;
     }
   }

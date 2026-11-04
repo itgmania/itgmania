@@ -29,17 +29,17 @@ class GraphDisplay : public ActorFrame {
  private:
   void UpdateVerts();
 
-  std::vector<float> m_Values;
+  std::vector<float> values_;
 
-  RectF m_quadVertices;
+  RectF quad_vertices_;
 
-  std::vector<Actor*> m_vpSongBoundaries;
-  AutoActor m_sprBarely;
-  AutoActor m_sprBacking;
-  AutoActor m_sprSongBoundary;
+  std::vector<Actor*> song_boundaries_;
+  AutoActor spr_barely_;
+  AutoActor spr_backing_;
+  AutoActor spr_song_boundary_;
 
-  GraphLine* m_pGraphLine;
-  GraphBody* m_pGraphBody;
+  GraphLine* graph_line_;
+  GraphBody* graph_body_;
 };
 
 #endif

@@ -93,78 +93,78 @@ class Profile {
   // added to SwapExceptPriority won't be swapped correctly when the user
   // changes the list priority of a profile. -Kyz
   Profile()
-      : m_Type(ProfileType_Normal),
-        m_ListPriority(0),
-        m_sDisplayName(""),
-        m_sCharacterID(""),
-        m_sLastUsedHighScoreName(""),
-        m_iWeightPounds(0),
-        m_Voomax(0),
-        m_BirthYear(0),
-        m_IgnoreStepCountCalories(false),
-        m_IsMale(true),
-        m_sGuid(MakeGuid()),
-        m_sDefaultModifiers(),
-        m_SortOrder(SortOrder_Invalid),
-        m_songs{},
-        m_groups{},
-        m_LastDifficulty(Difficulty_Invalid),
-        m_LastCourseDifficulty(Difficulty_Invalid),
-        m_LastStepsType(StepsType_Invalid),
-        m_lastSong(),
-        m_lastCourse(),
-        m_iCurrentCombo(0),
-        m_iTotalSessions(0),
-        m_iTotalSessionSeconds(0),
-        m_iTotalGameplaySeconds(0),
-        m_fTotalCaloriesBurned(0),
-        m_GoalType(GoalType_Calories),
-        m_iGoalCalories(0),
-        m_iGoalSeconds(0),
-        m_iTotalDancePoints(0),
-        m_iNumExtraStagesPassed(0),
-        m_iNumExtraStagesFailed(0),
-        m_iNumToasties(0),
-        m_iTotalTapsAndHolds(0),
-        m_iTotalJumps(0),
-        m_iTotalHolds(0),
-        m_iTotalRolls(0),
-        m_iTotalMines(0),
-        m_iTotalHands(0),
-        m_iTotalLifts(0),
-        m_bNewProfile(false),
-        m_UnlockedEntryIDs(),
-        m_sLastPlayedMachineGuid(""),
-        m_CreationTime(),
-        m_LastPlayedDate(),
-        m_iNumSongsPlayedByStyle(),
-        m_iNumTotalSongsPlayed(0),
-        m_UserTable(),
-        m_SongHighScores(),
-        m_CourseHighScores(),
-        m_vScreenshots(),
-        m_mapDayToCaloriesBurned() {
-    m_lastSong.Unset();
-    m_lastCourse.Unset();
+      : type_(ProfileType_Normal),
+        list_priority_(0),
+        display_name_(""),
+        character_id_(""),
+        last_used_high_score_name_(""),
+        weight_pounds_(0),
+        voomax_(0),
+        birth_year_(0),
+        ignore_step_count_calories_(false),
+        is_male_(true),
+        guid_(MakeGuid()),
+        default_modifiers_(),
+        sort_order_(SortOrder_Invalid),
+        songs_{},
+        groups_{},
+        last_difficulty_(Difficulty_Invalid),
+        last_course_difficulty_(Difficulty_Invalid),
+        last_steps_type_(StepsType_Invalid),
+        last_song_(),
+        last_course_(),
+        current_combo_(0),
+        total_sessions_(0),
+        total_session_seconds_(0),
+        total_gameplay_seconds_(0),
+        total_calories_burned_(0),
+        goal_type_(GoalType_Calories),
+        goal_calories_(0),
+        goal_seconds_(0),
+        total_dance_points_(0),
+        num_extra_stages_passed_(0),
+        num_extra_stages_failed_(0),
+        num_toasties_(0),
+        total_taps_and_holds_(0),
+        total_jumps_(0),
+        total_holds_(0),
+        total_rolls_(0),
+        total_mines_(0),
+        total_hands_(0),
+        total_lifts_(0),
+        new_profile_(false),
+        unlocked_entry_ids_(),
+        last_played_machine_guid_(""),
+        creation_time_(),
+        last_played_date_(),
+        num_songs_played_by_style_(),
+        num_total_songs_played_(0),
+        user_table_(),
+        song_high_scores_(),
+        course_high_scores_(),
+        screenshots_(),
+        map_day_to_calories_burned_() {
+    last_song_.Unset();
+    last_course_.Unset();
 
-    m_CreationTime.Init();
-    m_LastPlayedDate.Init();
+    creation_time_.Init();
+    last_played_date_.Init();
 
     FOREACH_ENUM(PlayMode, i)
-    m_iNumSongsPlayedByPlayMode[i] = 0;
+    num_songs_played_by_play_mode_[i] = 0;
     FOREACH_ENUM(Difficulty, i)
-    m_iNumSongsPlayedByDifficulty[i] = 0;
+    num_songs_played_by_difficulty_[i] = 0;
     for (int i = 0; i < MAX_METER + 1; i++) {
-      m_iNumSongsPlayedByMeter[i] = 0;
+      num_songs_played_by_meter_[i] = 0;
     }
 
-    ZERO(m_iNumStagesPassedByPlayMode);
-    ZERO(m_iNumStagesPassedByGrade);
-    m_UserTable.Unset();
+    ZERO(num_stages_passed_by_play_mode_);
+    ZERO(num_stages_passed_by_grade_);
+    user_table_.Unset();
 
     FOREACH_ENUM(StepsType, st)
     FOREACH_ENUM(RankingCategory, rc)
-    m_CategoryHighScores[st][rc].Init();
+    category_high_scores_[st][rc].Init();
   }
 
   ~Profile();
@@ -207,103 +207,103 @@ class Profile {
 
   bool IsMachine() const;
 
-  ProfileType m_Type;
+  ProfileType type_;
   // Profiles of the same type and priority are sorted by dir name.
-  int m_ListPriority;
+  int list_priority_;
 
   // Editable data
-  std::string m_sDisplayName;
-  std::string m_sCharacterID;
+  std::string display_name_;
+  std::string character_id_;
   /**
    * @brief The last used name for high scoring purposes.
    *
    * This really shouldn't be in "editable", but it's needed in the smaller
    * editable file so that it can be ready quickly. */
-  std::string m_sLastUsedHighScoreName;
-  int m_iWeightPounds;  // 0 == not set
+  std::string last_used_high_score_name_;
+  int weight_pounds_;  // 0 == not set
   // Voomax and BirthYear are used for calculating calories from heart rate.
-  float m_Voomax;   // 0 == not set
-  int m_BirthYear;  // 0 == not set
+  float voomax_;    // 0 == not set
+  int birth_year_;  // 0 == not set
   // m_IgnoreStepCountCalories is so that the step count based calorie
   // counter can be ignored in favor of calculating calories from heart rate
   // and voomax.
-  bool m_IgnoreStepCountCalories;
-  bool m_IsMale;  // Used solely for calculating calories from heart rate.
+  bool ignore_step_count_calories_;
+  bool is_male_;  // Used solely for calculating calories from heart rate.
   // std::string m_sProfileImageName;	// todo: add a default image -aj
 
   // General data
   static std::string MakeGuid();
 
-  std::string m_sGuid;
-  std::map<std::string, std::string> m_sDefaultModifiers;
-  SortOrder m_SortOrder;
-  std::vector<Song*> m_songs;
-  std::vector<Group*> m_groups;
-  std::unordered_map<std::string, std::vector<Song*>> songsGroups;
-  Difficulty m_LastDifficulty;
-  CourseDifficulty m_LastCourseDifficulty;
-  StepsType m_LastStepsType;
-  SongID m_lastSong;
-  CourseID m_lastCourse;
-  int m_iCurrentCombo;
-  int m_iTotalSessions;
-  int m_iTotalSessionSeconds;
-  int m_iTotalGameplaySeconds;
-  float m_fTotalCaloriesBurned;
-  GoalType m_GoalType;
-  int m_iGoalCalories;
-  int m_iGoalSeconds;
-  int m_iTotalDancePoints;
-  int m_iNumExtraStagesPassed;
-  int m_iNumExtraStagesFailed;
-  int m_iNumToasties;
-  int m_iTotalTapsAndHolds;
-  int m_iTotalJumps;
-  int m_iTotalHolds;
-  int m_iTotalRolls;
-  int m_iTotalMines;
-  int m_iTotalHands;
-  int m_iTotalLifts;
+  std::string guid_;
+  std::map<std::string, std::string> default_modifiers_;
+  SortOrder sort_order_;
+  std::vector<Song*> songs_;
+  std::vector<Group*> groups_;
+  std::unordered_map<std::string, std::vector<Song*>> songs_groups_;
+  Difficulty last_difficulty_;
+  CourseDifficulty last_course_difficulty_;
+  StepsType last_steps_type_;
+  SongID last_song_;
+  CourseID last_course_;
+  int current_combo_;
+  int total_sessions_;
+  int total_session_seconds_;
+  int total_gameplay_seconds_;
+  float total_calories_burned_;
+  GoalType goal_type_;
+  int goal_calories_;
+  int goal_seconds_;
+  int total_dance_points_;
+  int num_extra_stages_passed_;
+  int num_extra_stages_failed_;
+  int num_toasties_;
+  int total_taps_and_holds_;
+  int total_jumps_;
+  int total_holds_;
+  int total_rolls_;
+  int total_mines_;
+  int total_hands_;
+  int total_lifts_;
   /** @brief Is this a brand new profile? */
-  bool m_bNewProfile;
-  std::set<std::string> m_UnlockedEntryIDs;
+  bool new_profile_;
+  std::set<std::string> unlocked_entry_ids_;
   /**
    * @brief Which machine did we play on last, based on the Guid?
    *
    * This is mutable because it's overwritten on save, but is usually
    * const everywhere else. It was decided to keep const on the whole
    * save chain and keep this mutable. -Chris */
-  mutable std::string m_sLastPlayedMachineGuid;
-  mutable DateTime m_CreationTime;
-  mutable DateTime m_LastPlayedDate;
+  mutable std::string last_played_machine_guid_;
+  mutable DateTime creation_time_;
+  mutable DateTime last_played_date_;
   /* These stats count twice in the machine profile if two players are playing;
    * that's the only approach that makes sense for ByDifficulty and ByMeter. */
-  int m_iNumSongsPlayedByPlayMode[NUM_PlayMode];
-  std::map<StyleID, int> m_iNumSongsPlayedByStyle;
-  int m_iNumSongsPlayedByDifficulty[NUM_Difficulty];
-  int m_iNumSongsPlayedByMeter[MAX_METER + 1];
+  int num_songs_played_by_play_mode_[NUM_PlayMode];
+  std::map<StyleID, int> num_songs_played_by_style_;
+  int num_songs_played_by_difficulty_[NUM_Difficulty];
+  int num_songs_played_by_meter_[MAX_METER + 1];
   /**
    * @brief Count the total number of songs played.
    *
    * This stat counts once per song, even if two players are active. */
-  int m_iNumTotalSongsPlayed;
-  int m_iNumStagesPassedByPlayMode[NUM_PlayMode];
-  int m_iNumStagesPassedByGrade[NUM_Grade];
+  int num_total_songs_played_;
+  int num_stages_passed_by_play_mode_[NUM_PlayMode];
+  int num_stages_passed_by_grade_[NUM_Grade];
 
   /* store arbitrary data for the theme within a profile */
-  LuaTable m_UserTable;
+  LuaTable user_table_;
 
   // Song high scores
   struct HighScoresForASteps {
-    HighScoreList hsl;
-    HighScoresForASteps() : hsl() {}
+    HighScoreList hsl_;
+    HighScoresForASteps() : hsl_() {}
   };
   struct HighScoresForASong {
-    std::map<StepsID, HighScoresForASteps> m_StepsHighScores;
+    std::map<StepsID, HighScoresForASteps> steps_high_scores_;
     int GetNumTimesPlayed() const;
-    HighScoresForASong() : m_StepsHighScores() {}
+    HighScoresForASong() : steps_high_scores_() {}
   };
-  std::map<SongID, HighScoresForASong> m_SongHighScores;
+  std::map<SongID, HighScoresForASong> song_high_scores_;
 
   void AddStepsHighScore(
       const Song* pSong, const Steps* pSteps, HighScore hs, int& iIndexOut);
@@ -322,15 +322,15 @@ class Profile {
   // struct was a typedef'd array of HighScores, but VC6 freaks out
   // in processing the templates for map::operator[].
   struct HighScoresForATrail {
-    HighScoreList hsl;
-    HighScoresForATrail() : hsl() {}
+    HighScoreList hsl_;
+    HighScoresForATrail() : hsl_() {}
   };
   struct HighScoresForACourse {
-    std::map<TrailID, HighScoresForATrail> m_TrailHighScores;
+    std::map<TrailID, HighScoresForATrail> trail_high_scores_;
     int GetNumTimesPlayed() const;
-    HighScoresForACourse() : m_TrailHighScores() {}
+    HighScoresForACourse() : trail_high_scores_() {}
   };
-  std::map<CourseID, HighScoresForACourse> m_CourseHighScores;
+  std::map<CourseID, HighScoresForACourse> course_high_scores_;
 
   void AddCourseHighScore(
       const Course* pCourse, const Trail* pTrail, HighScore hs, int& iIndexOut);
@@ -350,7 +350,7 @@ class Profile {
       const std::string& to_dir);
 
   // Category high scores
-  HighScoreList m_CategoryHighScores[NUM_StepsType][NUM_RankingCategory];
+  HighScoreList category_high_scores_[NUM_StepsType][NUM_RankingCategory];
 
   void AddCategoryHighScore(
       StepsType st, RankingCategory rc, HighScore hs, int& iIndexOut);
@@ -360,7 +360,7 @@ class Profile {
   int GetCategoryNumTimesPlayed(StepsType st) const;
   void IncrementCategoryPlayCount(StepsType st, RankingCategory rc);
 
-  std::vector<Screenshot> m_vScreenshots;
+  std::vector<Screenshot> screenshots_;
   void AddScreenshot(const Screenshot& screenshot);
 
   /**
@@ -373,10 +373,10 @@ class Profile {
    * the worst that could happen is that playing on a mis-set machine will
    * insert some garbage entries into the map. */
   struct Calories {
-    Calories() : fCals(0) {}
-    float fCals;
+    Calories() : cals_(0) {}
+    float cals_;
   };
-  std::map<DateTime, Calories> m_mapDayToCaloriesBurned;
+  std::map<DateTime, Calories> map_day_to_calories_burned_;
   float GetCaloriesBurnedForDay(DateTime day) const;
 
   /*

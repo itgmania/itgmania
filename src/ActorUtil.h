@@ -186,19 +186,18 @@ void SortByZPosition(std::vector<Actor*>& vActors);
 FileType GetFileType(const std::string& sPath);
 };  // namespace ActorUtil
 
-#define SET_XY(actor) ActorUtil::SetXY(actor, m_sName)
+#define SET_XY(actor) ActorUtil::SetXY(actor, name_)
 #define ON_COMMAND(actor) ActorUtil::OnCommand(actor)
 #define OFF_COMMAND(actor) ActorUtil::OffCommand(actor)
-#define SET_XY_AND_ON_COMMAND(actor) \
-  ActorUtil::SetXYAndOnCommand(actor, m_sName)
+#define SET_XY_AND_ON_COMMAND(actor) ActorUtil::SetXYAndOnCommand(actor, name_)
 #define COMMAND(actor, command_name) ActorUtil::PlayCommand(actor, command_name)
-#define LOAD_ALL_COMMANDS(actor) ActorUtil::LoadAllCommands(actor, m_sName)
+#define LOAD_ALL_COMMANDS(actor) ActorUtil::LoadAllCommands(actor, name_)
 #define LOAD_ALL_COMMANDS_AND_SET_XY(actor) \
-  ActorUtil::LoadAllCommandsAndSetXY(actor, m_sName)
+  ActorUtil::LoadAllCommandsAndSetXY(actor, name_)
 #define LOAD_ALL_COMMANDS_AND_ON_COMMAND(actor) \
-  ActorUtil::LoadAllCommandsAndOnCommand(actor, m_sName)
+  ActorUtil::LoadAllCommandsAndOnCommand(actor, name_)
 #define LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(actor) \
-  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(actor, m_sName)
+  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(actor, name_)
 
 #endif
 

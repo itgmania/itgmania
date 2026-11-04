@@ -25,7 +25,7 @@ void WarnUserAboutBadSoundDriverEntry() {
 }
 }  // namespace
 
-DriverList RageSoundDriver::m_pDriverList;
+DriverList RageSoundDriver::driver_list_;
 
 RageSoundDriver* RageSoundDriver::Create(const std::string& drivers) {
   std::vector<std::string> driversToTry;
@@ -64,7 +64,7 @@ RageSoundDriver* RageSoundDriver::Create(const std::string& drivers) {
   }
 
   for (const std::string& Driver : driversToTry) {
-    RageDriver* pDriver = m_pDriverList.Create(Driver);
+    RageDriver* pDriver = driver_list_.Create(Driver);
     const char* driverString = Driver.c_str();
     if (pDriver == nullptr) {
       LOG->Trace("Unknown sound driver: %s", driverString);

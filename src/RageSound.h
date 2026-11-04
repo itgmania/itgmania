@@ -13,9 +13,9 @@ class RageSoundReader;
 struct lua_State;
 
 struct RageSoundMixPosition {
-  int64_t m_iSourceFrame;
-  int m_iFrames;
-  float m_fSourceToStreamRatio;
+  int64_t source_frame_;
+  int frames_;
+  float source_to_stream_ratio_;
 };
 
 /* Driver interface for sounds: this is what drivers see. */
@@ -39,26 +39,26 @@ struct RageSoundParams {
   RageSoundParams();
 
   // The amount of data to play (or loop):
-  float m_StartSecond;
-  float m_LengthSeconds;
+  float start_second_;
+  float length_seconds_;
 
   // Number of seconds to spend fading in.
-  float m_fFadeInSeconds;
+  float fade_in_seconds_;
 
   // Number of seconds to spend fading out.
-  float m_fFadeOutSeconds;
+  float fade_out_seconds_;
 
-  float m_Volume;          // multiplies with SOUNDMAN->GetMixVolume()
-  float m_fAttractVolume;  // multiplies with m_Volume
+  float volume_;          // multiplies with SOUNDMAN->GetMixVolume()
+  float attract_volume_;  // multiplies with m_Volume
 
   /* Number of samples input and output when changing speed.
    * Currently, this is either 1/1, 5/4 or 4/5. */
-  float m_fPitch;
-  float m_fSpeed;
+  float pitch_;
+  float speed_;
 
   /* Optional driver feature: time to actually start playing sounds.
    * If zero, or if not supported, the sound will start immediately. */
-  RageTimer m_StartTime;
+  RageTimer start_time_;
 
   /** @brief How does the sound stop itself, if it does? */
   enum StopMode_t {
@@ -67,9 +67,9 @@ struct RageSoundParams {
     M_CONTINUE, /**< Silence is fed at the end to continue timing longer than
                    the sound. */
     M_AUTO /**< The default, the sound stops while obeying filename hints. */
-  } /** @brief How does the sound stop itself, if it does? */ StopMode;
+  } /** @brief How does the sound stop itself, if it does? */ stop_mode_;
 
-  bool m_bIsCriticalSound;  // "is a sound that should be played even during
+  bool is_critical_sound_;  // "is a sound that should be played even during
                             // attract"
 };
 
@@ -78,10 +78,10 @@ struct RageSoundLoadParams {
 
   /* If true, speed and pitch changes will be supported for this sound, at a
    * small memory penalty if not used. */
-  bool m_bSupportRateChanging;
+  bool support_rate_changing_;
 
   // If true, panning will be supported for this sound.
-  bool m_bSupportPan;
+  bool support_pan_;
 };
 
 class RageSound : public RageSoundBase {
@@ -118,7 +118,7 @@ class RageSound : public RageSoundBase {
   void LoadSoundReader(RageSoundReader* pSound);
 
   // Get the loaded RageSoundReader. While playing, only properties can be set.
-  RageSoundReader* GetSoundReader() { return m_pSource; }
+  RageSoundReader* GetSoundReader() { return source_; }
 
   void Unload();
   bool IsLoaded() const;
@@ -127,7 +127,7 @@ class RageSound : public RageSoundBase {
   void StartPlaying();
   void StopPlaying();
 
-  std::string GetError() const { return m_sError; }
+  std::string GetError() const { return error_; }
 
   void Play(bool is_action, const RageSoundParams* params = nullptr);
   void PlayCopy(bool is_action, const RageSoundParams* pParams = nullptr) const;
@@ -139,13 +139,13 @@ class RageSound : public RageSoundBase {
 
   float GetLengthSeconds();
   float GetPositionSeconds(RageTimer* Timestamp = nullptr) const;
-  std::string GetLoadedFilePath() const { return m_sFilePath; }
-  bool IsPlaying() const { return m_bPlaying; }
+  std::string GetLoadedFilePath() const { return file_path_; }
+  bool IsPlaying() const { return playing_; }
 
   float GetPlaybackRate() const;
   RageTimer GetStartTime() const;
   void SetParams(const RageSoundParams& p);
-  const RageSoundParams& GetParams() const { return m_Param; }
+  const RageSoundParams& GetParams() const { return param_; }
   bool SetProperty(const std::string& sProperty, float fValue);
   void SetStopModeFromString(const std::string& sStopMode);
 
@@ -153,14 +153,14 @@ class RageSound : public RageSoundBase {
   virtual void PushSelf(lua_State* L);
 
  private:
-  mutable RageMutex m_Mutex;
+  mutable RageMutex mutex_;
 
-  RageSoundReader* m_pSource;
+  RageSoundReader* source_;
 
-  std::string m_sFilePath;
+  std::string file_path_;
 
   void ApplyParams();
-  RageSoundParams m_Param;
+  RageSoundParams param_;
 
   /* Hack: When we stop a playing sound, we can't ask the driver the position
    * after the sound has been detached from it, and we can't seek back to the
@@ -168,11 +168,11 @@ class RageSound : public RageSoundBase {
    * seek or after the driver reports a stop, so we can return a sane position
    * when stopped and before the first audible frames have reached hardware.
    */
-  int m_iStoppedSourceFrame;
-  bool m_bPlaying;
-  bool m_bDeleteWhenFinished;
+  int stopped_source_frame_;
+  bool playing_;
+  bool delete_when_finished_;
 
-  std::string m_sError;
+  std::string error_;
 
   bool SetPositionFrames(int frames = -1);
   RageSoundParams::StopMode_t GetStopMode() const;  // resolves M_AUTO

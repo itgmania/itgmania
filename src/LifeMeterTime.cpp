@@ -58,12 +58,12 @@ static Preference1D<float> g_fTimeMeterSecondsChange(
     TimeMeterSecondsChangeInit, NUM_ScoreEvent);
 
 LifeMeterTime::LifeMeterTime() {
-  m_fLifeTotalGainedSeconds = 0;
-  m_fLifeTotalLostSeconds = 0;
-  m_pStream = nullptr;
+  life_total_gained_seconds_ = 0;
+  life_total_lost_seconds_ = 0;
+  stream_ = nullptr;
 }
 
-LifeMeterTime::~LifeMeterTime() { delete m_pStream; }
+LifeMeterTime::~LifeMeterTime() { delete stream_; }
 
 void LifeMeterTime::Load(
     const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
@@ -71,31 +71,31 @@ void LifeMeterTime::Load(
 
   const std::string sType = "LifeMeterTime";
 
-  m_sprBackground.Load(THEME->GetPathG(sType, "background"));
-  m_sprBackground->SetName("Background");
-  m_sprBackground->ZoomToWidth(METER_WIDTH);
-  m_sprBackground->ZoomToHeight(METER_HEIGHT);
-  this->AddChild(m_sprBackground);
+  spr_background_.Load(THEME->GetPathG(sType, "background"));
+  spr_background_->SetName("Background");
+  spr_background_->ZoomToWidth(METER_WIDTH);
+  spr_background_->ZoomToHeight(METER_HEIGHT);
+  this->AddChild(spr_background_);
 
-  m_quadDangerGlow.ZoomToWidth(METER_WIDTH);
-  m_quadDangerGlow.ZoomToHeight(METER_HEIGHT);
+  quad_danger_glow_.ZoomToWidth(METER_WIDTH);
+  quad_danger_glow_.ZoomToHeight(METER_HEIGHT);
   // hardcoded effects...
-  m_quadDangerGlow.SetEffectDiffuseShift(
+  quad_danger_glow_.SetEffectDiffuseShift(
       1.0f, RageColor(1, 0, 0, 0.8f), RageColor(1, 0, 0, 0));
-  m_quadDangerGlow.SetEffectClock(Actor::CLOCK_BGM_BEAT);
-  this->AddChild(&m_quadDangerGlow);
+  quad_danger_glow_.SetEffectClock(Actor::CLOCK_BGM_BEAT);
+  this->AddChild(&quad_danger_glow_);
 
-  m_pStream = new StreamDisplay;
+  stream_ = new StreamDisplay;
   bool bExtra = GAMESTATE->IsAnExtraStage();
-  m_pStream->Load(bExtra ? "StreamDisplayExtra" : "StreamDisplay");
-  this->AddChild(m_pStream);
+  stream_->Load(bExtra ? "StreamDisplayExtra" : "StreamDisplay");
+  this->AddChild(stream_);
 
   std::string sExtra = bExtra ? "extra " : "";
-  m_sprFrame.Load(THEME->GetPathG(sType, sExtra + "frame"));
-  m_sprFrame->SetName("Frame");
-  this->AddChild(m_sprFrame);
+  spr_frame_.Load(THEME->GetPathG(sType, sExtra + "frame"));
+  spr_frame_->SetName("Frame");
+  this->AddChild(spr_frame_);
 
-  m_soundGainLife.Load(THEME->GetPathS(sType, "GainLife"));
+  sound_gain_life_.Load(THEME->GetPathS(sType, "GainLife"));
 }
 
 void LifeMeterTime::OnLoadSong() {
@@ -103,22 +103,22 @@ void LifeMeterTime::OnLoadSong() {
     return;
   }
 
-  float fOldLife = m_fLifeTotalLostSeconds;
+  float fOldLife = life_total_lost_seconds_;
   float fGainSeconds = 0;
   if (GAMESTATE->IsCourseMode()) {
-    Course* pCourse = GAMESTATE->m_pCurCourse;
+    Course* pCourse = GAMESTATE->cur_course_;
     ASSERT(pCourse != nullptr);
     fGainSeconds =
-        pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].fGainSeconds;
+        pCourse->entries_[GAMESTATE->GetCourseSongIndex()].gain_seconds_;
   } else {
     // Placeholderish, at least this way it won't crash when someone tries it
     // out in non-course mode. -Kyz
-    Song* song = GAMESTATE->m_pCurSong;
+    Song* song = GAMESTATE->cur_song_;
     ASSERT(song != nullptr);
-    float song_len = song->m_fMusicLengthSeconds;
-    Steps* steps = GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber];
+    float song_len = song->music_length_seconds_;
+    Steps* steps = GAMESTATE->cur_steps_[player_state_->player_number_];
     ASSERT(steps != nullptr);
-    RadarValues radars = steps->GetRadarValues(m_pPlayerState->m_PlayerNumber);
+    RadarValues radars = steps->GetRadarValues(player_state_->player_number_);
     float scorable_things =
         radars[RadarCategory_TapsAndHolds] + radars[RadarCategory_Lifts];
     if (g_fTimeMeterSecondsChange[SE_Held] > 0.0f) {
@@ -134,8 +134,8 @@ void LifeMeterTime::OnLoadSong() {
   if (MIN_LIFE_TIME > fGainSeconds) {
     fGainSeconds = MIN_LIFE_TIME;
   }
-  m_fLifeTotalGainedSeconds += fGainSeconds;
-  m_soundGainLife.Play(false);
+  life_total_gained_seconds_ += fGainSeconds;
+  sound_gain_life_.Play(false);
   SendLifeChangedMessage(fOldLife, TapNoteScore_Invalid, HoldNoteScore_Invalid);
 }
 
@@ -177,8 +177,8 @@ void LifeMeterTime::ChangeLife(TapNoteScore tns) {
       break;
   }
 
-  float fOldLife = m_fLifeTotalLostSeconds;
-  m_fLifeTotalLostSeconds -= fMeterChange;
+  float fOldLife = life_total_lost_seconds_;
+  life_total_lost_seconds_ -= fMeterChange;
   SendLifeChangedMessage(fOldLife, tns, HoldNoteScore_Invalid);
 }
 
@@ -202,20 +202,20 @@ void LifeMeterTime::ChangeLife(HoldNoteScore hns, TapNoteScore tns) {
       break;
   }
 
-  float fOldLife = m_fLifeTotalLostSeconds;
-  m_fLifeTotalLostSeconds -= fMeterChange;
+  float fOldLife = life_total_lost_seconds_;
+  life_total_lost_seconds_ -= fMeterChange;
   SendLifeChangedMessage(fOldLife, tns, hns);
 }
 
 void LifeMeterTime::ChangeLife(float delta) {
-  float old_life = m_fLifeTotalLostSeconds;
-  m_fLifeTotalLostSeconds -= delta;
+  float old_life = life_total_lost_seconds_;
+  life_total_lost_seconds_ -= delta;
   SendLifeChangedMessage(old_life, TapNoteScore_Invalid, HoldNoteScore_Invalid);
 }
 
 void LifeMeterTime::SetLife(float value) {
-  float old_life = m_fLifeTotalLostSeconds;
-  m_fLifeTotalLostSeconds = value;
+  float old_life = life_total_lost_seconds_;
+  life_total_lost_seconds_ = value;
   SendLifeChangedMessage(old_life, TapNoteScore_Invalid, HoldNoteScore_Invalid);
 }
 
@@ -226,17 +226,17 @@ void LifeMeterTime::HandleTapScoreNone() {
 void LifeMeterTime::SendLifeChangedMessage(
     float fOldLife, TapNoteScore tns, HoldNoteScore hns) {
   Message msg("LifeChanged");
-  msg.SetParam("Player", m_pPlayerState->m_PlayerNumber);
+  msg.SetParam("Player", player_state_->player_number_);
   msg.SetParam("TapNoteScore", LuaReference::Create(tns));
   msg.SetParam("HoldNoteScore", LuaReference::Create(hns));
   msg.SetParam("OldLife", fOldLife);
-  msg.SetParam("Difference", fOldLife - m_fLifeTotalLostSeconds);
+  msg.SetParam("Difference", fOldLife - life_total_lost_seconds_);
   msg.SetParam("LifeMeter", LuaReference::CreateFromPush(*this));
   MESSAGEMAN->Broadcast(msg);
 }
 
 bool LifeMeterTime::IsInDanger() const {
-  return m_pStream->GetPercent() < DANGER_THRESHOLD;
+  return stream_->GetPercent() < DANGER_THRESHOLD;
 }
 
 bool LifeMeterTime::IsHot() const { return false; }
@@ -247,18 +247,18 @@ void LifeMeterTime::Update(float fDeltaTime) {
   // update current stage stats so ScoreDisplayLifeTime can show the right thing
   float fSecs = GetLifeSeconds();
   fSecs = std::max(0.0f, fSecs);
-  m_pPlayerStageStats->m_fLifeRemainingSeconds = fSecs;
+  player_stage_stats_->life_remaining_seconds_ = fSecs;
 
   LifeMeter::Update(fDeltaTime);
 
-  m_pStream->SetPercent(GetLife());
-  m_pStream->SetPassingAlpha(0);
-  m_pStream->SetHotAlpha(0);
+  stream_->SetPercent(GetLife());
+  stream_->SetPassingAlpha(0);
+  stream_->SetHotAlpha(0);
 
-  if (m_pPlayerState->m_HealthState == HealthState_Danger) {
-    m_quadDangerGlow.SetDiffuseAlpha(1);
+  if (player_state_->health_state_ == HealthState_Danger) {
+    quad_danger_glow_.SetDiffuseAlpha(1);
   } else {
-    m_quadDangerGlow.SetDiffuseAlpha(0);
+    quad_danger_glow_.SetDiffuseAlpha(0);
   }
 }
 
@@ -269,8 +269,8 @@ float LifeMeterTime::GetLife() const {
 }
 
 float LifeMeterTime::GetLifeSeconds() const {
-  return m_fLifeTotalGainedSeconds -
-         (m_fLifeTotalLostSeconds + STATSMAN->m_CurStageStats.m_fStepsSeconds);
+  return life_total_gained_seconds_ -
+         (life_total_lost_seconds_ + STATSMAN->cur_stage_stats_.steps_seconds_);
 }
 
 /*

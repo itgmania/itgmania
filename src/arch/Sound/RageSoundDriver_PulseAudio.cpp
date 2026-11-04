@@ -26,26 +26,26 @@ REGISTER_SOUND_DRIVER_CLASS2("Pulse", PulseAudio);
 /* Constructor */
 RageSoundDriver_PulseAudio::RageSoundDriver_PulseAudio()
     : RageSoundDriver(),
-      m_LastPosition(0),
-      m_Error(nullptr),
-      m_Sem("Pulseaudio Synchronization Semaphore"),
-      m_PulseMainLoop(nullptr),
-      m_PulseCtx(nullptr),
-      m_PulseStream(nullptr) {
-  m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
-  if (m_ss.rate == 0) {
-    m_ss.rate = FALLBACK_SAMPLE_RATE;
+      last_position_(0),
+      error_(nullptr),
+      sem_("Pulseaudio Synchronization Semaphore"),
+      pulse_main_loop_(nullptr),
+      pulse_ctx_(nullptr),
+      pulse_stream_(nullptr) {
+  ss_.rate = PREFSMAN->sound_preferred_sample_rate_;
+  if (ss_.rate == 0) {
+    ss_.rate = FALLBACK_SAMPLE_RATE;
   }
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio() {
-  pa_context_disconnect(m_PulseCtx);
-  pa_context_unref(m_PulseCtx);
-  pa_threaded_mainloop_stop(m_PulseMainLoop);
-  pa_threaded_mainloop_free(m_PulseMainLoop);
+  pa_context_disconnect(pulse_ctx_);
+  pa_context_unref(pulse_ctx_);
+  pa_threaded_mainloop_stop(pulse_main_loop_);
+  pa_threaded_mainloop_free(pulse_main_loop_);
 
-  if (m_Error != nullptr) {
-    free(m_Error);
+  if (error_ != nullptr) {
+    free(error_);
   }
 }
 
@@ -54,8 +54,8 @@ std::string RageSoundDriver_PulseAudio::Init() {
   int error = 0;
 
   LOG->Trace("Pulse: pa_threaded_mainloop_new()...");
-  m_PulseMainLoop = pa_threaded_mainloop_new();
-  if (m_PulseMainLoop == nullptr) {
+  pulse_main_loop_ = pa_threaded_mainloop_new();
+  if (pulse_main_loop_ == nullptr) {
     return "pa_threaded_mainloop_new() failed!";
   }
 
@@ -67,35 +67,35 @@ std::string RageSoundDriver_PulseAudio::Init() {
 
   LOG->Trace("Pulse: pa_context_new_with_proplist()...");
 
-  m_PulseCtx = pa_context_new_with_proplist(
-      pa_threaded_mainloop_get_api(m_PulseMainLoop), PRODUCT_FAMILY, plist);
+  pulse_ctx_ = pa_context_new_with_proplist(
+      pa_threaded_mainloop_get_api(pulse_main_loop_), PRODUCT_FAMILY, plist);
   pa_proplist_free(plist);
 
-  if (m_PulseCtx == nullptr) {
+  if (pulse_ctx_ == nullptr) {
     return "pa_context_new_with_proplist() failed!";
   }
 #else
   LOG->Trace("Pulse: pa_context_new()...");
-  m_PulseCtx = pa_context_new(
-      pa_threaded_mainloop_get_api(m_PulseMainLoop), PRODUCT_FAMILY);
-  if (m_PulseCtx == nullptr) {
+  pulse_ctx_ = pa_context_new(
+      pa_threaded_mainloop_get_api(pulse_main_loop_), PRODUCT_FAMILY);
+  if (pulse_ctx_ == nullptr) {
     return "pa_context_new() failed!";
   }
 #endif
 
-  pa_context_set_state_callback(m_PulseCtx, StaticCtxStateCb, this);
+  pa_context_set_state_callback(pulse_ctx_, StaticCtxStateCb, this);
 
   LOG->Trace("Pulse: pa_context_connect()...");
   error =
-      pa_context_connect(m_PulseCtx, nullptr, (pa_context_flags_t)0, nullptr);
+      pa_context_connect(pulse_ctx_, nullptr, (pa_context_flags_t)0, nullptr);
 
   if (error < 0) {
     return ssprintf(
-        "pa_contect_connect(): %s", pa_strerror(pa_context_errno(m_PulseCtx)));
+        "pa_contect_connect(): %s", pa_strerror(pa_context_errno(pulse_ctx_)));
   }
 
   LOG->Trace("Pulse: pa_threaded_mainloop_start()...");
-  error = pa_threaded_mainloop_start(m_PulseMainLoop);
+  error = pa_threaded_mainloop_start(pulse_main_loop_);
   if (error < 0) {
     return ssprintf("pa_threaded_mainloop_start() returned %i", error);
   }
@@ -105,13 +105,13 @@ std::string RageSoundDriver_PulseAudio::Init() {
   StartDecodeThread();
 
   /* Wait for the pulseaudio stream to be ready before returning.
-   * An error may occur, if it appends, m_Error becomes non-nullptr. */
-  m_Sem.Wait();
+   * An error may occur, if it appends, error_ becomes non-nullptr. */
+  sem_.Wait();
 
-  if (m_Error == nullptr) {
+  if (error_ == nullptr) {
     return "";
   } else {
-    return m_Error;
+    return error_;
   }
 }
 
@@ -124,17 +124,17 @@ void RageSoundDriver_PulseAudio::m_InitStream(void) {
   ss_local.format = PA_SAMPLE_S16LE;
   ss_local.channels = 2;
   ss_local.rate =
-      m_ss.rate;  // Use the rate initialized in the constructor's m_ss
+      ss_.rate;  // Use the rate initialized in the constructor's ss_
 
   /* init channel map */
   pa_channel_map_init_stereo(&map);
 
   /* check sample spec */
   if (!pa_sample_spec_valid(&ss_local)) {
-    if (asprintf(&m_Error, "invalid sample spec!") == -1) {
-      m_Error = nullptr;  // asprintf failed to allocate memory
+    if (asprintf(&error_, "invalid sample spec!") == -1) {
+      error_ = nullptr;  // asprintf failed to allocate memory
     }
-    m_Sem.Post();
+    sem_.Post();
     return;
   }
 
@@ -145,25 +145,25 @@ void RageSoundDriver_PulseAudio::m_InitStream(void) {
 
   /* create the stream */
   LOG->Trace("Pulse: pa_stream_new()...");
-  m_PulseStream =
-      pa_stream_new(m_PulseCtx, PRODUCT_FAMILY " Audio", &ss_local, &map);
-  if (m_PulseStream == nullptr) {
+  pulse_stream_ =
+      pa_stream_new(pulse_ctx_, PRODUCT_FAMILY " Audio", &ss_local, &map);
+  if (pulse_stream_ == nullptr) {
     if (asprintf(
-            &m_Error, "pa_stream_new(): %s",
-            pa_strerror(pa_context_errno(m_PulseCtx))) == -1) {
-      m_Error = nullptr;  // asprintf failed to allocate memory
+            &error_, "pa_stream_new(): %s",
+            pa_strerror(pa_context_errno(pulse_ctx_))) == -1) {
+      error_ = nullptr;  // asprintf failed to allocate memory
     }
-    m_Sem.Post();
+    sem_.Post();
     return;
   }
 
   /* set the write callback, it will be called when the sound server
    * needs data */
-  pa_stream_set_write_callback(m_PulseStream, StaticStreamWriteCb, this);
+  pa_stream_set_write_callback(pulse_stream_, StaticStreamWriteCb, this);
 
   /* set the state callback, it will be called when the stream state will
    * change */
-  pa_stream_set_state_callback(m_PulseStream, StaticStreamStateCb, this);
+  pa_stream_set_state_callback(pulse_stream_, StaticStreamStateCb, this);
 
   /* configure attributes of the stream */
   pa_buffer_attr attr;
@@ -234,31 +234,31 @@ void RageSoundDriver_PulseAudio::m_InitStream(void) {
       PA_STREAM_ADJUST_LATENCY;  // Allow server to adjust latency based on our
                                  // buffer_attr
   error = pa_stream_connect_playback(
-      m_PulseStream, nullptr, &attr, static_cast<pa_stream_flags_t>(flags),
+      pulse_stream_, nullptr, &attr, static_cast<pa_stream_flags_t>(flags),
       nullptr, nullptr);
   if (error < 0) {
     if (asprintf(
-            &m_Error, "pa_stream_connect_playback(): %s",
-            pa_strerror(pa_context_errno(m_PulseCtx))) == -1) {
-      m_Error = nullptr;  // asprintf failed to allocate memory
+            &error_, "pa_stream_connect_playback(): %s",
+            pa_strerror(pa_context_errno(pulse_ctx_))) == -1) {
+      error_ = nullptr;  // asprintf failed to allocate memory
     }
-    m_Sem.Post();
+    sem_.Post();
     return;
   }
 
-  // m_ss is the member variable. After successfully connecting the stream,
+  // ss_ is the member variable. After successfully connecting the stream,
   // we can be more confident about the sample spec being used.
-  // It's generally good practice to update m_ss with the spec that was
+  // It's generally good practice to update ss_ with the spec that was
   // actually used to create the stream, in case the server negotiated
   // something slightly different (though with PA_SAMPLE_S16LE, 2ch, and
   // specific rates, it's less likely to change).
-  m_ss = ss_local;
+  ss_ = ss_local;
 
   // Semaphore is posted in StreamStateCb when stream becomes PA_STREAM_READY
 }
 
 void RageSoundDriver_PulseAudio::CtxStateCb(pa_context* c) {
-  switch (pa_context_get_state(m_PulseCtx)) {
+  switch (pa_context_get_state(pulse_ctx_)) {
     case PA_CONTEXT_CONNECTING:
       LOG->Trace("Pulse: Context connecting...");
       break;
@@ -275,11 +275,11 @@ void RageSoundDriver_PulseAudio::CtxStateCb(pa_context* c) {
     case PA_CONTEXT_TERMINATED:
     case PA_CONTEXT_FAILED:
       if (asprintf(
-              &m_Error, "context connection failed: %s",
-              pa_strerror(pa_context_errno(m_PulseCtx))) == -1) {
-        m_Error = nullptr;
+              &error_, "context connection failed: %s",
+              pa_strerror(pa_context_errno(pulse_ctx_))) == -1) {
+        error_ = nullptr;
       }
-      m_Sem.Post();
+      sem_.Post();
       return;
       break;
     default:
@@ -288,39 +288,39 @@ void RageSoundDriver_PulseAudio::CtxStateCb(pa_context* c) {
 }
 
 void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream* s) {
-  switch (pa_stream_get_state(m_PulseStream)) {
+  switch (pa_stream_get_state(pulse_stream_)) {
     case PA_STREAM_CREATING:
       LOG->Trace("Pulse: Stream creating...");
       break;
     case PA_STREAM_READY:
       LOG->Trace("Pulse: Stream ready now/");
-      m_Sem.Post();
+      sem_.Post();
       return;
       break;
     case PA_STREAM_UNCONNECTED:
     case PA_STREAM_TERMINATED:
     case PA_STREAM_FAILED:
       if (asprintf(
-              &m_Error, "stream connection failed: %s",
-              pa_strerror(pa_context_errno(m_PulseCtx))) == -1) {
+              &error_, "stream connection failed: %s",
+              pa_strerror(pa_context_errno(pulse_ctx_))) == -1) {
       }
-      m_Sem.Post();
+      sem_.Post();
       return;
       break;
   }
 }
 
 int64_t RageSoundDriver_PulseAudio::GetPosition() const {
-  pa_threaded_mainloop_lock(m_PulseMainLoop);
+  pa_threaded_mainloop_lock(pulse_main_loop_);
   int64_t position = GetPositionUnlocked();
-  pa_threaded_mainloop_unlock(m_PulseMainLoop);
+  pa_threaded_mainloop_unlock(pulse_main_loop_);
   return position;
 }
 
 int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const {
   pa_usec_t usec;
-  if (pa_stream_get_time(m_PulseStream, &usec) < 0) {
-    int paErrno = pa_context_errno(m_PulseCtx);
+  if (pa_stream_get_time(pulse_stream_, &usec) < 0) {
+    int paErrno = pa_context_errno(pulse_ctx_);
 
     // We might get no data error if the stream has just been started and hasn't
     // received any timing data yet
@@ -332,7 +332,7 @@ int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const {
     }
   }
 
-  size_t length = pa_usec_to_bytes(usec, &m_ss);
+  size_t length = pa_usec_to_bytes(usec, &ss_);
   return length /
          (sizeof(int16_t) * 2); /* we use 16-bit frames and 2 channels */
 }
@@ -342,26 +342,26 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream* s, size_t length) {
   while (length > 0) {
     void* buf;
     size_t bufsize = length;
-    if (pa_stream_begin_write(m_PulseStream, &buf, &bufsize) < 0) {
+    if (pa_stream_begin_write(pulse_stream_, &buf, &bufsize) < 0) {
       RageException::Throw(
           "Pulse: pa_stream_begin_write() failed: %s",
-          pa_strerror(pa_context_errno(m_PulseCtx)));
+          pa_strerror(pa_context_errno(pulse_ctx_)));
     }
 
     const size_t nbframes =
         bufsize / sizeof(int16_t); /* we use 16-bit frames */
-    int64_t pos1 = m_LastPosition;
+    int64_t pos1 = last_position_;
     int64_t pos2 = pos1 + nbframes / 2; /* Mix() position in stereo frames */
     this->Mix(reinterpret_cast<int16_t*>(buf), pos2 - pos1, pos1, curPos);
 
     if (pa_stream_write(
-            m_PulseStream, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0) {
+            pulse_stream_, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0) {
       RageException::Throw(
           "Pulse: pa_stream_write() failed: %s",
-          pa_strerror(pa_context_errno(m_PulseCtx)));
+          pa_strerror(pa_context_errno(pulse_ctx_)));
     }
 
-    m_LastPosition = pos2;
+    last_position_ = pos2;
     length -= bufsize;
   }
 }

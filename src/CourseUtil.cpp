@@ -40,8 +40,8 @@ static bool CompareCoursePointersByName(
 
 static bool CompareCoursePointersByAutogen(
     const Course* pCourse1, const Course* pCourse2) {
-  int b1 = pCourse1->m_bIsAutogen;
-  int b2 = pCourse2->m_bIsAutogen;
+  int b1 = pCourse1->is_autogen_;
+  int b2 = pCourse2->is_autogen_;
   if (b1 < b2) {
     return true;
   } else if (b1 > b2) {
@@ -66,8 +66,8 @@ static bool CompareCoursePointersByDifficulty(
 
 static bool CompareCoursePointersByTotalDifficulty(
     const Course* pCourse1, const Course* pCourse2) {
-  int iNum1 = pCourse1->m_SortOrder_TotalDifficulty;
-  int iNum2 = pCourse2->m_SortOrder_TotalDifficulty;
+  int iNum1 = pCourse1->sort_order_total_difficulty_;
+  int iNum2 = pCourse2->sort_order_total_difficulty_;
 
   if (iNum1 == iNum2) {
     return CompareCoursePointersByAutogen(pCourse1, pCourse2);
@@ -98,8 +98,8 @@ static bool CompareRandom(const Course* pCourse1, const Course* pCourse2) {
 
 static bool CompareCoursePointersByRanking(
     const Course* pCourse1, const Course* pCourse2) {
-  int iNum1 = pCourse1->m_SortOrder_Ranking;
-  int iNum2 = pCourse2->m_SortOrder_Ranking;
+  int iNum1 = pCourse1->sort_order_ranking_;
+  int iNum2 = pCourse2->sort_order_ranking_;
 
   if (iNum1 == iNum2) {
     return CompareCoursePointersByAutogen(pCourse1, pCourse2);
@@ -118,7 +118,7 @@ void CourseUtil::SortCoursePointerArrayByRanking(
     std::vector<Course*>& vpCoursesInOut) {
   for (unsigned i = 0; i < vpCoursesInOut.size(); i++) {
     vpCoursesInOut[i]->UpdateCourseStats(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType);
+        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
   }
   sort(
       vpCoursesInOut.begin(), vpCoursesInOut.end(),
@@ -129,7 +129,7 @@ void CourseUtil::SortCoursePointerArrayByTotalDifficulty(
     std::vector<Course*>& vpCoursesInOut) {
   for (unsigned i = 0; i < vpCoursesInOut.size(); i++) {
     vpCoursesInOut[i]->UpdateCourseStats(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType);
+        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
   }
   sort(
       vpCoursesInOut.begin(), vpCoursesInOut.end(),
@@ -182,7 +182,7 @@ void CourseUtil::SortCoursePointerArrayByAvgDifficulty(
   course_sort_val.clear();
   for (unsigned i = 0; i < vpCoursesInOut.size(); ++i) {
     int iMeter = vpCoursesInOut[i]->GetMeter(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType,
+        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_,
         Difficulty_Medium);
     course_sort_val[vpCoursesInOut[i]] = ssprintf("%06i", iMeter);
   }
@@ -245,63 +245,63 @@ void CourseUtil::SortByMostRecentlyPlayedForMachine(
 
 void CourseUtil::AutogenEndlessFromGroup(
     const std::string& sGroupName, Difficulty diff, Course& out) {
-  out.m_bIsAutogen = true;
-  out.m_bRepeat = true;
-  out.m_bShuffle = true;
-  out.m_iLives = -1;
+  out.is_autogen_ = true;
+  out.repeat_ = true;
+  out.shuffle_ = true;
+  out.lives_ = -1;
   FOREACH_ENUM(Difficulty, dc)
-  out.m_iCustomMeter[dc] = -1;
+  out.custom_meter_[dc] = -1;
 
   if (sGroupName == "") {
-    out.m_sMainTitle = "All Songs";
+    out.main_title_ = "All Songs";
     // this sounds reasonable... -aj
-    out.m_sBannerPath = THEME->GetPathG("Banner", "all music");
+    out.banner_path_ = THEME->GetPathG("Banner", "all music");
   } else {
-    out.m_sMainTitle = SONGMAN->ShortenGroupName(sGroupName);
-    out.m_sBannerPath = SONGMAN->GetSongGroupBannerPath(sGroupName);
+    out.main_title_ = SONGMAN->ShortenGroupName(sGroupName);
+    out.banner_path_ = SONGMAN->GetSongGroupBannerPath(sGroupName);
   }
 
   // We want multiple songs, so we can try to prevent repeats during
   // gameplay. (We might still get a repeat at the repeat boundary,
   // but that'd be rare.) -glenn
   CourseEntry e;
-  e.songCriteria.m_vsGroupNames.push_back(sGroupName);
-  e.stepsCriteria.m_difficulty = diff;
-  e.bSecret = true;
+  e.song_criteria_.group_names_.push_back(sGroupName);
+  e.steps_criteria_.difficulty_ = diff;
+  e.secret_ = true;
 
   // Insert a copy of e for each song in the group.
-  out.m_vEntries.insert(
-      out.m_vEntries.end(), SONGMAN->GetSongs(sGroupName).size(), e);
+  out.entries_.insert(
+      out.entries_.end(), SONGMAN->GetSongs(sGroupName).size(), e);
 }
 
 void CourseUtil::AutogenNonstopFromGroup(
     const std::string& sGroupName, Difficulty diff, Course& out) {
   AutogenEndlessFromGroup(sGroupName, diff, out);
 
-  out.m_bRepeat = false;
+  out.repeat_ = false;
 
-  out.m_sMainTitle += " Random";
+  out.main_title_ += " Random";
 
   // resize to 4
-  while (out.m_vEntries.size() < 4) {
-    out.m_vEntries.push_back(out.m_vEntries[0]);
+  while (out.entries_.size() < 4) {
+    out.entries_.push_back(out.entries_[0]);
   }
-  while (out.m_vEntries.size() > 4) {
-    out.m_vEntries.pop_back();
+  while (out.entries_.size() > 4) {
+    out.entries_.pop_back();
   }
 }
 
 void CourseUtil::AutogenOniFromArtist(
     const std::string& sArtistName, std::string sArtistNameTranslit,
     std::vector<Song*> aSongs, Difficulty dc, Course& out) {
-  out.m_bIsAutogen = true;
-  out.m_bRepeat = false;
-  out.m_bShuffle = true;
-  out.m_bSortByMeter = true;
+  out.is_autogen_ = true;
+  out.repeat_ = false;
+  out.shuffle_ = true;
+  out.sort_by_meter_ = true;
 
-  out.m_iLives = 4;
+  out.lives_ = 4;
   FOREACH_ENUM(Difficulty, cd)
-  out.m_iCustomMeter[cd] = -1;
+  out.custom_meter_[cd] = -1;
 
   ASSERT(sArtistName != "");
   ASSERT(aSongs.size() > 0);
@@ -309,9 +309,9 @@ void CourseUtil::AutogenOniFromArtist(
   /* "Artist Oni" is a little repetitive; "by Artist" stands out less, and
    * lowercasing "by" puts more emphasis on the artist's name. It also sorts
    * them together. */
-  out.m_sMainTitle = "by " + sArtistName;
+  out.main_title_ = "by " + sArtistName;
   if (sArtistNameTranslit != sArtistName) {
-    out.m_sMainTitleTranslit = "by " + sArtistNameTranslit;
+    out.main_title_translit_ = "by " + sArtistNameTranslit;
   }
 
   // How would we handle Artist Oni course banners, anyways? -aj
@@ -331,11 +331,11 @@ void CourseUtil::AutogenOniFromArtist(
   }
 
   CourseEntry e;
-  e.stepsCriteria.m_difficulty = dc;
+  e.steps_criteria_.difficulty_ = dc;
 
   for (unsigned i = 0; i < aSongs.size(); ++i) {
-    e.songID.FromSong(aSongs[i]);
-    out.m_vEntries.push_back(e);
+    e.song_id_.FromSong(aSongs[i]);
+    out.entries_.push_back(e);
   }
 }
 
@@ -393,22 +393,22 @@ bool EditCourseUtil::RenameAndSave(Course* pCourse, std::string sNewName) {
                    EDIT_COURSES_SUBDIR + sNewName + ".crs";
   } else {
     std::string sDir, sName, sExt;
-    splitpath(pCourse->m_sPath, sDir, sName, sExt);
+    splitpath(pCourse->path_, sDir, sName, sExt);
     sNewFilePath = sDir + sNewName + sExt;
   }
 
   // remove the old file if the name is changing
-  if (!pCourse->m_sPath.empty() && sNewFilePath != pCourse->m_sPath) {
-    FILEMAN->Remove(pCourse->m_sPath);  // not fatal if this fails
+  if (!pCourse->path_.empty() && sNewFilePath != pCourse->path_) {
+    FILEMAN->Remove(pCourse->path_);  // not fatal if this fails
   }
 
-  pCourse->m_sMainTitle = sNewName;
-  pCourse->m_sPath = sNewFilePath;
-  return CourseWriterCRS::Write(*pCourse, pCourse->m_sPath, false);
+  pCourse->main_title_ = sNewName;
+  pCourse->path_ = sNewFilePath;
+  return CourseWriterCRS::Write(*pCourse, pCourse->path_, false);
 }
 
 bool EditCourseUtil::RemoveAndDeleteFile(Course* pCourse) {
-  if (!FILEMAN->Remove(pCourse->m_sPath)) {
+  if (!FILEMAN->Remove(pCourse->path_)) {
     return false;
   }
   FILEMAN->Remove(pCourse->GetCacheFilePath());
@@ -448,7 +448,7 @@ bool EditCourseUtil::ValidateEditCourseName(
   std::vector<Course*> vpCourses;
   EditCourseUtil::GetAllEditCourses(vpCourses);
   for (const Course* p : vpCourses) {
-    if (GAMESTATE->m_pCurCourse == p) {
+    if (GAMESTATE->cur_course_ == p) {
       continue;  // don't comepare name against ourself
     }
 
@@ -463,25 +463,25 @@ bool EditCourseUtil::ValidateEditCourseName(
 
 void EditCourseUtil::UpdateAndSetTrail() {
   ASSERT(GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr);
-  StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType;
+  StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_;
   Trail* pTrail = nullptr;
-  if (GAMESTATE->m_pCurCourse) {
-    pTrail = GAMESTATE->m_pCurCourse->GetTrailForceRegenCache(st);
+  if (GAMESTATE->cur_course_) {
+    pTrail = GAMESTATE->cur_course_->GetTrailForceRegenCache(st);
   }
-  GAMESTATE->m_pCurTrail[PLAYER_1].Set(pTrail);
+  GAMESTATE->cur_trail_[PLAYER_1].Set(pTrail);
 }
 
 void EditCourseUtil::PrepareForPlay() {
-  GAMESTATE->m_pCurSong.Set(
+  GAMESTATE->cur_song_.Set(
       nullptr);  // CurSong will be set if we back out.  Set it back to nullptr
                  // so that ScreenStage won't show the last song.
-  GAMESTATE->m_PlayMode.Set(PLAY_MODE_ENDLESS);
-  GAMESTATE->m_bSideIsJoined[0] = true;
+  GAMESTATE->play_mode_.Set(PLAY_MODE_ENDLESS);
+  GAMESTATE->side_is_joined_[0] = true;
 
-  PROFILEMAN->GetProfile(ProfileSlot_Player1)->m_GoalType = GoalType_Time;
-  Course* pCourse = GAMESTATE->m_pCurCourse;
-  PROFILEMAN->GetProfile(ProfileSlot_Player1)->m_iGoalSeconds =
-      static_cast<int>(pCourse->m_fGoalSeconds);
+  PROFILEMAN->GetProfile(ProfileSlot_Player1)->goal_type_ = GoalType_Time;
+  Course* pCourse = GAMESTATE->cur_course_;
+  PROFILEMAN->GetProfile(ProfileSlot_Player1)->goal_seconds_ =
+      static_cast<int>(pCourse->goal_seconds_);
 }
 
 void EditCourseUtil::GetAllEditCourses(std::vector<Course*>& vpCoursesOut) {
@@ -497,18 +497,18 @@ void EditCourseUtil::GetAllEditCourses(std::vector<Course*>& vpCoursesOut) {
 void EditCourseUtil::LoadDefaults(Course& out) {
   out = Course();
 
-  out.m_fGoalSeconds = 0;
+  out.goal_seconds_ = 0;
 
   // pick a default name
   // XXX: Make this localizable
   for (int i = 0; i < 10000; i++) {
-    out.m_sMainTitle = ssprintf("Workout %d", i + 1);
+    out.main_title_ = ssprintf("Workout %d", i + 1);
 
     std::vector<Course*> vpCourses;
     EditCourseUtil::GetAllEditCourses(vpCourses);
 
     if (std::any_of(vpCourses.begin(), vpCourses.end(), [&](const Course* p) {
-          return out.m_sMainTitle == p->m_sMainTitle;
+          return out.main_title_ == p->main_title_;
         })) {
       break;
     }
@@ -518,9 +518,9 @@ void EditCourseUtil::LoadDefaults(Course& out) {
   SONGMAN->GetPreferredSortSongs(vpSongs);
   for (int i = 0; i < (int)vpSongs.size() && i < 6; i++) {
     CourseEntry ce;
-    ce.songID.FromSong(vpSongs[i]);
-    ce.stepsCriteria.m_difficulty = Difficulty_Easy;
-    out.m_vEntries.push_back(ce);
+    ce.song_id_.FromSong(vpSongs[i]);
+    ce.steps_criteria_.difficulty_ = Difficulty_Easy;
+    out.entries_.push_back(ce);
   }
 }
 
@@ -530,33 +530,33 @@ void EditCourseUtil::LoadDefaults(Course& out) {
 
 void CourseID::FromCourse(const Course* p) {
   if (p) {
-    if (p->m_bIsAutogen) {
-      sPath = "";
-      sFullTitle = p->GetTranslitFullTitle();
+    if (p->is_autogen_) {
+      path_ = "";
+      full_title_ = p->GetTranslitFullTitle();
     } else {
-      sPath = p->m_sPath;
-      sFullTitle = "";
+      path_ = p->path_;
+      full_title_ = "";
     }
   } else {
-    sPath = "";
-    sFullTitle = "";
+    path_ = "";
+    full_title_ = "";
   }
 
   // HACK for backwards compatibility:
   // Strip off leading "/".  2005/05/21 file layer changes added a leading
   // slash.
-  if (Left(sPath, 1) == "/") {
-    sPath.erase(sPath.begin());
+  if (Left(path_, 1) == "/") {
+    path_.erase(path_.begin());
   }
 }
 
 Course* CourseID::ToCourse() const {
   Course* pCourse = nullptr;
-  if (!sPath.empty()) {
+  if (!path_.empty()) {
     // HACK for backwards compatibility:
     // Re-add the leading "/".  2005/05/21 file layer changes added a leading
     // slash.
-    std::string slash_path = sPath;
+    std::string slash_path = path_;
     if (Left(slash_path, 1) != "/") {
       slash_path = "/" + slash_path;
     }
@@ -564,8 +564,8 @@ Course* CourseID::ToCourse() const {
     pCourse = SONGMAN->GetCourseFromPath(slash_path);
   }
 
-  if (pCourse == nullptr && !sFullTitle.empty()) {
-    pCourse = SONGMAN->GetCourseFromName(sFullTitle);
+  if (pCourse == nullptr && !full_title_.empty()) {
+    pCourse = SONGMAN->GetCourseFromName(full_title_);
   }
 
   return pCourse;
@@ -575,11 +575,11 @@ XNode* CourseID::CreateNode() const {
   XNode* pNode = new XNode("Course");
   ;
 
-  if (!sPath.empty()) {
-    pNode->AppendAttr("Path", sPath);
+  if (!path_.empty()) {
+    pNode->AppendAttr("Path", path_);
   }
-  if (!sFullTitle.empty()) {
-    pNode->AppendAttr("FullTitle", sFullTitle);
+  if (!full_title_.empty()) {
+    pNode->AppendAttr("FullTitle", full_title_);
   }
 
   return pNode;
@@ -587,20 +587,22 @@ XNode* CourseID::CreateNode() const {
 
 void CourseID::LoadFromNode(const XNode* pNode) {
   ASSERT(pNode->GetName() == "Course");
-  sFullTitle = std::string();
-  sPath = std::string();
-  if (!pNode->GetAttrValue("Path", sPath)) {
-    pNode->GetAttrValue("FullTitle", sFullTitle);
+  full_title_ = std::string();
+  path_ = std::string();
+  if (!pNode->GetAttrValue("Path", path_)) {
+    pNode->GetAttrValue("FullTitle", full_title_);
   }
 
   // HACK for backwards compatibility: /AdditionalCourses has been merged into
   // /Courses
-  if (Left(sPath, 18) == "AdditionalCourses/") {
-    sPath.replace(0, 18, "Courses/");
+  if (Left(path_, 18) == "AdditionalCourses/") {
+    path_.replace(0, 18, "Courses/");
   }
 }
 
-bool CourseID::IsValid() const { return !sPath.empty() || !sFullTitle.empty(); }
+bool CourseID::IsValid() const {
+  return !path_.empty() || !full_title_.empty();
+}
 
 /*
  * (c) 2001-2004 Chris Danford

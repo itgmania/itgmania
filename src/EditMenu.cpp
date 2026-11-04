@@ -49,7 +49,7 @@ void EditMenu::StripLockedStepsAndDifficulty(
     std::vector<StepsAndDifficulty>& v) {
   const Song* pSong = GetSelectedSong();
   for (int i = (int)v.size() - 1; i >= 0; i--) {
-    if (v[i].pSteps && UNLOCKMAN->StepsIsLocked(pSong, v[i].pSteps)) {
+    if (v[i].steps_ && UNLOCKMAN->StepsIsLocked(pSong, v[i].steps_)) {
       v.erase(v.begin() + i);
     }
   }
@@ -113,76 +113,76 @@ void EditMenu::Load(const std::string& sType) {
   ARROWS_DISABLED_COMMAND.Load(sType, "ArrowsDisabledCommand");
   ROW_Y.Load(sType, ROW_Y_NAME, NUM_EditMenuRow);
   EDIT_MODE.Load(sType, "EditMode");
-  TEXT_BANNER_TYPE.Load(m_sName, "TextBannerType");
+  TEXT_BANNER_TYPE.Load(name_, "TextBannerType");
 
   for (int i = 0; i < 2; i++) {
-    m_sprArrows[i].Load(THEME->GetPathG(sType, i == 0 ? "left" : "right"));
-    m_sprArrows[i]->SetX(ARROWS_X.GetValue(i));
-    this->AddChild(m_sprArrows[i]);
+    spr_arrows_[i].Load(THEME->GetPathG(sType, i == 0 ? "left" : "right"));
+    spr_arrows_[i]->SetX(ARROWS_X.GetValue(i));
+    this->AddChild(spr_arrows_[i]);
   }
 
-  m_SelectedRow = GetFirstRow();
+  selected_row_ = GetFirstRow();
 
-  ZERO(m_iSelection);
+  ZERO(selection_);
 
   FOREACH_EditMenuRow(r) {
-    m_textLabel[r].SetName(ssprintf("Label%i", r + 1));
-    m_textLabel[r].LoadFromFont(THEME->GetPathF(sType, "title"));
-    m_textLabel[r].SetText(EditMenuRowToLocalizedString(r));
-    ActorUtil::LoadAllCommandsAndSetXY(m_textLabel[r], sType);
+    text_label_[r].SetName(ssprintf("Label%i", r + 1));
+    text_label_[r].LoadFromFont(THEME->GetPathF(sType, "title"));
+    text_label_[r].SetText(EditMenuRowToLocalizedString(r));
+    ActorUtil::LoadAllCommandsAndSetXY(text_label_[r], sType);
     // m_textLabel[r].SetHorizAlign( align_left );
-    this->AddChild(&m_textLabel[r]);
+    this->AddChild(&text_label_[r]);
 
-    m_textValue[r].SetName(ssprintf("Value%i", r + 1));
-    m_textValue[r].LoadFromFont(THEME->GetPathF(sType, "value"));
-    m_textValue[r].SetText("blah");
-    ActorUtil::LoadAllCommandsAndSetXY(m_textValue[r], sType);
-    this->AddChild(&m_textValue[r]);
+    text_value_[r].SetName(ssprintf("Value%i", r + 1));
+    text_value_[r].LoadFromFont(THEME->GetPathF(sType, "value"));
+    text_value_[r].SetText("blah");
+    ActorUtil::LoadAllCommandsAndSetXY(text_value_[r], sType);
+    this->AddChild(&text_value_[r]);
   }
 
-  m_textLabel[ROW_GROUP].SetVisible(SHOW_GROUPS.GetValue());
-  m_textValue[ROW_GROUP].SetVisible(SHOW_GROUPS.GetValue());
+  text_label_[ROW_GROUP].SetVisible(SHOW_GROUPS.GetValue());
+  text_value_[ROW_GROUP].SetVisible(SHOW_GROUPS.GetValue());
 
   // Load low-res banners, if needed.
   IMAGECACHE->Demand("Banner");
 
   if (SHOW_GROUPS.GetValue()) {
-    m_GroupBanner.SetName("GroupBanner");
-    ActorUtil::SetXY(m_GroupBanner, sType);
-    ActorUtil::LoadAllCommands(m_GroupBanner, sType);
-    this->AddChild(&m_GroupBanner);
+    group_banner_.SetName("GroupBanner");
+    ActorUtil::SetXY(group_banner_, sType);
+    ActorUtil::LoadAllCommands(group_banner_, sType);
+    this->AddChild(&group_banner_);
   }
 
-  m_SongBanner.SetName("SongBanner");
-  ActorUtil::SetXY(m_SongBanner, sType);
-  ActorUtil::LoadAllCommands(m_SongBanner, sType);
-  this->AddChild(&m_SongBanner);
+  song_banner_.SetName("SongBanner");
+  ActorUtil::SetXY(song_banner_, sType);
+  ActorUtil::LoadAllCommands(song_banner_, sType);
+  this->AddChild(&song_banner_);
 
-  m_SongTextBanner.SetName("SongTextBanner");
-  m_SongTextBanner.Load(TEXT_BANNER_TYPE);
-  ActorUtil::SetXY(m_SongTextBanner, sType);
-  ActorUtil::LoadAllCommands(m_SongTextBanner, sType);
-  this->AddChild(&m_SongTextBanner);
+  song_text_banner_.SetName("SongTextBanner");
+  song_text_banner_.Load(TEXT_BANNER_TYPE);
+  ActorUtil::SetXY(song_text_banner_, sType);
+  ActorUtil::LoadAllCommands(song_text_banner_, sType);
+  this->AddChild(&song_text_banner_);
 
-  m_StepsDisplay.SetName("StepsDisplay");
-  m_StepsDisplay.Load("StepsDisplayEdit", nullptr);
-  ActorUtil::SetXY(m_StepsDisplay, sType);
-  this->AddChild(&m_StepsDisplay);
+  steps_display_.SetName("StepsDisplay");
+  steps_display_.Load("StepsDisplayEdit", nullptr);
+  ActorUtil::SetXY(steps_display_, sType);
+  this->AddChild(&steps_display_);
 
-  m_StepsDisplaySource.SetName("StepsDisplaySource");
-  m_StepsDisplaySource.Load("StepsDisplayEdit", nullptr);
-  ActorUtil::SetXY(m_StepsDisplaySource, sType);
-  this->AddChild(&m_StepsDisplaySource);
+  steps_display_source_.SetName("StepsDisplaySource");
+  steps_display_source_.Load("StepsDisplayEdit", nullptr);
+  ActorUtil::SetXY(steps_display_source_, sType);
+  this->AddChild(&steps_display_source_);
 
-  m_soundChangeRow.Load(THEME->GetPathS(sType, "row"), true);
-  m_soundChangeValue.Load(THEME->GetPathS(sType, "value"), true);
+  sound_change_row_.Load(THEME->GetPathS(sType, "row"), true);
+  sound_change_value_.Load(THEME->GetPathS(sType, "value"), true);
 
   // fill in data structures
-  GetGroupsToShow(m_sGroups);
+  GetGroupsToShow(groups_);
 
   // In EditMode_Practice this will be filled in by OnRowValueChanged()
   if (EDIT_MODE.GetValue() != EditMode_Practice) {
-    m_StepsTypes = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
+    steps_types_ = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
   }
 
   RefreshAll();
@@ -197,34 +197,34 @@ void EditMenu::RefreshAll() {
   OnRowValueChanged((EditMenuRow)0);
 
   // Select the current song if any
-  if (GAMESTATE->m_pCurSong) {
-    for (unsigned i = 0; i < m_sGroups.size(); i++) {
-      if (GAMESTATE->m_pCurSong->m_sGroupName == m_sGroups[i]) {
-        m_iSelection[ROW_GROUP] = i;
+  if (GAMESTATE->cur_song_) {
+    for (unsigned i = 0; i < groups_.size(); i++) {
+      if (GAMESTATE->cur_song_->group_name_ == groups_[i]) {
+        selection_[ROW_GROUP] = i;
       }
     }
     OnRowValueChanged(ROW_GROUP);
 
-    for (unsigned i = 0; i < m_pSongs.size(); i++) {
-      if (GAMESTATE->m_pCurSong == m_pSongs[i]) {
-        m_iSelection[ROW_SONG] = i;
+    for (unsigned i = 0; i < songs_.size(); i++) {
+      if (GAMESTATE->cur_song_ == songs_[i]) {
+        selection_[ROW_SONG] = i;
       }
     }
     OnRowValueChanged(ROW_SONG);
 
     // Select the current StepsType and difficulty if any
-    if (GAMESTATE->m_pCurSteps[PLAYER_1]) {
-      for (unsigned i = 0; i < m_StepsTypes.size(); i++) {
-        if (m_StepsTypes[i] == GAMESTATE->m_pCurSteps[PLAYER_1]->m_StepsType) {
-          m_iSelection[ROW_STEPS_TYPE] = i;
+    if (GAMESTATE->cur_steps_[PLAYER_1]) {
+      for (unsigned i = 0; i < steps_types_.size(); i++) {
+        if (steps_types_[i] == GAMESTATE->cur_steps_[PLAYER_1]->steps_type_) {
+          selection_[ROW_STEPS_TYPE] = i;
           OnRowValueChanged(ROW_STEPS_TYPE);
         }
       }
 
-      for (unsigned i = 0; i < m_vpSteps.size(); i++) {
-        const Steps* pSteps = m_vpSteps[i].pSteps;
-        if (pSteps == GAMESTATE->m_pCurSteps[PLAYER_1]) {
-          m_iSelection[ROW_STEPS] = i;
+      for (unsigned i = 0; i < steps_.size(); i++) {
+        const Steps* pSteps = steps_[i].steps_;
+        if (pSteps == GAMESTATE->cur_steps_[PLAYER_1]) {
+          selection_[ROW_STEPS] = i;
           OnRowValueChanged(ROW_STEPS);
         }
       }
@@ -232,51 +232,51 @@ void EditMenu::RefreshAll() {
   }
 }
 
-bool EditMenu::SafeToUse() { return !m_sGroups.empty(); }
+bool EditMenu::SafeToUse() { return !groups_.empty(); }
 
-bool EditMenu::CanGoUp() { return m_SelectedRow != GetFirstRow(); }
+bool EditMenu::CanGoUp() { return selected_row_ != GetFirstRow(); }
 
-bool EditMenu::CanGoDown() { return m_SelectedRow != NUM_EditMenuRow - 1; }
+bool EditMenu::CanGoDown() { return selected_row_ != NUM_EditMenuRow - 1; }
 
 bool EditMenu::CanGoLeft() {
-  if (GetRowSize(m_SelectedRow) <= 0) {
+  if (GetRowSize(selected_row_) <= 0) {
     return false;
   }
-  if (m_SelectedRow == ROW_SONG || m_SelectedRow == ROW_GROUP) {
+  if (selected_row_ == ROW_SONG || selected_row_ == ROW_GROUP) {
     return true;  // wraps
   }
-  return m_iSelection[m_SelectedRow] != 0;
+  return selection_[selected_row_] != 0;
 }
 
 int EditMenu::GetRowSize(EditMenuRow er) const {
   switch (er) {
     case ROW_GROUP:
-      return m_sGroups.size();
+      return groups_.size();
     case ROW_SONG:
-      return m_pSongs.size();
+      return songs_.size();
     case ROW_STEPS_TYPE:
-      return m_StepsTypes.size();
+      return steps_types_.size();
     case ROW_STEPS:
-      return m_vpSteps.size();
+      return steps_.size();
     case ROW_SOURCE_STEPS_TYPE:
-      return m_StepsTypes.size();
+      return steps_types_.size();
     case ROW_SOURCE_STEPS:
-      return m_vpSourceSteps.size();
+      return source_steps_.size();
     case ROW_ACTION:
-      return m_Actions.size();
+      return actions_.size();
     default:
       FAIL_M(ssprintf("Non-existant EditMenuRow %i", er));
   }
 }
 
 bool EditMenu::CanGoRight() {
-  if (GetRowSize(m_SelectedRow) <= 0) {
+  if (GetRowSize(selected_row_) <= 0) {
     return false;
   }
-  if (m_SelectedRow == ROW_SONG || m_SelectedRow == ROW_GROUP) {
+  if (selected_row_ == ROW_SONG || selected_row_ == ROW_GROUP) {
     return true;  // wraps
   }
-  return m_iSelection[m_SelectedRow] != GetRowSize(m_SelectedRow) - 1;
+  return selection_[selected_row_] != GetRowSize(selected_row_) - 1;
 }
 
 bool EditMenu::RowIsSelectable(EditMenuRow row) {
@@ -297,64 +297,64 @@ bool EditMenu::RowIsSelectable(EditMenuRow row) {
 }
 
 void EditMenu::Up() {
-  EditMenuRow dest = m_SelectedRow;
+  EditMenuRow dest = selected_row_;
   do {
     dest = (EditMenuRow)(dest - 1);
   } while (!RowIsSelectable(dest));
   ASSERT(dest >= 0);
   ChangeToRow(dest);
-  m_soundChangeRow.Play(true);
+  sound_change_row_.Play(true);
 }
 
 void EditMenu::Down() {
-  EditMenuRow dest = m_SelectedRow;
+  EditMenuRow dest = selected_row_;
   do {
     dest = (EditMenuRow)(dest + 1);
   } while (!RowIsSelectable(dest));
   ASSERT(dest < NUM_EditMenuRow);
   ChangeToRow(dest);
-  m_soundChangeRow.Play(true);
+  sound_change_row_.Play(true);
 }
 
 void EditMenu::Left() {
   if (CanGoLeft()) {
-    m_iSelection[m_SelectedRow]--;
-    wrap(m_iSelection[m_SelectedRow], GetRowSize(m_SelectedRow));
-    OnRowValueChanged(m_SelectedRow);
-    m_soundChangeValue.Play(true);
+    selection_[selected_row_]--;
+    wrap(selection_[selected_row_], GetRowSize(selected_row_));
+    OnRowValueChanged(selected_row_);
+    sound_change_value_.Play(true);
   }
 }
 
 void EditMenu::Right() {
   if (CanGoRight()) {
-    m_iSelection[m_SelectedRow]++;
-    wrap(m_iSelection[m_SelectedRow], GetRowSize(m_SelectedRow));
-    OnRowValueChanged(m_SelectedRow);
-    m_soundChangeValue.Play(true);
+    selection_[selected_row_]++;
+    wrap(selection_[selected_row_], GetRowSize(selected_row_));
+    OnRowValueChanged(selected_row_);
+    sound_change_value_.Play(true);
   }
 }
 
 void EditMenu::ChangeToRow(EditMenuRow newRow) {
-  m_textLabel[newRow].PlayCommand("GainFocus");
-  m_textValue[newRow].PlayCommand("GainFocus");
-  m_textLabel[m_SelectedRow].PlayCommand("LoseFocus");
-  m_textValue[m_SelectedRow].PlayCommand("LoseFocus");
+  text_label_[newRow].PlayCommand("GainFocus");
+  text_value_[newRow].PlayCommand("GainFocus");
+  text_label_[selected_row_].PlayCommand("LoseFocus");
+  text_value_[selected_row_].PlayCommand("LoseFocus");
 
-  m_SelectedRow = newRow;
+  selected_row_ = newRow;
 
   for (int i = 0; i < 2; i++) {
-    m_sprArrows[i]->SetY(ROW_Y.GetValue(newRow));
+    spr_arrows_[i]->SetY(ROW_Y.GetValue(newRow));
   }
   UpdateArrows();
 }
 
 void EditMenu::UpdateArrows() {
-  m_sprArrows[0]->RunCommands(
+  spr_arrows_[0]->RunCommands(
       CanGoLeft() ? ARROWS_ENABLED_COMMAND : ARROWS_DISABLED_COMMAND);
-  m_sprArrows[1]->RunCommands(
+  spr_arrows_[1]->RunCommands(
       CanGoRight() ? ARROWS_ENABLED_COMMAND : ARROWS_DISABLED_COMMAND);
-  m_sprArrows[0]->EnableAnimation(CanGoLeft());
-  m_sprArrows[1]->EnableAnimation(CanGoRight());
+  spr_arrows_[0]->EnableAnimation(CanGoLeft());
+  spr_arrows_[1]->EnableAnimation(CanGoRight());
 }
 
 static LocalizedString BLANK("EditMenu", "Blank");
@@ -369,20 +369,20 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
 
   switch (row) {
     case ROW_GROUP:
-      m_pSongs.clear();
+      songs_.clear();
       if (GetSelectedGroup() == "") {
-        m_textValue[ROW_GROUP].SetText(
-            THEME->GetString(m_sName, "No Group Selected."));
+        text_value_[ROW_GROUP].SetText(
+            THEME->GetString(name_, "No Group Selected."));
         if (SHOW_GROUPS.GetValue()) {
-          m_GroupBanner.LoadFallback();
-          m_GroupBanner.PlayCommand("Changed");
+          group_banner_.LoadFallback();
+          group_banner_.PlayCommand("Changed");
         }
       } else {
-        m_textValue[ROW_GROUP].SetText(
+        text_value_[ROW_GROUP].SetText(
             SONGMAN->ShortenGroupName(GetSelectedGroup()));
         if (SHOW_GROUPS.GetValue()) {
-          m_GroupBanner.LoadFromSongGroup(GetSelectedGroup());
-          m_GroupBanner.PlayCommand("Changed");
+          group_banner_.LoadFromSongGroup(GetSelectedGroup());
+          group_banner_.PlayCommand("Changed");
         }
         if (mode == EditMode_Practice) {
           std::vector<Song*> vtSongs;
@@ -390,43 +390,43 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
           // Filter out songs that aren't playable.
           for (Song* s : vtSongs) {
             if (SongUtil::IsSongPlayable(s)) {
-              m_pSongs.push_back(s);
+              songs_.push_back(s);
             }
           }
         } else {
-          GetSongsToShowForGroup(GetSelectedGroup(), m_pSongs);
+          GetSongsToShowForGroup(GetSelectedGroup(), songs_);
         }
       }
 
-      m_iSelection[ROW_SONG] = 0;
+      selection_[ROW_SONG] = 0;
       [[fallthrough]];
     case ROW_SONG:
       if (GetSelectedSong() == nullptr) {
-        m_textValue[ROW_SONG].SetText("");
-        m_SongBanner.LoadFallback();
-        m_SongBanner.PlayCommand("Changed");
-        m_SongTextBanner.SetFromString("", "", "", "", "", "");
+        text_value_[ROW_SONG].SetText("");
+        song_banner_.LoadFallback();
+        song_banner_.PlayCommand("Changed");
+        song_text_banner_.SetFromString("", "", "", "", "", "");
         if (mode == EditMode_Practice) {
-          m_iSelection[ROW_STEPS_TYPE] = 0;
-          m_StepsTypes.clear();
+          selection_[ROW_STEPS_TYPE] = 0;
+          steps_types_.clear();
         }
       } else {
-        m_textValue[ROW_SONG].SetText("");
-        m_SongBanner.LoadFromSong(GetSelectedSong());
-        m_SongBanner.PlayCommand("Changed");
-        m_SongTextBanner.SetFromSong(GetSelectedSong());
+        text_value_[ROW_SONG].SetText("");
+        song_banner_.LoadFromSong(GetSelectedSong());
+        song_banner_.PlayCommand("Changed");
+        song_text_banner_.SetFromSong(GetSelectedSong());
 
         if (mode == EditMode_Practice) {
           StepsType orgSel = StepsType_Invalid;
-          if (!m_StepsTypes.empty())  // Not first run
+          if (!steps_types_.empty())  // Not first run
           {
-            ASSERT((int)m_StepsTypes.size() > m_iSelection[ROW_STEPS_TYPE]);
-            orgSel = m_StepsTypes[m_iSelection[ROW_STEPS_TYPE]];
+            ASSERT((int)steps_types_.size() > selection_[ROW_STEPS_TYPE]);
+            orgSel = steps_types_[selection_[ROW_STEPS_TYPE]];
           }
 
           // The StepsType selection may no longer be valid. Zero it for now.
-          m_iSelection[ROW_STEPS_TYPE] = 0;
-          m_StepsTypes.clear();
+          selection_[ROW_STEPS_TYPE] = 0;
+          steps_types_.clear();
 
           // Only show StepsTypes for which we have valid Steps.
           std::vector<StepsType> vSts =
@@ -435,12 +435,12 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
             if (SongUtil::GetStepsByDifficulty(
                     GetSelectedSong(), st, Difficulty_Invalid, false) !=
                 nullptr) {
-              m_StepsTypes.push_back(st);
+              steps_types_.push_back(st);
             }
 
             // Try to preserve the user's StepsType selection.
             if (st == orgSel) {
-              m_iSelection[ROW_STEPS_TYPE] = m_StepsTypes.size() - 1;
+              selection_[ROW_STEPS_TYPE] = steps_types_.size() - 1;
             }
           }
         }
@@ -449,20 +449,20 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
       [[fallthrough]];
     case ROW_STEPS_TYPE:
       if (GetSelectedStepsType() == StepsType_Invalid) {
-        m_textValue[ROW_STEPS_TYPE].SetText(
-            THEME->GetString(m_sName, "No StepsType selected."));
-        m_vpSteps.clear();
+        text_value_[ROW_STEPS_TYPE].SetText(
+            THEME->GetString(name_, "No StepsType selected."));
+        steps_.clear();
       } else {
-        m_textValue[ROW_STEPS_TYPE].SetText(
+        text_value_[ROW_STEPS_TYPE].SetText(
             GAMEMAN->GetStepsTypeInfo(GetSelectedStepsType())
                 .GetLocalizedString());
 
         Difficulty dcOld = Difficulty_Invalid;
-        if (!m_vpSteps.empty()) {
+        if (!steps_.empty()) {
           dcOld = GetSelectedDifficulty();
         }
 
-        m_vpSteps.clear();
+        steps_.clear();
 
         FOREACH_ENUM(Difficulty, dc) {
           if (dc == Difficulty_Edit) {
@@ -476,7 +476,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                     Difficulty_Edit);
                 StepsUtil::SortStepsByDescription(v);
                 for (Steps* p : v) {
-                  m_vpSteps.push_back(StepsAndDifficulty(p, dc));
+                  steps_.push_back(StepsAndDifficulty(p, dc));
                 }
               } break;
               case EditMode_Home:
@@ -492,7 +492,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                 break;
               case EditMode_Home:
               case EditMode_Full:
-                m_vpSteps.push_back(
+                steps_.push_back(
                     StepsAndDifficulty(nullptr, dc));  // "New Edit"
                 break;
               default:
@@ -513,46 +513,46 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
               case EditMode_CourseMods:
                 // only show this difficulty if steps exist
                 if (pSteps) {
-                  m_vpSteps.push_back(StepsAndDifficulty(pSteps, dc));
+                  steps_.push_back(StepsAndDifficulty(pSteps, dc));
                 }
                 break;
               case EditMode_Full:
                 // show this difficulty whether or not steps exist.
-                m_vpSteps.push_back(StepsAndDifficulty(pSteps, dc));
+                steps_.push_back(StepsAndDifficulty(pSteps, dc));
                 break;
               default:
                 FAIL_M(ssprintf("Invalid edit mode: %i", mode));
             }
           }
         }
-        StripLockedStepsAndDifficulty(m_vpSteps);
+        StripLockedStepsAndDifficulty(steps_);
 
         int i = 0;
-        for (const StepsAndDifficulty& s : m_vpSteps) {
-          if (s.dc == dcOld) {
-            m_iSelection[ROW_STEPS] = i;
+        for (const StepsAndDifficulty& s : steps_) {
+          if (s.dc_ == dcOld) {
+            selection_[ROW_STEPS] = i;
             break;
           }
           i++;
         }
-        rage_clamp(m_iSelection[ROW_STEPS], 0, m_vpSteps.size() - 1);
+        rage_clamp(selection_[ROW_STEPS], 0, steps_.size() - 1);
       }
       [[fallthrough]];
     case ROW_STEPS:
       if (GetSelectedSteps() == nullptr && mode == EditMode_Practice) {
-        m_textValue[ROW_STEPS].SetText(
-            THEME->GetString(m_sName, "No Steps selected."));
-        m_StepsDisplay.Unset();
+        text_value_[ROW_STEPS].SetText(
+            THEME->GetString(name_, "No Steps selected."));
+        steps_display_.Unset();
       } else {
         std::string s = CustomDifficultyToLocalizedString(GetCustomDifficulty(
             GetSelectedStepsType(), GetSelectedDifficulty(),
             CourseType_Invalid));
 
-        m_textValue[ROW_STEPS].SetText(s);
+        text_value_[ROW_STEPS].SetText(s);
         if (GetSelectedSteps()) {
-          m_StepsDisplay.SetFromSteps(GetSelectedSteps());
+          steps_display_.SetFromSteps(GetSelectedSteps());
         } else {
-          m_StepsDisplay.SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
+          steps_display_.SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
               GetSelectedSourceStepsType(), 0, GetSelectedDifficulty(),
               CourseType_Invalid);
         }
@@ -560,18 +560,18 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
       [[fallthrough]];
     case ROW_SOURCE_STEPS_TYPE:
       if (mode == EditMode_Practice) {
-        m_textLabel[ROW_SOURCE_STEPS_TYPE].SetVisible(false);
-        m_textValue[ROW_SOURCE_STEPS_TYPE].SetVisible(false);
+        text_label_[ROW_SOURCE_STEPS_TYPE].SetVisible(false);
+        text_value_[ROW_SOURCE_STEPS_TYPE].SetVisible(false);
       } else {
-        m_textLabel[ROW_SOURCE_STEPS_TYPE].SetVisible(
+        text_label_[ROW_SOURCE_STEPS_TYPE].SetVisible(
             GetSelectedSteps() ? false : true);
-        m_textValue[ROW_SOURCE_STEPS_TYPE].SetVisible(
+        text_value_[ROW_SOURCE_STEPS_TYPE].SetVisible(
             GetSelectedSteps() ? false : true);
-        m_textValue[ROW_SOURCE_STEPS_TYPE].SetText(
+        text_value_[ROW_SOURCE_STEPS_TYPE].SetText(
             GAMEMAN->GetStepsTypeInfo(GetSelectedSourceStepsType())
                 .GetLocalizedString());
-        m_vpSourceSteps.clear();
-        m_vpSourceSteps.push_back(
+        source_steps_.clear();
+        source_steps_.push_back(
             StepsAndDifficulty(nullptr, Difficulty_Invalid));  // "blank"
 
         FOREACH_ENUM(Difficulty, dc) {
@@ -580,7 +580,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
             Steps* pSteps = SongUtil::GetStepsByDifficulty(
                 GetSelectedSong(), GetSelectedSourceStepsType(), dc);
             if (pSteps != nullptr) {
-              m_vpSourceSteps.push_back(StepsAndDifficulty(pSteps, dc));
+              source_steps_.push_back(StepsAndDifficulty(pSteps, dc));
             }
           } else {
             std::vector<Steps*> v;
@@ -588,25 +588,24 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                 GetSelectedSong(), v, GetSelectedSourceStepsType(), dc);
             StepsUtil::SortStepsByDescription(v);
             for (Steps* pSteps : v) {
-              m_vpSourceSteps.push_back(StepsAndDifficulty(pSteps, dc));
+              source_steps_.push_back(StepsAndDifficulty(pSteps, dc));
             }
           }
         }
-        StripLockedStepsAndDifficulty(m_vpSteps);
-        rage_clamp(
-            m_iSelection[ROW_SOURCE_STEPS], 0, m_vpSourceSteps.size() - 1);
+        StripLockedStepsAndDifficulty(steps_);
+        rage_clamp(selection_[ROW_SOURCE_STEPS], 0, source_steps_.size() - 1);
       }
       [[fallthrough]];
     case ROW_SOURCE_STEPS:
       if (mode == EditMode_Practice) {
-        m_textLabel[ROW_SOURCE_STEPS].SetVisible(false);
-        m_textValue[ROW_SOURCE_STEPS].SetVisible(false);
-        m_Actions.clear();
-        m_Actions.push_back(EditMenuAction_Practice);
+        text_label_[ROW_SOURCE_STEPS].SetVisible(false);
+        text_value_[ROW_SOURCE_STEPS].SetVisible(false);
+        actions_.clear();
+        actions_.push_back(EditMenuAction_Practice);
       } else {
-        m_textLabel[ROW_SOURCE_STEPS].SetVisible(
+        text_label_[ROW_SOURCE_STEPS].SetVisible(
             GetSelectedSteps() ? false : true);
-        m_textValue[ROW_SOURCE_STEPS].SetVisible(
+        text_value_[ROW_SOURCE_STEPS].SetVisible(
             GetSelectedSteps() ? false : true);
         {
           std::string s;
@@ -617,54 +616,54 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                 GetSelectedSourceStepsType(), GetSelectedSourceDifficulty(),
                 CourseType_Invalid));
           }
-          m_textValue[ROW_SOURCE_STEPS].SetText(s);
+          text_value_[ROW_SOURCE_STEPS].SetText(s);
         }
         bool bHideMeter = false;
         if (GetSelectedSourceDifficulty() == Difficulty_Invalid) {
           bHideMeter = true;
         } else if (GetSelectedSourceSteps()) {
-          m_StepsDisplaySource.SetFromSteps(GetSelectedSourceSteps());
+          steps_display_source_.SetFromSteps(GetSelectedSourceSteps());
         } else {
-          m_StepsDisplaySource
+          steps_display_source_
               .SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
                   GetSelectedSourceStepsType(), 0,
                   GetSelectedSourceDifficulty(), CourseType_Invalid);
         }
-        m_StepsDisplaySource.SetVisible(!(bHideMeter || GetSelectedSteps()));
+        steps_display_source_.SetVisible(!(bHideMeter || GetSelectedSteps()));
 
-        m_Actions.clear();
+        actions_.clear();
         // Stick autosave in the list first so that people will see it. -Kyz
         Song* cur_song = GetSelectedSong();
         if (cur_song != nullptr && cur_song->HasAutosaveFile() &&
             !cur_song->WasLoadedFromAutosave()) {
-          m_Actions.push_back(EditMenuAction_LoadAutosave);
+          actions_.push_back(EditMenuAction_LoadAutosave);
         }
         if (GetSelectedSteps()) {
           switch (mode) {
             case EditMode_Practice:
             case EditMode_CourseMods:
-              m_Actions.push_back(EditMenuAction_Practice);
+              actions_.push_back(EditMenuAction_Practice);
               break;
             case EditMode_Home:
             case EditMode_Full:
-              m_Actions.push_back(EditMenuAction_Edit);
-              m_Actions.push_back(EditMenuAction_Delete);
+              actions_.push_back(EditMenuAction_Edit);
+              actions_.push_back(EditMenuAction_Delete);
               break;
             default:
               FAIL_M(ssprintf("Invalid edit mode: %i", mode));
           }
         } else {
-          m_Actions.push_back(EditMenuAction_Create);
+          actions_.push_back(EditMenuAction_Create);
         }
-        m_iSelection[ROW_ACTION] = 0;
+        selection_[ROW_ACTION] = 0;
       }
       [[fallthrough]];
     case ROW_ACTION:
       if (GetSelectedAction() == EditMenuAction_Invalid) {
-        m_textValue[ROW_ACTION].SetText(
-            THEME->GetString(m_sName, "No valid action."));
+        text_value_[ROW_ACTION].SetText(
+            THEME->GetString(name_, "No valid action."));
       } else {
-        m_textValue[ROW_ACTION].SetText(
+        text_value_[ROW_ACTION].SetText(
             EditMenuActionToLocalizedString(GetSelectedAction()));
       }
       break;

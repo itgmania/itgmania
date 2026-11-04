@@ -15,11 +15,11 @@ void MeasureInfo::CalculateMeasureInfo(
   int lastRow = in.GetLastRow();
   int totalMeasureCount = lastRow / ROWS_PER_MEASURE + 1;
 
-  out.notesPerMeasure.clear();
-  out.npsPerMeasure.clear();
+  out.notes_per_measure_.clear();
+  out.nps_per_measure_.clear();
 
-  out.notesPerMeasure.resize(totalMeasureCount, 0);
-  out.npsPerMeasure.resize(totalMeasureCount, 0);
+  out.notes_per_measure_.resize(totalMeasureCount, 0);
+  out.nps_per_measure_.resize(totalMeasureCount, 0);
 
   NoteData::all_tracks_const_iterator curr_note =
       in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
@@ -38,7 +38,7 @@ void MeasureInfo::CalculateMeasureInfo(
       }
       // Before moving on to a new row, update the notes per measure for the
       // current measure.
-      out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
+      out.notes_per_measure_[iMeasureIndexOut] += notes_this_row;
       // Update iMeasureIndex for the current row.
       iMeasureIndexOut = curr_note.Row() / ROWS_PER_MEASURE;
       curr_row = curr_note.Row();
@@ -48,20 +48,20 @@ void MeasureInfo::CalculateMeasureInfo(
     // Regardless of how many notes are on this row, it's only considered 1
     // "note" when we want to calculate nps. So jumps/brackets don't inflate the
     // nps value.
-    if (curr_note->type == TapNoteType_Tap ||
-        curr_note->type == TapNoteType_HoldHead) {
+    if (curr_note->type_ == TapNoteType_Tap ||
+        curr_note->type_ == TapNoteType_HoldHead) {
       notes_this_row = 1;
     }
     ++curr_note;
   }
 
   // And handle the final note...
-  out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
+  out.notes_per_measure_[iMeasureIndexOut] += notes_this_row;
 
   // Now that all of the notes have been parsed, calculate nps for each measure
   for (int m = 0; m < totalMeasureCount; m++) {
-    if (out.notesPerMeasure[m] == 0) {
-      out.npsPerMeasure[m] = 0;
+    if (out.notes_per_measure_[m] == 0) {
+      out.nps_per_measure_[m] = 0;
       continue;
     }
 
@@ -86,15 +86,16 @@ void MeasureInfo::CalculateMeasureInfo(
     // As a hold over for this case, we check that the duration is <= 0.12
     // (instead of 0), so this only breaks for cases where charts are of 2,000
     // BPM (which are likely rarer than those with warps).
-    float nps =
-        measureDuration < 0.12 ? 0 : (out.notesPerMeasure[m] / measureDuration);
-    out.npsPerMeasure[m] = nps;
+    float nps = measureDuration < 0.12
+                    ? 0
+                    : (out.notes_per_measure_[m] / measureDuration);
+    out.nps_per_measure_[m] = nps;
 
     if (nps > peak_nps) {
       peak_nps = nps;
     }
   }
 
-  out.peakNps = peak_nps;
-  out.measureCount = totalMeasureCount;
+  out.peak_nps_ = peak_nps;
+  out.measure_count_ = totalMeasureCount;
 }

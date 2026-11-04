@@ -13,57 +13,57 @@
 
 struct FileSet;
 struct File {
-  std::string name;
-  std::string lname;
+  std::string name_;
+  std::string lname_;
 
   void SetName(const std::string& fn) {
-    name = fn;
-    lname = name;
-    MakeLower(lname);
+    name_ = fn;
+    lname_ = name_;
+    MakeLower(lname_);
   }
 
-  bool dir;
-  int size;
+  bool dir_;
+  int size_;
   /* Modification time of the file.  The contents of this is undefined, except
    * that when the file has been modified, this value will change. */
-  int hash;
+  int hash_;
 
   /* Private data, for RageFileDrivers. */
-  void* priv;
+  void* priv_;
 
   /* If this is non-nullptr, and dir is true, this is a pointer to the FileSet
    * containing the directory contents.  (This is a cache; it isn't always set.)
    */
-  const FileSet* dirp;
+  const FileSet* dirp_;
 
   File() {
-    dir = false;
-    dirp = nullptr;
-    size = -1;
-    hash = -1;
-    priv = nullptr;
+    dir_ = false;
+    dirp_ = nullptr;
+    size_ = -1;
+    hash_ = -1;
+    priv_ = nullptr;
   }
   File(const std::string& fn) {
     SetName(fn);
-    dir = false;
-    size = -1;
-    hash = -1;
-    priv = nullptr;
-    dirp = nullptr;
+    dir_ = false;
+    size_ = -1;
+    hash_ = -1;
+    priv_ = nullptr;
+    dirp_ = nullptr;
   }
 
-  bool operator<(const File& rhs) const { return lname < rhs.lname; }
+  bool operator<(const File& rhs) const { return lname_ < rhs.lname_; }
 
-  bool equal(const File& rhs) const { return lname == rhs.lname; }
+  bool equal(const File& rhs) const { return lname_ == rhs.lname_; }
   bool equal(const std::string& rhs) const {
     std::string l = rhs;
     MakeLower(l);
-    return lname == l;
+    return lname_ == l;
   }
 };
 
 inline bool operator==(const File& lhs, const File& rhs) {
-  return lhs.lname == rhs.lname;
+  return lhs.lname_ == rhs.lname_;
 }
 inline bool operator!=(const File& lhs, const File& rhs) {
   return !operator==(lhs, rhs);
@@ -71,17 +71,17 @@ inline bool operator!=(const File& lhs, const File& rhs) {
 
 /** @brief This represents a directory. */
 struct FileSet {
-  std::set<File> files;
-  RageTimer age;
+  std::set<File> files_;
+  RageTimer age_;
 
   /*
    * If m_bFilled is false, this FileSet hasn't completed being filled in yet;
    * it's owned by the thread filling it in.  Wait on FilenameDB::m_Mutex and
    * retry until it becomes true.
    */
-  bool m_bFilled;
+  bool filled_;
 
-  FileSet() { m_bFilled = true; }
+  FileSet() { filled_ = true; }
 
   void GetFilesMatching(
       const std::string& sBeginning, const std::string& sContaining,
@@ -98,7 +98,7 @@ struct FileSet {
 /** @brief A container for a file listing. */
 class FilenameDB {
  public:
-  FilenameDB() : m_Mutex("FilenameDB"), ExpireSeconds(-1) {}
+  FilenameDB() : mutex_("FilenameDB"), expire_seconds_(-1) {}
   virtual ~FilenameDB() { FlushDirCache(); }
 
   void AddFile(
@@ -131,15 +131,15 @@ class FilenameDB {
   virtual void CacheFile(const std::string& sPath);
 
  protected:
-  RageEvent m_Mutex;
+  RageEvent mutex_;
 
   const File* GetFile(const std::string& sPath);
   FileSet* GetFileSet(const std::string& sDir, bool create = true);
 
   /* Directories we have cached: */
-  std::map<std::string, FileSet*> dirs;
+  std::map<std::string, FileSet*> dirs_;
 
-  int ExpireSeconds;
+  int expire_seconds_;
 
   void GetFilesEqualTo(
       const std::string& sDir, const std::string& sName,
@@ -158,7 +158,7 @@ class FilenameDB {
 /* This FilenameDB must be populated in advance. */
 class NullFilenameDB : public FilenameDB {
  public:
-  NullFilenameDB() { ExpireSeconds = -1; }
+  NullFilenameDB() { expire_seconds_ = -1; }
   void CacheFile(const std::string& /* sPath */) {}
 };
 

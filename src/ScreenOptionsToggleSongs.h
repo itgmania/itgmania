@@ -23,7 +23,7 @@ class ScreenOptionsToggleSongs : public ScreenOptions {
   virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
-  std::vector<std::string> m_asGroups;
+  std::vector<std::string> groups_;
 };
 
 class ScreenOptionsToggleSongsSubPage : public ScreenOptions {
@@ -34,7 +34,7 @@ class ScreenOptionsToggleSongsSubPage : public ScreenOptions {
   virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
   virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-  std::vector<Song*> m_apSongs;
+  std::vector<Song*> songs_;
 };
 
 #endif

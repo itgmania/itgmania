@@ -9,16 +9,16 @@ struct RageTextureID;
 /** @brief Load the textures in advance for using them later. */
 class RageTexturePreloader {
  public:
-  RageTexturePreloader() : m_apTextures() {}
+  RageTexturePreloader() : textures_() {}
   RageTexturePreloader(const RageTexturePreloader& cpy)
-      : m_apTextures(cpy.m_apTextures) {}
+      : textures_(cpy.textures_) {}
   ~RageTexturePreloader();
   void Load(const RageTextureID& ID);
   void UnloadAll();
-  void Swap(RageTexturePreloader& rhs) { swap(m_apTextures, rhs.m_apTextures); }
+  void Swap(RageTexturePreloader& rhs) { swap(textures_, rhs.textures_); }
 
  private:
-  std::vector<RageTexture*> m_apTextures;
+  std::vector<RageTexture*> textures_;
 };
 
 #endif

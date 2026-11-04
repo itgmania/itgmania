@@ -11,7 +11,7 @@ class WindowsDialogBox {
   virtual ~WindowsDialogBox() {}
   void Run(int iDialog);
 
-  HWND GetHwnd() { return m_hWnd; }
+  HWND GetHwnd() { return wnd_; }
 
  protected:
   virtual INT_PTR HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -21,7 +21,7 @@ class WindowsDialogBox {
  private:
   static INT_PTR APIENTRY
   DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-  HWND m_hWnd;
+  HWND wnd_;
 };
 
 #endif

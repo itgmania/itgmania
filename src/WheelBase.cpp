@@ -34,95 +34,95 @@ StringToX(WheelState);
 LuaXType(WheelState);
 
 WheelBase::~WheelBase() {
-  for (WheelItemBase* i : m_WheelBaseItems) {
+  for (WheelItemBase* i : wheel_base_items_) {
     RageUtil::SafeDelete(i);
   }
-  m_WheelBaseItems.clear();
+  wheel_base_items_.clear();
 }
 
 void WheelBase::Load(std::string sType) {
   LOG->Trace("WheelBase::Load('%s')", sType.c_str());
   ASSERT(this->GetNumChildren() == 0);  // only load once
 
-  m_bEmpty = false;
-  m_iSelection = 0;
-  m_fTimeLeftInState = 0;
-  m_fPositionOffsetFromSelection = 0;
-  m_iSwitchesLeftInSpinDown = 0;
-  m_Moving = 0;
+  empty_ = false;
+  selection_ = 0;
+  time_left_in_state_ = 0;
+  position_offset_from_selection_ = 0;
+  switches_left_in_spin_down_ = 0;
+  moving_ = 0;
 
   SWITCH_SECONDS.Load(sType, "SwitchSeconds");
   LOCKED_INITIAL_VELOCITY.Load(sType, "LockedInitialVelocity");
   SCROLL_BAR_HEIGHT.Load(sType, "ScrollBarHeight");
-  m_exprItemTransformFunction.SetFromReference(
+  expr_item_transform_function_.SetFromReference(
       THEME->GetMetricR(sType, "ItemTransformFunction"));
   NUM_WHEEL_ITEMS_TO_DRAW.Load(sType, "NumWheelItems");
   WHEEL_ITEM_LOCKED_COLOR.Load(sType, "WheelItemLockedColor");
 
-  m_soundChangeMusic.Load(THEME->GetPathS(sType, "change"), true);
-  m_soundLocked.Load(THEME->GetPathS(sType, "locked"), true);
+  sound_change_music_.Load(THEME->GetPathS(sType, "change"), true);
+  sound_locked_.Load(THEME->GetPathS(sType, "locked"), true);
 
   WheelItemBase* pTempl = MakeItem();
-  ActorUtil::LoadAllCommands(*pTempl, m_sName);
+  ActorUtil::LoadAllCommands(*pTempl, name_);
   pTempl->PlayCommand("Init");
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
     WheelItemBase* pItem = pTempl->Copy();
     DEBUG_ASSERT(pItem);
-    m_WheelBaseItems.push_back(pItem);
+    wheel_base_items_.push_back(pItem);
   }
   RageUtil::SafeDelete(pTempl);
 
   // draw outside->inside
   for (int i = 0; i < NUM_WHEEL_ITEMS / 2; i++) {
-    this->AddChild(m_WheelBaseItems[i]);
+    this->AddChild(wheel_base_items_[i]);
   }
   for (int i = NUM_WHEEL_ITEMS - 1; i >= NUM_WHEEL_ITEMS / 2; i--) {
-    this->AddChild(m_WheelBaseItems[i]);
+    this->AddChild(wheel_base_items_[i]);
   }
 
-  m_sprHighlight.Load(THEME->GetPathG(sType, "highlight"));
-  m_sprHighlight->SetName("Highlight");
-  this->AddChild(m_sprHighlight);
-  ActorUtil::LoadAllCommands(*m_sprHighlight, m_sName);
+  spr_highlight_.Load(THEME->GetPathG(sType, "highlight"));
+  spr_highlight_->SetName("Highlight");
+  this->AddChild(spr_highlight_);
+  ActorUtil::LoadAllCommands(*spr_highlight_, name_);
 
-  m_ScrollBar.SetName("ScrollBar");
-  m_ScrollBar.SetBarHeight(SCROLL_BAR_HEIGHT);
-  this->AddChild(&m_ScrollBar);
-  ActorUtil::LoadAllCommands(m_ScrollBar, m_sName);
+  scroll_bar_.SetName("ScrollBar");
+  scroll_bar_.SetBarHeight(SCROLL_BAR_HEIGHT);
+  this->AddChild(&scroll_bar_);
+  ActorUtil::LoadAllCommands(scroll_bar_, name_);
 
   SetPositions();
 }
 
-void WheelBase::BeginScreen() { m_WheelState = STATE_SELECTING; }
+void WheelBase::BeginScreen() { wheel_state_ = STATE_SELECTING; }
 
 void WheelBase::SetItemPosition(
     Actor& item, int item_index, float offset_from_middle) {
-  Actor::TweenState ts = m_exprItemTransformFunction.GetTransformCached(
+  Actor::TweenState ts = expr_item_transform_function_.GetTransformCached(
       offset_from_middle, item_index, NUM_WHEEL_ITEMS);
   item.DestTweenState() = ts;
 }
 
 void WheelBase::UpdateScrollbar() {
-  int iTotalNumItems = m_CurWheelItemData.size();
-  float fItemAt = m_iSelection - m_fPositionOffsetFromSelection;
+  int iTotalNumItems = cur_wheel_item_data_.size();
+  float fItemAt = selection_ - position_offset_from_selection_;
 
   {
     float fSize = float(NUM_WHEEL_ITEMS) / iTotalNumItems;
     float fCenter = fItemAt / iTotalNumItems;
     fSize *= 0.5f;
 
-    m_ScrollBar.SetPercentage(fCenter, fSize);
+    scroll_bar_.SetPercentage(fCenter, fSize);
   }
 }
 
 bool WheelBase::IsSettled() const {
-  if (m_Moving) {
+  if (moving_) {
     return false;
   }
-  if (m_WheelState != STATE_SELECTING && m_WheelState != STATE_LOCKED) {
+  if (wheel_state_ != STATE_SELECTING && wheel_state_ != STATE_LOCKED) {
     return false;
   }
-  if (m_fPositionOffsetFromSelection != 0) {
+  if (position_offset_from_selection_ != 0) {
     return false;
   }
 
@@ -131,9 +131,9 @@ bool WheelBase::IsSettled() const {
 
 void WheelBase::SetPositions() {
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
-    WheelItemBase* pDisplay = m_WheelBaseItems[i];
+    WheelItemBase* pDisplay = wheel_base_items_[i];
     const float fOffsetFromSelection =
-        i - NUM_WHEEL_ITEMS / 2 + m_fPositionOffsetFromSelection;
+        i - NUM_WHEEL_ITEMS / 2 + position_offset_from_selection_;
     if (std::abs(fOffsetFromSelection) > NUM_WHEEL_ITEMS_TO_DRAW / 2) {
       pDisplay->SetVisible(false);
     } else {
@@ -153,11 +153,11 @@ void WheelBase::Update(float fDeltaTime) {
   }
 
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
-    WheelItemBase* pDisplay = m_WheelBaseItems[i];
-    if (m_WheelState == STATE_LOCKED && i != NUM_WHEEL_ITEMS / 2) {
-      pDisplay->m_colorLocked = WHEEL_ITEM_LOCKED_COLOR.GetValue();
+    WheelItemBase* pDisplay = wheel_base_items_[i];
+    if (wheel_state_ == STATE_LOCKED && i != NUM_WHEEL_ITEMS / 2) {
+      pDisplay->color_locked_ = WHEEL_ITEM_LOCKED_COLOR.GetValue();
     } else {
-      pDisplay->m_colorLocked = RageColor(0, 0, 0, 0);
+      pDisplay->color_locked_ = RageColor(0, 0, 0, 0);
     }
   }
 
@@ -165,18 +165,18 @@ void WheelBase::Update(float fDeltaTime) {
   // to break something.
   UpdateScrollbar();
 
-  if (m_Moving) {
-    m_TimeBeforeMovingBegins -= fDeltaTime;
-    m_TimeBeforeMovingBegins = std::max(m_TimeBeforeMovingBegins, 0.0f);
+  if (moving_) {
+    time_before_moving_begins_ -= fDeltaTime;
+    time_before_moving_begins_ = std::max(time_before_moving_begins_, 0.0f);
   }
 
   // update wheel state
-  m_fTimeLeftInState -= fDeltaTime;
-  if (m_fTimeLeftInState <= 0) {  // time to go to a new state
+  time_left_in_state_ -= fDeltaTime;
+  if (time_left_in_state_ <= 0) {  // time to go to a new state
     UpdateSwitch();
   }
 
-  if (m_WheelState == STATE_LOCKED) {
+  if (wheel_state_ == STATE_LOCKED) {
     /* Do this in at most .1 sec chunks, so we don't get weird if we stop
      * for some reason (and so it behaves the same when being single stepped).
      */
@@ -185,22 +185,22 @@ void WheelBase::Update(float fDeltaTime) {
       float t = std::min(fTime, 0.1f);
       fTime -= t;
 
-      m_fPositionOffsetFromSelection =
-          std::clamp(m_fPositionOffsetFromSelection, -0.3f, +0.3f);
+      position_offset_from_selection_ =
+          std::clamp(position_offset_from_selection_, -0.3f, +0.3f);
 
       float fSpringForce =
-          -m_fPositionOffsetFromSelection * LOCKED_INITIAL_VELOCITY;
-      m_fLockedWheelVelocity += fSpringForce;
+          -position_offset_from_selection_ * LOCKED_INITIAL_VELOCITY;
+      locked_wheel_velocity_ += fSpringForce;
 
-      float fDrag = -m_fLockedWheelVelocity * t * 4;
-      m_fLockedWheelVelocity += fDrag;
+      float fDrag = -locked_wheel_velocity_ * t * 4;
+      locked_wheel_velocity_ += fDrag;
 
-      m_fPositionOffsetFromSelection += m_fLockedWheelVelocity * t;
+      position_offset_from_selection_ += locked_wheel_velocity_ * t;
 
-      if (std::abs(m_fPositionOffsetFromSelection) < 0.01f &&
-          std::abs(m_fLockedWheelVelocity) < 0.01f) {
-        m_fPositionOffsetFromSelection = 0;
-        m_fLockedWheelVelocity = 0;
+      if (std::abs(position_offset_from_selection_) < 0.01f &&
+          std::abs(locked_wheel_velocity_) < 0.01f) {
+        position_offset_from_selection_ = 0;
+        locked_wheel_velocity_ = 0;
       }
     }
   }
@@ -208,57 +208,57 @@ void WheelBase::Update(float fDeltaTime) {
   if (IsMoving()) {
     // We're automatically moving. Move linearly, and don't clamp to the
     // selection.
-    float fSpinSpeed = m_SpinSpeed * m_Moving;
-    m_fPositionOffsetFromSelection -= fSpinSpeed * fDeltaTime;
+    float fSpinSpeed = spin_speed_ * moving_;
+    position_offset_from_selection_ -= fSpinSpeed * fDeltaTime;
 
     /* Make sure that we don't go further than 1 away, in case the speed is
      * very high or we miss a lot of frames. */
-    m_fPositionOffsetFromSelection =
-        std::clamp(m_fPositionOffsetFromSelection, -1.0f, 1.0f);
+    position_offset_from_selection_ =
+        std::clamp(position_offset_from_selection_, -1.0f, 1.0f);
 
     // If it passed the selection, move again.
-    if ((m_Moving == -1 && m_fPositionOffsetFromSelection >= 0) ||
-        (m_Moving == 1 && m_fPositionOffsetFromSelection <= 0)) {
-      ChangeMusic(m_Moving);
+    if ((moving_ == -1 && position_offset_from_selection_ >= 0) ||
+        (moving_ == 1 && position_offset_from_selection_ <= 0)) {
+      ChangeMusic(moving_);
 
-      if (PREFSMAN->m_iMusicWheelSwitchSpeed < MAX_WHEEL_SOUND_SPEED) {
-        m_soundChangeMusic.Play(true);
+      if (PREFSMAN->music_wheel_switch_speed_ < MAX_WHEEL_SOUND_SPEED) {
+        sound_change_music_.Play(true);
       }
     }
 
-    if (PREFSMAN->m_iMusicWheelSwitchSpeed >= MAX_WHEEL_SOUND_SPEED &&
-        m_MovingSoundTimer.Ago() >= 1.0f / MAX_WHEEL_SOUND_SPEED) {
-      m_MovingSoundTimer.GetDeltaTime();
-      m_soundChangeMusic.Play(true);
+    if (PREFSMAN->music_wheel_switch_speed_ >= MAX_WHEEL_SOUND_SPEED &&
+        moving_sound_timer_.Ago() >= 1.0f / MAX_WHEEL_SOUND_SPEED) {
+      moving_sound_timer_.GetDeltaTime();
+      sound_change_music_.Play(true);
     }
   } else {
     // "rotate" wheel toward selected song
     float fSpinSpeed =
-        0.2f + std::abs(m_fPositionOffsetFromSelection) / SWITCH_SECONDS;
+        0.2f + std::abs(position_offset_from_selection_) / SWITCH_SECONDS;
 
-    if (m_fPositionOffsetFromSelection > 0) {
-      m_fPositionOffsetFromSelection -= fSpinSpeed * fDeltaTime;
-      if (m_fPositionOffsetFromSelection < 0) {
-        m_fPositionOffsetFromSelection = 0;
+    if (position_offset_from_selection_ > 0) {
+      position_offset_from_selection_ -= fSpinSpeed * fDeltaTime;
+      if (position_offset_from_selection_ < 0) {
+        position_offset_from_selection_ = 0;
       }
-    } else if (m_fPositionOffsetFromSelection < 0) {
-      m_fPositionOffsetFromSelection += fSpinSpeed * fDeltaTime;
-      if (m_fPositionOffsetFromSelection > 0) {
-        m_fPositionOffsetFromSelection = 0;
+    } else if (position_offset_from_selection_ < 0) {
+      position_offset_from_selection_ += fSpinSpeed * fDeltaTime;
+      if (position_offset_from_selection_ > 0) {
+        position_offset_from_selection_ = 0;
       }
     }
   }
 }
 
 void WheelBase::UpdateSwitch() {
-  switch (m_WheelState) {
+  switch (wheel_state_) {
     case STATE_SELECTING:
-      m_fTimeLeftInState = 0;
+      time_left_in_state_ = 0;
       break;
     case STATE_LOCKED:
       break;
     default:
-      FAIL_M(ssprintf("Invalid wheel state: %i", m_WheelState));
+      FAIL_M(ssprintf("Invalid wheel state: %i", wheel_state_));
   }
 }
 
@@ -266,30 +266,30 @@ bool WheelBase::Select()  // return true if this selection can end the screen
 {
   LOG->Trace("WheelBase::Select()");
 
-  m_Moving = 0;
+  moving_ = 0;
 
-  if (m_bEmpty) {
+  if (empty_) {
     return false;
   }
 
-  switch (m_CurWheelItemData[m_iSelection]->m_Type) {
+  switch (cur_wheel_item_data_[selection_]->type_) {
     case WheelItemDataType_Generic:
       return true;
     case WheelItemDataType_Section:
     case WheelItemDataType_ParentSection: {
       std::string sThisItemSectionName =
-          m_CurWheelItemData[m_iSelection]->m_sText;
+          cur_wheel_item_data_[selection_]->text_;
       // Keep track of the open section so that we can restore it
       // when navigating back to ScreenSelectMusic.
-      GAMESTATE->sLastOpenSection = sThisItemSectionName;
-      if (m_sExpandedSectionName == sThisItemSectionName)  // already expanded
+      GAMESTATE->last_open_section_ = sThisItemSectionName;
+      if (expanded_section_name_ == sThisItemSectionName)  // already expanded
       {
         SetOpenSection("");  // collapse it
-        m_soundCollapse.Play(true);
+        sound_collapse_.Play(true);
       } else  // already collapsed
       {
         SetOpenSection(sThisItemSectionName);  // expand it
-        m_soundExpand.Play(true);
+        sound_expand_.Play(true);
       }
     }
       // Opening/closing sections cannot end the screen
@@ -300,37 +300,37 @@ bool WheelBase::Select()  // return true if this selection can end the screen
 }
 
 int WheelBase::IsMoving() const {
-  return m_Moving && m_TimeBeforeMovingBegins == 0;
+  return moving_ && time_before_moving_begins_ == 0;
 }
 
 void WheelBase::TweenOnScreenForSort() {
-  m_fPositionOffsetFromSelection = 0;
+  position_offset_from_selection_ = 0;
 
   /* Before we send SortOn, position items back to their destinations, so
    * commands can use this as a reference point. */
   SetPositions();
 
-  m_WheelState = STATE_FLYING_ON_AFTER_NEXT_SORT;
+  wheel_state_ = STATE_FLYING_ON_AFTER_NEXT_SORT;
 
   this->PlayCommand("SortOn");
 
-  m_fTimeLeftInState = GetTweenTimeLeft();
+  time_left_in_state_ = GetTweenTimeLeft();
 }
 
 void WheelBase::TweenOffScreenForSort() {
-  m_WheelState = STATE_FLYING_OFF_BEFORE_NEXT_SORT;
+  wheel_state_ = STATE_FLYING_OFF_BEFORE_NEXT_SORT;
 
   this->PlayCommand("SortOff");
 
-  m_fTimeLeftInState = GetTweenTimeLeft();
+  time_left_in_state_ = GetTweenTimeLeft();
 }
 
 void WheelBase::ChangeMusicUnlessLocked(int n) {
-  if (m_WheelState == STATE_LOCKED) {
+  if (wheel_state_ == STATE_LOCKED) {
     if (n) {
       int iSign = n / std::abs(n);
-      m_fLockedWheelVelocity = iSign * LOCKED_INITIAL_VELOCITY;
-      m_soundLocked.Play(true);
+      locked_wheel_velocity_ = iSign * LOCKED_INITIAL_VELOCITY;
+      sound_locked_.Play(true);
     }
     return;
   }
@@ -339,15 +339,15 @@ void WheelBase::ChangeMusicUnlessLocked(int n) {
 }
 
 void WheelBase::Move(int n) {
-  if (n == m_Moving) {
+  if (n == moving_) {
     return;
   }
 
-  if (m_WheelState == STATE_LOCKED) {
+  if (wheel_state_ == STATE_LOCKED) {
     if (n) {
       int iSign = n / std::abs(n);
-      m_fLockedWheelVelocity = iSign * LOCKED_INITIAL_VELOCITY;
-      m_soundLocked.Play(true);
+      locked_wheel_velocity_ = iSign * LOCKED_INITIAL_VELOCITY;
+      sound_locked_.Play(true);
     }
     return;
   }
@@ -356,12 +356,12 @@ void WheelBase::Move(int n) {
     return;
   }
 
-  m_TimeBeforeMovingBegins = 1 / 4.0f;
-  m_SpinSpeed = float(PREFSMAN->m_iMusicWheelSwitchSpeed);
-  m_Moving = n;
+  time_before_moving_begins_ = 1 / 4.0f;
+  spin_speed_ = float(PREFSMAN->music_wheel_switch_speed_);
+  moving_ = n;
 
-  if (m_Moving) {
-    ChangeMusic(m_Moving);
+  if (moving_) {
+    ChangeMusic(moving_);
   }
 }
 
@@ -371,7 +371,7 @@ bool WheelBase::MoveSpecific(int n) {
   /* Still process Move(0) so we sometimes continue moving immediate
    * after the sort change finished and before the repeat event causes a
    * Move(0). -Chris */
-  switch (m_WheelState) {
+  switch (wheel_state_) {
     case STATE_SELECTING:
       break;
     case STATE_FLYING_OFF_BEFORE_NEXT_SORT:
@@ -384,12 +384,12 @@ bool WheelBase::MoveSpecific(int n) {
       return false;  // don't continue
   }
 
-  if (m_Moving != 0 && n == 0 && m_TimeBeforeMovingBegins == 0) {
+  if (moving_ != 0 && n == 0 && time_before_moving_begins_ == 0) {
     /* We were moving, and now we're stopping.  If we're really close to
      * the selection, move to the next one, so we have a chance to spin down
      * smoothly. */
-    if (std::abs(m_fPositionOffsetFromSelection) < 0.25f) {
-      ChangeMusic(m_Moving);
+    if (std::abs(position_offset_from_selection_) < 0.25f) {
+      ChangeMusic(moving_);
     }
 
     /* Make sure the user always gets an SM_SongChanged when
@@ -401,30 +401,30 @@ bool WheelBase::MoveSpecific(int n) {
 }
 
 void WheelBase::ChangeMusic(int iDist) {
-  m_iSelection += iDist;
-  wrap(m_iSelection, m_CurWheelItemData.size());
+  selection_ += iDist;
+  wrap(selection_, cur_wheel_item_data_.size());
 
   RebuildWheelItems(iDist);
 
-  m_fPositionOffsetFromSelection += iDist;
+  position_offset_from_selection_ += iDist;
 
   //	SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
 
   /* If we're moving automatically, don't play this; it'll be called in Update.
    */
   if (!IsMoving()) {
-    m_soundChangeMusic.Play(true);
+    sound_change_music_.Play(true);
   }
 }
 
 void WheelBase::RebuildWheelItems(int iDist) {
-  const std::vector<WheelItemBaseData*>& data = m_CurWheelItemData;
-  std::vector<WheelItemBase*>& items = m_WheelBaseItems;
+  const std::vector<WheelItemBaseData*>& data = cur_wheel_item_data_;
+  std::vector<WheelItemBase*>& items = wheel_base_items_;
 
   // rewind to first index that will be displayed;
-  int iFirstVisibleIndex = m_iSelection;
-  if (m_iSelection > int(data.size() - 1)) {
-    m_iSelection = 0;
+  int iFirstVisibleIndex = selection_;
+  if (selection_ > int(data.size() - 1)) {
+    selection_ = 0;
   }
 
   // find the first wheel item shown
@@ -445,7 +445,7 @@ void WheelBase::RebuildWheelItems(int iDist) {
     wrap(iIndex, data.size());
     const WheelItemBaseData* pData = data[iIndex];
     WheelItemBase* pDisplay = items[i];
-    pDisplay->LoadFromWheelItemData(pData, iIndex, m_iSelection == iIndex, i);
+    pDisplay->LoadFromWheelItemData(pData, iIndex, selection_ == iIndex, i);
   }
 }
 

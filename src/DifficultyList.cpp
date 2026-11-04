@@ -34,7 +34,7 @@ inline constexpr int MAX_METERS =
 REGISTER_ACTOR_CLASS(StepsDisplayList);
 
 StepsDisplayList::StepsDisplayList() {
-  m_bShown = true;
+  shown_ = true;
 
   FOREACH_ENUM(PlayerNumber, pn) {
     SubscribeToMessage(
@@ -49,16 +49,16 @@ StepsDisplayList::~StepsDisplayList() {}
 void StepsDisplayList::LoadFromNode(const XNode* pNode) {
   ActorFrame::LoadFromNode(pNode);
 
-  if (m_sName.empty()) {
+  if (name_.empty()) {
     LuaHelpers::ReportScriptError("StepsDisplayList must have a Name");
     return;
   }
 
-  ITEMS_SPACING_Y.Load(m_sName, "ItemsSpacingY");
-  NUM_SHOWN_ITEMS.Load(m_sName, "NumShownItems");
-  MOVE_COMMAND.Load(m_sName, "MoveCommand");
+  ITEMS_SPACING_Y.Load(name_, "ItemsSpacingY");
+  NUM_SHOWN_ITEMS.Load(name_, "NumShownItems");
+  MOVE_COMMAND.Load(name_, "MoveCommand");
 
-  m_Lines.resize(MAX_METERS);
+  lines_.resize(MAX_METERS);
 
   FOREACH_ENUM(PlayerNumber, pn) {
     const XNode* pChild = pNode->GetChild(ssprintf("CursorP%i", pn + 1));
@@ -67,7 +67,7 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
           "%s: StepsDisplayList: missing the node \"CursorP%d\"",
           ActorUtil::GetWhere(pNode).c_str(), pn + 1);
     } else {
-      m_Cursors[pn].LoadActorFromNode(pChild, this);
+      cursors_[pn].LoadActorFromNode(pChild, this);
     }
 
     /* Hack: we need to tween cursors both up to down (cursor motion) and
@@ -83,17 +83,17 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
           "%s: StepsDisplayList: missing the node \"CursorP%dFrame\"",
           ActorUtil::GetWhere(pNode).c_str(), pn + 1);
     } else {
-      m_CursorFrames[pn].LoadFromNode(pChild);
-      m_CursorFrames[pn].AddChild(m_Cursors[pn]);
-      this->AddChild(&m_CursorFrames[pn]);
+      cursor_frames_[pn].LoadFromNode(pChild);
+      cursor_frames_[pn].AddChild(cursors_[pn]);
+      this->AddChild(&cursor_frames_[pn]);
     }
   }
 
-  for (unsigned m = 0; m < m_Lines.size(); ++m) {
+  for (unsigned m = 0; m < lines_.size(); ++m) {
     // todo: Use Row1, Row2 for names? also m_sName+"Row" -aj
-    m_Lines[m].m_Meter.SetName("Row");
-    m_Lines[m].m_Meter.Load("StepsDisplayListRow", nullptr);
-    this->AddChild(&m_Lines[m].m_Meter);
+    lines_[m].meter_.SetName("Row");
+    lines_[m].meter_.Load("StepsDisplayListRow", nullptr);
+    this->AddChild(&lines_[m].meter_);
   }
 
   UpdatePositions();
@@ -103,15 +103,15 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
 int StepsDisplayList::GetCurrentRowIndex(PlayerNumber pn) const {
   Difficulty ClosestDifficulty = GAMESTATE->GetClosestShownDifficulty(pn);
 
-  for (unsigned i = 0; i < m_Rows.size(); i++) {
-    const Row& row = m_Rows[i];
+  for (unsigned i = 0; i < rows_.size(); i++) {
+    const Row& row = rows_[i];
 
-    if (GAMESTATE->m_pCurSteps[pn] == nullptr) {
-      if (row.m_dc == ClosestDifficulty) {
+    if (GAMESTATE->cur_steps_[pn] == nullptr) {
+      if (row.dc_ == ClosestDifficulty) {
         return i;
       }
     } else {
-      if (GAMESTATE->m_pCurSteps[pn].Get() == row.m_Steps) {
+      if (GAMESTATE->cur_steps_[pn].Get() == row.steps_) {
         return i;
       }
     }
@@ -139,7 +139,7 @@ void StepsDisplayList::UpdatePositions() {
                  : GAMESTATE->IsHumanPlayer(PLAYER_1) ? iCurrentRow[PLAYER_1]
                                                       : 0;
 
-  std::vector<Row>& Rows = m_Rows;
+  std::vector<Row>& Rows = rows_;
 
   const bool BothPlayersActivated =
       GAMESTATE->IsHumanPlayer(PLAYER_1) && GAMESTATE->IsHumanPlayer(PLAYER_2);
@@ -210,61 +210,61 @@ void StepsDisplayList::UpdatePositions() {
     Row& row = Rows[i];
 
     float fY = ITEMS_SPACING_Y * ItemPosition;
-    row.m_fY = fY;
-    row.m_bHidden = i < first_start || (i >= first_end && i < second_start) ||
-                    i >= second_end;
+    row.y_ = fY;
+    row.hidden_ = i < first_start || (i >= first_end && i < second_start) ||
+                  i >= second_end;
   }
 }
 
 void StepsDisplayList::PositionItems() {
   for (size_t i = 0; i < MAX_METERS; ++i) {
-    bool bUnused = (i >= m_Rows.size());
-    m_Lines[i].m_Meter.SetVisible(!bUnused);
+    bool bUnused = (i >= rows_.size());
+    lines_[i].meter_.SetVisible(!bUnused);
   }
 
-  for (size_t m = 0; m < m_Rows.size(); ++m) {
-    Row& row = m_Rows[m];
-    bool bHidden = row.m_bHidden;
-    if (!m_bShown) {
+  for (size_t m = 0; m < rows_.size(); ++m) {
+    Row& row = rows_[m];
+    bool bHidden = row.hidden_;
+    if (!shown_) {
       bHidden = true;
     }
 
     const float fDiffuseAlpha = bHidden ? 0.0f : 1.0f;
-    if (m_Lines[m].m_Meter.GetDestY() != row.m_fY ||
-        m_Lines[m].m_Meter.DestTweenState().diffuse[0][3] != fDiffuseAlpha) {
-      m_Lines[m].m_Meter.RunCommands(MOVE_COMMAND.GetValue());
-      m_Lines[m].m_Meter.RunCommandsOnChildren(MOVE_COMMAND.GetValue());
+    if (lines_[m].meter_.GetDestY() != row.y_ ||
+        lines_[m].meter_.DestTweenState().diffuse_[0][3] != fDiffuseAlpha) {
+      lines_[m].meter_.RunCommands(MOVE_COMMAND.GetValue());
+      lines_[m].meter_.RunCommandsOnChildren(MOVE_COMMAND.GetValue());
     }
 
-    m_Lines[m].m_Meter.SetY(row.m_fY);
+    lines_[m].meter_.SetY(row.y_);
   }
 
   for (size_t m = 0; m < MAX_METERS; ++m) {
     bool bHidden = true;
-    if (m_bShown && m < m_Rows.size()) {
-      bHidden = m_Rows[m].m_bHidden;
+    if (shown_ && m < rows_.size()) {
+      bHidden = rows_[m].hidden_;
     }
 
     float fDiffuseAlpha = bHidden ? 0.0f : 1.0f;
 
-    m_Lines[m].m_Meter.SetDiffuseAlpha(fDiffuseAlpha);
+    lines_[m].meter_.SetDiffuseAlpha(fDiffuseAlpha);
   }
 
   FOREACH_HumanPlayer(pn) {
     int iCurrentRow = GetCurrentRowIndex(pn);
 
     float fY = 0;
-    if (iCurrentRow < (int)m_Rows.size()) {
-      fY = m_Rows[iCurrentRow].m_fY;
+    if (iCurrentRow < (int)rows_.size()) {
+      fY = rows_[iCurrentRow].y_;
     }
 
-    m_CursorFrames[pn].PlayCommand("Change");
-    m_CursorFrames[pn].SetY(fY);
+    cursor_frames_[pn].PlayCommand("Change");
+    cursor_frames_[pn].SetY(fY);
   }
 }
 
 void StepsDisplayList::SetFromGameState() {
-  const Song* pSong = GAMESTATE->m_pCurSong;
+  const Song* pSong = GAMESTATE->cur_song_;
   unsigned i = 0;
 
   if (pSong == nullptr) {
@@ -273,11 +273,11 @@ void StepsDisplayList::SetFromGameState() {
     // DIFFICULTIES_TO_SHOW.
     const std::vector<Difficulty>& difficulties =
         CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
-    m_Rows.resize(difficulties.size());
+    rows_.resize(difficulties.size());
     for (const Difficulty& d : difficulties) {
-      m_Rows[i].m_dc = d;
-      m_Lines[i].m_Meter.SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
-          GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType, 0, d,
+      rows_[i].dc_ = d;
+      lines_[i].meter_.SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
+          GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_, 0, d,
           CourseType_Invalid);
       ++i;
     }
@@ -286,24 +286,24 @@ void StepsDisplayList::SetFromGameState() {
     SongUtil::GetPlayableSteps(pSong, vpSteps);
     // Should match the sort in ScreenSelectMusic::AfterMusicChange.
 
-    m_Rows.resize(vpSteps.size());
+    rows_.resize(vpSteps.size());
     for (const Steps* s : vpSteps) {
       // LOG->Trace(ssprintf("setting steps for row %i",i));
-      m_Rows[i].m_Steps = s;
-      m_Lines[i].m_Meter.SetFromSteps(s);
+      rows_[i].steps_ = s;
+      lines_[i].meter_.SetFromSteps(s);
       ++i;
     }
   }
 
   while (i < MAX_METERS) {
-    m_Lines[i++].m_Meter.Unset();
+    lines_[i++].meter_.Unset();
   }
 
   UpdatePositions();
   PositionItems();
 
   for (size_t m = 0; m < MAX_METERS; ++m) {
-    m_Lines[m].m_Meter.FinishTweening();
+    lines_[m].meter_.FinishTweening();
   }
 }
 

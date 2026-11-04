@@ -55,116 +55,116 @@ BitmapText::BitmapText() {
   }
   iReloadCounter++;
 
-  m_pFont = nullptr;
-  m_bUppercase = false;
+  font_ = nullptr;
+  uppercase_ = false;
 
-  m_bRainbowScroll = false;
-  m_bJitter = false;
-  m_fDistortion = 0.0f;
-  m_bUsingDistortion = false;
-  m_mult_attrs_with_diffuse = false;
+  rainbow_scroll_ = false;
+  jitter_ = false;
+  distortion_ = 0.0f;
+  using_distortion_ = false;
+  mult_attrs_with_diffuse_ = false;
 
-  m_iWrapWidthPixels = -1;
-  m_fMaxWidth = 0;
-  m_fMaxHeight = 0;
-  m_iVertSpacing = 0;
-  m_MaxDimensionUsesZoom = false;
-  m_bHasGlowAttribute = false;
+  wrap_width_pixels_ = -1;
+  max_width_ = 0;
+  max_height_ = 0;
+  vert_spacing_ = 0;
+  max_dimension_uses_zoom_ = false;
+  has_glow_attribute_ = false;
   // Never, this way we dont have awkward settings between themes. -Midiman
   SetShadowLength(0);
   // SM4SVN r28328, "draw glow using stroke texture" forces the BitmapText to
   // glow both the inner and stroke elements. This makes BitmapText elements
   // with an invisible stroke have a glowing stroke instead. Not good. -aj
-  m_TextGlowMode = TextGlowMode_Both;  // Both used for compatibility with SM4
+  text_glow_mode_ = TextGlowMode_Both;  // Both used for compatibility with SM4
 }
 
 BitmapText::~BitmapText() {
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
+  if (font_) {
+    FONT->UnloadFont(font_);
   }
 }
 
 BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   Actor::operator=(cpy);
 
-  m_bUppercase = cpy.m_bUppercase;
-  m_sText = cpy.m_sText;
-  m_wTextLines = cpy.m_wTextLines;
-  m_iLineWidths = cpy.m_iLineWidths;
-  m_iWrapWidthPixels = cpy.m_iWrapWidthPixels;
-  m_fMaxWidth = cpy.m_fMaxWidth;
-  m_fMaxHeight = cpy.m_fMaxHeight;
-  m_bRainbowScroll = cpy.m_bRainbowScroll;
-  m_bJitter = cpy.m_bJitter;
-  m_fDistortion = cpy.m_fDistortion;
-  m_bUsingDistortion = cpy.m_bUsingDistortion;
-  m_mult_attrs_with_diffuse = cpy.m_mult_attrs_with_diffuse;
-  m_iVertSpacing = cpy.m_iVertSpacing;
-  m_MaxDimensionUsesZoom = cpy.m_MaxDimensionUsesZoom;
-  m_aVertices = cpy.m_aVertices;
-  m_vpFontPageTextures = cpy.m_vpFontPageTextures;
-  m_mAttributes = cpy.m_mAttributes;
-  m_bHasGlowAttribute = cpy.m_bHasGlowAttribute;
-  BMT_Tweens = cpy.BMT_Tweens;
-  BMT_current = cpy.BMT_current;
-  BMT_start = cpy.BMT_start;
+  uppercase_ = cpy.uppercase_;
+  text_ = cpy.text_;
+  text_lines_ = cpy.text_lines_;
+  line_widths_ = cpy.line_widths_;
+  wrap_width_pixels_ = cpy.wrap_width_pixels_;
+  max_width_ = cpy.max_width_;
+  max_height_ = cpy.max_height_;
+  rainbow_scroll_ = cpy.rainbow_scroll_;
+  jitter_ = cpy.jitter_;
+  distortion_ = cpy.distortion_;
+  using_distortion_ = cpy.using_distortion_;
+  mult_attrs_with_diffuse_ = cpy.mult_attrs_with_diffuse_;
+  vert_spacing_ = cpy.vert_spacing_;
+  max_dimension_uses_zoom_ = cpy.max_dimension_uses_zoom_;
+  vertices_ = cpy.vertices_;
+  font_page_textures_ = cpy.font_page_textures_;
+  attributes_ = cpy.attributes_;
+  has_glow_attribute_ = cpy.has_glow_attribute_;
+  bmt_tweens_ = cpy.bmt_tweens_;
+  bmt_current_ = cpy.bmt_current_;
+  bmt_start_ = cpy.bmt_start_;
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
+  if (font_) {
+    FONT->UnloadFont(font_);
   }
 
-  if (cpy.m_pFont != nullptr) {
-    m_pFont = FONT->CopyFont(cpy.m_pFont);
+  if (cpy.font_ != nullptr) {
+    font_ = FONT->CopyFont(cpy.font_);
   } else {
-    m_pFont = nullptr;
+    font_ = nullptr;
   }
 
   return *this;
 }
 
 BitmapText::BitmapText(const BitmapText& cpy) : Actor(cpy) {
-  m_pFont = nullptr;
+  font_ = nullptr;
 
   *this = cpy;
 }
 
-void BitmapText::SetCurrentTweenStart() { BMT_start = BMT_current; }
+void BitmapText::SetCurrentTweenStart() { bmt_start_ = bmt_current_; }
 
 void BitmapText::EraseHeadTween() {
-  if (BMT_Tweens.empty()) {
+  if (bmt_tweens_.empty()) {
     return;
   }
 
-  BMT_current = BMT_Tweens[0];
-  BMT_Tweens.erase(BMT_Tweens.begin());
+  bmt_current_ = bmt_tweens_[0];
+  bmt_tweens_.erase(bmt_tweens_.begin());
 }
 
 void BitmapText::UpdatePercentThroughTween(float between) {
-  if (BMT_Tweens.empty()) {
+  if (bmt_tweens_.empty()) {
     return;
   }
 
   BMT_TweenState::MakeWeightedAverage(
-      BMT_current, BMT_start, BMT_Tweens[0], between);
+      bmt_current_, bmt_start_, bmt_tweens_[0], between);
 }
 
 void BitmapText::BeginTweening(float time, ITween* interp) {
   Actor::BeginTweening(time, interp);
-  if (!BMT_Tweens.empty()) {
-    BMT_Tweens.push_back(BMT_Tweens.back());
+  if (!bmt_tweens_.empty()) {
+    bmt_tweens_.push_back(bmt_tweens_.back());
   } else {
-    BMT_Tweens.push_back(BMT_current);
+    bmt_tweens_.push_back(bmt_current_);
   }
 }
 
 void BitmapText::StopTweening() {
-  BMT_Tweens.clear();
+  bmt_tweens_.clear();
   Actor::StopTweening();
 }
 
 void BitmapText::FinishTweening() {
-  if (!BMT_Tweens.empty()) {
-    BMT_current = BMT_DestTweenState();
+  if (!bmt_tweens_.empty()) {
+    bmt_current_ = BMT_DestTweenState();
   }
   Actor::FinishTweening();
 }
@@ -172,14 +172,14 @@ void BitmapText::FinishTweening() {
 void BitmapText::BMT_TweenState::MakeWeightedAverage(
     BMT_TweenState& out, const BMT_TweenState& from, const BMT_TweenState& to,
     float between) {
-  out.m_stroke_color.b =
-      lerp(between, from.m_stroke_color.b, to.m_stroke_color.b);
-  out.m_stroke_color.g =
-      lerp(between, from.m_stroke_color.g, to.m_stroke_color.g);
-  out.m_stroke_color.r =
-      lerp(between, from.m_stroke_color.r, to.m_stroke_color.r);
-  out.m_stroke_color.a =
-      lerp(between, from.m_stroke_color.a, to.m_stroke_color.a);
+  out.stroke_color_.b_ =
+      lerp(between, from.stroke_color_.b_, to.stroke_color_.b_);
+  out.stroke_color_.g_ =
+      lerp(between, from.stroke_color_.g_, to.stroke_color_.g_);
+  out.stroke_color_.r_ =
+      lerp(between, from.stroke_color_.r_, to.stroke_color_.r_);
+  out.stroke_color_.a_ =
+      lerp(between, from.stroke_color_.a_, to.stroke_color_.a_);
 }
 
 void BitmapText::LoadFromNode(const XNode* node) {
@@ -219,14 +219,14 @@ void BitmapText::LoadFromNode(const XNode* node) {
 bool BitmapText::LoadFromFont(const std::string& sFontFilePath) {
   CHECKPOINT_M(ssprintf("BitmapText::LoadFromFont(%s)", sFontFilePath.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
+  if (font_) {
+    FONT->UnloadFont(font_);
+    font_ = nullptr;
   }
 
-  m_pFont = FONT->LoadFont(sFontFilePath);
+  font_ = FONT->LoadFont(sFontFilePath);
 
-  this->SetStrokeColor(m_pFont->GetDefaultStrokeColor());
+  this->SetStrokeColor(font_->GetDefaultStrokeColor());
 
   BuildChars();
 
@@ -239,12 +239,12 @@ bool BitmapText::LoadFromTextureAndChars(
       "BitmapText::LoadFromTextureAndChars(\"%s\",\"%s\")",
       sTexturePath.c_str(), sChars.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
+  if (font_) {
+    FONT->UnloadFont(font_);
+    font_ = nullptr;
   }
 
-  m_pFont = FONT->LoadFont(sTexturePath, sChars);
+  font_ = FONT->LoadFont(sTexturePath, sChars);
 
   BuildChars();
 
@@ -253,111 +253,110 @@ bool BitmapText::LoadFromTextureAndChars(
 
 void BitmapText::BuildChars() {
   // If we don't have a font yet, we'll do this when it loads.
-  if (m_pFont == nullptr) {
+  if (font_ == nullptr) {
     return;
   }
 
   // calculate line lengths and widths
-  m_size.x = 0;
+  size_.x_ = 0;
 
-  m_iLineWidths.clear();
-  for (unsigned l = 0; l < m_wTextLines.size(); l++)  // for each line
+  line_widths_.clear();
+  for (unsigned l = 0; l < text_lines_.size(); l++)  // for each line
   {
-    m_iLineWidths.push_back(
-        m_pFont->GetLineWidthInSourcePixels(m_wTextLines[l]));
-    m_size.x = std::max(m_size.x, (float)m_iLineWidths.back());
+    line_widths_.push_back(font_->GetLineWidthInSourcePixels(text_lines_[l]));
+    size_.x_ = std::max(size_.x_, (float)line_widths_.back());
   }
 
   /* Ensure that the width is always even. This maintains pixel alignment;
    * fX below will always be an integer. */
-  m_size.x = QuantizeUp(m_size.x, 2.0f);
+  size_.x_ = QuantizeUp(size_.x_, 2.0f);
 
-  m_aVertices.clear();
-  m_vpFontPageTextures.clear();
+  vertices_.clear();
+  font_page_textures_.clear();
 
-  if (m_wTextLines.empty()) {
+  if (text_lines_.empty()) {
     return;
   }
 
-  m_size.y = float(m_pFont->GetHeight() * m_wTextLines.size());
+  size_.y_ = float(font_->GetHeight() * text_lines_.size());
 
   // The height (from the origin to the baseline):
-  int iPadding = m_pFont->GetLineSpacing() - m_pFont->GetHeight();
-  iPadding += m_iVertSpacing;
+  int iPadding = font_->GetLineSpacing() - font_->GetHeight();
+  iPadding += vert_spacing_;
 
   // There's padding between every line:
-  m_size.y += iPadding * int(m_wTextLines.size() - 1);
+  size_.y_ += iPadding * int(text_lines_.size() - 1);
 
   // the top position of the first row of characters
-  int iY = std::lrint(-m_size.y / 2.0f);
+  int iY = std::lrint(-size_.y_ / 2.0f);
 
-  for (unsigned i = 0; i < m_wTextLines.size(); i++)  // foreach line
+  for (unsigned i = 0; i < text_lines_.size(); i++)  // foreach line
   {
-    iY += m_pFont->GetHeight();
+    iY += font_->GetHeight();
 
-    std::wstring sLine = m_wTextLines[i];
-    if (m_pFont->IsRightToLeft()) {
+    std::wstring sLine = text_lines_[i];
+    if (font_->IsRightToLeft()) {
       reverse(sLine.begin(), sLine.end());
     }
-    const int iLineWidth = m_iLineWidths[i];
+    const int iLineWidth = line_widths_[i];
 
     float fX = SCALE(
-        m_fHorizAlign, 0.0f, 1.0f, -m_size.x / 2.0f,
-        +m_size.x / 2.0f - iLineWidth);
+        horiz_align_, 0.0f, 1.0f, -size_.x_ / 2.0f,
+        +size_.x_ / 2.0f - iLineWidth);
     int iX = std::lrint(fX);
 
     for (unsigned j = 0; j < sLine.size(); ++j) {
       RageSpriteVertex v[4];
-      const glyph& g = m_pFont->GetGlyph(sLine[j]);
+      const glyph& g = font_->GetGlyph(sLine[j]);
 
       // Advance the cursor early for RTL(?)
-      if (m_pFont->IsRightToLeft()) {
-        iX -= g.m_iHadvance;
+      if (font_->IsRightToLeft()) {
+        iX -= g.hadvance_;
       }
 
       // set vertex positions
-      v[0].p = RageVector3(
-          iX + g.m_fHshift, iY + g.m_pPage->m_fVshift, 0);  // top left
-      v[1].p = RageVector3(
-          iX + g.m_fHshift, iY + g.m_pPage->m_fVshift + g.m_fHeight,
+      v[0].p_ =
+          RageVector3(iX + g.hshift_, iY + g.page_->vshift_, 0);  // top left
+      v[1].p_ = RageVector3(
+          iX + g.hshift_, iY + g.page_->vshift_ + g.height_,
           0);  // bottom left
-      v[2].p = RageVector3(
-          iX + g.m_fHshift + g.m_fWidth,
-          iY + g.m_pPage->m_fVshift + g.m_fHeight, 0);  // bottom right
-      v[3].p = RageVector3(
-          iX + g.m_fHshift + g.m_fWidth, iY + g.m_pPage->m_fVshift,
+      v[2].p_ = RageVector3(
+          iX + g.hshift_ + g.width_, iY + g.page_->vshift_ + g.height_,
+          0);  // bottom right
+      v[3].p_ = RageVector3(
+          iX + g.hshift_ + g.width_, iY + g.page_->vshift_,
           0);  // top right
 
       // Advance the cursor.
-      if (!m_pFont->IsRightToLeft()) {
-        iX += g.m_iHadvance;
+      if (!font_->IsRightToLeft()) {
+        iX += g.hadvance_;
       }
 
       // set texture coordinates
-      v[0].t = RageVector2(g.m_TexRect.left, g.m_TexRect.top);
-      v[1].t = RageVector2(g.m_TexRect.left, g.m_TexRect.bottom);
-      v[2].t = RageVector2(g.m_TexRect.right, g.m_TexRect.bottom);
-      v[3].t = RageVector2(g.m_TexRect.right, g.m_TexRect.top);
+      v[0].t_ = RageVector2(g.tex_rect_.left_, g.tex_rect_.top_);
+      v[1].t_ = RageVector2(g.tex_rect_.left_, g.tex_rect_.bottom_);
+      v[2].t_ = RageVector2(g.tex_rect_.right_, g.tex_rect_.bottom_);
+      v[3].t_ = RageVector2(g.tex_rect_.right_, g.tex_rect_.top_);
 
-      m_aVertices.insert(m_aVertices.end(), &v[0], &v[4]);
-      m_vpFontPageTextures.push_back(g.GetFontPageTextures());
+      vertices_.insert(vertices_.end(), &v[0], &v[4]);
+      font_page_textures_.push_back(g.GetFontPageTextures());
     }
 
     // The amount of padding a line needs:
     iY += iPadding;
   }
 
-  if (m_bUsingDistortion) {
+  if (using_distortion_) {
     int iSeed = RageTimer::GetTimeSinceStartSeconds() * 500000;
     RandomGen rnd(iSeed);
-    for (unsigned int i = 0; i < m_aVertices.size(); i += 4) {
-      float w = m_aVertices[i + 2].p.x - m_aVertices[i].p.x;
-      float h = m_aVertices[i + 2].p.y - m_aVertices[i].p.y;
+    for (unsigned int i = 0; i < vertices_.size(); i += 4) {
+      float w = vertices_[i + 2].p_.x_ - vertices_[i].p_.x_;
+      float h = vertices_[i + 2].p_.y_ - vertices_[i].p_.y_;
       for (unsigned int ioff = 0; ioff < 4; ++ioff) {
-        m_aVertices[i + ioff].p.x +=
-            ((rnd() % 9) / 8.0f - .5f) * m_fDistortion * w;
-        m_aVertices[i + ioff].p.y +=
-            ((rnd() % 9) / 8.0f - .5f) * m_fDistortion * h;
+        vertices_[i + ioff].p_.x_ +=
+            ((rnd() % 9) / 8.0f - .5f) * distortion_ * w;
+        vertices_[i + ioff].p_.y_ +=
+            ((rnd() % 9) / 8.0f - .5f) * distortion_ * h;
       }
     }
   }
@@ -365,53 +364,54 @@ void BitmapText::BuildChars() {
 
 void BitmapText::DrawChars(bool bUseStrokeTexture) {
   // bail if cropped all the way
-  if (m_pTempState->crop.left + m_pTempState->crop.right >= 1 ||
-      m_pTempState->crop.top + m_pTempState->crop.bottom >= 1) {
+  if (temp_state_->crop_.left_ + temp_state_->crop_.right_ >= 1 ||
+      temp_state_->crop_.top_ + temp_state_->crop_.bottom_ >= 1) {
     return;
   }
 
-  const int iNumGlyphs = m_vpFontPageTextures.size();
+  const int iNumGlyphs = font_page_textures_.size();
   int iStartGlyph = std::lrint(
-      SCALE(m_pTempState->crop.left, 0.f, 1.f, 0, (float)iNumGlyphs));
+      SCALE(temp_state_->crop_.left_, 0.f, 1.f, 0, (float)iNumGlyphs));
   int iEndGlyph = std::lrint(
-      SCALE(m_pTempState->crop.right, 0.f, 1.f, (float)iNumGlyphs, 0));
+      SCALE(temp_state_->crop_.right_, 0.f, 1.f, (float)iNumGlyphs, 0));
   iStartGlyph = std::clamp(iStartGlyph, 0, iNumGlyphs);
   iEndGlyph = std::clamp(iEndGlyph, 0, iNumGlyphs);
 
-  if (m_pTempState->fade.top > 0 || m_pTempState->fade.bottom > 0 ||
-      m_pTempState->fade.left > 0 || m_pTempState->fade.right > 0) {
+  if (temp_state_->fade_.top_ > 0 || temp_state_->fade_.bottom_ > 0 ||
+      temp_state_->fade_.left_ > 0 || temp_state_->fade_.right_ > 0) {
     // Handle fading by tweaking the alpha values of the vertices.
 
     // Actual size of the fade on each side:
-    const RectF& FadeDist = m_pTempState->fade;
+    const RectF& FadeDist = temp_state_->fade_;
     RectF FadeSize = FadeDist;
 
     // If the cropped size is less than the fade distance, clamp.
     const float fHorizRemaining =
-        1.0f - (m_pTempState->crop.left + m_pTempState->crop.right);
-    if (FadeDist.left + FadeDist.right > 0 &&
-        fHorizRemaining < FadeDist.left + FadeDist.right) {
+        1.0f - (temp_state_->crop_.left_ + temp_state_->crop_.right_);
+    if (FadeDist.left_ + FadeDist.right_ > 0 &&
+        fHorizRemaining < FadeDist.left_ + FadeDist.right_) {
       const float LeftPercent =
-          FadeDist.left / (FadeDist.left + FadeDist.right);
-      FadeSize.left = LeftPercent * fHorizRemaining;
-      FadeSize.right = (1.0f - LeftPercent) * fHorizRemaining;
+          FadeDist.left_ / (FadeDist.left_ + FadeDist.right_);
+      FadeSize.left_ = LeftPercent * fHorizRemaining;
+      FadeSize.right_ = (1.0f - LeftPercent) * fHorizRemaining;
     }
 
     /* We fade from 0 to LeftColor, then from RightColor to 0. (We won't fade
      * all the way to 0 if the crop is beyond the outer edge.) */
-    const float fRightAlpha = SCALE(FadeSize.right, FadeDist.right, 0, 1, 0);
-    const float fLeftAlpha = SCALE(FadeSize.left, FadeDist.left, 0, 1, 0);
+    const float fRightAlpha = SCALE(FadeSize.right_, FadeDist.right_, 0, 1, 0);
+    const float fLeftAlpha = SCALE(FadeSize.left_, FadeDist.left_, 0, 1, 0);
 
-    const float fStartFadeLeftPercent = m_pTempState->crop.left;
-    const float fStopFadeLeftPercent = m_pTempState->crop.left + FadeSize.left;
+    const float fStartFadeLeftPercent = temp_state_->crop_.left_;
+    const float fStopFadeLeftPercent =
+        temp_state_->crop_.left_ + FadeSize.left_;
     const float fLeftFadeStartGlyph =
         SCALE(fStartFadeLeftPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
     const float fLeftFadeStopGlyph =
         SCALE(fStopFadeLeftPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
 
     const float fStartFadeRightPercent =
-        1 - (m_pTempState->crop.right + FadeSize.right);
-    const float fStopFadeRightPercent = 1 - (m_pTempState->crop.right);
+        1 - (temp_state_->crop_.right_ + FadeSize.right_);
+    const float fStopFadeRightPercent = 1 - (temp_state_->crop_.right_);
     const float fRightFadeStartGlyph =
         SCALE(fStartFadeRightPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
     const float fRightFadeStopGlyph =
@@ -421,7 +421,7 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
       int i = start * 4;
 
       float fAlpha = 1.0f;
-      if (FadeSize.left > 0.001f) {
+      if (FadeSize.left_ > 0.001f) {
         // Add .5, so we fade wrt. the center of the vert, not the left side.
         float fPercent = SCALE(
             start + 0.5f, fLeftFadeStartGlyph, fLeftFadeStopGlyph, 0.0f, 1.0f);
@@ -429,7 +429,7 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
         fAlpha *= fPercent * fLeftAlpha;
       }
 
-      if (FadeSize.right > 0.001f) {
+      if (FadeSize.right_ > 0.001f) {
         float fPercent = SCALE(
             start + 0.5f, fRightFadeStartGlyph, fRightFadeStopGlyph, 1.0f,
             0.0f);
@@ -438,13 +438,13 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
       }
 
       for (int j = 0; j < 4; ++j) {
-        m_aVertices[i + j].c.a =
-            (unsigned char)(m_aVertices[i + j].c.a * fAlpha);
+        vertices_[i + j].c_.a_ =
+            (unsigned char)(vertices_[i + j].c_.a_ * fAlpha);
       }
     }
   }
 
-  bool bDistanceField = m_pFont->IsDistanceField();
+  bool bDistanceField = font_->IsDistanceField();
   if (bDistanceField) {
     DISPLAY->SetEffectMode(EffectMode_DistanceField);
   }
@@ -452,23 +452,23 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
   for (int start = iStartGlyph; start < iEndGlyph;) {
     int end = start;
     while (end < iEndGlyph &&
-           *m_vpFontPageTextures[end] == *m_vpFontPageTextures[start]) {
+           *font_page_textures_[end] == *font_page_textures_[start]) {
       end++;
     }
 
     bool bHaveATexture =
         !bUseStrokeTexture ||
-        (bUseStrokeTexture && m_vpFontPageTextures[start]->m_pTextureStroke);
+        (bUseStrokeTexture && font_page_textures_[start]->texture_stroke_);
     if (bHaveATexture) {
       DISPLAY->ClearAllTextures();
       if (bUseStrokeTexture) {
         DISPLAY->SetTexture(
             TextureUnit_1,
-            m_vpFontPageTextures[start]->m_pTextureStroke->GetTexHandle());
+            font_page_textures_[start]->texture_stroke_->GetTexHandle());
       } else {
         DISPLAY->SetTexture(
             TextureUnit_1,
-            m_vpFontPageTextures[start]->m_pTextureMain->GetTexHandle());
+            font_page_textures_[start]->texture_main_->GetTexHandle());
       }
 
       // Don't bother setting texture render states for text. We never go
@@ -481,7 +481,7 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
       // This is SLOW. We need to do something else about this. -Colby
       // Actor::SetTextureRenderStates();
 
-      DISPLAY->DrawQuads(&m_aVertices[start * 4], (end - start) * 4);
+      DISPLAY->DrawQuads(&vertices_[start * 4], (end - start) * 4);
     }
 
     start = end;
@@ -497,26 +497,26 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
 void BitmapText::SetText(
     const std::string& _sText, const std::string& _sAlternateText,
     int iWrapWidthPixels) {
-  ASSERT(m_pFont != nullptr);
+  ASSERT(font_ != nullptr);
 
   std::string sNewText = StringWillUseAlternate(_sText, _sAlternateText)
                              ? _sAlternateText
                              : _sText;
 
-  if (m_bUppercase) {
+  if (uppercase_) {
     MakeUpper(sNewText);
   }
 
   if (iWrapWidthPixels == -1) {  // wrap not specified
-    iWrapWidthPixels = m_iWrapWidthPixels;
+    iWrapWidthPixels = wrap_width_pixels_;
   }
 
-  if (m_sText == sNewText && iWrapWidthPixels == m_iWrapWidthPixels) {
+  if (text_ == sNewText && iWrapWidthPixels == wrap_width_pixels_) {
     return;
   }
 
-  m_sText = sNewText;
-  m_iWrapWidthPixels = iWrapWidthPixels;
+  text_ = sNewText;
+  wrap_width_pixels_ = iWrapWidthPixels;
   ClearAttributes();
   SetTextInternal();
 }
@@ -524,10 +524,10 @@ void BitmapText::SetText(
 void BitmapText::SetTextInternal() {
   // Break the string into lines.
 
-  m_wTextLines.clear();
+  text_lines_.clear();
 
-  if (m_iWrapWidthPixels == -1) {
-    split(RStringToWstring(m_sText), L"\n", m_wTextLines, false);
+  if (wrap_width_pixels_ == -1) {
+    split(RStringToWstring(text_), L"\n", text_lines_, false);
   } else {
     // Break sText into lines that don't exceed iWrapWidthPixels. (if only
     // one word fits on the line, it may be larger than iWrapWidthPixels).
@@ -537,7 +537,7 @@ void BitmapText::SetTextInternal() {
      * and soft hyphens and pretty easily, too." -glenn */
     // TODO: Move this wrapping logic into Font.
     std::vector<std::string> asLines;
-    split(m_sText, "\n", asLines, false);
+    split(text_, "\n", asLines, false);
 
     for (unsigned line = 0; line < asLines.size(); ++line) {
       std::vector<std::string> asWords;
@@ -549,7 +549,7 @@ void BitmapText::SetTextInternal() {
       for (unsigned i = 0; i < asWords.size(); i++) {
         const std::string& sWord = asWords[i];
         int iWidthWord =
-            m_pFont->GetLineWidthInSourcePixels(RStringToWstring(sWord));
+            font_->GetLineWidthInSourcePixels(RStringToWstring(sWord));
 
         if (sCurLine.empty()) {
           sCurLine = sWord;
@@ -558,20 +558,19 @@ void BitmapText::SetTextInternal() {
         }
 
         std::string sToAdd = " " + sWord;
-        int iWidthToAdd =
-            m_pFont->GetLineWidthInSourcePixels(L" ") + iWidthWord;
+        int iWidthToAdd = font_->GetLineWidthInSourcePixels(L" ") + iWidthWord;
         if (iCurLineWidth + iWidthToAdd <=
-            m_iWrapWidthPixels)  // will fit on current line
+            wrap_width_pixels_)  // will fit on current line
         {
           sCurLine += sToAdd;
           iCurLineWidth += iWidthToAdd;
         } else {
-          m_wTextLines.push_back(RStringToWstring(sCurLine));
+          text_lines_.push_back(RStringToWstring(sCurLine));
           sCurLine = sWord;
           iCurLineWidth = iWidthWord;
         }
       }
-      m_wTextLines.push_back(RStringToWstring(sCurLine));
+      text_lines_.push_back(RStringToWstring(sCurLine));
     }
   }
 
@@ -580,45 +579,45 @@ void BitmapText::SetTextInternal() {
 }
 
 void BitmapText::SetVertSpacing(int iSpacing) {
-  m_iVertSpacing = iSpacing;
+  vert_spacing_ = iSpacing;
   BuildChars();
 }
 
 void BitmapText::SetMaxWidth(float fMaxWidth) {
-  m_fMaxWidth = fMaxWidth;
+  max_width_ = fMaxWidth;
   UpdateBaseZoom();
 }
 
 void BitmapText::SetMaxHeight(float fMaxHeight) {
-  m_fMaxHeight = fMaxHeight;
+  max_height_ = fMaxHeight;
   UpdateBaseZoom();
 }
 
-void BitmapText::SetMaxDimUseZoom(bool use) { m_MaxDimensionUsesZoom = use; }
+void BitmapText::SetMaxDimUseZoom(bool use) { max_dimension_uses_zoom_ = use; }
 
 void BitmapText::SetUppercase(bool b) {
-  m_bUppercase = b;
+  uppercase_ = b;
   BuildChars();
 }
 
 void BitmapText::SetDistortion(float f) {
-  m_fDistortion = f;
-  m_bUsingDistortion = true;
+  distortion_ = f;
+  using_distortion_ = true;
   BuildChars();
 }
 
 void BitmapText::UnSetDistortion() {
-  m_bUsingDistortion = false;
+  using_distortion_ = false;
   BuildChars();
 }
 
 void BitmapText::set_mult_attrs_with_diffuse(bool m) {
-  m_mult_attrs_with_diffuse = m;
+  mult_attrs_with_diffuse_ = m;
   BuildChars();
 }
 
 bool BitmapText::get_mult_attrs_with_diffuse() {
-  return m_mult_attrs_with_diffuse;
+  return mult_attrs_with_diffuse_;
 }
 
 void BitmapText::UpdateBaseZoom() {
@@ -629,28 +628,28 @@ void BitmapText::UpdateBaseZoom() {
 
   constexpr float maxZoom = 1.0f;
 
-  if (m_fMaxWidth == 0) {
+  if (max_width_ == 0) {
     SetBaseZoomX(1);
   } else {
     float width = GetUnzoomedWidth();
-    if (m_MaxDimensionUsesZoom) {
+    if (max_dimension_uses_zoom_) {
       width /= GetZoomX();
     }
     if (width != 0) {
-      const float zoom = std::fmin(maxZoom, m_fMaxWidth / width);
+      const float zoom = std::fmin(maxZoom, max_width_ / width);
       SetBaseZoomX(zoom);
     }
   }
 
-  if (m_fMaxHeight == 0) {
+  if (max_height_ == 0) {
     SetBaseZoomY(1);
   } else {
     float height = GetUnzoomedHeight();
-    if (m_MaxDimensionUsesZoom) {
+    if (max_dimension_uses_zoom_) {
       height /= GetZoomY();
     }
     if (height != 0) {
-      const float zoom = std::fmin(maxZoom, m_fMaxHeight / height);
+      const float zoom = std::fmin(maxZoom, max_height_ / height);
       SetBaseZoomY(zoom);
     }
   }
@@ -658,7 +657,7 @@ void BitmapText::UpdateBaseZoom() {
 
 bool BitmapText::StringWillUseAlternate(
     const std::string& sText, const std::string& sAlternateText) const {
-  ASSERT(m_pFont != nullptr);
+  ASSERT(font_ != nullptr);
 
   // Can't use the alternate if there isn't one.
   if (!sAlternateText.size()) {
@@ -666,12 +665,12 @@ bool BitmapText::StringWillUseAlternate(
   }
 
   // False if the alternate isn't needed.
-  if (m_pFont->FontCompleteForString(RStringToWstring(sText))) {
+  if (font_->FontCompleteForString(RStringToWstring(sText))) {
     return false;
   }
 
   // False if the alternate is also incomplete.
-  if (!m_pFont->FontCompleteForString(RStringToWstring(sAlternateText))) {
+  if (!font_->FontCompleteForString(RStringToWstring(sAlternateText))) {
     return false;
   }
 
@@ -679,25 +678,25 @@ bool BitmapText::StringWillUseAlternate(
 }
 
 void BitmapText::CropLineToWidth(size_t l, int width) {
-  if (l < m_wTextLines.size()) {
+  if (l < text_lines_.size()) {
     int used_width = width;
-    std::wstring& line = m_wTextLines[l];
-    const size_t fit = m_pFont->GetGlyphsThatFit(line, &used_width);
+    std::wstring& line = text_lines_[l];
+    const size_t fit = font_->GetGlyphsThatFit(line, &used_width);
     if (fit < line.size()) {
       line.erase(line.begin() + fit, line.end());
     }
-    m_iLineWidths[l] = used_width;
+    line_widths_[l] = used_width;
   }
 }
 
 void BitmapText::CropToWidth(int width) {
-  for (size_t l = 0; l < m_wTextLines.size(); ++l) {
+  for (size_t l = 0; l < text_lines_.size(); ++l) {
     CropLineToWidth(l, width);
   }
   BuildChars();
 }
 
-bool BitmapText::EarlyAbortDraw() const { return m_wTextLines.empty(); }
+bool BitmapText::EarlyAbortDraw() const { return text_lines_.empty(); }
 
 // draw text at x, y using colorTop blended down to colorBottom, with size
 // multiplied by scale
@@ -706,17 +705,17 @@ void BitmapText::DrawPrimitives() noexcept {
   DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Modulate);
 
   // Draw if we're not fully transparent or the zbuffer is enabled
-  if (m_pTempState->diffuse[0].a != 0) {
+  if (temp_state_->diffuse_[0].a_ != 0) {
     // render the shadow
-    if (m_fShadowLengthX != 0 || m_fShadowLengthY != 0) {
+    if (shadow_length_x_ != 0 || shadow_length_y_ != 0) {
       DISPLAY->PushMatrix();
-      DISPLAY->TranslateWorld(m_fShadowLengthX, m_fShadowLengthY, 0);
+      DISPLAY->TranslateWorld(shadow_length_x_, shadow_length_y_, 0);
 
-      RageColor c = m_ShadowColor;
-      c.a *= m_pTempState->diffuse[0].a;
+      RageColor c = shadow_color_;
+      c.a_ *= temp_state_->diffuse_[0].a_;
 
-      for (RageSpriteVertex& vertex : m_aVertices) {
-        vertex.c = c;
+      for (RageSpriteVertex& vertex : vertices_) {
+        vertex.c_ = c;
       }
 
       DrawChars(false);
@@ -726,134 +725,132 @@ void BitmapText::DrawPrimitives() noexcept {
 
     // render the stroke
     RageColor stroke_color = GetCurrStrokeColor();
-    if (stroke_color.a > 0) {
-      stroke_color.a *= m_pTempState->diffuse[0].a;
-      for (RageSpriteVertex& vertex : m_aVertices) {
-        vertex.c = stroke_color;
+    if (stroke_color.a_ > 0) {
+      stroke_color.a_ *= temp_state_->diffuse_[0].a_;
+      for (RageSpriteVertex& vertex : vertices_) {
+        vertex.c_ = stroke_color;
       }
       DrawChars(true);
     }
 
     // render the diffuse pass
-    if (m_bRainbowScroll) {
+    if (rainbow_scroll_) {
       int color_index =
           int(RageTimer::GetTimeSinceStart() / 0.200) % RAINBOW_COLORS.size();
-      for (size_t i = 0; i < m_aVertices.size(); i += 4) {
+      for (size_t i = 0; i < vertices_.size(); i += 4) {
         const RageColor color = RAINBOW_COLORS[color_index];
         for (size_t j = i; j < i + 4; j++) {
-          m_aVertices[j].c = color;
+          vertices_[j].c_ = color;
         }
 
         color_index = (color_index + 1) % RAINBOW_COLORS.size();
       }
     } else {
       size_t i = 0;
-      std::map<size_t, Attribute>::const_iterator iter = m_mAttributes.begin();
-      while (i < m_aVertices.size()) {
+      std::map<size_t, Attribute>::const_iterator iter = attributes_.begin();
+      while (i < vertices_.size()) {
         // Set the colors up to the next attribute.
         size_t iEnd =
-            iter == m_mAttributes.end() ? m_aVertices.size() : iter->first * 4;
-        iEnd = std::min(iEnd, m_aVertices.size());  // clamp to vertex size
+            iter == attributes_.end() ? vertices_.size() : iter->first * 4;
+        iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
         for (; i < iEnd; i += 4) {
-          m_aVertices[i + 0].c = m_pTempState->diffuse[0];  // top left
-          m_aVertices[i + 1].c = m_pTempState->diffuse[2];  // bottom left
-          m_aVertices[i + 2].c = m_pTempState->diffuse[3];  // bottom right
-          m_aVertices[i + 3].c = m_pTempState->diffuse[1];  // top right
+          vertices_[i + 0].c_ = temp_state_->diffuse_[0];  // top left
+          vertices_[i + 1].c_ = temp_state_->diffuse_[2];  // bottom left
+          vertices_[i + 2].c_ = temp_state_->diffuse_[3];  // bottom right
+          vertices_[i + 3].c_ = temp_state_->diffuse_[1];  // top right
         }
-        if (iter == m_mAttributes.end()) {
+        if (iter == attributes_.end()) {
           break;
         }
         // Set the colors according to this attribute.
         const Attribute& attr = iter->second;
         ++iter;
-        if (attr.length < 0) {
-          iEnd = iter == m_mAttributes.end() ? m_aVertices.size()
-                                             : iter->first * 4;
+        if (attr.length_ < 0) {
+          iEnd = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
         } else {
-          iEnd = i + attr.length * 4;
+          iEnd = i + attr.length_ * 4;
         }
-        iEnd = std::min(iEnd, m_aVertices.size());  // clamp to vertex size
+        iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
         std::vector<RageColor> temp_attr_diffuse(
-            NUM_DIFFUSE_COLORS, m_internalDiffuse);
+            NUM_DIFFUSE_COLORS, internal_diffuse_);
         for (size_t c = 0; c < NUM_DIFFUSE_COLORS; ++c) {
-          temp_attr_diffuse[c] *= attr.diffuse[c];
-          if (m_mult_attrs_with_diffuse) {
-            temp_attr_diffuse[c] *= m_pTempState->diffuse[c];
+          temp_attr_diffuse[c] *= attr.diffuse_[c];
+          if (mult_attrs_with_diffuse_) {
+            temp_attr_diffuse[c] *= temp_state_->diffuse_[c];
           }
         }
         for (; i < iEnd; i += 4) {
-          m_aVertices[i + 0].c = temp_attr_diffuse[0];  // top left
-          m_aVertices[i + 1].c = temp_attr_diffuse[2];  // bottom left
-          m_aVertices[i + 2].c = temp_attr_diffuse[3];  // bottom right
-          m_aVertices[i + 3].c = temp_attr_diffuse[1];  // top right
+          vertices_[i + 0].c_ = temp_attr_diffuse[0];  // top left
+          vertices_[i + 1].c_ = temp_attr_diffuse[2];  // bottom left
+          vertices_[i + 2].c_ = temp_attr_diffuse[3];  // bottom right
+          vertices_[i + 3].c_ = temp_attr_diffuse[1];  // top right
         }
       }
     }
 
     // apply jitter to verts
     std::vector<RageVector3> vGlyphJitter;
-    if (m_bJitter) {
+    if (jitter_) {
       int iSeed = RageTimer::GetTimeSinceStartSeconds() * 8;
       RandomGen rnd(iSeed);
-      for (size_t i = 0; i < m_aVertices.size(); i += 4) {
+      for (size_t i = 0; i < vertices_.size(); i += 4) {
         RageVector3 jitter(rnd() % 2, rnd() % 3, 0);
         vGlyphJitter.push_back(jitter);
 
-        m_aVertices[i + 0].p += jitter;  // top left
-        m_aVertices[i + 1].p += jitter;  // bottom left
-        m_aVertices[i + 2].p += jitter;  // bottom right
-        m_aVertices[i + 3].p += jitter;  // top right
+        vertices_[i + 0].p_ += jitter;  // top left
+        vertices_[i + 1].p_ += jitter;  // bottom left
+        vertices_[i + 2].p_ += jitter;  // bottom right
+        vertices_[i + 3].p_ += jitter;  // top right
       }
     }
 
     DrawChars(false);
 
     // undo jitter to verts
-    if (m_bJitter) {
-      ASSERT(vGlyphJitter.size() == m_aVertices.size() / 4);
-      for (size_t i = 0; i < m_aVertices.size(); i += 4) {
+    if (jitter_) {
+      ASSERT(vGlyphJitter.size() == vertices_.size() / 4);
+      for (size_t i = 0; i < vertices_.size(); i += 4) {
         const RageVector3& jitter = vGlyphJitter[i / 4];
         ;
 
-        m_aVertices[i + 0].p -= jitter;  // top left
-        m_aVertices[i + 1].p -= jitter;  // bottom left
-        m_aVertices[i + 2].p -= jitter;  // bottom right
-        m_aVertices[i + 3].p -= jitter;  // top right
+        vertices_[i + 0].p_ -= jitter;  // top left
+        vertices_[i + 1].p_ -= jitter;  // bottom left
+        vertices_[i + 2].p_ -= jitter;  // bottom right
+        vertices_[i + 3].p_ -= jitter;  // top right
       }
     }
   }
 
   // render the glow pass
-  if (m_pTempState->glow.a > 0.0001f || m_bHasGlowAttribute) {
+  if (temp_state_->glow_.a_ > 0.0001f || has_glow_attribute_) {
     DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Glow);
 
     size_t i = 0;
-    auto iter = m_mAttributes.begin();
-    while (i < m_aVertices.size()) {
+    auto iter = attributes_.begin();
+    while (i < vertices_.size()) {
       size_t iEnd =
-          iter == m_mAttributes.end() ? m_aVertices.size() : iter->first * 4;
-      iEnd = std::min(iEnd, m_aVertices.size());  // clamp to vertex size
+          iter == attributes_.end() ? vertices_.size() : iter->first * 4;
+      iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
       for (; i < iEnd; ++i) {
-        m_aVertices[i].c = m_pTempState->glow;
+        vertices_[i].c_ = temp_state_->glow_;
       }
-      if (iter == m_mAttributes.end()) {
+      if (iter == attributes_.end()) {
         break;
       }
       // Set the glow according to this attribute.
       const Attribute& attr = iter->second;
       ++iter;
-      if (attr.length < 0) {
-        iEnd =
-            iter == m_mAttributes.end() ? m_aVertices.size() : iter->first * 4;
+      if (attr.length_ < 0) {
+        iEnd = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
       } else {
-        iEnd = i + attr.length * 4;
+        iEnd = i + attr.length_ * 4;
       }
-      iEnd = std::min(iEnd, m_aVertices.size());  // clamp to vertex size
+      iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
       for (; i < iEnd; ++i) {
-        if (m_internalGlow.a > 0) {
-          m_aVertices[i].c = attr.glow * m_internalGlow;
+        if (internal_glow_.a_ > 0) {
+          vertices_[i].c_ = attr.glow_ * internal_glow_;
         } else {
-          m_aVertices[i].c = attr.glow;
+          vertices_[i].c_ = attr.glow_;
         }
       }
     }
@@ -862,47 +859,47 @@ void BitmapText::DrawPrimitives() noexcept {
     /* This doesn't work well if the font is using an invisible stroke, as
      * the invisible stroke will glow as well. Time for TextGlowMode.
      * Only draw the strokes if the glow mode is not inner only. -aj */
-    DrawChars(m_TextGlowMode != TextGlowMode_Inner);
+    DrawChars(text_glow_mode_ != TextGlowMode_Inner);
   }
 }
 
 // Rebuild when these change.
 void BitmapText::SetHorizAlign(float f) {
-  float fHorizAlign = m_fHorizAlign;
+  float fHorizAlign = horiz_align_;
   Actor::SetHorizAlign(f);
-  if (fHorizAlign == m_fHorizAlign) {
+  if (fHorizAlign == horiz_align_) {
     return;
   }
   BuildChars();
 }
 
 void BitmapText::SetWrapWidthPixels(int iWrapWidthPixels) {
-  ASSERT(m_pFont != nullptr);  // always load a font first
-  if (m_iWrapWidthPixels == iWrapWidthPixels) {
+  ASSERT(font_ != nullptr);  // always load a font first
+  if (wrap_width_pixels_ == iWrapWidthPixels) {
     return;
   }
-  m_iWrapWidthPixels = iWrapWidthPixels;
+  wrap_width_pixels_ = iWrapWidthPixels;
   SetTextInternal();
 }
 
 BitmapText::Attribute BitmapText::GetDefaultAttribute() const {
   Attribute attr;
   for (int i = 0; i < 4; ++i) {
-    attr.diffuse[i] = GetDiffuses(i);
+    attr.diffuse_[i] = GetDiffuses(i);
   }
-  attr.glow = GetGlow();
+  attr.glow_ = GetGlow();
   return attr;
 }
 
 void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
   // Fixup position for new lines.
   Attribute newAttr = attr;
-  auto lineIter = m_wTextLines.cbegin();
+  auto lineIter = text_lines_.cbegin();
 
   int iLines = 0;
   size_t iAdjustedPos = iPos;
 
-  for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+  for (; lineIter != text_lines_.cend(); ++lineIter) {
     size_t length = lineIter->length() +
                     1;  // +1 to account for implicit newline at the end
     if (length > iAdjustedPos) {
@@ -912,21 +909,21 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
     ++iLines;
   }
 
-  if (newAttr.length > 0) {
+  if (newAttr.length_ > 0) {
     // Fixup length for new lines.
-    size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
-    for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+    size_t iAdjustedEndPos = iAdjustedPos + newAttr.length_;
+    for (; lineIter != text_lines_.cend(); ++lineIter) {
       size_t length = lineIter->length() +
                       1;  // +1 to account for implicit newline at the end
-      if (length > iAdjustedEndPos || newAttr.length == 0) {
+      if (length > iAdjustedEndPos || newAttr.length_ == 0) {
         break;
       }
       iAdjustedEndPos -= length;
-      newAttr.length -= 1;
+      newAttr.length_ -= 1;
     }
   }
 
-  if (newAttr.length ==
+  if (newAttr.length_ ==
       0) {  // Attribute doesn't cover any printable characters
     return;
   }
@@ -934,57 +931,57 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
   // Check if there are existing attributes overlapping this one. We might need
   // to remove or fix them up.
   const size_t iStartPos = iPos - iLines;
-  const size_t iEndPos = iStartPos + newAttr.length;
+  const size_t iEndPos = iStartPos + newAttr.length_;
 
   // First attribute starting at the same position or further than the new
   // attribute
-  const auto iterFirstAfterStart = m_mAttributes.lower_bound(iStartPos);
-  if (iterFirstAfterStart != m_mAttributes.begin()) {
+  const auto iterFirstAfterStart = attributes_.lower_bound(iStartPos);
+  if (iterFirstAfterStart != attributes_.begin()) {
     // Last attribute starting at earlier position than the new attribute (if it
     // exists)
     auto iterLastBeforeStart = iterFirstAfterStart;
     --iterLastBeforeStart;
 
     // Fixup the length so that it ends before the new attribute
-    iterLastBeforeStart->second.length = std::min(
-        iterLastBeforeStart->second.length,
+    iterLastBeforeStart->second.length_ = std::min(
+        iterLastBeforeStart->second.length_,
         static_cast<int>(iStartPos - iterLastBeforeStart->first));
   }
 
   // First attribute starting after the end of the new attribute
-  auto iterLastBeforeEnd = m_mAttributes.lower_bound(iEndPos);
+  auto iterLastBeforeEnd = attributes_.lower_bound(iEndPos);
   if (iterLastBeforeEnd != iterFirstAfterStart) {
     // Go back one, so that we are at the last overlapping attribute
     --iterLastBeforeEnd;
     const bool lastAttrOverlappingCompletely =
-        iterLastBeforeEnd->first + iterLastBeforeEnd->second.length <= iEndPos;
+        iterLastBeforeEnd->first + iterLastBeforeEnd->second.length_ <= iEndPos;
 
     auto iterEraseEnd = iterLastBeforeEnd;
     // If it's overlapping completely, erase it as well
     if (lastAttrOverlappingCompletely) {
       ++iterEraseEnd;
     }
-    m_mAttributes.erase(iterFirstAfterStart, iterEraseEnd);
+    attributes_.erase(iterFirstAfterStart, iterEraseEnd);
 
     // Otherwise it's only overlapping partially so fix it up
     if (!lastAttrOverlappingCompletely) {
       // Fixup the length accordingly
       Attribute lastAttr = iterLastBeforeEnd->second;
-      lastAttr.length -= iEndPos - iterLastBeforeEnd->first;
+      lastAttr.length_ -= iEndPos - iterLastBeforeEnd->first;
 
       // Erase it and insert just after the new attribute
-      m_mAttributes.erase(iterLastBeforeEnd);
-      m_mAttributes[iEndPos] = lastAttr;
+      attributes_.erase(iterLastBeforeEnd);
+      attributes_[iEndPos] = lastAttr;
     }
   }
 
-  m_mAttributes[iStartPos] = newAttr;
-  m_bHasGlowAttribute = m_bHasGlowAttribute || attr.glow.a > 0.0001f;
+  attributes_[iStartPos] = newAttr;
+  has_glow_attribute_ = has_glow_attribute_ || attr.glow_.a_ > 0.0001f;
 }
 
 void BitmapText::ClearAttributes() {
-  m_mAttributes.clear();
-  m_bHasGlowAttribute = false;
+  attributes_.clear();
+  has_glow_attribute_ = false;
 }
 
 void BitmapText::Attribute::FromStack(lua_State* L, int iPos) {
@@ -997,7 +994,7 @@ void BitmapText::Attribute::FromStack(lua_State* L, int iPos) {
 
   // Get the length.
   lua_getfield(L, iTab, "Length");
-  length = lua_tointeger(L, -1);
+  length_ = lua_tointeger(L, -1);
   lua_settop(L, iTab);
 
   // Get the diffuse colors.
@@ -1005,7 +1002,7 @@ void BitmapText::Attribute::FromStack(lua_State* L, int iPos) {
   if (!lua_isnil(L, -1)) {
     for (int i = 1; i <= NUM_DIFFUSE_COLORS; ++i) {
       lua_rawgeti(L, -i, i);
-      diffuse[i - 1].FromStack(L, -1);
+      diffuse_[i - 1].FromStack(L, -1);
     }
   }
   lua_settop(L, iTab);
@@ -1013,14 +1010,14 @@ void BitmapText::Attribute::FromStack(lua_State* L, int iPos) {
   // Get a single diffuse color.
   lua_getfield(L, iTab, "Diffuse");
   if (!lua_isnil(L, -1)) {
-    diffuse[0].FromStack(L, -1);
-    diffuse[1] = diffuse[2] = diffuse[3] = diffuse[0];
+    diffuse_[0].FromStack(L, -1);
+    diffuse_[1] = diffuse_[2] = diffuse_[3] = diffuse_[0];
   }
   lua_settop(L, iTab);
 
   // Get the glow color.
   lua_getfield(L, iTab, "Glow");
-  glow.FromStack(L, -1);
+  glow_.FromStack(L, -1);
 
   lua_settop(L, iTab - 1);
 }

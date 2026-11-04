@@ -16,7 +16,7 @@ class InputHandler_SextetStream : public InputHandler {
   class Impl;
 
  protected:
-  Impl* _impl;
+  Impl* impl_;
 };
 
 // Note: InputHandler_SextetStreamFromFile uses blocking I/O. For the

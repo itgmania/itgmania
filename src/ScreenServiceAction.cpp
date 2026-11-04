@@ -97,7 +97,7 @@ static std::string ClearMemoryCardEdits() {
   }
 
   std::string sDir = MEM_CARD_MOUNT_POINT[pn] +
-                     (std::string)PREFSMAN->m_sMemoryCardProfileSubdir + "/";
+                     (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
   std::vector<std::string> vsEditFiles;
   GetDirListing(sDir + EDIT_STEPS_SUBDIR + "*.edit", vsEditFiles, false, true);
   GetDirListing(sDir + EDIT_COURSES_SUBDIR + "*.crs", vsEditFiles, false, true);
@@ -132,7 +132,7 @@ static std::string TransferStatsMachineToMemoryCard() {
   sDir += "MachineProfile/";
 
   bool bSaved = PROFILEMAN->GetMachineProfile()->SaveAllToDir(
-      sDir, PREFSMAN->m_bSignProfileData);
+      sDir, PREFSMAN->sign_profile_data_);
 
   MEMCARDMAN->UnmountCard(pn);
 
@@ -168,7 +168,7 @@ static std::string TransferStatsMemoryCardToMachine() {
   Profile backup = *PROFILEMAN->GetMachineProfile();
 
   ProfileLoadResult lr = PROFILEMAN->GetMachineProfile()->LoadAllFromDir(
-      sDir, PREFSMAN->m_bSignProfileData);
+      sDir, PREFSMAN->sign_profile_data_);
   std::string s;
   switch (lr) {
     case ProfileLoadResult_Success:
@@ -358,12 +358,12 @@ static std::string CopyEditsMachineToMemoryCard() {
 
   std::string sFromDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
   std::string sToDir = MEM_CARD_MOUNT_POINT[pn] +
-                       (std::string)PREFSMAN->m_sMemoryCardProfileSubdir + "/";
+                       (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
 
   std::vector<std::string> vs;
   vs.push_back(ssprintf(COPIED_TO_CARD.GetValue().c_str(), pn + 1));
   std::string s =
-      CopyEdits(sFromDir, sToDir, PREFSMAN->m_sMemoryCardProfileSubdir);
+      CopyEdits(sFromDir, sToDir, PREFSMAN->memory_card_profile_subdir_);
   vs.push_back(s);
 
   MEMCARDMAN->UnmountCard(pn);
@@ -388,7 +388,7 @@ static std::string SyncEditsMachineToMemoryCard() {
 
   std::string sFromDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
   std::string sToDir = MEM_CARD_MOUNT_POINT[pn] +
-                       (std::string)PREFSMAN->m_sMemoryCardProfileSubdir + "/";
+                       (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
   SyncEdits(
       sFromDir, sToDir, iNumAdded, iNumDeleted, iNumOverwritten, iNumFailed);
 
@@ -451,7 +451,7 @@ static std::string ResetPreferences() {
 
 REGISTER_SCREEN_CLASS(ScreenServiceAction);
 void ScreenServiceAction::BeginScreen() {
-  std::string sActions = THEME->GetMetric(m_sName, "Actions");
+  std::string sActions = THEME->GetMetric(name_, "Actions");
   std::vector<std::string> vsActions;
   split(sActions, ",", vsActions);
 

@@ -29,11 +29,11 @@
 
 LuaManager* LUA = nullptr;
 struct Impl {
-  Impl() : g_pLock("Lua") {}
-  std::vector<lua_State*> g_FreeStateList;
-  std::map<lua_State*, bool> g_ActiveStates;
+  Impl() : lock_("Lua") {}
+  std::vector<lua_State*> free_state_list_;
+  std::map<lua_State*, bool> active_states_;
 
-  RageMutex g_pLock;
+  RageMutex lock_;
 };
 static Impl* pImpl = nullptr;
 
@@ -182,7 +182,7 @@ void CreateTableFromXNodeRecursive(Lua* L, const XNode* pNode) {
 
   FOREACH_CONST_Child(pNode, c) {
     const XNode* pChild = c;
-    lua_pushstring(L, pChild->m_sName.c_str());  // push key
+    lua_pushstring(L, pChild->name_.c_str());  // push key
 
     // push value (more correctly, build this child's table and leave it there)
     CreateTableFromXNodeRecursive(L, pChild);
@@ -283,7 +283,7 @@ LuaManager::LuaManager() {
   ASSERT(L != nullptr);
 
   lua_atpanic(L, LuaPanic);
-  m_pLuaMain = L;
+  lua_main_ = L;
 
   lua_pushcfunction(L, luaopen_base);
   lua_call(L, 0, 0);
@@ -304,32 +304,32 @@ LuaManager::LuaManager() {
 }
 
 LuaManager::~LuaManager() {
-  lua_close(m_pLuaMain);
+  lua_close(lua_main_);
   RageUtil::SafeDelete(pImpl);
 }
 
 Lua* LuaManager::Get() {
   bool bLocked = false;
-  if (!pImpl->g_pLock.IsLockedByThisThread()) {
-    pImpl->g_pLock.Lock();
+  if (!pImpl->lock_.IsLockedByThisThread()) {
+    pImpl->lock_.Lock();
     bLocked = true;
   }
 
-  ASSERT(lua_gettop(m_pLuaMain) == 1);
+  ASSERT(lua_gettop(lua_main_) == 1);
 
   lua_State* pRet;
-  if (pImpl->g_FreeStateList.empty()) {
-    pRet = lua_newthread(m_pLuaMain);
+  if (pImpl->free_state_list_.empty()) {
+    pRet = lua_newthread(lua_main_);
 
     // Store the new thread in THREAD_POOL, so it isn't collected.
-    int iLast = lua_objlen(m_pLuaMain, THREAD_POOL);
-    lua_rawseti(m_pLuaMain, THREAD_POOL, iLast + 1);
+    int iLast = lua_objlen(lua_main_, THREAD_POOL);
+    lua_rawseti(lua_main_, THREAD_POOL, iLast + 1);
   } else {
-    pRet = pImpl->g_FreeStateList.back();
-    pImpl->g_FreeStateList.pop_back();
+    pRet = pImpl->free_state_list_.back();
+    pImpl->free_state_list_.pop_back();
   }
 
-  pImpl->g_ActiveStates[pRet] = bLocked;
+  pImpl->active_states_[pRet] = bLocked;
   if (LUADEBUG) {
     LUADEBUG->ActivateState(pRet);
   }
@@ -340,15 +340,15 @@ void LuaManager::Release(Lua*& p) {
   if (LUADEBUG) {
     LUADEBUG->DeactivateState(p);
   }
-  pImpl->g_FreeStateList.push_back(p);
+  pImpl->free_state_list_.push_back(p);
 
   ASSERT(lua_gettop(p) == 0);
-  ASSERT(pImpl->g_ActiveStates.find(p) != pImpl->g_ActiveStates.end());
-  bool bDoUnlock = pImpl->g_ActiveStates[p];
-  pImpl->g_ActiveStates.erase(p);
+  ASSERT(pImpl->active_states_.find(p) != pImpl->active_states_.end());
+  bool bDoUnlock = pImpl->active_states_[p];
+  pImpl->active_states_.erase(p);
 
   if (bDoUnlock) {
-    pImpl->g_pLock.Unlock();
+    pImpl->lock_.Unlock();
   }
   p = nullptr;
 }
@@ -381,12 +381,12 @@ void LuaManager::Release(Lua*& p) {
  * LUA->Release(L1);
  */
 void LuaManager::YieldLua() {
-  ASSERT(pImpl->g_pLock.IsLockedByThisThread());
+  ASSERT(pImpl->lock_.IsLockedByThisThread());
 
-  pImpl->g_pLock.Unlock();
+  pImpl->lock_.Unlock();
 }
 
-void LuaManager::UnyieldLua() { pImpl->g_pLock.Lock(); }
+void LuaManager::UnyieldLua() { pImpl->lock_.Lock(); }
 
 void LuaManager::RegisterTypes() {
   Lua* L = Get();
@@ -403,12 +403,12 @@ void LuaManager::RegisterTypes() {
 
 LuaThreadVariable::LuaThreadVariable(
     const std::string& sName, const std::string& sValue) {
-  m_Name = new LuaReference;
-  m_pOldValue = new LuaReference;
+  name_ = new LuaReference;
+  old_value_ = new LuaReference;
 
   Lua* L = LUA->Get();
   LuaHelpers::Push(L, sName);
-  m_Name->SetFromStack(L);
+  name_->SetFromStack(L);
   LuaHelpers::Push(L, sValue);
   SetFromStack(L);
   LUA->Release(L);
@@ -416,12 +416,12 @@ LuaThreadVariable::LuaThreadVariable(
 
 LuaThreadVariable::LuaThreadVariable(
     const std::string& sName, const LuaReference& Value) {
-  m_Name = new LuaReference;
-  m_pOldValue = new LuaReference;
+  name_ = new LuaReference;
+  old_value_ = new LuaReference;
 
   Lua* L = LUA->Get();
   LuaHelpers::Push(L, sName);
-  m_Name->SetFromStack(L);
+  name_->SetFromStack(L);
 
   Value.PushSelf(L);
   SetFromStack(L);
@@ -430,11 +430,11 @@ LuaThreadVariable::LuaThreadVariable(
 
 // name and value are on the stack
 LuaThreadVariable::LuaThreadVariable(lua_State* L) {
-  m_Name = new LuaReference;
-  m_pOldValue = new LuaReference;
+  name_ = new LuaReference;
+  old_value_ = new LuaReference;
 
   lua_pushvalue(L, -2);
-  m_Name->SetFromStack(L);
+  name_->SetFromStack(L);
 
   SetFromStack(L);
 
@@ -512,15 +512,15 @@ int LuaThreadVariable::AdjustCount(lua_State* L, int iAdd) {
 }
 
 void LuaThreadVariable::SetFromStack(lua_State* L) {
-  ASSERT(!m_pOldValue->IsSet());  // don't call twice
+  ASSERT(!old_value_->IsSet());  // don't call twice
 
   PushThreadTable(L, true);
 
-  m_Name->PushSelf(L);
+  name_->PushSelf(L);
   lua_gettable(L, -2);
-  m_pOldValue->SetFromStack(L);
+  old_value_->SetFromStack(L);
 
-  m_Name->PushSelf(L);
+  name_->PushSelf(L);
   lua_pushvalue(L, -3);
   lua_settable(L, -3);
 
@@ -533,8 +533,8 @@ LuaThreadVariable::~LuaThreadVariable() {
   Lua* L = LUA->Get();
 
   PushThreadTable(L, true);
-  m_Name->PushSelf(L);
-  m_pOldValue->PushSelf(L);
+  name_->PushSelf(L);
+  old_value_->PushSelf(L);
   lua_settable(L, -3);
 
   if (AdjustCount(L, -1) == 0) {
@@ -551,14 +551,14 @@ LuaThreadVariable::~LuaThreadVariable() {
 
   LUA->Release(L);
 
-  delete m_pOldValue;
-  delete m_Name;
+  delete old_value_;
+  delete name_;
 }
 
 namespace {
 struct LClass {
-  std::string m_sBaseName;
-  std::vector<std::string> m_vMethods;
+  std::string base_name_;
+  std::vector<std::string> methods_;
 };
 }  // namespace
 
@@ -603,7 +603,7 @@ XNode* LuaHelpers::GetLuaInformation() {
           name = lua_tostring(L, -1);
 
           if (name) {
-            c.m_sBaseName = name;
+            c.base_name_ = name;
           }
           lua_pop(L, 2);  // pop name and metatable
 
@@ -611,10 +611,10 @@ XNode* LuaHelpers::GetLuaInformation() {
           FOREACH_LUATABLE(L, -1) {
             std::string sMethod;
             if (LuaHelpers::FromStack(L, sMethod, -1)) {
-              c.m_vMethods.push_back(sMethod);
+              c.methods_.push_back(sMethod);
             }
           }
-          sort(c.m_vMethods.begin(), c.m_vMethods.end());
+          sort(c.methods_.begin(), c.methods_.end());
           break;
         }
         [[fallthrough]];
@@ -698,10 +698,10 @@ XNode* LuaHelpers::GetLuaInformation() {
     XNode* pClassNode = pClassesNode->AppendChild("Class");
 
     pClassNode->AppendAttr("name", c.first);
-    if (!c.second.m_sBaseName.empty()) {
-      pClassNode->AppendAttr("base", c.second.m_sBaseName);
+    if (!c.second.base_name_.empty()) {
+      pClassNode->AppendAttr("base", c.second.base_name_);
     }
-    for (const std::string& m : c.second.m_vMethods) {
+    for (const std::string& m : c.second.methods_) {
       XNode* pMethodNode = pClassNode->AppendChild("Function");
       pMethodNode->AppendAttr("name", m);
     }
@@ -923,7 +923,7 @@ void LuaHelpers::ParseCommandList(
       s << "\tparent = self:GetParent();\n";
     }
 
-    for (const Command& cmd : cmds.v) {
+    for (const Command& cmd : cmds.v_) {
       std::string sCmdName = cmd.GetName();
       if (bLegacy) {
         MakeLower(sCmdName);
@@ -937,8 +937,8 @@ void LuaHelpers::ParseCommandList(
                       sCmdName == "playcommand" || sCmdName == "queuecommand" ||
                       sCmdName == "queuemessage" || sCmdName == "settext");
 
-      for (unsigned i = 1; i < cmd.m_vsArgs.size(); i++) {
-        std::string sArg = cmd.m_vsArgs[i];
+      for (unsigned i = 1; i < cmd.args_.size(); i++) {
+        std::string sArg = cmd.args_[i];
 
         // "+200" -> "200"
         if (sArg[0] == '+') {
@@ -954,12 +954,12 @@ void LuaHelpers::ParseCommandList(
           RageColor col;  // in case FromString fails
           col.FromString(sArg);
           // col is still valid if FromString fails
-          s << col.r << "," << col.g << "," << col.b << "," << col.a;
+          s << col.r_ << "," << col.g_ << "," << col.b_ << "," << col.a_;
         } else {
           s << sArg;
         }
 
-        if (i != cmd.m_vsArgs.size() - 1) {
+        if (i != cmd.args_.size() - 1) {
           s << ",";
         }
       }

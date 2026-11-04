@@ -62,10 +62,10 @@ struct hash<IOHIDElementCookie> : private hash<uintptr_t> {
 
 class HIDDevice {
  private:
-  IOHIDDeviceInterface** m_Interface;
-  IOHIDQueueInterface** m_Queue;
-  bool m_bRunning;
-  std::string m_sDescription;
+  IOHIDDeviceInterface** interface_;
+  IOHIDQueueInterface** queue_;
+  bool running_;
+  std::string description_;
 
   static void AddLogicalDevice(const void* value, void* context);
   static void AddElement(const void* value, void* context);
@@ -92,7 +92,7 @@ class HIDDevice {
   // This adds the element with the given cookie to the queue to be notified of
   // state changes.
   inline void AddElementToQueue(IOHIDElementCookie cookie) {
-    IOReturn ret = CALL(m_Queue, addElement, cookie, 0);
+    IOReturn ret = CALL(queue_, addElement, cookie, 0);
     if (ret != KERN_SUCCESS) {
       LOG->Warn(
           "Failed to add HID element with cookie %u to queue: %u", cookie, ret);
@@ -104,8 +104,8 @@ class HIDDevice {
       IOHIDReportType type, UInt32 reportID, void* buffer, UInt32 size,
       UInt32 timeoutMS) {
     return CALL(
-        m_Interface, setReport, type, reportID, buffer, size, timeoutMS,
-        nullptr, nullptr, nullptr);
+        interface_, setReport, type, reportID, buffer, size, timeoutMS, nullptr,
+        nullptr, nullptr);
   }
 
  public:
@@ -115,7 +115,7 @@ class HIDDevice {
   bool Open(io_object_t device);
   void StartQueue(
       CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void* target);
-  inline const std::string& GetDescription() const { return m_sDescription; }
+  inline const std::string& GetDescription() const { return description_; }
 
   /* Add button presses (or releases) to vPresses for the given cookie. More
    * than one DeviceInput can be added at a time. For example, Two axes

@@ -45,8 +45,8 @@ class Luna : public LuaBinding {
   typedef int(binding_t)(T* p, lua_State* L);
 
   struct RegType {
-    const char* szName;
-    binding_t* mfunc;
+    const char* name_;
+    binding_t* mfunc_;
   };
 
   void Register(Lua* L, int iMethods, int iMetatable) {
@@ -54,29 +54,29 @@ class Luna : public LuaBinding {
     lua_setfield(L, iMetatable, "__tostring");
 
     // fill method table with methods from class T
-    for (unsigned i = 0; i < m_aMethods.size(); i++) {
-      const RegType* l = &m_aMethods[i];
-      lua_pushlightuserdata(L, (void*)l->mfunc);
+    for (unsigned i = 0; i < methods_.size(); i++) {
+      const RegType* l = &methods_[i];
+      lua_pushlightuserdata(L, (void*)l->mfunc_);
       lua_pushcclosure(L, thunk, 1);
-      lua_setfield(L, iMethods, l->szName);
+      lua_setfield(L, iMethods, l->name_);
     }
   }
 
  public:
-  virtual const std::string& GetClassName() const { return m_sClassName; }
+  virtual const std::string& GetClassName() const { return class_name_; }
   virtual const std::string& GetBaseClassName() const {
-    return m_sBaseClassName;
+    return base_class_name_;
   }
-  static std::string m_sClassName;
-  static std::string m_sBaseClassName;
+  static std::string class_name_;
+  static std::string base_class_name_;
 
   // Get userdata from the Lua stack and return a pointer to T object.
   static T* check(lua_State* L, int narg, bool bIsSelf = false) {
-    if (!LuaBinding::CheckLuaObjectType(L, narg, m_sClassName.c_str())) {
+    if (!LuaBinding::CheckLuaObjectType(L, narg, class_name_.c_str())) {
       if (bIsSelf) {
-        luaL_typerror(L, narg, m_sClassName.c_str());
+        luaL_typerror(L, narg, class_name_.c_str());
       } else {
-        LuaHelpers::TypeError(L, narg, m_sClassName.c_str());
+        LuaHelpers::TypeError(L, narg, class_name_.c_str());
       }
     }
 
@@ -84,7 +84,7 @@ class Luna : public LuaBinding {
   }
 
   static T* get(lua_State* L, int narg) {
-    return (T*)GetPointerFromStack(L, m_sClassName, narg);
+    return (T*)GetPointerFromStack(L, class_name_, narg);
   }
 
   /* Push a table or userdata for the given object.  This is called on the
@@ -94,7 +94,7 @@ class Luna : public LuaBinding {
  protected:
   void AddMethod(const char* szName, int (*pFunc)(T* p, lua_State* L)) {
     RegType r = {szName, pFunc};
-    m_aMethods.push_back(r);
+    methods_.push_back(r);
   }
 
  private:
@@ -108,13 +108,13 @@ class Luna : public LuaBinding {
     return pFunc(obj, L);  // call member function
   }
 
-  std::vector<RegType> m_aMethods;
+  std::vector<RegType> methods_;
 
   static int tostring_T(lua_State* L) {
     char buff[32];
     const void* pData = check(L, 1);
     snprintf(buff, sizeof(buff), "%p", pData);
-    lua_pushfstring(L, "%s (%s)", m_sClassName.c_str(), buff);
+    lua_pushfstring(L, "%s (%s)", class_name_.c_str(), buff);
     return 1;
   }
 };
@@ -138,7 +138,7 @@ class LuaClass : public LuaTable {
   template <>                                               \
   void Luna<T>::PushObject(                                 \
       Lua* L, const std::string& sDerivedClassName, T* p) { \
-    p->m_pLuaInstance->PushSelf(L);                         \
+    p->lua_instance_->PushSelf(L);                          \
     LuaBinding::ApplyDerivedType(L, sDerivedClassName, p);  \
   }                                                         \
   LUA_REGISTER_CLASS_BASIC(T, T)
@@ -163,11 +163,11 @@ class LuaClass : public LuaTable {
 
 #define LUA_REGISTER_CLASS_BASIC(T, B)                              \
   template <>                                                       \
-  std::string Luna<T>::m_sClassName = #T;                           \
+  std::string Luna<T>::class_name_ = #T;                            \
   template <>                                                       \
-  std::string Luna<T>::m_sBaseClassName = #B;                       \
+  std::string Luna<T>::base_class_name_ = #B;                       \
   void T::PushSelf(lua_State* L) {                                  \
-    Luna<B>::PushObject(L, Luna<T>::m_sClassName, this);            \
+    Luna<B>::PushObject(L, Luna<T>::class_name_, this);             \
   }                                                                 \
   static Luna##T registera##T;                                      \
   /* Call PushSelf, so we always call the derived Luna<T>::Push. */ \

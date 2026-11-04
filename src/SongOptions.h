@@ -33,33 +33,33 @@ LuaDeclareType(SoundEffectType);
 
 class SongOptions {
  public:
-  bool m_bAssistClap;
-  bool m_bAssistMetronome;
-  float m_fMusicRate, m_SpeedfMusicRate;
-  float m_fHaste, m_SpeedfHaste;
-  AutosyncType m_AutosyncType;
-  SoundEffectType m_SoundEffectType;
-  bool m_bStaticBackground;
-  bool m_bRandomBGOnly;
-  bool m_bSaveScore;
-  bool m_bSaveReplay;
+  bool assist_clap_;
+  bool assist_metronome_;
+  float music_rate_, speed_music_rate_;
+  float haste_, speed_haste_;
+  AutosyncType autosync_type_;
+  SoundEffectType sound_effect_type_;
+  bool static_background_;
+  bool random_bg_only_;
+  bool save_score_;
+  bool save_replay_;
 
   /**
    * @brief Set up the SongOptions with reasonable defaults.
    */
   SongOptions()
-      : m_bAssistClap(false),
-        m_bAssistMetronome(false),
-        m_fMusicRate(1.0f),
-        m_SpeedfMusicRate(1.0f),
-        m_fHaste(0.0f),
-        m_SpeedfHaste(1.0f),
-        m_AutosyncType(AutosyncType_Off),
-        m_SoundEffectType(SoundEffectType_Off),
-        m_bStaticBackground(false),
-        m_bRandomBGOnly(false),
-        m_bSaveScore(true),
-        m_bSaveReplay(false) {};
+      : assist_clap_(false),
+        assist_metronome_(false),
+        music_rate_(1.0f),
+        speed_music_rate_(1.0f),
+        haste_(0.0f),
+        speed_haste_(1.0f),
+        autosync_type_(AutosyncType_Off),
+        sound_effect_type_(SoundEffectType_Off),
+        static_background_(false),
+        random_bg_only_(false),
+        save_score_(true),
+        save_replay_(false) {};
   void Init() { *this = {}; }
   void Approach(const SongOptions& other, float fDeltaSeconds);
   void GetMods(std::vector<std::string>& AddTo) const;

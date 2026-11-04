@@ -21,11 +21,11 @@ std::vector<int> make_pids(int base_pid, int size) {
 HidDevice::HidDevice(
     int vid, const std::vector<int> pids, int interfaceNum,
     bool autoReconnection, bool nonBlockingRead)
-    : vid{vid},
-      pids{pids},
-      interfaceNum{interfaceNum},
-      autoReconnection{autoReconnection},
-      nonBlockingRead{nonBlockingRead} {
+    : vid_{vid},
+      pids_{pids},
+      interface_num_{interfaceNum},
+      auto_reconnection_{autoReconnection},
+      non_blocking_read_{nonBlockingRead} {
   bool result = TryConnect();
 
   if (!result) {
@@ -33,7 +33,7 @@ HidDevice::HidDevice(
         "HidDevice with vendor_id 0x%04x and pids 0x%s %d could not connect.",
         vid, GetPidsString(pids).c_str(), interfaceNum);
   } else {
-    foundOnce = true;
+    found_once_ = true;
   }
 }
 
@@ -50,46 +50,46 @@ HidDevice::~HidDevice() {
 }
 
 void HidDevice::Close() {
-  hid_close(handle);
-  handle = nullptr;
+  hid_close(handle_);
+  handle_ = nullptr;
 
-  foundDeviceInfo.vid = 0;
-  foundDeviceInfo.pid = 0;
-  foundDeviceInfo.interfaceNum = 0;
-  foundDeviceInfo.path = nullptr;
+  found_device_info_.vid_ = 0;
+  found_device_info_.pid_ = 0;
+  found_device_info_.interface_num_ = 0;
+  found_device_info_.path_ = nullptr;
 }
 
 bool HidDevice::Open(const char* path) {
-  handle = hid_open_path(path);
+  handle_ = hid_open_path(path);
 
-  if (nonBlockingRead) {
-    hid_set_nonblocking(handle, 1);
+  if (non_blocking_read_) {
+    hid_set_nonblocking(handle_, 1);
   }
 
-  if (handle) {
+  if (handle_) {
     LOG->Info(
-        "HidDevice 0x%04x:0x%04x %d opened by path %s", foundDeviceInfo.vid,
-        foundDeviceInfo.pid, foundDeviceInfo.interfaceNum,
-        foundDeviceInfo.path);
+        "HidDevice 0x%04x:0x%04x %d opened by path %s", found_device_info_.vid_,
+        found_device_info_.pid_, found_device_info_.interface_num_,
+        found_device_info_.path_);
   } else {
     LOG->Warn(
         "HidDevice 0x%04x:0x%04x %d could not be opened by path %s. Are "
         "permissions correct?",
-        foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum,
-        foundDeviceInfo.path);
+        found_device_info_.vid_, found_device_info_.pid_,
+        found_device_info_.interface_num_, found_device_info_.path_);
   }
 
-  return handle != nullptr;
+  return handle_ != nullptr;
 }
 
 bool HidDevice::TryConnect() {
-  GetDeviceInfo(vid, pids, interfaceNum, &foundDeviceInfo);
+  GetDeviceInfo(vid_, pids_, interface_num_, &found_device_info_);
 
-  if (foundDeviceInfo.path == nullptr) {
+  if (found_device_info_.path_ == nullptr) {
     return false;
   }
 
-  return Open(foundDeviceInfo.path);
+  return Open(found_device_info_.path_);
 }
 
 bool HidDevice::CheckConnection() {
@@ -97,18 +97,18 @@ bool HidDevice::CheckConnection() {
     return true;
   }
 
-  if (!autoReconnection || !foundOnce) {
+  if (!auto_reconnection_ || !found_once_) {
     return false;
   }
 
   return TryConnect();
 }
 
-const wchar_t* HidDevice::GetError() { return hid_read_error(handle); }
+const wchar_t* HidDevice::GetError() { return hid_read_error(handle_); }
 
-bool HidDevice::IsConnected() { return handle != nullptr; }
+bool HidDevice::IsConnected() { return handle_ != nullptr; }
 
-bool HidDevice::FoundOnce() { return foundOnce; }
+bool HidDevice::FoundOnce() { return found_once_; }
 
 const std::string HidDevice::GetPidsString(const std::vector<int> pids) {
   std::string pidsString;
@@ -165,10 +165,10 @@ void HidDevice::GetDeviceInfo(
   }
 
   if (found && cur_dev != nullptr) {
-    device_info->vid = cur_dev->vendor_id;
-    device_info->pid = cur_dev->product_id;
-    device_info->interfaceNum = cur_dev->interface_number;
-    device_info->path = cur_dev->path;
+    device_info->vid_ = cur_dev->vendor_id;
+    device_info->pid_ = cur_dev->product_id;
+    device_info->interface_num_ = cur_dev->interface_number;
+    device_info->path_ = cur_dev->path;
   }
 }
 
@@ -177,13 +177,13 @@ int HidDevice::Read(unsigned char* data, size_t length) {
     return NotConnected;
   }
 
-  int result = hid_read(handle, data, length);
+  int result = hid_read(handle_, data, length);
 
   if (result == -1) {
     LOG->Warn(
         "HidDevice 0x%04x:0x%04x %d read failed. Fail reason %ls",
-        foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum,
-        GetError());
+        found_device_info_.vid_, found_device_info_.pid_,
+        found_device_info_.interface_num_, GetError());
     Close();
   }
 
@@ -195,13 +195,13 @@ HidResults HidDevice::Write(const unsigned char* data, size_t length) {
     return NotConnected;
   }
 
-  size_t result = static_cast<size_t>(hid_write(handle, data, length));
+  size_t result = static_cast<size_t>(hid_write(handle_, data, length));
 
   if (result != length) {
     LOG->Warn(
         "HidDevice 0x%04x:0x%04x %d write failed. Fail reason %ls",
-        foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum,
-        GetError());
+        found_device_info_.vid_, found_device_info_.pid_,
+        found_device_info_.interface_num_, GetError());
     Close();
     return OperationFailed;
   }

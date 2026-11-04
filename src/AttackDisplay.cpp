@@ -27,32 +27,32 @@ std::string GetAttackPieceName(const std::string& sAttack) {
 }
 
 AttackDisplay::AttackDisplay() {
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
   }
 
-  m_sprAttack.SetDiffuseAlpha(0);  // invisible
-  this->AddChild(&m_sprAttack);
+  spr_attack_.SetDiffuseAlpha(0);  // invisible
+  this->AddChild(&spr_attack_);
 }
 
 void AttackDisplay::Init(const PlayerState* pPlayerState) {
-  m_pPlayerState = pPlayerState;
+  player_state_ = pPlayerState;
 
   // TODO: Remove use of PlayerNumber.
-  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-  m_sprAttack.SetName(ssprintf("TextP%d", pn + 1));
+  PlayerNumber pn = player_state_->player_number_;
+  spr_attack_.SetName(ssprintf("TextP%d", pn + 1));
 
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
   }
 
   std::set<std::string> attacks;
   for (int al = 0; al < NUM_ATTACK_LEVELS; al++) {
-    const Character* ch = GAMESTATE->m_pCurCharacters[pn];
+    const Character* ch = GAMESTATE->cur_characters_[pn];
     ASSERT(ch != nullptr);
-    const std::string* asAttacks = ch->m_sAttacks[al];
+    const std::string* asAttacks = ch->attacks_[al];
     for (int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att) {
       attacks.insert(asAttacks[att]);
     }
@@ -67,31 +67,31 @@ void AttackDisplay::Init(const PlayerState* pPlayerState) {
       continue;
     }
 
-    m_TexturePreload.Load(path);
+    texture_preload_.Load(path);
   }
 }
 
 void AttackDisplay::Update(float fDelta) {
   ActorFrame::Update(fDelta);
 
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
   }
 
-  if (!m_pPlayerState->m_bAttackBeganThisUpdate) {
+  if (!player_state_->attack_began_this_update_) {
     return;
   }
   // don't handle this again
 
-  for (unsigned s = 0; s < m_pPlayerState->m_ActiveAttacks.size(); s++) {
-    const Attack& attack = m_pPlayerState->m_ActiveAttacks[s];
+  for (unsigned s = 0; s < player_state_->active_attacks_.size(); s++) {
+    const Attack& attack = player_state_->active_attacks_[s];
 
-    if (attack.fStartSecond >= 0) {
+    if (attack.start_second_ >= 0) {
       continue; /* hasn't started yet */
     }
 
-    if (attack.fSecsRemaining <= 0) {
+    if (attack.secs_remaining_ <= 0) {
       continue; /* ended already */
     }
 
@@ -99,7 +99,7 @@ void AttackDisplay::Update(float fDelta) {
       continue;
     }
 
-    SetAttack(attack.sModifiers);
+    SetAttack(attack.modifiers_);
     break;
   }
 }
@@ -111,14 +111,14 @@ void AttackDisplay::SetAttack(const std::string& sText) {
     return;
   }
 
-  m_sprAttack.SetDiffuseAlpha(1);
-  m_sprAttack.Load(path);
+  spr_attack_.SetDiffuseAlpha(1);
+  spr_attack_.Load(path);
 
   // TODO: Remove use of PlayerNumber.
-  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  PlayerNumber pn = player_state_->player_number_;
 
   const std::string sName = ssprintf("%sP%i", sText.c_str(), pn + 1);
-  m_sprAttack.RunCommands(
+  spr_attack_.RunCommands(
       THEME->GetMetricA("AttackDisplay", sName + "OnCommand"));
 }
 

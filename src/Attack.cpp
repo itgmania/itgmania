@@ -16,11 +16,11 @@
 void Attack::GetAttackBeats(
     const Song* pSong, float& fStartBeat, float& fEndBeat) const {
   ASSERT(pSong != nullptr);
-  ASSERT_M(fStartSecond >= 0, ssprintf("StartSecond: %f", fStartSecond));
+  ASSERT_M(start_second_ >= 0, ssprintf("StartSecond: %f", start_second_));
 
-  const TimingData& timing = pSong->m_SongTiming;
-  fStartBeat = timing.GetBeatFromElapsedTime(fStartSecond);
-  fEndBeat = timing.GetBeatFromElapsedTime(fStartSecond + fSecsRemaining);
+  const TimingData& timing = pSong->song_timing_;
+  fStartBeat = timing.GetBeatFromElapsedTime(start_second_);
+  fEndBeat = timing.GetBeatFromElapsedTime(start_second_ + secs_remaining_);
 }
 
 /* Get the range for an attack that's being applied in realtime, eg. during
@@ -31,7 +31,7 @@ void Attack::GetRealtimeAttackBeats(
     float& fEndBeat) const {
   ASSERT(pSong != nullptr);
 
-  if (fStartSecond >= 0) {
+  if (start_second_ >= 0) {
     GetAttackBeats(pSong, fStartBeat, fEndBeat);
     return;
   }
@@ -41,12 +41,12 @@ void Attack::GetRealtimeAttackBeats(
   /* If reasonable, push the attack forward 8 beats so that notes on screen
    * don't change suddenly. */
   fStartBeat = std::min(
-      GAMESTATE->m_Position.m_fSongBeat + 8, pPlayerState->m_fLastDrawnBeat);
+      GAMESTATE->position_.song_beat_ + 8, pPlayerState->last_drawn_beat_);
   fStartBeat = std::trunc(fStartBeat) + 1;
 
-  const TimingData& timing = pSong->m_SongTiming;
+  const TimingData& timing = pSong->song_timing_;
   const float lStartSecond = timing.GetElapsedTimeFromBeat(fStartBeat);
-  const float fEndSecond = lStartSecond + fSecsRemaining;
+  const float fEndSecond = lStartSecond + secs_remaining_;
   fEndBeat = timing.GetBeatFromElapsedTime(fEndSecond);
   fEndBeat = std::trunc(fEndBeat) + 1;
 
@@ -58,28 +58,29 @@ void Attack::GetRealtimeAttackBeats(
 
 bool Attack::ContainsTransformOrTurn() const {
   PlayerOptions po;
-  po.FromString(sModifiers);
+  po.FromString(modifiers_);
   return po.ContainsTransformOrTurn();
 }
 
 Attack Attack::FromGlobalCourseModifier(const std::string& sModifiers) {
   Attack a;
-  a.fStartSecond = 0;
-  a.fSecsRemaining = 10000; /* whole song */
-  a.level = ATTACK_LEVEL_1;
-  a.sModifiers = sModifiers;
-  a.bGlobal = true;
+  a.start_second_ = 0;
+  a.secs_remaining_ = 10000; /* whole song */
+  a.level_ = ATTACK_LEVEL_1;
+  a.modifiers_ = sModifiers;
+  a.global_ = true;
   return a;
 }
 
 std::string Attack::GetTextDescription() const {
-  std::string s = sModifiers + " " + ssprintf("(%.2f seconds)", fSecsRemaining);
+  std::string s =
+      modifiers_ + " " + ssprintf("(%.2f seconds)", secs_remaining_);
   return s;
 }
 
 int Attack::GetNumAttacks() const {
   std::vector<std::string> tmp;
-  split(this->sModifiers, ",", tmp);
+  split(this->modifiers_, ",", tmp);
   return tmp.size();
 }
 
@@ -93,15 +94,15 @@ std::vector<std::string> AttackArray::ToVectorString() const {
   std::vector<std::string> ret;
   for (const Attack& a : *this) {
     ret.push_back(ssprintf(
-        "TIME=%f:LEN=%f:MODS=%s", a.fStartSecond, a.fSecsRemaining,
-        a.sModifiers.c_str()));
+        "TIME=%f:LEN=%f:MODS=%s", a.start_second_, a.secs_remaining_,
+        a.modifiers_.c_str()));
   }
   return ret;
 }
 
 void AttackArray::UpdateStartTimes(float delta) {
   for (Attack& a : *this) {
-    a.fStartSecond += delta;
+    a.start_second_ += delta;
   }
 }
 

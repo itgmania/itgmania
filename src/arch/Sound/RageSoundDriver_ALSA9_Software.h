@@ -18,7 +18,7 @@ class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
   /* virtuals: */
   int64_t GetPosition() const;
   float GetPlayLatency() const;
-  int GetSampleRate() const { return m_iSampleRate; }
+  int GetSampleRate() const { return sample_rate_; }
 
   void SetupDecodingThread();
 
@@ -27,10 +27,10 @@ class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
   void MixerThread();
   bool GetData();
 
-  bool m_bShutdown;
-  int m_iSampleRate;
-  Alsa9Buf* m_pPCM;
-  RageThread m_MixingThread;
+  bool shutdown_;
+  int sample_rate_;
+  Alsa9Buf* pcm_;
+  RageThread mixing_thread_;
 };
 
 #endif

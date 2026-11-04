@@ -21,9 +21,9 @@ class ScreenTestLights : public ScreenWithMenuElements {
   virtual bool MenuBack(const InputEventPlus& input);
 
  private:
-  BitmapText m_textInputs;
+  BitmapText text_inputs_;
 
-  RageTimer m_timerBackToAutoCycle;
+  RageTimer timer_back_to_auto_cycle_;
 };
 
 #endif

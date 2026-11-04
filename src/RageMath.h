@@ -73,13 +73,13 @@ class RageQuadratic {
   float GetSlope(float fT) const;
 
   /* Equivalent to Evaluate(0.0f) and Evaluate(1.0f), but faster: */
-  float GetBezierStart() const { return m_fD; }
-  float GetBezierEnd() const { return m_fA + m_fB + m_fC + m_fD; }
+  float GetBezierStart() const { return d_; }
+  float GetBezierEnd() const { return a_ + b_ + c_ + d_; }
 
   void PushSelf(lua_State* L);
 
  private:
-  float m_fA, m_fB, m_fC, m_fD;
+  float a_, b_, c_, d_;
 };
 
 class RageBezier2D {
@@ -91,13 +91,13 @@ class RageBezier2D {
   void Evaluate(float fT, float* pX, float* pY) const;
   float EvaluateYFromX(float fX) const;
 
-  RageQuadratic& get_x() { return m_X; }
-  RageQuadratic& get_y() { return m_Y; }
+  RageQuadratic& get_x() { return x_; }
+  RageQuadratic& get_y() { return y_; }
   void PushSelf(lua_State* L);
 
  private:
-  RageQuadratic m_X;
-  RageQuadratic m_Y;
+  RageQuadratic x_;
+  RageQuadratic y_;
 };
 
 #endif

@@ -8,52 +8,52 @@
 #include "global.h"
 
 RageWorkerThread::RageWorkerThread(const std::string& sName)
-    : m_WorkerEvent("\"" + sName + "\" worker event"),
-      m_HeartbeatEvent("\"" + sName + "\" heartbeat event") {
-  m_sName = sName;
-  m_Timeout.SetZero();
-  m_iRequest = REQ_NONE;
-  m_bTimedOut = false;
-  m_fHeartbeat = -1;
-  m_bRequestFinished = false;
+    : worker_event_("\"" + sName + "\" worker event"),
+      heartbeat_event_("\"" + sName + "\" heartbeat event") {
+  name_ = sName;
+  timeout_.SetZero();
+  request_ = REQ_NONE;
+  timed_out_ = false;
+  heartbeat_ = -1;
+  request_finished_ = false;
 
-  m_WorkerThread.SetName("Worker thread (" + sName + ")");
+  worker_thread_.SetName("Worker thread (" + sName + ")");
 }
 
 RageWorkerThread::~RageWorkerThread() {
   /* The worker thread must be stopped by the derived class. */
-  ASSERT(!m_WorkerThread.IsCreated());
+  ASSERT(!worker_thread_.IsCreated());
 }
 
 void RageWorkerThread::SetTimeout(float fSeconds) {
-  m_WorkerEvent.Lock();
+  worker_event_.Lock();
   if (fSeconds < 0) {
-    m_Timeout.SetZero();
+    timeout_.SetZero();
   } else {
-    m_Timeout.Touch();
-    m_Timeout += fSeconds;
+    timeout_.Touch();
+    timeout_ += fSeconds;
   }
-  m_WorkerEvent.Unlock();
+  worker_event_.Unlock();
 }
 
 void RageWorkerThread::StartThread() {
-  ASSERT(!m_WorkerThread.IsCreated());
+  ASSERT(!worker_thread_.IsCreated());
 
-  m_WorkerThread.Create(StartWorkerMain, this);
+  worker_thread_.Create(StartWorkerMain, this);
 }
 
 void RageWorkerThread::StopThread() {
   /* If we're timed out, wait. */
-  m_WorkerEvent.Lock();
-  if (m_bTimedOut) {
+  worker_event_.Lock();
+  if (timed_out_) {
     LOG->Trace(
         "Waiting for timed-out worker thread \"%s\" to complete ...",
-        m_sName.c_str());
-    while (m_bTimedOut) {
-      m_WorkerEvent.Wait();
+        name_.c_str());
+    while (timed_out_) {
+      worker_event_.Wait();
     }
   }
-  m_WorkerEvent.Unlock();
+  worker_event_.Unlock();
 
   /* Disable the timeout.  This will ensure that we really wait for the worker
    * thread to shut down. */
@@ -61,46 +61,46 @@ void RageWorkerThread::StopThread() {
 
   /* Shut down. */
   DoRequest(REQ_SHUTDOWN);
-  m_WorkerThread.Wait();
+  worker_thread_.Wait();
 }
 
 bool RageWorkerThread::DoRequest(int iRequest) {
-  ASSERT(!m_bTimedOut);
-  ASSERT(m_iRequest == REQ_NONE);
+  ASSERT(!timed_out_);
+  ASSERT(request_ == REQ_NONE);
 
-  if (m_Timeout.IsZero() && iRequest != REQ_SHUTDOWN) {
+  if (timeout_.IsZero() && iRequest != REQ_SHUTDOWN) {
     LOG->Warn(
-        "Request made with timeout disabled (%s, iRequest = %i)",
-        m_sName.c_str(), iRequest);
+        "Request made with timeout disabled (%s, iRequest = %i)", name_.c_str(),
+        iRequest);
   }
 
   /* Set the request, and wake up the worker thread. */
-  m_WorkerEvent.Lock();
+  worker_event_.Lock();
 
-  m_iRequest = iRequest;
-  m_WorkerEvent.Broadcast();
+  request_ = iRequest;
+  worker_event_.Broadcast();
 
   /* Wait for it to complete or time out. */
-  while (!m_bRequestFinished) {
-    bool bTimedOut = !m_WorkerEvent.Wait(&m_Timeout);
+  while (!request_finished_) {
+    bool bTimedOut = !worker_event_.Wait(&timeout_);
     if (bTimedOut) {
       break;
     }
   }
 
-  const bool bRequestFinished = m_bRequestFinished;
-  if (m_bRequestFinished) {
+  const bool bRequestFinished = request_finished_;
+  if (request_finished_) {
     /* The request finished successfully.  It's the calling function's
      * responsibility to clean up. */
-    m_bRequestFinished = false;
+    request_finished_ = false;
   } else {
     /* The request hasn't finished yet.  Set m_bTimedOut true.  This tells the
      * still-running request that it timed out, and so it's the thread's
      * responsibility to clean up--we can't do it, since we'd collide with the
      * request. */
-    m_bTimedOut = true;
+    timed_out_ = true;
   }
-  m_WorkerEvent.Unlock();
+  worker_event_.Unlock();
 
   return bRequestFinished;
 }
@@ -108,30 +108,29 @@ bool RageWorkerThread::DoRequest(int iRequest) {
 void RageWorkerThread::WorkerMain() {
   for (;;) {
     bool bTimeToRunHeartbeat = false;
-    m_WorkerEvent.Lock();
-    while (m_iRequest == REQ_NONE && !bTimeToRunHeartbeat) {
-      if (!m_WorkerEvent.Wait(
-              m_fHeartbeat != -1 ? &m_NextHeartbeat : nullptr)) {
+    worker_event_.Lock();
+    while (request_ == REQ_NONE && !bTimeToRunHeartbeat) {
+      if (!worker_event_.Wait(heartbeat_ != -1 ? &next_heartbeat_ : nullptr)) {
         bTimeToRunHeartbeat = true;
       }
     }
-    const int iRequest = m_iRequest;
-    m_iRequest = REQ_NONE;
+    const int iRequest = request_;
+    request_ = REQ_NONE;
 
-    m_WorkerEvent.Unlock();
+    worker_event_.Unlock();
 
     /* If it's time to run a heartbeat, do so. */
     if (bTimeToRunHeartbeat) {
       DoHeartbeat();
 
       /* Wake up anyone waiting for a heartbeat. */
-      m_HeartbeatEvent.Lock();
-      m_HeartbeatEvent.Broadcast();
-      m_HeartbeatEvent.Unlock();
+      heartbeat_event_.Lock();
+      heartbeat_event_.Broadcast();
+      heartbeat_event_.Unlock();
 
       /* Schedule the next heartbeat. */
-      m_NextHeartbeat.Touch();
-      m_NextHeartbeat += m_fHeartbeat;
+      next_heartbeat_.Touch();
+      next_heartbeat_ += heartbeat_;
     }
 
     if (iRequest != REQ_NONE) {
@@ -146,32 +145,32 @@ void RageWorkerThread::WorkerMain() {
        */
       /* The request is finished.  If it timed out, clear the timeout flag and
        * call RequestTimedOut, to allow cleaning up. */
-      m_WorkerEvent.Lock();
+      worker_event_.Lock();
 
-      if (m_bTimedOut) {
+      if (timed_out_) {
         LOG->Trace("Request %i timed out", iRequest);
 
         /* The calling thread timed out.  It's already gone and moved on, so
          * it's our responsibility to clean up.  No new requests will come in
          * until we clear m_bTimedOut, so we can safely unlock and clean up. */
-        m_WorkerEvent.Unlock();
+        worker_event_.Unlock();
 
         RequestTimedOut();
 
         /* Clear the time-out flag, indicating that we can work again.  Wake
          * up StopThread, which may be waiting for this. */
-        m_WorkerEvent.Lock();
-        m_bTimedOut = false;
-        m_WorkerEvent.Broadcast();
-        m_WorkerEvent.Unlock();
+        worker_event_.Lock();
+        timed_out_ = false;
+        worker_event_.Broadcast();
+        worker_event_.Unlock();
       } else {
         CHECKPOINT_M(ssprintf("HandleRequest(%i) OK", iRequest));
 
-        m_bRequestFinished = true;
+        request_finished_ = true;
 
         /* We're finished.  Wake up the requester. */
-        m_WorkerEvent.Broadcast();
-        m_WorkerEvent.Unlock();
+        worker_event_.Broadcast();
+        worker_event_.Unlock();
       }
     }
 
@@ -183,11 +182,11 @@ void RageWorkerThread::WorkerMain() {
 
 bool RageWorkerThread::WaitForOneHeartbeat() {
   /* It doesn't make sense to wait for a heartbeat if there is no heartbeat. */
-  ASSERT(m_fHeartbeat != -1);
+  ASSERT(heartbeat_ != -1);
 
-  m_HeartbeatEvent.Lock();
-  bool bTimedOut = !m_HeartbeatEvent.Wait(&m_Timeout);
-  m_HeartbeatEvent.Unlock();
+  heartbeat_event_.Lock();
+  bool bTimedOut = !heartbeat_event_.Wait(&timeout_);
+  heartbeat_event_.Unlock();
 
   return !bTimedOut;
 }

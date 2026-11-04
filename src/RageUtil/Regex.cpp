@@ -13,47 +13,47 @@
 void Regex::Compile() {
   const char* error;
   int offset;
-  m_pReg =
-      pcre_compile(m_sPattern.c_str(), PCRE_CASELESS, &error, &offset, nullptr);
+  reg_ =
+      pcre_compile(pattern_.c_str(), PCRE_CASELESS, &error, &offset, nullptr);
 
-  if (m_pReg == nullptr) {
+  if (reg_ == nullptr) {
     RageException::Throw(
-        "Invalid regex: \"%s\" (%s).", m_sPattern.c_str(), error);
+        "Invalid regex: \"%s\" (%s).", pattern_.c_str(), error);
   }
 
-  int iRet = pcre_fullinfo(
-      (pcre*)m_pReg, nullptr, PCRE_INFO_CAPTURECOUNT, &m_iBackrefs);
+  int iRet =
+      pcre_fullinfo((pcre*)reg_, nullptr, PCRE_INFO_CAPTURECOUNT, &backrefs_);
   ASSERT(iRet >= 0);
 
-  ++m_iBackrefs;
-  ASSERT(m_iBackrefs < 128);
+  ++backrefs_;
+  ASSERT(backrefs_ < 128);
 }
 
 void Regex::Set(const std::string& sStr) {
   Release();
-  m_sPattern = sStr;
+  pattern_ = sStr;
   Compile();
 }
 
 void Regex::Release() {
-  pcre_free(m_pReg);
-  m_pReg = nullptr;
-  m_sPattern = std::string();
+  pcre_free(reg_);
+  reg_ = nullptr;
+  pattern_ = std::string();
 }
 
 Regex::Regex(const std::string& sStr)
-    : m_pReg(nullptr), m_iBackrefs(0), m_sPattern(std::string()) {
+    : reg_(nullptr), backrefs_(0), pattern_(std::string()) {
   Set(sStr);
 }
 
 Regex::Regex(const Regex& rhs)
-    : m_pReg(nullptr), m_iBackrefs(0), m_sPattern(std::string()) {
-  Set(rhs.m_sPattern);
+    : reg_(nullptr), backrefs_(0), pattern_(std::string()) {
+  Set(rhs.pattern_);
 }
 
 Regex& Regex::operator=(const Regex& rhs) {
   if (this != &rhs) {
-    Set(rhs.m_sPattern);
+    Set(rhs.pattern_);
   }
   return *this;
 }
@@ -63,12 +63,11 @@ Regex::~Regex() { Release(); }
 bool Regex::Compare(const std::string& sStr) {
   int iMat[128 * 3];
   int iRet = pcre_exec(
-      (pcre*)m_pReg, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
+      (pcre*)reg_, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
 
   if (iRet < -1) {
     RageException::Throw(
-        "Unexpected return from pcre_exec('%s'): %i.", m_sPattern.c_str(),
-        iRet);
+        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), iRet);
   }
 
   return iRet >= 0;
@@ -80,19 +79,18 @@ bool Regex::Compare(
 
   int iMat[128 * 3];
   int iRet = pcre_exec(
-      (pcre*)m_pReg, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
+      (pcre*)reg_, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
 
   if (iRet < -1) {
     RageException::Throw(
-        "Unexpected return from pcre_exec('%s'): %i.", m_sPattern.c_str(),
-        iRet);
+        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), iRet);
   }
 
   if (iRet == -1) {
     return false;
   }
 
-  for (unsigned i = 1; i < m_iBackrefs; ++i) {
+  for (unsigned i = 1; i < backrefs_; ++i) {
     const int iStart = iMat[i * 2], end = iMat[i * 2 + 1];
     if (iStart == -1) {
       asMatches.push_back(std::string()); /* no match */

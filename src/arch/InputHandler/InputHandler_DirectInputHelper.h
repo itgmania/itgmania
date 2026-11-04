@@ -14,37 +14,37 @@ extern LPDIRECTINPUT8 g_dinput;
 
 struct input_t {
   // DirectInput offset for this input type:
-  DWORD ofs;
+  DWORD ofs_;
 
   // Button, axis or hat:
-  enum Type { KEY, BUTTON, AXIS, HAT } type;
+  enum Type { KEY, BUTTON, AXIS, HAT } type_;
 
-  int num;
+  int num_;
 
   // Comparitor for finding the input_t with the matching ofs member in std
   // containers.
   class Compare {
    public:
-    Compare(DWORD _ofs) : ofs(_ofs) {}
+    Compare(DWORD _ofs) : ofs_(_ofs) {}
 
-    bool operator()(const input_t& input) const { return input.ofs == ofs; }
+    bool operator()(const input_t& input) const { return input.ofs_ == ofs_; }
 
    private:
-    DWORD ofs;
+    DWORD ofs_;
   };
 };
 
 struct DIDevice {
-  DIDEVICEINSTANCE JoystickInst;
-  LPDIRECTINPUTDEVICE8 Device;
-  std::string m_sName;
+  DIDEVICEINSTANCE joystick_inst_;
+  LPDIRECTINPUTDEVICE8 device_;
+  std::string name_;
 
-  enum { KEYBOARD, JOYSTICK, MOUSE } type;
+  enum { KEYBOARD, JOYSTICK, MOUSE } type_;
 
-  bool buffered;
-  int buttons, axes, hats;
-  std::vector<input_t> Inputs;
-  InputDevice dev;
+  bool buffered_;
+  int buttons_, axes_, hats_;
+  std::vector<input_t> inputs_;
+  InputDevice dev_;
 
   DIDevice();
 
@@ -53,9 +53,9 @@ struct DIDevice {
 };
 
 struct XIDevice {
-  std::string m_sName;
-  DWORD m_dwXInputSlot;
-  InputDevice dev;
+  std::string name_;
+  DWORD x_input_slot_;
+  InputDevice dev_;
 
   XIDevice();
 };

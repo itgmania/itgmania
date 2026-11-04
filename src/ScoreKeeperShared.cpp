@@ -28,9 +28,9 @@ void ScoreKeeperShared::Load(
   ScoreKeeperNormal::Load(apSongs, apSteps, asModifiers);
 
   const Style* pStyle =
-      GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
+      GAMESTATE->GetCurrentStyle(player_state_->player_number_);
   if (pStyle == nullptr ||
-      pStyle->m_StyleType != StyleType_TwoPlayersSharedSides) {
+      pStyle->style_type_ != StyleType_TwoPlayersSharedSides) {
     return;
   }
 
@@ -49,7 +49,7 @@ void ScoreKeeperShared::Load(
 
     NoteData ndTransformedForStyle;
     pStyle->GetTransformedNoteDataForStyle(
-        m_pPlayerState->m_PlayerNumber, ndTemp, ndTransformedForStyle);
+        player_state_->player_number_, ndTemp, ndTransformedForStyle);
 
     std::vector<NoteData> vParts;
     if (ndTransformedForStyle.IsComposite()) {
@@ -62,27 +62,27 @@ void ScoreKeeperShared::Load(
       NoteData ndPre = part;
       NoteDataUtil::TransformNoteData(
           ndPre, *(pSteps->GetTimingData()), asModifiers[i],
-          pSteps->m_StepsType, pSong);
+          pSteps->steps_type_, pSong);
 
       NoteData ndPost = ndPre;
       NoteDataUtil::TransformNoteData(
           ndPost, *(pSteps->GetTimingData()),
-          m_pPlayerState->m_PlayerOptions.GetStage(), pSteps->m_StepsType);
+          player_state_->player_options_.GetStage(), pSteps->steps_type_);
 
       GAMESTATE->SetProcessedTimingData(
           const_cast<TimingData*>(pSteps->GetTimingData()));
       iTotalPossibleDancePoints += GetPossibleDancePoints(
           &ndPre, &ndPost, pSteps->GetTimingData(),
-          pSong->m_fMusicLengthSeconds);
+          pSong->music_length_seconds_);
       iTotalPossibleGradePoints += GetPossibleGradePoints(
           &ndPre, &ndPost, pSteps->GetTimingData(),
-          pSong->m_fMusicLengthSeconds);
+          pSong->music_length_seconds_);
       GAMESTATE->SetProcessedTimingData(nullptr);
     }
   }
 
-  m_pPlayerStageStats->m_iPossibleDancePoints = iTotalPossibleDancePoints;
-  m_pPlayerStageStats->m_iPossibleGradePoints = iTotalPossibleGradePoints;
+  player_stage_stats_->possible_dance_points_ = iTotalPossibleDancePoints;
+  player_stage_stats_->possible_grade_points_ = iTotalPossibleGradePoints;
 }
 
 // These ScoreKeepers don't get to draw.

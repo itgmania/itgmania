@@ -31,7 +31,7 @@ class RageSoundDriver_WaveOut : public RageSoundDriver {
  private:
   static int MixerThread_start(void* p);
   void MixerThread();
-  RageThread MixingThread;
+  RageThread mixing_thread_;
   bool GetData();
   void SetupDecodingThread();
 

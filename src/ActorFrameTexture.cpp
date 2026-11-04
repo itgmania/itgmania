@@ -21,15 +21,15 @@ ActorFrameTexture* ActorFrameTexture::Copy() const {
 }
 
 ActorFrameTexture::ActorFrameTexture() {
-  m_bDepthBuffer = false;
-  m_bAlphaBuffer = false;
-  m_bFloat = false;
-  m_bPreserveTexture = false;
+  depth_buffer_ = false;
+  alpha_buffer_ = false;
+  float_ = false;
+  preserve_texture_ = false;
   static uint64_t i = 0;
   ++i;
-  m_sTextureName = ssprintf("ActorFrameTexture %" PRIu64, i);
+  texture_name_ = ssprintf("ActorFrameTexture %" PRIu64, i);
 
-  m_pRenderTarget = nullptr;
+  render_target_ = nullptr;
 }
 
 ActorFrameTexture::ActorFrameTexture(const ActorFrameTexture& cpy)
@@ -39,54 +39,54 @@ ActorFrameTexture::ActorFrameTexture(const ActorFrameTexture& cpy)
 
 ActorFrameTexture::~ActorFrameTexture() {
   /* Release our reference to the texture. */
-  TEXTUREMAN->UnloadTexture(m_pRenderTarget);
+  TEXTUREMAN->UnloadTexture(render_target_);
 }
 
 void ActorFrameTexture::Create() {
-  if (m_pRenderTarget != nullptr) {
+  if (render_target_ != nullptr) {
     LuaHelpers::ReportScriptError(
         "Can't Create an already created ActorFrameTexture");
     return;
   }
 
-  if (TEXTUREMAN->IsTextureRegistered(m_sTextureName)) {
+  if (TEXTUREMAN->IsTextureRegistered(texture_name_)) {
     LuaHelpers::ReportScriptError(
         "ActorFrameTexture: Texture Name already in use.");
     return;
   }
 
-  if ((int)m_size.x < 1 || (int)m_size.y < 1) {
+  if ((int)size_.x_ < 1 || (int)size_.y_ < 1) {
     LuaHelpers::ReportScriptError(
         "ActorFrameTexture: Cannot have width or height less than 1");
     return;
   }
-  RageTextureID id(m_sTextureName);
-  id.Policy = RageTextureID::TEX_VOLATILE;
+  RageTextureID id(texture_name_);
+  id.policy_ = RageTextureID::TEX_VOLATILE;
 
   RenderTargetParam param;
-  param.bWithDepthBuffer = m_bDepthBuffer;
-  param.bWithAlpha = m_bAlphaBuffer;
-  param.bFloat = m_bFloat;
-  param.iWidth = (int)m_size.x;
-  param.iHeight = (int)m_size.y;
-  m_pRenderTarget = new RageTextureRenderTarget(id, param);
-  m_pRenderTarget->m_bWasUsed = true;
+  param.with_depth_buffer_ = depth_buffer_;
+  param.with_alpha_ = alpha_buffer_;
+  param.float_ = float_;
+  param.width_ = (int)size_.x_;
+  param.height_ = (int)size_.y_;
+  render_target_ = new RageTextureRenderTarget(id, param);
+  render_target_->was_used_ = true;
 
   /* This passes ownership of m_pRenderTarget to TEXTUREMAN, but we retain
    * our reference to it until we call TEXTUREMAN->UnloadTexture. */
-  TEXTUREMAN->RegisterTexture(id, m_pRenderTarget);
+  TEXTUREMAN->RegisterTexture(id, render_target_);
 }
 
 void ActorFrameTexture::DrawPrimitives() {
-  if (m_pRenderTarget == nullptr) {
+  if (render_target_ == nullptr) {
     return;
   }
 
-  m_pRenderTarget->BeginRenderingTo(m_bPreserveTexture);
+  render_target_->BeginRenderingTo(preserve_texture_);
 
   ActorFrame::DrawPrimitives();
 
-  m_pRenderTarget->FinishRenderingTo();
+  render_target_->FinishRenderingTo();
 }
 
 // lua start

@@ -7,31 +7,31 @@
 #include "tomcrypt.h"
 
 PRNGWrapper::PRNGWrapper(const struct ltc_prng_descriptor* pPRNGDescriptor) {
-  m_iPRNG = register_prng(pPRNGDescriptor);
-  ASSERT(m_iPRNG >= 0);
+  i_prng_ = register_prng(pPRNGDescriptor);
+  ASSERT(i_prng_ >= 0);
 
-  int iRet = rng_make_prng(128, m_iPRNG, &m_PRNG, nullptr);
+  int iRet = rng_make_prng(128, i_prng_, &prng_, nullptr);
   ASSERT_M(iRet == CRYPT_OK, error_to_string(iRet));
 }
 
 PRNGWrapper::~PRNGWrapper() {
-  if (m_iPRNG != -1) {
-    prng_descriptor[m_iPRNG].done(&m_PRNG);
+  if (i_prng_ != -1) {
+    prng_descriptor[i_prng_].done(&prng_);
   }
 }
 
-RSAKeyWrapper::RSAKeyWrapper() { memset(&m_Key, 0, sizeof(m_Key)); }
+RSAKeyWrapper::RSAKeyWrapper() { memset(&key_, 0, sizeof(key_)); }
 
 RSAKeyWrapper::~RSAKeyWrapper() { Unload(); }
 
-void RSAKeyWrapper::Unload() { rsa_free(&m_Key); }
+void RSAKeyWrapper::Unload() { rsa_free(&key_); }
 
 bool RSAKeyWrapper::Load(const std::string& sKey, std::string& sError) {
   Unload();
 
-  int iRet = rsa_import((const unsigned char*)sKey.data(), sKey.size(), &m_Key);
+  int iRet = rsa_import((const unsigned char*)sKey.data(), sKey.size(), &key_);
   if (iRet != CRYPT_OK) {
-    memset(&m_Key, 0, sizeof(m_Key));
+    memset(&key_, 0, sizeof(key_));
     sError = error_to_string(iRet);
     return false;
   }

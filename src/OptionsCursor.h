@@ -25,18 +25,18 @@ class OptionsCursor : public ActorFrame {
   void SetCanGo(bool bCanGoLeft, bool bCanGoRight);
 
  protected:
-  AutoActor m_sprMiddle;
-  AutoActor m_sprLeft;
-  AutoActor m_sprRight;
+  AutoActor spr_middle_;
+  AutoActor spr_left_;
+  AutoActor spr_right_;
 
-  AutoActor m_sprCanGoLeft;
-  AutoActor m_sprCanGoRight;
+  AutoActor spr_can_go_left_;
+  AutoActor spr_can_go_right_;
 
   // save the metrics-set X because it gets obliterated on a call to SetBarWidth
-  int m_iOriginalLeftX;
-  int m_iOriginalRightX;
-  int m_iOriginalCanGoLeftX;
-  int m_iOriginalCanGoRightX;
+  int original_left_x_;
+  int original_right_x_;
+  int original_can_go_left_x_;
+  int original_can_go_right_x_;
 };
 
 #endif

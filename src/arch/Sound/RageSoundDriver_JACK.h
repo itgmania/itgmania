@@ -21,11 +21,11 @@ class RageSoundDriver_JACK : public RageSoundDriver {
   int64_t GetPosition() const;
 
  private:
-  jack_client_t* client;
-  jack_port_t* port_l;
-  jack_port_t* port_r;
+  jack_client_t* client_;
+  jack_port_t* port_l_;
+  jack_port_t* port_r_;
 
-  int sample_rate;
+  int sample_rate_;
 
   // Helper for Init()
   std::string ConnectPorts();

@@ -9,15 +9,16 @@
 
 /* XXX remove? */
 struct RageSurfaceColor {
-  uint8_t r, g, b, a;
-  RageSurfaceColor() : r(0), g(0), b(0), a(0) {}
+  uint8_t r_, g_, b_, a_;
+  RageSurfaceColor() : r_(0), g_(0), b_(0), a_(0) {}
   RageSurfaceColor(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_)
-      : r(r_), g(g_), b(b_), a(a_) {}
+      : r_(r_), g_(g_), b_(b_), a_(a_) {}
 };
 
 inline bool operator==(
     const RageSurfaceColor& lhs, const RageSurfaceColor& rhs) {
-  return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
+  return lhs.r_ == rhs.r_ && lhs.g_ == rhs.g_ && lhs.b_ == rhs.b_ &&
+         lhs.a_ == rhs.a_;
 }
 
 inline bool operator!=(
@@ -26,8 +27,8 @@ inline bool operator!=(
 }
 
 struct RageSurfacePalette {
-  RageSurfaceColor colors[256];
-  int32_t ncolors;
+  RageSurfaceColor colors_[256];
+  int32_t ncolors_;
 
   /* Find the exact color; returns -1 if not found. */
   int32_t FindColor(const RageSurfaceColor& color) const;
@@ -38,14 +39,14 @@ struct RageSurfaceFormat {
   RageSurfaceFormat(const RageSurfaceFormat& cpy);
   ~RageSurfaceFormat() = default;
 
-  int32_t BytesPerPixel;
-  int32_t BitsPerPixel;
-  std::array<uint32_t, 4> Mask;
-  std::array<uint32_t, 4> Shift;
-  std::array<uint32_t, 4> Loss;
-  uint32_t &Rmask, &Gmask, &Bmask, &Amask;     /* deprecated */
-  uint32_t &Rshift, &Gshift, &Bshift, &Ashift; /* deprecated */
-  std::unique_ptr<RageSurfacePalette> palette;
+  int32_t bytes_per_pixel_;
+  int32_t bits_per_pixel_;
+  std::array<uint32_t, 4> mask_;
+  std::array<uint32_t, 4> shift_;
+  std::array<uint32_t, 4> loss_;
+  uint32_t &rmask_, &gmask_, &bmask_, &amask_;     /* deprecated */
+  uint32_t &rshift_, &gshift_, &bshift_, &ashift_; /* deprecated */
+  std::unique_ptr<RageSurfacePalette> palette_;
 
   void GetRGB(uint32_t val, uint8_t* r, uint8_t* g, uint8_t* b) const;
 
@@ -60,13 +61,13 @@ struct RageSurfaceFormat {
 };
 
 struct RageSurface {
-  RageSurfaceFormat* format; /* compatibility only */
-  RageSurfaceFormat fmt;
+  RageSurfaceFormat* format_; /* compatibility only */
+  RageSurfaceFormat fmt_;
 
-  uint8_t* pixels;
-  bool pixels_owned;
-  int32_t w, h, pitch;
-  int32_t flags;
+  uint8_t* pixels_;
+  bool pixels_owned_;
+  int32_t w_, h_, pitch_;
+  int32_t flags_;
 
   RageSurface();
   ~RageSurface();

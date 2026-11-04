@@ -50,17 +50,17 @@ struct DateTime {
    * @brief The number of seconds after the minute.
    *
    * Valid values are [0, 59]. */
-  int tm_sec;
+  int tm_sec_;
   /**
    * @brief The number of minutes after the hour.
    *
    * Valid values are [0, 59]. */
-  int tm_min;
+  int tm_min_;
   /**
    * @brief The number of hours since midnight (or 0000 hours).
    *
    * Valid values are [0, 23]. */
-  int tm_hour;
+  int tm_hour_;
   /**
    * @brief The specified day of the current month.
    *
@@ -68,14 +68,14 @@ struct DateTime {
    *
    * XXX: Is it possible to set an illegal date through here,
    * such as day 30 of February? -Wolfman2000 */
-  int tm_mday;
+  int tm_mday_;
   /**
    * @brief The number of months since January.
    *
    * Valid values are [0, 11]. */
-  int tm_mon;
+  int tm_mon_;
   /** @brief The number of years since the year 1900. */
-  int tm_year;
+  int tm_year_;
 
   /** @brief Set up a default date and time. */
   DateTime();

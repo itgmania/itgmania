@@ -19,17 +19,17 @@
 #include "RageFile.h"
 
 void MsdFile::AddParam(const char* buf, int len) {
-  values.back().params.push_back(std::string(buf, len));
+  values_.back().params_.push_back(std::string(buf, len));
 }
 
 void MsdFile::AddValue() /* (no extra charge) */
 {
-  values.push_back(value_t());
-  values.back().params.reserve(32);
+  values_.push_back(value_t());
+  values_.back().params_.reserve(32);
 }
 
 void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
-  values.reserve(64);
+  values_.reserve(64);
 
   bool ReadingValue = false;
   int i = 0;
@@ -151,12 +151,12 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
 
 // returns true if successful, false otherwise
 bool MsdFile::ReadFile(std::string sNewPath, bool bUnescape) {
-  error = "";
+  error_ = "";
 
   RageFile f;
   /* Open a file. */
   if (!f.Open(sNewPath)) {
-    error = f.GetError();
+    error_ = f.GetError();
     return false;
   }
 
@@ -166,7 +166,7 @@ bool MsdFile::ReadFile(std::string sNewPath, bool bUnescape) {
 
   int iBytesRead = f.Read(FileString);
   if (iBytesRead == -1) {
-    error = f.GetError();
+    error_ = f.GetError();
     return false;
   }
 
@@ -184,7 +184,7 @@ std::string MsdFile::GetParam(unsigned val, unsigned par) const {
     return std::string();
   }
 
-  return values[val].params[par];
+  return values_[val].params_[par];
 }
 
 /*

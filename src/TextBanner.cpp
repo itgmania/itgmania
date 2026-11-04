@@ -14,58 +14,58 @@
 REGISTER_ACTOR_CLASS(TextBanner);
 
 void TextBanner::LoadFromNode(const XNode* pNode) {
-  m_bInitted = true;
+  initted_ = true;
 
   ActorFrame::LoadFromNode(pNode);
 }
 
 void TextBanner::Load(std::string sMetricsGroup) {
-  m_bInitted = true;
+  initted_ = true;
 
-  m_textTitle.SetName("Title");
-  m_textTitle.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
-  this->AddChild(&m_textTitle);
+  text_title_.SetName("Title");
+  text_title_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  this->AddChild(&text_title_);
 
-  m_textSubTitle.SetName("Subtitle");
-  m_textSubTitle.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
-  this->AddChild(&m_textSubTitle);
+  text_sub_title_.SetName("Subtitle");
+  text_sub_title_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  this->AddChild(&text_sub_title_);
 
-  m_textArtist.SetName("Artist");
-  m_textArtist.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
-  this->AddChild(&m_textArtist);
+  text_artist_.SetName("Artist");
+  text_artist_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  this->AddChild(&text_artist_);
 
   AddCommand("AfterSet", THEME->GetMetricA(sMetricsGroup, "AfterSetCommand"));
-  m_sArtistPrependString =
+  artist_prepend_string_ =
       THEME->GetMetric(sMetricsGroup, "ArtistPrependString");
 
-  ActorUtil::LoadAllCommandsAndOnCommand(m_textTitle, sMetricsGroup);
-  ActorUtil::LoadAllCommandsAndOnCommand(m_textSubTitle, sMetricsGroup);
-  ActorUtil::LoadAllCommandsAndOnCommand(m_textArtist, sMetricsGroup);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_title_, sMetricsGroup);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_sub_title_, sMetricsGroup);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_artist_, sMetricsGroup);
 }
 
-TextBanner::TextBanner() { m_bInitted = false; }
+TextBanner::TextBanner() { initted_ = false; }
 
 TextBanner::TextBanner(const TextBanner& cpy)
     : ActorFrame(cpy),
-      m_bInitted(cpy.m_bInitted),
-      m_textTitle(cpy.m_textTitle),
-      m_textSubTitle(cpy.m_textSubTitle),
-      m_textArtist(cpy.m_textArtist),
-      m_sArtistPrependString(cpy.m_sArtistPrependString) {
-  this->AddChild(&m_textTitle);
-  this->AddChild(&m_textSubTitle);
-  this->AddChild(&m_textArtist);
+      initted_(cpy.initted_),
+      text_title_(cpy.text_title_),
+      text_sub_title_(cpy.text_sub_title_),
+      text_artist_(cpy.text_artist_),
+      artist_prepend_string_(cpy.artist_prepend_string_) {
+  this->AddChild(&text_title_);
+  this->AddChild(&text_sub_title_);
+  this->AddChild(&text_artist_);
 }
 
 void TextBanner::SetFromString(
     const std::string& sDisplayTitle, const std::string& sTranslitTitle,
     const std::string& sDisplaySubTitle, const std::string& sTranslitSubTitle,
     const std::string& sDisplayArtist, const std::string& sTranslitArtist) {
-  ASSERT(m_bInitted);
+  ASSERT(initted_);
 
-  m_textTitle.SetText(sDisplayTitle, sTranslitTitle);
-  m_textSubTitle.SetText(sDisplaySubTitle, sTranslitSubTitle);
-  m_textArtist.SetText(sDisplayArtist, sTranslitArtist);
+  text_title_.SetText(sDisplayTitle, sTranslitTitle);
+  text_sub_title_.SetText(sDisplaySubTitle, sTranslitSubTitle);
+  text_artist_.SetText(sDisplayArtist, sTranslitArtist);
 
   Message msg("AfterSet");
   this->PlayCommandNoRecurse(msg);
@@ -79,8 +79,8 @@ void TextBanner::SetFromSong(const Song* pSong) {
   SetFromString(
       pSong->GetDisplayMainTitle(), pSong->GetTranslitMainTitle(),
       pSong->GetDisplaySubTitle(), pSong->GetTranslitSubTitle(),
-      m_sArtistPrependString + pSong->GetDisplayArtist(),
-      m_sArtistPrependString + pSong->GetTranslitArtist());
+      artist_prepend_string_ + pSong->GetDisplayArtist(),
+      artist_prepend_string_ + pSong->GetTranslitArtist());
 }
 
 // lua start

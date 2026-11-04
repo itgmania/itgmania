@@ -13,56 +13,57 @@ void SongPosition::UpdateSongPosition(
     float fPositionSeconds, const TimingData& timing,
     const RageTimer& timestamp, float fAdditionalVisualDelay) {
   if (!timestamp.IsZero()) {
-    m_LastBeatUpdate = timestamp;
+    last_beat_update_ = timestamp;
   } else {
-    m_LastBeatUpdate.Touch();
+    last_beat_update_.Touch();
   }
 
   TimingData::GetBeatArgs beat_info;
-  beat_info.elapsed_time = fPositionSeconds;
+  beat_info.elapsed_time_ = fPositionSeconds;
   timing.GetBeatAndBPSFromElapsedTime(beat_info);
-  m_fSongBeat = beat_info.beat;
-  m_fCurBPS = beat_info.bps_out;
-  m_bFreeze = beat_info.freeze_out;
-  m_bDelay = beat_info.delay_out;
-  m_iWarpBeginRow = beat_info.warp_begin_out;
-  m_fWarpDestination = beat_info.warp_dest_out;
+  song_beat_ = beat_info.beat_;
+  cur_bps_ = beat_info.bps_out_;
+  freeze_ = beat_info.freeze_out_;
+  delay_ = beat_info.delay_out_;
+  warp_begin_row_ = beat_info.warp_begin_out_;
+  warp_destination_ = beat_info.warp_dest_out_;
 
   // "Crash reason : -243478.890625 -48695.773438"
   // The question is why is -2000 used as the limit? -aj
   ASSERT_M(
-      m_fSongBeat > -2000, ssprintf(
-                               "Song beat %f at %f seconds is less than -2000!",
-                               m_fSongBeat, fPositionSeconds));
+      song_beat_ > -2000, ssprintf(
+                              "Song beat %f at %f seconds is less than -2000!",
+                              song_beat_, fPositionSeconds));
 
-  m_fMusicSeconds = fPositionSeconds;
+  music_seconds_ = fPositionSeconds;
 
-  m_fLightSongBeat =
+  light_song_beat_ =
       timing.GetBeatFromElapsedTime(fPositionSeconds + g_fLightsAheadSeconds);
 
-  m_fSongBeatNoOffset = timing.GetBeatFromElapsedTimeNoOffset(fPositionSeconds);
+  song_beat_no_offset_ =
+      timing.GetBeatFromElapsedTimeNoOffset(fPositionSeconds);
 
-  m_fMusicSecondsVisible =
+  music_seconds_visible_ =
       fPositionSeconds - g_fVisualDelaySeconds.Get() - fAdditionalVisualDelay;
-  beat_info.elapsed_time = m_fMusicSecondsVisible;
+  beat_info.elapsed_time_ = music_seconds_visible_;
   timing.GetBeatAndBPSFromElapsedTime(beat_info);
-  m_fSongBeatVisible = beat_info.beat;
+  song_beat_visible_ = beat_info.beat_;
 }
 
 // lua start
 #include "LuaBinding.h"
 class LunaSongPosition : public Luna<SongPosition> {
  public:
-  DEFINE_METHOD(GetMusicSecondsVisible, m_fMusicSecondsVisible);
-  DEFINE_METHOD(GetSongBeatVisible, m_fSongBeatVisible);
-  DEFINE_METHOD(GetMusicSeconds, m_fMusicSeconds);
-  DEFINE_METHOD(GetSongBeat, m_fSongBeat);
-  DEFINE_METHOD(GetSongBeatNoOffset, m_fSongBeatNoOffset);
-  DEFINE_METHOD(GetCurBPS, m_fCurBPS);
-  DEFINE_METHOD(GetFreeze, m_bFreeze);
-  DEFINE_METHOD(GetDelay, m_bDelay);
-  DEFINE_METHOD(GetWarpBeginRow, m_iWarpBeginRow);
-  DEFINE_METHOD(GetWarpDestination, m_fWarpDestination);
+  DEFINE_METHOD(GetMusicSecondsVisible, music_seconds_visible_);
+  DEFINE_METHOD(GetSongBeatVisible, song_beat_visible_);
+  DEFINE_METHOD(GetMusicSeconds, music_seconds_);
+  DEFINE_METHOD(GetSongBeat, song_beat_);
+  DEFINE_METHOD(GetSongBeatNoOffset, song_beat_no_offset_);
+  DEFINE_METHOD(GetCurBPS, cur_bps_);
+  DEFINE_METHOD(GetFreeze, freeze_);
+  DEFINE_METHOD(GetDelay, delay_);
+  DEFINE_METHOD(GetWarpBeginRow, warp_begin_row_);
+  DEFINE_METHOD(GetWarpDestination, warp_destination_);
 
   LunaSongPosition() {
     ADD_METHOD(GetMusicSecondsVisible);

@@ -31,9 +31,9 @@ struct WheelItemBaseData {
   WheelItemBaseData() {}
   WheelItemBaseData(WheelItemDataType type, std::string sText, RageColor color);
   virtual ~WheelItemBaseData() {}
-  WheelItemDataType m_Type;
-  std::string m_sText;
-  RageColor m_color;  // either text color or section background color
+  WheelItemDataType type_;
+  std::string text_;
+  RageColor color_;  // either text color or section background color
 };
 /** @brief An item on the wheel. */
 class WheelItemBase : public ActorFrame {
@@ -50,31 +50,31 @@ class WheelItemBase : public ActorFrame {
       const WheelItemBaseData* pWID, int iIndex, bool bHasFocus,
       int iDrawIndex);
 
-  RageColor m_colorLocked;
+  RageColor color_locked_;
 
   const std::string GetText() {
-    ASSERT(m_pData != nullptr);
-    return m_pData->m_sText;
+    ASSERT(data_ != nullptr);
+    return data_->text_;
   }
   const RageColor GetColor() {
-    ASSERT(m_pData != nullptr);
-    return m_pData->m_color;
+    ASSERT(data_ != nullptr);
+    return data_->color_;
   }
   WheelItemDataType GetType() {
-    ASSERT(m_pData != nullptr);
-    return m_pData->m_Type;
+    ASSERT(data_ != nullptr);
+    return data_->type_;
   }
-  bool IsLoaded() { return m_pData != nullptr; }
+  bool IsLoaded() { return data_ != nullptr; }
 
   // Lua
   void PushSelf(lua_State* L);
 
  protected:
-  void SetGrayBar(Actor* pBar) { m_pGrayBar = pBar; }
+  void SetGrayBar(Actor* pBar) { gray_bar_ = pBar; }
 
-  const WheelItemBaseData* m_pData;
+  const WheelItemBaseData* data_;
 
-  Actor* m_pGrayBar;
+  Actor* gray_bar_;
 };
 
 #endif

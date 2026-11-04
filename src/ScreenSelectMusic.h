@@ -58,8 +58,8 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   // ScreenWithMenuElements override: never play music here; we do it ourself.
   virtual void StartPlayingMusic() {}
 
-  bool GetGoToOptions() const { return m_bGoToOptions; }
-  MusicWheel* GetMusicWheel() { return &m_MusicWheel; }
+  bool GetGoToOptions() const { return go_to_options_; }
+  MusicWheel* GetMusicWheel() { return &music_wheel_; }
 
   void OpenOptionsList(PlayerNumber pn);
   void OnConfirmSongDeletion();
@@ -86,11 +86,11 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   bool LoadReadyMemoryCards();
   bool ShouldWaitForMemoryCard() const;
 
-  std::vector<Steps*> m_vpSteps;
-  std::vector<Trail*> m_vpTrails;
-  int m_iSelection[NUM_PLAYERS];
+  std::vector<Steps*> steps_;
+  std::vector<Trail*> trails_;
+  int selection_[NUM_PLAYERS];
 
-  RageTimer m_timerIdleComment;
+  RageTimer timer_idle_comment_;
   ThemeMetric<float> IDLE_COMMENT_SECONDS;
 
   ThemeMetric<float> SAMPLE_MUSIC_DELAY_INIT;
@@ -124,66 +124,66 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   ThemeMetric<bool> CONFIRM_EXIT;
 
   bool CanChangeSong() const {
-    return m_SelectionState == SelectionState_SelectingSong;
+    return selection_state_ == SelectionState_SelectingSong;
   }
   SelectionState GetNextSelectionState() const {
-    switch (m_SelectionState) {
+    switch (selection_state_) {
       case SelectionState_SelectingSong:
         return TWO_PART_SELECTION ? SelectionState_SelectingSteps
                                   : SelectionState_Finalized;
       case SelectionState_SelectingSteps:
         return SelectionState_Finalized;
-        DEFAULT_FAIL(m_SelectionState);
+        DEFAULT_FAIL(selection_state_);
     }
   }
 
-  GameButton m_GameButtonPreviousSong;
-  GameButton m_GameButtonNextSong;
-  GameButton m_GameButtonPreviousDifficulty;
-  GameButton m_GameButtonNextDifficulty;
-  GameButton m_GameButtonPreviousGroup;
-  GameButton m_GameButtonNextGroup;
-  GameButton m_GameButtonCancelTwoPart1;
-  GameButton m_GameButtonCancelTwoPart2;
+  GameButton game_button_previous_song_;
+  GameButton game_button_next_song_;
+  GameButton game_button_previous_difficulty_;
+  GameButton game_button_next_difficulty_;
+  GameButton game_button_previous_group_;
+  GameButton game_button_next_group_;
+  GameButton game_button_cancel_two_part1_;
+  GameButton game_button_cancel_two_part2_;
 
-  std::string m_sSectionMusicPath;
-  std::string m_sSortMusicPath;
-  std::string m_sRouletteMusicPath;
-  std::string m_sRandomMusicPath;
-  std::string m_sCourseMusicPath;
-  std::string m_sLoopMusicPath;
-  std::string m_sFallbackCDTitlePath;
+  std::string section_music_path_;
+  std::string sort_music_path_;
+  std::string roulette_music_path_;
+  std::string random_music_path_;
+  std::string course_music_path_;
+  std::string loop_music_path_;
+  std::string fallback_cd_title_path_;
 
-  FadingBanner m_Banner;
-  Sprite m_sprCDTitleFront, m_sprCDTitleBack;
-  AutoActor m_sprHighScoreFrame[NUM_PLAYERS];
-  BitmapText m_textHighScore[NUM_PLAYERS];
-  MusicWheel m_MusicWheel;
-  OptionsList m_OptionsList[NUM_PLAYERS];
+  FadingBanner banner_;
+  Sprite spr_cd_title_front_, spr_cd_title_back_;
+  AutoActor spr_high_score_frame_[NUM_PLAYERS];
+  BitmapText text_high_score_[NUM_PLAYERS];
+  MusicWheel music_wheel_;
+  OptionsList options_list_[NUM_PLAYERS];
 
-  SelectionState m_SelectionState;
-  bool m_bStepsChosen[NUM_PLAYERS];  // only used in
-                                     // SelectionState_SelectingSteps
-  bool m_bGoToOptions;
-  std::string m_sSampleMusicToPlay;
-  TimingData* m_pSampleMusicTimingData;
-  float m_fSampleStartSeconds, m_fSampleLengthSeconds;
-  bool m_bAllowOptionsMenu, m_bAllowOptionsMenuRepeat;
-  bool m_bSelectIsDown[NUM_PLAYERS];
-  bool m_bAcceptSelectRelease[NUM_PLAYERS];
+  SelectionState selection_state_;
+  bool steps_chosen_[NUM_PLAYERS];  // only used in
+                                    // SelectionState_SelectingSteps
+  bool go_to_options_;
+  std::string sample_music_to_play_;
+  TimingData* sample_music_timing_data_;
+  float sample_start_seconds_, sample_length_seconds_;
+  bool allow_options_menu_, allow_options_menu_repeat_;
+  bool select_is_down_[NUM_PLAYERS];
+  bool accept_select_release_[NUM_PLAYERS];
 
-  bool m_bPreviewDisabled;
+  bool preview_disabled_;
 
-  RageSound m_soundStart;
-  RageSound m_soundDifficultyEasier;
-  RageSound m_soundDifficultyHarder;
-  RageSound m_soundOptionsChange;
-  RageSound m_soundLocked;
+  RageSound sound_start_;
+  RageSound sound_difficulty_easier_;
+  RageSound sound_difficulty_harder_;
+  RageSound sound_options_change_;
+  RageSound sound_locked_;
 
-  BackgroundLoader m_BackgroundLoader;
-  RageTexturePreloader m_TexturePreload;
+  BackgroundLoader background_loader_;
+  RageTexturePreloader texture_preload_;
 
-  Song* m_pSongAwaitingDeletionConfirmation;
+  Song* song_awaiting_deletion_confirmation_;
 };
 
 #endif

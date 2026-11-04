@@ -13,18 +13,18 @@
 constexpr int BEATS_PER_MEASURE = 4;
 
 struct MeasureInfo {
-  int measureCount;
-  float peakNps;
-  std::vector<float> npsPerMeasure;
-  std::vector<int> notesPerMeasure;
+  int measure_count_;
+  float peak_nps_;
+  std::vector<float> nps_per_measure_;
+  std::vector<int> notes_per_measure_;
 
   MeasureInfo() { Zero(); }
 
   void Zero() {
-    measureCount = 0;
-    peakNps = 0;
-    npsPerMeasure.clear();
-    notesPerMeasure.clear();
+    measure_count_ = 0;
+    peak_nps_ = 0;
+    nps_per_measure_.clear();
+    notes_per_measure_.clear();
   }
 
   static void CalculateMeasureInfo(

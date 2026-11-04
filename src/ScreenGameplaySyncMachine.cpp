@@ -32,9 +32,9 @@
 REGISTER_SCREEN_CLASS(ScreenGameplaySyncMachine);
 
 void ScreenGameplaySyncMachine::Init() {
-  GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
+  GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
   GAMESTATE->SetCurrentStyle(
-      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID);
+      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID);
   AdjustSync::ResetOriginalSyncData();
 
   std::string sFile = THEME->GetPathO("ScreenGameplaySyncMachine", "music");
@@ -42,42 +42,42 @@ void ScreenGameplaySyncMachine::Init() {
   SSCLoader loaderSSC;
   SMLoader loaderSM;
   if (Right(sFile, 4) == ".ssc") {
-    loaderSSC.LoadFromSimfile(sFile, m_Song);
+    loaderSSC.LoadFromSimfile(sFile, song_);
   } else {
-    loaderSM.LoadFromSimfile(sFile, m_Song);
+    loaderSM.LoadFromSimfile(sFile, song_);
   }
 
-  m_Song.SetSongDir(Dirname(sFile));
-  m_Song.TidyUpData();
+  song_.SetSongDir(Dirname(sFile));
+  song_.TidyUpData();
 
-  GAMESTATE->m_pCurSong.Set(&m_Song);
+  GAMESTATE->cur_song_.Set(&song_);
   // Needs proper StepsType -freem
   std::vector<Steps*> vpSteps;
-  SongUtil::GetPlayableSteps(&m_Song, vpSteps);
+  SongUtil::GetPlayableSteps(&song_, vpSteps);
   ASSERT_M(
       vpSteps.size() > 0, "No playable steps for ScreenGameplaySyncMachine");
   Steps* pSteps = vpSteps[0];
-  GAMESTATE->m_pCurSteps[GAMESTATE->GetFirstHumanPlayer()].Set(pSteps);
+  GAMESTATE->cur_steps_[GAMESTATE->GetFirstHumanPlayer()].Set(pSteps);
 
   GamePreferences::m_AutoPlay.Set(PC_HUMAN);
 
   ScreenGameplayNormal::Init();
 
   SO_GROUP_ASSIGN(
-      GAMESTATE->m_SongOptions, ModsLevel_Stage, m_AutosyncType,
+      GAMESTATE->song_options_, ModsLevel_Stage, autosync_type_,
       AutosyncType_Machine);
 
   ClearMessageQueue();  // remove all of the messages set in ScreenGameplay that
                         // animate "ready", "here we go", etc.
 
-  GAMESTATE->m_bGameplayLeadIn.Set(false);
+  GAMESTATE->gameplay_lead_in_.Set(false);
 
-  m_DancingState = STATE_DANCING;
+  dancing_state_ = STATE_DANCING;
 
-  m_textSyncInfo.SetName("SyncInfo");
-  m_textSyncInfo.LoadFromFont(THEME->GetPathF(m_sName, "SyncInfo"));
-  ActorUtil::LoadAllCommands(m_textSyncInfo, m_sName);
-  this->AddChild(&m_textSyncInfo);
+  text_sync_info_.SetName("SyncInfo");
+  text_sync_info_.LoadFromFont(THEME->GetPathF(name_, "SyncInfo"));
+  ActorUtil::LoadAllCommands(text_sync_info_, name_);
+  this->AddChild(&text_sync_info_);
 
   this->SubscribeToMessage(Message_AutosyncChanged);
 
@@ -93,11 +93,11 @@ bool ScreenGameplaySyncMachine::Input(const InputEventPlus& input) {
   // Hack to make this work from Player2's controls
   InputEventPlus _input = input;
 
-  if (_input.GameI.controller != GameController_Invalid) {
-    _input.GameI.controller = GameController_1;
+  if (_input.game_i_.controller_ != GameController_Invalid) {
+    _input.game_i_.controller_ = GameController_1;
   }
-  if (_input.pn != PLAYER_INVALID) {
-    _input.pn = PLAYER_1;
+  if (_input.pn_ != PLAYER_INVALID) {
+    _input.pn_ = PLAYER_1;
   }
 
   return ScreenGameplay::Input(_input);
@@ -112,15 +112,15 @@ void ScreenGameplaySyncMachine::HandleScreenMessage(const ScreenMessage SM) {
   ScreenGameplayNormal::HandleScreenMessage(SM);
 
   if (SM == SM_GoToPrevScreen || SM == SM_GoToNextScreen) {
-    FOREACH_PlayerNumber(pn) { GAMESTATE->m_pCurSteps[pn].Set(nullptr); }
-    GAMESTATE->m_PlayMode.Set(PlayMode_Invalid);
+    FOREACH_PlayerNumber(pn) { GAMESTATE->cur_steps_[pn].Set(nullptr); }
+    GAMESTATE->play_mode_.Set(PlayMode_Invalid);
     GAMESTATE->SetCurrentStyle(nullptr, PLAYER_INVALID);
-    GAMESTATE->m_pCurSong.Set(nullptr);
+    GAMESTATE->cur_song_.Set(nullptr);
   }
 }
 
 void ScreenGameplaySyncMachine::ResetAndRestartCurrentSong() {
-  m_pSoundMusic->Stop();
+  sound_music_->Stop();
   ReloadCurrentSong();
   StartPlayingSong(4, 0);
 
@@ -135,19 +135,19 @@ static LocalizedString COLLECTING_SAMPLE(
 static LocalizedString STANDARD_DEVIATION(
     "ScreenGameplaySyncMachine", "Standard deviation");
 void ScreenGameplaySyncMachine::RefreshText() {
-  float fNew = PREFSMAN->m_fGlobalOffsetSeconds;
-  float fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
-  float fStdDev = AdjustSync::s_fStandardDeviation;
+  float fNew = PREFSMAN->global_offset_seconds_;
+  float fOld = AdjustSync::global_offset_seconds_original_;
+  float fStdDev = AdjustSync::standard_deviation_;
   std::string s;
   s += OLD_OFFSET.GetValue() + ssprintf(": %0.3f\n", fOld);
   s += NEW_OFFSET.GetValue() + ssprintf(": %0.3f\n", fNew);
   s += STANDARD_DEVIATION.GetValue() + ssprintf(": %0.3f\n", fStdDev);
   s += COLLECTING_SAMPLE.GetValue() +
        ssprintf(
-           ": %d / %d", AdjustSync::s_iAutosyncOffsetSample + 1,
-           AdjustSync::OFFSET_SAMPLE_COUNT);
+           ": %d / %d", AdjustSync::autosync_offset_sample_ + 1,
+           AdjustSync::kOffsetSampleCount);
 
-  m_textSyncInfo.SetText(s);
+  text_sync_info_.SetText(s);
 }
 
 /*

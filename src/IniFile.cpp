@@ -20,14 +20,13 @@ http://en.wikipedia.org/wiki/INI_file
 IniFile::IniFile() : XNode("IniFile") {}
 
 bool IniFile::ReadFile(const std::string& sPath) {
-  m_sPath = sPath;
-  CHECKPOINT_M(ssprintf("Reading '%s'", m_sPath.c_str()));
+  path_ = sPath;
+  CHECKPOINT_M(ssprintf("Reading '%s'", path_.c_str()));
 
   RageFile f;
-  if (!f.Open(m_sPath)) {
-    LOG->Trace(
-        "Reading '%s' failed: %s", m_sPath.c_str(), f.GetError().c_str());
-    m_sError = f.GetError();
+  if (!f.Open(path_)) {
+    LOG->Trace("Reading '%s' failed: %s", path_.c_str(), f.GetError().c_str());
+    error_ = f.GetError();
     return 0;
   }
 
@@ -45,10 +44,10 @@ bool IniFile::ReadFile(RageFileBasic& f) {
       std::string s;
       switch (f.GetLine(s)) {
         case -1:
-          m_sError = f.GetError();
+          error_ = f.GetError();
           LOG->Warn(
-              "Error reading line in file '%s': %s", m_sPath.c_str(),
-              m_sError.c_str());
+              "Error reading line in file '%s': %s", path_.c_str(),
+              error_.c_str());
           return false;
         case 0:
           return true;  // eof
@@ -104,7 +103,7 @@ bool IniFile::ReadFile(RageFileBasic& f) {
           }
         } else {
           LOG->Warn(
-              "No '=' found in line of file '%s': %s", m_sPath.c_str(),
+              "No '=' found in line of file '%s': %s", path_.c_str(),
               line.c_str());
         }
 
@@ -117,7 +116,7 @@ bool IniFile::WriteFile(const std::string& sPath) const {
   RageFile f;
   if (!f.Open(sPath, RageFile::WRITE)) {
     LOG->Warn("Writing '%s' failed: %s", sPath.c_str(), f.GetError().c_str());
-    m_sError = f.GetError();
+    error_ = f.GetError();
     return false;
   }
 
@@ -130,10 +129,10 @@ bool IniFile::WriteFile(const std::string& sPath) const {
 bool IniFile::WriteFile(RageFileBasic& f) const {
   FOREACH_CONST_Child(this, pKey) {
     if (f.PutLine(ssprintf("[%s]", pKey->GetName().c_str())) == -1) {
-      m_sError = f.GetError();
+      error_ = f.GetError();
       LOG->Warn(
-          "Error when writing key to file '%s': %s", m_sPath.c_str(),
-          m_sError.c_str());
+          "Error when writing key to file '%s': %s", path_.c_str(),
+          error_.c_str());
       return false;
     }
 
@@ -147,15 +146,15 @@ bool IniFile::WriteFile(RageFileBasic& f) const {
       DEBUG_ASSERT(sName.find('=') == sName.npos);
 
       if (f.PutLine(ssprintf("%s=%s", sName.c_str(), sValue.c_str())) == -1) {
-        m_sError = f.GetError();
-        LOG->Warn("Error when writing attribute: %s", m_sError.c_str());
+        error_ = f.GetError();
+        LOG->Warn("Error when writing attribute: %s", error_.c_str());
         return false;
       }
     }
 
     if (f.PutLine("") == -1) {
-      m_sError = f.GetError();
-      LOG->Warn("Error when writing newline: %s", m_sError.c_str());
+      error_ = f.GetError();
+      LOG->Warn("Error when writing newline: %s", error_.c_str());
       return false;
     }
   }

@@ -17,11 +17,11 @@
 
 static void LogVideoDriverInfo(VideoDriverInfo info) {
   LOG->Info(
-      "Video driver: %s [%s]", info.sDescription.c_str(),
-      info.sProvider.c_str());
+      "Video driver: %s [%s]", info.description_.c_str(),
+      info.provider_.c_str());
   LOG->Info(
-      "              %s, %s [%s]", info.sVersion.c_str(), info.sDate.c_str(),
-      info.sDeviceID.c_str());
+      "              %s, %s [%s]", info.version_.c_str(), info.date_.c_str(),
+      info.device_id_.c_str());
 }
 
 static void GetMemoryDebugInfo() {
@@ -57,7 +57,7 @@ static void GetDisplayDriverDebugInfo() {
     {
       LogVideoDriverInfo(info);
       LoggedSomething = true;
-    } else if (info.sDescription == sPrimaryDeviceName) {
+    } else if (info.description_ == sPrimaryDeviceName) {
       LogVideoDriverInfo(info);
       LoggedSomething = true;
       break;

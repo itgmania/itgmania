@@ -49,11 +49,11 @@ class NoteSkinManager {
   void ValidateNoteSkinName(std::string& name);
 
   void SetCurrentNoteSkin(const std::string& sNoteSkin) {
-    m_sCurrentNoteSkin = sNoteSkin;
+    current_note_skin_ = sNoteSkin;
   }
-  const std::string& GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
-  void SetPlayerNumber(PlayerNumber pn) { m_PlayerNumber = pn; }
-  void SetGameController(GameController gc) { m_GameController = gc; }
+  const std::string& GetCurrentNoteSkin() { return current_note_skin_; }
+  void SetPlayerNumber(PlayerNumber pn) { player_number_ = pn; }
+  void SetGameController(GameController gc) { game_controller_ = gc; }
   std::string GetPath(
       const std::string& sButtonName, const std::string& sElement);
   bool PushActorTemplate(
@@ -90,12 +90,12 @@ class NoteSkinManager {
       const std::string& sNoteSkinName, NoteSkinData& data_out);
   bool LoadNoteSkinDataRecursive(
       const std::string& sNoteSkinName, NoteSkinData& data_out);
-  std::string m_sCurrentNoteSkin;
-  const Game* m_pCurGame;
+  std::string current_note_skin_;
+  const Game* cur_game_;
 
   // xxx: is this the best way to implement this? -freem
-  PlayerNumber m_PlayerNumber;
-  GameController m_GameController;
+  PlayerNumber player_number_;
+  GameController game_controller_;
 };
 
 extern NoteSkinManager*

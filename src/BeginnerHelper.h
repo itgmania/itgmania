@@ -21,7 +21,7 @@ class BeginnerHelper : public ActorFrame {
   static bool CanUse(PlayerNumber pn);
   void AddPlayer(PlayerNumber pn, const NoteData& nd);
   void ShowStepCircle(PlayerNumber pn, int CSTEP);
-  bool m_bShowBackground;
+  bool show_background_;
 
   void Update(float fDeltaTime);
   virtual void DrawPrimitives();
@@ -29,17 +29,17 @@ class BeginnerHelper : public ActorFrame {
  protected:
   void Step(PlayerNumber pn, int CSTEP);
 
-  std::array<NoteData, NUM_PLAYERS> m_NoteData;
-  std::array<bool, NUM_PLAYERS> m_bPlayerEnabled;
-  std::array<Model*, NUM_PLAYERS> m_pDancer;
-  Model* m_pDancePad;
-  Sprite m_sFlash;
-  AutoActor m_sBackground;
+  std::array<NoteData, NUM_PLAYERS> note_data_;
+  std::array<bool, NUM_PLAYERS> player_enabled_;
+  std::array<Model*, NUM_PLAYERS> dancer_;
+  Model* dance_pad_;
+  Sprite flash_;
+  AutoActor background_;
   std::array<std::array<Sprite, 4>, NUM_PLAYERS>
-      m_sStepCircle;  // More memory, but much easier to manage.
+      step_circle_;  // More memory, but much easier to manage.
 
-  int m_iLastRowChecked;
-  bool m_bInitialized;
+  int last_row_checked_;
+  bool initialized_;
 
   ThemeMetric<bool> SHOW_DANCE_PAD;
 };

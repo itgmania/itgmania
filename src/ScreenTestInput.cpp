@@ -46,30 +46,30 @@ class InputList : public BitmapText {
     std::vector<DeviceInput> DeviceInputs;
     INPUTFILTER->GetPressedButtons(DeviceInputs);
     for (const DeviceInput& di : DeviceInputs) {
-      if (!di.bDown && di.level == 0.0f) {
+      if (!di.down_ && di.level_ == 0.0f) {
         continue;
       }
 
       std::string sTemp;
       sTemp += INPUTMAN->GetDeviceSpecificInputString(di);
-      if (di.level == 1.0f) {
+      if (di.level_ == 1.0f) {
         sTemp += ssprintf(" - 1 ");
       } else {
-        sTemp += ssprintf(" - %.3f ", di.level);
+        sTemp += ssprintf(" - %.3f ", di.level_);
       }
 
       GameInput gi;
       if (INPUTMAPPER->DeviceToGame(di, gi)) {
         std::string sName = GameButtonToLocalizedString(
-            INPUTMAPPER->GetInputScheme(), gi.button);
+            INPUTMAPPER->GetInputScheme(), gi.button_);
         sTemp += ssprintf(
-            " - %s %d %s", CONTROLLER.GetValue().c_str(), gi.controller + 1,
+            " - %s %d %s", CONTROLLER.GetValue().c_str(), gi.controller_ + 1,
             sName.c_str());
 
-        if (!PREFSMAN->m_bOnlyDedicatedMenuButtons) {
+        if (!PREFSMAN->only_dedicated_menu_buttons_) {
           GameButton mb =
-              INPUTMAPPER->GetInputScheme()->GameButtonToMenuButton(gi.button);
-          if (mb != GameButton_Invalid && mb != gi.button) {
+              INPUTMAPPER->GetInputScheme()->GameButtonToMenuButton(gi.button_);
+          if (mb != GameButton_Invalid && mb != gi.button_) {
             std::string sGameButtonString =
                 GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), mb);
             sTemp += ssprintf(
@@ -100,12 +100,12 @@ REGISTER_ACTOR_CLASS(InputList);
 REGISTER_SCREEN_CLASS(ScreenTestInput);
 
 bool ScreenTestInput::Input(const InputEventPlus& input) {
-  std::string sMessage = input.DeviceI.ToString();
+  std::string sMessage = input.device_i_.ToString();
   bool bHandled = false;
-  switch (input.type) {
+  switch (input.type_) {
     case IET_FIRST_PRESS:
     case IET_RELEASE: {
-      switch (input.type) {
+      switch (input.type_) {
         case IET_FIRST_PRESS:
           sMessage += "Pressed";
           break;
@@ -141,7 +141,7 @@ bool ScreenTestInput::MenuStart(const InputEventPlus& input) {
 }
 
 bool ScreenTestInput::MenuBack(const InputEventPlus& input) {
-  if (input.type != IET_REPEAT) {
+  if (input.type_ != IET_REPEAT) {
     return false;  // ignore
   }
 

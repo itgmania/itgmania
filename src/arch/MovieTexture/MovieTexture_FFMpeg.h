@@ -34,13 +34,13 @@ constexpr int kSwsFlags = SWS_BILINEAR;
 // presentation. Frames are pre-allocated and recycled via frame_pool_ to avoid
 // heap allocations in steady state.
 struct ConvertedFrame {
-  std::vector<uint8_t> data;
-  float pts = 0.0f;
-  float duration = 0.0f;
-  int width = 0;
-  int height = 0;
-  int pitch = 0;
-  bool is_last_frame = false;
+  std::vector<uint8_t> data_;
+  float pts_ = 0.0f;
+  float duration_ = 0.0f;
+  int width_ = 0;
+  int height_ = 0;
+  int pitch_ = 0;
+  bool is_last_frame_ = false;
 };
 
 class MovieTexture_FFMpeg : public MovieTexture_Generic {
@@ -142,12 +142,12 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
 };
 
 static struct AVPixelFormat_t {
-  int bpp;
-  uint32_t masks[4];
-  avcodec::AVPixelFormat pf;
-  bool bHighColor;
-  bool bByteSwapOnLittleEndian;
-  MovieDecoderPixelFormatYCbCr YUV;
+  int bpp_;
+  uint32_t masks_[4];
+  avcodec::AVPixelFormat pf_;
+  bool high_color_;
+  bool byte_swap_on_little_endian_;
+  MovieDecoderPixelFormatYCbCr yuv_;
 } AVPixelFormats[] = {
     {
         32,

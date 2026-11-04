@@ -24,12 +24,12 @@ class ScreenEditMenu : public ScreenWithMenuElements {
   void RefreshExplanationText();
   void RefreshNumStepsLoadedFromProfile();
 
-  EditMenu m_Selector;
+  EditMenu selector_;
 
  private:
-  BitmapText m_textExplanation;
-  BitmapText m_textNumStepsLoadedFromProfile;
-  BitmapText m_NoSongsMessage;
+  BitmapText text_explanation_;
+  BitmapText text_num_steps_loaded_from_profile_;
+  BitmapText no_songs_message_;
 };
 
 #endif

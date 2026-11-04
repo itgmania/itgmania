@@ -8,9 +8,9 @@
 
 class LunaDisplayMode : public Luna<DisplayMode> {
  public:
-  DEFINE_METHOD(GetWidth, width);
-  DEFINE_METHOD(GetHeight, height);
-  DEFINE_METHOD(GetRefreshRate, refreshRate);
+  DEFINE_METHOD(GetWidth, width_);
+  DEFINE_METHOD(GetHeight, height_);
+  DEFINE_METHOD(GetRefreshRate, refresh_rate_);
   LunaDisplayMode() {
     ADD_METHOD(GetWidth);
     ADD_METHOD(GetHeight);

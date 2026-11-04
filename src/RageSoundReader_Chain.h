@@ -19,7 +19,7 @@ class RageSoundReader_Chain : public RageSoundReader {
   /* Set the preferred sample rate.  This will only be used if the source sounds
    * use different sample rates. */
   void SetPreferredSampleRate(int iSampleRate) {
-    m_iPreferredSampleRate = iSampleRate;
+    preferred_sample_rate_ = iSampleRate;
   }
 
   int LoadSound(std::string sPath);
@@ -33,14 +33,14 @@ class RageSoundReader_Chain : public RageSoundReader {
   void Finish();
 
   /* Return the number of added sounds. */
-  int GetNumSounds() const { return m_aSounds.size(); }
+  int GetNumSounds() const { return sounds_.size(); }
 
   int GetLength() const;
   int GetLength_Fast() const;
   int SetPosition(int iFrame);
   int Read(float* pBuf, int iFrames);
   int GetSampleRate() const;
-  unsigned GetNumChannels() const { return m_iChannels; }
+  unsigned GetNumChannels() const { return channels_; }
   bool SetProperty(const std::string& sProperty, float fValue);
   int GetNextSourceFrame() const;
   float GetStreamToSourceRatio() const;
@@ -49,30 +49,32 @@ class RageSoundReader_Chain : public RageSoundReader {
  private:
   int GetSampleRateInternal() const;
 
-  int m_iPreferredSampleRate;
-  int m_iActualSampleRate;
-  unsigned m_iChannels;
+  int preferred_sample_rate_;
+  int actual_sample_rate_;
+  unsigned channels_;
 
-  std::map<std::string, RageSoundReader*> m_apNamedSounds;
-  std::vector<RageSoundReader*> m_apLoadedSounds;
+  std::map<std::string, RageSoundReader*> named_sounds_;
+  std::vector<RageSoundReader*> loaded_sounds_;
 
   struct Sound {
-    int iIndex;  // into m_apLoadedSounds
-    int iOffsetMS;
-    float fPan;
-    RageSoundReader* pSound;  // nullptr if not activated
+    int index_;  // into m_apLoadedSounds
+    int offset_ms_;
+    float pan_;
+    RageSoundReader* sound_;  // nullptr if not activated
 
     int GetOffsetFrame(int iSampleRate) const {
-      return int(int64_t(iOffsetMS) * iSampleRate / 1000);
+      return int(int64_t(offset_ms_) * iSampleRate / 1000);
     }
-    bool operator<(const Sound& rhs) const { return iOffsetMS < rhs.iOffsetMS; }
+    bool operator<(const Sound& rhs) const {
+      return offset_ms_ < rhs.offset_ms_;
+    }
   };
-  std::vector<Sound> m_aSounds;
+  std::vector<Sound> sounds_;
 
   /* Read state: */
-  int m_iCurrentFrame;
-  unsigned m_iNextSound;
-  std::vector<Sound*> m_apActiveSounds;
+  int current_frame_;
+  unsigned next_sound_;
+  std::vector<Sound*> active_sounds_;
 
   void ActivateSound(Sound* s);
   void ReleaseSound(Sound* s);

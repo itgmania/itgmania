@@ -38,18 +38,18 @@ class GraphLine : public Actor {
     // parameters have no effect.
     Actor::SetTextureRenderStates();
 
-    for (unsigned i = 0; i < m_Quads.size(); ++i) {
-      m_Quads[i].c = this->m_pTempState->diffuse[0];
+    for (unsigned i = 0; i < quads_.size(); ++i) {
+      quads_[i].c_ = this->temp_state_->diffuse_[0];
     }
-    for (unsigned i = 0; i < m_pCircles.size(); ++i) {
-      m_pCircles[i].c = this->m_pTempState->diffuse[0];
+    for (unsigned i = 0; i < circles_.size(); ++i) {
+      circles_[i].c_ = this->temp_state_->diffuse_[0];
     }
 
-    DISPLAY->DrawQuads(&m_Quads[0], m_Quads.size());
+    DISPLAY->DrawQuads(&quads_[0], quads_.size());
 
-    int iFans = m_pCircles.size() / iCircleVertices;
+    int iFans = circles_.size() / iCircleVertices;
     for (int i = 0; i < iFans; ++i) {
-      DISPLAY->DrawFan(&m_pCircles[0] + iCircleVertices * i, iCircleVertices);
+      DISPLAY->DrawFan(&circles_[0] + iCircleVertices * i, iCircleVertices);
     }
   }
 
@@ -63,34 +63,33 @@ class GraphLine : public Actor {
       const float fX = std::cos(fRotation) * fRadius;
       const float fY = -std::sin(fRotation) * fRadius;
       pVerts[1 + i] = v;
-      pVerts[1 + i].p.x += fX;
-      pVerts[1 + i].p.y += fY;
+      pVerts[1 + i].p_.x_ += fX;
+      pVerts[1 + i].p_.y_ += fY;
     }
   }
 
   void Set(const RageSpriteVertex* m_LineStrip, int iSize) {
-    m_pCircles.resize(iSize * iCircleVertices);
+    circles_.resize(iSize * iCircleVertices);
 
     for (int i = 0; i < iSize; ++i) {
       MakeCircle(
-          m_LineStrip[i], &m_pCircles[0] + iCircleVertices * i, iSubdivisions,
-          1);
+          m_LineStrip[i], &circles_[0] + iCircleVertices * i, iSubdivisions, 1);
     }
 
     int iNumLines = iSize - 1;
-    m_Quads.resize(iNumLines * 4);
+    quads_.resize(iNumLines * 4);
     for (int i = 0; i < iNumLines; ++i) {
       const RageSpriteVertex& p1 = m_LineStrip[i];
       const RageSpriteVertex& p2 = m_LineStrip[i + 1];
 
-      float opp = p2.p.x - p1.p.x;
-      float adj = p2.p.y - p1.p.y;
+      float opp = p2.p_.x_ - p1.p_.x_;
+      float adj = p2.p_.y_ - p1.p_.y_;
       float hyp = std::pow(opp * opp + adj * adj, 0.5f);
 
       float lsin = opp / hyp;
       float lcos = adj / hyp;
 
-      RageSpriteVertex* v = &m_Quads[i * 4];
+      RageSpriteVertex* v = &quads_[i * 4];
       v[0] = v[1] = p1;
       v[2] = v[3] = p2;
 
@@ -98,108 +97,108 @@ class GraphLine : public Actor {
       float ydist = lsin * iLineWidth / 2;
       float xdist = lcos * iLineWidth / 2;
 
-      v[0].p.x += xdist;
-      v[0].p.y -= ydist;
-      v[1].p.x -= xdist;
-      v[1].p.y += ydist;
-      v[2].p.x -= xdist;
-      v[2].p.y += ydist;
-      v[3].p.x += xdist;
-      v[3].p.y -= ydist;
+      v[0].p_.x_ += xdist;
+      v[0].p_.y_ -= ydist;
+      v[1].p_.x_ -= xdist;
+      v[1].p_.y_ += ydist;
+      v[2].p_.x_ -= xdist;
+      v[2].p_.y_ += ydist;
+      v[3].p_.x_ += xdist;
+      v[3].p_.y_ -= ydist;
     }
   }
 
   virtual GraphLine* Copy() const;
 
  private:
-  std::vector<RageSpriteVertex> m_Quads;
-  std::vector<RageSpriteVertex> m_pCircles;
+  std::vector<RageSpriteVertex> quads_;
+  std::vector<RageSpriteVertex> circles_;
 };
 REGISTER_ACTOR_CLASS(GraphLine);
 
 class GraphBody : public Actor {
  public:
   GraphBody(std::string sFile) {
-    m_pTexture = TEXTUREMAN->LoadTexture(sFile);
+    texture_ = TEXTUREMAN->LoadTexture(sFile);
 
     for (int i = 0; i < 2 * VALUE_RESOLUTION; ++i) {
-      m_Slices[i].c = RageColor(1, 1, 1, 1);
-      m_Slices[i].t = RageVector2(0, 0);
+      slices_[i].c_ = RageColor(1, 1, 1, 1);
+      slices_[i].t_ = RageVector2(0, 0);
     }
   }
   ~GraphBody() {
-    TEXTUREMAN->UnloadTexture(m_pTexture);
-    m_pTexture = nullptr;
+    TEXTUREMAN->UnloadTexture(texture_);
+    texture_ = nullptr;
   }
 
   void DrawPrimitives() {
     Actor::SetGlobalRenderStates();  // set Actor-specified render states
 
     DISPLAY->ClearAllTextures();
-    DISPLAY->SetTexture(TextureUnit_1, m_pTexture->GetTexHandle());
+    DISPLAY->SetTexture(TextureUnit_1, texture_->GetTexHandle());
 
     // Must call this after setting the texture or else texture
     // parameters have no effect.
     Actor::SetTextureRenderStates();
 
     DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Modulate);
-    DISPLAY->DrawQuadStrip(m_Slices, ARRAYLEN(m_Slices));
+    DISPLAY->DrawQuadStrip(slices_, ARRAYLEN(slices_));
   }
 
-  RageTexture* m_pTexture;
-  RageSpriteVertex m_Slices[2 * VALUE_RESOLUTION];
+  RageTexture* texture_;
+  RageSpriteVertex slices_[2 * VALUE_RESOLUTION];
 };
 
 GraphDisplay::GraphDisplay() {
-  m_pGraphLine = nullptr;
-  m_pGraphBody = nullptr;
+  graph_line_ = nullptr;
+  graph_body_ = nullptr;
 }
 
 GraphDisplay::~GraphDisplay() {
-  for (Actor* p : m_vpSongBoundaries) {
+  for (Actor* p : song_boundaries_) {
     RageUtil::SafeDelete(p);
   }
-  m_vpSongBoundaries.clear();
-  RageUtil::SafeDelete(m_pGraphLine);
-  RageUtil::SafeDelete(m_pGraphBody);
+  song_boundaries_.clear();
+  RageUtil::SafeDelete(graph_line_);
+  RageUtil::SafeDelete(graph_body_);
 }
 
 void GraphDisplay::Set(const StageStats& ss, const PlayerStageStats& pss) {
   float fTotalStepSeconds = ss.GetTotalPossibleStepsSeconds();
 
-  m_Values.resize(VALUE_RESOLUTION);
+  values_.resize(VALUE_RESOLUTION);
   pss.GetLifeRecord(
-      &m_Values[0], VALUE_RESOLUTION, ss.GetTotalPossibleStepsSeconds());
-  for (unsigned i = 0; i < ARRAYLEN(m_Values); i++) {
-    rage_clamp(m_Values[i], 0.f, 1.f);
+      &values_[0], VALUE_RESOLUTION, ss.GetTotalPossibleStepsSeconds());
+  for (unsigned i = 0; i < ARRAYLEN(values_); i++) {
+    rage_clamp(values_[i], 0.f, 1.f);
   }
 
   UpdateVerts();
 
   // Show song boundaries
   float fSec = 0;
-  const std::vector<Song*>& possibleSongs = ss.m_vpPossibleSongs;
+  const std::vector<Song*>& possibleSongs = ss.possible_songs_;
 
   std::for_each(
       possibleSongs.begin(), possibleSongs.end() - 1, [&](Song* song) {
         fSec += song->GetStepsSeconds();
 
-        Actor* p = m_sprSongBoundary->Copy();
-        m_vpSongBoundaries.push_back(p);
+        Actor* p = spr_song_boundary_->Copy();
+        song_boundaries_.push_back(p);
         float fX = SCALE(
-            fSec, 0, fTotalStepSeconds, m_quadVertices.left,
-            m_quadVertices.right);
+            fSec, 0, fTotalStepSeconds, quad_vertices_.left_,
+            quad_vertices_.right_);
         p->SetX(fX);
         this->AddChild(p);
       });
 
-  if (!pss.m_bFailed) {
+  if (!pss.failed_) {
     // Search for the min life record to show "Just Barely!"
     float fMinLifeSoFar = 1.0f;
     int iMinLifeSoFarAt = 0;
 
     for (int i = 0; i < VALUE_RESOLUTION; ++i) {
-      float fLife = m_Values[i];
+      float fLife = values_[i];
       if (fLife < fMinLifeSoFar) {
         fMinLifeSoFar = fLife;
         iMinLifeSoFarAt = i;
@@ -209,72 +208,72 @@ void GraphDisplay::Set(const StageStats& ss, const PlayerStageStats& pss) {
     if (fMinLifeSoFar > 0.0f && fMinLifeSoFar < 0.1f) {
       float fX = SCALE(
           float(iMinLifeSoFarAt), 0.0f, float(VALUE_RESOLUTION - 1),
-          m_quadVertices.left, m_quadVertices.right);
-      m_sprBarely->SetX(fX);
+          quad_vertices_.left_, quad_vertices_.right_);
+      spr_barely_->SetX(fX);
     } else {
-      m_sprBarely->SetVisible(false);
+      spr_barely_->SetVisible(false);
     }
-    this->AddChild(m_sprBarely);
+    this->AddChild(spr_barely_);
   }
 }
 
 void GraphDisplay::Load(std::string sMetricsGroup) {
-  m_size.x = THEME->GetMetricI(sMetricsGroup, "BodyWidth");
-  m_size.y = THEME->GetMetricI(sMetricsGroup, "BodyHeight");
+  size_.x_ = THEME->GetMetricI(sMetricsGroup, "BodyWidth");
+  size_.y_ = THEME->GetMetricI(sMetricsGroup, "BodyHeight");
 
-  m_sprBacking.Load(THEME->GetPathG(sMetricsGroup, "Backing"));
-  m_sprBacking->ZoomToWidth(m_size.x);
-  m_sprBacking->ZoomToHeight(m_size.y);
-  this->AddChild(m_sprBacking);
+  spr_backing_.Load(THEME->GetPathG(sMetricsGroup, "Backing"));
+  spr_backing_->ZoomToWidth(size_.x_);
+  spr_backing_->ZoomToHeight(size_.y_);
+  this->AddChild(spr_backing_);
 
-  m_pGraphBody = new GraphBody(THEME->GetPathG(sMetricsGroup, "Body"));
-  this->AddChild(m_pGraphBody);
+  graph_body_ = new GraphBody(THEME->GetPathG(sMetricsGroup, "Body"));
+  this->AddChild(graph_body_);
 
-  m_pGraphLine = new GraphLine;
-  m_pGraphLine->SetName("Line");
-  ActorUtil::LoadAllCommands(m_pGraphLine, sMetricsGroup);
-  this->AddChild(m_pGraphLine);
+  graph_line_ = new GraphLine;
+  graph_line_->SetName("Line");
+  ActorUtil::LoadAllCommands(graph_line_, sMetricsGroup);
+  this->AddChild(graph_line_);
 
-  m_sprSongBoundary.Load(THEME->GetPathG(sMetricsGroup, "SongBoundary"));
+  spr_song_boundary_.Load(THEME->GetPathG(sMetricsGroup, "SongBoundary"));
 
-  m_sprBarely.Load(THEME->GetPathG(sMetricsGroup, "Barely"));
+  spr_barely_.Load(THEME->GetPathG(sMetricsGroup, "Barely"));
 }
 
 void GraphDisplay::UpdateVerts() {
-  m_quadVertices.left = -m_size.x / 2;
-  m_quadVertices.right = m_size.x / 2;
-  m_quadVertices.top = -m_size.y / 2;
-  m_quadVertices.bottom = m_size.y / 2;
+  quad_vertices_.left_ = -size_.x_ / 2;
+  quad_vertices_.right_ = size_.x_ / 2;
+  quad_vertices_.top_ = -size_.y_ / 2;
+  quad_vertices_.bottom_ = size_.y_ / 2;
 
   RageSpriteVertex LineStrip[VALUE_RESOLUTION];
   for (int i = 0; i < VALUE_RESOLUTION; ++i) {
     const float fX = SCALE(
-        float(i), 0.0f, float(VALUE_RESOLUTION - 1), m_quadVertices.left,
-        m_quadVertices.right);
+        float(i), 0.0f, float(VALUE_RESOLUTION - 1), quad_vertices_.left_,
+        quad_vertices_.right_);
     const float fY = SCALE(
-        m_Values[i], 0.0f, 1.0f, m_quadVertices.bottom, m_quadVertices.top);
+        values_[i], 0.0f, 1.0f, quad_vertices_.bottom_, quad_vertices_.top_);
 
-    m_pGraphBody->m_Slices[i * 2 + 0].p = RageVector3(fX, fY, 0);
-    m_pGraphBody->m_Slices[i * 2 + 1].p =
-        RageVector3(fX, m_quadVertices.bottom, 0);
+    graph_body_->slices_[i * 2 + 0].p_ = RageVector3(fX, fY, 0);
+    graph_body_->slices_[i * 2 + 1].p_ =
+        RageVector3(fX, quad_vertices_.bottom_, 0);
 
-    const RectF* pRect = m_pGraphBody->m_pTexture->GetTextureCoordRect(0);
+    const RectF* pRect = graph_body_->texture_->GetTextureCoordRect(0);
 
     const float fU = SCALE(
-        fX, m_quadVertices.left, m_quadVertices.right, pRect->left,
-        pRect->right);
+        fX, quad_vertices_.left_, quad_vertices_.right_, pRect->left_,
+        pRect->right_);
     const float fV = SCALE(
-        fY, m_quadVertices.top, m_quadVertices.bottom, pRect->top,
-        pRect->bottom);
-    m_pGraphBody->m_Slices[i * 2 + 0].t = RageVector2(fU, fV);
-    m_pGraphBody->m_Slices[i * 2 + 1].t = RageVector2(fU, pRect->bottom);
+        fY, quad_vertices_.top_, quad_vertices_.bottom_, pRect->top_,
+        pRect->bottom_);
+    graph_body_->slices_[i * 2 + 0].t_ = RageVector2(fU, fV);
+    graph_body_->slices_[i * 2 + 1].t_ = RageVector2(fU, pRect->bottom_);
 
-    LineStrip[i].p = RageVector3(fX, fY, 0);
-    LineStrip[i].c = RageColor(1, 1, 1, 1);
-    LineStrip[i].t = RageVector2(0, 0);
+    LineStrip[i].p_ = RageVector3(fX, fY, 0);
+    LineStrip[i].c_ = RageColor(1, 1, 1, 1);
+    LineStrip[i].t_ = RageVector2(0, 0);
   }
 
-  m_pGraphLine->Set(LineStrip, VALUE_RESOLUTION);
+  graph_line_->Set(LineStrip, VALUE_RESOLUTION);
 }
 
 // lua start

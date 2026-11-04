@@ -102,15 +102,15 @@ RageSurfaceUtils::OpenResult ProbeFileFormat(
 }
 
 struct StbIoState {
-  RageFile* file;
-  bool io_failed;
+  RageFile* file_;
+  bool io_failed_;
 };
 
 int StbRead(void* user, char* data, int size) {
   StbIoState* state = static_cast<StbIoState*>(user);
-  const int got = state->file->Read(data, static_cast<size_t>(size));
+  const int got = state->file_->Read(data, static_cast<size_t>(size));
   if (got == -1) {
-    state->io_failed = true;
+    state->io_failed_ = true;
     return 0;
   }
   return got;
@@ -122,22 +122,22 @@ void StbSkip(void* user, int size) {
     return;
   }
 
-  const int pos = state->file->Tell();
+  const int pos = state->file_->Tell();
   if (pos == -1) {
-    state->io_failed = true;
+    state->io_failed_ = true;
     return;
   }
 
   const int target = pos + size;
-  const int ret = state->file->Seek(target);
+  const int ret = state->file_->Seek(target);
   if (ret != target) {
-    state->io_failed = true;
+    state->io_failed_ = true;
   }
 }
 
 int StbEof(void* user) {
   StbIoState* state = static_cast<StbIoState*>(user);
-  return state->io_failed || state->file->AtEOF();
+  return state->io_failed_ || state->file_->AtEOF();
 }
 
 const stbi_io_callbacks kStbCallbacks = {StbRead, StbSkip, StbEof};
@@ -149,11 +149,11 @@ RageSurface* CreateHeaderOnlySurface(int width, int height) {
 void InitializeGrayscalePalette(RageSurface* img) {
   for (int i = 0; i < 256; ++i) {
     RageSurfaceColor color;
-    color.r = static_cast<uint8_t>(i);
-    color.g = static_cast<uint8_t>(i);
-    color.b = static_cast<uint8_t>(i);
-    color.a = 0xFF;
-    img->fmt.palette->colors[i] = color;
+    color.r_ = static_cast<uint8_t>(i);
+    color.g_ = static_cast<uint8_t>(i);
+    color.b_ = static_cast<uint8_t>(i);
+    color.a_ = 0xFF;
+    img->fmt_.palette_->colors_[i] = color;
   }
 }
 
@@ -188,7 +188,7 @@ RageSurface* CreateSurfaceFromStbPixels(
   if (channels == 2) {
     for (int y = 0; y < height; ++y) {
       const stbi_uc* src = pixels + static_cast<size_t>(y) * width * 2;
-      uint8_t* dst = img->pixels + static_cast<size_t>(y) * img->pitch;
+      uint8_t* dst = img->pixels_ + static_cast<size_t>(y) * img->pitch_;
       for (int x = 0; x < width; ++x) {
         const uint8_t gray = src[x * 2 + 0];
         dst[x * 4 + 0] = gray;
@@ -203,7 +203,7 @@ RageSurface* CreateSurfaceFromStbPixels(
   const size_t row_bytes = static_cast<size_t>(width) * channels;
   for (int y = 0; y < height; ++y) {
     std::memcpy(
-        img->pixels + static_cast<size_t>(y) * img->pitch,
+        img->pixels_ + static_cast<size_t>(y) * img->pitch_,
         pixels + static_cast<size_t>(y) * row_bytes, row_bytes);
   }
 
@@ -212,7 +212,7 @@ RageSurface* CreateSurfaceFromStbPixels(
 
 std::string GetLoadError(
     const StbIoState& state, RageFile& file, RageSurfaceSTBFormat format) {
-  if (state.io_failed) {
+  if (state.io_failed_) {
     const std::string file_error = file.GetError();
     if (!file_error.empty()) {
       return file_error;

@@ -15,8 +15,8 @@ class InputHandler_MonkeyKeyboard : public InputHandler {
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
  private:
-  RageTimer m_timerPressButton;
-  DeviceButton m_dbLast;  // Last input that we sent
+  RageTimer timer_press_button_;
+  DeviceButton last_;  // Last input that we sent
 };
 
 #endif

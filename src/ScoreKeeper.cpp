@@ -12,8 +12,8 @@
 
 ScoreKeeper::ScoreKeeper(
     PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
-  m_pPlayerState = pPlayerState;
-  m_pPlayerStageStats = pPlayerStageStats;
+  player_state_ = pPlayerState;
+  player_stage_stats_ = pPlayerStageStats;
 }
 
 void ScoreKeeper::GetScoreOfLastTapInRow(
@@ -23,12 +23,12 @@ void ScoreKeeper::GetScoreOfLastTapInRow(
   for (int track = 0; track < nd.GetNumTracks(); ++track) {
     const TapNote& tn = nd.GetTapNote(track, iRow);
 
-    if (tn.type != TapNoteType_Tap && tn.type != TapNoteType_HoldHead) {
+    if (tn.type_ != TapNoteType_Tap && tn.type_ != TapNoteType_HoldHead) {
       continue;
     }
     ++iNum;
   }
-  tnsOut = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result.tns;
+  tnsOut = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result_.tns_;
   iNumTapsInRowOut = iNum;
 }
 

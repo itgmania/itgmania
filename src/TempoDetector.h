@@ -9,15 +9,15 @@
 /** @brief A single BPM/offset estimate produced by TempoDetector. */
 struct TempoResult {
   /** @brief The estimated tempo, in beats per minute. */
-  double bpm;
+  double bpm_;
   /**
    * @brief The estimated music offset, in seconds.
    *
    * This uses the same sign convention as TimingData::m_fBeat0OffsetInSeconds,
    * so it can be assigned to a TimingData directly. */
-  double offset;
+  double offset_;
   /** @brief Relative confidence, normalized so all results sum to 1. */
-  double fitness;
+  double fitness_;
 };
 
 /**

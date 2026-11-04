@@ -18,22 +18,22 @@ void ScreenSongOptions::Init() {
 
   /* Hack: If we're coming in from "press start for more options", we need a
    * different fade in. */
-  if (PREFSMAN->m_ShowSongOptions == Maybe_ASK) {
-    m_In.Load(THEME->GetPathB("ScreenSongOptions", "option in"));
-    m_In.StartTransitioning();
+  if (PREFSMAN->show_song_options_ == Maybe_ASK) {
+    in_.Load(THEME->GetPathB("ScreenSongOptions", "option in"));
+    in_.StartTransitioning();
   }
 }
 
 void ScreenSongOptions::ExportOptions(
     int iRow, const std::vector<PlayerNumber>& vpns) {
   PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
-  PlayerState* pPS = GAMESTATE->m_pPlayerState[pn];
-  const FailType ft = pPS->m_PlayerOptions.GetPreferred().m_FailType;
+  PlayerState* pPS = GAMESTATE->player_state_[pn];
+  const FailType ft = pPS->player_options_.GetPreferred().fail_type_;
 
   ScreenOptionsMaster::ExportOptions(iRow, vpns);
 
-  if (ft != pPS->m_PlayerOptions.GetPreferred().m_FailType) {
-    GAMESTATE->m_bFailTypeWasExplicitlySet = true;
+  if (ft != pPS->player_options_.GetPreferred().fail_type_) {
+    GAMESTATE->fail_type_was_explicitly_set_ = true;
   }
 }
 

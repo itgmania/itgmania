@@ -9,24 +9,24 @@
 #include "RageTimer.h"
 
 struct Joystick {
-  InputDevice id;
+  InputDevice id_;
   // map cookie to button
-  std::unordered_map<IOHIDElementCookie, DeviceButton> mapping;
-  IOHIDElementCookie x_axis, y_axis, z_axis, x_rot, y_rot, z_rot, hat;
-  int x_min, x_max;
-  int y_min, y_max;
-  int z_min, z_max;
-  int rx_min, rx_max;
-  int ry_min, ry_max;
-  int rz_min, rz_max;
-  int hat_min, hat_max;
+  std::unordered_map<IOHIDElementCookie, DeviceButton> mapping_;
+  IOHIDElementCookie x_axis_, y_axis_, z_axis_, x_rot_, y_rot_, z_rot_, hat_;
+  int x_min_, x_max_;
+  int y_min_, y_max_;
+  int z_min_, z_max_;
+  int rx_min_, rx_max_;
+  int ry_min_, ry_max_;
+  int rz_min_, rz_max_;
+  int hat_min_, hat_max_;
 
   Joystick();
 };
 
 class JoystickDevice : public HIDDevice {
  private:
-  std::vector<Joystick> m_vSticks;
+  std::vector<Joystick> sticks_;
 
  protected:
   bool AddLogicalDevice(int usagePage, int usage);

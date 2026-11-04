@@ -103,7 +103,7 @@ void BGAnimation::LoadFromAniDir(const std::string& _sAniDir) {
   std::string sPathToIni = sAniDir + "BGAnimation.ini";
 
   if (DoesFileExist(sPathToIni)) {
-    if (PREFSMAN->m_bQuirksMode) {
+    if (PREFSMAN->quirks_mode_) {
       // This is a 3.9-style BGAnimation (using .ini)
       IniFile ini;
       ini.ReadFile(sPathToIni);

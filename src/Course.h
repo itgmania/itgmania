@@ -55,40 +55,40 @@ SongSort OldStyleStringToSongSort(const std::string& ss);
 
 class CourseEntry {
  public:
-  bool bSecret;         // show "??????" instead of an exact song
-  bool bUseSongSelect;  // if true, this entry was created from a #SONGSELECT
-                        // entry, instead of a #SONG entry
+  bool secret_;           // show "??????" instead of an exact song
+  bool use_song_select_;  // if true, this entry was created from a #SONGSELECT
+                          // entry, instead of a #SONG entry
 
   // filter criteria, applied from top to bottom
-  SongID songID;  // don't filter if unset
-  SongCriteria songCriteria;
-  StepsCriteria stepsCriteria;
-  bool bNoDifficult;  // if true, CourseDifficulty doesn't affect this entry
+  SongID song_id_;  // don't filter if unset
+  SongCriteria song_criteria_;
+  StepsCriteria steps_criteria_;
+  bool no_difficult_;  // if true, CourseDifficulty doesn't affect this entry
 
-  SongSort songSort;  // sort by this after filtering
-  int iChooseIndex;   //
+  SongSort song_sort_;  // sort by this after filtering
+  int choose_index_;    //
 
-  std::string sModifiers;  // set player and song options using these
-  AttackArray attacks;     // timed sModifiers
-  float fGainSeconds;      // time gained back at the beginning of the song.
+  std::string modifiers_;  // set player and song options using these
+  AttackArray attacks_;    // timed sModifiers
+  float gain_seconds_;     // time gained back at the beginning of the song.
                            // LifeMeterTime only.
-  int iGainLives;  // lives gained back at the beginning of the next song
+  int gain_lives_;  // lives gained back at the beginning of the next song
 
   CourseEntry()
-      : bSecret(false),
-        bUseSongSelect(false),
-        songID(),
-        songCriteria(),
-        stepsCriteria(),
-        bNoDifficult(false),
-        songSort(SongSort_Randomize),
-        iChooseIndex(0),
-        sModifiers(std::string("")),
-        attacks(),
-        fGainSeconds(0),
-        iGainLives(-1) {}
+      : secret_(false),
+        use_song_select_(false),
+        song_id_(),
+        song_criteria_(),
+        steps_criteria_(),
+        no_difficult_(false),
+        song_sort_(SongSort_Randomize),
+        choose_index_(0),
+        modifiers_(std::string("")),
+        attacks_(),
+        gain_seconds_(0),
+        gain_lives_(-1) {}
 
-  bool IsFixedSong() const { return songID.IsValid(); }
+  bool IsFixedSong() const { return song_id_.IsValid(); }
 
   std::string GetTextDescription() const;
   int GetNumModChanges() const;
@@ -115,10 +115,10 @@ class Course {
   // Returns the transliterated titles, if any; otherwise returns the main
   // titles.
   std::string GetTranslitMainTitle() const {
-    return m_sMainTitleTranslit.size() ? m_sMainTitleTranslit : m_sMainTitle;
+    return main_title_translit_.size() ? main_title_translit_ : main_title_;
   }
   std::string GetTranslitSubTitle() const {
-    return m_sSubTitleTranslit.size() ? m_sSubTitleTranslit : m_sSubTitle;
+    return sub_title_translit_.size() ? sub_title_translit_ : sub_title_;
   }
 
   // "title subtitle"
@@ -137,7 +137,7 @@ class Course {
   bool AllSongsAreFixed() const;
   const Style* GetCourseStyle(const Game* pGame, int iNumPlayers) const;
 
-  int GetEstimatedNumStages() const { return m_vEntries.size(); }
+  int GetEstimatedNumStages() const { return entries_.size(); }
   bool IsPlayableIn(StepsType st) const;
   bool CourseHasBestOrWorst() const;
   RageColor GetColor() const;
@@ -170,7 +170,7 @@ class Course {
 
   const CourseEntry* FindFixedSong(const Song* pSong) const;
 
-  ProfileSlot GetLoadedFromProfileSlot() const { return m_LoadedFromProfile; }
+  ProfileSlot GetLoadedFromProfileSlot() const { return loaded_from_profile_; }
 
   bool Matches(std::string sGroup, std::string sCourse) const;
 
@@ -186,54 +186,54 @@ class Course {
       bool& bCourseDifficultyIsSignificant) const;
   bool GetTrailSorted(StepsType st, CourseDifficulty cd, Trail& trail) const;
 
-  bool IsAnEdit() const { return m_LoadedFromProfile != ProfileSlot_Invalid; }
+  bool IsAnEdit() const { return loaded_from_profile_ != ProfileSlot_Invalid; }
 
-  bool m_bIsAutogen;  // was this created by AutoGen?
-  std::string m_sPath;
+  bool is_autogen_;  // was this created by AutoGen?
+  std::string path_;
 
-  std::string m_sMainTitle, m_sMainTitleTranslit;
-  std::string m_sSubTitle, m_sSubTitleTranslit;
-  std::string m_sScripter;
-  std::string m_sDescription;
+  std::string main_title_, main_title_translit_;
+  std::string sub_title_, sub_title_translit_;
+  std::string scripter_;
+  std::string description_;
 
-  std::string m_sBannerPath;
-  std::string m_sBackgroundPath;
-  std::string m_sGroupName;
+  std::string banner_path_;
+  std::string background_path_;
+  std::string group_name_;
 
-  bool m_bRepeat;        // repeat after last song?  "Endless"
-  float m_fGoalSeconds;  // if not 0, stop play after this number of seconds
-  bool m_bShuffle;
-  int m_iLives;                        // -1 means use bar life meter
-  int m_iCustomMeter[NUM_Difficulty];  // -1 = no meter specified
-  bool m_bSortByMeter;
+  bool repeat_;         // repeat after last song?  "Endless"
+  float goal_seconds_;  // if not 0, stop play after this number of seconds
+  bool shuffle_;
+  int lives_;                         // -1 means use bar life meter
+  int custom_meter_[NUM_Difficulty];  // -1 = no meter specified
+  bool sort_by_meter_;
 
-  bool m_bIncomplete;
+  bool incomplete_;
 
-  std::vector<CourseEntry> m_vEntries;
+  std::vector<CourseEntry> entries_;
 
   // sorting values
-  int m_SortOrder_TotalDifficulty;
-  int m_SortOrder_Ranking;
+  int sort_order_total_difficulty_;
+  int sort_order_ranking_;
 
-  ProfileSlot m_LoadedFromProfile;  // ProfileSlot_Invalid if wasn't loaded from
-                                    // a profile
+  ProfileSlot loaded_from_profile_;  // ProfileSlot_Invalid if wasn't loaded
+                                     // from a profile
 
   typedef std::pair<StepsType, Difficulty> CacheEntry;
   struct CacheData {
-    Trail trail;
-    bool null;
+    Trail trail_;
+    bool null_;
 
-    CacheData() : trail(), null(false) {}
+    CacheData() : trail_(), null_(false) {}
   };
   typedef std::map<CacheEntry, CacheData> TrailCache_t;
-  mutable TrailCache_t m_TrailCache;
-  mutable int m_iTrailCacheSeed;
+  mutable TrailCache_t trail_cache_;
+  mutable int trail_cache_seed_;
 
   typedef std::map<CacheEntry, RadarValues> RadarCache_t;
-  RadarCache_t m_RadarCache;
+  RadarCache_t radar_cache_;
 
   // Preferred styles:
-  std::set<std::string> m_setStyles;
+  std::set<std::string> set_styles_;
 };
 
 #endif

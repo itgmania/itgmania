@@ -39,7 +39,7 @@ static constexpr SnekBitMapping sensorBitMappingDance[] = {
 
 InputHandler_SnekConfig::InputHandler_SnekConfig() {
   // do not start the thread when initialized.
-  m_bShutdown = true;
+  shutdown_ = true;
 
   if (IsConnected()) {
     std::array<uint8_t, SNEK_CONFIG_PACKETSIZE> res;
@@ -109,28 +109,28 @@ void InputHandler_SnekConfig::BroadcastFullSensorStateHelper(
   }
 
   INPUTFILTER->setFullSensorStateBinary(
-      mapping.pn, mapping.panel, currSensor, isPressed);
+      mapping.pn_, mapping.panel_, currSensor, isPressed);
 }
 
 void InputHandler_SnekConfig::StartSensorDebugging() {
-  if (!IsConnected() || DebugThread != nullptr) {
+  if (!IsConnected() || debug_thread_ != nullptr) {
     return;
   }
 
-  m_bShutdown = false;
+  shutdown_ = false;
 
-  DebugThread = new RageThread();
-  DebugThread->SetName("SnekConfig debug thread");
-  DebugThread->Create(InputThread_Start, this);
+  debug_thread_ = new RageThread();
+  debug_thread_->SetName("SnekConfig debug thread");
+  debug_thread_->Create(InputThread_Start, this);
 }
 
 void InputHandler_SnekConfig::StopSensorDebugging() {
-  if (DebugThread != nullptr && !m_bShutdown) {
-    m_bShutdown = true;
-    DebugThread->Wait();
+  if (debug_thread_ != nullptr && !shutdown_) {
+    shutdown_ = true;
+    debug_thread_->Wait();
 
-    delete DebugThread;
-    DebugThread = nullptr;
+    delete debug_thread_;
+    debug_thread_ = nullptr;
   }
 }
 
@@ -138,7 +138,7 @@ void InputHandler_SnekConfig::InputThreadMain() {
   std::array<uint8_t, SNEK_CONFIG_PACKETSIZE> res;
   uint8_t sensorNumber = 0;
 
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     // extio sensor cmds are 1,2,3,4, so add one to zero index.
     if (!SendCommand(
             SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, (sensorNumber + 1), res)) {
@@ -149,14 +149,14 @@ void InputHandler_SnekConfig::InputThreadMain() {
     uint32_t newState = 0;
     std::memcpy(&newState, &res[2], sizeof(newState));
 
-    if (newState != sensorState[sensorNumber]) {
+    if (newState != sensor_state_[sensorNumber]) {
       // use xor to fire events only on the bits that have changed.
-      uint32_t changed = newState ^ sensorState[sensorNumber];
+      uint32_t changed = newState ^ sensor_state_[sensorNumber];
 
       // walk through only the bits are are interested in (via the sensor
       // mapping)
       for (const auto& mapping : sensorBitMappingDance) {
-        const uint32_t mask = 1u << mapping.bitPosition;
+        const uint32_t mask = 1u << mapping.bit_position_;
 
         if ((changed & mask) == 0) {
           // This sensor didn't change.
@@ -174,7 +174,7 @@ void InputHandler_SnekConfig::InputThreadMain() {
       // as the response is sent via the config end point.
       MESSAGEMAN->Broadcast("TestSensorRedrawEvent");
 
-      sensorState[sensorNumber] = newState;
+      sensor_state_[sensorNumber] = newState;
     }
 
     sensorNumber++;
@@ -205,12 +205,12 @@ bool InputHandler_SnekConfig::SendCommand(
   cmd[(SNEK_CONFIG_PACKETSIZE - 1)] = crc;
 
   // Send command
-  if (dev.Write(cmd.data(), cmd.size()) != HidResults::Success) {
+  if (dev_.Write(cmd.data(), cmd.size()) != HidResults::Success) {
     LOG->Warn("snek could not send");
     return false;
   }
 
-  int rtnSize = dev.Read(response.data(), response.size());
+  int rtnSize = dev_.Read(response.data(), response.size());
 
   // Read response, always a full payload size.
   if (rtnSize != SNEK_CONFIG_PACKETSIZE) {

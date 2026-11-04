@@ -149,212 +149,213 @@ void ValidateDisplayAspectRatio(float& val) {
 void ValidateSongsPerPlay(int& val) { rage_clamp(val, 0, MAX_SONGS_PER_PLAY); }
 
 PrefsManager::PrefsManager()
-    : m_sCurrentGame("CurrentGame", ""),
+    : current_game_("CurrentGame", ""),
 
-      m_sAnnouncer("Announcer", ""),
-      m_sTheme("Theme", SpecialFiles::BASE_THEME_NAME),
-      m_sDefaultModifiers("DefaultModifiers", ""),
+      announcer_("Announcer", ""),
+      theme_("Theme", SpecialFiles::BASE_THEME_NAME),
+      default_modifiers_("DefaultModifiers", ""),
 
-      m_bWindowed("Windowed", true),
-      m_sDisplayId("DisplayId", ""),
-      m_iDisplayWidth("DisplayWidth", 854),
-      m_iDisplayHeight("DisplayHeight", 480),
-      m_fDisplayAspectRatio(
+      windowed_("Windowed", true),
+      display_id_("DisplayId", ""),
+      display_width_("DisplayWidth", 854),
+      display_height_("DisplayHeight", 480),
+      display_aspect_ratio_(
           "DisplayAspectRatio", 16 / 9.f, ValidateDisplayAspectRatio),
-      m_iDisplayColorDepth("DisplayColorDepth", 32),
-      m_iTextureColorDepth("TextureColorDepth", 32),
-      m_iMovieColorDepth("MovieColorDepth", 32),
-      m_bStretchBackgrounds("StretchBackgrounds", false),
-      m_BGFitMode("BackgroundFitMode", BFM_CoverPreserve),
-      m_HighResolutionTextures(
+      display_color_depth_("DisplayColorDepth", 32),
+      texture_color_depth_("TextureColorDepth", 32),
+      movie_color_depth_("MovieColorDepth", 32),
+      stretch_backgrounds_("StretchBackgrounds", false),
+      bg_fit_mode_("BackgroundFitMode", BFM_CoverPreserve),
+      high_resolution_textures_(
           "HighResolutionTextures", HighResolutionTextures_Auto),
-      m_iMaxTextureResolution("MaxTextureResolution", 2048),
-      m_iRefreshRate("RefreshRate", REFRESH_DEFAULT),
-      m_bAllowMultitexture("AllowMultitexture", true),
-      m_bFullscreenIsBorderlessWindow("FullscreenIsBorderlessWindow", true),
-      m_bShowStats("ShowStats", TRUE_IF_DEBUG),
-      m_bShowBanners("ShowBanners", true),
-      m_bShowMouseCursor("ShowMouseCursor", false),
+      max_texture_resolution_("MaxTextureResolution", 2048),
+      refresh_rate_("RefreshRate", REFRESH_DEFAULT),
+      allow_multitexture_("AllowMultitexture", true),
+      fullscreen_is_borderless_window_("FullscreenIsBorderlessWindow", true),
+      show_stats_("ShowStats", TRUE_IF_DEBUG),
+      show_banners_("ShowBanners", true),
+      show_mouse_cursor_("ShowMouseCursor", false),
 
-      m_bHiddenSongs("HiddenSongs", false),
-      m_bVsync("Vsync", true),
-      m_FastNoteRendering("FastNoteRendering", false),
-      m_bInterlaced("Interlaced", false),
-      m_bPAL("PAL", false),
-      m_bDelayedTextureDelete("DelayedTextureDelete", false),
-      m_bDelayedModelDelete("DelayedModelDelete", false),
-      m_ImageCache("ImageCache", IMGCACHE_LOW_RES_PRELOAD),
-      m_bFastLoad("FastLoad", true),
-      m_NeverCacheList("NeverCacheList", ""),
+      hidden_songs_("HiddenSongs", false),
+      vsync_("Vsync", true),
+      fast_note_rendering_("FastNoteRendering", false),
+      interlaced_("Interlaced", false),
+      pal_("PAL", false),
+      delayed_texture_delete_("DelayedTextureDelete", false),
+      delayed_model_delete_("DelayedModelDelete", false),
+      image_cache_("ImageCache", IMGCACHE_LOW_RES_PRELOAD),
+      fast_load_("FastLoad", true),
+      never_cache_list_("NeverCacheList", ""),
 
-      m_bOnlyDedicatedMenuButtons("OnlyDedicatedMenuButtons", false),
-      m_bMenuTimer("MenuTimer", false),
+      only_dedicated_menu_buttons_("OnlyDedicatedMenuButtons", false),
+      menu_timer_("MenuTimer", false),
 
-      m_fLifeDifficultyScale("LifeDifficultyScale", 1.0f),
+      life_difficulty_scale_("LifeDifficultyScale", 1.0f),
 
-      m_bRateModsAffectTweens("RateModsAffectFGChanges", false),
+      rate_mods_affect_tweens_("RateModsAffectFGChanges", false),
 
-      m_iRegenComboAfterMiss("RegenComboAfterMiss", 5),
-      m_iMaxRegenComboAfterMiss(
+      regen_combo_after_miss_("RegenComboAfterMiss", 5),
+      max_regen_combo_after_miss_(
           "MaxRegenComboAfterMiss",
           5),  // this was 10 by default in SM3.95 -dguzek
-      m_bMercifulDrain(
+      merciful_drain_(
           "MercifulDrain", false),  // negative life deltas are scaled by the
                                     // players life percentage
-      m_HarshHotLifePenalty("HarshHotLifePenalty", true),
-      m_bMinimum1FullSongInCourses(
+      harsh_hot_life_penalty_("HarshHotLifePenalty", true),
+      minimum1_full_song_in_courses_(
           "Minimum1FullSongInCourses",
           false),  // FEoS for 1st song, FailImmediate thereafter
-      m_bFailOffInBeginner("FailOffInBeginner", false),
-      m_bFailOffForFirstStageEasy("FailOffForFirstStageEasy", false),
-      m_bMercifulBeginner("MercifulBeginner", false),
-      m_bMercifulSuperMeter("MercifulSuperMeter", true),
-      m_bDelayedBack("DelayedBack", true),
-      m_AllowHoldForOptions("AllowHoldForOptions", true),
-      m_bShowInstructions("ShowInstructions", true),
-      m_bShowCaution("ShowCaution", true),
-      m_bShowNativeLanguage("ShowNativeLanguage", true),
-      m_iArcadeOptionsNavigation("ArcadeOptionsNavigation", 0),
-      m_ThreeKeyNavigation("ThreeKeyNavigation", false),
-      m_MusicWheelUsesSections(
+      fail_off_in_beginner_("FailOffInBeginner", false),
+      fail_off_for_first_stage_easy_("FailOffForFirstStageEasy", false),
+      merciful_beginner_("MercifulBeginner", false),
+      merciful_super_meter_("MercifulSuperMeter", true),
+      delayed_back_("DelayedBack", true),
+      allow_hold_for_options_("AllowHoldForOptions", true),
+      show_instructions_("ShowInstructions", true),
+      show_caution_("ShowCaution", true),
+      show_native_language_("ShowNativeLanguage", true),
+      arcade_options_navigation_("ArcadeOptionsNavigation", 0),
+      three_key_navigation_("ThreeKeyNavigation", false),
+      music_wheel_uses_sections_(
           "MusicWheelUsesSections", MusicWheelUsesSections_ALWAYS),
-      m_iMusicWheelSwitchSpeed("MusicWheelSwitchSpeed", 15),
-      m_bRandomPrioritizeDifficulty("RandomPrioritizeDifficulty", false),
-      m_AllowW1("AllowW1", ALLOW_W1_EVERYWHERE),
-      m_bEventMode("EventMode", true),
-      m_iCoinsPerCredit("CoinsPerCredit", 1),
-      m_iMaxNumCredits("MaxNumCredits", 20),
-      m_iSongsPerPlay("SongsPerPlay", 3, ValidateSongsPerPlay),
-      m_bDelayedCreditsReconcile("DelayedCreditsReconcile", false),
-      m_bComboContinuesBetweenSongs("ComboContinuesBetweenSongs", false),
-      m_AllowMultipleToasties("AllowMultipleToasties", true),
-      m_MinTNSToHideNotes("MinTNSToHideNotes", TNS_W3),
-      m_ShowSongOptions("ShowSongOptions", Maybe_NO),
-      m_bPercentageScoring("PercentageScoring", true),
+      music_wheel_switch_speed_("MusicWheelSwitchSpeed", 15),
+      random_prioritize_difficulty_("RandomPrioritizeDifficulty", false),
+      allow_w1_("AllowW1", ALLOW_W1_EVERYWHERE),
+      event_mode_("EventMode", true),
+      coins_per_credit_("CoinsPerCredit", 1),
+      max_num_credits_("MaxNumCredits", 20),
+      songs_per_play_("SongsPerPlay", 3, ValidateSongsPerPlay),
+      delayed_credits_reconcile_("DelayedCreditsReconcile", false),
+      combo_continues_between_songs_("ComboContinuesBetweenSongs", false),
+      allow_multiple_toasties_("AllowMultipleToasties", true),
+      min_tns_to_hide_notes_("MinTNSToHideNotes", TNS_W3),
+      show_song_options_("ShowSongOptions", Maybe_NO),
+      percentage_scoring_("PercentageScoring", true),
       // Wow, these preference names are *seriously* long -Colby
-      m_fMinPercentageForMachineSongHighScore(
+      min_percentage_for_machine_song_high_score_(
           "MinPercentageForMachineSongHighScore",
           0.0001f),  // This is for home, who cares how bad you do?
-      m_fMinPercentageForMachineCourseHighScore(
+      min_percentage_for_machine_course_high_score_(
           "MinPercentageForMachineCourseHighScore",
           0.0001f),  // don't save course scores with 0 percentage
-      m_bDisqualification("Disqualification", false),
-      m_bAutogenSteps("AutogenSteps", false),
-      m_bAutogenGroupCourses("AutogenGroupCourses", true),
-      m_bOnlyPreferredDifficulties("OnlyPreferredDifficulties", false),
-      m_bBreakComboToGetItem("BreakComboToGetItem", false),
-      m_bLockCourseDifficulties("LockCourseDifficulties", false),
-      m_ShowDancingCharacters("ShowDancingCharacters", SDC_Random),
-      m_bUseUnlockSystem("UseUnlockSystem", false),
-      m_fGlobalOffsetSeconds("GlobalOffsetSeconds", -0.008f),
-      m_DefaultSyncOffset("DefaultSyncOffset", SyncOffset_ITG),
-      m_iProgressiveLifebar("ProgressiveLifebar", 0),
-      m_iProgressiveStageLifebar("ProgressiveStageLifebar", 0),
-      m_iProgressiveNonstopLifebar("ProgressiveNonstopLifebar", 0),
-      m_bShowBeginnerHelper("ShowBeginnerHelper", false),
-      m_bDisableScreenSaver("DisableScreenSaver", true),
-      m_sLanguage(
+      disqualification_("Disqualification", false),
+      autogen_steps_("AutogenSteps", false),
+      autogen_group_courses_("AutogenGroupCourses", true),
+      only_preferred_difficulties_("OnlyPreferredDifficulties", false),
+      break_combo_to_get_item_("BreakComboToGetItem", false),
+      lock_course_difficulties_("LockCourseDifficulties", false),
+      show_dancing_characters_("ShowDancingCharacters", SDC_Random),
+      use_unlock_system_("UseUnlockSystem", false),
+      global_offset_seconds_("GlobalOffsetSeconds", -0.008f),
+      default_sync_offset_("DefaultSyncOffset", SyncOffset_ITG),
+      progressive_lifebar_("ProgressiveLifebar", 0),
+      progressive_stage_lifebar_("ProgressiveStageLifebar", 0),
+      progressive_nonstop_lifebar_("ProgressiveNonstopLifebar", 0),
+      show_beginner_helper_("ShowBeginnerHelper", false),
+      disable_screen_saver_("DisableScreenSaver", true),
+      language_(
           "Language", ""),  // ThemeManager will deal with this invalid language
-      m_sMemoryCardProfileSubdir("MemoryCardProfileSubdir", PRODUCT_ID),
-      m_iProductID("ProductID", 1),
-      m_iCenterImageTranslateX("CenterImageTranslateX", 0),
-      m_iCenterImageTranslateY("CenterImageTranslateY", 0),
-      m_fCenterImageAddWidth("CenterImageAddWidth", 0),
-      m_fCenterImageAddHeight("CenterImageAddHeight", 0),
-      m_AttractSoundFrequency("AttractSoundFrequency", ASF_EVERY_TIME),
-      m_bAllowExtraStage("AllowExtraStage", false),
-      m_iMaxHighScoresPerListForMachine("MaxHighScoresPerListForMachine", 10),
-      m_iMaxHighScoresPerListForPlayer("MaxHighScoresPerListForPlayer", 3),
-      m_bAllowMultipleHighScoreWithSameName(
+      memory_card_profile_subdir_("MemoryCardProfileSubdir", PRODUCT_ID),
+      product_id_("ProductID", 1),
+      center_image_translate_x_("CenterImageTranslateX", 0),
+      center_image_translate_y_("CenterImageTranslateY", 0),
+      center_image_add_width_("CenterImageAddWidth", 0),
+      center_image_add_height_("CenterImageAddHeight", 0),
+      attract_sound_frequency_("AttractSoundFrequency", ASF_EVERY_TIME),
+      allow_extra_stage_("AllowExtraStage", false),
+      max_high_scores_per_list_for_machine_(
+          "MaxHighScoresPerListForMachine", 10),
+      max_high_scores_per_list_for_player_("MaxHighScoresPerListForPlayer", 3),
+      allow_multiple_high_score_with_same_name_(
           "AllowMultipleHighScoreWithSameName", true),
-      m_DisableUploadDir("DisableUploadDir", true),
-      m_bCelShadeModels(
+      disable_upload_dir_("DisableUploadDir", true),
+      cel_shade_models_(
           "CelShadeModels", false),  // Work-In-Progress.. disable by default.
-      m_bPreferredSortUsesGroups("PreferredSortUsesGroups", true),
-      m_fDebounceCoinInputTime("DebounceCoinInputTime", 0),
-      m_bResetCoinsAtStartup("ResetCoinsAtStartup", false),
+      preferred_sort_uses_groups_("PreferredSortUsesGroups", true),
+      debounce_coin_input_time_("DebounceCoinInputTime", 0),
+      reset_coins_at_startup_("ResetCoinsAtStartup", false),
 
-      m_fPadStickSeconds("PadStickSeconds", 0),
-      m_EditRecordModeLeadIn("EditRecordModeLeadIn", 1.0f),
-      m_EditClearPromptThreshold("EditClearPromptThreshold", 50),
-      m_bForceMipMaps("ForceMipMaps", false),
-      m_bTrilinearFiltering("TrilinearFiltering", false),
-      m_bAnisotropicFiltering("AnisotropicFiltering", false),
+      pad_stick_seconds_("PadStickSeconds", 0),
+      edit_record_mode_lead_in_("EditRecordModeLeadIn", 1.0f),
+      edit_clear_prompt_threshold_("EditClearPromptThreshold", 50),
+      force_mip_maps_("ForceMipMaps", false),
+      trilinear_filtering_("TrilinearFiltering", false),
+      anisotropic_filtering_("AnisotropicFiltering", false),
 
-      m_bSignProfileData("SignProfileData", false),
-      m_ProfileSortOrder("ProfileSortOrder", ProfileSortOrder_Priority),
-      m_bProfileSortOrderAscending("ProfileSortOrderAscending", true),
-      m_CourseSortOrder("CourseSortOrder", COURSE_SORT_SONGS),
-      m_bSubSortByNumSteps("SubSortByNumSteps", false),
-      m_GetRankingName("GetRankingName", RANKING_ON),
-      m_sAdditionalSongFoldersReadOnly(
+      sign_profile_data_("SignProfileData", false),
+      profile_sort_order_("ProfileSortOrder", ProfileSortOrder_Priority),
+      profile_sort_order_ascending_("ProfileSortOrderAscending", true),
+      course_sort_order_("CourseSortOrder", COURSE_SORT_SONGS),
+      sub_sort_by_num_steps_("SubSortByNumSteps", false),
+      get_ranking_name_("GetRankingName", RANKING_ON),
+      additional_song_folders_read_only_(
           "AdditionalSongFoldersReadOnly", "", nullptr,
           PreferenceType::Immutable),
-      m_sAdditionalSongFoldersWritable(
+      additional_song_folders_writable_(
           "AdditionalSongFoldersWritable", "", nullptr,
           PreferenceType::Immutable),
-      m_sAdditionalCourseFoldersReadOnly(
+      additional_course_folders_read_only_(
           "AdditionalCourseFoldersReadOnly", "", nullptr,
           PreferenceType::Immutable),
-      m_sAdditionalCourseFoldersWritable(
+      additional_course_folders_writable_(
           "AdditionalCourseFoldersWritable", "", nullptr,
           PreferenceType::Immutable),
-      m_sAdditionalFoldersReadOnly(
+      additional_folders_read_only_(
           "AdditionalFoldersReadOnly", "", nullptr, PreferenceType::Immutable),
-      m_sAdditionalFoldersWritable(
+      additional_folders_writable_(
           "AdditionalFoldersWritable", "", nullptr, PreferenceType::Immutable),
-      m_sDefaultTheme("DefaultTheme", "Simply Love"),
-      m_sLastSeenVideoDriver("LastSeenVideoDriver", ""),
-      m_sVideoRenderers(
+      default_theme_("DefaultTheme", "Simply Love"),
+      last_seen_video_driver_("LastSeenVideoDriver", ""),
+      video_renderers_(
           "VideoRenderers", ""),  // StepMania.cpp sets these on first run:
-      m_bSmoothLines("SmoothLines", true),
-      m_iSoundWriteAhead("SoundWriteAhead", 0),
-      m_iSoundDevice("SoundDevice", ""),
-      m_iSoundPreferredSampleRate("SoundPreferredSampleRate", 0),
-      m_sLightsStepsDifficulty("LightsStepsDifficulty", "hard,medium"),
-      m_bLightsSimplifyBass("LightsSimplifyBass", false),
-      m_bLightsBassParallel("LightsBassParallel", false),
-      m_bAllowUnacceleratedRenderer("AllowUnacceleratedRenderer", false),
-      m_bThreadedInput("ThreadedInput", true),
-      m_bThreadedMovieDecode("ThreadedMovieDecode", true),
-      m_sTestInitialScreen("TestInitialScreen", ""),
-      m_bDebugLights("DebugLights", false),
-      m_bMonkeyInput("MonkeyInput", false),
-      m_sMachineName("MachineName", ""),
-      m_sCoursesToShowRanking("CoursesToShowRanking", ""),
-      m_MuteActions("MuteActions", false),
-      m_bAllowSongDeletion("AllowSongDeletion", false),
+      smooth_lines_("SmoothLines", true),
+      sound_write_ahead_("SoundWriteAhead", 0),
+      sound_device_("SoundDevice", ""),
+      sound_preferred_sample_rate_("SoundPreferredSampleRate", 0),
+      lights_steps_difficulty_("LightsStepsDifficulty", "hard,medium"),
+      lights_simplify_bass_("LightsSimplifyBass", false),
+      lights_bass_parallel_("LightsBassParallel", false),
+      allow_unaccelerated_renderer_("AllowUnacceleratedRenderer", false),
+      threaded_input_("ThreadedInput", true),
+      threaded_movie_decode_("ThreadedMovieDecode", true),
+      test_initial_screen_("TestInitialScreen", ""),
+      debug_lights_("DebugLights", false),
+      monkey_input_("MonkeyInput", false),
+      machine_name_("MachineName", ""),
+      courses_to_show_ranking_("CoursesToShowRanking", ""),
+      mute_actions_("MuteActions", false),
+      allow_song_deletion_("AllowSongDeletion", false),
 
-      m_bQuirksMode("QuirksMode", false),
+      quirks_mode_("QuirksMode", false),
 
-      m_custom_songs_enable("CustomSongsEnable", false),
-      m_custom_songs_max_count(
+      custom_songs_enable_("CustomSongsEnable", false),
+      custom_songs_max_count_(
           "CustomSongsMaxCount", 1000),  // No limit. -- 2 Unlimited
-      m_custom_songs_load_timeout("CustomSongsLoadTimeout", 5.f),
-      m_custom_songs_max_seconds("CustomSongsMaxSeconds", 120.f),
-      m_custom_songs_max_megabytes("CustomSongsMaxMegabytes", 5.f),
+      custom_songs_load_timeout_("CustomSongsLoadTimeout", 5.f),
+      custom_songs_max_seconds_("CustomSongsMaxSeconds", 120.f),
+      custom_songs_max_megabytes_("CustomSongsMaxMegabytes", 5.f),
 
       /* Debug: */
-      m_bDebugMenuEnabled(
+      debug_menu_enabled_(
           "DebugMenuEnabled", true, nullptr, PreferenceType::Immutable),
-      m_bLogToDisk("LogToDisk", true),
+      log_to_disk_("LogToDisk", true),
 #if defined(DEBUG)
-      m_bForceLogFlush("ForceLogFlush", true),
-      m_bShowLogOutput("ShowLogOutput", true),
+      force_log_flush_("ForceLogFlush", true),
+      show_log_output_("ShowLogOutput", true),
 #else
-      m_bForceLogFlush("ForceLogFlush", false),
-      m_bShowLogOutput("ShowLogOutput", false),
+      force_log_flush_("ForceLogFlush", false),
+      show_log_output_("ShowLogOutput", false),
 #endif
-      m_bLogSkips("LogSkips", false),
-      m_bLogCheckpoints("LogCheckpoints", false),
-      m_bShowLoadingWindow("ShowLoadingWindow", true),
-      m_bPseudoLocalize("PseudoLocalize", false),
-      m_show_theme_errors("ShowThemeErrors", false),
-      m_sAdditionalSongFolders(
+      log_skips_("LogSkips", false),
+      log_checkpoints_("LogCheckpoints", false),
+      show_loading_window_("ShowLoadingWindow", true),
+      pseudo_localize_("PseudoLocalize", false),
+      show_theme_errors_("ShowThemeErrors", false),
+      additional_song_folders_(
           "AdditionalSongFolders", "", nullptr, PreferenceType::Deprecated),
-      m_sAdditionalCourseFolders(
+      additional_course_folders_(
           "AdditionalCourseFolders", "", nullptr, PreferenceType::Deprecated),
-      m_sAdditionalFolders(
+      additional_folders_(
           "AdditionalFolders", "", nullptr, PreferenceType::Deprecated) {
   Init();
   ReadPrefsFromDisk();
@@ -373,7 +374,7 @@ PrefsManager::PrefsManager()
 void PrefsManager::Init() {
   IPreference::LoadAllDefaults();
 
-  m_mapGameNameToGamePrefs.clear();
+  map_game_name_to_game_prefs_.clear();
 }
 
 PrefsManager::~PrefsManager() {
@@ -382,43 +383,43 @@ PrefsManager::~PrefsManager() {
 }
 
 void PrefsManager::SetCurrentGame(const std::string& sGame) {
-  if (m_sCurrentGame.Get() == sGame) {
+  if (current_game_.Get() == sGame) {
     return;  // redundant
   }
 
-  if (!m_sCurrentGame.Get().empty()) {
+  if (!current_game_.Get().empty()) {
     StoreGamePrefs();
   }
 
-  m_sCurrentGame.Set(sGame);
+  current_game_.Set(sGame);
 
   RestoreGamePrefs();
 }
 
 void PrefsManager::StoreGamePrefs() {
-  ASSERT(!m_sCurrentGame.Get().empty());
+  ASSERT(!current_game_.Get().empty());
 
   // save off old values
-  GamePrefs& gp = m_mapGameNameToGamePrefs[m_sCurrentGame.Get()];
-  gp.m_sAnnouncer = m_sAnnouncer;
-  gp.m_sTheme = m_sTheme;
-  gp.m_sDefaultModifiers = m_sDefaultModifiers;
+  GamePrefs& gp = map_game_name_to_game_prefs_[current_game_.Get()];
+  gp.announcer_ = announcer_;
+  gp.theme_ = theme_;
+  gp.default_modifiers_ = default_modifiers_;
 }
 
 void PrefsManager::RestoreGamePrefs() {
-  ASSERT(!m_sCurrentGame.Get().empty());
+  ASSERT(!current_game_.Get().empty());
 
   // load prefs
   GamePrefs gp;
   std::map<std::string, GamePrefs>::const_iterator iter =
-      m_mapGameNameToGamePrefs.find(m_sCurrentGame);
-  if (iter != m_mapGameNameToGamePrefs.end()) {
+      map_game_name_to_game_prefs_.find(current_game_);
+  if (iter != map_game_name_to_game_prefs_.end()) {
     gp = iter->second;
   }
 
-  m_sAnnouncer.Set(gp.m_sAnnouncer);
-  m_sTheme.Set(gp.m_sTheme);
-  m_sDefaultModifiers.Set(gp.m_sDefaultModifiers);
+  announcer_.Set(gp.announcer_);
+  theme_.Set(gp.theme_);
+  default_modifiers_.Set(gp.default_modifiers_);
 
   // give Static.ini a chance to clobber the saved game prefs
   ReadPrefsFromFile(
@@ -426,9 +427,9 @@ void PrefsManager::RestoreGamePrefs() {
 }
 
 PrefsManager::GamePrefs::GamePrefs()
-    : m_sAnnouncer(""),
-      m_sTheme(SpecialFiles::BASE_THEME_NAME),
-      m_sDefaultModifiers("") {}
+    : announcer_(""),
+      theme_(SpecialFiles::BASE_THEME_NAME),
+      default_modifiers_("") {}
 
 void PrefsManager::ReadPrefsFromDisk() {
   ReadDefaultsFromFile(
@@ -442,7 +443,7 @@ void PrefsManager::ReadPrefsFromDisk() {
 
   TranslateDeprecatedFlags();
 
-  if (!m_sCurrentGame.Get().empty()) {
+  if (!current_game_.Get().empty()) {
     RestoreGamePrefs();
   }
 }
@@ -513,12 +514,12 @@ void PrefsManager::ReadGamePrefsFromIni(const std::string& sIni) {
 
     std::string sGame = Right(
         section_name, section_name.length() - GAME_SECTION_PREFIX.length());
-    GamePrefs& gp = m_mapGameNameToGamePrefs[sGame];
+    GamePrefs& gp = map_game_name_to_game_prefs_[sGame];
 
     // todo: read more prefs here? -aj
-    ini.GetValue(section_name, "Announcer", gp.m_sAnnouncer);
-    ini.GetValue(section_name, "Theme", gp.m_sTheme);
-    ini.GetValue(section_name, "DefaultModifiers", gp.m_sDefaultModifiers);
+    ini.GetValue(section_name, "Announcer", gp.announcer_);
+    ini.GetValue(section_name, "Theme", gp.theme_);
+    ini.GetValue(section_name, "DefaultModifiers", gp.default_modifiers_);
   }
 }
 
@@ -545,14 +546,14 @@ void PrefsManager::ReadDefaultsFromIni(
 }
 
 void PrefsManager::TranslateDeprecatedFlags() {
-  if (!m_sAdditionalFolders.Get().empty()) {
-    m_sAdditionalFoldersWritable.Set(m_sAdditionalFolders.Get());
+  if (!additional_folders_.Get().empty()) {
+    additional_folders_writable_.Set(additional_folders_.Get());
   }
-  if (!m_sAdditionalSongFolders.Get().empty()) {
-    m_sAdditionalSongFoldersWritable.Set(m_sAdditionalSongFolders.Get());
+  if (!additional_song_folders_.Get().empty()) {
+    additional_song_folders_writable_.Set(additional_song_folders_.Get());
   }
-  if (!m_sAdditionalCourseFolders.Get().empty()) {
-    m_sAdditionalCourseFoldersWritable.Set(m_sAdditionalCourseFolders.Get());
+  if (!additional_course_folders_.Get().empty()) {
+    additional_course_folders_writable_.Set(additional_course_folders_.Get());
   }
 }
 
@@ -563,7 +564,7 @@ void PrefsManager::SavePrefsToDisk() {
 }
 
 void PrefsManager::SavePrefsToIni(IniFile& ini) {
-  if (!m_sCurrentGame.Get().empty()) {
+  if (!current_game_.Get().empty()) {
     StoreGamePrefs();
   }
 
@@ -573,13 +574,13 @@ void PrefsManager::SavePrefsToIni(IniFile& ini) {
   }
   IPreference::SavePrefsToNode(pNode);
 
-  for (const auto& iter : m_mapGameNameToGamePrefs) {
+  for (const auto& iter : map_game_name_to_game_prefs_) {
     std::string sSection = "Game-" + std::string(iter.first);
 
     // todo: write more values here? -aj
-    ini.SetValue(sSection, "Announcer", iter.second.m_sAnnouncer);
-    ini.SetValue(sSection, "Theme", iter.second.m_sTheme);
-    ini.SetValue(sSection, "DefaultModifiers", iter.second.m_sDefaultModifiers);
+    ini.SetValue(sSection, "Announcer", iter.second.announcer_);
+    ini.SetValue(sSection, "Theme", iter.second.theme_);
+    ini.SetValue(sSection, "DefaultModifiers", iter.second.default_modifiers_);
   }
 }
 

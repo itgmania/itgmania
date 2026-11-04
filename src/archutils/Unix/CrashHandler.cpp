@@ -240,23 +240,23 @@ static void RunCrashHandler(const CrashData* crash) {
     /* We've received a second signal.  This may mean that another thread
      * crashed before we stopped it, or it may mean that the crash handler
      * crashed. */
-    switch (crash->type) {
+    switch (crash->type_) {
       case CrashData::SIGNAL:
         safe_print(
-            fileno(stderr), "Fatal signal (", SignalName(crash->signal), ")",
+            fileno(stderr), "Fatal signal (", SignalName(crash->signal_), ")",
             nullptr);
         break;
 
       case CrashData::FORCE_CRASH:
         safe_print(
-            fileno(stderr), "Crash handler failed: \"", crash->reason, "\"",
+            fileno(stderr), "Crash handler failed: \"", crash->reason_, "\"",
             nullptr);
         break;
 
       default:
         safe_print(
             fileno(stderr), "Unexpected RunCrashHandler call (",
-            itoa(crash->type), ")", nullptr);
+            itoa(crash->type_), ")", nullptr);
         break;
     }
 
@@ -340,11 +340,11 @@ static void BacktraceAllThreads(CrashData& crash) {
 
     BacktraceContext ctx;
     if (GetThreadBacktraceContext(iID, &ctx)) {
-      GetBacktrace(crash.BacktracePointers[iCnt], BACKTRACE_MAX_SIZE, &ctx);
+      GetBacktrace(crash.backtrace_pointers_[iCnt], BACKTRACE_MAX_SIZE, &ctx);
     }
     strncpy(
-        crash.m_ThreadName[iCnt], RageThread::GetThreadNameByID(iID),
-        sizeof(crash.m_ThreadName[0]) - 1);
+        crash.thread_name_[iCnt], RageThread::GetThreadNameByID(iID),
+        sizeof(crash.thread_name_[0]) - 1);
 
     ++iCnt;
 
@@ -358,11 +358,11 @@ void CrashHandler::ForceCrash(const char* reason) {
   CrashData crash;
   memset(&crash, 0, sizeof(crash));
 
-  crash.type = CrashData::FORCE_CRASH;
-  strncpy(crash.reason, reason, sizeof(crash.reason));
-  crash.reason[sizeof(crash.reason) - 1] = 0;
+  crash.type_ = CrashData::FORCE_CRASH;
+  strncpy(crash.reason_, reason, sizeof(crash.reason_));
+  crash.reason_[sizeof(crash.reason_) - 1] = 0;
 
-  GetBacktrace(crash.BacktracePointers[0], BACKTRACE_MAX_SIZE, nullptr);
+  GetBacktrace(crash.backtrace_pointers_[0], BACKTRACE_MAX_SIZE, nullptr);
 
   RunCrashHandler(&crash);
 }
@@ -371,9 +371,9 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
   CrashData crash;
   memset(&crash, 0, sizeof(crash));
 
-  crash.type = CrashData::FORCE_CRASH;
+  crash.type_ = CrashData::FORCE_CRASH;
 
-  GetBacktrace(crash.BacktracePointers[0], BACKTRACE_MAX_SIZE, nullptr);
+  GetBacktrace(crash.backtrace_pointers_[0], BACKTRACE_MAX_SIZE, nullptr);
 
   if (iID == GetInvalidThreadId()) {
     /* Backtrace all threads. */
@@ -383,21 +383,21 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
     if (!GetThreadBacktraceContext(iID, &ctx)) {
       reason += "; GetThreadBacktraceContext failed";
     } else {
-      GetBacktrace(crash.BacktracePointers[1], BACKTRACE_MAX_SIZE, &ctx);
+      GetBacktrace(crash.backtrace_pointers_[1], BACKTRACE_MAX_SIZE, &ctx);
     }
     strncpy(
-        crash.m_ThreadName[1], RageThread::GetThreadNameByID(iID),
-        sizeof(crash.m_ThreadName[0]) - 1);
+        crash.thread_name_[1], RageThread::GetThreadNameByID(iID),
+        sizeof(crash.thread_name_[0]) - 1);
   }
 
   strncpy(
-      crash.m_ThreadName[0], RageThread::GetCurrentThreadName(),
-      sizeof(crash.m_ThreadName[0]) - 1);
+      crash.thread_name_[0], RageThread::GetCurrentThreadName(),
+      sizeof(crash.thread_name_[0]) - 1);
 
   strncpy(
-      crash.reason, reason.c_str(),
-      std::min(sizeof(crash.reason) - 1, reason.length()));
-  crash.reason[sizeof(crash.reason) - 1] = 0;
+      crash.reason_, reason.c_str(),
+      std::min(sizeof(crash.reason_) - 1, reason.length()));
+  crash.reason_[sizeof(crash.reason_) - 1] = 0;
 
   RunCrashHandler(&crash);
 
@@ -423,13 +423,13 @@ void CrashHandler::CrashSignalHandler(
   CrashData crash;
   memset(&crash, 0, sizeof(crash));
 
-  crash.type = CrashData::SIGNAL;
-  crash.signal = signal;
-  crash.si = *si;
+  crash.type_ = CrashData::SIGNAL;
+  crash.signal_ = signal;
+  crash.si_ = *si;
 
   BacktraceContext ctx;
   GetSignalBacktraceContext(&ctx, uc);
-  GetBacktrace(crash.BacktracePointers[0], BACKTRACE_MAX_SIZE, &ctx);
+  GetBacktrace(crash.backtrace_pointers_[0], BACKTRACE_MAX_SIZE, &ctx);
 #if defined(HAVE_DECL_SIGUSR1) && HAVE_DECL_SIGUSR1
   if (signal == SIGUSR1) {
     BacktraceAllThreads(crash);
@@ -437,8 +437,8 @@ void CrashHandler::CrashSignalHandler(
 #endif
 
   strncpy(
-      crash.m_ThreadName[0], RageThread::GetCurrentThreadName(),
-      sizeof(crash.m_ThreadName[0]) - 1);
+      crash.thread_name_[0], RageThread::GetCurrentThreadName(),
+      sizeof(crash.thread_name_[0]) - 1);
 
   bInCrashSignalHandler = false;
 

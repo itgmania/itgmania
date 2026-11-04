@@ -30,7 +30,7 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   bool NextReadWillStep() const { return GetCursorAvail() == 0; }
 
   /* Get the ratio last set by SetSpeedRatio. */
-  float GetRatio() const { return m_fSpeedRatio; }
+  float GetRatio() const { return speed_ratio_; }
 
  protected:
   int FillData(int iMax);
@@ -43,20 +43,20 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   int GetWindowSizeFrames() const;
   int GetToleranceFrames() const { return GetWindowSizeFrames() / 4; }
 
-  int m_iDataBufferAvailFrames;
+  int data_buffer_avail_frames_;
   struct ChannelInfo {
-    std::vector<float> m_DataBuffer;
-    int m_iCorrelatedPos;
-    int m_iLastCorrelatedPos;
+    std::vector<float> data_buffer_;
+    int correlated_pos_;
+    int last_correlated_pos_;
   };
-  std::vector<ChannelInfo> m_Channels;
+  std::vector<ChannelInfo> channels_;
 
-  int m_iUncorrelatedPos;
-  int m_iPos;
+  int uncorrelated_pos_;
+  int pos_;
 
-  float m_fSpeedRatio;
-  float m_fTrailingSpeedRatio;
-  float m_fErrorFrames;
+  float speed_ratio_;
+  float trailing_speed_ratio_;
+  float error_frames_;
 };
 
 #endif

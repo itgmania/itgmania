@@ -32,7 +32,7 @@ class DialogDriver_Null : public DialogDriver {};
 
 typedef DialogDriver* (*CreateDialogDriverFn)();
 struct RegisterDialogDriver {
-  static std::map<istring, CreateDialogDriverFn>* g_pRegistrees;
+  static std::map<istring, CreateDialogDriverFn>* registrees_;
   RegisterDialogDriver(const istring& sName, CreateDialogDriverFn pfn);
 };
 #define REGISTER_DIALOG_DRIVER_CLASS(name)     \

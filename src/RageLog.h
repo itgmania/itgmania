@@ -36,11 +36,11 @@ class RageLog {
   void SetFlushing(bool b);       // enable or disable flushing
 
  private:
-  bool m_bLogToDisk;
-  bool m_bInfoToDisk;
-  bool m_bUserLogToDisk;
-  bool m_bFlush;
-  bool m_bShowLogOutput;
+  bool log_to_disk_;
+  bool info_to_disk_;
+  bool user_log_to_disk_;
+  bool flush_;
+  bool show_log_output_;
   void Write(int, const std::string& str);
   void UpdateMappedLog();
   void AddToInfo(const std::string& buf);

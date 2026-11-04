@@ -6,21 +6,21 @@
 #include "RageUtil.h"
 
 void RageTextureID::Init() {
-  iMaxSize = 2048;
-  bMipMaps = false;  // Most sprites (especially text) look worse with mip maps
-  iAlphaBits = 4;
-  iGrayscaleBits = -1;
-  bDither = false;
-  bStretch = false;
-  iColorDepth = -1;  // default
-  bHotPinkColorKey = false;
-  AdditionalTextureHints = "";
-  Policy = TEXTUREMAN->GetDefaultTexturePolicy();
+  max_size_ = 2048;
+  mip_maps_ = false;  // Most sprites (especially text) look worse with mip maps
+  alpha_bits_ = 4;
+  grayscale_bits_ = -1;
+  dither_ = false;
+  stretch_ = false;
+  color_depth_ = -1;  // default
+  hot_pink_color_key_ = false;
+  additional_texture_hints_ = "";
+  policy_ = TEXTUREMAN->GetDefaultTexturePolicy();
 }
 
 void RageTextureID::SetFilename(const std::string& fn) {
-  filename = fn;
-  CollapsePath(filename);
+  filename_ = fn;
+  CollapsePath(filename_);
 }
 
 /*

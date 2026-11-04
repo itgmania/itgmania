@@ -265,7 +265,7 @@ std::vector<std::string> UnresolvePath(const std::string& absolutePath) {
   FILEMAN->GetLoadedDrivers(mounts);
   std::vector<std::string> result;
   for (RageFileManager::DriverLocation& mount : mounts) {
-    std::string root = mount.Root;
+    std::string root = mount.root_;
     if (Right(root, 1) != "/") {
       root.append("/");
     }
@@ -277,7 +277,7 @@ std::vector<std::string> UnresolvePath(const std::string& absolutePath) {
     }
 
     std::string path = Right(absPath, absPath.size() - root.size());
-    std::string luaPath = mount.MountPoint + path;
+    std::string luaPath = mount.mount_point_ + path;
     if (Left(luaPath, 1) == "/") {
       luaPath = luaPath.substr(1);
     }

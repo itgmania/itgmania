@@ -24,25 +24,25 @@ class SongCriteria {
    * @brief What group name are we searching for for Songs?
    *
    * If an empty string, don't bother using this for searching. */
-  std::vector<std::string> m_vsGroupNames;
-  std::vector<std::string> m_vsSongNames;
-  std::vector<std::string> m_vsArtistNames;
+  std::vector<std::string> group_names_;
+  std::vector<std::string> song_names_;
+  std::vector<std::string> artist_names_;
 
-  bool m_bUseSongGenreAllowedList;
-  std::vector<std::string> m_vsSongGenreAllowedList;
+  bool use_song_genre_allowed_list_;
+  std::vector<std::string> song_genre_allowed_list_;
   enum Selectable {
     Selectable_Yes,
     Selectable_No,
     Selectable_DontCare
-  } m_Selectable;
-  bool m_bUseSongAllowedList;
-  std::vector<Song*> m_vpSongAllowedList;
+  } selectable_;
+  bool use_song_allowed_list_;
+  std::vector<Song*> song_allowed_list_;
   /** @brief How many songs does this take max? Don't use this if it's -1. */
-  int m_iMaxStagesForSong;      // don't filter if -1
-  float m_fMinBPM;              // don't filter if -1
-  float m_fMaxBPM;              // don't filter if -1
-  float m_fMinDurationSeconds;  // don't filter if -1
-  float m_fMaxDurationSeconds;  // don't filter if -1
+  int max_stages_for_song_;     // don't filter if -1
+  float min_bpm_;               // don't filter if -1
+  float max_bpm_;               // don't filter if -1
+  float min_duration_seconds_;  // don't filter if -1
+  float max_duration_seconds_;  // don't filter if -1
 
   /** @brief Is this song used for tutorial purposes? */
   enum Tutorial {
@@ -50,31 +50,31 @@ class SongCriteria {
     Tutorial_No,      /**< This song is not used for tutorial purposes. */
     Tutorial_DontCare /**< This song can or cannot be used for tutorial
                          purposes. */
-  } m_Tutorial;
+  } tutorial_;
   /** @brief Is this song used for locking/unlocking purposes? */
   enum Locked {
     Locked_Locked,   /**< This song is a locked song. */
     Locked_Unlocked, /**< This song is an unlocked song. */
     Locked_DontCare  /**< This song can or cannot be locked or unlocked. */
-  } m_Locked;
+  } locked_;
 
   /** @brief Set up some initial song criteria. */
   SongCriteria()
-      : m_vsGroupNames(),
-        m_vsSongNames(),
-        m_vsArtistNames(),
-        m_bUseSongGenreAllowedList(false),
-        m_vsSongGenreAllowedList(),
-        m_Selectable(Selectable_DontCare),
-        m_bUseSongAllowedList(false),
-        m_vpSongAllowedList(),
-        m_iMaxStagesForSong(-1),
-        m_fMinBPM(-1),
-        m_fMaxBPM(-1),
-        m_fMinDurationSeconds(-1),
-        m_fMaxDurationSeconds(-1),
-        m_Tutorial(Tutorial_DontCare),
-        m_Locked(Locked_DontCare) {
+      : group_names_(),
+        song_names_(),
+        artist_names_(),
+        use_song_genre_allowed_list_(false),
+        song_genre_allowed_list_(),
+        selectable_(Selectable_DontCare),
+        use_song_allowed_list_(false),
+        song_allowed_list_(),
+        max_stages_for_song_(-1),
+        min_bpm_(-1),
+        max_bpm_(-1),
+        min_duration_seconds_(-1),
+        max_duration_seconds_(-1),
+        tutorial_(Tutorial_DontCare),
+        locked_(Locked_DontCare) {
     // m_fMinBPM = -1;
     // m_fMaxBPM = -1;
   }
@@ -93,12 +93,12 @@ class SongCriteria {
   bool operator==(const SongCriteria& other) const {
 /** @brief A quick way to match every part of the song criterium. */
 #define X(x) (x == other.x)
-    return X(m_vsGroupNames) && X(m_vsSongNames) && X(m_vsArtistNames) &&
-           X(m_bUseSongGenreAllowedList) && X(m_vsSongGenreAllowedList) &&
-           X(m_Selectable) && X(m_bUseSongAllowedList) &&
-           X(m_vpSongAllowedList) && X(m_iMaxStagesForSong) && X(m_fMinBPM) &&
-           X(m_fMaxBPM) && X(m_fMinDurationSeconds) &&
-           X(m_fMaxDurationSeconds) && X(m_Tutorial) && X(m_Locked);
+    return X(group_names_) && X(song_names_) && X(artist_names_) &&
+           X(use_song_genre_allowed_list_) && X(song_genre_allowed_list_) &&
+           X(selectable_) && X(use_song_allowed_list_) &&
+           X(song_allowed_list_) && X(max_stages_for_song_) && X(min_bpm_) &&
+           X(max_bpm_) && X(min_duration_seconds_) &&
+           X(max_duration_seconds_) && X(tutorial_) && X(locked_);
 #undef X
   }
   /**
@@ -218,23 +218,23 @@ bool GetStepsTypeAndDifficultyFromSortOrder(
 }  // namespace SongUtil
 
 class SongID {
-  std::string sDir;
+  std::string dir_;
 
  public:
   /**
    * @brief Set up the SongID with default values.
    *
    * This used to call Unset() to do the same thing. */
-  SongID() : sDir("") {}
+  SongID() : dir_("") {}
   void Unset() { FromSong(nullptr); }
   void FromSong(const Song* p);
   Song* ToSong() const;
-  bool operator<(const SongID& other) const { return sDir < other.sDir; }
-  bool operator==(const SongID& other) const { return sDir == other.sDir; }
+  bool operator<(const SongID& other) const { return dir_ < other.dir_; }
+  bool operator==(const SongID& other) const { return dir_ == other.dir_; }
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
-  void FromString(std::string _sDir) { sDir = _sDir; }
+  void FromString(std::string _sDir) { dir_ = _sDir; }
   std::string ToString() const;
   bool IsValid() const;
 };

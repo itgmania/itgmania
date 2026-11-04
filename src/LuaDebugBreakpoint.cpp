@@ -22,81 +22,81 @@ int GetCallStackDepth(lua_State* L) {
 
 Breakpoint Breakpoint::Pause() {
   Breakpoint bp;
-  bp.m_eventMask = ALL_EVENTS;
-  bp.m_reason = "pause";
-  bp.m_temporary = true;
+  bp.event_mask_ = ALL_EVENTS;
+  bp.reason_ = "pause";
+  bp.temporary_ = true;
   return bp;
 }
 
 Breakpoint Breakpoint::Return(lua_State* L) {
   Breakpoint bp;
-  bp.m_eventMask = ALL_EVENTS;
-  bp.m_maxStackDepth = GetCallStackDepth(L) - 1;
-  bp.m_thread = L;
-  bp.m_reason = "step";
-  bp.m_temporary = true;
+  bp.event_mask_ = ALL_EVENTS;
+  bp.max_stack_depth_ = GetCallStackDepth(L) - 1;
+  bp.thread_ = L;
+  bp.reason_ = "step";
+  bp.temporary_ = true;
   return bp;
 }
 
 Breakpoint Breakpoint::Step(lua_State* L) {
   Breakpoint bp;
-  bp.m_eventMask = ALL_EVENTS;
-  bp.m_thread = L;
-  bp.m_reason = "step";
-  bp.m_temporary = true;
+  bp.event_mask_ = ALL_EVENTS;
+  bp.thread_ = L;
+  bp.reason_ = "step";
+  bp.temporary_ = true;
   return bp;
 }
 
 Breakpoint Breakpoint::Next(lua_State* L) {
   Breakpoint bp;
-  bp.m_eventMask = LUA_MASKLINE;
-  bp.m_maxStackDepth = GetCallStackDepth(L);
-  bp.m_thread = L;
-  bp.m_reason = "step";
-  bp.m_temporary = true;
+  bp.event_mask_ = LUA_MASKLINE;
+  bp.max_stack_depth_ = GetCallStackDepth(L);
+  bp.thread_ = L;
+  bp.reason_ = "step";
+  bp.temporary_ = true;
   return bp;
 }
 
 Breakpoint Breakpoint::Function(
     BreakpointId id, const std::string& functionName) {
   Breakpoint bp;
-  bp.m_id = id;
-  bp.m_eventMask = LUA_MASKCALL;
-  bp.m_functionName = functionName;
-  bp.m_reason = "function breakpoint";
+  bp.id_ = id;
+  bp.event_mask_ = LUA_MASKCALL;
+  bp.function_name_ = functionName;
+  bp.reason_ = "function breakpoint";
   return bp;
 }
 
 Breakpoint Breakpoint::Line(
     BreakpointId id, const std::string& fileName, int lineNumber) {
   Breakpoint bp;
-  bp.m_id = id;
-  bp.m_eventMask = LUA_MASKLINE;
-  bp.m_fileName = fileName;
-  bp.m_lineNumber = lineNumber;
-  bp.m_reason = "breakpoint";
+  bp.id_ = id;
+  bp.event_mask_ = LUA_MASKLINE;
+  bp.file_name_ = fileName;
+  bp.line_number_ = lineNumber;
+  bp.reason_ = "breakpoint";
   return bp;
 }
 
 bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
-  if ((m_eventMask & (1 << debug.event)) == 0) {
+  if ((event_mask_ & (1 << debug.event)) == 0) {
     return false;
   }
 
-  if (m_thread != nullptr && m_thread != L) {
+  if (thread_ != nullptr && thread_ != L) {
     return false;
   }
 
-  if (m_lineNumber >= 0) {
+  if (line_number_ >= 0) {
     if (debug.currentline == INT_MIN) {
       lua_getinfo(L, "l", &debug);
     }
-    if (m_lineNumber != debug.currentline) {
+    if (line_number_ != debug.currentline) {
       return false;
     }
   }
 
-  if (!m_functionName.empty()) {
+  if (!function_name_.empty()) {
     if (debug.name == nullptr) {
       lua_getinfo(L, "n", &debug);
       if (debug.name == nullptr) {
@@ -104,12 +104,12 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
         return false;
       }
     }
-    if (m_functionName != debug.name) {
+    if (function_name_ != debug.name) {
       return false;
     }
   }
 
-  if (!m_fileName.empty()) {
+  if (!file_name_.empty()) {
     if (debug.source == nullptr) {
       lua_getinfo(L, "S", &debug);
       if (debug.source == nullptr) {
@@ -125,13 +125,13 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
         }
       }
     }
-    if (!EqualsNoCase(m_fileName, debug.source)) {
+    if (!EqualsNoCase(file_name_, debug.source)) {
       return false;
     }
   }
 
   lua_Debug tmp;
-  if (m_maxStackDepth >= 0 && lua_getstack(L, m_maxStackDepth, &tmp)) {
+  if (max_stack_depth_ >= 0 && lua_getstack(L, max_stack_depth_, &tmp)) {
     return false;
   }
 
@@ -140,9 +140,9 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
 
 bool Breakpoint::EvaluateConditions(
     DebuggeeState& stackFrame, std::string& evaluationError) {
-  if (!m_condition.empty()) {
+  if (!condition_.empty()) {
     lua_State* L = stackFrame.GetLua();
-    int resultCount = LuaEvaluate(m_condition, stackFrame);
+    int resultCount = LuaEvaluate(condition_, stackFrame);
     if (resultCount < 0) {
       evaluationError = LuaValueToString(L, -1, false);
       lua_pop(L, 1);
@@ -156,11 +156,11 @@ bool Breakpoint::EvaluateConditions(
     }
   }
 
-  if (m_hitCondition > 0 && ++m_hitCount < m_hitCondition) {
+  if (hit_condition_ > 0 && ++hit_count_ < hit_condition_) {
     return false;
   }
 
-  m_hitCount = 0;
+  hit_count_ = 0;
   return true;
 }
 
@@ -168,24 +168,24 @@ std::string Breakpoint::EvaluateLogMessage(
     DebuggeeState& stackFrame, std::string& evaluationError) {
   // Evaluates any Lua expressions inside { } in the log message.
 
-  if (m_logMessage.empty()) {
-    return m_logMessage;
+  if (log_message_.empty()) {
+    return log_message_;
   }
   lua_State* L = stackFrame.GetLua();
 
   std::string result;
-  result.reserve(m_logMessage.size());
-  for (size_t i = 0; i < m_logMessage.size(); i++) {
-    if (m_logMessage[i] == '{') {
+  result.reserve(log_message_.size());
+  for (size_t i = 0; i < log_message_.size(); i++) {
+    if (log_message_[i] == '{') {
       i++;
-      if (i < m_logMessage.size() && m_logMessage[i] == '{') {
+      if (i < log_message_.size() && log_message_[i] == '{') {
         // Double {{ escapes it.
         result.push_back('{');
       } else {
         // Try to find the end of the expression.
         size_t expressionStart = i;
-        for (; i < m_logMessage.size(); i++) {
-          if (m_logMessage[i] != '}') {
+        for (; i < log_message_.size(); i++) {
+          if (log_message_[i] != '}') {
             continue;
           }
           // Found a closing }. Check if the substring from
@@ -193,7 +193,7 @@ std::string Breakpoint::EvaluateLogMessage(
           // expression.
 
           std::string expression =
-              m_logMessage.substr(expressionStart, i - expressionStart);
+              log_message_.substr(expressionStart, i - expressionStart);
           std::string returnExpression = "return " + expression;
 
           int loadstringResult = luaL_loadstring(L, returnExpression.c_str());
@@ -232,14 +232,14 @@ std::string Breakpoint::EvaluateLogMessage(
           break;
         }
 
-        if (i >= m_logMessage.size()) {
+        if (i >= log_message_.size()) {
           evaluationError = "Unbalanced \"{\"";
           return {};
         }
       }
-    } else if (m_logMessage[i] == '}') {
+    } else if (log_message_[i] == '}') {
       i++;
-      if (i < m_logMessage.size() && m_logMessage[i] == '}') {
+      if (i < log_message_.size() && log_message_[i] == '}') {
         // Double }} escapes it.
         result.push_back('}');
       } else {
@@ -247,7 +247,7 @@ std::string Breakpoint::EvaluateLogMessage(
         return {};
       }
     } else {
-      result.push_back(m_logMessage[i]);
+      result.push_back(log_message_[i]);
     }
   }
 

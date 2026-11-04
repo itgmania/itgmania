@@ -79,7 +79,7 @@ class ThreadedFileWorker {
   ThreadedFileWorker(const std::string& sPath);
   ~ThreadedFileWorker();
 
-  RageFileDriver* GetChildDriver() const { return m_pChildDriver; }
+  RageFileDriver* GetChildDriver() const { return child_driver_; }
 
   /* Runs fn in the worker and waits up to timeout.  Rejects calls during a
    * timeout.  fn may finish after a timeout, so it must capture by value. */
@@ -94,12 +94,12 @@ class ThreadedFileWorker {
 
  private:
   struct Operation {
-    std::function<void()> fn;
-    bool bMustRun = false;
-    bool bStarted = false;
-    bool bFinished = false;
-    bool bCancelled = false;
-    std::condition_variable Changed;
+    std::function<void()> fn_;
+    bool must_run_ = false;
+    bool started_ = false;
+    bool finished_ = false;
+    bool cancelled_ = false;
+    std::condition_variable changed_;
   };
 
   /* Call these with m_Mutex held. */
@@ -115,79 +115,78 @@ class ThreadedFileWorker {
   }
   void WorkerMain();
 
-  std::string m_sPath;
-  RageFileDriver* m_pChildDriver;
-  RageThread m_WorkerThread;
+  std::string path_;
+  RageFileDriver* child_driver_;
+  RageThread worker_thread_;
 
-  std::mutex m_Mutex;
-  std::condition_variable m_WorkAvailable;
-  std::deque<std::shared_ptr<Operation>> m_Queue;
+  std::mutex mutex_;
+  std::condition_variable work_available_;
+  std::deque<std::shared_ptr<Operation>> queue_;
   /* An operation timed out, and the worker hasn't been idle since. */
-  bool m_bTimedOut = false;
-  std::chrono::steady_clock::time_point m_Deadline =
+  bool timed_out_ = false;
+  std::chrono::steady_clock::time_point deadline_ =
       std::chrono::steady_clock::time_point::max();
-  bool m_bShutdown = false;
+  bool shutdown_ = false;
 };
 
 ThreadedFileWorker::ThreadedFileWorker(const std::string& sPath)
-    : m_sPath(sPath) {
+    : path_(sPath) {
   /* Grab a reference to the child driver.  We'll operate on it directly. */
-  m_pChildDriver = FILEMAN->GetFileDriver(sPath);
-  if (m_pChildDriver == nullptr) {
+  child_driver_ = FILEMAN->GetFileDriver(sPath);
+  if (child_driver_ == nullptr) {
     WARN(ssprintf(
         "ThreadedFileWorker: Mountpoint \"%s\" not found", sPath.c_str()));
   }
 
-  m_WorkerThread.SetName(sPath);
-  m_WorkerThread.Create(StartWorkerMain, this);
+  worker_thread_.SetName(sPath);
+  worker_thread_.Create(StartWorkerMain, this);
 }
 
 ThreadedFileWorker::~ThreadedFileWorker() {
   {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_bShutdown = true;
-    if (m_bTimedOut) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    shutdown_ = true;
+    if (timed_out_) {
       LOG->Trace(
           "Waiting for timed-out operations on \"%s\" to complete ...",
-          m_sPath.c_str());
+          path_.c_str());
     }
   }
-  m_WorkAvailable.notify_one();
+  work_available_.notify_one();
 
-  m_WorkerThread.Wait();
+  worker_thread_.Wait();
 
-  if (m_pChildDriver != nullptr) {
-    FILEMAN->ReleaseFileDriver(m_pChildDriver);
+  if (child_driver_ != nullptr) {
+    FILEMAN->ReleaseFileDriver(child_driver_);
   }
 }
 
 void ThreadedFileWorker::WorkerMain() {
-  std::unique_lock<std::mutex> lock(m_Mutex);
+  std::unique_lock<std::mutex> lock(mutex_);
   for (;;) {
-    m_WorkAvailable.wait(
-        lock, [this] { return m_bShutdown || !m_Queue.empty(); });
-    if (m_Queue.empty()) {
+    work_available_.wait(lock, [this] { return shutdown_ || !queue_.empty(); });
+    if (queue_.empty()) {
       return;
     }
 
-    std::shared_ptr<Operation> pOp = m_Queue.front();
-    m_Queue.pop_front();
-    if (!pOp->bCancelled) {
-      pOp->bStarted = true;
-      pOp->Changed.notify_one();
+    std::shared_ptr<Operation> pOp = queue_.front();
+    queue_.pop_front();
+    if (!pOp->cancelled_) {
+      pOp->started_ = true;
+      pOp->changed_.notify_one();
 
       lock.unlock();
-      pOp->fn();
+      pOp->fn_();
       lock.lock();
 
-      pOp->bFinished = true;
-      pOp->Changed.notify_one();
+      pOp->finished_ = true;
+      pOp->changed_.notify_one();
     }
 
-    if (m_bTimedOut && m_Queue.empty()) {
-      m_bTimedOut = false;
+    if (timed_out_ && queue_.empty()) {
+      timed_out_ = false;
       LOG->Trace(
-          "Timed-out operations on \"%s\" have completed", m_sPath.c_str());
+          "Timed-out operations on \"%s\" have completed", path_.c_str());
     }
   }
 }
@@ -195,10 +194,10 @@ void ThreadedFileWorker::WorkerMain() {
 std::shared_ptr<ThreadedFileWorker::Operation> ThreadedFileWorker::Queue(
     std::function<void()> fn, bool bMustRun) {
   auto pOp = std::make_shared<Operation>();
-  pOp->fn = std::move(fn);
-  pOp->bMustRun = bMustRun;
-  m_Queue.push_back(pOp);
-  m_WorkAvailable.notify_one();
+  pOp->fn_ = std::move(fn);
+  pOp->must_run_ = bMustRun;
+  queue_.push_back(pOp);
+  work_available_.notify_one();
   return pOp;
 }
 
@@ -206,51 +205,51 @@ bool ThreadedFileWorker::Wait(
     std::unique_lock<std::mutex>& lock, Operation& op,
     std::chrono::seconds timeout,
     std::chrono::steady_clock::time_point deadline) {
-  op.Changed.wait_until(lock, deadline, [&] {
-    return op.bStarted || op.bCancelled || m_bTimedOut;
+  op.changed_.wait_until(lock, deadline, [&] {
+    return op.started_ || op.cancelled_ || timed_out_;
   });
-  if (!op.bStarted) {
-    op.bCancelled = !op.bMustRun;
+  if (!op.started_) {
+    op.cancelled_ = !op.must_run_;
     return false;
   }
 
   deadline = std::min(std::chrono::steady_clock::now() + timeout, deadline);
-  if (op.Changed.wait_until(lock, deadline, [&op] { return op.bFinished; })) {
+  if (op.changed_.wait_until(lock, deadline, [&op] { return op.finished_; })) {
     return true;
   }
 
-  m_bTimedOut = true;
-  for (const std::shared_ptr<Operation>& pQueued : m_Queue) {
-    pQueued->bCancelled = !pQueued->bMustRun;
-    pQueued->Changed.notify_one();
+  timed_out_ = true;
+  for (const std::shared_ptr<Operation>& pQueued : queue_) {
+    pQueued->cancelled_ = !pQueued->must_run_;
+    pQueued->changed_.notify_one();
   }
   LOG->Warn(
       "An operation on \"%s\" timed out; failing further access until it "
       "completes",
-      m_sPath.c_str());
+      path_.c_str());
   return false;
 }
 
 bool ThreadedFileWorker::Run(
     std::function<void()> fn, std::chrono::seconds timeout) {
-  std::unique_lock<std::mutex> lock(m_Mutex);
-  if (m_pChildDriver == nullptr || m_bTimedOut ||
-      std::chrono::steady_clock::now() >= m_Deadline) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  if (child_driver_ == nullptr || timed_out_ ||
+      std::chrono::steady_clock::now() >= deadline_) {
     return false;
   }
 
   std::shared_ptr<Operation> pOp = Queue(std::move(fn), false);
-  return Wait(lock, *pOp, timeout, m_Deadline);
+  return Wait(lock, *pOp, timeout, deadline_);
 }
 
 void ThreadedFileWorker::SetDeadline(
     std::chrono::steady_clock::time_point deadline) {
-  std::lock_guard<std::mutex> lock(m_Mutex);
-  m_Deadline = deadline;
+  std::lock_guard<std::mutex> lock(mutex_);
+  deadline_ = deadline;
 }
 
 void ThreadedFileWorker::RunEventually(std::function<void()> fn) {
-  std::unique_lock<std::mutex> lock(m_Mutex);
+  std::unique_lock<std::mutex> lock(mutex_);
   std::shared_ptr<Operation> pOp = Queue(std::move(fn), true);
   Wait(
       lock, *pOp, OPERATION_TIMEOUT,
@@ -261,7 +260,7 @@ class RageFileObjTimeout : public RageFileObj {
  public:
   RageFileObjTimeout(
       ThreadedFileWorker* pWorker, RageFileBasic* pFile, int iSize, int iMode)
-      : m_pWorker(pWorker), m_pFile(pFile), m_iFileSize(iSize), m_iMode(iMode) {
+      : worker_(pWorker), file_(pFile), file_size_(iSize), mode_(iMode) {
     /* We have a lot of overhead per read and write operation, since we send
      * commands to the worker.  Buffer these operations. */
     if (iMode & RageFile::WRITE) {
@@ -274,33 +273,33 @@ class RageFileObjTimeout : public RageFileObj {
 
   RageFileObjTimeout(const RageFileObjTimeout& cpy, RageFileBasic* pFile)
       : RageFileObj(cpy),
-        m_pWorker(cpy.m_pWorker),
-        m_pFile(pFile),
-        m_iFileSize(cpy.m_iFileSize),
-        m_iMode(cpy.m_iMode) {}
+        worker_(cpy.worker_),
+        file_(pFile),
+        file_size_(cpy.file_size_),
+        mode_(cpy.mode_) {}
 
   ~RageFileObjTimeout() {
-    if (m_pFile != nullptr && (m_iMode & RageFile::WRITE)) {
+    if (file_ != nullptr && (mode_ & RageFile::WRITE)) {
       Flush();
     }
-    if (m_pFile != nullptr) {
+    if (file_ != nullptr) {
       Close();
     }
   }
 
-  int GetFileSize() const { return m_iFileSize; }
+  int GetFileSize() const { return file_size_; }
 
   RageFileBasic* Copy() const {
     RageFileBasic* pCopy = nullptr;
-    if (m_pFile != nullptr) {
+    if (file_ != nullptr) {
       auto ppCopy = std::make_shared<RageFileBasic*>(nullptr);
-      RageFileBasic* pFile = m_pFile;
-      if (m_pWorker->Run([pFile, ppCopy] { *ppCopy = pFile->Copy(); })) {
+      RageFileBasic* pFile = file_;
+      if (worker_->Run([pFile, ppCopy] { *ppCopy = pFile->Copy(); })) {
         pCopy = *ppCopy;
       } else {
         /* Give up on this file, and on the copy if it's made after all. */
         Close();
-        m_pWorker->RunEventually([ppCopy] { delete *ppCopy; });
+        worker_->RunEventually([ppCopy] { delete *ppCopy; });
       }
     }
 
@@ -338,21 +337,21 @@ class RageFileObjTimeout : public RageFileObj {
  private:
   /* See ThreadedFileWorker::Run for what fn may capture. */
   int RunOnFile(std::function<int(RageFileBasic&)> fn) {
-    if (m_pFile == nullptr) {
+    if (file_ == nullptr) {
       SetError("Operation timed out");
       return -1;
     }
 
     struct Result {
-      int iRet = -1;
-      std::string sError;
+      int ret_ = -1;
+      std::string error_;
     };
     auto pResult = std::make_shared<Result>();
-    RageFileBasic* pFile = m_pFile;
-    if (!m_pWorker->Run([pFile, pResult, fn] {
-          pResult->iRet = fn(*pFile);
-          if (pResult->iRet == -1) {
-            pResult->sError = pFile->GetError();
+    RageFileBasic* pFile = file_;
+    if (!worker_->Run([pFile, pResult, fn] {
+          pResult->ret_ = fn(*pFile);
+          if (pResult->ret_ == -1) {
+            pResult->error_ = pFile->GetError();
           }
         })) {
       Close();
@@ -360,52 +359,52 @@ class RageFileObjTimeout : public RageFileObj {
       return -1;
     }
 
-    if (pResult->iRet == -1) {
-      SetError(pResult->sError);
+    if (pResult->ret_ == -1) {
+      SetError(pResult->error_);
     }
-    return pResult->iRet;
+    return pResult->ret_;
   }
 
   /* Closing can block too, so it's done in the worker.  This waits for it,
    * since closing a written file is what saves it, unless an earlier
    * operation timed out and may still be using the file. */
   void Close() const {
-    RageFileBasic* pFile = m_pFile;
-    m_pFile = nullptr;
-    m_pWorker->RunEventually([pFile] { delete pFile; });
+    RageFileBasic* pFile = file_;
+    file_ = nullptr;
+    worker_->RunEventually([pFile] { delete pFile; });
   }
 
-  ThreadedFileWorker* m_pWorker;
+  ThreadedFileWorker* worker_;
 
   /* Null once given up after a timeout.  Mutable because Copy() is const,
    * but can give it up. */
-  mutable RageFileBasic* m_pFile;
+  mutable RageFileBasic* file_;
 
-  int m_iFileSize;
-  int m_iMode;
+  int file_size_;
+  int mode_;
 };
 
 /* This FilenameDB runs PopulateFileSet in the worker. */
 class TimedFilenameDB : public FilenameDB {
  public:
   TimedFilenameDB() {
-    ExpireSeconds = -1;
-    m_pWorker = nullptr;
+    expire_seconds_ = -1;
+    worker_ = nullptr;
   }
 
   void SetWorker(ThreadedFileWorker* pWorker) {
     ASSERT(pWorker != nullptr);
-    m_pWorker = pWorker;
+    worker_ = pWorker;
   }
 
   void PopulateFileSet(FileSet& fs, const std::string& sPath) {
-    ASSERT(m_pWorker != nullptr);
+    ASSERT(worker_ != nullptr);
 
     auto pResult = std::make_shared<FileSet>();
-    RageFileDriver* pChildDriver = m_pWorker->GetChildDriver();
-    if (!m_pWorker->Run(
+    RageFileDriver* pChildDriver = worker_->GetChildDriver();
+    if (!worker_->Run(
             [pChildDriver, pResult, sPath] {
-              pChildDriver->FDB->GetFileSetCopy(sPath, *pResult);
+              pChildDriver->fdb_->GetFileSetCopy(sPath, *pResult);
             },
             LIST_TIMEOUT)) {
       LOG->Trace("PopulateFileSet(%s) failed", sPath.c_str());
@@ -414,59 +413,58 @@ class TimedFilenameDB : public FilenameDB {
 
     /* Only copy the files.  fs.m_bFilled tells other threads when fs is ready,
      * and FilenameDB sets it when we return. */
-    fs.files = std::move(pResult->files);
+    fs.files_ = std::move(pResult->files_);
 
-    for (const File& file : fs.files) {
-      const_cast<File&>(file).dirp = nullptr;
+    for (const File& file : fs.files_) {
+      const_cast<File&>(file).dirp_ = nullptr;
     }
   }
 
  private:
-  ThreadedFileWorker* m_pWorker;
+  ThreadedFileWorker* worker_;
 };
 
 RageFileDriverTimeout::RageFileDriverTimeout(const std::string& sPath)
     : RageFileDriver(new TimedFilenameDB()) {
-  m_pWorker = new ThreadedFileWorker(sPath);
+  worker_ = new ThreadedFileWorker(sPath);
 
-  static_cast<TimedFilenameDB*>(FDB)->SetWorker(m_pWorker);
+  static_cast<TimedFilenameDB*>(fdb_)->SetWorker(worker_);
 }
 
 RageFileBasic* RageFileDriverTimeout::Open(
     const std::string& sPath, int iMode, int& iErr) {
-  RageFileDriver* pChildDriver = m_pWorker->GetChildDriver();
+  RageFileDriver* pChildDriver = worker_->GetChildDriver();
   if (pChildDriver == nullptr) {
     iErr = ENODEV;
     return nullptr;
   }
 
   struct Result {
-    RageFileBasic* pFile = nullptr;
-    int iErr = 0;
-    int iSize = 0;
+    RageFileBasic* file_ = nullptr;
+    int err_ = 0;
+    int size_ = 0;
   };
   auto pResult = std::make_shared<Result>();
-  if (!m_pWorker->Run([pChildDriver, pResult, sPath, iMode] {
-        pResult->pFile = pChildDriver->Open(sPath, iMode, pResult->iErr);
+  if (!worker_->Run([pChildDriver, pResult, sPath, iMode] {
+        pResult->file_ = pChildDriver->Open(sPath, iMode, pResult->err_);
         /* GetFileSize can't report errors, and asking the device later could
          * time out, so get the size while opening. */
-        if (pResult->pFile != nullptr && (iMode & RageFile::READ)) {
-          pResult->iSize = pResult->pFile->GetFileSize();
+        if (pResult->file_ != nullptr && (iMode & RageFile::READ)) {
+          pResult->size_ = pResult->file_->GetFileSize();
         }
       })) {
-    m_pWorker->RunEventually([pResult] { delete pResult->pFile; });
+    worker_->RunEventually([pResult] { delete pResult->file_; });
     LOG->Trace("Open(%s) failed", sPath.c_str());
     iErr = EFAULT; /* Win32 has no ETIMEDOUT */
     return nullptr;
   }
 
-  iErr = pResult->iErr;
-  if (pResult->pFile == nullptr) {
+  iErr = pResult->err_;
+  if (pResult->file_ == nullptr) {
     return nullptr;
   }
 
-  return new RageFileObjTimeout(
-      m_pWorker, pResult->pFile, pResult->iSize, iMode);
+  return new RageFileObjTimeout(worker_, pResult->file_, pResult->size_, iMode);
 }
 
 void RageFileDriverTimeout::SetDeadline(float fSeconds) {
@@ -476,18 +474,18 @@ void RageFileDriverTimeout::SetDeadline(float fSeconds) {
                std::chrono::duration_cast<std::chrono::steady_clock::duration>(
                    std::chrono::duration<float>(fSeconds));
   }
-  m_pWorker->SetDeadline(deadline);
+  worker_->SetDeadline(deadline);
 }
 
 void RageFileDriverTimeout::FlushDirCache(const std::string& sPath) {
   RageFileDriver::FlushDirCache(sPath);
 
-  RageFileDriver* pChildDriver = m_pWorker->GetChildDriver();
+  RageFileDriver* pChildDriver = worker_->GetChildDriver();
   if (pChildDriver == nullptr) {
     return;
   }
 
-  if (!m_pWorker->Run(
+  if (!worker_->Run(
           [pChildDriver, sPath] { pChildDriver->FlushDirCache(sPath); })) {
     LOG->Trace("FlushDirCache(%s) failed", sPath.c_str());
   }
@@ -496,8 +494,8 @@ void RageFileDriverTimeout::FlushDirCache(const std::string& sPath) {
 bool RageFileDriverTimeout::Move(
     const std::string& sOldPath, const std::string& sNewPath) {
   auto pResult = std::make_shared<bool>(false);
-  RageFileDriver* pChildDriver = m_pWorker->GetChildDriver();
-  if (!m_pWorker->Run([pChildDriver, pResult, sOldPath, sNewPath] {
+  RageFileDriver* pChildDriver = worker_->GetChildDriver();
+  if (!worker_->Run([pChildDriver, pResult, sOldPath, sNewPath] {
         *pResult = pChildDriver->Move(sOldPath, sNewPath);
       }) ||
       !*pResult) {
@@ -512,8 +510,8 @@ bool RageFileDriverTimeout::Move(
 
 bool RageFileDriverTimeout::Remove(const std::string& sPath) {
   auto pResult = std::make_shared<bool>(false);
-  RageFileDriver* pChildDriver = m_pWorker->GetChildDriver();
-  if (!m_pWorker->Run([pChildDriver, pResult, sPath] {
+  RageFileDriver* pChildDriver = worker_->GetChildDriver();
+  if (!worker_->Run([pChildDriver, pResult, sPath] {
         *pResult = pChildDriver->Remove(sPath);
       }) ||
       !*pResult) {
@@ -524,7 +522,7 @@ bool RageFileDriverTimeout::Remove(const std::string& sPath) {
   return true;
 }
 
-RageFileDriverTimeout::~RageFileDriverTimeout() { delete m_pWorker; }
+RageFileDriverTimeout::~RageFileDriverTimeout() { delete worker_; }
 
 static struct FileDriverEntry_Timeout : public FileDriverEntry {
   FileDriverEntry_Timeout() : FileDriverEntry("TIMEOUT") {}

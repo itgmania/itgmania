@@ -15,32 +15,32 @@
 #define AI_PATH "Data/AI.ini"
 
 struct TapScoreDistribution {
-  float fPercent[NUM_TapNoteScore];
+  float percent_[NUM_TapNoteScore];
 
   void ChangeWeightsToPercents() {
     float sum = 0;
     for (int i = 0; i < NUM_TapNoteScore; ++i) {
-      sum += fPercent[i];
+      sum += percent_[i];
     }
     for (int i = 0; i < NUM_TapNoteScore; ++i) {
-      fPercent[i] /= sum;
+      percent_[i] /= sum;
     }
   }
   void SetDefaultWeights() {
-    fPercent[TNS_None] = 0;
-    fPercent[TNS_Miss] = 1;
-    fPercent[TNS_W5] = 0;
-    fPercent[TNS_W4] = 0;
-    fPercent[TNS_W3] = 0;
-    fPercent[TNS_W2] = 0;
-    fPercent[TNS_W1] = 0;
+    percent_[TNS_None] = 0;
+    percent_[TNS_Miss] = 1;
+    percent_[TNS_W5] = 0;
+    percent_[TNS_W4] = 0;
+    percent_[TNS_W3] = 0;
+    percent_[TNS_W2] = 0;
+    percent_[TNS_W1] = 0;
   }
 
   TapNoteScore GetTapNoteScore() {
     float fRand = randomf(0, 1);
     float fCumulativePercent = 0;
     for (int i = 0; i <= TNS_W1; i++) {
-      fCumulativePercent += fPercent[i];
+      fCumulativePercent += percent_[i];
       if (fRand <= fCumulativePercent + 1e-4) {  // rounding error
         return (TapNoteScore)i;
       }
@@ -78,20 +78,20 @@ void PlayerAI::InitFromDisk() {
   if (condition) {                                                          \
     LuaHelpers::ReportScriptErrorFmt(                                       \
         "AI weight for " #tns " in \"%s\" section not set.", sKey.c_str()); \
-    dist.fPercent[tns] = 0;                                                 \
+    dist.percent_[tns] = 0;                                                 \
   }
-        dist.fPercent[TNS_None] = 0;
-        bSuccess = pNode->GetAttrValue("WeightMiss", dist.fPercent[TNS_Miss]);
+        dist.percent_[TNS_None] = 0;
+        bSuccess = pNode->GetAttrValue("WeightMiss", dist.percent_[TNS_Miss]);
         SET_MALF_IF(!bSuccess, TNS_Miss);
-        bSuccess = pNode->GetAttrValue("WeightW5", dist.fPercent[TNS_W5]);
+        bSuccess = pNode->GetAttrValue("WeightW5", dist.percent_[TNS_W5]);
         SET_MALF_IF(!bSuccess, TNS_W5);
-        bSuccess = pNode->GetAttrValue("WeightW4", dist.fPercent[TNS_W4]);
+        bSuccess = pNode->GetAttrValue("WeightW4", dist.percent_[TNS_W4]);
         SET_MALF_IF(!bSuccess, TNS_W4);
-        bSuccess = pNode->GetAttrValue("WeightW3", dist.fPercent[TNS_W3]);
+        bSuccess = pNode->GetAttrValue("WeightW3", dist.percent_[TNS_W3]);
         SET_MALF_IF(!bSuccess, TNS_W3);
-        bSuccess = pNode->GetAttrValue("WeightW2", dist.fPercent[TNS_W2]);
+        bSuccess = pNode->GetAttrValue("WeightW2", dist.percent_[TNS_W2]);
         SET_MALF_IF(!bSuccess, TNS_W2);
-        bSuccess = pNode->GetAttrValue("WeightW1", dist.fPercent[TNS_W1]);
+        bSuccess = pNode->GetAttrValue("WeightW1", dist.percent_[TNS_W1]);
         SET_MALF_IF(!bSuccess, TNS_W1);
 #undef SET_MALF_IF
       }
@@ -101,7 +101,7 @@ void PlayerAI::InitFromDisk() {
 }
 
 TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
-  if (pPlayerState->m_PlayerController == PC_AUTOPLAY) {
+  if (pPlayerState->player_controller_ == PC_AUTOPLAY) {
     return TNS_W1;
   }
 
@@ -113,25 +113,25 @@ TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
   }
   */
 
-  int iCpuSkill = pPlayerState->m_iCpuSkill;
+  int iCpuSkill = pPlayerState->cpu_skill_;
 
   /* If we're in battle mode, reduce the skill based on the number of modifier
    * attacks against us. If we're in demonstration or jukebox mode with
    * modifiers attached, don't make demonstration miss a lot. */
   // Idea: weight certain modifiers (boomerang, tornado) more? (to simulate
   // readability problems) -aj
-  if (!GAMESTATE->m_bDemonstrationOrJukebox) {
+  if (!GAMESTATE->demonstration_or_jukebox_) {
     int iSumOfAttackLevels =
-        pPlayerState->m_fSecondsUntilAttacksPhasedOut > 0
-            ? pPlayerState->m_iLastPositiveSumOfAttackLevels
+        pPlayerState->seconds_until_attacks_phased_out_ > 0
+            ? pPlayerState->last_positive_sum_of_attack_levels_
             : 0;
 
     ASSERT_M(
         iCpuSkill >= 0 && iCpuSkill < NUM_SKILL_LEVELS,
         ssprintf("%i", iCpuSkill));
     ASSERT_M(
-        pPlayerState->m_PlayerController == PC_CPU,
-        ssprintf("%i", pPlayerState->m_PlayerController));
+        pPlayerState->player_controller_ == PC_CPU,
+        ssprintf("%i", pPlayerState->player_controller_));
 
     iCpuSkill -= iSumOfAttackLevels * 3;
     rage_clamp(iCpuSkill, 0, NUM_SKILL_LEVELS - 1);
@@ -142,7 +142,7 @@ TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
   TapNoteScore score = distribution.GetTapNoteScore();
 
   const auto& disabledWindows =
-      pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
+      pPlayerState->player_options_.GetCurrent().disabled_windows_;
   // Downgrade the TapNoteScore if that specific window is disabled.
   if (score == TNS_W1 && disabledWindows[TW_W1]) {
     score = TNS_W2;

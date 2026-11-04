@@ -8,25 +8,25 @@
 
 RageFileDriverSlice::RageFileDriverSlice(
     RageFileBasic* pFile, int iOffset, int iFileSize) {
-  m_pFile = pFile;
-  m_iOffset = iOffset;
-  m_iFileSize = iFileSize;
-  m_iFilePos = 0;
-  m_bFileOwned = false;
+  file_ = pFile;
+  offset_ = iOffset;
+  file_size_ = iFileSize;
+  file_pos_ = 0;
+  file_owned_ = false;
 }
 
 RageFileDriverSlice::RageFileDriverSlice(const RageFileDriverSlice& cpy)
     : RageFileObj(cpy) {
-  m_pFile = cpy.m_pFile->Copy();
-  m_iOffset = cpy.m_iOffset;
-  m_iFileSize = cpy.m_iFileSize;
-  m_iFilePos = cpy.m_iFilePos;
-  m_bFileOwned = true;
+  file_ = cpy.file_->Copy();
+  offset_ = cpy.offset_;
+  file_size_ = cpy.file_size_;
+  file_pos_ = cpy.file_pos_;
+  file_owned_ = true;
 }
 
 RageFileDriverSlice::~RageFileDriverSlice() {
-  if (m_bFileOwned) {
-    delete m_pFile;
+  if (file_owned_) {
+    delete file_;
   }
 }
 
@@ -38,32 +38,32 @@ RageFileDriverSlice* RageFileDriverSlice::Copy() const {
 int RageFileDriverSlice::ReadInternal(void* buf, size_t bytes) {
   /* Make sure we're reading from the right place.  We might have been
    * constructed with a file not pointing to iOffset. */
-  m_pFile->Seek(m_iFilePos + m_iOffset);
+  file_->Seek(file_pos_ + offset_);
 
-  const int bytes_left = m_iFileSize - this->m_iFilePos;
-  const int got = m_pFile->Read(buf, std::min((int)bytes, bytes_left));
+  const int bytes_left = file_size_ - this->file_pos_;
+  const int got = file_->Read(buf, std::min((int)bytes, bytes_left));
   if (got == -1) {
-    SetError(m_pFile->GetError());
+    SetError(file_->GetError());
     return -1;
   }
 
-  m_iFilePos += got;
+  file_pos_ += got;
 
   return got;
 }
 
 int RageFileDriverSlice::SeekInternal(int offset) {
   ASSERT(offset >= 0);
-  offset = std::min(offset, m_iFileSize);
+  offset = std::min(offset, file_size_);
 
-  int ret = m_pFile->Seek(m_iOffset + offset);
+  int ret = file_->Seek(offset_ + offset);
   if (ret == -1) {
-    SetError(m_pFile->GetError());
+    SetError(file_->GetError());
     return -1;
   }
-  ret -= m_iOffset;
+  ret -= offset_;
   ASSERT(ret >= 0);
-  m_iFilePos = ret;
+  file_pos_ = ret;
 
   return ret;
 }

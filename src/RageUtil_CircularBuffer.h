@@ -10,7 +10,7 @@
  * reading and another is writing. */
 template <class T>
 class CircBuf {
-  T* buf;
+  T* buf_;
   /* read_pos is the position data is read from; write_pos is the position
    * data is written to.  If read_pos == write_pos, the buffer is empty.
    *
@@ -18,27 +18,27 @@ class CircBuf {
    * buffer (read_pos == write_pos) is indistinguishable from an empty buffer.
    *
    * Invariants: read_pos < size, write_pos < size. */
-  unsigned size;
-  unsigned m_iBlockSize;
+  unsigned size_;
+  unsigned block_size_;
 
   /* These are volatile to prevent reads and writes to them from being
    * optimized. */
-  volatile unsigned read_pos, write_pos;
+  volatile unsigned read_pos_, write_pos_;
 
  public:
   CircBuf() {
-    buf = nullptr;
+    buf_ = nullptr;
     clear();
   }
 
-  ~CircBuf() { delete[] buf; }
+  ~CircBuf() { delete[] buf_; }
 
   void swap(CircBuf& rhs) {
-    std::swap(size, rhs.size);
-    std::swap(m_iBlockSize, rhs.m_iBlockSize);
-    std::swap(read_pos, rhs.read_pos);
-    std::swap(write_pos, rhs.write_pos);
-    std::swap(buf, rhs.buf);
+    std::swap(size_, rhs.size_);
+    std::swap(block_size_, rhs.block_size_);
+    std::swap(read_pos_, rhs.read_pos_);
+    std::swap(write_pos_, rhs.write_pos_);
+    std::swap(buf_, rhs.buf_);
   }
 
   CircBuf& operator=(const CircBuf& rhs) {
@@ -48,28 +48,28 @@ class CircBuf {
   }
 
   CircBuf(const CircBuf& cpy) {
-    size = cpy.size;
-    read_pos = cpy.read_pos;
-    write_pos = cpy.write_pos;
-    m_iBlockSize = cpy.m_iBlockSize;
-    if (size) {
-      buf = new T[size];
-      memcpy(buf, cpy.buf, size * sizeof(T));
+    size_ = cpy.size_;
+    read_pos_ = cpy.read_pos_;
+    write_pos_ = cpy.write_pos_;
+    block_size_ = cpy.block_size_;
+    if (size_) {
+      buf_ = new T[size_];
+      memcpy(buf_, cpy.buf_, size_ * sizeof(T));
     } else {
-      buf = nullptr;
+      buf_ = nullptr;
     }
   }
 
   /* Return the number of elements available to read. */
   unsigned num_readable() const {
-    const int rpos = read_pos;
-    const int wpos = write_pos;
+    const int rpos = read_pos_;
+    const int wpos = write_pos_;
     if (rpos < wpos) {
       /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
       return wpos - rpos;
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-      return size - (rpos - wpos);
+      return size_ - (rpos - wpos);
     } else {  // if( rpos == wpos )
       /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
       return 0;
@@ -78,74 +78,74 @@ class CircBuf {
 
   /* Return the number of writable elements. */
   unsigned num_writable() const {
-    const int rpos = read_pos;
-    const int wpos = write_pos;
+    const int rpos = read_pos_;
+    const int wpos = write_pos_;
 
     int ret;
     if (rpos < wpos) {
       /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-      ret = size - (wpos - rpos);
+      ret = size_ - (wpos - rpos);
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
       ret = rpos - wpos;
     } else {  // if( rpos == wpos )
       /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
-      ret = size;
+      ret = size_;
     }
 
     /* Subtract the blocksize, to account for the element that we never fill
      * while keeping the entries aligned to m_iBlockSize. */
-    return ret - m_iBlockSize;
+    return ret - block_size_;
   }
 
-  unsigned capacity() const { return size; }
+  unsigned capacity() const { return size_; }
 
   void reserve(unsigned n, int iBlockSize = 1) {
-    m_iBlockSize = iBlockSize;
+    block_size_ = iBlockSize;
 
     clear();
-    delete[] buf;
-    buf = nullptr;
+    delete[] buf_;
+    buf_ = nullptr;
 
     /* Reserve an extra byte.  We'll never fill more than n bytes; the extra
      * byte is to guarantee that read_pos != write_pos when the buffer is full,
      * since that would be ambiguous with an empty buffer. */
     if (n != 0) {
-      size = n + 1;
-      size = ((size + iBlockSize - 1) / iBlockSize) * iBlockSize;  // round up
+      size_ = n + 1;
+      size_ = ((size_ + iBlockSize - 1) / iBlockSize) * iBlockSize;  // round up
 
-      buf = new T[size];
+      buf_ = new T[size_];
     } else {
-      size = 0;
+      size_ = 0;
     }
   }
 
   void clear() {
-    read_pos = 0;
-    write_pos = 0;
+    read_pos_ = 0;
+    write_pos_ = 0;
   }
 
   /* Indicate that n elements have been written. */
-  void advance_write_pointer(int n) { write_pos = (write_pos + n) % size; }
+  void advance_write_pointer(int n) { write_pos_ = (write_pos_ + n) % size_; }
 
   /* Indicate that n elements have been read. */
-  void advance_read_pointer(int n) { read_pos = (read_pos + n) % size; }
+  void advance_read_pointer(int n) { read_pos_ = (read_pos_ + n) % size_; }
 
   void get_write_pointers(T* pPointers[2], unsigned pSizes[2]) {
-    const int rpos = read_pos;
-    const int wpos = write_pos;
+    const int rpos = read_pos_;
+    const int wpos = write_pos_;
 
     if (rpos <= wpos) {
       /* The buffer looks like "eeeeDDDDeeee" or "eeeeeeeeeeee" (e = empty, D =
        * data). */
-      pPointers[0] = buf + wpos;
-      pPointers[1] = buf;
+      pPointers[0] = buf_ + wpos;
+      pPointers[1] = buf_;
 
-      pSizes[0] = size - wpos;
+      pSizes[0] = size_ - wpos;
       pSizes[1] = rpos;
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-      pPointers[0] = buf + wpos;
+      pPointers[0] = buf_ + wpos;
       pPointers[1] = nullptr;
 
       pSizes[0] = rpos - wpos;
@@ -155,9 +155,9 @@ class CircBuf {
     /* Subtract the blocksize, to account for the element that we never fill
      * while keeping the entries aligned to m_iBlockSize. */
     if (pSizes[1]) {
-      pSizes[1] -= m_iBlockSize;
+      pSizes[1] -= block_size_;
     } else {
-      pSizes[0] -= m_iBlockSize;
+      pSizes[0] -= block_size_;
     }
   }
 
@@ -171,22 +171,22 @@ class CircBuf {
   }
 
   void get_read_pointers(T* pPointers[2], unsigned pSizes[2]) {
-    const int rpos = read_pos;
-    const int wpos = write_pos;
+    const int rpos = read_pos_;
+    const int wpos = write_pos_;
 
     if (rpos < wpos) {
       /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-      pPointers[0] = buf + rpos;
+      pPointers[0] = buf_ + rpos;
       pPointers[1] = nullptr;
 
       pSizes[0] = wpos - rpos;
       pSizes[1] = 0;
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-      pPointers[0] = buf + rpos;
-      pPointers[1] = buf;
+      pPointers[0] = buf_ + rpos;
+      pPointers[1] = buf_;
 
-      pSizes[0] = size - rpos;
+      pSizes[0] = size_ - rpos;
       pSizes[1] = wpos;
     } else {
       /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */

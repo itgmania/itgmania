@@ -13,15 +13,15 @@ static const std::string TRANSLATIONS_PATH = "Data/Translations.xml";
 static const std::string ERASE_MARKER = "-erase-";
 
 struct TitleTrans {
-  Regex TitleFrom, SubFrom, ArtistFrom;
-  TitleFields Replacement;
+  Regex title_from_, sub_from_, artist_from_;
+  TitleFields replacement_;
 
   /* If this is true, no translit fields will be generated automatically. */
-  bool translit;
-  TitleTrans() { translit = true; }
+  bool translit_;
+  TitleTrans() { translit_ = true; }
 
   TitleTrans(const TitleFields& tf, bool translit_)
-      : Replacement(tf), translit(translit_) {}
+      : replacement_(tf), translit_(translit_) {}
 
   bool Matches(const TitleFields& tf, TitleFields& to);
 
@@ -29,13 +29,14 @@ struct TitleTrans {
 };
 
 bool TitleTrans::Matches(const TitleFields& from, TitleFields& to) {
-  if (!TitleFrom.Replace(Replacement.Title, from.Title, to.Title)) {
+  if (!title_from_.Replace(replacement_.title_, from.title_, to.title_)) {
     return false; /* no match */
   }
-  if (!SubFrom.Replace(Replacement.Subtitle, from.Subtitle, to.Subtitle)) {
+  if (!sub_from_.Replace(
+          replacement_.subtitle_, from.subtitle_, to.subtitle_)) {
     return false; /* no match */
   }
-  if (!ArtistFrom.Replace(Replacement.Artist, from.Artist, to.Artist)) {
+  if (!artist_from_.Replace(replacement_.artist_, from.artist_, to.artist_)) {
     return false; /* no match */
   }
 
@@ -51,25 +52,25 @@ void TitleTrans::LoadFromNode(const XNode* pNode) {
     const std::string& sKeyName = attr->first;
     const std::string sValue = attr->second->GetValue<std::string>();
     if (sKeyName == "DontTransliterate") {
-      translit = false;
+      translit_ = false;
     } else if (sKeyName == "TitleFrom") {
-      TitleFrom = "^(" + sValue + ")$";
+      title_from_ = "^(" + sValue + ")$";
     } else if (sKeyName == "ArtistFrom") {
-      ArtistFrom = "^(" + sValue + ")$";
+      artist_from_ = "^(" + sValue + ")$";
     } else if (sKeyName == "SubtitleFrom") {
-      SubFrom = "^(" + sValue + ")$";
+      sub_from_ = "^(" + sValue + ")$";
     } else if (sKeyName == "TitleTo") {
-      Replacement.Title = sValue;
+      replacement_.title_ = sValue;
     } else if (sKeyName == "ArtistTo") {
-      Replacement.Artist = sValue;
+      replacement_.artist_ = sValue;
     } else if (sKeyName == "SubtitleTo") {
-      Replacement.Subtitle = sValue;
+      replacement_.subtitle_ = sValue;
     } else if (sKeyName == "TitleTransTo") {
-      Replacement.TitleTranslit = sValue;
+      replacement_.title_translit_ = sValue;
     } else if (sKeyName == "ArtistTransTo") {
-      Replacement.ArtistTranslit = sValue;
+      replacement_.artist_translit_ = sValue;
     } else if (sKeyName == "SubtitleTransTo") {
-      Replacement.SubtitleTranslit = sValue;
+      replacement_.subtitle_translit_ = sValue;
     } else {
       LuaHelpers::ReportScriptErrorFmt(
           "Unknown TitleSubst tag: \"%s\"", sKeyName.c_str());
@@ -78,64 +79,69 @@ void TitleTrans::LoadFromNode(const XNode* pNode) {
 }
 
 void TitleSubst::AddTrans(const TitleTrans& tr) {
-  ASSERT(tr.TitleFrom.IsSet() || tr.SubFrom.IsSet() || tr.ArtistFrom.IsSet());
-  ttab.push_back(new TitleTrans(tr));
+  ASSERT(
+      tr.title_from_.IsSet() || tr.sub_from_.IsSet() ||
+      tr.artist_from_.IsSet());
+  ttab_.push_back(new TitleTrans(tr));
 }
 
 void TitleSubst::Subst(TitleFields& tf) {
-  for (TitleTrans* tt : ttab) {
+  for (TitleTrans* tt : ttab_) {
     TitleFields to;
     if (!tt->Matches(tf, to)) {
       continue;
     }
 
     /* The song matches.  Replace whichever strings aren't empty. */
-    if (!tt->Replacement.Title.empty() && tf.Title != tt->Replacement.Title) {
-      if (tt->translit) {
-        tf.TitleTranslit = tf.Title;
+    if (!tt->replacement_.title_.empty() &&
+        tf.title_ != tt->replacement_.title_) {
+      if (tt->translit_) {
+        tf.title_translit_ = tf.title_;
       }
-      tf.Title =
-          (tt->Replacement.Title != ERASE_MARKER) ? to.Title : std::string();
-      FontCharAliases::ReplaceMarkers(tf.Title);
+      tf.title_ =
+          (tt->replacement_.title_ != ERASE_MARKER) ? to.title_ : std::string();
+      FontCharAliases::ReplaceMarkers(tf.title_);
     }
-    if (!tt->Replacement.Subtitle.empty() &&
-        tf.Subtitle != tt->Replacement.Subtitle) {
-      if (tt->translit) {
-        tf.SubtitleTranslit = tf.Subtitle;
+    if (!tt->replacement_.subtitle_.empty() &&
+        tf.subtitle_ != tt->replacement_.subtitle_) {
+      if (tt->translit_) {
+        tf.subtitle_translit_ = tf.subtitle_;
       }
-      tf.Subtitle = (tt->Replacement.Subtitle != ERASE_MARKER) ? to.Subtitle
-                                                               : std::string();
-      FontCharAliases::ReplaceMarkers(tf.Subtitle);
+      tf.subtitle_ = (tt->replacement_.subtitle_ != ERASE_MARKER)
+                         ? to.subtitle_
+                         : std::string();
+      FontCharAliases::ReplaceMarkers(tf.subtitle_);
     }
-    if (!tt->Replacement.Artist.empty() &&
-        tf.Artist != tt->Replacement.Artist) {
-      if (tt->translit) {
-        tf.ArtistTranslit = tf.Artist;
+    if (!tt->replacement_.artist_.empty() &&
+        tf.artist_ != tt->replacement_.artist_) {
+      if (tt->translit_) {
+        tf.artist_translit_ = tf.artist_;
       }
-      tf.Artist =
-          (tt->Replacement.Artist != ERASE_MARKER) ? to.Artist : std::string();
-      FontCharAliases::ReplaceMarkers(tf.Artist);
+      tf.artist_ = (tt->replacement_.artist_ != ERASE_MARKER) ? to.artist_
+                                                              : std::string();
+      FontCharAliases::ReplaceMarkers(tf.artist_);
     }
 
     /* These are used when applying kanji to a field that doesn't have the
      * correct data.  Should be used sparingly. */
-    if (!tt->Replacement.TitleTranslit.empty()) {
-      tf.TitleTranslit = (tt->Replacement.TitleTranslit != ERASE_MARKER)
-                             ? tt->Replacement.TitleTranslit
-                             : std::string();
-      FontCharAliases::ReplaceMarkers(tf.TitleTranslit);
+    if (!tt->replacement_.title_translit_.empty()) {
+      tf.title_translit_ = (tt->replacement_.title_translit_ != ERASE_MARKER)
+                               ? tt->replacement_.title_translit_
+                               : std::string();
+      FontCharAliases::ReplaceMarkers(tf.title_translit_);
     }
-    if (!tt->Replacement.SubtitleTranslit.empty()) {
-      tf.SubtitleTranslit = (tt->Replacement.SubtitleTranslit != ERASE_MARKER)
-                                ? tt->Replacement.SubtitleTranslit
+    if (!tt->replacement_.subtitle_translit_.empty()) {
+      tf.subtitle_translit_ =
+          (tt->replacement_.subtitle_translit_ != ERASE_MARKER)
+              ? tt->replacement_.subtitle_translit_
+              : std::string();
+      FontCharAliases::ReplaceMarkers(tf.subtitle_translit_);
+    }
+    if (!tt->replacement_.artist_translit_.empty()) {
+      tf.artist_translit_ = (tt->replacement_.artist_translit_ != ERASE_MARKER)
+                                ? tt->replacement_.artist_translit_
                                 : std::string();
-      FontCharAliases::ReplaceMarkers(tf.SubtitleTranslit);
-    }
-    if (!tt->Replacement.ArtistTranslit.empty()) {
-      tf.ArtistTranslit = (tt->Replacement.ArtistTranslit != ERASE_MARKER)
-                              ? tt->Replacement.ArtistTranslit
-                              : std::string();
-      FontCharAliases::ReplaceMarkers(tf.ArtistTranslit);
+      FontCharAliases::ReplaceMarkers(tf.artist_translit_);
     }
 
     // Matched once.  Keep processing to allow multiple matching entries.  For
@@ -173,8 +179,8 @@ void TitleSubst::Load(const std::string& filename, const std::string& section) {
 }
 
 TitleSubst::~TitleSubst() {
-  for (unsigned i = 0; i < ttab.size(); ++i) {
-    delete ttab[i];
+  for (unsigned i = 0; i < ttab_.size(); ++i) {
+    delete ttab_[i];
   }
 }
 

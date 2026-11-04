@@ -18,13 +18,13 @@ class ModIcon : public ActorFrame {
   void Set(const std::string& sText);
 
  protected:
-  BitmapText m_text;
-  AutoActor m_sprFilled;
-  AutoActor m_sprEmpty;
+  BitmapText text_;
+  AutoActor spr_filled_;
+  AutoActor spr_empty_;
 
   ThemeMetric<int> CROP_TEXT_TO_WIDTH;
   ThemeMetric<std::string> STOP_WORDS;
-  std::vector<std::string> m_vStopWords;
+  std::vector<std::string> stop_words_;
 };
 
 #endif

@@ -26,7 +26,7 @@ Bookkeeper::Bookkeeper() {
   // GameState resets the coin count, but once the Bookkeeper is initialized,
   // the coin count is overwritten by the ReadFromDisk function. Resetting the
   // CoinsFile before reloading allows the game to start without credits.
-  if (PREFSMAN->m_bResetCoinsAtStartup) {
+  if (PREFSMAN->reset_coins_at_startup_) {
     WriteCoinsFile(0);
   }
 
@@ -42,16 +42,16 @@ Bookkeeper::~Bookkeeper() { WriteToDisk(); }
     return;                                                  \
   }
 
-void Bookkeeper::ClearAll() { m_mapCoinsForHour.clear(); }
+void Bookkeeper::ClearAll() { map_coins_for_hour_.clear(); }
 
 bool Bookkeeper::Date::operator<(const Date& rhs) const {
-  if (m_iYear != rhs.m_iYear) {
-    return m_iYear < rhs.m_iYear;
+  if (year_ != rhs.year_) {
+    return year_ < rhs.year_;
   }
-  if (m_iDayOfYear != rhs.m_iDayOfYear) {
-    return m_iDayOfYear < rhs.m_iDayOfYear;
+  if (day_of_year_ != rhs.day_of_year_) {
+    return day_of_year_ < rhs.day_of_year_;
   }
-  return m_iHour < rhs.m_iHour;
+  return hour_ < rhs.hour_;
 }
 
 void Bookkeeper::Date::Set(time_t t) {
@@ -62,9 +62,9 @@ void Bookkeeper::Date::Set(time_t t) {
 }
 
 void Bookkeeper::Date::Set(tm pTime) {
-  m_iHour = pTime.tm_hour;
-  m_iDayOfYear = pTime.tm_yday;
-  m_iYear = pTime.tm_year + 1900;
+  hour_ = pTime.tm_hour;
+  day_of_year_ = pTime.tm_yday;
+  year_ = pTime.tm_year + 1900;
 }
 
 void Bookkeeper::LoadFromNode(const XNode* pNode) {
@@ -83,9 +83,9 @@ void Bookkeeper::LoadFromNode(const XNode* pNode) {
 
   FOREACH_CONST_Child(pData, day) {
     Date d;
-    if (!day->GetAttrValue("Hour", d.m_iHour) ||
-        !day->GetAttrValue("Day", d.m_iDayOfYear) ||
-        !day->GetAttrValue("Year", d.m_iYear)) {
+    if (!day->GetAttrValue("Hour", d.hour_) ||
+        !day->GetAttrValue("Day", d.day_of_year_) ||
+        !day->GetAttrValue("Year", d.year_)) {
       LOG->Warn("Incomplete date field");
       continue;
     }
@@ -93,7 +93,7 @@ void Bookkeeper::LoadFromNode(const XNode* pNode) {
     int iCoins;
     day->GetTextValue(iCoins);
 
-    m_mapCoinsForHour[d] = iCoins;
+    map_coins_for_hour_[d] = iCoins;
   }
 }
 
@@ -103,15 +103,15 @@ XNode* Bookkeeper::CreateNode() const {
   {
     XNode* pData = xml->AppendChild("Data");
 
-    for (std::map<Date, int>::const_iterator it = m_mapCoinsForHour.begin();
-         it != m_mapCoinsForHour.end(); ++it) {
+    for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
+         it != map_coins_for_hour_.end(); ++it) {
       int iCoins = it->second;
       XNode* pDay = pData->AppendChild("Coins", iCoins);
 
       const Date& d = it->first;
-      pDay->AppendAttr("Hour", d.m_iHour);
-      pDay->AppendAttr("Day", d.m_iDayOfYear);
-      pDay->AppendAttr("Year", d.m_iYear);
+      pDay->AppendAttr("Hour", d.hour_);
+      pDay->AppendAttr("Day", d.day_of_year_);
+      pDay->AppendAttr("Year", d.year_);
     }
   }
 
@@ -134,12 +134,12 @@ void Bookkeeper::ReadFromDisk() {
   if (numCoins < 0) {
     numCoins = 0;
   } else if (
-      numCoins / PREFSMAN->m_iCoinsPerCredit > PREFSMAN->m_iMaxNumCredits) {
+      numCoins / PREFSMAN->coins_per_credit_ > PREFSMAN->max_num_credits_) {
     numCoins = 0;
   }
 
   LOG->Trace("Number of Coins to Load on boot: %i", numCoins);
-  GAMESTATE->m_iCoins.Set(numCoins);
+  GAMESTATE->coins_.Set(numCoins);
 
   LoadFromNode(&xml);
 }
@@ -162,7 +162,7 @@ void Bookkeeper::CoinInserted() {
   Date d;
   d.Set(time(nullptr));
 
-  ++m_mapCoinsForHour[d];
+  ++map_coins_for_hour_[d];
 }
 
 void Bookkeeper::WriteCoinsFile(int coins) {
@@ -193,12 +193,13 @@ int Bookkeeper::GetNumCoinsInRange(
 
 int Bookkeeper::GetNumCoins(Date beginning, Date ending) const {
   return GetNumCoinsInRange(
-      m_mapCoinsForHour.lower_bound(beginning),
-      m_mapCoinsForHour.lower_bound(ending));
+      map_coins_for_hour_.lower_bound(beginning),
+      map_coins_for_hour_.lower_bound(ending));
 }
 
 int Bookkeeper::GetCoinsTotal() const {
-  return GetNumCoinsInRange(m_mapCoinsForHour.begin(), m_mapCoinsForHour.end());
+  return GetNumCoinsInRange(
+      map_coins_for_hour_.begin(), map_coins_for_hour_.end());
 }
 
 void Bookkeeper::GetCoinsLastDays(int coins[NUM_LAST_DAYS]) const {
@@ -237,26 +238,26 @@ void Bookkeeper::GetCoinsByDayOfWeek(int coins[DAYS_IN_WEEK]) const {
     coins[i] = 0;
   }
 
-  for (std::map<Date, int>::const_iterator it = m_mapCoinsForHour.begin();
-       it != m_mapCoinsForHour.end(); ++it) {
+  for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
+       it != map_coins_for_hour_.end(); ++it) {
     const Date& d = it->first;
-    int iDayOfWeek = GetDayInYearAndYear(d.m_iDayOfYear, d.m_iYear).tm_wday;
+    int iDayOfWeek = GetDayInYearAndYear(d.day_of_year_, d.year_).tm_wday;
     coins[iDayOfWeek] += it->second;
   }
 }
 
 void Bookkeeper::GetCoinsByHour(int coins[HOURS_IN_DAY]) const {
   memset(coins, 0, sizeof(int) * HOURS_IN_DAY);
-  for (std::map<Date, int>::const_iterator it = m_mapCoinsForHour.begin();
-       it != m_mapCoinsForHour.end(); ++it) {
+  for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
+       it != map_coins_for_hour_.end(); ++it) {
     const Date& d = it->first;
 
-    if (d.m_iHour >= HOURS_IN_DAY) {
-      LOG->Warn("Hour %i >= %i", d.m_iHour, HOURS_IN_DAY);
+    if (d.hour_ >= HOURS_IN_DAY) {
+      LOG->Warn("Hour %i >= %i", d.hour_, HOURS_IN_DAY);
       continue;
     }
 
-    coins[d.m_iHour] += it->second;
+    coins[d.hour_] += it->second;
   }
 }
 

@@ -23,8 +23,8 @@ class InputHandler_NSEvent : public InputHandler {
   void InitKeyCodeMap();
 
  private:
-  DeviceButton m_NSKeyCodeMap[0x100];
-  unsigned m_ResponderID;
+  DeviceButton ns_key_code_map_[0x100];
+  unsigned responder_id_;
 };
 
 #endif /* InputHandler_NSEvent_hpp */

@@ -15,15 +15,15 @@
 #include "global.h"
 
 int TrailUtil::GetNumSongs(const Trail* pTrail) {
-  return pTrail->m_vEntries.size();
+  return pTrail->entries_.size();
 }
 
 float TrailUtil::GetTotalSeconds(const Trail* pTrail) {
-  const auto& entries = pTrail->m_vEntries;
+  const auto& entries = pTrail->entries_;
   return std::accumulate(
       entries.begin(), entries.end(), 0.f,
       [](float total, const TrailEntry& e) {
-        return total + e.pSong->m_fMusicLengthSeconds;
+        return total + e.song_->music_length_seconds_;
       });
 }
 
@@ -31,19 +31,19 @@ float TrailUtil::GetTotalSeconds(const Trail* pTrail) {
 
 void TrailID::FromTrail(const Trail* p) {
   if (p == nullptr) {
-    st = StepsType_Invalid;
-    cd = Difficulty_Invalid;
+    st_ = StepsType_Invalid;
+    cd_ = Difficulty_Invalid;
   } else {
-    st = p->m_StepsType;
-    cd = p->m_CourseDifficulty;
+    st_ = p->steps_type_;
+    cd_ = p->course_difficulty_;
   }
 }
 
 XNode* TrailID::CreateNode() const {
   XNode* pNode = new XNode("Trail");
 
-  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st).szName);
-  pNode->AppendAttr("CourseDifficulty", DifficultyToString(cd));
+  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st_).name_);
+  pNode->AppendAttr("CourseDifficulty", DifficultyToString(cd_));
 
   return pNode;
 }
@@ -54,22 +54,22 @@ void TrailID::LoadFromNode(const XNode* pNode) {
   std::string sTemp;
 
   pNode->GetAttrValue("StepsType", sTemp);
-  st = GAMEMAN->StringToStepsType(sTemp);
+  st_ = GAMEMAN->StringToStepsType(sTemp);
 
   pNode->GetAttrValue("CourseDifficulty", sTemp);
-  cd = StringToDifficulty(sTemp);
+  cd_ = StringToDifficulty(sTemp);
 }
 
 bool TrailID::IsValid() const {
-  return st != StepsType_Invalid && cd != Difficulty_Invalid;
+  return st_ != StepsType_Invalid && cd_ != Difficulty_Invalid;
 }
 
 bool TrailID::operator<(const TrailID& rhs) const {
 #define COMP(a)               \
   if (a < rhs.a) return true; \
   if (a > rhs.a) return false;
-  COMP(st);
-  COMP(cd);
+  COMP(st_);
+  COMP(cd_);
 #undef COMP
   return false;
 }

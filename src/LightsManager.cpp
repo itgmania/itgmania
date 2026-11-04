@@ -75,16 +75,16 @@ static void GetUsedGameInputs(std::vector<GameInput>& vGameInputsOut) {
 
   std::set<GameInput> vGIs;
   std::vector<const Style*> vStyles;
-  GAMEMAN->GetStylesForGame(GAMESTATE->m_pCurGame, vStyles);
+  GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_, vStyles);
   const auto& value = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
   for (const Style* style : vStyles) {
     bool bFound =
-        find(value.begin(), value.end(), style->m_StepsType) != value.end();
+        find(value.begin(), value.end(), style->steps_type_) != value.end();
     if (!bFound) {
       continue;
     }
     FOREACH_PlayerNumber(pn) {
-      for (int iCol = 0; iCol < style->m_iColsPerPlayer; ++iCol) {
+      for (int iCol = 0; iCol < style->cols_per_player_; ++iCol) {
         std::vector<GameInput> gi;
         style->StyleInputToGameInput(iCol, pn, gi);
         for (size_t i = 0; i < gi.size(); ++i) {
@@ -105,67 +105,67 @@ LightsManager* LIGHTSMAN =
     nullptr;  // global and accessible from anywhere in our program
 
 LightsManager::LightsManager() {
-  ZERO(m_fSecsLeftInCabinetLightBlink);
-  ZERO(m_fSecsLeftInGameButtonBlink);
-  ZERO(m_fActorLights);
-  ZERO(m_fSecsLeftInActorLightBlink);
-  m_iQueuedCoinCounterPulses = 0;
-  m_CoinCounterTimer.SetZero();
+  ZERO(secs_left_in_cabinet_light_blink_);
+  ZERO(secs_left_in_game_button_blink_);
+  ZERO(actor_lights_);
+  ZERO(secs_left_in_actor_light_blink_);
+  queued_coin_counter_pulses_ = 0;
+  coin_counter_timer_.SetZero();
 
-  m_LightsMode = LIGHTSMODE_JOINING;
+  lights_mode_ = LIGHTSMODE_JOINING;
   std::string sDriver = g_sLightsDriver.Get();
   if (sDriver.empty()) {
     sDriver = DEFAULT_LIGHTS_DRIVER;
   }
-  LightsDriver::Create(sDriver, m_vpDrivers);
+  LightsDriver::Create(sDriver, drivers_);
 
   SetLightsMode(LIGHTSMODE_ATTRACT);
 
-  m_LightsMutex = new RageEvent("LightsMutex");
-  m_LightsThreadShutdown = false;
-  m_LightsThread.SetName("LightsManager thread");
-  m_LightsThread.Create(LightsManThread_Start, this);
+  lights_mutex_ = new RageEvent("LightsMutex");
+  lights_thread_shutdown_ = false;
+  lights_thread_.SetName("LightsManager thread");
+  lights_thread_.Create(LightsManThread_Start, this);
 }
 
 LightsManager::~LightsManager() {
   // tell the thread to quit.
-  if (m_LightsMutex != nullptr) {
-    m_LightsMutex->Lock();
-    m_LightsThreadShutdown = true;
-    m_LightsMutex->Signal();
-    m_LightsMutex->Unlock();
-    m_LightsThread.Wait();
+  if (lights_mutex_ != nullptr) {
+    lights_mutex_->Lock();
+    lights_thread_shutdown_ = true;
+    lights_mutex_->Signal();
+    lights_mutex_->Unlock();
+    lights_thread_.Wait();
   }
 
-  for (LightsDriver* iter : m_vpDrivers) {
+  for (LightsDriver* iter : drivers_) {
     RageUtil::SafeDelete(iter);
   }
-  m_vpDrivers.clear();
+  drivers_.clear();
 }
 
 int LightsManager::LightsManThreadMain() {
-  while (!m_LightsThreadShutdown) {
-    m_LightsMutex->Lock();
+  while (!lights_thread_shutdown_) {
+    lights_mutex_->Lock();
 
     // spin here until we get a light to push out.
-    while (m_LightsQueue.empty() && !m_LightsThreadShutdown) {
-      m_LightsMutex->Wait();
+    while (lights_queue_.empty() && !lights_thread_shutdown_) {
+      lights_mutex_->Wait();
     }
 
-    if (m_LightsThreadShutdown) {
-      m_LightsMutex->Unlock();
+    if (lights_thread_shutdown_) {
+      lights_mutex_->Unlock();
       break;
     }
 
     // pop the first in first state out from the queue
-    LightsState push = m_LightsQueue.front();
-    m_LightsQueue.pop();
+    LightsState push = lights_queue_.front();
+    lights_queue_.pop();
 
-    m_LightsMutex->Unlock();
+    lights_mutex_->Unlock();
 
     // push to all of the devices
     // could take time, it's why we are in at thread
-    for (LightsDriver* iter : m_vpDrivers) {
+    for (LightsDriver* iter : drivers_) {
       iter->Set(&push);
     }
   }
@@ -181,21 +181,21 @@ void LightsManager::Update(float fDeltaTime) {
   // Update actor effect lights.
   FOREACH_CabinetLight(cl) {
     float fTime = fDeltaTime;
-    float& fDuration = m_fSecsLeftInActorLightBlink[cl];
+    float& fDuration = secs_left_in_actor_light_blink_[cl];
     if (fDuration > 0) {
       // The light has power left.  Brighten it.
       float fSeconds = std::min(fDuration, fTime);
       fDuration -= fSeconds;
       fTime -= fSeconds;
-      fapproach(m_fActorLights[cl], 1, fSeconds / g_fLightEffectRiseSeconds);
+      fapproach(actor_lights_[cl], 1, fSeconds / g_fLightEffectRiseSeconds);
     }
 
     if (fTime > 0) {
       // The light is out of power.  Dim it.
-      fapproach(m_fActorLights[cl], 0, fTime / g_fLightEffectFalloffSeconds);
+      fapproach(actor_lights_[cl], 0, fTime / g_fLightEffectFalloffSeconds);
     }
 
-    Actor::SetBGMLight(cl, m_fActorLights[cl]);
+    Actor::SetBGMLight(cl, actor_lights_[cl]);
   }
 
   if (!IsEnabled()) {
@@ -205,41 +205,41 @@ void LightsManager::Update(float fDeltaTime) {
   // update lights falloff
   {
     FOREACH_CabinetLight(cl)
-        fapproach(m_fSecsLeftInCabinetLightBlink[cl], 0, fDeltaTime);
+        fapproach(secs_left_in_cabinet_light_blink_[cl], 0, fDeltaTime);
     FOREACH_ENUM(GameController, gc)
     FOREACH_ENUM(GameButton, gb)
-    fapproach(m_fSecsLeftInGameButtonBlink[gc][gb], 0, fDeltaTime);
+    fapproach(secs_left_in_game_button_blink_[gc][gb], 0, fDeltaTime);
   }
 
   // Set new lights state cabinet lights
   {
-    ZERO(m_LightsState.m_bCabinetLights);
-    ZERO(m_LightsState.m_bGameButtonLights);
+    ZERO(lights_state_.cabinet_lights_);
+    ZERO(lights_state_.game_button_lights_);
   }
 
   {
-    m_LightsState.m_bCoinCounter = false;
-    if (!m_CoinCounterTimer.IsZero()) {
-      float fAgo = m_CoinCounterTimer.Ago();
+    lights_state_.coin_counter_ = false;
+    if (!coin_counter_timer_.IsZero()) {
+      float fAgo = coin_counter_timer_.Ago();
       if (fAgo < g_fCoinPulseTime) {
-        m_LightsState.m_bCoinCounter = true;
+        lights_state_.coin_counter_ = true;
       } else if (fAgo >= g_fCoinPulseTime * 2) {
-        m_CoinCounterTimer.SetZero();
+        coin_counter_timer_.SetZero();
       }
-    } else if (m_iQueuedCoinCounterPulses) {
-      m_CoinCounterTimer.Touch();
-      --m_iQueuedCoinCounterPulses;
+    } else if (queued_coin_counter_pulses_) {
+      coin_counter_timer_.Touch();
+      --queued_coin_counter_pulses_;
     }
   }
 
-  if (m_LightsMode == LIGHTSMODE_TEST_AUTO_CYCLE) {
-    m_fTestAutoCycleCurrentIndex += fDeltaTime;
-    m_fTestAutoCycleCurrentIndex =
-        std::fmod(m_fTestAutoCycleCurrentIndex, NUM_CabinetLight * 100);
+  if (lights_mode_ == LIGHTSMODE_TEST_AUTO_CYCLE) {
+    test_auto_cycle_current_index_ += fDeltaTime;
+    test_auto_cycle_current_index_ =
+        std::fmod(test_auto_cycle_current_index_, NUM_CabinetLight * 100);
   }
 
-  switch (m_LightsMode) {
-    DEFAULT_FAIL(m_LightsMode);
+  switch (lights_mode_) {
+    DEFAULT_FAIL(lights_mode_);
 
     case LIGHTSMODE_ATTRACT: {
       int iSec = RageTimer::GetTimeSinceStartSeconds();
@@ -251,22 +251,22 @@ void LightsManager::Update(float fDeltaTime) {
       switch (iTopIndex) {
         DEFAULT_FAIL(iTopIndex);
         case 0:
-          m_LightsState.m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT] = true;
+          lights_state_.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT] = true;
           break;
         case 1:
-          m_LightsState.m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT] = true;
+          lights_state_.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT] = true;
           break;
         case 2:
-          m_LightsState.m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT] = true;
+          lights_state_.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT] = true;
           break;
         case 3:
-          m_LightsState.m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT] = true;
+          lights_state_.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT] = true;
           break;
       }
 
       if (iTopIndex == 0) {
-        m_LightsState.m_bCabinetLights[LIGHT_BASS_LEFT] = true;
-        m_LightsState.m_bCabinetLights[LIGHT_BASS_RIGHT] = true;
+        lights_state_.cabinet_lights_[LIGHT_BASS_LEFT] = true;
+        lights_state_.cabinet_lights_[LIGHT_BASS_RIGHT] = true;
       }
 
       break;
@@ -279,7 +279,7 @@ void LightsManager::Update(float fDeltaTime) {
       // if we've crossed a beat boundary, advance the light index
       {
         static float fLastBeat;
-        float fLightSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
+        float fLightSongBeat = GAMESTATE->position_.light_song_beat_;
 
         if (fracf(fLightSongBeat) < fracf(fLastBeat)) {
           ++iLight;
@@ -307,7 +307,7 @@ void LightsManager::Update(float fDeltaTime) {
           break;
       }
 
-      m_LightsState.m_bCabinetLights[cl] = true;
+      lights_state_.cabinet_lights_[cl] = true;
 
       break;
     }
@@ -318,49 +318,49 @@ void LightsManager::Update(float fDeltaTime) {
         int currLightPlayerNumber = (cl & 1) == 1 ? 1 : 0;
         bool skipLightActivation = false;
 
-        auto playerOptions = GAMESTATE->m_pPlayerState[currLightPlayerNumber]
-                                 ->m_PlayerOptions.GetCurrent();
+        auto playerOptions = GAMESTATE->player_state_[currLightPlayerNumber]
+                                 ->player_options_.GetCurrent();
 
         if (cl == LIGHT_MARQUEE_UP_LEFT || cl == LIGHT_MARQUEE_UP_RIGHT ||
             cl == LIGHT_MARQUEE_LR_LEFT || cl == LIGHT_MARQUEE_LR_RIGHT) {
           if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber)) {
             skipLightActivation =
-                playerOptions.m_HideLightType ==
+                playerOptions.hide_light_type_ ==
                     HideLightType::HideLightType_HideMarqueeLights ||
-                playerOptions.m_HideLightType ==
+                playerOptions.hide_light_type_ ==
                     HideLightType::HideLightType_HideAllLights;
           }
         } else {
-          bool lightsBassParallel = PREFSMAN->m_bLightsBassParallel;
+          bool lightsBassParallel = PREFSMAN->lights_bass_parallel_;
 
           int otherPn = currLightPlayerNumber == 0 ? 1 : 0;
           auto otherPlayerOptions =
-              GAMESTATE->m_pPlayerState[otherPn]->m_PlayerOptions.GetCurrent();
+              GAMESTATE->player_state_[otherPn]->player_options_.GetCurrent();
 
           if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber)) {
             skipLightActivation =
-                playerOptions.m_HideLightType ==
+                playerOptions.hide_light_type_ ==
                     HideLightType::HideLightType_HideBassLights ||
-                playerOptions.m_HideLightType ==
+                playerOptions.hide_light_type_ ==
                     HideLightType::HideLightType_HideAllLights ||
                 (lightsBassParallel &&
-                 (otherPlayerOptions.m_HideLightType ==
+                 (otherPlayerOptions.hide_light_type_ ==
                       HideLightType::HideLightType_HideBassLights ||
-                  otherPlayerOptions.m_HideLightType ==
+                  otherPlayerOptions.hide_light_type_ ==
                       HideLightType::HideLightType_HideAllLights));
           } else {
             skipLightActivation =
                 lightsBassParallel &&
-                (otherPlayerOptions.m_HideLightType ==
+                (otherPlayerOptions.hide_light_type_ ==
                      HideLightType::HideLightType_HideBassLights ||
-                 otherPlayerOptions.m_HideLightType ==
+                 otherPlayerOptions.hide_light_type_ ==
                      HideLightType::HideLightType_HideAllLights);
           }
         }
 
         if (!skipLightActivation) {
-          m_LightsState.m_bCabinetLights[cl] =
-              m_fSecsLeftInCabinetLightBlink[cl] > 0;
+          lights_state_.cabinet_lights_[cl] =
+              secs_left_in_cabinet_light_blink_[cl] > 0;
         }
       }
       break;
@@ -368,7 +368,7 @@ void LightsManager::Update(float fDeltaTime) {
 
     case LIGHTSMODE_STAGE:
     case LIGHTSMODE_ALL_CLEARED: {
-      FOREACH_CabinetLight(cl) m_LightsState.m_bCabinetLights[cl] = true;
+      FOREACH_CabinetLight(cl) lights_state_.cabinet_lights_[cl] = true;
 
       break;
     }
@@ -377,30 +377,30 @@ void LightsManager::Update(float fDeltaTime) {
       int iSec = GetTestAutoCycleCurrentIndex();
 
       CabinetLight cl = CabinetLight(iSec % NUM_CabinetLight);
-      m_LightsState.m_bCabinetLights[cl] = true;
+      lights_state_.cabinet_lights_[cl] = true;
 
       break;
     }
 
     case LIGHTSMODE_TEST_MANUAL_CYCLE: {
-      CabinetLight cl = m_clTestManualCycleCurrent;
-      m_LightsState.m_bCabinetLights[cl] = true;
+      CabinetLight cl = test_manual_cycle_current_;
+      lights_state_.cabinet_lights_[cl] = true;
 
       break;
     }
   }
 
   // Update game controller lights
-  switch (m_LightsMode) {
-    DEFAULT_FAIL(m_LightsMode);
+  switch (lights_mode_) {
+    DEFAULT_FAIL(lights_mode_);
 
     case LIGHTSMODE_ALL_CLEARED:
     case LIGHTSMODE_STAGE:
     case LIGHTSMODE_JOINING: {
       FOREACH_ENUM(GameController, gc) {
-        if (GAMESTATE->m_bSideIsJoined[gc]) {
+        if (GAMESTATE->side_is_joined_[gc]) {
           FOREACH_ENUM(GameButton, gb)
-          m_LightsState.m_bGameButtonLights[gc][gb] = true;
+          lights_state_.game_button_lights_[gc][gb] = true;
         }
       }
 
@@ -409,26 +409,26 @@ void LightsManager::Update(float fDeltaTime) {
 
     case LIGHTSMODE_MENU_START_ONLY:
     case LIGHTSMODE_MENU_START_AND_DIRECTIONS: {
-      float fLightSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
+      float fLightSongBeat = GAMESTATE->position_.light_song_beat_;
 
       /* Blink menu lights on the first half of the beat */
       if (fracf(fLightSongBeat) <= 0.5f) {
         FOREACH_PlayerNumber(pn) {
-          if (!GAMESTATE->m_bSideIsJoined[pn]) {
+          if (!GAMESTATE->side_is_joined_[pn]) {
             continue;
           }
 
-          m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_START] = true;
+          lights_state_.game_button_lights_[pn][GAME_BUTTON_START] = true;
 
-          if (m_LightsMode == LIGHTSMODE_MENU_START_AND_DIRECTIONS) {
-            m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_MENULEFT] = true;
-            m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_MENURIGHT] = true;
-            m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_MENUUP] = true;
-            m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_MENUDOWN] = true;
+          if (lights_mode_ == LIGHTSMODE_MENU_START_AND_DIRECTIONS) {
+            lights_state_.game_button_lights_[pn][GAME_BUTTON_MENULEFT] = true;
+            lights_state_.game_button_lights_[pn][GAME_BUTTON_MENURIGHT] = true;
+            lights_state_.game_button_lights_[pn][GAME_BUTTON_MENUUP] = true;
+            lights_state_.game_button_lights_[pn][GAME_BUTTON_MENUDOWN] = true;
           } else {
             // flash select during evaluation screen to indicate
             // that the button can be used for screenshots etc.
-            m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_SELECT] = true;
+            lights_state_.game_button_lights_[pn][GAME_BUTTON_SELECT] = true;
           }
         }
       }
@@ -439,15 +439,15 @@ void LightsManager::Update(float fDeltaTime) {
 
     case LIGHTSMODE_DEMONSTRATION:
     case LIGHTSMODE_GAMEPLAY: {
-      bool bGameplay = (m_LightsMode == LIGHTSMODE_DEMONSTRATION) ||
-                       (m_LightsMode == LIGHTSMODE_GAMEPLAY);
+      bool bGameplay = (lights_mode_ == LIGHTSMODE_DEMONSTRATION) ||
+                       (lights_mode_ == LIGHTSMODE_GAMEPLAY);
 
       // Blink on notes during gameplay.
       if (bGameplay && g_bBlinkGameplayButtonLightsOnNote) {
         FOREACH_ENUM(GameController, gc) {
           FOREACH_ENUM(GameButton, gb) {
-            m_LightsState.m_bGameButtonLights[gc][gb] =
-                m_fSecsLeftInGameButtonBlink[gc][gb] > 0;
+            lights_state_.game_button_lights_[gc][gb] =
+                secs_left_in_game_button_blink_[gc][gb] > 0;
           }
         }
         break;
@@ -464,7 +464,7 @@ void LightsManager::Update(float fDeltaTime) {
         FOREACH_GameButton_Custom(gb) {
           bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
           // or them in the event the game wants to turn them on too.
-          m_LightsState.m_bGameButtonLights[gc][gb] |= bOn;
+          lights_state_.game_button_lights_[gc][gb] |= bOn;
         }
       }
 
@@ -475,7 +475,7 @@ void LightsManager::Update(float fDeltaTime) {
         FOREACH_GameButton_Menu(gb) {
           bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
           // or them in the event the game wants to turn them on too.
-          m_LightsState.m_bGameButtonLights[gc][gb] |= bOn;
+          lights_state_.game_button_lights_[gc][gb] |= bOn;
         }
       }
 
@@ -489,25 +489,26 @@ void LightsManager::Update(float fDeltaTime) {
       GetUsedGameInputs(vGI);
       wrap(index, vGI.size());
 
-      ZERO(m_LightsState.m_bGameButtonLights);
+      ZERO(lights_state_.game_button_lights_);
 
-      GameController gc = vGI[index].controller;
-      GameButton gb = vGI[index].button;
-      m_LightsState.m_bGameButtonLights[gc][gb] = true;
+      GameController gc = vGI[index].controller_;
+      GameButton gb = vGI[index].button_;
+      lights_state_.game_button_lights_[gc][gb] = true;
 
       break;
     }
 
     case LIGHTSMODE_TEST_MANUAL_CYCLE: {
-      ZERO(m_LightsState.m_bGameButtonLights);
+      ZERO(lights_state_.game_button_lights_);
 
       std::vector<GameInput> vGI;
       GetUsedGameInputs(vGI);
 
-      if (m_iControllerTestManualCycleCurrent != -1) {
-        GameController gc = vGI[m_iControllerTestManualCycleCurrent].controller;
-        GameButton gb = vGI[m_iControllerTestManualCycleCurrent].button;
-        m_LightsState.m_bGameButtonLights[gc][gb] = true;
+      if (controller_test_manual_cycle_current_ != -1) {
+        GameController gc =
+            vGI[controller_test_manual_cycle_current_].controller_;
+        GameButton gb = vGI[controller_test_manual_cycle_current_].button_;
+        lights_state_.game_button_lights_[gc][gb] = true;
       }
 
       break;
@@ -517,12 +518,12 @@ void LightsManager::Update(float fDeltaTime) {
   // If not joined, has enough credits, and not too late to join, then
   // blink the menu buttons rapidly so they'll press Start
   {
-    int iBeat = (int)(GAMESTATE->m_Position.m_fLightSongBeat * 4);
+    int iBeat = (int)(GAMESTATE->position_.light_song_beat_ * 4);
     bool bBlinkOn = (iBeat % 2) == 0;
     FOREACH_PlayerNumber(pn) {
-      if (!GAMESTATE->m_bSideIsJoined[pn] && GAMESTATE->PlayersCanJoin() &&
+      if (!GAMESTATE->side_is_joined_[pn] && GAMESTATE->PlayersCanJoin() &&
           GAMESTATE->EnoughCreditsToJoin()) {
-        m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_START] = bBlinkOn;
+        lights_state_.game_button_lights_[pn][GAME_BUTTON_START] = bBlinkOn;
       }
     }
   }
@@ -530,55 +531,55 @@ void LightsManager::Update(float fDeltaTime) {
   // apply new light values we set above
 
   // only push to thread on changes.
-  if (m_LightsState != m_PrevLightsState) {
+  if (lights_state_ != prev_lights_state_) {
     // add lights state to queue.
-    m_LightsMutex->Lock();
-    m_LightsQueue.push(m_LightsState);
-    m_LightsMutex->Signal();
-    m_LightsMutex->Unlock();
+    lights_mutex_->Lock();
+    lights_queue_.push(lights_state_);
+    lights_mutex_->Signal();
+    lights_mutex_->Unlock();
 
-    m_PrevLightsState = std::move(m_LightsState);
+    prev_lights_state_ = std::move(lights_state_);
   }
 }
 
 void LightsManager::BlinkCabinetLight(CabinetLight cl) {
-  m_fSecsLeftInCabinetLightBlink[cl] = g_fLightsFalloffSeconds;
+  secs_left_in_cabinet_light_blink_[cl] = g_fLightsFalloffSeconds;
 }
 
 void LightsManager::BlinkGameButton(GameInput gi) {
-  m_fSecsLeftInGameButtonBlink[gi.controller][gi.button] =
+  secs_left_in_game_button_blink_[gi.controller_][gi.button_] =
       g_fLightsFalloffSeconds;
 }
 
 void LightsManager::SetLightsMode(LightsMode lm) {
-  m_LightsMode = lm;
-  m_fTestAutoCycleCurrentIndex = 0;
-  m_clTestManualCycleCurrent = CabinetLight_Invalid;
-  m_iControllerTestManualCycleCurrent = -1;
+  lights_mode_ = lm;
+  test_auto_cycle_current_index_ = 0;
+  test_manual_cycle_current_ = CabinetLight_Invalid;
+  controller_test_manual_cycle_current_ = -1;
 }
 
-LightsMode LightsManager::GetLightsMode() { return m_LightsMode; }
+LightsMode LightsManager::GetLightsMode() { return lights_mode_; }
 
 void LightsManager::ChangeTestCabinetLight(int iDir) {
-  m_iControllerTestManualCycleCurrent = -1;
+  controller_test_manual_cycle_current_ = -1;
 
-  enum_add(m_clTestManualCycleCurrent, iDir);
-  wrap(*ConvertValue<int>(&m_clTestManualCycleCurrent), NUM_CabinetLight);
+  enum_add(test_manual_cycle_current_, iDir);
+  wrap(*ConvertValue<int>(&test_manual_cycle_current_), NUM_CabinetLight);
 }
 
 void LightsManager::ChangeTestGameButtonLight(int iDir) {
-  m_clTestManualCycleCurrent = CabinetLight_Invalid;
+  test_manual_cycle_current_ = CabinetLight_Invalid;
 
   std::vector<GameInput> vGI;
   GetUsedGameInputs(vGI);
 
-  m_iControllerTestManualCycleCurrent += iDir;
-  wrap(m_iControllerTestManualCycleCurrent, vGI.size());
+  controller_test_manual_cycle_current_ += iDir;
+  wrap(controller_test_manual_cycle_current_, vGI.size());
 }
 
 CabinetLight LightsManager::GetFirstLitCabinetLight() {
   FOREACH_CabinetLight(cl) {
-    if (m_LightsState.m_bCabinetLights[cl]) {
+    if (lights_state_.cabinet_lights_[cl]) {
       return cl;
     }
   }
@@ -588,7 +589,7 @@ CabinetLight LightsManager::GetFirstLitCabinetLight() {
 GameInput LightsManager::GetFirstLitGameButtonLight() {
   FOREACH_ENUM(GameController, gc) {
     FOREACH_ENUM(GameButton, gb) {
-      if (m_LightsState.m_bGameButtonLights[gc][gb]) {
+      if (lights_state_.game_button_lights_[gc][gb]) {
         return GameInput(gc, gb);
       }
     }
@@ -597,11 +598,11 @@ GameInput LightsManager::GetFirstLitGameButtonLight() {
 }
 
 bool LightsManager::IsEnabled() const {
-  return m_vpDrivers.size() >= 1 || PREFSMAN->m_bDebugLights;
+  return drivers_.size() >= 1 || PREFSMAN->debug_lights_;
 }
 
 void LightsManager::TurnOffAllLights() {
-  for (LightsDriver* iter : m_vpDrivers) {
+  for (LightsDriver* iter : drivers_) {
     iter->Reset();
   }
 }

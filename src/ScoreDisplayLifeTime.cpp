@@ -23,31 +23,31 @@ void ScoreDisplayLifeTime::Init(
 
   const std::string sType = "ScoreDisplayLifeTime";
 
-  m_sprFrame.Load(THEME->GetPathG(sType, "frame"));
-  m_sprFrame->SetName("Frame");
-  this->AddChild(m_sprFrame);
-  ActorUtil::LoadAllCommandsAndOnCommand(m_sprFrame, sType);
+  spr_frame_.Load(THEME->GetPathG(sType, "frame"));
+  spr_frame_->SetName("Frame");
+  this->AddChild(spr_frame_);
+  ActorUtil::LoadAllCommandsAndOnCommand(spr_frame_, sType);
 
-  m_textTimeRemaining.LoadFromFont(THEME->GetPathF(sType, "TimeRemaining"));
-  m_textTimeRemaining.SetName("TimeRemaining");
-  this->AddChild(&m_textTimeRemaining);
-  ActorUtil::LoadAllCommandsAndOnCommand(m_textTimeRemaining, sType);
+  text_time_remaining_.LoadFromFont(THEME->GetPathF(sType, "TimeRemaining"));
+  text_time_remaining_.SetName("TimeRemaining");
+  this->AddChild(&text_time_remaining_);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_time_remaining_, sType);
 
-  m_textDeltaSeconds.LoadFromFont(THEME->GetPathF(sType, "DeltaSeconds"));
-  m_textDeltaSeconds.SetName("DeltaSeconds");
-  this->AddChild(&m_textDeltaSeconds);
-  ActorUtil::LoadAllCommandsAndOnCommand(m_textDeltaSeconds, sType);
+  text_delta_seconds_.LoadFromFont(THEME->GetPathF(sType, "DeltaSeconds"));
+  text_delta_seconds_.SetName("DeltaSeconds");
+  this->AddChild(&text_delta_seconds_);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_delta_seconds_, sType);
 
   FOREACH_ENUM(TapNoteScore, tns) {
     const std::string& sCommand = TapNoteScoreToString(tns);
-    if (!m_textDeltaSeconds.HasCommand(sCommand)) {
-      ActorUtil::LoadCommand(m_textDeltaSeconds, sType, sCommand);
+    if (!text_delta_seconds_.HasCommand(sCommand)) {
+      ActorUtil::LoadCommand(text_delta_seconds_, sType, sCommand);
     }
   }
   FOREACH_ENUM(HoldNoteScore, hns) {
     const std::string& sCommand = HoldNoteScoreToString(hns);
-    if (!m_textDeltaSeconds.HasCommand(sCommand)) {
-      ActorUtil::LoadCommand(m_textDeltaSeconds, sType, sCommand);
+    if (!text_delta_seconds_.HasCommand(sCommand)) {
+      ActorUtil::LoadCommand(text_delta_seconds_, sType, sCommand);
     }
   }
 }
@@ -55,10 +55,10 @@ void ScoreDisplayLifeTime::Init(
 void ScoreDisplayLifeTime::Update(float fDelta) {
   ScoreDisplay::Update(fDelta);
 
-  float fSecs = m_pPlayerStageStats->m_fLifeRemainingSeconds;
+  float fSecs = player_stage_stats_->life_remaining_seconds_;
 
   std::string s = SecondsToMSSMsMs(fSecs);
-  m_textTimeRemaining.SetText(s);
+  text_time_remaining_.SetText(s);
 }
 
 void ScoreDisplayLifeTime::OnLoadSong() {}

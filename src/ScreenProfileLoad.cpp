@@ -10,20 +10,20 @@
 REGISTER_SCREEN_CLASS(ScreenProfileLoad);
 
 void ScreenProfileLoad::Init() {
-  LOAD_EDITS.Load(m_sName, "LoadEdits");
+  LOAD_EDITS.Load(name_, "LoadEdits");
 
   ScreenWithMenuElements::Init();
 }
 
 void ScreenProfileLoad::BeginScreen() {
-  m_bHaveProfileToLoad = GAMESTATE->HaveProfileToLoad();
+  have_profile_to_load_ = GAMESTATE->HaveProfileToLoad();
   ScreenWithMenuElements::BeginScreen();
 }
 
 bool ScreenProfileLoad::Input(const InputEventPlus& input) { return false; }
 
 void ScreenProfileLoad::Continue() {
-  if (m_bHaveProfileToLoad) {
+  if (have_profile_to_load_) {
     GAMESTATE->LoadProfiles(LOAD_EDITS);
     SCREENMAN->ZeroNextUpdate();
   }
@@ -44,7 +44,7 @@ class LunaScreenProfileLoad : public Luna<ScreenProfileLoad> {
     COMMON_RETURN_SELF;
   }
   static int HaveProfileToLoad(T* p, lua_State* L) {
-    LuaHelpers::Push(L, p->m_bHaveProfileToLoad);
+    LuaHelpers::Push(L, p->have_profile_to_load_);
     return 1;
   }
 

@@ -6,11 +6,11 @@
 #include <string>
 
 struct VideoDriverInfo {
-  std::string sProvider;
-  std::string sDescription;
-  std::string sVersion;
-  std::string sDate;
-  std::string sDeviceID;
+  std::string provider_;
+  std::string description_;
+  std::string version_;
+  std::string date_;
+  std::string device_id_;
 };
 
 std::string GetPrimaryVideoName();

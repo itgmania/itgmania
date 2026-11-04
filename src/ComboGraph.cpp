@@ -20,9 +20,9 @@ REGISTER_ACTOR_CLASS(ComboGraph);
 ComboGraph::ComboGraph() {
   DeleteChildrenWhenDone(true);
 
-  m_pNormalCombo = nullptr;
-  m_pMaxCombo = nullptr;
-  m_pComboNumber = nullptr;
+  normal_combo_ = nullptr;
+  max_combo_ = nullptr;
+  combo_number_ = nullptr;
 }
 
 void ComboGraph::Load(std::string sMetricsGroup) {
@@ -36,34 +36,33 @@ void ComboGraph::Load(std::string sMetricsGroup) {
 
   Actor* pActor = nullptr;
 
-  m_pBacking = ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "Backing"));
-  if (m_pBacking != nullptr) {
-    m_pBacking->ZoomToWidth(BODY_WIDTH);
-    m_pBacking->ZoomToHeight(BODY_HEIGHT);
-    this->AddChild(m_pBacking);
+  backing_ = ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "Backing"));
+  if (backing_ != nullptr) {
+    backing_->ZoomToWidth(BODY_WIDTH);
+    backing_->ZoomToHeight(BODY_HEIGHT);
+    this->AddChild(backing_);
   }
 
-  m_pNormalCombo =
+  normal_combo_ =
       ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "NormalCombo"));
-  if (m_pNormalCombo != nullptr) {
-    m_pNormalCombo->ZoomToWidth(BODY_WIDTH);
-    m_pNormalCombo->ZoomToHeight(BODY_HEIGHT);
-    this->AddChild(m_pNormalCombo);
+  if (normal_combo_ != nullptr) {
+    normal_combo_->ZoomToWidth(BODY_WIDTH);
+    normal_combo_->ZoomToHeight(BODY_HEIGHT);
+    this->AddChild(normal_combo_);
   }
 
-  m_pMaxCombo =
-      ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "MaxCombo"));
-  if (m_pMaxCombo != nullptr) {
-    m_pMaxCombo->ZoomToWidth(BODY_WIDTH);
-    m_pMaxCombo->ZoomToHeight(BODY_HEIGHT);
-    this->AddChild(m_pMaxCombo);
+  max_combo_ = ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "MaxCombo"));
+  if (max_combo_ != nullptr) {
+    max_combo_->ZoomToWidth(BODY_WIDTH);
+    max_combo_->ZoomToHeight(BODY_HEIGHT);
+    this->AddChild(max_combo_);
   }
 
   pActor = ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "ComboNumber"));
   if (pActor != nullptr) {
-    m_pComboNumber = dynamic_cast<BitmapText*>(pActor);
-    if (m_pComboNumber != nullptr) {
-      this->AddChild(m_pComboNumber);
+    combo_number_ = dynamic_cast<BitmapText*>(pActor);
+    if (combo_number_ != nullptr) {
+      this->AddChild(combo_number_);
     } else {
       LuaHelpers::ReportScriptErrorFmt(
           "ComboGraph: \"sMetricsGroup\" \"ComboNumber\" must be a BitmapText");
@@ -77,12 +76,12 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
 
   // Find the largest combo.
   int iMaxComboSize = 0;
-  for (unsigned i = 0; i < pss.m_ComboList.size(); ++i) {
-    iMaxComboSize = std::max(iMaxComboSize, pss.m_ComboList[i].GetStageCnt());
+  for (unsigned i = 0; i < pss.combo_list_.size(); ++i) {
+    iMaxComboSize = std::max(iMaxComboSize, pss.combo_list_[i].GetStageCnt());
   }
 
-  for (unsigned i = 0; i < pss.m_ComboList.size(); ++i) {
-    const PlayerStageStats::Combo_t& combo = pss.m_ComboList[i];
+  for (unsigned i = 0; i < pss.combo_list_.size(); ++i) {
+    const PlayerStageStats::Combo_t& combo = pss.combo_list_[i];
     if (combo.GetStageCnt() < MinComboSizeToShow) {
       continue;  // too small
     }
@@ -90,14 +89,14 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
     const bool bIsMax = (combo.GetStageCnt() == iMaxComboSize);
 
     LOG->Trace(
-        "combo %i is %f+%f of %f", i, combo.m_fStartSecond,
-        combo.m_fSizeSeconds, fLastSecond);
-    Actor* pSprite = bIsMax ? m_pMaxCombo->Copy() : m_pNormalCombo->Copy();
+        "combo %i is %f+%f of %f", i, combo.start_second_, combo.size_seconds_,
+        fLastSecond);
+    Actor* pSprite = bIsMax ? max_combo_->Copy() : normal_combo_->Copy();
 
     const float fStart =
-        SCALE(combo.m_fStartSecond, fFirstSecond, fLastSecond, 0.0f, 1.0f);
+        SCALE(combo.start_second_, fFirstSecond, fLastSecond, 0.0f, 1.0f);
     const float fSize =
-        SCALE(combo.m_fSizeSeconds, 0, fLastSecond - fFirstSecond, 0.0f, 1.0f);
+        SCALE(combo.size_seconds_, 0, fLastSecond - fFirstSecond, 0.0f, 1.0f);
     pSprite->SetCropLeft(SCALE(fSize, 0.0f, 1.0f, 0.5f, 0.0f));
     pSprite->SetCropRight(SCALE(fSize, 0.0f, 1.0f, 0.5f, 0.0f));
 
@@ -107,8 +106,8 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
     this->AddChild(pSprite);
   }
 
-  for (unsigned i = 0; i < pss.m_ComboList.size(); ++i) {
-    const PlayerStageStats::Combo_t& combo = pss.m_ComboList[i];
+  for (unsigned i = 0; i < pss.combo_list_.size(); ++i) {
+    const PlayerStageStats::Combo_t& combo = pss.combo_list_[i];
     if (combo.GetStageCnt() < MinComboSizeToShow) {
       continue;  // too small
     }
@@ -122,12 +121,12 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
       continue;
     }
 
-    BitmapText* pText = m_pComboNumber->Copy();
+    BitmapText* pText = combo_number_->Copy();
 
     const float fStart =
-        SCALE(combo.m_fStartSecond, fFirstSecond, fLastSecond, 0.0f, 1.0f);
+        SCALE(combo.start_second_, fFirstSecond, fLastSecond, 0.0f, 1.0f);
     const float fSize =
-        SCALE(combo.m_fSizeSeconds, 0, fLastSecond - fFirstSecond, 0.0f, 1.0f);
+        SCALE(combo.size_seconds_, 0, fLastSecond - fFirstSecond, 0.0f, 1.0f);
 
     const float fCenterPercent = fStart + fSize / 2;
     const float fCenterXPos = SCALE(
@@ -140,9 +139,9 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
   }
 
   // Hide the templates.
-  m_pNormalCombo->SetVisible(false);
-  m_pMaxCombo->SetVisible(false);
-  m_pComboNumber->SetVisible(false);
+  normal_combo_->SetVisible(false);
+  max_combo_->SetVisible(false);
+  combo_number_->SetVisible(false);
 }
 
 // lua start

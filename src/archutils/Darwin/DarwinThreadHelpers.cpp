@@ -40,9 +40,9 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
     ResumeThread(iID);
     return false;
   }
-  ctx->ip = (void*)state.__eip;
-  ctx->bp = (void*)state.__ebp;
-  ctx->sp = (void*)state.__esp;
+  ctx->ip_ = (void*)state.__eip;
+  ctx->bp_ = (void*)state.__ebp;
+  ctx->sp_ = (void*)state.__esp;
   return true;
 #elif defined(__x86_64__)
   x86_thread_state64_t state;
@@ -54,9 +54,9 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
     return false;
   }
 
-  ctx->ip = (void*)state.__rip;
-  ctx->bp = (void*)state.__rbp;
-  ctx->sp = (void*)state.__rsp;
+  ctx->ip_ = (void*)state.__rip;
+  ctx->bp_ = (void*)state.__rbp;
+  ctx->sp_ = (void*)state.__rsp;
   return true;
 #elif defined(__aarch64__)
   arm_thread_state64_t state;
@@ -67,9 +67,9 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
     return false;
   }
 
-  ctx->ip = (void*)arm_thread_state64_get_pc(state);
-  ctx->bp = (void*)arm_thread_state64_get_fp(state);
-  ctx->sp = (void*)arm_thread_state64_get_sp(state);
+  ctx->ip_ = (void*)arm_thread_state64_get_pc(state);
+  ctx->bp_ = (void*)arm_thread_state64_get_fp(state);
+  ctx->sp_ = (void*)arm_thread_state64_get_sp(state);
   return true;
 #else
   ResumeThread(iID);

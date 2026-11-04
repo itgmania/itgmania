@@ -40,27 +40,24 @@
 #include "StatsManager.h"
 
 // Defines specific to ScreenNameEntry
-#define CATEGORY_Y THEME->GetMetricF(m_sName, "CategoryY")
-#define CATEGORY_ZOOM THEME->GetMetricF(m_sName, "CategoryZoom")
-#define CHARS_ZOOM_SMALL THEME->GetMetricF(m_sName, "CharsZoomSmall")
-#define CHARS_ZOOM_LARGE THEME->GetMetricF(m_sName, "CharsZoomLarge")
-#define CHARS_SPACING_Y THEME->GetMetricF(m_sName, "CharsSpacingY")
-#define CHARS_CHOICES THEME->GetMetric(m_sName, "CharsChoices")
+#define CATEGORY_Y THEME->GetMetricF(name_, "CategoryY")
+#define CATEGORY_ZOOM THEME->GetMetricF(name_, "CategoryZoom")
+#define CHARS_ZOOM_SMALL THEME->GetMetricF(name_, "CharsZoomSmall")
+#define CHARS_ZOOM_LARGE THEME->GetMetricF(name_, "CharsZoomLarge")
+#define CHARS_SPACING_Y THEME->GetMetricF(name_, "CharsSpacingY")
+#define CHARS_CHOICES THEME->GetMetric(name_, "CharsChoices")
 #define SCROLLING_CHARS_COMMAND \
-  THEME->GetMetricA(m_sName, "ScrollingCharsCommand")
-#define SELECTED_CHARS_COMMAND \
-  THEME->GetMetricA(m_sName, "SelectedCharsCommand")
-#define GRAY_ARROWS_Y THEME->GetMetricF(m_sName, "ReceptorArrowsY")
+  THEME->GetMetricA(name_, "ScrollingCharsCommand")
+#define SELECTED_CHARS_COMMAND THEME->GetMetricA(name_, "SelectedCharsCommand")
+#define GRAY_ARROWS_Y THEME->GetMetricF(name_, "ReceptorArrowsY")
 #define NUM_CHARS_TO_DRAW_BEHIND \
-  THEME->GetMetricI(m_sName, "NumCharsToDrawBehind")
-#define NUM_CHARS_TO_DRAW_TOTAL \
-  THEME->GetMetricI(m_sName, "NumCharsToDrawTotal")
-#define FAKE_BEATS_PER_SEC THEME->GetMetricF(m_sName, "FakeBeatsPerSec")
-#define MAX_RANKING_NAME_LENGTH \
-  THEME->GetMetricI(m_sName, "MaxRankingNameLength")
+  THEME->GetMetricI(name_, "NumCharsToDrawBehind")
+#define NUM_CHARS_TO_DRAW_TOTAL THEME->GetMetricI(name_, "NumCharsToDrawTotal")
+#define FAKE_BEATS_PER_SEC THEME->GetMetricF(name_, "FakeBeatsPerSec")
+#define MAX_RANKING_NAME_LENGTH THEME->GetMetricI(name_, "MaxRankingNameLength")
 #define PLAYER_X(p, styleType) \
   THEME->GetMetricF(           \
-      m_sName,                 \
+      name_,                   \
       ssprintf("PlayerP%d%sX", p + 1, StyleTypeToString(styleType).c_str()))
 
 // cache for frequently used metrics
@@ -73,14 +70,14 @@ static int g_iNumCharsToDrawTotal;
 void ScreenNameEntry::ScrollingText::Init(
     const std::string& sName, const std::vector<float>& xs) {
   SetName(sName);
-  m_Xs = xs;
-  m_bDone = false;
-  m_Stamp.LoadFromFont(THEME->GetPathF(sName, "letters"));
-  m_Stamp.RunCommands(THEME->GetMetricA(sName, "ScrollingCharsCommand"));
+  xs_ = xs;
+  done_ = false;
+  stamp_.LoadFromFont(THEME->GetPathF(sName, "letters"));
+  stamp_.RunCommands(THEME->GetMetricA(sName, "ScrollingCharsCommand"));
 }
 
 void ScreenNameEntry::ScrollingText::DrawPrimitives() {
-  const float fFakeBeat = GAMESTATE->m_Position.m_fSongBeat;
+  const float fFakeBeat = GAMESTATE->position_.song_beat_;
   const size_t iClosestIndex = std::lrint(fFakeBeat) % CHARS_CHOICES.size();
   const float fClosestYOffset = GetClosestCharYOffset(fFakeBeat);
 
@@ -107,13 +104,13 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives() {
       fAlpha *= SCALE(fClosestYOffset, 0.f, 0.5f, 1.f, 0.f);
     }
 
-    m_Stamp.SetZoom(fZoom);
-    m_Stamp.SetDiffuseAlpha(fAlpha);
-    m_Stamp.SetText(c);
-    m_Stamp.SetY(fY);
-    for (const float& x : m_Xs) {
-      m_Stamp.SetX(x);
-      m_Stamp.Draw();
+    stamp_.SetZoom(fZoom);
+    stamp_.SetDiffuseAlpha(fAlpha);
+    stamp_.SetText(c);
+    stamp_.SetY(fY);
+    for (const float& x : xs_) {
+      stamp_.SetX(x);
+      stamp_.Draw();
     }
     fY += g_fCharsSpacingY;
     iCharIndex = (iCharIndex + 1) % CHARS_CHOICES.size();
@@ -138,49 +135,49 @@ float ScreenNameEntry::ScrollingText::GetClosestCharYOffset(
 
 REGISTER_SCREEN_CLASS(ScreenNameEntry);
 ScreenNameEntry::ScreenNameEntry() {
-  if (PREFSMAN->m_sTestInitialScreen.Get() != "") {
-    GAMESTATE->m_bSideIsJoined[PLAYER_1] = true;
-    GAMESTATE->m_bSideIsJoined[PLAYER_2] = true;
+  if (PREFSMAN->test_initial_screen_.Get() != "") {
+    GAMESTATE->side_is_joined_[PLAYER_1] = true;
+    GAMESTATE->side_is_joined_[PLAYER_2] = true;
     GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
-    GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
+    GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
     GAMESTATE->SetCurrentStyle(
         GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(), "versus"),
         PLAYER_INVALID);
     StageStats ss;
     for (int z = 0; z < 3; ++z) {
-      ss.m_vpPlayedSongs.push_back(SONGMAN->GetRandomSong());
-      ss.m_vpPossibleSongs = ss.m_vpPlayedSongs;
-      ss.m_player[PLAYER_1].m_pStyle = GAMESTATE->GetCurrentStyle(PLAYER_1);
-      ss.m_playMode = GAMESTATE->m_PlayMode;
-      ASSERT(ss.m_vpPlayedSongs[0]->GetAllSteps().size() != 0);
-      StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StepsType;
+      ss.played_songs_.push_back(SONGMAN->GetRandomSong());
+      ss.possible_songs_ = ss.played_songs_;
+      ss.player_[PLAYER_1].style_ = GAMESTATE->GetCurrentStyle(PLAYER_1);
+      ss.play_mode_ = GAMESTATE->play_mode_;
+      ASSERT(ss.played_songs_[0]->GetAllSteps().size() != 0);
+      StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_1)->steps_type_;
 
       FOREACH_PlayerNumber(p) {
-        Steps* pSteps = ss.m_vpPlayedSongs[0]->GetAllSteps()[0];
-        ss.m_player[p].m_iStepsPlayed = 1;
-        GAMESTATE->m_pCurSteps[p].Set(pSteps);
-        ss.m_player[p].m_iPossibleDancePoints = 100;
-        ss.m_player[p].m_iActualDancePoints = 100;
-        ss.m_player[p].m_iScore = 100;
-        ss.m_player[p].m_iPossibleDancePoints = 1000;
-        ss.m_player[p].m_iActualDancePoints = 985;
-        ss.m_player[p].m_vpPossibleSteps.push_back(pSteps);
+        Steps* pSteps = ss.played_songs_[0]->GetAllSteps()[0];
+        ss.player_[p].steps_played_ = 1;
+        GAMESTATE->cur_steps_[p].Set(pSteps);
+        ss.player_[p].possible_dance_points_ = 100;
+        ss.player_[p].actual_dance_points_ = 100;
+        ss.player_[p].score_ = 100;
+        ss.player_[p].possible_dance_points_ = 1000;
+        ss.player_[p].actual_dance_points_ = 985;
+        ss.player_[p].possible_steps_.push_back(pSteps);
 
         HighScore hs;
         hs.SetGrade(Grade_Tier03);
-        hs.SetPercentDP(ss.m_player[p].GetPercentDancePoints());
-        hs.SetScore(ss.m_player[p].m_iScore);
+        hs.SetPercentDP(ss.player_[p].GetPercentDancePoints());
+        hs.SetScore(ss.player_[p].score_);
         hs.SetDateTime(DateTime::GetNowDateTime());
         int a, b;
-        PROFILEMAN->AddStepsScore(ss.m_vpPlayedSongs[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.m_vpPlayedSongs[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.m_vpPlayedSongs[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.m_vpPlayedSongs[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.m_vpPlayedSongs[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
         PROFILEMAN->AddCategoryScore(st, RANKING_A, p, hs, a, b);
       }
 
-      STATSMAN->m_vPlayedStageStats.push_back(ss);
+      STATSMAN->played_stage_stats_.push_back(ss);
     }
   }
 }
@@ -198,8 +195,8 @@ void ScreenNameEntry::Init() {
   // reset Player and Song Options
   {
     FOREACH_PlayerNumber(p) PO_GROUP_CALL(
-        GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, Init);
-    SO_GROUP_CALL(GAMESTATE->m_SongOptions, ModsLevel_Stage, Init);
+        GAMESTATE->player_state_[p]->player_options_, ModsLevel_Stage, Init);
+    SO_GROUP_CALL(GAMESTATE->song_options_, ModsLevel_Stage, Init);
   }
 
   std::vector<GameState::RankingFeat> aFeats[NUM_PLAYERS];
@@ -208,9 +205,9 @@ void ScreenNameEntry::Init() {
   FOREACH_PlayerNumber(p) {
     GAMESTATE->GetRankingFeats(p, aFeats[p]);
     GAMESTATE->JoinPlayer(p);
-    m_bStillEnteringName[p] = aFeats[p].size() > 0;
+    still_entering_name_[p] = aFeats[p].size() > 0;
 #if 0  // Debugging.
-		m_bStillEnteringName[p] = p == PLAYER_1;
+		still_entering_name_[p] = p == PLAYER_1;
 #endif
   }
 
@@ -221,64 +218,63 @@ void ScreenNameEntry::Init() {
   }
 
   bool IsOnRanking =
-      ((GAMESTATE->m_PlayMode == PLAY_MODE_NONSTOP ||
-        GAMESTATE->m_PlayMode == PLAY_MODE_ONI) &&
-       !(GAMESTATE->m_pCurCourse->IsRanking()));
+      ((GAMESTATE->play_mode_ == PLAY_MODE_NONSTOP ||
+        GAMESTATE->play_mode_ == PLAY_MODE_ONI) &&
+       !(GAMESTATE->cur_course_->IsRanking()));
 
-  if (PREFSMAN->m_GetRankingName == RANKING_OFF ||
-      (PREFSMAN->m_GetRankingName == RANKING_LIST && !IsOnRanking)) {
+  if (PREFSMAN->get_ranking_name_ == RANKING_OFF ||
+      (PREFSMAN->get_ranking_name_ == RANKING_LIST && !IsOnRanking)) {
     // don't collect score due to ranking setting
     PostScreenMessage(SM_GoToNextScreen, 0);
     return;
   }
 
-  GAMESTATE->m_bGameplayLeadIn.Set(false);  // enable the gray arrows
+  GAMESTATE->gameplay_lead_in_.Set(false);  // enable the gray arrows
 
   FOREACH_PlayerNumber(p) {
     // load last used ranking name if any
     Profile* pProfile = PROFILEMAN->GetProfile(p);
-    if (pProfile && !pProfile->m_sLastUsedHighScoreName.empty()) {
-      m_sSelectedName[p] = pProfile->m_sLastUsedHighScoreName;
+    if (pProfile && !pProfile->last_used_high_score_name_.empty()) {
+      selected_name_[p] = pProfile->last_used_high_score_name_;
     }
 
     // resize string to MAX_RANKING_NAME_LENGTH
-    m_sSelectedName[p] = ssprintf(
+    selected_name_[p] = ssprintf(
         "%*.*s", MAX_RANKING_NAME_LENGTH, MAX_RANKING_NAME_LENGTH,
-        m_sSelectedName[p].c_str());
-    ASSERT((int)m_sSelectedName[p].length() == MAX_RANKING_NAME_LENGTH);
+        selected_name_[p].c_str());
+    ASSERT((int)selected_name_[p].length() == MAX_RANKING_NAME_LENGTH);
 
     // don't load player if they aren't going to enter their name
-    if (!m_bStillEnteringName[p]) {
+    if (!still_entering_name_[p]) {
       continue;  // skip
     }
 
     // remove modifiers that may have been on the last song
     PlayerOptions po;
     GAMESTATE->GetDefaultPlayerOptions(po);
-    GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.Assign(ModsLevel_Stage, po);
+    GAMESTATE->player_state_[p]->player_options_.Assign(ModsLevel_Stage, po);
 
     ASSERT(GAMESTATE->IsHumanPlayer(
         p));  // they better be enabled if they made a high score!
 
     const float fPlayerX =
-        PLAYER_X(p, GAMESTATE->GetCurrentStyle(p)->m_StyleType);
+        PLAYER_X(p, GAMESTATE->GetCurrentStyle(p)->style_type_);
 
     {
-      LockNoteSkin l(GAMESTATE->m_pPlayerState[p]
-                         ->m_PlayerOptions.GetCurrent()
-                         .m_sNoteSkin);
+      LockNoteSkin l(
+          GAMESTATE->player_state_[p]->player_options_.GetCurrent().note_skin_);
 
-      m_ReceptorArrowRow[p].Load(GAMESTATE->m_pPlayerState[p], 0);
-      m_ReceptorArrowRow[p].SetX(fPlayerX);
-      m_ReceptorArrowRow[p].SetY(GRAY_ARROWS_Y);
-      this->AddChild(&m_ReceptorArrowRow[p]);
+      receptor_arrow_row_[p].Load(GAMESTATE->player_state_[p], 0);
+      receptor_arrow_row_[p].SetX(fPlayerX);
+      receptor_arrow_row_[p].SetY(GRAY_ARROWS_Y);
+      this->AddChild(&receptor_arrow_row_[p]);
     }
 
     const Style* pStyle = GAMESTATE->GetCurrentStyle(p);
     const int iMaxCols =
-        std::min(int(ABS_MAX_RANKING_NAME_LENGTH), pStyle->m_iColsPerPlayer);
-    m_ColToStringIndex[p].insert(
-        m_ColToStringIndex[p].begin(), pStyle->m_iColsPerPlayer, -1);
+        std::min(int(ABS_MAX_RANKING_NAME_LENGTH), pStyle->cols_per_player_);
+    col_to_string_index_[p].insert(
+        col_to_string_index_[p].begin(), pStyle->cols_per_player_, -1);
     int CurrentStringIndex = 0;
     std::vector<float> xs;
 
@@ -293,64 +289,64 @@ void ScreenNameEntry::Init() {
       bool gi_is_start = false;
       for (size_t i = 0; i < gi.size(); ++i) {
         gi_is_start |=
-            (INPUTMAPPER->GameButtonToMenuButton(gi[i].button) ==
+            (INPUTMAPPER->GameButtonToMenuButton(gi[i].button_) ==
              GAME_BUTTON_START);
       }
       if (gi_is_start) {
         continue;
       }
-      m_ColToStringIndex[p][iCol] = CurrentStringIndex++;
+      col_to_string_index_[p][iCol] = CurrentStringIndex++;
 
-      float ColX = fPlayerX + pStyle->m_ColumnInfo[p][iCol].fXOffset;
+      float ColX = fPlayerX + pStyle->column_info_[p][iCol].x_offset_;
 
-      m_textSelectedChars[p][iCol].LoadFromFont(
-          THEME->GetPathF(m_sName, "letters"));
-      m_textSelectedChars[p][iCol].SetX(ColX);
-      m_textSelectedChars[p][iCol].SetY(GRAY_ARROWS_Y);
-      m_textSelectedChars[p][iCol].RunCommands(SELECTED_CHARS_COMMAND);
-      m_textSelectedChars[p][iCol].SetZoom(CHARS_ZOOM_LARGE);
-      if (iCol < (int)m_sSelectedName[p].length()) {
-        m_textSelectedChars[p][iCol].SetText(
-            m_sSelectedName[p].substr(iCol, 1));
+      text_selected_chars_[p][iCol].LoadFromFont(
+          THEME->GetPathF(name_, "letters"));
+      text_selected_chars_[p][iCol].SetX(ColX);
+      text_selected_chars_[p][iCol].SetY(GRAY_ARROWS_Y);
+      text_selected_chars_[p][iCol].RunCommands(SELECTED_CHARS_COMMAND);
+      text_selected_chars_[p][iCol].SetZoom(CHARS_ZOOM_LARGE);
+      if (iCol < (int)selected_name_[p].length()) {
+        text_selected_chars_[p][iCol].SetText(
+            selected_name_[p].substr(iCol, 1));
       }
-      this->AddChild(&m_textSelectedChars[p][iCol]);
+      this->AddChild(&text_selected_chars_[p][iCol]);
       xs.push_back(ColX);
     }
-    m_Text[p].Init(m_sName, xs);
-    this->AddChild(&m_Text[p]);
+    text_[p].Init(name_, xs);
+    this->AddChild(&text_[p]);
 
-    m_textCategory[p].LoadFromFont(THEME->GetPathF(m_sName, "category"));
-    m_textCategory[p].SetX(fPlayerX);
-    m_textCategory[p].SetY(CATEGORY_Y);
-    m_textCategory[p].SetZoom(CATEGORY_ZOOM);
+    text_category_[p].LoadFromFont(THEME->GetPathF(name_, "category"));
+    text_category_[p].SetX(fPlayerX);
+    text_category_[p].SetY(CATEGORY_Y);
+    text_category_[p].SetZoom(CATEGORY_ZOOM);
     std::string joined;
     for (unsigned j = 0; j < aFeats[p].size(); ++j) {
       if (j) {
         joined += "\n";
       }
-      joined += aFeats[p][j].Feat;
+      joined += aFeats[p][j].feat_;
     }
 
-    m_textCategory[p].SetText(joined);
-    this->AddChild(&m_textCategory[p]);
+    text_category_[p].SetText(joined);
+    this->AddChild(&text_category_[p]);
   }
 
-  m_soundStep.Load(THEME->GetPathS(m_sName, "step"));
-  m_fFakeBeat = 0;
+  sound_step_.Load(THEME->GetPathS(name_, "step"));
+  fake_beat_ = 0;
 }
 
 bool ScreenNameEntry::AnyStillEntering() const {
-  FOREACH_PlayerNumber(p) if (m_bStillEnteringName[p]) return true;
+  FOREACH_PlayerNumber(p) if (still_entering_name_[p]) return true;
   return false;
 }
 
 void ScreenNameEntry::Update(float fDelta) {
-  if (m_bFirstUpdate) {
+  if (first_update_) {
     SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("name entry"));
   }
 
-  m_fFakeBeat += fDelta * FAKE_BEATS_PER_SEC;
-  GAMESTATE->m_Position.m_fSongBeat = m_fFakeBeat;
+  fake_beat_ += fDelta * FAKE_BEATS_PER_SEC;
+  GAMESTATE->position_.song_beat_ = fake_beat_;
 
   ScreenWithMenuElements::Update(fDelta);
 }
@@ -360,21 +356,21 @@ bool ScreenNameEntry::Input(const InputEventPlus& input) {
     return false;
   }
 
-  if (input.type != IET_FIRST_PRESS || !input.GameI.IsValid()) {
+  if (input.type_ != IET_FIRST_PRESS || !input.game_i_.IsValid()) {
     return false;  // ignore
   }
 
   const int iCol =
-      GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn(input.GameI);
+      GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(input.game_i_);
   bool bHandled = false;
-  if (iCol != Column_Invalid && m_bStillEnteringName[input.pn]) {
-    int iStringIndex = m_ColToStringIndex[input.pn][iCol];
+  if (iCol != Column_Invalid && still_entering_name_[input.pn_]) {
+    int iStringIndex = col_to_string_index_[input.pn_][iCol];
     if (iStringIndex != -1) {
-      m_ReceptorArrowRow[input.pn].Step(iCol, TNS_W1);
-      m_soundStep.Play(true);
-      char c = m_Text[input.pn].GetClosestChar(m_fFakeBeat);
-      m_textSelectedChars[input.pn][iCol].SetText(std::string(1, c));
-      m_sSelectedName[input.pn][iStringIndex] = c;
+      receptor_arrow_row_[input.pn_].Step(iCol, TNS_W1);
+      sound_step_.Play(true);
+      char c = text_[input.pn_].GetClosestChar(fake_beat_);
+      text_selected_chars_[input.pn_][iCol].SetText(std::string(1, c));
+      selected_name_[input.pn_][iStringIndex] = c;
     }
     bHandled = true;
   }
@@ -387,7 +383,7 @@ void ScreenNameEntry::HandleScreenMessage(const ScreenMessage SM) {
     if (!IsTransitioning()) {
       InputEventPlus iep;
       FOREACH_PlayerNumber(p) {
-        iep.pn = p;
+        iep.pn_ = p;
         this->MenuStart(iep);
       }
     }
@@ -397,25 +393,25 @@ void ScreenNameEntry::HandleScreenMessage(const ScreenMessage SM) {
 }
 
 bool ScreenNameEntry::MenuStart(const InputEventPlus& input) {
-  PlayerNumber pn = input.pn;
+  PlayerNumber pn = input.pn_;
 
-  if (!m_bStillEnteringName[pn]) {
+  if (!still_entering_name_[pn]) {
     return false;
   }
-  m_bStillEnteringName[pn] = false;
-  m_Text[pn].SetDone();
+  still_entering_name_[pn] = false;
+  text_[pn].SetDone();
 
-  m_soundStep.Play(true);
+  sound_step_.Play(true);
 
   // save last used ranking name
   Profile* pProfile = PROFILEMAN->GetProfile(pn);
-  pProfile->m_sLastUsedHighScoreName = m_sSelectedName[pn];
+  pProfile->last_used_high_score_name_ = selected_name_[pn];
 
-  Trim(m_sSelectedName[pn], " ");
+  Trim(selected_name_[pn], " ");
 
-  GAMESTATE->StoreRankingName(pn, m_sSelectedName[pn]);
+  GAMESTATE->StoreRankingName(pn, selected_name_[pn]);
 
-  if (!AnyStillEntering() && !m_Out.IsTransitioning()) {
+  if (!AnyStillEntering() && !out_.IsTransitioning()) {
     StartTransitioningScreen(SM_GoToNextScreen);
   }
   return true;

@@ -27,16 +27,16 @@ struct ConfOption {
   static ConfOption* Find(std::string name);
 
   // Name of this option.
-  std::string name;
+  std::string name_;
 
   // Name of the preference this option affects.
-  std::string m_sPrefName;
+  std::string pref_name_;
 
   typedef void (*MoveData_t)(
       int& sel, bool ToSel, const ConfOption* pConfOption);
-  MoveData_t MoveData;
-  int m_iEffects;
-  bool m_bAllowThemeItems;
+  MoveData_t move_data_;
+  int effects_;
+  bool allow_theme_items_;
 
   /* For dynamic options, update the options. Since this changes the available
    * options, this may invalidate the offsets returned by Get() and Put(). */
@@ -48,10 +48,10 @@ struct ConfOption {
 
   inline int Get() const {
     int sel;
-    MoveData(sel, true, this);
+    move_data_(sel, true, this);
     return sel;
   }
-  inline void Put(int sel) const { MoveData(sel, false, this); }
+  inline void Put(int sel) const { move_data_(sel, false, this); }
   int GetEffects() const;
 
   ConfOption(
@@ -66,14 +66,14 @@ struct ConfOption {
       const char* c15 = nullptr, const char* c16 = nullptr,
       const char* c17 = nullptr, const char* c18 = nullptr,
       const char* c19 = nullptr) {
-    name = n;
-    m_sPrefName = name;  // copy from name (not n), to allow refcounting
-    MoveData = m;
-    MakeOptionsListCB = nullptr;
-    m_iEffects = 0;
-    m_bAllowThemeItems = true;
+    name_ = n;
+    pref_name_ = name_;  // copy from name (not n), to allow refcounting
+    move_data_ = m;
+    make_options_list_cb_ = nullptr;
+    effects_ = 0;
+    allow_theme_items_ = true;
 #define PUSH(c) \
-  if (c) names.push_back(c);
+  if (c) names_.push_back(c);
     PUSH(c0);
     PUSH(c1);
     PUSH(c2);
@@ -100,16 +100,16 @@ struct ConfOption {
 
   ConfOption(
       const char* n, MoveData_t m, void (*lst)(std::vector<std::string>& out)) {
-    name = n;
-    MoveData = m;
-    MakeOptionsListCB = lst;
-    m_iEffects = 0;
-    m_bAllowThemeItems = false;  // don't theme dynamic choices
+    name_ = n;
+    move_data_ = m;
+    make_options_list_cb_ = lst;
+    effects_ = 0;
+    allow_theme_items_ = false;  // don't theme dynamic choices
   }
 
   // private:
-  std::vector<std::string> names;
-  void (*MakeOptionsListCB)(std::vector<std::string>& out);
+  std::vector<std::string> names_;
+  void (*make_options_list_cb_)(std::vector<std::string>& out);
 };
 
 #endif

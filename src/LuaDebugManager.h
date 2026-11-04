@@ -31,8 +31,8 @@ class LuaDebugManager {
   void DeactivateState(lua_State* lua);
 
  private:
-  std::unique_ptr<LuaDebug::Debugger> m_debugger;
-  std::unique_ptr<LuaDebug::Server> m_server;
+  std::unique_ptr<LuaDebug::Debugger> debugger_;
+  std::unique_ptr<LuaDebug::Server> server_;
 };
 
 extern LuaDebugManager* LUADEBUG;

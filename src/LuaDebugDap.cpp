@@ -2,8 +2,8 @@
 
 namespace LuaDebug {
 bool LuaDebug::Header::TryParse(const char* buffer, size_t length) {
-  m_headerLength = 0;
-  m_contentLength = 0;
+  header_length_ = 0;
+  content_length_ = 0;
   if (length == 0) {
     return false;
   }
@@ -34,8 +34,8 @@ bool LuaDebug::Header::TryParse(const char* buffer, size_t length) {
     return false;
   }
 
-  m_headerLength = headerEnd + 4;
-  m_contentLength = contentLength;
+  header_length_ = headerEnd + 4;
+  content_length_ = contentLength;
   return true;
 }
 

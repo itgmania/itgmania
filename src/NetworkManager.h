@@ -75,41 +75,41 @@ WebSocketMessageType StringToWebSocketMessageType(const std::string& sDC);
 LuaDeclareType(WebSocketMessageType);
 
 struct HttpRequestArgs {
-  std::string url;
-  std::string method = ix::HttpClient::kGet;
-  std::string body;
-  std::string multipartBoundary;
-  std::unordered_map<std::string, std::string> headers;
-  int connectTimeout = -1;
-  int transferTimeout = -1;
-  std::string downloadFile;
-  std::function<bool(int current, int total)> onProgress;
-  std::function<void(const ix::HttpResponsePtr& response)> onResponse;
-  std::function<void(const std::string& errorMessage)> onFileError;
+  std::string url_;
+  std::string method_ = ix::HttpClient::kGet;
+  std::string body_;
+  std::string multipart_boundary_;
+  std::unordered_map<std::string, std::string> headers_;
+  int connect_timeout_ = -1;
+  int transfer_timeout_ = -1;
+  std::string download_file_;
+  std::function<bool(int current, int total)> on_progress_;
+  std::function<void(const ix::HttpResponsePtr& response)> on_response_;
+  std::function<void(const std::string& errorMessage)> on_file_error_;
 };
 
 class HttpRequestFuture {
  public:
-  HttpRequestFuture(ix::HttpRequestArgsPtr& args) : args(args) {};
+  HttpRequestFuture(ix::HttpRequestArgsPtr& args) : args_(args) {};
 
   static int Collect(lua_State* L);
   static int Cancel(lua_State* L);
 
  private:
-  ix::HttpRequestArgsPtr args;
+  ix::HttpRequestArgsPtr args_;
 };
 
 typedef std::shared_ptr<HttpRequestFuture> HttpRequestFuturePtr;
 
 struct WebSocketArgs {
-  std::string url;
-  std::unordered_map<std::string, std::string> headers;
-  int handshakeTimeout = -1;
-  int pingInterval = -1;
-  bool automaticReconnect = true;
-  bool enableDeflate = true;
-  std::function<void(const ix::WebSocketMessage& response)> onMessage;
-  std::function<void()> onClose;
+  std::string url_;
+  std::unordered_map<std::string, std::string> headers_;
+  int handshake_timeout_ = -1;
+  int ping_interval_ = -1;
+  bool automatic_reconnect_ = true;
+  bool enable_deflate_ = true;
+  std::function<void(const ix::WebSocketMessage& response)> on_message_;
+  std::function<void()> on_close_;
 };
 
 class WebSocketHandle {
@@ -121,8 +121,8 @@ class WebSocketHandle {
   static int Close(lua_State* L);
   static int Send(lua_State* L);
 
-  ix::WebSocket webSocket;
-  std::function<void()> onClose;
+  ix::WebSocket web_socket_;
+  std::function<void()> on_close_;
 };
 
 typedef std::shared_ptr<WebSocketHandle> WebSocketHandlePtr;
@@ -156,34 +156,34 @@ class HttpRequestPool {
 
  private:
   struct Job {
-    ix::HttpRequestArgsPtr request;
-    Task task;
-    std::uint64_t sequence;
+    ix::HttpRequestArgsPtr request_;
+    Task task_;
+    std::uint64_t sequence_;
   };
 
   void Run(std::size_t slot);
   void Finish(std::uint64_t sequence, std::function<void()> result);
 
-  const int maxThreads;
-  const bool ordered;
-  const ix::SocketTLSOptions tlsOptions;
+  const int max_threads_;
+  const bool ordered_;
+  const ix::SocketTLSOptions tls_options_;
 
-  std::mutex mutex;
-  std::condition_variable cv;
-  std::deque<Job> queue;
-  std::vector<std::thread> threads;
+  std::mutex mutex_;
+  std::condition_variable cv_;
+  std::deque<Job> queue_;
+  std::vector<std::thread> threads_;
   // The request each thread is sending, if any; indexed like threads.
-  std::vector<ix::HttpRequestArgsPtr> running;
-  int idleThreads = 0;
-  bool stopping = false;
+  std::vector<ix::HttpRequestArgsPtr> running_;
+  int idle_threads_ = 0;
+  bool stopping_ = false;
 
   // Ordered pools: the next sequence number to hand out and to hand on, and
   // the results that finished ahead of their turn.
-  std::uint64_t nextSequence = 0;
-  std::uint64_t nextResult = 0;
-  std::map<std::uint64_t, std::function<void()>> waitingResults;
+  std::uint64_t next_sequence_ = 0;
+  std::uint64_t next_result_ = 0;
+  std::map<std::uint64_t, std::function<void()>> waiting_results_;
   // Held while results are handed on, so two threads never run them at once.
-  std::mutex resultMutex;
+  std::mutex result_mutex_;
 };
 
 class NetworkManager {
@@ -212,15 +212,15 @@ class NetworkManager {
   void ClearDownloads();
 
   // Builds requests and encodes URLs; never sends anything itself.
-  ix::HttpClient helperClient;
-  ix::SocketTLSOptions tlsOptions;
+  ix::HttpClient helper_client_;
+  ix::SocketTLSOptions tls_options_;
 
-  static Preference<bool> httpEnabled;
-  static Preference<std::string> httpAllowHosts;
-  static Preference<int> httpMaxConcurrentRequests;
-  static Preference<int> httpMaxConcurrentDownloads;
+  static Preference<bool> http_enabled_;
+  static Preference<std::string> http_allow_hosts_;
+  static Preference<int> http_max_concurrent_requests_;
+  static Preference<int> http_max_concurrent_downloads_;
 
-  std::atomic<bool> shutdownWorkers{false};
+  std::atomic<bool> shutdown_workers_{false};
 
   // Requests that keep their response in memory, and requests that write it
   // to a downloadFile. Downloads get a pool of their own so that a large one
@@ -228,19 +228,19 @@ class NetworkManager {
   // order the requests were made, as they did over one connection; downloads
   // finish in whatever order they come in, so a small file never waits on a
   // large one.
-  std::unique_ptr<HttpRequestPool> requestPool;
-  std::unique_ptr<HttpRequestPool> downloadPool;
+  std::unique_ptr<HttpRequestPool> request_pool_;
+  std::unique_ptr<HttpRequestPool> download_pool_;
 
-  std::thread webSocketWorker;
-  std::mutex webSocketWorkerMutex;
-  std::condition_variable webSocketWorkerCv;
-  std::queue<std::function<void()>> webSocketWorkerQueue;
+  std::thread web_socket_worker_;
+  std::mutex web_socket_worker_mutex_;
+  std::condition_variable web_socket_worker_cv_;
+  std::queue<std::function<void()>> web_socket_worker_queue_;
 
-  std::mutex webSocketHandlesMutex;
-  std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
+  std::mutex web_socket_handles_mutex_;
+  std::vector<std::shared_ptr<WebSocketHandle>> web_socket_handles_;
 
-  std::mutex mainThreadTaskMutex;
-  std::queue<std::function<void()>> mainThreadTaskQueue;
+  std::mutex main_thread_task_mutex_;
+  std::queue<std::function<void()>> main_thread_task_queue_;
 };
 
 extern NetworkManager* NETWORK;

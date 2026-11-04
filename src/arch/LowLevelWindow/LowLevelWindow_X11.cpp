@@ -96,7 +96,7 @@ LowLevelWindow_X11::LowLevelWindow_X11() {
   LOG->Info(
       "Client GLX vendor: %s [%s]", glXGetClientString(Dpy, GLX_VENDOR),
       glXGetClientString(Dpy, GLX_VERSION));
-  m_bWasWindowed = true;
+  was_windowed_ = true;
   g_pScreenConfig = XRRGetScreenInfo(Dpy, RootWindow(Dpy, DefaultScreen(Dpy)));
 }
 
@@ -108,7 +108,7 @@ LowLevelWindow_X11::~LowLevelWindow_X11() {
   }
 
   // Reset the display
-  if (!m_bWasWindowed) {
+  if (!was_windowed_) {
     RestoreOutputConfig();
     XUngrabKeyboard(Dpy, CurrentTime);
   }
@@ -166,7 +166,7 @@ bool TryInhibitScreensaver(DBusConnection* connection, uint32_t& cookieOut) {
 }  // namespace
 
 void LowLevelWindow_X11::InhibitScreensaver() {
-  if (m_dbus != nullptr) {
+  if (dbus_ != nullptr) {
     return;
   }
 
@@ -188,8 +188,8 @@ void LowLevelWindow_X11::InhibitScreensaver() {
 
   uint32_t cookie = 0;
   if (TryInhibitScreensaver(connection, cookie)) {
-    m_dbus = connection;
-    m_screensaverCookie = cookie;
+    dbus_ = connection;
+    screensaver_cookie_ = cookie;
     LOG->Info("LowLevelWindow_X11: inhibited screensaver");
     return;
   }
@@ -202,7 +202,7 @@ void LowLevelWindow_X11::InhibitScreensaver() {
 }
 
 void LowLevelWindow_X11::UninhibitScreensaver() {
-  if (m_dbus == nullptr) {
+  if (dbus_ == nullptr) {
     return;
   }
 
@@ -210,14 +210,14 @@ void LowLevelWindow_X11::UninhibitScreensaver() {
       kScreenSaverBusName, kScreenSaverPath, kScreenSaverInterface,
       "UnInhibit");
   if (message != nullptr) {
-    dbus_uint32_t cookie = m_screensaverCookie;
+    dbus_uint32_t cookie = screensaver_cookie_;
     dbus_message_append_args(
         message, DBUS_TYPE_UINT32, &cookie, DBUS_TYPE_INVALID);
 
     DBusError error;
     dbus_error_init(&error);
-    DBusMessage* reply = dbus_connection_send_with_reply_and_block(
-        m_dbus, message, 1000, &error);
+    DBusMessage* reply =
+        dbus_connection_send_with_reply_and_block(dbus_, message, 1000, &error);
     if (reply != nullptr) {
       dbus_message_unref(reply);
     }
@@ -230,10 +230,10 @@ void LowLevelWindow_X11::UninhibitScreensaver() {
     dbus_message_unref(message);
   }
 
-  m_screensaverCookie = 0;
-  dbus_connection_close(m_dbus);
-  dbus_connection_unref(m_dbus);
-  m_dbus = nullptr;
+  screensaver_cookie_ = 0;
+  dbus_connection_close(dbus_);
+  dbus_connection_unref(dbus_);
+  dbus_ = nullptr;
 }
 
 /*
@@ -280,21 +280,21 @@ std::string LowLevelWindow_X11::TryVideoMode(
       &winAttrib, restore);
 
   // These might change if we're rendering at different resolution than window
-  int windowWidth = p.width;
-  int windowHeight = p.height;
+  int windowWidth = p.width_;
+  int windowHeight = p.height_;
   bool renderOffscreen = false;
 
-  if (g_pContext == nullptr || p.bpp != CurrentParams.bpp ||
-      m_bWasWindowed != p.windowed) {
+  if (g_pContext == nullptr || p.bpp_ != current_params_.bpp_ ||
+      was_windowed_ != p.windowed_) {
     bool bFirstRun = g_pContext == nullptr;
     // Different depth, or we didn't make a window before. New context.
     bNewDeviceOut = true;
 
     int visAttribs[32];
     int i = 0;
-    ASSERT(p.bpp == 16 || p.bpp == 32);
+    ASSERT(p.bpp_ == 16 || p.bpp_ == 32);
 
-    if (p.bpp == 32) {
+    if (p.bpp_ == 32) {
       visAttribs[i++] = GLX_RED_SIZE;
       visAttribs[i++] = 8;
       visAttribs[i++] = GLX_GREEN_SIZE;
@@ -325,12 +325,12 @@ std::string LowLevelWindow_X11::TryVideoMode(
     // I get strange behavior if I add override redirect after creating the
     // window. So, let's recreate the window when changing that state.
     if (!MakeWindow(
-            Win, xvi->screen, xvi->depth, xvi->visual, p.width, p.height,
-            !p.windowed)) {
+            Win, xvi->screen, xvi->depth, xvi->visual, p.width_, p.height_,
+            !p.windowed_)) {
       return "Failed to create the window.";
     }
 
-    char* szWindowTitle = const_cast<char*>(p.sWindowTitle.c_str());
+    char* szWindowTitle = const_cast<char*>(p.window_title_.c_str());
     XChangeProperty(
         Dpy, Win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
         reinterpret_cast<unsigned char*>(szWindowTitle), strlen(szWindowTitle));
@@ -369,7 +369,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
         Dpy, Win,
         winAttrib.your_event_mask | StructureNotifyMask | PropertyChangeMask);
 
-    if (!p.windowed) {
+    if (!p.windowed_) {
       // X11 is an asynchronous beast. If we're resizing an existing
       // window directly (i.e. override-redirect as opposed to asking the
       // WM to do it) and don't wait for the window to actually be
@@ -380,8 +380,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
       // So, set the event mask so we're notified when the window is resized...
       // Send the resize command...
       XResizeWindow(
-          Dpy, Win, static_cast<unsigned int>(p.width),
-          static_cast<unsigned int>(p.height));
+          Dpy, Win, static_cast<unsigned int>(p.width_),
+          static_cast<unsigned int>(p.height_));
 
       // We'll wait for the notification once we've done everything else,
       // to save time.
@@ -390,15 +390,15 @@ std::string LowLevelWindow_X11::TryVideoMode(
 
   float rate = 60;  // Will be unchanged if windowed. Not sure I care.
 
-  if (!p.windowed) {
+  if (!p.windowed_) {
     RestoreOutputConfig();
 
-    if (p.sDisplayId == ID_XSCREEN || p.sDisplayId.empty()) {
+    if (p.display_id_ == ID_XSCREEN || p.display_id_.empty()) {
       // If the user changed the resolution while StepMania was windowed we
       // overwrite the resolution to restore with it at exit.
       g_iOldSize =
           XRRConfigCurrentConfiguration(g_pScreenConfig, &g_OldRotation);
-      m_bWasWindowed = false;
+      was_windowed_ = false;
 
       // Find a matching mode.
       int iSizesXct;
@@ -408,7 +408,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       int iSizeMatch = -1;
 
       for (int i = 0; i < iSizesXct; ++i) {
-        if (pSizesX[i].width == p.width && pSizesX[i].height == p.height) {
+        if (pSizesX[i].width == p.width_ && pSizesX[i].height == p.height_) {
           iSizeMatch = i;
           break;
         }
@@ -455,7 +455,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
 
       // If an output name has been specified, search for it
       RROutput targetOut = None;
-      if (p.sDisplayId.length() > 0) {
+      if (p.display_id_.length() > 0) {
         for (unsigned int i = 0;
              i < static_cast<uint32_t>(scrRes->noutput) && targetOut == None;
              ++i) {
@@ -463,7 +463,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
               XRRGetOutputInfo(Dpy, scrRes, scrRes->outputs[i]);
           std::string outName = std::string(
               outInfo->name, static_cast<unsigned int>(outInfo->nameLen));
-          if (p.sDisplayId == outName) {
+          if (p.display_id_ == outName) {
             targetOut = scrRes->outputs[i];
           }
           XRRFreeOutputInfo(outInfo);
@@ -472,7 +472,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       if (targetOut == None) {
         LOG->Info(
             "Did not find display output %s, trying another",
-            p.sDisplayId.c_str());
+            p.display_id_.c_str());
         // didn't find named output, pick primary/or at least one that works
         if (g_iRandRVerMajor >= 1 && g_iRandRVerMinor >= 3) {
           // RandR 1.3 can tell us what the primary display is.
@@ -539,14 +539,14 @@ std::string LowLevelWindow_X11::TryVideoMode(
         const unsigned int modeWidth = bPortrait ? thisMI.height : thisMI.width;
         const unsigned int modeHeight =
             bPortrait ? thisMI.width : thisMI.height;
-        if (p.width >= 0 && p.height >= 0 &&
-            modeWidth == static_cast<uint32_t>(p.width) &&
-            modeHeight == static_cast<uint32_t>(p.height)) {
+        if (p.width_ >= 0 && p.height_ >= 0 &&
+            modeWidth == static_cast<uint32_t>(p.width_) &&
+            modeHeight == static_cast<uint32_t>(p.height_)) {
           float fTempRefresh =
               calcRandRRefresh(thisMI.dotClock, thisMI.hTotal, thisMI.vTotal);
-          float fTempDiff = std::abs(p.rate - fTempRefresh);
-          if ((p.rate != REFRESH_DEFAULT && fTempDiff < fRefreshDiff) ||
-              (p.rate == REFRESH_DEFAULT && fTempRefresh > fRefreshRate)) {
+          float fTempDiff = std::abs(p.rate_ - fTempRefresh);
+          if ((p.rate_ != REFRESH_DEFAULT && fTempDiff < fRefreshDiff) ||
+              (p.rate_ == REFRESH_DEFAULT && fTempRefresh > fRefreshRate)) {
             int j;
             // Ensure that the output supports the mode
             for (j = 0; j < tgtOutInfo->nmode; j++) {
@@ -594,7 +594,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       XRRFreeOutputInfo(tgtOutInfo);
       XRRFreeScreenResources(scrRes);
     }
-    m_bWasWindowed = false;
+    was_windowed_ = false;
 
     XRaiseWindow(Dpy, Win);
 
@@ -606,11 +606,11 @@ std::string LowLevelWindow_X11::TryVideoMode(
         Dpy, Win, True, GrabModeAsync, GrabModeAsync, CurrentTime));
   } else  // if(p.windowed)
   {
-    if (!m_bWasWindowed) {
+    if (!was_windowed_) {
       // Return the display to the mode it was in before we fullscreened.
       RestoreOutputConfig();
       XUngrabKeyboard(Dpy, CurrentTime);
-      m_bWasWindowed = true;
+      was_windowed_ = true;
     }
 
     Atom net_wm_state = XInternAtom(Dpy, "_NET_WM_STATE", False);
@@ -623,12 +623,12 @@ std::string LowLevelWindow_X11::TryVideoMode(
     // then set fullscreen hint, and set the CurrentParams.outWidth,
     // CurrentParams.outHeight to the values of that display otherwise set the
     // size hints and disable MAXIMIZED_*
-    if (p.bWindowIsFullscreenBorderless) {
+    if (p.window_is_fullscreen_borderless_) {
       auto specs = DisplaySpecs{};
       GetDisplaySpecs(specs);
       auto target = std::find_if(
           specs.begin(), specs.end(), [&](const DisplaySpec& spec) {
-            return p.sDisplayId == spec.id() && spec.currentMode() != nullptr;
+            return p.display_id_ == spec.id() && spec.currentMode() != nullptr;
           });
       // If we didn't find a matching DisplaySpec for the requested ID, pick the
       // first one with a current mode
@@ -643,10 +643,10 @@ std::string LowLevelWindow_X11::TryVideoMode(
         return "Unable to find destination monitor for fullscreen borderless";
       }
 
-      windowWidth = target->currentMode()->width;
-      windowHeight = target->currentMode()->height;
+      windowWidth = target->currentMode()->width_;
+      windowHeight = target->currentMode()->height_;
 
-      if (windowWidth != p.width || windowHeight != p.height) {
+      if (windowWidth != p.width_ || windowHeight != p.height_) {
         renderOffscreen = true;
       }
 
@@ -674,8 +674,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
             Dpy, Win, static_cast<unsigned int>(windowWidth),
             static_cast<unsigned int>(windowHeight));
         XMoveWindow(
-            Dpy, Win, target->currentBounds().left,
-            target->currentBounds().top);
+            Dpy, Win, target->currentBounds().left_,
+            target->currentBounds().top_);
         XRaiseWindow(Dpy, Win);
 
         SetWMState(winAttrib.root, Win, 1, fullscreen_state);
@@ -683,8 +683,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
         SetWMState(winAttrib.root, Win, 1, maximized_vert);
       }
     } else {
-      windowWidth = p.width;
-      windowHeight = p.height;
+      windowWidth = p.width_;
+      windowHeight = p.height_;
 
       SetWMState(winAttrib.root, Win, 0, fullscreen_state);
       // Make a window fixed size, don't let resize it or maximize it.
@@ -718,18 +718,18 @@ std::string LowLevelWindow_X11::TryVideoMode(
     }
   }
 
-  CurrentParams = p;
-  CurrentParams.windowWidth = windowWidth;
-  CurrentParams.windowHeight = windowHeight;
-  CurrentParams.renderOffscreen = renderOffscreen;
+  current_params_ = p;
+  current_params_.window_width_ = windowWidth;
+  current_params_.window_height_ = windowHeight;
+  current_params_.render_offscreen_ = renderOffscreen;
   ASSERT(rate > 0);
-  CurrentParams.rate = std::round(rate);
+  current_params_.rate_ = std::round(rate);
 
-  if (!p.windowed) {
+  if (!p.windowed_) {
     // Set our V-sync hint.
     if (GLXEW_EXT_swap_control) {  // I haven't seen this actually implemented
                                    // yet, but why not.
-      glXSwapIntervalEXT(Dpy, Win, CurrentParams.vsync ? 1 : 0);
+      glXSwapIntervalEXT(Dpy, Win, current_params_.vsync_ ? 1 : 0);
     }
     // XXX: These two might be server-global. I should look into whether
     // to try to preserve the original value on exit.
@@ -737,17 +737,17 @@ std::string LowLevelWindow_X11::TryVideoMode(
                                 // apparently.
     else if (GLXEW_MESA_swap_control) {  // Haven't seen this NOT implemented
                                          // yet
-      glXSwapIntervalMESA(CurrentParams.vsync ? 1 : 0);
+      glXSwapIntervalMESA(current_params_.vsync_ ? 1 : 0);
     }
 #endif
     else if (GLXEW_SGI_swap_control) {  // But old GLEW.
-      glXSwapIntervalSGI(CurrentParams.vsync ? 1 : 0);
+      glXSwapIntervalSGI(current_params_.vsync_ ? 1 : 0);
     } else {
-      CurrentParams.vsync = false;  // Assuming it's not on
+      current_params_.vsync_ = false;  // Assuming it's not on
     }
   }
 
-  if (PREFSMAN->m_bDisableScreenSaver) {
+  if (PREFSMAN->disable_screen_saver_) {
     InhibitScreensaver();
   }
 
@@ -866,9 +866,9 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
         for (unsigned int modeIdx = 0;
              modeIdx < static_cast<uint32_t>(outInfo->nmode); ++modeIdx) {
           DisplayMode mode = outputModes[outInfo->modes[modeIdx]];
-          unsigned int modeWidth = bPortrait ? mode.height : mode.width;
-          unsigned int modeHeight = bPortrait ? mode.width : mode.height;
-          DisplayMode m = {modeWidth, modeHeight, mode.refreshRate};
+          unsigned int modeWidth = bPortrait ? mode.height_ : mode.width_;
+          unsigned int modeHeight = bPortrait ? mode.width_ : mode.height_;
+          DisplayMode m = {modeWidth, modeHeight, mode.refresh_rate_};
           outputSupported.insert(m);
           if (curRRMode != None && outInfo->modes[modeIdx] == curRRMode) {
             outputCurMode = m;
@@ -900,7 +900,7 @@ class RenderTarget_X11 : public RenderTarget {
   void Create(
       const RenderTargetParam& param, int& iTextureWidthOut,
       int& iTextureHeightOut);
-  uintptr_t GetTexture() const { return static_cast<uintptr_t>(m_iTexHandle); }
+  uintptr_t GetTexture() const { return static_cast<uintptr_t>(tex_handle_); }
   void StartRenderingTo();
   void FinishRenderingTo();
 
@@ -908,34 +908,34 @@ class RenderTarget_X11 : public RenderTarget {
   virtual bool InvertY() const { return true; }
 
  private:
-  int m_iWidth, m_iHeight;
-  LowLevelWindow_X11* m_pWind;
-  GLXPbuffer m_iPbuffer;
-  GLXContext m_pPbufferContext;
-  GLuint m_iTexHandle;
+  int width_, height_;
+  LowLevelWindow_X11* wind_;
+  GLXPbuffer pbuffer_;
+  GLXContext pbuffer_context_;
+  GLuint tex_handle_;
 
-  GLXContext m_pOldContext;
-  GLXDrawable m_pOldDrawable;
+  GLXContext old_context_;
+  GLXDrawable old_drawable_;
 };
 
 RenderTarget_X11::RenderTarget_X11(LowLevelWindow_X11* pWind) {
-  m_pWind = pWind;
-  m_iPbuffer = 0;
-  m_pPbufferContext = nullptr;
-  m_iTexHandle = 0;
-  m_pOldContext = nullptr;
-  m_pOldDrawable = 0;
+  wind_ = pWind;
+  pbuffer_ = 0;
+  pbuffer_context_ = nullptr;
+  tex_handle_ = 0;
+  old_context_ = nullptr;
+  old_drawable_ = 0;
 }
 
 RenderTarget_X11::~RenderTarget_X11() {
-  if (m_pPbufferContext) {
-    glXDestroyContext(Dpy, m_pPbufferContext);
+  if (pbuffer_context_) {
+    glXDestroyContext(Dpy, pbuffer_context_);
   }
-  if (m_iPbuffer) {
-    glXDestroyPbuffer(Dpy, m_iPbuffer);
+  if (pbuffer_) {
+    glXDestroyPbuffer(Dpy, pbuffer_);
   }
-  if (m_iTexHandle) {
-    glDeleteTextures(1, reinterpret_cast<GLuint*>(&m_iTexHandle));
+  if (tex_handle_) {
+    glDeleteTextures(1, reinterpret_cast<GLuint*>(&tex_handle_));
   }
 }
 
@@ -947,8 +947,8 @@ void RenderTarget_X11::Create(
   // ASSERT( param.iWidth == power_of_two(param.iWidth) && param.iHeight ==
   // power_of_two(param.iHeight) );
 
-  m_iWidth = param.iWidth;
-  m_iHeight = param.iHeight;
+  width_ = param.width_;
+  height_ = param.height_;
 
   /* NOTE: int casts on GLX_DONT_CARE are for -Werror=narrowing */
   int pConfigAttribs[] = {
@@ -964,12 +964,12 @@ void RenderTarget_X11::Create(
       GLX_BLUE_SIZE,
       8,
       GLX_ALPHA_SIZE,
-      param.bWithAlpha ? 8 : (int)GLX_DONT_CARE,
+      param.with_alpha_ ? 8 : (int)GLX_DONT_CARE,
 
       GLX_DOUBLEBUFFER,
       False,
       GLX_DEPTH_SIZE,
-      param.bWithDepthBuffer ? 16 : (int)GLX_DONT_CARE,
+      param.with_depth_buffer_ ? 16 : (int)GLX_DONT_CARE,
       None};
   int iConfigs;
   GLXFBConfig* pConfigs =
@@ -977,38 +977,38 @@ void RenderTarget_X11::Create(
   ASSERT(pConfigs);
 
   const int pPbufferAttribs[] = {
-      GLX_PBUFFER_WIDTH, param.iWidth, GLX_PBUFFER_HEIGHT, param.iHeight, None};
+      GLX_PBUFFER_WIDTH, param.width_, GLX_PBUFFER_HEIGHT, param.height_, None};
 
   for (int i = 0; i < iConfigs; ++i) {
-    m_iPbuffer = glXCreatePbuffer(Dpy, pConfigs[i], pPbufferAttribs);
-    if (m_iPbuffer == 0) {
+    pbuffer_ = glXCreatePbuffer(Dpy, pConfigs[i], pPbufferAttribs);
+    if (pbuffer_ == 0) {
       continue;
     }
 
     XVisualInfo* pVisual = glXGetVisualFromFBConfig(Dpy, pConfigs[i]);
-    m_pPbufferContext = glXCreateContext(Dpy, pVisual, g_pContext, True);
-    ASSERT(m_pPbufferContext);
+    pbuffer_context_ = glXCreateContext(Dpy, pVisual, g_pContext, True);
+    ASSERT(pbuffer_context_);
     XFree(pVisual);
     break;
   }
 
-  ASSERT(m_iPbuffer);
+  ASSERT(pbuffer_);
 
   // allocate OpenGL texture resource
-  glGenTextures(1, reinterpret_cast<GLuint*>(&m_iTexHandle));
-  glBindTexture(GL_TEXTURE_2D, m_iTexHandle);
+  glGenTextures(1, reinterpret_cast<GLuint*>(&tex_handle_));
+  glBindTexture(GL_TEXTURE_2D, tex_handle_);
 
-  LOG->Trace("n %i, %ix%i", m_iTexHandle, param.iWidth, param.iHeight);
+  LOG->Trace("n %i, %ix%i", tex_handle_, param.width_, param.height_);
   while (glGetError() != GL_NO_ERROR);
 
-  int iTextureWidth = power_of_two(param.iWidth);
-  int iTextureHeight = power_of_two(param.iHeight);
+  int iTextureWidth = power_of_two(param.width_);
+  int iTextureHeight = power_of_two(param.height_);
   iTextureWidthOut = iTextureWidth;
   iTextureHeightOut = iTextureHeight;
 
   glTexImage2D(
-      GL_TEXTURE_2D, 0, param.bWithAlpha ? GL_RGBA8 : GL_RGB8, iTextureWidth,
-      iTextureHeight, 0, param.bWithAlpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE,
+      GL_TEXTURE_2D, 0, param.with_alpha_ ? GL_RGBA8 : GL_RGB8, iTextureWidth,
+      iTextureHeight, 0, param.with_alpha_ ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE,
       nullptr);
   GLenum error = glGetError();
   ASSERT_M(error == GL_NO_ERROR, GLToString(error));
@@ -1021,30 +1021,30 @@ void RenderTarget_X11::Create(
 }
 
 void RenderTarget_X11::StartRenderingTo() {
-  m_pOldContext = glXGetCurrentContext();
-  m_pOldDrawable = glXGetCurrentDrawable();
-  glXMakeCurrent(Dpy, m_iPbuffer, m_pPbufferContext);
+  old_context_ = glXGetCurrentContext();
+  old_drawable_ = glXGetCurrentDrawable();
+  glXMakeCurrent(Dpy, pbuffer_, pbuffer_context_);
 
-  glViewport(0, 0, m_iWidth, m_iHeight);
+  glViewport(0, 0, width_, height_);
 }
 
 void RenderTarget_X11::FinishRenderingTo() {
   glFlush();
 
-  glBindTexture(GL_TEXTURE_2D, m_iTexHandle);
+  glBindTexture(GL_TEXTURE_2D, tex_handle_);
 
   while (glGetError() != GL_NO_ERROR);
 
-  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, m_iWidth, m_iHeight);
+  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
 
   GLenum error = glGetError();
   ASSERT_M(error == GL_NO_ERROR, GLToString(error));
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  glXMakeCurrent(Dpy, m_pOldDrawable, m_pOldContext);
-  m_pOldContext = nullptr;
-  m_pOldDrawable = 0;
+  glXMakeCurrent(Dpy, old_drawable_, old_context_);
+  old_context_ = nullptr;
+  old_drawable_ = 0;
 }
 
 bool LowLevelWindow_X11::SupportsRenderToTexture() const {

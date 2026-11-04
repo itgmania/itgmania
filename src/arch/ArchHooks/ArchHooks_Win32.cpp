@@ -63,14 +63,14 @@ void ArchHooks_Win32::DumpDebugInfo() {
 }
 
 struct CallbackData {
-  HWND hParent;
-  HWND hResult;
+  HWND parent_;
+  HWND result_;
 };
 
 // Like GW_ENABLEDPOPUP:
 static BOOL CALLBACK GetEnabledPopup(HWND hWnd, LPARAM lParam) {
   CallbackData* pData = (CallbackData*)lParam;
-  if (GetParent(hWnd) != pData->hParent) {
+  if (GetParent(hWnd) != pData->parent_) {
     return TRUE;
   }
   if ((GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP) != WS_POPUP) {
@@ -80,7 +80,7 @@ static BOOL CALLBACK GetEnabledPopup(HWND hWnd, LPARAM lParam) {
     return TRUE;
   }
 
-  pData->hResult = hWnd;
+  pData->result_ = hWnd;
   return FALSE;
 }
 
@@ -101,12 +101,12 @@ bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[]) {
     /* If the application has a model dialog box open, we want to be sure to
      * give focus to it, not the main window. */
     CallbackData data;
-    data.hParent = hWnd;
-    data.hResult = nullptr;
+    data.parent_ = hWnd;
+    data.result_ = nullptr;
     EnumWindows(GetEnabledPopup, (LPARAM)&data);
 
-    if (data.hResult != nullptr) {
-      SetForegroundWindow(data.hResult);
+    if (data.result_ != nullptr) {
+      SetForegroundWindow(data.result_);
     } else {
       SetForegroundWindow(hWnd);
     }

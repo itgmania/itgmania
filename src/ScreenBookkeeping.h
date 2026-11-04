@@ -37,12 +37,12 @@ class ScreenBookkeeping : public ScreenWithMenuElements {
  private:
   void UpdateView();
 
-  int m_iViewIndex;
-  std::vector<BookkeepingView> m_vBookkeepingViews;
+  int view_index_;
+  std::vector<BookkeepingView> bookkeeping_views_;
 
-  BitmapText m_textAllTime;
-  BitmapText m_textTitle;
-  BitmapText m_textData[NUM_BOOKKEEPING_COLS];
+  BitmapText text_all_time_;
+  BitmapText text_title_;
+  BitmapText text_data_[NUM_BOOKKEEPING_COLS];
 };
 
 #endif

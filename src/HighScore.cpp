@@ -22,35 +22,35 @@
 ThemeMetric<std::string> EMPTY_NAME("HighScore", "EmptyName");
 
 struct HighScoreImpl {
-  std::string sName;  // name that shows in the machine's ranking screen
-  Grade grade;
-  unsigned int iScore;
-  float fPercentDP;
-  float fSurviveSeconds;
-  unsigned int iMaxCombo;         // maximum combo obtained [SM5 alpha 1a+]
-  StageAward stageAward;          // stage award [SM5 alpha 1a+]
-  PeakComboAward peakComboAward;  // peak combo award [SM5 alpha 1a+]
-  std::string sModifiers;
-  DateTime dateTime;         // return value of time() when screenshot was taken
-  std::string sPlayerGuid;   // who made this high score
-  std::string sMachineGuid;  // where this high score was made
-  int iProductID;
-  int iTapNoteScores[NUM_TapNoteScore];
-  int iHoldNoteScores[NUM_HoldNoteScore];
-  RadarValues radarValues;
-  float fLifeRemainingSeconds;
-  bool bDisqualified;
-  bool bIsRoutine;
+  std::string name_;  // name that shows in the machine's ranking screen
+  Grade grade_;
+  unsigned int score_;
+  float percent_dp_;
+  float survive_seconds_;
+  unsigned int max_combo_;           // maximum combo obtained [SM5 alpha 1a+]
+  StageAward stage_award_;           // stage award [SM5 alpha 1a+]
+  PeakComboAward peak_combo_award_;  // peak combo award [SM5 alpha 1a+]
+  std::string modifiers_;
+  DateTime date_time_;       // return value of time() when screenshot was taken
+  std::string player_guid_;  // who made this high score
+  std::string machine_guid_;  // where this high score was made
+  int product_id_;
+  int tap_note_scores_[NUM_TapNoteScore];
+  int hold_note_scores_[NUM_HoldNoteScore];
+  RadarValues radar_values_;
+  float life_remaining_seconds_;
+  bool disqualified_;
+  bool is_routine_;
 
   // Additional player-specific attributes for HighScore
-  std::vector<std::string> playerNames;
-  std::vector<Grade> playerGrades;
-  std::vector<unsigned int> playerScores;
-  std::vector<float> playerPercentDPs;
-  std::vector<unsigned int> playerMaxCombos;
-  std::vector<std::string> playerGuids;
-  std::vector<std::array<int, NUM_TapNoteScore>> playerTapNoteScores;
-  std::vector<std::array<int, NUM_HoldNoteScore>> playerHoldNoteScores;
+  std::vector<std::string> player_names_;
+  std::vector<Grade> player_grades_;
+  std::vector<unsigned int> player_scores_;
+  std::vector<float> player_percent_d_ps_;
+  std::vector<unsigned int> player_max_combos_;
+  std::vector<std::string> player_guids_;
+  std::vector<std::array<int, NUM_TapNoteScore>> player_tap_note_scores_;
+  std::vector<std::array<int, NUM_HoldNoteScore>> player_hold_note_scores_;
 
   HighScoreImpl();
   XNode* CreateNode() const;
@@ -63,103 +63,104 @@ struct HighScoreImpl {
 };
 
 bool HighScoreImpl::operator==(const HighScoreImpl& other) const {
-  if (sName != other.sName) {
+  if (name_ != other.name_) {
     return false;
   }
-  if (grade != other.grade) {
+  if (grade_ != other.grade_) {
     return false;
   }
-  if (iScore != other.iScore) {
+  if (score_ != other.score_) {
     return false;
   }
-  if (iMaxCombo != other.iMaxCombo) {
+  if (max_combo_ != other.max_combo_) {
     return false;
   }
-  if (stageAward != other.stageAward) {
+  if (stage_award_ != other.stage_award_) {
     return false;
   }
-  if (peakComboAward != other.peakComboAward) {
+  if (peak_combo_award_ != other.peak_combo_award_) {
     return false;
   }
-  if (fPercentDP != other.fPercentDP) {
+  if (percent_dp_ != other.percent_dp_) {
     return false;
   }
-  if (fSurviveSeconds != other.fSurviveSeconds) {
+  if (survive_seconds_ != other.survive_seconds_) {
     return false;
   }
-  if (sModifiers != other.sModifiers) {
+  if (modifiers_ != other.modifiers_) {
     return false;
   }
-  if (dateTime != other.dateTime) {
+  if (date_time_ != other.date_time_) {
     return false;
   }
-  if (sPlayerGuid != other.sPlayerGuid) {
+  if (player_guid_ != other.player_guid_) {
     return false;
   }
-  if (sMachineGuid != other.sMachineGuid) {
+  if (machine_guid_ != other.machine_guid_) {
     return false;
   }
-  if (iProductID != other.iProductID) {
+  if (product_id_ != other.product_id_) {
     return false;
   }
   FOREACH_ENUM(TapNoteScore, tns) {
-    if (iTapNoteScores[tns] != other.iTapNoteScores[tns]) {
+    if (tap_note_scores_[tns] != other.tap_note_scores_[tns]) {
       return false;
     }
   }
   FOREACH_ENUM(HoldNoteScore, hns) {
-    if (iHoldNoteScores[hns] != other.iHoldNoteScores[hns]) {
+    if (hold_note_scores_[hns] != other.hold_note_scores_[hns]) {
       return false;
     }
   }
-  if (radarValues != other.radarValues) {
+  if (radar_values_ != other.radar_values_) {
     return false;
   }
-  if (fLifeRemainingSeconds != other.fLifeRemainingSeconds) {
+  if (life_remaining_seconds_ != other.life_remaining_seconds_) {
     return false;
   }
-  if (bDisqualified != other.bDisqualified) {
+  if (disqualified_ != other.disqualified_) {
     return false;
   }
   return true;
 }
 
 HighScoreImpl::HighScoreImpl() {
-  sName = "";
-  grade = Grade_NoData;
-  iScore = 0;
-  fPercentDP = 0;
-  fSurviveSeconds = 0;
-  iMaxCombo = 0;
-  stageAward = StageAward_Invalid;
-  peakComboAward = PeakComboAward_Invalid;
-  sModifiers = "";
-  dateTime.Init();
-  sPlayerGuid = "";
-  sMachineGuid = "";
-  iProductID = 0;
-  ZERO(iTapNoteScores);
-  ZERO(iHoldNoteScores);
-  radarValues.MakeUnknown();
-  fLifeRemainingSeconds = 0;
-  bIsRoutine = false;
+  name_ = "";
+  grade_ = Grade_NoData;
+  score_ = 0;
+  percent_dp_ = 0;
+  survive_seconds_ = 0;
+  max_combo_ = 0;
+  stage_award_ = StageAward_Invalid;
+  peak_combo_award_ = PeakComboAward_Invalid;
+  modifiers_ = "";
+  date_time_.Init();
+  player_guid_ = "";
+  machine_guid_ = "";
+  product_id_ = 0;
+  ZERO(tap_note_scores_);
+  ZERO(hold_note_scores_);
+  radar_values_.MakeUnknown();
+  life_remaining_seconds_ = 0;
+  is_routine_ = false;
 
-  playerNames = std::vector<std::string>(NUM_PLAYERS, "");
-  playerGrades = std::vector<Grade>(NUM_PLAYERS, Grade_NoData);
-  playerScores = std::vector<unsigned int>(NUM_PLAYERS, 0);
-  playerPercentDPs = std::vector<float>(NUM_PLAYERS, 0);
-  playerMaxCombos = std::vector<unsigned int>(NUM_PLAYERS, 0);
-  playerGuids = std::vector<std::string>(NUM_PLAYERS, "");
+  player_names_ = std::vector<std::string>(NUM_PLAYERS, "");
+  player_grades_ = std::vector<Grade>(NUM_PLAYERS, Grade_NoData);
+  player_scores_ = std::vector<unsigned int>(NUM_PLAYERS, 0);
+  player_percent_d_ps_ = std::vector<float>(NUM_PLAYERS, 0);
+  player_max_combos_ = std::vector<unsigned int>(NUM_PLAYERS, 0);
+  player_guids_ = std::vector<std::string>(NUM_PLAYERS, "");
 
-  playerTapNoteScores.resize(NUM_PLAYERS, std::array<int, NUM_TapNoteScore>{});
-  playerHoldNoteScores.resize(
+  player_tap_note_scores_.resize(
+      NUM_PLAYERS, std::array<int, NUM_TapNoteScore>{});
+  player_hold_note_scores_.resize(
       NUM_PLAYERS, std::array<int, NUM_HoldNoteScore>{});
 
   // Initialize each array to zeros
-  for (auto& scoresArray : playerTapNoteScores) {
+  for (auto& scoresArray : player_tap_note_scores_) {
     std::fill(scoresArray.begin(), scoresArray.end(), 0);
   }
-  for (auto& scoresArray : playerHoldNoteScores) {
+  for (auto& scoresArray : player_hold_note_scores_) {
     std::fill(scoresArray.begin(), scoresArray.end(), 0);
   }
 }
@@ -171,58 +172,60 @@ XNode* HighScoreImpl::CreateNode() const {
 
   // TRICKY:  Don't write "name to fill in" markers.
   pNode->AppendChild(
-      "Name", IsRankingToFillIn(sName) ? std::string("") : sName);
-  pNode->AppendChild("Grade", GradeToString(grade));
-  pNode->AppendChild("Score", iScore);
-  pNode->AppendChild("PercentDP", fPercentDP);
-  pNode->AppendChild("SurviveSeconds", fSurviveSeconds);
-  pNode->AppendChild("MaxCombo", iMaxCombo);
-  pNode->AppendChild("StageAward", StageAwardToString(stageAward));
-  pNode->AppendChild("PeakComboAward", PeakComboAwardToString(peakComboAward));
-  pNode->AppendChild("Modifiers", sModifiers);
-  pNode->AppendChild("DateTime", dateTime.GetString());
-  pNode->AppendChild("PlayerGuid", sPlayerGuid);
-  pNode->AppendChild("MachineGuid", sMachineGuid);
-  pNode->AppendChild("ProductID", iProductID);
+      "Name", IsRankingToFillIn(name_) ? std::string("") : name_);
+  pNode->AppendChild("Grade", GradeToString(grade_));
+  pNode->AppendChild("Score", score_);
+  pNode->AppendChild("PercentDP", percent_dp_);
+  pNode->AppendChild("SurviveSeconds", survive_seconds_);
+  pNode->AppendChild("MaxCombo", max_combo_);
+  pNode->AppendChild("StageAward", StageAwardToString(stage_award_));
+  pNode->AppendChild(
+      "PeakComboAward", PeakComboAwardToString(peak_combo_award_));
+  pNode->AppendChild("Modifiers", modifiers_);
+  pNode->AppendChild("DateTime", date_time_.GetString());
+  pNode->AppendChild("PlayerGuid", player_guid_);
+  pNode->AppendChild("MachineGuid", machine_guid_);
+  pNode->AppendChild("ProductID", product_id_);
   XNode* pTapNoteScores = pNode->AppendChild("TapNoteScores");
   FOREACH_ENUM(TapNoteScore, tns)
   if (tns != TNS_None) {  // HACK: don't save meaningless "none" count
-    pTapNoteScores->AppendChild(TapNoteScoreToString(tns), iTapNoteScores[tns]);
+    pTapNoteScores->AppendChild(
+        TapNoteScoreToString(tns), tap_note_scores_[tns]);
   }
   XNode* pHoldNoteScores = pNode->AppendChild("HoldNoteScores");
   FOREACH_ENUM(HoldNoteScore, hns)
   if (hns != HNS_None) {  // HACK: don't save meaningless "none" count
     pHoldNoteScores->AppendChild(
-        HoldNoteScoreToString(hns), iHoldNoteScores[hns]);
+        HoldNoteScoreToString(hns), hold_note_scores_[hns]);
   }
   pNode->AppendChild(
-      radarValues.CreateNode(bWriteSimpleValues, bWriteComplexValues));
-  pNode->AppendChild("LifeRemainingSeconds", fLifeRemainingSeconds);
-  pNode->AppendChild("Disqualified", bDisqualified);
-  if (bIsRoutine) {
+      radar_values_.CreateNode(bWriteSimpleValues, bWriteComplexValues));
+  pNode->AppendChild("LifeRemainingSeconds", life_remaining_seconds_);
+  pNode->AppendChild("Disqualified", disqualified_);
+  if (is_routine_) {
     XNode* pRoutineNode = pNode->AppendChild("RoutineData");
     // Loop through each player and add their specific data to "RoutineData"
-    for (size_t i = 0; i < playerNames.size(); ++i) {
+    for (size_t i = 0; i < player_names_.size(); ++i) {
       XNode* pPlayerNode =
           pRoutineNode->AppendChild(PlayerNumberToString((PlayerNumber)i));
-      pPlayerNode->AppendChild("Grade", GradeToString(playerGrades[i]));
-      pPlayerNode->AppendChild("Score", playerScores[i]);
-      pPlayerNode->AppendChild("PercentDP", playerPercentDPs[i]);
-      pPlayerNode->AppendChild("MaxCombo", playerMaxCombos[i]);
-      pPlayerNode->AppendChild("PlayerGuid", playerGuids[i]);
+      pPlayerNode->AppendChild("Grade", GradeToString(player_grades_[i]));
+      pPlayerNode->AppendChild("Score", player_scores_[i]);
+      pPlayerNode->AppendChild("PercentDP", player_percent_d_ps_[i]);
+      pPlayerNode->AppendChild("MaxCombo", player_max_combos_[i]);
+      pPlayerNode->AppendChild("PlayerGuid", player_guids_[i]);
 
       XNode* pRoutineTapNoteScores = pPlayerNode->AppendChild("TapNoteScores");
       FOREACH_ENUM(TapNoteScore, tns)
       if (tns != TNS_None) {  // HACK: don't save meaningless "none" count
         pRoutineTapNoteScores->AppendChild(
-            TapNoteScoreToString(tns), playerTapNoteScores[i][tns]);
+            TapNoteScoreToString(tns), player_tap_note_scores_[i][tns]);
       }
       XNode* pRoutineHoldNoteScores =
           pPlayerNode->AppendChild("HoldNoteScores");
       FOREACH_ENUM(HoldNoteScore, hns)
       if (hns != HNS_None) {  // HACK: don't save meaningless "none" count
         pRoutineHoldNoteScores->AppendChild(
-            HoldNoteScoreToString(hns), playerHoldNoteScores[i][hns]);
+            HoldNoteScoreToString(hns), player_hold_note_scores_[i][hns]);
       }
     }
   }
@@ -234,70 +237,70 @@ void HighScoreImpl::LoadFromNode(const XNode* pNode) {
 
   std::string s;
 
-  pNode->GetChildValue("Name", sName);
+  pNode->GetChildValue("Name", name_);
   pNode->GetChildValue("Grade", s);
-  grade = StringToGrade(s);
-  pNode->GetChildValue("Score", iScore);
-  pNode->GetChildValue("PercentDP", fPercentDP);
-  pNode->GetChildValue("SurviveSeconds", fSurviveSeconds);
-  pNode->GetChildValue("MaxCombo", iMaxCombo);
+  grade_ = StringToGrade(s);
+  pNode->GetChildValue("Score", score_);
+  pNode->GetChildValue("PercentDP", percent_dp_);
+  pNode->GetChildValue("SurviveSeconds", survive_seconds_);
+  pNode->GetChildValue("MaxCombo", max_combo_);
   pNode->GetChildValue("StageAward", s);
-  stageAward = StringToStageAward(s);
+  stage_award_ = StringToStageAward(s);
   pNode->GetChildValue("PeakComboAward", s);
-  peakComboAward = StringToPeakComboAward(s);
-  pNode->GetChildValue("Modifiers", sModifiers);
+  peak_combo_award_ = StringToPeakComboAward(s);
+  pNode->GetChildValue("Modifiers", modifiers_);
   pNode->GetChildValue("DateTime", s);
-  dateTime.FromString(s);
-  pNode->GetChildValue("PlayerGuid", sPlayerGuid);
-  pNode->GetChildValue("MachineGuid", sMachineGuid);
-  pNode->GetChildValue("ProductID", iProductID);
+  date_time_.FromString(s);
+  pNode->GetChildValue("PlayerGuid", player_guid_);
+  pNode->GetChildValue("MachineGuid", machine_guid_);
+  pNode->GetChildValue("ProductID", product_id_);
   const XNode* pTapNoteScores = pNode->GetChild("TapNoteScores");
   if (pTapNoteScores) {
     FOREACH_ENUM(TapNoteScore, tns)
     pTapNoteScores->GetChildValue(
-        TapNoteScoreToString(tns), iTapNoteScores[tns]);
+        TapNoteScoreToString(tns), tap_note_scores_[tns]);
   }
   const XNode* pHoldNoteScores = pNode->GetChild("HoldNoteScores");
   if (pHoldNoteScores) {
     FOREACH_ENUM(HoldNoteScore, hns)
     pHoldNoteScores->GetChildValue(
-        HoldNoteScoreToString(hns), iHoldNoteScores[hns]);
+        HoldNoteScoreToString(hns), hold_note_scores_[hns]);
   }
   const XNode* pRadarValues = pNode->GetChild("RadarValues");
   if (pRadarValues) {
-    radarValues.LoadFromNode(pRadarValues);
+    radar_values_.LoadFromNode(pRadarValues);
   }
-  pNode->GetChildValue("LifeRemainingSeconds", fLifeRemainingSeconds);
-  pNode->GetChildValue("Disqualified", bDisqualified);
+  pNode->GetChildValue("LifeRemainingSeconds", life_remaining_seconds_);
+  pNode->GetChildValue("Disqualified", disqualified_);
 
   // Validate input.
-  grade = std::clamp(grade, Grade_Tier01, Grade_Failed);
+  grade_ = std::clamp(grade_, Grade_Tier01, Grade_Failed);
   const XNode* pRoutineNode = pNode->GetChild("RoutineData");
 
   if (pRoutineNode) {
     // Load player-specific data
-    bIsRoutine = true;
+    is_routine_ = true;
     FOREACH_PlayerNumber(pn) {
       const XNode* pPlayerNode =
           pRoutineNode->GetChild(PlayerNumberToString(pn));
       if (pPlayerNode) {
         std::string gradeStr;
-        pPlayerNode->GetChildValue("Name", playerNames[pn]);
+        pPlayerNode->GetChildValue("Name", player_names_[pn]);
         pPlayerNode->GetChildValue("Grade", gradeStr);
-        playerGrades[pn] = StringToGrade(gradeStr);
-        pPlayerNode->GetChildValue("Score", playerScores[pn]);
-        LOG->Trace("Loaded player score %d", playerScores[pn]);
-        pPlayerNode->GetChildValue("PercentDP", playerPercentDPs[pn]);
-        LOG->Trace("Loaded player percentDP %f", playerPercentDPs[pn]);
-        pPlayerNode->GetChildValue("MaxCombo", playerMaxCombos[pn]);
-        LOG->Trace("Loaded player maxCombo %d", playerMaxCombos[pn]);
-        pPlayerNode->GetChildValue("PlayerGuid", playerGuids[pn]);
+        player_grades_[pn] = StringToGrade(gradeStr);
+        pPlayerNode->GetChildValue("Score", player_scores_[pn]);
+        LOG->Trace("Loaded player score %d", player_scores_[pn]);
+        pPlayerNode->GetChildValue("PercentDP", player_percent_d_ps_[pn]);
+        LOG->Trace("Loaded player percentDP %f", player_percent_d_ps_[pn]);
+        pPlayerNode->GetChildValue("MaxCombo", player_max_combos_[pn]);
+        LOG->Trace("Loaded player maxCombo %d", player_max_combos_[pn]);
+        pPlayerNode->GetChildValue("PlayerGuid", player_guids_[pn]);
 
         const XNode* pPTapNoteScores = pPlayerNode->GetChild("TapNoteScores");
         if (pPTapNoteScores) {
           FOREACH_ENUM(TapNoteScore, tns) {
             pPTapNoteScores->GetChildValue(
-                TapNoteScoreToString(tns), playerTapNoteScores[pn][tns]);
+                TapNoteScoreToString(tns), player_tap_note_scores_[pn][tns]);
           }
         }
 
@@ -305,144 +308,144 @@ void HighScoreImpl::LoadFromNode(const XNode* pNode) {
         if (pPHoldNoteScores) {
           FOREACH_ENUM(HoldNoteScore, hns) {
             pPHoldNoteScores->GetChildValue(
-                HoldNoteScoreToString(hns), playerHoldNoteScores[pn][hns]);
+                HoldNoteScoreToString(hns), player_hold_note_scores_[pn][hns]);
           }
         }
       }
     }
   } else {
-    bIsRoutine = false;
+    is_routine_ = false;
   }
 }
 
 REGISTER_CLASS_TRAITS(HighScoreImpl, new HighScoreImpl(*pCopy))
 
-HighScore::HighScore() { m_Impl = new HighScoreImpl; }
+HighScore::HighScore() { impl_ = new HighScoreImpl; }
 
 bool HighScore::IsEmpty() const {
-  if (m_Impl->iTapNoteScores[TNS_W1] || m_Impl->iTapNoteScores[TNS_W2] ||
-      m_Impl->iTapNoteScores[TNS_W3] || m_Impl->iTapNoteScores[TNS_W4] ||
-      m_Impl->iTapNoteScores[TNS_W5]) {
+  if (impl_->tap_note_scores_[TNS_W1] || impl_->tap_note_scores_[TNS_W2] ||
+      impl_->tap_note_scores_[TNS_W3] || impl_->tap_note_scores_[TNS_W4] ||
+      impl_->tap_note_scores_[TNS_W5]) {
     return false;
   }
-  if (m_Impl->iHoldNoteScores[HNS_Held] > 0) {
+  if (impl_->hold_note_scores_[HNS_Held] > 0) {
     return false;
   }
   return true;
 }
 
-std::string HighScore::GetName() const { return m_Impl->sName; }
-Grade HighScore::GetGrade() const { return m_Impl->grade; }
-unsigned int HighScore::GetScore() const { return m_Impl->iScore; }
-unsigned int HighScore::GetMaxCombo() const { return m_Impl->iMaxCombo; }
-StageAward HighScore::GetStageAward() const { return m_Impl->stageAward; }
+std::string HighScore::GetName() const { return impl_->name_; }
+Grade HighScore::GetGrade() const { return impl_->grade_; }
+unsigned int HighScore::GetScore() const { return impl_->score_; }
+unsigned int HighScore::GetMaxCombo() const { return impl_->max_combo_; }
+StageAward HighScore::GetStageAward() const { return impl_->stage_award_; }
 PeakComboAward HighScore::GetPeakComboAward() const {
-  return m_Impl->peakComboAward;
+  return impl_->peak_combo_award_;
 }
-float HighScore::GetPercentDP() const { return m_Impl->fPercentDP; }
-float HighScore::GetSurviveSeconds() const { return m_Impl->fSurviveSeconds; }
+float HighScore::GetPercentDP() const { return impl_->percent_dp_; }
+float HighScore::GetSurviveSeconds() const { return impl_->survive_seconds_; }
 float HighScore::GetSurvivalSeconds() const {
   return GetSurviveSeconds() + GetLifeRemainingSeconds();
 }
-std::string HighScore::GetModifiers() const { return m_Impl->sModifiers; }
-DateTime HighScore::GetDateTime() const { return m_Impl->dateTime; }
+std::string HighScore::GetModifiers() const { return impl_->modifiers_; }
+DateTime HighScore::GetDateTime() const { return impl_->date_time_; }
 int HighScore::GetTapNoteScore(TapNoteScore tns) const {
-  return m_Impl->iTapNoteScores[tns];
+  return impl_->tap_note_scores_[tns];
 }
 int HighScore::GetHoldNoteScore(HoldNoteScore hns) const {
-  return m_Impl->iHoldNoteScores[hns];
+  return impl_->hold_note_scores_[hns];
 }
 const RadarValues& HighScore::GetRadarValues() const {
-  return m_Impl->radarValues;
+  return impl_->radar_values_;
 }
 float HighScore::GetLifeRemainingSeconds() const {
-  return m_Impl->fLifeRemainingSeconds;
+  return impl_->life_remaining_seconds_;
 }
-bool HighScore::GetDisqualified() const { return m_Impl->bDisqualified; }
+bool HighScore::GetDisqualified() const { return impl_->disqualified_; }
 
-void HighScore::SetName(const std::string& sName) { m_Impl->sName = sName; }
-void HighScore::SetGrade(Grade g) { m_Impl->grade = g; }
-void HighScore::SetScore(unsigned int iScore) { m_Impl->iScore = iScore; }
-void HighScore::SetMaxCombo(unsigned int i) { m_Impl->iMaxCombo = i; }
-void HighScore::SetStageAward(StageAward a) { m_Impl->stageAward = a; }
+void HighScore::SetName(const std::string& sName) { impl_->name_ = sName; }
+void HighScore::SetGrade(Grade g) { impl_->grade_ = g; }
+void HighScore::SetScore(unsigned int iScore) { impl_->score_ = iScore; }
+void HighScore::SetMaxCombo(unsigned int i) { impl_->max_combo_ = i; }
+void HighScore::SetStageAward(StageAward a) { impl_->stage_award_ = a; }
 void HighScore::SetPeakComboAward(PeakComboAward a) {
-  m_Impl->peakComboAward = a;
+  impl_->peak_combo_award_ = a;
 }
-void HighScore::SetPercentDP(float f) { m_Impl->fPercentDP = f; }
-void HighScore::SetAliveSeconds(float f) { m_Impl->fSurviveSeconds = f; }
-void HighScore::SetModifiers(std::string s) { m_Impl->sModifiers = s; }
-void HighScore::SetDateTime(DateTime d) { m_Impl->dateTime = d; }
-void HighScore::SetPlayerGuid(std::string s) { m_Impl->sPlayerGuid = s; }
-void HighScore::SetMachineGuid(std::string s) { m_Impl->sMachineGuid = s; }
-void HighScore::SetProductID(int i) { m_Impl->iProductID = i; }
+void HighScore::SetPercentDP(float f) { impl_->percent_dp_ = f; }
+void HighScore::SetAliveSeconds(float f) { impl_->survive_seconds_ = f; }
+void HighScore::SetModifiers(std::string s) { impl_->modifiers_ = s; }
+void HighScore::SetDateTime(DateTime d) { impl_->date_time_ = d; }
+void HighScore::SetPlayerGuid(std::string s) { impl_->player_guid_ = s; }
+void HighScore::SetMachineGuid(std::string s) { impl_->machine_guid_ = s; }
+void HighScore::SetProductID(int i) { impl_->product_id_ = i; }
 void HighScore::SetTapNoteScore(TapNoteScore tns, int i) {
-  m_Impl->iTapNoteScores[tns] = i;
+  impl_->tap_note_scores_[tns] = i;
 }
 void HighScore::SetHoldNoteScore(HoldNoteScore hns, int i) {
-  m_Impl->iHoldNoteScores[hns] = i;
+  impl_->hold_note_scores_[hns] = i;
 }
 void HighScore::SetRadarValues(const RadarValues& rv) {
-  m_Impl->radarValues = rv;
+  impl_->radar_values_ = rv;
 }
 void HighScore::SetLifeRemainingSeconds(float f) {
-  m_Impl->fLifeRemainingSeconds = f;
+  impl_->life_remaining_seconds_ = f;
 }
-void HighScore::SetDisqualified(bool b) { m_Impl->bDisqualified = b; }
+void HighScore::SetDisqualified(bool b) { impl_->disqualified_ = b; }
 
-void HighScore::SetRoutine(bool b) { m_Impl->bIsRoutine = b; }
+void HighScore::SetRoutine(bool b) { impl_->is_routine_ = b; }
 
-bool HighScore::IsRoutine() const { return m_Impl->bIsRoutine; }
+bool HighScore::IsRoutine() const { return impl_->is_routine_; }
 
 // Getters
 std::string HighScore::GetPlayerGuid(const PlayerNumber& playerNum) const {
-  return m_Impl->playerGuids.at(playerNum);
+  return impl_->player_guids_.at(playerNum);
 }
 
 void HighScore::SetPlayerGrade(const PlayerNumber& playerNum, Grade grade) {
-  m_Impl->playerGrades[playerNum] = grade;
+  impl_->player_grades_[playerNum] = grade;
 }
 
 void HighScore::SetPlayerScore(
     const PlayerNumber& playerNum, unsigned int score) {
-  m_Impl->playerScores[playerNum] = score;
+  impl_->player_scores_[playerNum] = score;
 }
 
 void HighScore::SetPlayerPercentDP(
     const PlayerNumber& playerNum, float percentDP) {
-  m_Impl->playerPercentDPs[playerNum] = percentDP;
+  impl_->player_percent_d_ps_[playerNum] = percentDP;
 }
 
 void HighScore::SetPlayerMaxCombo(
     const PlayerNumber& playerNum, unsigned int maxCombo) {
-  m_Impl->playerMaxCombos[playerNum] = maxCombo;
+  impl_->player_max_combos_[playerNum] = maxCombo;
 }
 
 void HighScore::SetPlayerGuid(
     const PlayerNumber& playerNum, const std::string& guid) {
-  m_Impl->playerGuids[playerNum] = guid;
+  impl_->player_guids_[playerNum] = guid;
 }
 
 // Assuming TapNoteScores and HoldNoteScores are stored in a similar format to
 // HighScoreImpl
 void HighScore::SetPlayerTapNoteScore(
     const PlayerNumber& playerNum, TapNoteScore tns, int score) {
-  m_Impl->playerTapNoteScores[playerNum][tns] = score;
+  impl_->player_tap_note_scores_[playerNum][tns] = score;
 }
 
 void HighScore::SetPlayerHoldNoteScore(
     const PlayerNumber& playerNum, HoldNoteScore hns, int score) {
-  m_Impl->playerHoldNoteScores[playerNum][hns] = score;
+  impl_->player_hold_note_scores_[playerNum][hns] = score;
 }
 
 /* We normally don't give direct access to the members.  We need this one
  * for NameToFillIn; use a special accessor so it's easy to find where this
  * is used. */
-std::string* HighScore::GetNameMutable() { return &m_Impl->sName; }
+std::string* HighScore::GetNameMutable() { return &impl_->name_; }
 
 bool HighScore::operator<(const HighScore& other) const {
   /* Make sure we treat AAAA as higher than AAA, even though the score
    * is the same. */
-  if (PREFSMAN->m_bPercentageScoring) {
+  if (PREFSMAN->percentage_scoring_) {
     if (GetPercentDP() != other.GetPercentDP()) {
       return GetPercentDP() < other.GetPercentDP();
     }
@@ -460,14 +463,12 @@ bool HighScore::operator>=(const HighScore& other) const {
 }
 
 bool HighScore::operator==(const HighScore& other) const {
-  return *m_Impl == *other.m_Impl;
+  return *impl_ == *other.impl_;
 }
 
-XNode* HighScore::CreateNode() const { return m_Impl->CreateNode(); }
+XNode* HighScore::CreateNode() const { return impl_->CreateNode(); }
 
-void HighScore::LoadFromNode(const XNode* pNode) {
-  m_Impl->LoadFromNode(pNode);
-}
+void HighScore::LoadFromNode(const XNode* pNode) { impl_->LoadFromNode(pNode); }
 
 std::string HighScore::GetDisplayName() const {
   if (GetName().empty()) {
@@ -479,24 +480,24 @@ std::string HighScore::GetDisplayName() const {
 
 /* begin HighScoreList */
 void HighScoreList::Init() {
-  iNumTimesPlayed = 0;
-  vHighScores.clear();
-  HighGrade = Grade_NoData;
+  num_times_played_ = 0;
+  high_scores_.clear();
+  high_grade_ = Grade_NoData;
 }
 
 void HighScoreList::AddHighScore(
     HighScore hs, int& iIndexOut, bool bIsMachine) {
   int i;
-  for (i = 0; i < (int)vHighScores.size(); i++) {
-    if (hs >= vHighScores[i]) {
+  for (i = 0; i < (int)high_scores_.size(); i++) {
+    if (hs >= high_scores_[i]) {
       break;
     }
   }
   const int iMaxScores = bIsMachine
-                             ? PREFSMAN->m_iMaxHighScoresPerListForMachine
-                             : PREFSMAN->m_iMaxHighScoresPerListForPlayer;
+                             ? PREFSMAN->max_high_scores_per_list_for_machine_
+                             : PREFSMAN->max_high_scores_per_list_for_player_;
   if (i < iMaxScores) {
-    vHighScores.insert(vHighScores.begin() + i, hs);
+    high_scores_.insert(high_scores_.begin() + i, hs);
     iIndexOut = i;
 
     // Delete extra machine high scores in RemoveAllButOneOfEachNameAndClampSize
@@ -507,35 +508,35 @@ void HighScoreList::AddHighScore(
       ClampSize(bIsMachine);
     }
   }
-  HighGrade = std::min(hs.GetGrade(), HighGrade);
+  high_grade_ = std::min(hs.GetGrade(), high_grade_);
 }
 
 void HighScoreList::IncrementPlayCount(DateTime _dtLastPlayed) {
-  dtLastPlayed = _dtLastPlayed;
-  iNumTimesPlayed++;
+  last_played_ = _dtLastPlayed;
+  num_times_played_++;
 }
 
 const HighScore& HighScoreList::GetTopScore() const {
-  if (vHighScores.empty()) {
+  if (high_scores_.empty()) {
     static HighScore hs;
     hs = HighScore();
     return hs;
   } else {
-    return vHighScores[0];
+    return high_scores_[0];
   }
 }
 
 XNode* HighScoreList::CreateNode() const {
   XNode* pNode = new XNode("HighScoreList");
 
-  pNode->AppendChild("NumTimesPlayed", iNumTimesPlayed);
-  pNode->AppendChild("LastPlayed", dtLastPlayed.GetString());
-  if (HighGrade != Grade_NoData) {
-    pNode->AppendChild("HighGrade", GradeToString(HighGrade));
+  pNode->AppendChild("NumTimesPlayed", num_times_played_);
+  pNode->AppendChild("LastPlayed", last_played_.GetString());
+  if (high_grade_ != Grade_NoData) {
+    pNode->AppendChild("HighGrade", GradeToString(high_grade_));
   }
 
-  for (unsigned i = 0; i < vHighScores.size(); i++) {
-    const HighScore& hs = vHighScores[i];
+  for (unsigned i = 0; i < high_scores_.size(); i++) {
+    const HighScore& hs = high_scores_[i];
     pNode->AppendChild(hs.CreateNode());
   }
 
@@ -549,32 +550,32 @@ void HighScoreList::LoadFromNode(const XNode* pHighScoreList) {
   FOREACH_CONST_Child(pHighScoreList, p) {
     const std::string& name = p->GetName();
     if (name == "NumTimesPlayed") {
-      p->GetTextValue(iNumTimesPlayed);
+      p->GetTextValue(num_times_played_);
     } else if (name == "LastPlayed") {
       std::string s;
       p->GetTextValue(s);
-      dtLastPlayed.FromString(s);
+      last_played_.FromString(s);
     } else if (name == "HighGrade") {
       std::string s;
       p->GetTextValue(s);
-      HighGrade = StringToGrade(s);
+      high_grade_ = StringToGrade(s);
     } else if (name == "HighScore") {
-      vHighScores.resize(vHighScores.size() + 1);
-      vHighScores.back().LoadFromNode(p);
+      high_scores_.resize(high_scores_.size() + 1);
+      high_scores_.back().LoadFromNode(p);
 
-      HighGrade = std::min(vHighScores.back().GetGrade(), HighGrade);
+      high_grade_ = std::min(high_scores_.back().GetGrade(), high_grade_);
     }
   }
 }
 
 void HighScoreList::RemoveAllButOneOfEachName() {
-  for (std::vector<HighScore>::iterator i = vHighScores.begin();
-       i != vHighScores.end(); ++i) {
-    for (std::vector<HighScore>::iterator j = i + 1; j != vHighScores.end();
+  for (std::vector<HighScore>::iterator i = high_scores_.begin();
+       i != high_scores_.end(); ++i) {
+    for (std::vector<HighScore>::iterator j = i + 1; j != high_scores_.end();
          j++) {
       if (i->GetName() == j->GetName()) {
         j--;
-        vHighScores.erase(j + 1);
+        high_scores_.erase(j + 1);
       }
     }
   }
@@ -582,33 +583,33 @@ void HighScoreList::RemoveAllButOneOfEachName() {
 
 void HighScoreList::ClampSize(bool bIsMachine) {
   const int iMaxScores = bIsMachine
-                             ? PREFSMAN->m_iMaxHighScoresPerListForMachine
-                             : PREFSMAN->m_iMaxHighScoresPerListForPlayer;
-  if (vHighScores.size() > unsigned(iMaxScores)) {
-    vHighScores.erase(vHighScores.begin() + iMaxScores, vHighScores.end());
+                             ? PREFSMAN->max_high_scores_per_list_for_machine_
+                             : PREFSMAN->max_high_scores_per_list_for_player_;
+  if (high_scores_.size() > unsigned(iMaxScores)) {
+    high_scores_.erase(high_scores_.begin() + iMaxScores, high_scores_.end());
   }
 }
 
 void HighScoreList::MergeFromOtherHSL(HighScoreList& other, bool is_machine) {
-  iNumTimesPlayed += other.iNumTimesPlayed;
-  if (other.dtLastPlayed > dtLastPlayed) {
-    dtLastPlayed = other.dtLastPlayed;
+  num_times_played_ += other.num_times_played_;
+  if (other.last_played_ > last_played_) {
+    last_played_ = other.last_played_;
   }
-  if (other.HighGrade > HighGrade) {
-    HighGrade = other.HighGrade;
+  if (other.high_grade_ > high_grade_) {
+    high_grade_ = other.high_grade_;
   }
-  vHighScores.insert(
-      vHighScores.end(), other.vHighScores.begin(), other.vHighScores.end());
-  std::sort(vHighScores.begin(), vHighScores.end());
+  high_scores_.insert(
+      high_scores_.end(), other.high_scores_.begin(), other.high_scores_.end());
+  std::sort(high_scores_.begin(), high_scores_.end());
   // Remove non-unique scores because they probably come from an accidental
   // repeated merge. -Kyz
   std::vector<HighScore>::iterator unique_end =
-      std::unique(vHighScores.begin(), vHighScores.end());
-  vHighScores.erase(unique_end, vHighScores.end());
+      std::unique(high_scores_.begin(), high_scores_.end());
+  high_scores_.erase(unique_end, high_scores_.end());
   // Reverse it because sort moved the lesser scores to the top.
-  std::reverse(vHighScores.begin(), vHighScores.end());
+  std::reverse(high_scores_.begin(), high_scores_.end());
 
-  if (!PREFSMAN->m_bAllowMultipleHighScoreWithSameName) {
+  if (!PREFSMAN->allow_multiple_high_score_with_same_name_) {
     // erase all but the highest score for each name
     RemoveAllButOneOfEachName();
   }
@@ -619,9 +620,9 @@ XNode* Screenshot::CreateNode() const {
   XNode* pNode = new XNode("Screenshot");
 
   // TRICKY:  Don't write "name to fill in" markers.
-  pNode->AppendChild("FileName", sFileName);
-  pNode->AppendChild("MD5", sMD5);
-  pNode->AppendChild(highScore.CreateNode());
+  pNode->AppendChild("FileName", file_name_);
+  pNode->AppendChild("MD5", md5_);
+  pNode->AppendChild(high_score_.CreateNode());
 
   return pNode;
 }
@@ -629,11 +630,11 @@ XNode* Screenshot::CreateNode() const {
 void Screenshot::LoadFromNode(const XNode* pNode) {
   ASSERT(pNode->GetName() == "Screenshot");
 
-  pNode->GetChildValue("FileName", sFileName);
-  pNode->GetChildValue("MD5", sMD5);
+  pNode->GetChildValue("FileName", file_name_);
+  pNode->GetChildValue("MD5", md5_);
   const XNode* pHighScore = pNode->GetChild("HighScore");
   if (pHighScore) {
-    highScore.LoadFromNode(pHighScore);
+    high_score_.LoadFromNode(pHighScore);
   }
 }
 
@@ -726,8 +727,8 @@ class LunaHighScoreList : public Luna<HighScoreList> {
  public:
   static int GetHighScores(T* p, lua_State* L) {
     lua_newtable(L);
-    for (int i = 0; i < (int)p->vHighScores.size(); ++i) {
-      p->vHighScores[i].PushSelf(L);
+    for (int i = 0; i < (int)p->high_scores_.size(); ++i) {
+      p->high_scores_[i].PushSelf(L);
       lua_rawseti(L, -2, i + 1);
     }
 
@@ -736,9 +737,9 @@ class LunaHighScoreList : public Luna<HighScoreList> {
 
   static int GetHighestScoreOfName(T* p, lua_State* L) {
     std::string name = SArg(1);
-    for (size_t i = 0; i < p->vHighScores.size(); ++i) {
-      if (name == p->vHighScores[i].GetName()) {
-        p->vHighScores[i].PushSelf(L);
+    for (size_t i = 0; i < p->high_scores_.size(); ++i) {
+      if (name == p->high_scores_[i].GetName()) {
+        p->high_scores_[i].PushSelf(L);
         return 1;
       }
     }
@@ -749,8 +750,8 @@ class LunaHighScoreList : public Luna<HighScoreList> {
   static int GetRankOfName(T* p, lua_State* L) {
     std::string name = SArg(1);
     size_t rank = 0;
-    for (size_t i = 0; i < p->vHighScores.size(); ++i) {
-      if (name == p->vHighScores[i].GetName()) {
+    for (size_t i = 0; i < p->high_scores_.size(); ++i) {
+      if (name == p->high_scores_[i].GetName()) {
         // Indices from Lua are one-indexed.  +1 to adjust.
         rank = i + 1;
         break;

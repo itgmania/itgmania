@@ -355,7 +355,7 @@ void InputHandler_X11::RegisterKeyEvent(
   // Event timestamp is in milliseconds, truncated to 32 bits in the X11 wire
   // protocol.
   RageTimer now;
-  uint64_t now_ms = now.m_secs * 1000 + now.m_us / 1000;
+  uint64_t now_ms = now.secs_ * 1000 + now.us_ / 1000;
   int32_t age_ms =
       static_cast<uint32_t>(now_ms) - static_cast<uint32_t>(timestamp);
   uint64_t timestamp_ms = now_ms - age_ms;

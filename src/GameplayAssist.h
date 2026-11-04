@@ -20,11 +20,11 @@ class GameplayAssist {
 
  private:
   /** @brief the sound made when a note is to be hit. */
-  RageSound m_soundAssistClap;
+  RageSound sound_assist_clap_;
   /** @brief the sound made when crossing a new measure. */
-  RageSound m_soundAssistMetronomeMeasure;
+  RageSound sound_assist_metronome_measure_;
   /** @brief the sound made when crossing a new beat. */
-  RageSound m_soundAssistMetronomeBeat;
+  RageSound sound_assist_metronome_beat_;
 };
 
 #endif

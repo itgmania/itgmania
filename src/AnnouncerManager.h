@@ -29,7 +29,7 @@ class AnnouncerManager {
   /**
    * @brief Retrieve the current announcer's name.
    * @return the current announcer's name. */
-  std::string GetCurAnnouncerName() const { return m_sCurAnnouncerName; };
+  std::string GetCurAnnouncerName() const { return cur_announcer_name_; };
   void NextAnnouncer();
 
   std::string GetPathTo(std::string sFolderName);
@@ -42,7 +42,7 @@ class AnnouncerManager {
   static std::string GetAnnouncerDirFromName(std::string sAnnouncerName);
   std::string GetPathTo(std::string AnnouncerPath, std::string sFolderName);
   /** @brief the current announcer's name. */
-  std::string m_sCurAnnouncerName;
+  std::string cur_announcer_name_;
 };
 
 extern AnnouncerManager*

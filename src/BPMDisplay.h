@@ -108,16 +108,16 @@ class BPMDisplay : public BitmapText {
   ThemeMetric<std::string> BPM_FORMAT_STRING;
 
   /** @brief The lowest valued BPM. */
-  float m_fBPMFrom;
+  float bpm_from_;
   /** @brief The highest valued BPM. */
-  float m_fBPMTo;
+  float bpm_to_;
   /** @brief The current BPM index used. */
-  int m_iCurrentBPM;
+  int current_bpm_;
   /** @brief The list of BPMs. */
-  std::vector<float> m_BPMS;
-  float m_fPercentInState;
+  std::vector<float> bpms_;
+  float percent_in_state_;
   /** @brief How long it takes to cycle the various BPMs. */
-  float m_fCycleTime;
+  float cycle_time_;
 };
 
 #endif

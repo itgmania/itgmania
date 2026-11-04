@@ -20,14 +20,14 @@ static const char* StreamTypeNames[] = {
 XToString(StreamType);
 
 StreamDisplay::StreamDisplay() {
-  m_fPercent = 0;
-  m_fTrailingPercent = 0;
-  m_fVelocity = 0;
-  m_fPassingAlpha = 0;
-  m_fHotAlpha = 0;
-  m_bAlwaysBounce = false;
+  percent_ = 0;
+  trailing_percent_ = 0;
+  velocity_ = 0;
+  passing_alpha_ = 0;
+  hot_alpha_ = 0;
+  always_bounce_ = false;
 
-  m_bDeleteChildren = true;
+  delete_children_ = true;
 }
 
 void StreamDisplay::Load(
@@ -35,7 +35,7 @@ void StreamDisplay::Load(
   // XXX: actually load from the metrics group passed in -aj
   std::string sMetricsGroup = "StreamDisplay";
 
-  m_transformPill.SetFromReference(
+  transform_pill_.SetFromReference(
       THEME->GetMetricR(sMetricsGroup, "PillTransformFunction"));
   VELOCITY_MULTIPLIER.Load(sMetricsGroup, "VelocityMultiplier");
   VELOCITY_MIN.Load(sMetricsGroup, "VelocityMin");
@@ -47,18 +47,18 @@ void StreamDisplay::Load(
       THEME->GetMetricF(sMetricsGroup, "TextureCoordScaleX");
   int iNumPills =
       static_cast<int>(THEME->GetMetricF(sMetricsGroup, "NumPills"));
-  m_bAlwaysBounce = THEME->GetMetricB(sMetricsGroup, "AlwaysBounceNormalBar");
+  always_bounce_ = THEME->GetMetricB(sMetricsGroup, "AlwaysBounceNormalBar");
 
   FOREACH_ENUM(StreamType, st) {
-    ASSERT(m_vpSprPill[st].empty());
+    ASSERT(spr_pill_[st].empty());
 
     for (int i = 0; i < iNumPills; i++) {
       Sprite* pSpr = new Sprite;
 
       pSpr->Load(THEME->GetPathG(sMetricsGroup, StreamTypeToString(st)));
-      m_vpSprPill[st].push_back(pSpr);
+      spr_pill_[st].push_back(pSpr);
 
-      m_transformPill.TransformItemDirect(*pSpr, -1, i, iNumPills);
+      transform_pill_.TransformItemDirect(*pSpr, -1, i, iNumPills);
       float f = 1 / fTextureCoordScaleX;
       pSpr->SetCustomTextureRect(RectF(f * i, 0, f * (i + 1), 1));
 
@@ -73,43 +73,43 @@ void StreamDisplay::Update(float fDeltaSecs) {
   // HACK:  Tweaking these values is very difficult.  Update the
   // "physics" many times so that the spring motion appears faster
   for (int i = 0; i < 10; i++) {
-    const float fDelta = m_fPercent - m_fTrailingPercent;
+    const float fDelta = percent_ - trailing_percent_;
 
     // Don't apply spring and viscous forces if we're full or empty.
     // Just move straight to either full or empty.
-    if (m_fPercent <= 0 || m_fPercent >= 1) {
+    if (percent_ <= 0 || percent_ >= 1) {
       if (std::abs(fDelta) < 0.00001f) {
-        m_fVelocity = 0;  // prevent div/0
+        velocity_ = 0;  // prevent div/0
       } else {
-        m_fVelocity = (fDelta / std::abs(fDelta)) * VELOCITY_MULTIPLIER;
+        velocity_ = (fDelta / std::abs(fDelta)) * VELOCITY_MULTIPLIER;
       }
     } else {
       const float fSpringForce = fDelta * SPRING_MULTIPLIER;
-      m_fVelocity += fSpringForce * fDeltaSecs;
+      velocity_ += fSpringForce * fDeltaSecs;
 
-      const float fViscousForce = -m_fVelocity * VISCOSITY_MULTIPLIER;
-      if (!m_bAlwaysBounce) {
-        m_fVelocity += fViscousForce * fDeltaSecs;
+      const float fViscousForce = -velocity_ * VISCOSITY_MULTIPLIER;
+      if (!always_bounce_) {
+        velocity_ += fViscousForce * fDeltaSecs;
       }
     }
 
-    rage_clamp(m_fVelocity, VELOCITY_MIN, VELOCITY_MAX);
+    rage_clamp(velocity_, VELOCITY_MIN, VELOCITY_MAX);
 
-    m_fTrailingPercent += m_fVelocity * fDeltaSecs;
+    trailing_percent_ += velocity_ * fDeltaSecs;
   }
 
   // Don't clamp life percentage a little outside the visible range so
   // that the clamp doesn't dampen the "jiggle" of the meter.
-  rage_clamp(m_fTrailingPercent, -0.1f, 1.1f);
+  rage_clamp(trailing_percent_, -0.1f, 1.1f);
 
   // set crop of pills
-  const float fPillWidthPercent = 1.0f / m_vpSprPill[0].size();
+  const float fPillWidthPercent = 1.0f / spr_pill_[0].size();
   FOREACH_ENUM(StreamType, st) {
-    for (int i = 0; i < (int)m_vpSprPill[st].size(); i++) {
-      Sprite* pSpr = m_vpSprPill[st][i];
+    for (int i = 0; i < (int)spr_pill_[st].size(); i++) {
+      Sprite* pSpr = spr_pill_[st][i];
       float fPercentFilledThisPill = SCALE(
-          m_fTrailingPercent, fPillWidthPercent * i,
-          fPillWidthPercent * (i + 1), 0.0f, 1.0f);
+          trailing_percent_, fPillWidthPercent * i, fPillWidthPercent * (i + 1),
+          0.0f, 1.0f);
       rage_clamp(fPercentFilledThisPill, 0.0f, 1.0f);
 
       // XXX scale by current song speed
@@ -121,15 +121,15 @@ void StreamDisplay::Update(float fDeltaSecs) {
       switch (st) {
         DEFAULT_FAIL(st);
         case StreamType_Normal:
-          pSpr->SetVisible(m_fPassingAlpha < 1 || m_fHotAlpha < 1);
+          pSpr->SetVisible(passing_alpha_ < 1 || hot_alpha_ < 1);
           pSpr->SetDiffuseAlpha(1);
           break;
         case StreamType_Passing:
-          pSpr->SetDiffuseAlpha(m_fPassingAlpha);
-          pSpr->SetVisible(m_fHotAlpha < 1);
+          pSpr->SetDiffuseAlpha(passing_alpha_);
+          pSpr->SetVisible(hot_alpha_ < 1);
           break;
         case StreamType_Hot:
-          pSpr->SetDiffuseAlpha(m_fHotAlpha);
+          pSpr->SetDiffuseAlpha(hot_alpha_);
           break;
       }
     }
@@ -150,9 +150,9 @@ void StreamDisplay::SetPercent(float fPercent) {
     fPercent = 1;
   }
 
-  float fDeltaPercent = fPercent - m_fPercent;
-  m_fVelocity += fDeltaPercent;
-  m_fPercent = fPercent;
+  float fDeltaPercent = fPercent - percent_;
+  velocity_ += fDeltaPercent;
+  percent_ = fPercent;
 }
 
 /*

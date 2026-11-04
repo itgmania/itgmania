@@ -18,10 +18,10 @@ struct StreamBreakdown {
   static constexpr int kNumCachedMinimizationLevels = 3;
 
   /** @brief Cached breakdown text for minimization levels 0 through 2. */
-  std::array<std::string, kNumCachedMinimizationLevels> texts;
+  std::array<std::string, kNumCachedMinimizationLevels> texts_;
 
-  int totalStreamMeasures = 0;
-  int totalBreakMeasures = 0;
+  int total_stream_measures_ = 0;
+  int total_break_measures_ = 0;
 
   /**
    * @brief Calculate the breakdown from a chart's notes-per-measure data.

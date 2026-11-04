@@ -13,11 +13,11 @@
 #include "RageUtil.h"
 
 SoundEffectControl::SoundEffectControl() {
-  m_bLocked = false;
-  m_fSample = 0.0f;
-  m_fLastLevel = 0.0f;
-  m_pPlayerState = nullptr;
-  m_pNoteData = nullptr;
+  locked_ = false;
+  sample_ = 0.0f;
+  last_level_ = 0.0f;
+  player_state_ = nullptr;
+  note_data_ = nullptr;
 }
 
 void SoundEffectControl::Load(
@@ -29,12 +29,12 @@ void SoundEffectControl::Load(
   PROPERTY_CENTER.Load(sType, "PropertyCenter");
   PROPERTY_MAX.Load(sType, "PropertyMax");
 
-  m_pPlayerState = pPlayerState;
-  m_pNoteData = pNoteData;
+  player_state_ = pPlayerState;
+  note_data_ = pNoteData;
 }
 
 void SoundEffectControl::SetSoundReader(RageSoundReader* pPlayer) {
-  m_pSoundReader = pPlayer;
+  sound_reader_ = pPlayer;
 }
 
 void SoundEffectControl::Update(float fDeltaTime) {
@@ -43,54 +43,54 @@ void SoundEffectControl::Update(float fDeltaTime) {
   }
 
   float fLevel = INPUTMAPPER->GetLevel(
-      GAME_BUTTON_EFFECT_UP, m_pPlayerState->m_PlayerNumber);
+      GAME_BUTTON_EFFECT_UP, player_state_->player_number_);
   fLevel -= INPUTMAPPER->GetLevel(
-      GAME_BUTTON_EFFECT_DOWN, m_pPlayerState->m_PlayerNumber);
+      GAME_BUTTON_EFFECT_DOWN, player_state_->player_number_);
   rage_clamp(fLevel, -1.0f, +1.0f);
 
   if (LOCK_TO_HOLD) {
-    int iRow = BeatToNoteRow(GAMESTATE->m_Position.m_fSongBeat);
+    int iRow = BeatToNoteRow(GAMESTATE->position_.song_beat_);
     int iHoldsHeld, iHoldsLetGo;
     HoldsBeingHeld(iRow, iHoldsHeld, iHoldsLetGo);
 
     /* If no holds are being held, or any have been missed, lock the effect off
      * until the button has been released. */
     if (iHoldsLetGo > 0 || iHoldsHeld == 0) {
-      m_bLocked = true;
+      locked_ = true;
     }
 
     /* If the button is released, unlock it when the level crosses or reaches 0.
      */
-    if (m_bLocked) {
-      if ((fLevel <= 0.0f && m_fLastLevel >= 0.0f) ||
-          (fLevel >= 0.0f && m_fLastLevel <= 0.0f)) {
-        m_bLocked = false;
+    if (locked_) {
+      if ((fLevel <= 0.0f && last_level_ >= 0.0f) ||
+          (fLevel >= 0.0f && last_level_ <= 0.0f)) {
+        locked_ = false;
       }
     }
   }
 
-  m_fLastLevel = fLevel;
+  last_level_ = fLevel;
 
-  if (m_bLocked) {
+  if (locked_) {
     fLevel = 0.0f;
   }
 
-  m_fSample = fLevel;
-  m_pPlayerState->m_EffectHistory.AddSample(m_fSample, fDeltaTime);
+  sample_ = fLevel;
+  player_state_->effect_history_.AddSample(sample_, fDeltaTime);
 
   float fPropertyMin = PROPERTY_MIN;
   float fPropertyCenter = PROPERTY_CENTER;
   float fPropertyMax = PROPERTY_MAX;
 
   float fCurrent;
-  if (m_fSample < 0) {
-    fCurrent = SCALE(m_fSample, 0.0f, -1.0f, fPropertyCenter, fPropertyMin);
+  if (sample_ < 0) {
+    fCurrent = SCALE(sample_, 0.0f, -1.0f, fPropertyCenter, fPropertyMin);
   } else {
-    fCurrent = SCALE(m_fSample, 0.0f, +1.0f, fPropertyCenter, fPropertyMax);
+    fCurrent = SCALE(sample_, 0.0f, +1.0f, fPropertyCenter, fPropertyMax);
   }
 
-  if (m_pSoundReader) {
-    m_pSoundReader->SetProperty(SOUND_PROPERTY, fCurrent);
+  if (sound_reader_) {
+    sound_reader_->SetProperty(SOUND_PROPERTY, fCurrent);
   }
 }
 
@@ -99,20 +99,20 @@ void SoundEffectControl::Update(float fDeltaTime) {
 void SoundEffectControl::HoldsBeingHeld(
     int iRow, int& iHoldsHeld, int& iHoldsLetGo) const {
   iHoldsHeld = iHoldsLetGo = 0;
-  for (int c = 0; c < m_pNoteData->GetNumTracks(); ++c) {
+  for (int c = 0; c < note_data_->GetNumTracks(); ++c) {
     NoteData::TrackMap::const_iterator begin, end;
-    m_pNoteData->GetTapNoteRangeInclusive(c, iRow, iRow + 1, begin, end);
+    note_data_->GetTapNoteRangeInclusive(c, iRow, iRow + 1, begin, end);
     if (begin == end) {
       continue;
     }
 
     const TapNote& tn = begin->second;
-    if (tn.type != TapNoteType_HoldHead) {
+    if (tn.type_ != TapNoteType_HoldHead) {
       continue;
     }
-    if (tn.HoldResult.bActive) {
+    if (tn.hold_result_.active_) {
       ++iHoldsHeld;
-    } else if (tn.HoldResult.hns == HNS_LetGo) {
+    } else if (tn.hold_result_.hns_ == HNS_LetGo) {
       ++iHoldsLetGo;
     }
   }

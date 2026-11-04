@@ -1,31 +1,31 @@
 #include "CocoaEventDispatcher.h"
 #include "global.h"
 
-CocoaEventDispatcher CocoaEventDispatcher::sharedDispatcher;
+CocoaEventDispatcher CocoaEventDispatcher::shared_dispatcher_;
 
 CocoaEventDispatcher::CocoaEventDispatcher()
-    : m_Mutex("Cocoa Event Dispatcher"), m_NextResponderID(1) {}
+    : mutex_("Cocoa Event Dispatcher"), next_responder_id_(1) {}
 
 unsigned CocoaEventDispatcher::AddResponder(const std::function<void(EVENT_TYPE)>& resp) {
-  LockMut(m_Mutex);
+  LockMut(mutex_);
 
-  const unsigned respID = m_NextResponderID++;
-  m_Responders.push_back(CocoaEventDispatcher::Responder{respID, resp});
+  const unsigned respID = next_responder_id_++;
+  responders_.push_back(CocoaEventDispatcher::Responder{respID, resp});
 
   return respID;
 }
 
 void CocoaEventDispatcher::RemoveResponder(unsigned respID) {
-  LockMut(m_Mutex);
-  m_Responders.erase(find_if(m_Responders.begin(), m_Responders.end(), [=](const auto& resp) {
-    return resp.ID == respID;
+  LockMut(mutex_);
+  responders_.erase(find_if(responders_.begin(), responders_.end(), [=](const auto& resp) {
+    return resp.id_ == respID;
   }));
 }
 
 void CocoaEventDispatcher::DispatchEvent(EVENT_TYPE e) {
-  LockMut(m_Mutex);
+  LockMut(mutex_);
 
-  for (const auto& responder : m_Responders) {
-    responder.Function(e);
+  for (const auto& responder : responders_) {
+    responder.function_(e);
   }
 }

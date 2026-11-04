@@ -8,37 +8,37 @@
 #include "RageTextureID.h"
 
 struct RageTextureManagerPrefs {
-  int m_iTextureColorDepth;
-  int m_iMovieColorDepth;
-  bool m_bDelayedDelete;
-  int m_iMaxTextureResolution;
-  bool m_bHighResolutionTextures;
-  bool m_bMipMaps;
+  int texture_color_depth_;
+  int movie_color_depth_;
+  bool delayed_delete_;
+  int max_texture_resolution_;
+  bool high_resolution_textures_;
+  bool mip_maps_;
 
   RageTextureManagerPrefs()
-      : m_iTextureColorDepth(16),
-        m_iMovieColorDepth(16),
-        m_bDelayedDelete(false),
-        m_iMaxTextureResolution(1024),
-        m_bHighResolutionTextures(true),
-        m_bMipMaps(false) {}
+      : texture_color_depth_(16),
+        movie_color_depth_(16),
+        delayed_delete_(false),
+        max_texture_resolution_(1024),
+        high_resolution_textures_(true),
+        mip_maps_(false) {}
   RageTextureManagerPrefs(
       int iTextureColorDepth, int iMovieColorDepth, bool bDelayedDelete,
       int iMaxTextureResolution, bool bHighResolutionTextures, bool bMipMaps)
-      : m_iTextureColorDepth(iTextureColorDepth),
-        m_iMovieColorDepth(iMovieColorDepth),
-        m_bDelayedDelete(bDelayedDelete),
-        m_iMaxTextureResolution(iMaxTextureResolution),
-        m_bHighResolutionTextures(bHighResolutionTextures),
-        m_bMipMaps(bMipMaps) {}
+      : texture_color_depth_(iTextureColorDepth),
+        movie_color_depth_(iMovieColorDepth),
+        delayed_delete_(bDelayedDelete),
+        max_texture_resolution_(iMaxTextureResolution),
+        high_resolution_textures_(bHighResolutionTextures),
+        mip_maps_(bMipMaps) {}
 
   bool operator!=(const RageTextureManagerPrefs& rhs) const {
-    return m_iTextureColorDepth != rhs.m_iTextureColorDepth ||
-           m_iMovieColorDepth != rhs.m_iMovieColorDepth ||
-           m_bDelayedDelete != rhs.m_bDelayedDelete ||
-           m_iMaxTextureResolution != rhs.m_iMaxTextureResolution ||
-           m_bHighResolutionTextures != rhs.m_bHighResolutionTextures ||
-           m_bMipMaps != rhs.m_bMipMaps;
+    return texture_color_depth_ != rhs.texture_color_depth_ ||
+           movie_color_depth_ != rhs.movie_color_depth_ ||
+           delayed_delete_ != rhs.delayed_delete_ ||
+           max_texture_resolution_ != rhs.max_texture_resolution_ ||
+           high_resolution_textures_ != rhs.high_resolution_textures_ ||
+           mip_maps_ != rhs.mip_maps_;
   }
 };
 
@@ -57,13 +57,13 @@ class RageTextureManager {
   void ReloadAll();
 
   bool SetPrefs(RageTextureManagerPrefs prefs);
-  RageTextureManagerPrefs GetPrefs() { return m_Prefs; };
+  RageTextureManagerPrefs GetPrefs() { return prefs_; };
 
   RageTextureID::TexPolicy GetDefaultTexturePolicy() const {
-    return m_TexturePolicy;
+    return texture_policy_;
   }
   void SetDefaultTexturePolicy(RageTextureID::TexPolicy p) {
-    m_TexturePolicy = p;
+    texture_policy_ = p;
   }
 
   // call this between Screens
@@ -89,8 +89,8 @@ class RageTextureManager {
   void GarbageCollect(GCType type);
   RageTexture* LoadTextureInternal(RageTextureID ID);
 
-  RageTextureManagerPrefs m_Prefs;
-  RageTextureID::TexPolicy m_TexturePolicy;
+  RageTextureManagerPrefs prefs_;
+  RageTextureID::TexPolicy texture_policy_;
 };
 
 extern RageTextureManager*

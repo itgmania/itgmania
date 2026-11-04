@@ -36,7 +36,7 @@ InputMode StringToInputMode(const std::string& str);
 #define FOREACH_OptionsPlayer(pn)                                \
   for (PlayerNumber pn = GetNextHumanPlayer((PlayerNumber) - 1); \
        pn != PLAYER_INVALID &&                                   \
-       (m_InputMode == INPUTMODE_INDIVIDUAL || pn == 0);         \
+       (input_mode_ == INPUTMODE_INDIVIDUAL || pn == 0);         \
        pn = GetNextHumanPlayer(pn))
 
 /** @brief A grid of options; the selected option is drawn with a highlight
@@ -112,12 +112,12 @@ class ScreenOptions : public ScreenWithMenuElements {
       const InputEventPlus& input, int iDir);  // iDir == -1 or iDir == +1
 
   int GetCurrentRow(PlayerNumber pn = PLAYER_1) const {
-    return m_iCurrentRow[pn];
+    return current_row_[pn];
   }
   bool AllAreOnLastRow() const;
-  OptionRow* GetRow(int iRow) const { return m_pRows[iRow]; }
+  OptionRow* GetRow(int iRow) const { return rows_[iRow]; }
   // void SetOptionRowFromName( const std::string& nombre );
-  int GetNumRows() const { return static_cast<int>(m_pRows.size()); }
+  int GetNumRows() const { return static_cast<int>(rows_.size()); }
 
  protected:  // derived classes need access to these
   enum Navigation {
@@ -128,48 +128,48 @@ class ScreenOptions : public ScreenWithMenuElements {
     NAV_TOGGLE_THREE_KEY,
     NAV_TOGGLE_FIVE_KEY
   };
-  void SetNavigation(Navigation nav) { m_OptionsNavigation = nav; }
-  void SetInputMode(InputMode im) { m_InputMode = im; }
+  void SetNavigation(Navigation nav) { options_navigation_ = nav; }
+  void SetInputMode(InputMode im) { input_mode_ = im; }
 
   /** @brief Map menu lines to m_OptionRow entries. */
-  std::vector<OptionRow*> m_pRows;
+  std::vector<OptionRow*> rows_;
   /** @brief The current row each player is on. */
-  int m_iCurrentRow[NUM_PLAYERS];
+  int current_row_[NUM_PLAYERS];
 
-  OptionRowType m_OptionRowTypeNormal;
-  OptionRowType m_OptionRowTypeExit;
+  OptionRowType option_row_type_normal_;
+  OptionRowType option_row_type_exit_;
 
-  Navigation m_OptionsNavigation;
-  InputMode m_InputMode;
+  Navigation options_navigation_;
+  InputMode input_mode_;
 
-  int m_iFocusX[NUM_PLAYERS];
-  bool m_bWasOnExit[NUM_PLAYERS];
+  int focus_x_[NUM_PLAYERS];
+  bool was_on_exit_[NUM_PLAYERS];
 
   /** @brief True if at least one player pressed Start after selecting the song.
    *
    * TRICKY: People hold Start to get to PlayerOptions, then the repeat events
    * cause them to zip to the bottom. So, ignore Start repeat events until
    * we've seen one first pressed event. */
-  bool m_bGotAtLeastOneStartPressed[NUM_PLAYERS];
+  bool got_at_least_one_start_pressed_[NUM_PLAYERS];
 
   // actors
-  ActorFrame m_frameContainer;
-  AutoActor m_sprPage;
+  ActorFrame frame_container_;
+  AutoActor spr_page_;
 
-  OptionsCursor m_Cursor[NUM_PLAYERS];
-  AutoActor m_sprLineHighlight[NUM_PLAYERS];
+  OptionsCursor cursor_[NUM_PLAYERS];
+  AutoActor spr_line_highlight_[NUM_PLAYERS];
 
-  BitmapText m_textExplanation[NUM_PLAYERS];
-  BitmapText m_textExplanationTogether;
-  DualScrollBar m_ScrollBar;
-  AutoActor m_sprMore;
+  BitmapText text_explanation_[NUM_PLAYERS];
+  BitmapText text_explanation_together_;
+  DualScrollBar scroll_bar_;
+  AutoActor spr_more_;
 
-  RageSound m_SoundChangeCol;
-  RageSound m_SoundNextRow;
-  RageSound m_SoundPrevRow;
-  RageSound m_SoundToggleOn;
-  RageSound m_SoundToggleOff;
-  RageSound m_SoundStart;
+  RageSound sound_change_col_;
+  RageSound sound_next_row_;
+  RageSound sound_prev_row_;
+  RageSound sound_toggle_on_;
+  RageSound sound_toggle_off_;
+  RageSound sound_start_;
 
   // metrics
   ThemeMetric<int> NUM_ROWS_SHOWN;
@@ -177,8 +177,8 @@ class ScreenOptions : public ScreenWithMenuElements {
   ThemeMetric<apActorCommands> ROW_ON_COMMAND;
   ThemeMetric<apActorCommands> ROW_OFF_COMMAND;
   LuaExpressionTransform
-      m_exprRowPositionTransformFunction;  // params:
-                                           // self,offsetFromCenter,itemIndex,numItems
+      expr_row_position_transform_function_;  // params:
+                                              // self,offsetFromCenter,itemIndex,numItems
   ThemeMetric<bool> SHOW_SCROLL_BAR;
   ThemeMetric<float> SCROLL_BAR_HEIGHT;
   ThemeMetric<float> SCROLL_BAR_TIME;

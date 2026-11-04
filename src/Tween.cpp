@@ -39,10 +39,10 @@ struct InterpolateBezier1D : public ITween {
   float Tween(float f) const;
   ITween* Copy() const { return new InterpolateBezier1D(*this); }
 
-  RageQuadratic m_Bezier;
+  RageQuadratic bezier_;
 };
 
-float InterpolateBezier1D::Tween(float f) const { return m_Bezier.Evaluate(f); }
+float InterpolateBezier1D::Tween(float f) const { return bezier_.Evaluate(f); }
 
 /*
  * Interpolation with 2-dimensional cubic Bezier curves.
@@ -51,11 +51,11 @@ struct InterpolateBezier2D : public ITween {
   float Tween(float f) const;
   ITween* Copy() const { return new InterpolateBezier2D(*this); }
 
-  RageBezier2D m_Bezier;
+  RageBezier2D bezier_;
 };
 
 float InterpolateBezier2D::Tween(float f) const {
-  return m_Bezier.EvaluateYFromX(f);
+  return bezier_.EvaluateYFromX(f);
 }
 
 /* This interpolator combines multiple other interpolators, to allow
@@ -100,11 +100,11 @@ ITween* ITween::CreateFromStack(Lua* L, int iStackPos) {
     lua_pop(L, iArgs);
     if (iArgs == 4) {
       InterpolateBezier1D* pBezier = new InterpolateBezier1D;
-      pBezier->m_Bezier.SetFromBezier(fC[0], fC[1], fC[2], fC[3]);
+      pBezier->bezier_.SetFromBezier(fC[0], fC[1], fC[2], fC[3]);
       return pBezier;
     } else if (iArgs == 8) {
       InterpolateBezier2D* pBezier = new InterpolateBezier2D;
-      pBezier->m_Bezier.SetFromBezier(
+      pBezier->bezier_.SetFromBezier(
           fC[0], fC[1], fC[2], fC[3], fC[4], fC[5], fC[6], fC[7]);
       return pBezier;
     }

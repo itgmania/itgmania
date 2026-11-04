@@ -10,33 +10,33 @@
 #include "RageThreads.h"
 
 typedef struct {
-  bool P1_PadUp;
-  bool P1_PadDown;
-  bool P1_PadLeft;
-  bool P1_PadRight;
-  bool P2_PadUp;
-  bool P2_PadDown;
-  bool P2_PadLeft;
-  bool P2_PadRight;
-  bool P1_MenuUp;
-  bool P1_MenuDown;
-  bool P1_MenuLeft;
-  bool P1_MenuRight;
-  bool P2_MenuUp;
-  bool P2_MenuDown;
-  bool P2_MenuLeft;
-  bool P2_MenuRight;
-  bool P1_MenuStart;
-  bool P2_MenuStart;
+  bool p1_pad_up_;
+  bool p1_pad_down_;
+  bool p1_pad_left_;
+  bool p1_pad_right_;
+  bool p2_pad_up_;
+  bool p2_pad_down_;
+  bool p2_pad_left_;
+  bool p2_pad_right_;
+  bool p1_menu_up_;
+  bool p1_menu_down_;
+  bool p1_menu_left_;
+  bool p1_menu_right_;
+  bool p2_menu_up_;
+  bool p2_menu_down_;
+  bool p2_menu_left_;
+  bool p2_menu_right_;
+  bool p1_menu_start_;
+  bool p2_menu_start_;
 } GAME_INPUT;
 
 typedef struct {
-  int P1_InsertCoin;
-  int P2_InsertCoin;
-  int VolumeUp;
-  int VolumeDown;
-  int TestSwitch;
-  int SelectSwitch;
+  int p1_insert_coin_;
+  int p2_insert_coin_;
+  int volume_up_;
+  int volume_down_;
+  int test_switch_;
+  int select_switch_;
 } OPERATOR_INPUT;
 
 enum COUNTER_STATE {

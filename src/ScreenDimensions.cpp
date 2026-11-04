@@ -28,7 +28,7 @@ float ScreenDimensions::GetThemeAspectRatio() { return THEME_NATIVE_ASPECT; }
  * and 854x480 (should really be 852 so that SCREEN_CENTER_X == 426 and not 427)
  * respectively. -aj */
 float ScreenDimensions::GetScreenWidth() {
-  float fAspect = PREFSMAN->m_fDisplayAspectRatio;
+  float fAspect = PREFSMAN->display_aspect_ratio_;
   float fScale = 1;
   if (fAspect > THEME_NATIVE_ASPECT) {
     fScale = fAspect / THEME_NATIVE_ASPECT;
@@ -42,7 +42,7 @@ float ScreenDimensions::GetScreenWidth() {
 }
 
 float ScreenDimensions::GetScreenHeight() {
-  float fAspect = PREFSMAN->m_fDisplayAspectRatio;
+  float fAspect = PREFSMAN->display_aspect_ratio_;
   float fScale = 1;
   if (fAspect < THEME_NATIVE_ASPECT) {
     fScale = THEME_NATIVE_ASPECT / fAspect;
@@ -68,7 +68,7 @@ void ScreenDimensions::ReloadScreenDimensions() {
   LUA->SetGlobal("ASPECT_SCALE_FACTOR", (int)ASPECT_SCALE_FACTOR);
 }
 
-LuaFunction(GetScreenAspectRatio, PREFSMAN->m_fDisplayAspectRatio);
+LuaFunction(GetScreenAspectRatio, PREFSMAN->display_aspect_ratio_);
 LuaFunction(GetThemeAspectRatio, ScreenDimensions::GetThemeAspectRatio());
 
 /*

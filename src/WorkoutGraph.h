@@ -28,10 +28,10 @@ class WorkoutGraph : public ActorFrame {
  protected:
   void SetInternal(int iNumSongsToShowForCurrentStage);
 
-  Sprite m_sprEmpty;
-  std::vector<Sprite*> m_vpBars;
+  Sprite spr_empty_;
+  std::vector<Sprite*> bars_;
 
-  int m_iSongsChoppedOffAtBeginning;
+  int songs_chopped_off_at_beginning_;
 };
 
 #endif

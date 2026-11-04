@@ -16,32 +16,32 @@ namespace StepParity {
 /// a step chart.
 class StepParityGenerator {
  private:
-  const StageLayout* layout;
-  TimingData* timing;
+  const StageLayout* layout_;
+  TimingData* timing_;
 
-  StepParity::State* beginningState = nullptr;
-  StepParity::StepParityNode* startNode = nullptr;
-  StepParity::State* endingState = nullptr;
-  StepParity::StepParityNode* endNode = nullptr;
-  StepParity::State* tmpState = nullptr;
+  StepParity::State* beginning_state_ = nullptr;
+  StepParity::StepParityNode* start_node_ = nullptr;
+  StepParity::State* ending_state_ = nullptr;
+  StepParity::StepParityNode* end_node_ = nullptr;
+  StepParity::State* tmp_state_ = nullptr;
 
-  std::deque<StepParity::State> statePool;
-  std::deque<StepParity::StepParityNode> nodePool;
+  std::deque<StepParity::State> state_pool_;
+  std::deque<StepParity::StepParityNode> node_pool_;
 
   StepParity::State* allocState() {
-    statePool.emplace_back();
-    return &statePool.back();
+    state_pool_.emplace_back();
+    return &state_pool_.back();
   }
 
  public:
-  std::unordered_map<std::uint64_t, StepParity::State*> stateCache;
-  std::vector<StepParity::StepParityNode*> nodes;
-  std::vector<Row> rows;
-  std::vector<int> nodes_for_rows;
-  int columnCount_;
+  std::unordered_map<std::uint64_t, StepParity::State*> state_cache_;
+  std::vector<StepParity::StepParityNode*> nodes_;
+  std::vector<Row> rows_;
+  std::vector<int> nodes_for_rows_;
+  int column_count_;
 
-  StepParityGenerator(const StageLayout* l, TimingData* t) : layout(l) {
-    timing = t;
+  StepParityGenerator(const StageLayout* l, TimingData* t) : layout_(l) {
+    timing_ = t;
   }
   /// @brief Analyzes the given NoteData to generate a vector of
   /// StepParity::Rows, with each step annotated with a foot placement.

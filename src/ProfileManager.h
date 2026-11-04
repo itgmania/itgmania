@@ -55,7 +55,7 @@ class ProfileManager {
   int GetLocalProfileIndexFromID(std::string sProfileID) const;
   int GetNumLocalProfiles() const;
 
-  std::string GetStatsPrefix() { return m_stats_prefix; }
+  std::string GetStatsPrefix() { return stats_prefix_; }
   void SetStatsPrefix(const std::string& prefix);
 
   bool LoadFirstAvailableProfile(
@@ -89,7 +89,7 @@ class ProfileManager {
   void SaveMachineProfile() const;
 
   bool IsPersistentProfile(PlayerNumber pn) const {
-    return !m_sProfileDir[pn].empty();
+    return !profile_dir_[pn].empty();
   }
   bool IsPersistentProfile(ProfileSlot slot) const;
 
@@ -108,7 +108,7 @@ class ProfileManager {
   }
 
   const std::string& GetProfileDir(ProfileSlot slot) const;
-  Profile* GetMachineProfile() { return m_pMachineProfile; }
+  Profile* GetMachineProfile() { return machine_profile_; }
 
   std::string GetPlayerName(PlayerNumber pn) const;
   bool ProfileWasLoadedFromMemoryCard(PlayerNumber pn) const;
@@ -147,9 +147,9 @@ class ProfileManager {
   // Lua
   void PushSelf(lua_State* L);
 
-  static Preference<bool> m_bProfileStepEdits;
-  static Preference<bool> m_bProfileCourseEdits;
-  static Preference1D<std::string> m_sDefaultLocalProfileID;
+  static Preference<bool> profile_step_edits_;
+  static Preference<bool> profile_course_edits_;
+  static Preference1D<std::string> default_local_profile_id_;
 
  private:
   ProfileLoadResult LoadProfile(
@@ -157,26 +157,26 @@ class ProfileManager {
 
   // Directory that contains the profile.  Either on local machine or
   // on a memory card.
-  std::string m_sProfileDir[NUM_PLAYERS];
+  std::string profile_dir_[NUM_PLAYERS];
 
-  std::string m_stats_prefix;
+  std::string stats_prefix_;
 
-  bool m_bWasLoadedFromMemoryCard[NUM_PLAYERS];
-  bool m_bLastLoadWasTamperedOrCorrupt
+  bool was_loaded_from_memory_card_[NUM_PLAYERS];
+  bool last_load_was_tampered_or_corrupt_
       [NUM_PLAYERS];  // true if Stats.xml was present, but failed to load
                       // (probably because of a signature failure)
-  bool m_bLastLoadWasFromLastGood
+  bool last_load_was_from_last_good_
       [NUM_PLAYERS];  // true if the primary Stats file was corrupt or missing
                       // and LastGood loaded successfully
-  mutable bool m_bNeedToBackUpLastLoad[NUM_PLAYERS];  // if true, back up
-                                                      // profile on next save
-  bool m_bNewProfile[NUM_PLAYERS];
+  mutable bool need_to_back_up_last_load_[NUM_PLAYERS];  // if true, back up
+                                                         // profile on next save
+  bool new_profile_[NUM_PLAYERS];
   // prevent a bad save from overwriting Stats.xml after a prefix reload failed
-  bool m_bStatsPrefixChangeFailed[NUM_PLAYERS];
+  bool stats_prefix_change_failed_[NUM_PLAYERS];
 
-  Profile* m_pMemoryCardProfile[NUM_PLAYERS];  // holds Profile for the
+  Profile* memory_card_profile_[NUM_PLAYERS];  // holds Profile for the
                                                // currently inserted card
-  Profile* m_pMachineProfile;
+  Profile* machine_profile_;
 };
 
 extern ProfileManager*

@@ -54,8 +54,8 @@ static void SpliceProgramPath(char* buf, int bufsiz, const char* fn) {
 ///////////////////////////////////////////////////////////////////////////
 
 static const struct ExceptionLookup {
-  DWORD code;
-  const char* name;
+  DWORD code_;
+  const char* name_;
 } exceptions[] = {
     {EXCEPTION_ACCESS_VIOLATION, "Access Violation"},
     {EXCEPTION_BREAKPOINT, "Breakpoint"},
@@ -98,9 +98,9 @@ static const struct ExceptionLookup {
 };
 
 static const char* LookupException(DWORD code) {
-  for (int i = 0; exceptions[i].code; ++i) {
-    if (exceptions[i].code == code) {
-      return exceptions[i].name;
+  for (int i = 0; exceptions[i].code_; ++i) {
+    if (exceptions[i].code_ == code) {
+      return exceptions[i].name_;
     }
   }
 
@@ -114,10 +114,10 @@ static void GetReason(const EXCEPTION_RECORD* pRecord, CrashInfo* crash) {
 
   if (reason == nullptr) {
     BufferedFormatString(
-        crash->m_CrashReason, sizeof(crash->m_CrashReason),
+        crash->crash_reason_, sizeof(crash->crash_reason_),
         "unknown exception 0x%08lx", pRecord->ExceptionCode);
   } else {
-    strcpy(crash->m_CrashReason, reason);
+    strcpy(crash->crash_reason_, reason);
   }
 }
 
@@ -364,11 +364,11 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
 
   RageThread::HaltAllThreads(false);
 
-  if (!g_CrashInfo.m_CrashReason[0]) {
+  if (!g_CrashInfo.crash_reason_[0]) {
     GetReason(pExc->ExceptionRecord, &g_CrashInfo);
   }
   CrashHandler::do_backtrace(
-      (void**)g_CrashInfo.m_BacktracePointers, BACKTRACE_MAX_SIZE,
+      (void**)g_CrashInfo.backtrace_pointers_, BACKTRACE_MAX_SIZE,
       GetCurrentProcess(), GetCurrentThread(), pExc->ContextRecord);
 
   RunChild();
@@ -513,9 +513,9 @@ static void debug_crash() {
  */
 void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
   strncpy(
-      g_CrashInfo.m_CrashReason, reason.c_str(),
-      sizeof(g_CrashInfo.m_CrashReason));
-  g_CrashInfo.m_CrashReason[sizeof(g_CrashInfo.m_CrashReason) - 1] = 0;
+      g_CrashInfo.crash_reason_, reason.c_str(),
+      sizeof(g_CrashInfo.crash_reason_));
+  g_CrashInfo.crash_reason_[sizeof(g_CrashInfo.crash_reason_) - 1] = 0;
 
   /* Suspend the other thread we're going to backtrace. (We need to at least
    * suspend hThread, for GetThreadContext to work.) */
@@ -538,27 +538,27 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
       CONTEXT context;
       context.ContextFlags = CONTEXT_FULL;
       if (!GetThreadContext(hThread, &context)) {
-        size_t used = strlen(g_CrashInfo.m_CrashReason);
+        size_t used = strlen(g_CrashInfo.crash_reason_);
         BufferedFormatString(
-            g_CrashInfo.m_CrashReason + used,
-            sizeof(g_CrashInfo.m_CrashReason) - used,
+            g_CrashInfo.crash_reason_ + used,
+            sizeof(g_CrashInfo.crash_reason_) - used,
             "; GetThreadContext(%Ix) failed",
             reinterpret_cast<uintptr_t>(hThread));
       } else {
         static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
         do_backtrace(
-            (void**)g_CrashInfo.m_AlternateThreadBacktrace[iCnt],
+            (void**)g_CrashInfo.alternate_thread_backtrace_[iCnt],
             BACKTRACE_MAX_SIZE, GetCurrentProcess(), hThread, &context);
 
         const char* pName = RageThread::GetThreadNameByID(iID);
         strncpy(
-            g_CrashInfo.m_AlternateThreadName[iCnt], pName ? pName : "???",
-            sizeof(g_CrashInfo.m_AlternateThreadName[iCnt]) - 1);
+            g_CrashInfo.alternate_thread_name_[iCnt], pName ? pName : "???",
+            sizeof(g_CrashInfo.alternate_thread_name_[iCnt]) - 1);
 
         ++iCnt;
       }
 
-      if (iCnt == CrashInfo::MAX_BACKTRACE_THREADS) {
+      if (iCnt == CrashInfo::kMaxBacktraceThreads) {
         break;
       }
     }
@@ -568,17 +568,17 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
     CONTEXT context;
     context.ContextFlags = CONTEXT_FULL;
     if (!GetThreadContext(hThread, &context)) {
-      strcat(g_CrashInfo.m_CrashReason, "(GetThreadContext failed)");
+      strcat(g_CrashInfo.crash_reason_, "(GetThreadContext failed)");
     } else {
       static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
       do_backtrace(
-          (void**)g_CrashInfo.m_AlternateThreadBacktrace[0], BACKTRACE_MAX_SIZE,
-          GetCurrentProcess(), hThread, &context);
+          (void**)g_CrashInfo.alternate_thread_backtrace_[0],
+          BACKTRACE_MAX_SIZE, GetCurrentProcess(), hThread, &context);
 
       const char* pName = RageThread::GetThreadNameByID(iID);
       strncpy(
-          g_CrashInfo.m_AlternateThreadName[0], pName ? pName : "???",
-          sizeof(g_CrashInfo.m_AlternateThreadName[0]) - 1);
+          g_CrashInfo.alternate_thread_name_[0], pName ? pName : "???",
+          sizeof(g_CrashInfo.alternate_thread_name_[0]) - 1);
     }
   }
 
@@ -586,8 +586,8 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
 }
 
 void CrashHandler::ForceCrash(const char* reason) {
-  strncpy(g_CrashInfo.m_CrashReason, reason, sizeof(g_CrashInfo.m_CrashReason));
-  g_CrashInfo.m_CrashReason[sizeof(g_CrashInfo.m_CrashReason) - 1] = 0;
+  strncpy(g_CrashInfo.crash_reason_, reason, sizeof(g_CrashInfo.crash_reason_));
+  g_CrashInfo.crash_reason_[sizeof(g_CrashInfo.crash_reason_) - 1] = 0;
 
   debug_crash();
 }

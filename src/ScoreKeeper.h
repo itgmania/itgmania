@@ -27,8 +27,8 @@ class ScoreKeeper {
       PlayerStageStats* pPlayerStageStats);
 
  protected:
-  PlayerState* m_pPlayerState;
-  PlayerStageStats* m_pPlayerStageStats;
+  PlayerState* player_state_;
+  PlayerStageStats* player_stage_stats_;
 
   // Common toggles that this class handles directly:
 

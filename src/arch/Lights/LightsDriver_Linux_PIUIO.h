@@ -13,7 +13,7 @@ class LightsDriver_Linux_PIUIO : public LightsDriver {
   virtual void Set(const LightsState* ls);
 
  private:
-  int fd;
+  int fd_;
 };
 
 #endif

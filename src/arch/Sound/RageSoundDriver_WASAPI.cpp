@@ -17,52 +17,52 @@
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
 
 RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
-    : m_iSampleRate(0),
-      m_iBufferSizeFrames(0),
-      m_bFloat(true),
-      m_pAudioClient(nullptr),
-      m_pRenderClient(nullptr),
-      m_pAudioClock(nullptr),
-      m_iAudioClockFreq(0),
-      m_hAudioEvent(INVALID_HANDLE_VALUE),
-      m_bShutdownMixerThread(false),
-      m_bOwnsComInit(false) {}
+    : sample_rate_(0),
+      buffer_size_frames_(0),
+      float_(true),
+      audio_client_(nullptr),
+      render_client_(nullptr),
+      audio_clock_(nullptr),
+      audio_clock_freq_(0),
+      audio_event_(INVALID_HANDLE_VALUE),
+      shutdown_mixer_thread_(false),
+      owns_com_init_(false) {}
 
 RageSoundDriver_WASAPI::~RageSoundDriver_WASAPI() {
-  if (m_MixingThread.IsCreated()) {
-    m_bShutdownMixerThread = true;
-    if (m_hAudioEvent != INVALID_HANDLE_VALUE) {
-      SetEvent(m_hAudioEvent);  // Wake up thread
+  if (mixing_thread_.IsCreated()) {
+    shutdown_mixer_thread_ = true;
+    if (audio_event_ != INVALID_HANDLE_VALUE) {
+      SetEvent(audio_event_);  // Wake up thread
     }
-    m_MixingThread.Wait();
+    mixing_thread_.Wait();
   }
 
   FreeWASAPI();
 
-  if (m_hAudioEvent != INVALID_HANDLE_VALUE) {
-    CloseHandle(m_hAudioEvent);
+  if (audio_event_ != INVALID_HANDLE_VALUE) {
+    CloseHandle(audio_event_);
   }
 }
 
 void RageSoundDriver_WASAPI::FreeWASAPI() {
-  if (m_pAudioClient) {
-    m_pAudioClient->Stop();
+  if (audio_client_) {
+    audio_client_->Stop();
   }
-  if (m_pAudioClock) {
-    m_pAudioClock->Release();
-    m_pAudioClock = nullptr;
+  if (audio_clock_) {
+    audio_clock_->Release();
+    audio_clock_ = nullptr;
   }
-  if (m_pRenderClient) {
-    m_pRenderClient->Release();
-    m_pRenderClient = nullptr;
+  if (render_client_) {
+    render_client_->Release();
+    render_client_ = nullptr;
   }
-  if (m_pAudioClient) {
-    m_pAudioClient->Release();
-    m_pAudioClient = nullptr;
+  if (audio_client_) {
+    audio_client_->Release();
+    audio_client_ = nullptr;
   }
-  if (m_bOwnsComInit) {
+  if (owns_com_init_) {
     CoUninitialize();
-    m_bOwnsComInit = false;
+    owns_com_init_ = false;
   }
 }
 
@@ -72,7 +72,7 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     sError = hr_ssprintf(hr, "CoInitializeEx failed");
     return false;
   }
-  m_bOwnsComInit = SUCCEEDED(hr);
+  owns_com_init_ = SUCCEEDED(hr);
 
   IMMDeviceEnumerator* pEnumerator = nullptr;
   hr = CoCreateInstance(
@@ -94,7 +94,7 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   hr = pDevice->Activate(
-      __uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&m_pAudioClient);
+      __uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&audio_client_);
   pDevice->Release();
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "Activate(IAudioClient) failed");
@@ -103,14 +103,14 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   WAVEFORMATEX* pwfx = nullptr;
-  hr = m_pAudioClient->GetMixFormat(&pwfx);
+  hr = audio_client_->GetMixFormat(&pwfx);
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "GetMixFormat failed");
     FreeWASAPI();
     return false;
   }
 
-  m_iSampleRate = pwfx->nSamplesPerSec;
+  sample_rate_ = pwfx->nSamplesPerSec;
   int iChannels = pwfx->nChannels;
 
   if (pwfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
@@ -122,11 +122,11 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
 
   WAVEFORMATEXTENSIBLE* pEx = (WAVEFORMATEXTENSIBLE*)pwfx;
   if (pEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
-    m_bFloat = true;
+    float_ = true;
   } else if (
       pEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM &&
       pEx->Format.wBitsPerSample == 16) {
-    m_bFloat = false;
+    float_ = false;
   } else {
     sError = "Unsupported format (expected float or 16-bit PCM)";
     CoTaskMemFree(pwfx);
@@ -135,13 +135,13 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   REFERENCE_TIME hnsRequestedDuration = 0;
-  if (PREFSMAN->m_iSoundWriteAhead) {
+  if (PREFSMAN->sound_write_ahead_) {
     // WriteAhead is in frames. Convert to 100-nanosecond units.
-    hnsRequestedDuration = (REFERENCE_TIME)PREFSMAN->m_iSoundWriteAhead *
-                           10000000ULL / m_iSampleRate;
+    hnsRequestedDuration = (REFERENCE_TIME)PREFSMAN->sound_write_ahead_ *
+                           10000000ULL / sample_rate_;
   }
 
-  hr = m_pAudioClient->Initialize(
+  hr = audio_client_->Initialize(
       AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
       hnsRequestedDuration, 0, pwfx, nullptr);
 
@@ -153,42 +153,42 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
-  m_hAudioEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-  if (m_hAudioEvent == NULL) {
+  audio_event_ = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+  if (audio_event_ == NULL) {
     sError = werr_ssprintf(GetLastError(), "CreateEvent failed");
     FreeWASAPI();
     return false;
   }
 
-  hr = m_pAudioClient->SetEventHandle(m_hAudioEvent);
+  hr = audio_client_->SetEventHandle(audio_event_);
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "SetEventHandle failed");
     FreeWASAPI();
     return false;
   }
 
-  hr = m_pAudioClient->GetBufferSize(&m_iBufferSizeFrames);
+  hr = audio_client_->GetBufferSize(&buffer_size_frames_);
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "GetBufferSize failed");
     FreeWASAPI();
     return false;
   }
 
-  hr = m_pAudioClient->GetService(IID_PPV_ARGS(&m_pRenderClient));
+  hr = audio_client_->GetService(IID_PPV_ARGS(&render_client_));
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "GetService(IAudioRenderClient) failed");
     FreeWASAPI();
     return false;
   }
 
-  hr = m_pAudioClient->GetService(IID_PPV_ARGS(&m_pAudioClock));
+  hr = audio_client_->GetService(IID_PPV_ARGS(&audio_clock_));
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "GetService(IAudioClock) failed");
     FreeWASAPI();
     return false;
   }
 
-  hr = m_pAudioClock->GetFrequency(&m_iAudioClockFreq);
+  hr = audio_clock_->GetFrequency(&audio_clock_freq_);
   if (FAILED(hr)) {
     sError = hr_ssprintf(hr, "GetFrequency failed");
     FreeWASAPI();
@@ -197,8 +197,7 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
 
   LOG->Info(
       "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
-      iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
-      m_iBufferSizeFrames);
+      iChannels, sample_rate_, float_ ? "Float" : "Int16", buffer_size_frames_);
 
   return true;
 }
@@ -211,11 +210,11 @@ std::string RageSoundDriver_WASAPI::Init() {
 
   // Set decode buffer size.
   // We want it to be at least as big as the WASAPI buffer.
-  SetDecodeBufferSize(m_iBufferSizeFrames * 3 / 2);
+  SetDecodeBufferSize(buffer_size_frames_ * 3 / 2);
   StartDecodeThread();
 
-  m_MixingThread.SetName("WASAPI Mixer Thread");
-  m_MixingThread.Create(MixerThread_start, this);
+  mixing_thread_.SetName("WASAPI Mixer Thread");
+  mixing_thread_.Create(MixerThread_start, this);
 
   return "";
 }
@@ -235,7 +234,7 @@ void RageSoundDriver_WASAPI::MixerThread() {
     }
   }
 
-  HRESULT hr = m_pAudioClient->Start();
+  HRESULT hr = audio_client_->Start();
   if (FAILED(hr)) {
     LOG->Warn(hr_ssprintf(hr, "Failed to start IAudioClient").c_str());
     return;
@@ -243,34 +242,34 @@ void RageSoundDriver_WASAPI::MixerThread() {
 
   int64_t iHardwareFrame = 0;  // Total frames played/mixed so far
 
-  while (!m_bShutdownMixerThread) {
+  while (!shutdown_mixer_thread_) {
     DWORD waitResult =
-        WaitForSingleObject(m_hAudioEvent, 2000);  // 2 second timeout safety
+        WaitForSingleObject(audio_event_, 2000);  // 2 second timeout safety
     if (waitResult == WAIT_TIMEOUT) {
       LOG->Warn("WASAPI: Timeout waiting for audio event");
-      m_pAudioClient->Stop();
-      m_pAudioClient->Start();
+      audio_client_->Stop();
+      audio_client_->Start();
       continue;
     }
 
-    if (m_bShutdownMixerThread) {
+    if (shutdown_mixer_thread_) {
       break;
     }
 
     UINT32 padding = 0;
-    hr = m_pAudioClient->GetCurrentPadding(&padding);
+    hr = audio_client_->GetCurrentPadding(&padding);
     if (FAILED(hr)) {
       LOG->Warn(hr_ssprintf(hr, "GetCurrentPadding failed").c_str());
       continue;
     }
 
-    UINT32 framesAvailable = m_iBufferSizeFrames - padding;
+    UINT32 framesAvailable = buffer_size_frames_ - padding;
     if (framesAvailable == 0) {
       continue;
     }
 
     BYTE* pData = nullptr;
-    hr = m_pRenderClient->GetBuffer(framesAvailable, &pData);
+    hr = render_client_->GetBuffer(framesAvailable, &pData);
     if (FAILED(hr)) {
       LOG->Warn(hr_ssprintf(hr, "GetBuffer failed").c_str());
       continue;
@@ -278,14 +277,14 @@ void RageSoundDriver_WASAPI::MixerThread() {
 
     int64_t iCurrentFrame = GetPosition();
 
-    if (m_bFloat) {
+    if (float_) {
       this->Mix((float*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
     } else {
       this->Mix(
           (int16_t*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
     }
 
-    hr = m_pRenderClient->ReleaseBuffer(framesAvailable, 0);
+    hr = render_client_->ReleaseBuffer(framesAvailable, 0);
     if (FAILED(hr)) {
       LOG->Warn(hr_ssprintf(hr, "ReleaseBuffer failed").c_str());
     }
@@ -293,26 +292,26 @@ void RageSoundDriver_WASAPI::MixerThread() {
     iHardwareFrame += framesAvailable;
   }
 
-  m_pAudioClient->Stop();
+  audio_client_->Stop();
 }
 
 int64_t RageSoundDriver_WASAPI::GetPosition() const {
   UINT64 position = 0;
-  if (FAILED(m_pAudioClock->GetPosition(&position, nullptr))) {
+  if (FAILED(audio_clock_->GetPosition(&position, nullptr))) {
     return 0;
   }
-  return (int64_t)(position * (UINT64)m_iSampleRate / m_iAudioClockFreq);
+  return (int64_t)(position * (UINT64)sample_rate_ / audio_clock_freq_);
 }
 
 float RageSoundDriver_WASAPI::GetPlayLatency() const {
   REFERENCE_TIME latency = 0;
-  if (FAILED(m_pAudioClient->GetStreamLatency(&latency))) {
+  if (FAILED(audio_client_->GetStreamLatency(&latency))) {
     return 0.0f;
   }
   return (float)latency / 10000000.0f;
 }
 
-int RageSoundDriver_WASAPI::GetSampleRate() const { return m_iSampleRate; }
+int RageSoundDriver_WASAPI::GetSampleRate() const { return sample_rate_; }
 
 void RageSoundDriver_WASAPI::SetupDecodingThread() {
   if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL)) {

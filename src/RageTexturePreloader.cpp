@@ -14,7 +14,7 @@ void RageTexturePreloader::Load(const RageTextureID& ID) {
   ASSERT(TEXTUREMAN != nullptr);
 
   RageTexture* pTexture = TEXTUREMAN->LoadTexture(ID);
-  m_apTextures.push_back(pTexture);
+  textures_.push_back(pTexture);
 }
 
 void RageTexturePreloader::UnloadAll() {
@@ -22,10 +22,10 @@ void RageTexturePreloader::UnloadAll() {
     return;
   }
 
-  for (unsigned i = 0; i < m_apTextures.size(); ++i) {
-    TEXTUREMAN->UnloadTexture(m_apTextures[i]);
+  for (unsigned i = 0; i < textures_.size(); ++i) {
+    TEXTUREMAN->UnloadTexture(textures_[i]);
   }
-  m_apTextures.clear();
+  textures_.clear();
 }
 
 RageTexturePreloader::~RageTexturePreloader() { UnloadAll(); }

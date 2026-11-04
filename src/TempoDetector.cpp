@@ -27,22 +27,22 @@ const int IntervalDownsample = 3;
 const double MaxAnalysisSeconds = 600.0;
 
 struct Onset {
-  int pos;
-  real strength;
+  int pos_;
+  real strength_;
 };
 
 struct DetectorData {
-  const float* samples;
-  int samplerate;
-  int numFrames;
-  std::atomic<bool>* terminate;
-  std::atomic<int>* progress;
-  std::vector<TempoResult> result;
+  const float* samples_;
+  int samplerate_;
+  int num_frames_;
+  std::atomic<bool>* terminate_;
+  std::atomic<int>* progress_;
+  std::vector<TempoResult> result_;
 };
 
 struct TempoSort {
   bool operator()(const TempoResult& a, const TempoResult& b) {
-    return a.fitness > b.fitness;
+    return a.fitness_ > b.fitness_;
   }
 };
 
@@ -85,9 +85,9 @@ void FindOnsets(
 
 struct Matrix {
   Matrix(int nRows, int nCols)
-      : data(static_cast<size_t>(nRows) * nCols, 0.0),
-        rows(nRows),
-        cols(nCols) {}
+      : data_(static_cast<size_t>(nRows) * nCols, 0.0),
+        rows_(nRows),
+        cols_(nCols) {}
 
   static Matrix Identity(int nSize) {
     Matrix result(nSize, nSize);
@@ -98,17 +98,17 @@ struct Matrix {
   }
 
   real& operator()(int nRow, int nCol) {
-    return data[nCol + static_cast<size_t>(cols) * nRow];
+    return data_[nCol + static_cast<size_t>(cols_) * nRow];
   }
   real operator()(int nRow, int nCol) const {
-    return data[nCol + static_cast<size_t>(cols) * nRow];
+    return data_[nCol + static_cast<size_t>(cols_) * nRow];
   }
 
   Matrix operator*(const Matrix& other) const {
-    Matrix result(rows, other.cols);
-    for (int r = 0; r < rows; ++r) {
-      for (int ocol = 0; ocol < other.cols; ++ocol) {
-        for (int c = 0; c < cols; ++c) {
+    Matrix result(rows_, other.cols_);
+    for (int r = 0; r < rows_; ++r) {
+      for (int ocol = 0; ocol < other.cols_; ++ocol) {
+        for (int c = 0; c < cols_; ++c) {
           result(r, ocol) += (*this)(r, c) * other(c, ocol);
         }
       }
@@ -117,18 +117,18 @@ struct Matrix {
   }
 
   Matrix Transpose() const {
-    Matrix result(cols, rows);
-    for (int r = 0; r < rows; ++r) {
-      for (int c = 0; c < cols; ++c) {
+    Matrix result(cols_, rows_);
+    for (int r = 0; r < rows_; ++r) {
+      for (int c = 0; c < cols_; ++c) {
         result(c, r) += (*this)(r, c);
       }
     }
     return result;
   }
 
-  std::vector<real> data;
-  int rows;
-  int cols;
+  std::vector<real> data_;
+  int rows_;
+  int cols_;
 };
 
 class Givens {
@@ -137,8 +137,8 @@ class Givens {
 
   // Performs QR factorization using Givens rotations.
   void Decompose(const Matrix& matrix) {
-    int nRows = matrix.rows;
-    int nCols = matrix.cols;
+    int nRows = matrix.rows_;
+    int nCols = matrix.cols_;
 
     if (nRows == nCols) {
       nCols--;
@@ -162,7 +162,7 @@ class Givens {
 
   Matrix Solve(const Matrix& matrix) {
     Matrix qtm = q_.Transpose() * matrix;
-    int nCols = r_.cols;
+    int nCols = r_.cols_;
     Matrix s(1, nCols);
     for (int i = nCols - 1; i >= 0; --i) {
       s(0, i) = qtm(i, 0);
@@ -199,7 +199,7 @@ class Givens {
   }
 
   void PreMultiply(Matrix& matrix, int i, int j) {
-    int nRowSize = matrix.cols;
+    int nRowSize = matrix.cols_;
     for (int nRow = 0; nRow < nRowSize; ++nRow) {
       real temp = matrix(i, nRow) * j_(0, 0) + matrix(j, nRow) * j_(0, 1);
       matrix(j, nRow) = matrix(i, nRow) * j_(1, 0) + matrix(j, nRow) * j_(1, 1);
@@ -246,7 +246,7 @@ void PolyFit(
   Matrix coeff = givens.Solve(xtyMatrix);
 
   for (int i = 0; i < degree; ++i) {
-    outCoefs[i] = coeff.data[i];
+    outCoefs[i] = coeff.data_[i];
   }
 }
 
@@ -273,50 +273,50 @@ void NormalizeFitness(real& fitness, const real* coefs, real interval) {
 
 struct GapData {
   GapData(int bufferSize, int downsample, int numOnsets, const Onset* onsets)
-      : onsets(onsets),
-        wrappedPos(numOnsets > 0 ? numOnsets : 1, 0),
-        wrappedOnsets(bufferSize > 0 ? bufferSize : 1, 0.0),
-        window(2048 >> downsample, 0.0),
-        bufferSize(bufferSize),
-        numOnsets(numOnsets),
-        windowSize(2048 >> downsample),
-        downsample(downsample) {
-    CreateHammingWindow(&window[0], windowSize);
+      : onsets_(onsets),
+        wrapped_pos_(numOnsets > 0 ? numOnsets : 1, 0),
+        wrapped_onsets_(bufferSize > 0 ? bufferSize : 1, 0.0),
+        window_(2048 >> downsample, 0.0),
+        buffer_size_(bufferSize),
+        num_onsets_(numOnsets),
+        window_size_(2048 >> downsample),
+        downsample_(downsample) {
+    CreateHammingWindow(&window_[0], window_size_);
   }
 
-  const Onset* onsets;
-  std::vector<int> wrappedPos;
-  std::vector<real> wrappedOnsets;
-  std::vector<real> window;
-  int bufferSize, numOnsets, windowSize, downsample;
+  const Onset* onsets_;
+  std::vector<int> wrapped_pos_;
+  std::vector<real> wrapped_onsets_;
+  std::vector<real> window_;
+  int buffer_size_, num_onsets_, window_size_, downsample_;
 };
 
 struct IntervalTester {
   IntervalTester(int samplerate, int numOnsets, const Onset* onsets)
-      : samplerate(samplerate), numOnsets(numOnsets), onsets(onsets) {
-    minInterval = static_cast<int>(samplerate * 60.0 / MaximumBPM + 0.5);
-    maxInterval = static_cast<int>(samplerate * 60.0 / MinimumBPM + 0.5);
-    numIntervals = maxInterval - minInterval;
-    fitness.assign(numIntervals > 0 ? numIntervals : 1, 0.0);
+      : samplerate_(samplerate), num_onsets_(numOnsets), onsets_(onsets) {
+    min_interval_ = static_cast<int>(samplerate * 60.0 / MaximumBPM + 0.5);
+    max_interval_ = static_cast<int>(samplerate * 60.0 / MinimumBPM + 0.5);
+    num_intervals_ = max_interval_ - min_interval_;
+    fitness_.assign(num_intervals_ > 0 ? num_intervals_ : 1, 0.0);
   }
 
-  int minInterval;
-  int maxInterval;
-  int numIntervals;
-  int samplerate;
-  int numOnsets;
-  const Onset* onsets;
-  std::vector<real> fitness;
-  real coefs[4];
+  int min_interval_;
+  int max_interval_;
+  int num_intervals_;
+  int samplerate_;
+  int num_onsets_;
+  const Onset* onsets_;
+  std::vector<real> fitness_;
+  real coefs_[4];
 };
 
 // Returns the confidence value that indicates how many onsets are close to the
 // given gap position.
 real GapConfidence(const GapData& gapdata, int gapPos, int interval) {
-  int windowSize = gapdata.windowSize;
+  int windowSize = gapdata.window_size_;
   int halfWindowSize = windowSize / 2;
-  const real* window = &gapdata.window[0];
-  const real* wrappedOnsets = &gapdata.wrappedOnsets[0];
+  const real* window = &gapdata.window_[0];
+  const real* wrappedOnsets = &gapdata.wrapped_onsets_[0];
   real area = 0.0;
 
   int beginOnset = gapPos - halfWindowSize;
@@ -349,20 +349,20 @@ real GapConfidence(const GapData& gapdata, int gapPos, int interval) {
 
 // Returns the confidence of the best gap value for the given interval.
 real GetConfidenceForInterval(GapData& gapdata, int interval) {
-  int downsample = gapdata.downsample;
-  int numOnsets = gapdata.numOnsets;
-  const Onset* onsets = gapdata.onsets;
+  int downsample = gapdata.downsample_;
+  int numOnsets = gapdata.num_onsets_;
+  const Onset* onsets = gapdata.onsets_;
 
-  int* wrappedPos = &gapdata.wrappedPos[0];
-  real* wrappedOnsets = &gapdata.wrappedOnsets[0];
-  memset(wrappedOnsets, 0, sizeof(real) * gapdata.bufferSize);
+  int* wrappedPos = &gapdata.wrapped_pos_[0];
+  real* wrappedOnsets = &gapdata.wrapped_onsets_[0];
+  memset(wrappedOnsets, 0, sizeof(real) * gapdata.buffer_size_);
 
   // Make a histogram of onset strengths for every position in the interval.
   int reducedInterval = interval >> downsample;
   for (int i = 0; i < numOnsets; ++i) {
-    int pos = (onsets[i].pos % interval) >> downsample;
+    int pos = (onsets[i].pos_ % interval) >> downsample;
     wrappedPos[i] = pos;
-    wrappedOnsets[pos] += onsets[i].strength;
+    wrappedOnsets[pos] += onsets[i].strength_;
   }
 
   // Record the amount of support for each gap value.
@@ -383,21 +383,21 @@ real GetConfidenceForInterval(GapData& gapdata, int interval) {
 
 // Returns the confidence of the best gap value for the given BPM value.
 real GetConfidenceForBPM(GapData& gapdata, IntervalTester& test, real bpm) {
-  int numOnsets = gapdata.numOnsets;
-  const Onset* onsets = gapdata.onsets;
+  int numOnsets = gapdata.num_onsets_;
+  const Onset* onsets = gapdata.onsets_;
 
-  int* wrappedPos = &gapdata.wrappedPos[0];
-  real* wrappedOnsets = &gapdata.wrappedOnsets[0];
-  memset(wrappedOnsets, 0, sizeof(real) * gapdata.bufferSize);
+  int* wrappedPos = &gapdata.wrapped_pos_[0];
+  real* wrappedOnsets = &gapdata.wrapped_onsets_[0];
+  memset(wrappedOnsets, 0, sizeof(real) * gapdata.buffer_size_);
 
   // Make a histogram of onset strengths for every position in the interval.
-  real intervalf = test.samplerate * 60.0 / bpm;
+  real intervalf = test.samplerate_ * 60.0 / bpm;
   int interval = static_cast<int>(intervalf + 0.5);
   for (int i = 0; i < numOnsets; ++i) {
     int pos = static_cast<int>(
-        std::fmod(static_cast<real>(onsets[i].pos), intervalf));
+        std::fmod(static_cast<real>(onsets[i].pos_), intervalf));
     wrappedPos[i] = pos;
-    wrappedOnsets[pos] += onsets[i].strength;
+    wrappedOnsets[pos] += onsets[i].strength_;
   }
 
   // Record the amount of support for each gap value.
@@ -414,7 +414,7 @@ real GetConfidenceForBPM(GapData& gapdata, IntervalTester& test, real bpm) {
   }
 
   // Normalize the confidence value.
-  NormalizeFitness(highestConfidence, test.coefs, intervalf);
+  NormalizeFitness(highestConfidence, test.coefs_, intervalf);
 
   return highestConfidence;
 }
@@ -423,16 +423,16 @@ real GetConfidenceForBPM(GapData& gapdata, IntervalTester& test, real bpm) {
 // Interval testing
 
 real IntervalToBPM(const IntervalTester& test, int i) {
-  return (test.samplerate * 60.0) / (i + test.minInterval);
+  return (test.samplerate_ * 60.0) / (i + test.min_interval_);
 }
 
 void FillCoarseIntervals(IntervalTester& test, GapData& gapdata) {
   int numCoarseIntervals =
-      (test.numIntervals + IntervalDelta - 1) / IntervalDelta;
+      (test.num_intervals_ + IntervalDelta - 1) / IntervalDelta;
   for (int i = 0; i < numCoarseIntervals; ++i) {
     int index = i * IntervalDelta;
-    int interval = test.minInterval + index;
-    test.fitness[index] =
+    int interval = test.min_interval_ + index;
+    test.fitness_[index] =
         std::max(0.001, GetConfidenceForInterval(gapdata, interval));
   }
 }
@@ -441,13 +441,13 @@ void FillIntervalRange(
     IntervalTester& test, GapData& gapdata, int begin, int end, int& beginOut,
     int& endOut) {
   begin = std::max(begin, 0);
-  end = std::min(end, test.numIntervals);
-  for (int i = begin, interval = test.minInterval + begin; i < end;
+  end = std::min(end, test.num_intervals_);
+  for (int i = begin, interval = test.min_interval_ + begin; i < end;
        ++i, ++interval) {
-    real* fit = &test.fitness[i];
+    real* fit = &test.fitness_[i];
     if (*fit == 0) {
       *fit = GetConfidenceForInterval(gapdata, interval);
-      NormalizeFitness(*fit, test.coefs, static_cast<real>(interval));
+      NormalizeFitness(*fit, test.coefs_, static_cast<real>(interval));
       *fit = std::max(*fit, 0.1);
     }
   }
@@ -474,9 +474,9 @@ int FindBestInterval(const real* fitness, int begin, int end) {
 // value.
 void RemoveDuplicates(std::vector<TempoResult>& tempo) {
   for (int i = 0; i < (int)tempo.size(); ++i) {
-    real bpm = tempo[i].bpm, doubled = bpm * 2.0, halved = bpm * 0.5;
+    real bpm = tempo[i].bpm_, doubled = bpm * 2.0, halved = bpm * 0.5;
     for (int j = (int)tempo.size() - 1; j > i; --j) {
-      real v = tempo[j].bpm;
+      real v = tempo[j].bpm_;
       if (std::min(
               std::min(std::fabs(v - bpm), std::fabs(v - doubled)),
               std::fabs(v - halved)) < 0.1) {
@@ -490,15 +490,15 @@ void RemoveDuplicates(std::vector<TempoResult>& tempo) {
 void RoundBPMValues(
     IntervalTester& test, GapData& gapdata, std::vector<TempoResult>& tempo) {
   for (TempoResult& t : tempo) {
-    real roundBPM = std::round(t.bpm);
-    real diff = std::fabs(t.bpm - roundBPM);
+    real roundBPM = std::round(t.bpm_);
+    real diff = std::fabs(t.bpm_ - roundBPM);
     if (diff < 0.01) {
-      t.bpm = roundBPM;
+      t.bpm_ = roundBPM;
     } else if (diff < 0.05) {
-      real old = GetConfidenceForBPM(gapdata, test, t.bpm);
+      real old = GetConfidenceForBPM(gapdata, test, t.bpm_);
       real cur = GetConfidenceForBPM(gapdata, test, roundBPM);
       if (cur > old * 0.99) {
-        t.bpm = roundBPM;
+        t.bpm_ = roundBPM;
       }
     }
   }
@@ -506,61 +506,64 @@ void RoundBPMValues(
 
 // Finds likely BPM candidates based on the given note onset values.
 void CalculateBPM(DetectorData* data, Onset* onsets, int numOnsets) {
-  std::vector<TempoResult>& tempo = data->result;
+  std::vector<TempoResult>& tempo = data->result_;
 
   // In order to determine the BPM, we need at least two onsets.
   if (numOnsets < 2) {
     return;
   }
 
-  IntervalTester test(data->samplerate, numOnsets, onsets);
+  IntervalTester test(data->samplerate_, numOnsets, onsets);
   GapData* gapdata =
-      new GapData(test.maxInterval, IntervalDownsample, numOnsets, onsets);
+      new GapData(test.max_interval_, IntervalDownsample, numOnsets, onsets);
 
   // Loop through every 10th possible BPM, later we will fill in those that
   // look interesting.
   FillCoarseIntervals(test, *gapdata);
   int numCoarseIntervals =
-      (test.numIntervals + IntervalDelta - 1) / IntervalDelta;
-  if (data->terminate->load()) {
+      (test.num_intervals_ + IntervalDelta - 1) / IntervalDelta;
+  if (data->terminate_->load()) {
     delete gapdata;
     return;
   }
-  data->progress->store(2);
+  data->progress_->store(2);
 
   // Determine the polynomial coefficients to approximate the fitness curve
   // and normalize the current fitness values.
   PolyFit(
-      3, test.coefs, &test.fitness[0], numCoarseIntervals, test.minInterval);
+      3, test.coefs_, &test.fitness_[0], numCoarseIntervals,
+      test.min_interval_);
   real maxFitness = 0.001;
-  for (int i = 0; i < test.numIntervals; i += IntervalDelta) {
+  for (int i = 0; i < test.num_intervals_; i += IntervalDelta) {
     NormalizeFitness(
-        test.fitness[i], test.coefs, static_cast<real>(test.minInterval + i));
-    maxFitness = std::max(maxFitness, test.fitness[i]);
+        test.fitness_[i], test.coefs_,
+        static_cast<real>(test.min_interval_ + i));
+    maxFitness = std::max(maxFitness, test.fitness_[i]);
   }
 
   // Refine the intervals around the best intervals.
   real fitnessThreshold = maxFitness * 0.4;
-  for (int i = 0; i < test.numIntervals; i += IntervalDelta) {
-    if (test.fitness[i] > fitnessThreshold) {
+  for (int i = 0; i < test.num_intervals_; i += IntervalDelta) {
+    if (test.fitness_[i] > fitnessThreshold) {
       int begin = 0, end = 0;
       FillIntervalRange(
           test, *gapdata, i - IntervalDelta, i + IntervalDelta, begin, end);
-      int best = FindBestInterval(&test.fitness[0], begin, end);
-      TempoResult result = {IntervalToBPM(test, best), 0.0, test.fitness[best]};
+      int best = FindBestInterval(&test.fitness_[0], begin, end);
+      TempoResult result = {
+          IntervalToBPM(test, best), 0.0, test.fitness_[best]};
       tempo.push_back(result);
     }
   }
-  if (data->terminate->load()) {
+  if (data->terminate_->load()) {
     delete gapdata;
     return;
   }
-  data->progress->store(3);
+  data->progress_->store(3);
 
   // At this point we stop the downsampling and upgrade to a more precise gap
   // window.
   delete gapdata;
-  gapdata = new GapData(test.maxInterval, 0, numOnsets, onsets);
+  gapdata = new GapData(test.max_interval_, 0, numOnsets, onsets);
 
   // Round BPM values to integers when possible, and remove weaker duplicates.
   std::stable_sort(tempo.begin(), tempo.end(), TempoSort());
@@ -569,9 +572,9 @@ void CalculateBPM(DetectorData* data, Onset* onsets, int numOnsets) {
 
   // If the fitness of the first and second option is very close, we ask for a
   // second opinion.
-  if (tempo.size() >= 2 && tempo[0].fitness / tempo[1].fitness < 1.05) {
+  if (tempo.size() >= 2 && tempo[0].fitness_ / tempo[1].fitness_ < 1.05) {
     for (TempoResult& t : tempo) {
-      t.fitness = GetConfidenceForBPM(*gapdata, test, t.bpm);
+      t.fitness_ = GetConfidenceForBPM(*gapdata, test, t.bpm_);
     }
     std::stable_sort(tempo.begin(), tempo.end(), TempoSort());
   }
@@ -623,12 +626,12 @@ void ComputeSlopes(
 
 // Returns the most promising offset for the given BPM value.
 real GetBaseOffsetValue(GapData& gapdata, int samplerate, real bpm) {
-  int numOnsets = gapdata.numOnsets;
-  const Onset* onsets = gapdata.onsets;
+  int numOnsets = gapdata.num_onsets_;
+  const Onset* onsets = gapdata.onsets_;
 
-  int* wrappedPos = &gapdata.wrappedPos[0];
-  real* wrappedOnsets = &gapdata.wrappedOnsets[0];
-  memset(wrappedOnsets, 0, sizeof(real) * gapdata.bufferSize);
+  int* wrappedPos = &gapdata.wrapped_pos_[0];
+  real* wrappedOnsets = &gapdata.wrapped_onsets_[0];
+  memset(wrappedOnsets, 0, sizeof(real) * gapdata.buffer_size_);
 
   // Make a histogram of onset strengths for every position in the interval.
   real intervalf = samplerate * 60.0 / bpm;
@@ -636,7 +639,7 @@ real GetBaseOffsetValue(GapData& gapdata, int samplerate, real bpm) {
   memset(wrappedOnsets, 0, sizeof(real) * interval);
   for (int i = 0; i < numOnsets; ++i) {
     int pos = static_cast<int>(
-        std::fmod(static_cast<real>(onsets[i].pos), intervalf));
+        std::fmod(static_cast<real>(onsets[i].pos_), intervalf));
     wrappedPos[i] = pos;
     wrappedOnsets[pos] += 1.0;
   }
@@ -663,8 +666,8 @@ real GetBaseOffsetValue(GapData& gapdata, int samplerate, real bpm) {
 // promising one.
 real AdjustForOffbeats(
     DetectorData* data, const real* slopes, real offset, real bpm) {
-  int samplerate = data->samplerate;
-  int numFrames = data->numFrames;
+  int samplerate = data->samplerate_;
+  int numFrames = data->num_frames_;
 
   // Determine the offbeat sample position.
   real secondsPerBeat = 60.0 / bpm;
@@ -689,8 +692,8 @@ real AdjustForOffbeats(
 
 // Selects the best offset value for each of the BPM candidates.
 void CalculateOffset(DetectorData* data, Onset* onsets, int numOnsets) {
-  std::vector<TempoResult>& tempo = data->result;
-  int samplerate = data->samplerate;
+  std::vector<TempoResult>& tempo = data->result_;
+  int samplerate = data->samplerate_;
 
   if (tempo.empty()) {
     return;
@@ -699,23 +702,23 @@ void CalculateOffset(DetectorData* data, Onset* onsets, int numOnsets) {
   // Create gapdata buffers for testing.
   real maxInterval = 0.0;
   for (TempoResult& t : tempo) {
-    maxInterval = std::max(maxInterval, samplerate * 60.0 / t.bpm);
+    maxInterval = std::max(maxInterval, samplerate * 60.0 / t.bpm_);
   }
   GapData gapdata(static_cast<int>(maxInterval + 1.0), 1, numOnsets, onsets);
 
   // Fill in onset values for each BPM.
   for (TempoResult& t : tempo) {
-    t.offset = GetBaseOffsetValue(gapdata, samplerate, t.bpm);
+    t.offset_ = GetBaseOffsetValue(gapdata, samplerate, t.bpm_);
   }
 
   // The slope representation only depends on the samples, so it is shared by
   // every candidate rather than rebuilt for each one.
-  std::vector<real> slopes(data->numFrames > 0 ? data->numFrames : 1, 0.0);
-  ComputeSlopes(data->samples, &slopes[0], data->numFrames, samplerate);
+  std::vector<real> slopes(data->num_frames_ > 0 ? data->num_frames_ : 1, 0.0);
+  ComputeSlopes(data->samples_, &slopes[0], data->num_frames_, samplerate);
 
   // Test all onsets against their offbeat values, pick the best one.
   for (TempoResult& t : tempo) {
-    t.offset = AdjustForOffbeats(data, &slopes[0], t.offset, t.bpm);
+    t.offset_ = AdjustForOffbeats(data, &slopes[0], t.offset_, t.bpm_);
   }
 }
 
@@ -814,27 +817,27 @@ TempoDetector* TempoDetector::Create(
 
 void TempoDetector::Run() {
   DetectorData data;
-  data.samples = &samples_[0];
-  data.samplerate = sample_rate_;
-  data.numFrames = (int)samples_.size();
-  data.terminate = &terminate_;
-  data.progress = &progress_;
+  data.samples_ = &samples_[0];
+  data.samplerate_ = sample_rate_;
+  data.num_frames_ = (int)samples_.size();
+  data.terminate_ = &terminate_;
+  data.progress_ = &progress_;
 
   // Run the aubio onset tracker to find note onsets.
   std::vector<Onset> onsets;
-  FindOnsets(data.samples, data.samplerate, data.numFrames, onsets);
+  FindOnsets(data.samples_, data.samplerate_, data.num_frames_, onsets);
   if (!terminate_.load()) {
     progress_.store(1);
 
     for (int i = 0; i < std::min((int)onsets.size(), 100); ++i) {
-      int a = std::max(0, onsets[i].pos - 100);
-      int b = std::min(data.numFrames, onsets[i].pos + 100);
+      int a = std::max(0, onsets[i].pos_ - 100);
+      int b = std::min(data.num_frames_, onsets[i].pos_ + 100);
       float v = 0.0f;
       for (int j = a; j < b; ++j) {
-        v += std::fabs(data.samples[j]);
+        v += std::fabs(data.samples_[j]);
       }
       v /= static_cast<float>(std::max(1, b - a));
-      onsets[i].strength = v;
+      onsets[i].strength_ = v;
     }
 
     // Find BPM values.
@@ -854,15 +857,15 @@ void TempoDetector::Run() {
   // ArrowVortex reports the fitness as a share of the total, and flips the
   // offset to the sign convention used by the simfile.
   double fTotalFitness = 0.0;
-  for (TempoResult& t : data.result) {
-    fTotalFitness += t.fitness;
+  for (TempoResult& t : data.result_) {
+    fTotalFitness += t.fitness_;
   }
-  for (TempoResult& t : data.result) {
-    t.fitness = fTotalFitness > 0.0 ? t.fitness / fTotalFitness : 0.0;
-    t.offset = -t.offset;
+  for (TempoResult& t : data.result_) {
+    t.fitness_ = fTotalFitness > 0.0 ? t.fitness_ / fTotalFitness : 0.0;
+    t.offset_ = -t.offset_;
   }
 
-  results_ = data.result;
+  results_ = data.result_;
   finished_.store(true);
 }
 

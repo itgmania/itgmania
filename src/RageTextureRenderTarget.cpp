@@ -6,7 +6,7 @@
 
 RageTextureRenderTarget::RageTextureRenderTarget(
     RageTextureID name, const RenderTargetParam& param)
-    : RageTexture(name), m_Param(param) {
+    : RageTexture(name), param_(param) {
   Create();
 }
 
@@ -25,25 +25,23 @@ void RageTextureRenderTarget::Create() {
   /* All render targets support non-power-of-two targets,
    * but some require that the resulting texture dimensions be powers of two.
    * CreateRenderTarget returns the actual resolution. */
-  m_iTexHandle =
-      DISPLAY->CreateRenderTarget(m_Param, m_iTextureWidth, m_iTextureHeight);
+  tex_handle_ =
+      DISPLAY->CreateRenderTarget(param_, texture_width_, texture_height_);
 
-  m_iSourceWidth = m_Param.iWidth;
-  m_iSourceHeight = m_Param.iHeight;
-  m_iImageWidth = m_Param.iWidth;
-  m_iImageHeight = m_Param.iHeight;
-  m_iFramesWide = m_iFramesHigh = 1;
+  source_width_ = param_.width_;
+  source_height_ = param_.height_;
+  image_width_ = param_.width_;
+  image_height_ = param_.height_;
+  frames_wide_ = frames_high_ = 1;
 
   CreateFrameRects();
 }
 
-void RageTextureRenderTarget::Destroy() {
-  DISPLAY->DeleteTexture(m_iTexHandle);
-}
+void RageTextureRenderTarget::Destroy() { DISPLAY->DeleteTexture(tex_handle_); }
 
 void RageTextureRenderTarget::BeginRenderingTo(bool bPreserveTexture) {
-  m_iPreviousRenderTarget = DISPLAY->GetRenderTarget();
-  DISPLAY->SetRenderTarget(m_iTexHandle, bPreserveTexture);
+  previous_render_target_ = DISPLAY->GetRenderTarget();
+  DISPLAY->SetRenderTarget(tex_handle_, bPreserveTexture);
 
   /* We're rendering to a texture, not the framebuffer.
    * Stash away the centering matrix, and set it to identity. */
@@ -53,8 +51,8 @@ void RageTextureRenderTarget::BeginRenderingTo(bool bPreserveTexture) {
   // Reset the perspective to fit the new target.
   DISPLAY->CameraPushMatrix();
   DISPLAY->LoadMenuPerspective(
-      0, (float)m_iImageWidth, (float)m_iImageHeight, (float)m_iImageWidth / 2,
-      (float)m_iImageHeight / 2);  // 0 FOV = ortho
+      0, (float)image_width_, (float)image_height_, (float)image_width_ / 2,
+      (float)image_height_ / 2);  // 0 FOV = ortho
 
   DISPLAY->PushMatrix();
   DISPLAY->LoadIdentity();
@@ -66,7 +64,7 @@ void RageTextureRenderTarget::FinishRenderingTo() {
   DISPLAY->CameraPopMatrix();
   DISPLAY->PopMatrix();
 
-  DISPLAY->SetRenderTarget(m_iPreviousRenderTarget);
+  DISPLAY->SetRenderTarget(previous_render_target_);
 }
 
 // lua start

@@ -26,8 +26,8 @@ class Background : public ActorFrame {
   // and under everything else.  m_disable_draw exists so that
   // ScreenGameplay can draw the background manually, and still have it as a
   // child. -Kyz
-  bool m_disable_draw;
-  virtual bool EarlyAbortDraw() const { return m_disable_draw; }
+  bool disable_draw_;
+  virtual bool EarlyAbortDraw() const { return disable_draw_; }
 
   /**
    * @brief Retrieve whatever dancing characters are in use.
@@ -35,7 +35,7 @@ class Background : public ActorFrame {
   DancingCharacters* GetDancingCharacters();
 
  protected:
-  BackgroundImpl* m_pImpl;
+  BackgroundImpl* impl_;
 };
 
 #endif

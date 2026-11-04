@@ -121,84 +121,82 @@ class EditMenu : public ActorFrame {
     if (!SHOW_GROUPS.GetValue()) {
       return GROUP_ALL;
     }
-    int groups = static_cast<int>(m_sGroups.size());
-    RETURN_IF_INVALID(m_iSelection[ROW_GROUP] >= groups, "");
-    return m_sGroups[m_iSelection[ROW_GROUP]];
+    int groups = static_cast<int>(groups_.size());
+    RETURN_IF_INVALID(selection_[ROW_GROUP] >= groups, "");
+    return groups_[selection_[ROW_GROUP]];
   }
   /** @brief Retrieve the currently selected song.
    * @return the current song. */
   Song* GetSelectedSong() const {
     RETURN_IF_INVALID(
-        m_pSongs.empty() || m_iSelection[ROW_SONG] >= (int)m_pSongs.size(),
-        nullptr);
-    return m_pSongs[m_iSelection[ROW_SONG]];
+        songs_.empty() || selection_[ROW_SONG] >= (int)songs_.size(), nullptr);
+    return songs_[selection_[ROW_SONG]];
   }
   /** @brief Retrieve the currently selected steps type.
    * @return the current steps type. */
   StepsType GetSelectedStepsType() const {
     RETURN_IF_INVALID(
-        m_StepsTypes.empty() ||
-            m_iSelection[ROW_STEPS_TYPE] >= (int)m_StepsTypes.size(),
+        steps_types_.empty() ||
+            selection_[ROW_STEPS_TYPE] >= (int)steps_types_.size(),
         StepsType_Invalid);
-    return m_StepsTypes[m_iSelection[ROW_STEPS_TYPE]];
+    return steps_types_[selection_[ROW_STEPS_TYPE]];
   }
   /** @brief Retrieve the currently selected steps.
    * @return the current steps. */
   Steps* GetSelectedSteps() const {
     RETURN_IF_INVALID(
-        m_vpSteps.empty() || m_iSelection[ROW_STEPS] >= (int)m_vpSteps.size(),
-        nullptr);
-    return m_vpSteps[m_iSelection[ROW_STEPS]].pSteps;
+        steps_.empty() || selection_[ROW_STEPS] >= (int)steps_.size(), nullptr);
+    return steps_[selection_[ROW_STEPS]].steps_;
   }
   /** @brief Retrieve the currently selected difficulty.
    * @return the current difficulty. */
   Difficulty GetSelectedDifficulty() const {
     RETURN_IF_INVALID(
-        m_vpSteps.empty() || m_iSelection[ROW_STEPS] >= (int)m_vpSteps.size(),
+        steps_.empty() || selection_[ROW_STEPS] >= (int)steps_.size(),
         Difficulty_Invalid);
-    return m_vpSteps[m_iSelection[ROW_STEPS]].dc;
+    return steps_[selection_[ROW_STEPS]].dc_;
   }
   /** @brief Retrieve the currently selected source steps type.
    * @return the current source steps type. */
   StepsType GetSelectedSourceStepsType() const {
     RETURN_IF_INVALID(
-        m_StepsTypes.empty() ||
-            m_iSelection[ROW_SOURCE_STEPS_TYPE] >= (int)m_StepsTypes.size(),
+        steps_types_.empty() ||
+            selection_[ROW_SOURCE_STEPS_TYPE] >= (int)steps_types_.size(),
         StepsType_Invalid);
-    return m_StepsTypes[m_iSelection[ROW_SOURCE_STEPS_TYPE]];
+    return steps_types_[selection_[ROW_SOURCE_STEPS_TYPE]];
   }
   /** @brief Retrieve the currently selected source steps.
    * @return the current source steps. */
   Steps* GetSelectedSourceSteps() const {
     RETURN_IF_INVALID(
-        m_vpSourceSteps.empty() ||
-            m_iSelection[ROW_SOURCE_STEPS] >= (int)m_vpSourceSteps.size(),
+        source_steps_.empty() ||
+            selection_[ROW_SOURCE_STEPS] >= (int)source_steps_.size(),
         nullptr);
-    return m_vpSourceSteps[m_iSelection[ROW_SOURCE_STEPS]].pSteps;
+    return source_steps_[selection_[ROW_SOURCE_STEPS]].steps_;
   }
   /** @brief Retrieve the currently selected difficulty.
    * @return the current difficulty. */
   Difficulty GetSelectedSourceDifficulty() const {
     RETURN_IF_INVALID(
-        m_vpSourceSteps.empty() ||
-            m_iSelection[ROW_SOURCE_STEPS] >= (int)m_vpSourceSteps.size(),
+        source_steps_.empty() ||
+            selection_[ROW_SOURCE_STEPS] >= (int)source_steps_.size(),
         Difficulty_Invalid);
-    return m_vpSourceSteps[m_iSelection[ROW_SOURCE_STEPS]].dc;
+    return source_steps_[selection_[ROW_SOURCE_STEPS]].dc_;
   }
   /** @brief Retrieve the currently selected action.
    * @return the current action. */
   EditMenuAction GetSelectedAction() const {
     RETURN_IF_INVALID(
-        m_Actions.empty() || m_iSelection[ROW_ACTION] >= (int)m_Actions.size(),
+        actions_.empty() || selection_[ROW_ACTION] >= (int)actions_.size(),
         EditMenuAction_Invalid);
-    return m_Actions[m_iSelection[ROW_ACTION]];
+    return actions_[selection_[ROW_ACTION]];
   }
 
 #undef RETURN_IF_INVALID
 
   /** @brief Retrieve the currently selected row.
    * @return the current row. */
-  EditMenuRow GetSelectedRow() const { return m_SelectedRow; }
+  EditMenuRow GetSelectedRow() const { return selected_row_; }
 
  private:
   struct StepsAndDifficulty;
@@ -209,48 +207,48 @@ class EditMenu : public ActorFrame {
   void GetGroupsToShow(std::vector<std::string>& vsGroupsOut);
 
   void UpdateArrows();
-  AutoActor m_sprArrows[NUM_ARROWS];
+  AutoActor spr_arrows_[NUM_ARROWS];
 
-  EditMenuRow m_SelectedRow;
+  EditMenuRow selected_row_;
   EditMenuRow GetFirstRow() const {
     return SHOW_GROUPS.GetValue() ? ROW_GROUP : ROW_SONG;
   }
   int GetRowSize(EditMenuRow er) const;
-  int m_iSelection[NUM_EditMenuRow];
-  BitmapText m_textLabel[NUM_EditMenuRow];
-  BitmapText m_textValue[NUM_EditMenuRow];
+  int selection_[NUM_EditMenuRow];
+  BitmapText text_label_[NUM_EditMenuRow];
+  BitmapText text_value_[NUM_EditMenuRow];
 
   /** @brief The group's banner. */
-  FadingBanner m_GroupBanner;
+  FadingBanner group_banner_;
   /** @brief The Song's banner. */
-  FadingBanner m_SongBanner;
-  TextBanner m_SongTextBanner;
-  StepsDisplay m_StepsDisplay;
-  StepsDisplay m_StepsDisplaySource;
+  FadingBanner song_banner_;
+  TextBanner song_text_banner_;
+  StepsDisplay steps_display_;
+  StepsDisplay steps_display_source_;
 
   struct StepsAndDifficulty {
     StepsAndDifficulty(Steps* s, Difficulty d) {
-      pSteps = s;
-      dc = d;
+      steps_ = s;
+      dc_ = d;
     }
-    Steps* pSteps;
-    Difficulty dc;
+    Steps* steps_;
+    Difficulty dc_;
   };
 
   /** @brief The list of groups. */
-  std::vector<std::string> m_sGroups;
+  std::vector<std::string> groups_;
   /** @brief The list of Songs in a group. */
-  std::vector<Song*> m_pSongs;
-  std::vector<StepsType> m_StepsTypes;
-  std::vector<StepsAndDifficulty> m_vpSteps;
-  std::vector<StepsAndDifficulty> m_vpSourceSteps;
-  std::vector<EditMenuAction> m_Actions;
+  std::vector<Song*> songs_;
+  std::vector<StepsType> steps_types_;
+  std::vector<StepsAndDifficulty> steps_;
+  std::vector<StepsAndDifficulty> source_steps_;
+  std::vector<EditMenuAction> actions_;
 
   void OnRowValueChanged(EditMenuRow row);
   void ChangeToRow(EditMenuRow newRow);
 
-  RageSound m_soundChangeRow;
-  RageSound m_soundChangeValue;
+  RageSound sound_change_row_;
+  RageSound sound_change_value_;
 
   /** @brief A metric to determine if groups are shown. */
   ThemeMetric<bool> SHOW_GROUPS;

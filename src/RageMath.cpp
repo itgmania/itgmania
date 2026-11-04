@@ -24,68 +24,69 @@ void RageVec3ClearBounds(RageVector3& mins, RageVector3& maxs) {
 
 void RageVec3AddToBounds(
     const RageVector3& p, RageVector3& mins, RageVector3& maxs) {
-  mins.x = std::min(mins.x, p.x);
-  mins.y = std::min(mins.y, p.y);
-  mins.z = std::min(mins.z, p.z);
-  maxs.x = std::max(maxs.x, p.x);
-  maxs.y = std::max(maxs.y, p.y);
-  maxs.z = std::max(maxs.z, p.z);
+  mins.x_ = std::min(mins.x_, p.x_);
+  mins.y_ = std::min(mins.y_, p.y_);
+  mins.z_ = std::min(mins.z_, p.z_);
+  maxs.x_ = std::max(maxs.x_, p.x_);
+  maxs.y_ = std::max(maxs.y_, p.y_);
+  maxs.z_ = std::max(maxs.z_, p.z_);
 }
 
 void RageVec3Normalize(RageVector3* pOut, const RageVector3* pV) {
-  float scale = 1.0f / std::sqrt(pV->x * pV->x + pV->y * pV->y + pV->z * pV->z);
-  pOut->x = pV->x * scale;
-  pOut->y = pV->y * scale;
-  pOut->z = pV->z * scale;
+  float scale =
+      1.0f / std::sqrt(pV->x_ * pV->x_ + pV->y_ * pV->y_ + pV->z_ * pV->z_);
+  pOut->x_ = pV->x_ * scale;
+  pOut->y_ = pV->y_ * scale;
+  pOut->z_ = pV->z_ * scale;
 }
 
 void RageVec3Cross(
     RageVector3* ret, const RageVector3* a, const RageVector3* b) {
-  ret->x = (a->y * b->z) - (a->z * b->y);
-  ret->y = ((a->x * b->z) - (a->z * b->x));
-  ret->z = (a->x * b->y) - (a->y * b->x);
+  ret->x_ = (a->y_ * b->z_) - (a->z_ * b->y_);
+  ret->y_ = ((a->x_ * b->z_) - (a->z_ * b->x_));
+  ret->z_ = (a->x_ * b->y_) - (a->y_ * b->x_);
 }
 
 void RageVec3TransformCoord(
     RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM) {
-  RageVector4 temp(pV->x, pV->y, pV->z, 1.0f);  // translate
+  RageVector4 temp(pV->x_, pV->y_, pV->z_, 1.0f);  // translate
   RageVec4TransformCoord(&temp, &temp, pM);
-  *pOut = RageVector3(temp.x / temp.w, temp.y / temp.w, temp.z / temp.w);
+  *pOut = RageVector3(temp.x_ / temp.w_, temp.y_ / temp.w_, temp.z_ / temp.w_);
 }
 
 void RageVec3TransformNormal(
     RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM) {
-  RageVector4 temp(pV->x, pV->y, pV->z, 0.0f);  // don't translate
+  RageVector4 temp(pV->x_, pV->y_, pV->z_, 0.0f);  // don't translate
   RageVec4TransformCoord(&temp, &temp, pM);
-  *pOut = RageVector3(temp.x, temp.y, temp.z);
+  *pOut = RageVector3(temp.x_, temp.y_, temp.z_);
 }
 
-#define m00 m[0][0]
-#define m01 m[0][1]
-#define m02 m[0][2]
-#define m03 m[0][3]
-#define m10 m[1][0]
-#define m11 m[1][1]
-#define m12 m[1][2]
-#define m13 m[1][3]
-#define m20 m[2][0]
-#define m21 m[2][1]
-#define m22 m[2][2]
-#define m23 m[2][3]
-#define m30 m[3][0]
-#define m31 m[3][1]
-#define m32 m[3][2]
-#define m33 m[3][3]
+#define m00 m_[0][0]
+#define m01 m_[0][1]
+#define m02 m_[0][2]
+#define m03 m_[0][3]
+#define m10 m_[1][0]
+#define m11 m_[1][1]
+#define m12 m_[1][2]
+#define m13 m_[1][3]
+#define m20 m_[2][0]
+#define m21 m_[2][1]
+#define m22 m_[2][2]
+#define m23 m_[2][3]
+#define m30 m_[3][0]
+#define m31 m_[3][1]
+#define m32 m_[3][2]
+#define m33 m_[3][3]
 
 void RageVec4TransformCoord(
     RageVector4* pOut, const RageVector4* pV, const RageMatrix* pM) {
   const RageMatrix& a = *pM;
   const RageVector4& v = *pV;
   *pOut = RageVector4(
-      a.m00 * v.x + a.m10 * v.y + a.m20 * v.z + a.m30 * v.w,
-      a.m01 * v.x + a.m11 * v.y + a.m21 * v.z + a.m31 * v.w,
-      a.m02 * v.x + a.m12 * v.y + a.m22 * v.z + a.m32 * v.w,
-      a.m03 * v.x + a.m13 * v.y + a.m23 * v.z + a.m33 * v.w);
+      a.m00 * v.x_ + a.m10 * v.y_ + a.m20 * v.z_ + a.m30 * v.w_,
+      a.m01 * v.x_ + a.m11 * v.y_ + a.m21 * v.z_ + a.m31 * v.w_,
+      a.m02 * v.x_ + a.m12 * v.y_ + a.m22 * v.z_ + a.m32 * v.w_,
+      a.m03 * v.x_ + a.m13 * v.y_ + a.m23 * v.z_ + a.m33 * v.w_);
 }
 
 RageMatrix::RageMatrix(
@@ -153,26 +154,26 @@ void RageMatrixMultiply(
 
 void RageMatrixTranslation(RageMatrix* pOut, float x, float y, float z) {
   RageMatrixIdentity(pOut);
-  pOut->m[3][0] = x;
-  pOut->m[3][1] = y;
-  pOut->m[3][2] = z;
+  pOut->m_[3][0] = x;
+  pOut->m_[3][1] = y;
+  pOut->m_[3][2] = z;
 }
 
 void RageMatrixScaling(RageMatrix* pOut, float x, float y, float z) {
   RageMatrixIdentity(pOut);
-  pOut->m[0][0] = x;
-  pOut->m[1][1] = y;
-  pOut->m[2][2] = z;
+  pOut->m_[0][0] = x;
+  pOut->m_[1][1] = y;
+  pOut->m_[2][2] = z;
 }
 
 void RageMatrixSkewX(RageMatrix* pOut, float fAmount) {
   RageMatrixIdentity(pOut);
-  pOut->m[1][0] = fAmount;
+  pOut->m_[1][0] = fAmount;
 }
 
 void RageMatrixSkewY(RageMatrix* pOut, float fAmount) {
   RageMatrixIdentity(pOut);
-  pOut->m[0][1] = fAmount;
+  pOut->m_[0][1] = fAmount;
 }
 
 /*
@@ -234,11 +235,11 @@ void RageMatrixRotationY(RageMatrix* pOut, float theta) {
   theta *= PI / 180;
 
   RageMatrixIdentity(pOut);
-  pOut->m[0][0] = std::cos(theta);
-  pOut->m[2][2] = pOut->m[0][0];
+  pOut->m_[0][0] = std::cos(theta);
+  pOut->m_[2][2] = pOut->m_[0][0];
 
-  pOut->m[0][2] = std::sin(theta);
-  pOut->m[2][0] = -pOut->m[0][2];
+  pOut->m_[0][2] = std::sin(theta);
+  pOut->m_[2][0] = -pOut->m_[0][2];
 }
 
 /* Return RageMatrixRotationX(rX) * RageMatrixRotationY(rY) *
@@ -298,27 +299,28 @@ void RageAARotate(RageVector3* inret, const RageVector3* axis, float angle) {
   float ha = angle / 2.0f;
   float ca2 = std::cos(ha);
   float sa2 = std::sin(ha);
-  RageVector4 quat(axis->x * sa2, axis->y * sa2, axis->z * sa2, ca2);
-  RageVector4 quatc(-quat.x, -quat.y, -quat.z, ca2);
-  RageVector4 point(inret->x, inret->y, inret->z, 0.0f);
+  RageVector4 quat(axis->x_ * sa2, axis->y_ * sa2, axis->z_ * sa2, ca2);
+  RageVector4 quatc(-quat.x_, -quat.y_, -quat.z_, ca2);
+  RageVector4 point(inret->x_, inret->y_, inret->z_, 0.0f);
   RageQuatMultiply(&point, quat, point);
   RageQuatMultiply(&point, point, quatc);
-  inret->x = point.x;
-  inret->y = point.y;
-  inret->z = point.z;
+  inret->x_ = point.x_;
+  inret->y_ = point.y_;
+  inret->z_ = point.z_;
 }
 
 void RageQuatMultiply(
     RageVector4* pOut, const RageVector4& pA, const RageVector4& pB) {
   RageVector4 out;
-  out.x = pA.w * pB.x + pA.x * pB.w + pA.y * pB.z - pA.z * pB.y;
-  out.y = pA.w * pB.y + pA.y * pB.w + pA.z * pB.x - pA.x * pB.z;
-  out.z = pA.w * pB.z + pA.z * pB.w + pA.x * pB.y - pA.y * pB.x;
-  out.w = pA.w * pB.w - pA.x * pB.x - pA.y * pB.y - pA.z * pB.z;
+  out.x_ = pA.w_ * pB.x_ + pA.x_ * pB.w_ + pA.y_ * pB.z_ - pA.z_ * pB.y_;
+  out.y_ = pA.w_ * pB.y_ + pA.y_ * pB.w_ + pA.z_ * pB.x_ - pA.x_ * pB.z_;
+  out.z_ = pA.w_ * pB.z_ + pA.z_ * pB.w_ + pA.x_ * pB.y_ - pA.y_ * pB.x_;
+  out.w_ = pA.w_ * pB.w_ - pA.x_ * pB.x_ - pA.y_ * pB.y_ - pA.z_ * pB.z_;
 
   float dist, square;
 
-  square = out.x * out.x + out.y * out.y + out.z * out.z + out.w * out.w;
+  square =
+      out.x_ * out.x_ + out.y_ * out.y_ + out.z_ * out.z_ + out.w_ * out.w_;
 
   if (square > 0.0) {
     dist = 1.0f / std::sqrt(square);
@@ -326,10 +328,10 @@ void RageQuatMultiply(
     dist = 1;
   }
 
-  out.x *= dist;
-  out.y *= dist;
-  out.z *= dist;
-  out.w *= dist;
+  out.x_ *= dist;
+  out.y_ *= dist;
+  out.z_ *= dist;
+  out.w_ *= dist;
 
   *pOut = out;
 }
@@ -372,17 +374,17 @@ void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr) {
   hpr /= 180.0f;
   hpr /= 2.0f;
 
-  const float sX = std::sin(hpr.x);
-  const float cX = std::cos(hpr.x);
-  const float sY = std::sin(hpr.y);
-  const float cY = std::cos(hpr.y);
-  const float sZ = std::sin(hpr.z);
-  const float cZ = std::cos(hpr.z);
+  const float sX = std::sin(hpr.x_);
+  const float cX = std::cos(hpr.x_);
+  const float sY = std::sin(hpr.y_);
+  const float cY = std::cos(hpr.y_);
+  const float sZ = std::sin(hpr.z_);
+  const float cZ = std::cos(hpr.z_);
 
-  pOut->w = cX * cY * cZ + sX * sY * sZ;
-  pOut->x = sX * cY * cZ - cX * sY * sZ;
-  pOut->y = cX * sY * cZ + sX * cY * sZ;
-  pOut->z = cX * cY * sZ - sX * sY * cZ;
+  pOut->w_ = cX * cY * cZ + sX * sY * sZ;
+  pOut->x_ = sX * cY * cZ - cX * sY * sZ;
+  pOut->y_ = cX * sY * cZ + sX * cY * sZ;
+  pOut->z_ = cX * cY * sZ - sX * sY * cZ;
 }
 
 /*
@@ -391,18 +393,18 @@ void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr) {
  */
 
 void RageMatrixFromQuat(RageMatrix* pOut, const RageVector4 q) {
-  float xx = q.x * (q.x + q.x);
-  float xy = q.x * (q.y + q.y);
-  float xz = q.x * (q.z + q.z);
+  float xx = q.x_ * (q.x_ + q.x_);
+  float xy = q.x_ * (q.y_ + q.y_);
+  float xz = q.x_ * (q.z_ + q.z_);
 
-  float wx = q.w * (q.x + q.x);
-  float wy = q.w * (q.y + q.y);
-  float wz = q.w * (q.z + q.z);
+  float wx = q.w_ * (q.x_ + q.x_);
+  float wy = q.w_ * (q.y_ + q.y_);
+  float wz = q.w_ * (q.z_ + q.z_);
 
-  float yy = q.y * (q.y + q.y);
-  float yz = q.y * (q.z + q.z);
+  float yy = q.y_ * (q.y_ + q.y_);
+  float yz = q.y_ * (q.z_ + q.z_);
 
-  float zz = q.z * (q.z + q.z);
+  float zz = q.z_ * (q.z_ + q.z_);
   // careful.  The param order is row-major, which is the
   // transpose of the order shown in the OpenGL docs.
   *pOut = RageMatrix(
@@ -416,20 +418,21 @@ void RageQuatSlerp(
   float to1[4];
 
   // calc cosine
-  float cosom = from.x * to.x + from.y * to.y + from.z * to.z + from.w * to.w;
+  float cosom =
+      from.x_ * to.x_ + from.y_ * to.y_ + from.z_ * to.z_ + from.w_ * to.w_;
 
   // adjust signs (if necessary)
   if (cosom < 0) {
     cosom = -cosom;
-    to1[0] = -to.x;
-    to1[1] = -to.y;
-    to1[2] = -to.z;
-    to1[3] = -to.w;
+    to1[0] = -to.x_;
+    to1[1] = -to.y_;
+    to1[2] = -to.z_;
+    to1[3] = -to.w_;
   } else {
-    to1[0] = to.x;
-    to1[1] = to.y;
-    to1[2] = to.z;
-    to1[3] = to.w;
+    to1[0] = to.x_;
+    to1[1] = to.y_;
+    to1[2] = to.z_;
+    to1[3] = to.w_;
   }
 
   // calculate coefficients
@@ -447,10 +450,10 @@ void RageQuatSlerp(
     scale1 = t;
   }
   // calculate final values
-  pOut->x = scale0 * from.x + scale1 * to1[0];
-  pOut->y = scale0 * from.y + scale1 * to1[1];
-  pOut->z = scale0 * from.z + scale1 * to1[2];
-  pOut->w = scale0 * from.w + scale1 * to1[3];
+  pOut->x_ = scale0 * from.x_ + scale1 * to1[0];
+  pOut->y_ = scale0 * from.y_ + scale1 * to1[1];
+  pOut->z_ = scale0 * from.z_ + scale1 * to1[2];
+  pOut->w_ = scale0 * from.w_ + scale1 * to1[3];
 }
 
 RageMatrix RageLookAt(
@@ -498,21 +501,21 @@ void RageMatrixAngles(RageMatrix* pOut, const RageVector3& angles) {
   RageMatrixIdentity(pOut);
 
   // matrix = (Z * Y) * X
-  pOut->m[0][0] = cp * cy;
-  pOut->m[0][1] = cp * sy;
-  pOut->m[0][2] = -sp;
-  pOut->m[1][0] = sr * sp * cy + cr * -sy;
-  pOut->m[1][1] = sr * sp * sy + cr * cy;
-  pOut->m[1][2] = sr * cp;
-  pOut->m[2][0] = (cr * sp * cy + -sr * -sy);
-  pOut->m[2][1] = (cr * sp * sy + -sr * cy);
-  pOut->m[2][2] = cr * cp;
+  pOut->m_[0][0] = cp * cy;
+  pOut->m_[0][1] = cp * sy;
+  pOut->m_[0][2] = -sp;
+  pOut->m_[1][0] = sr * sp * cy + cr * -sy;
+  pOut->m_[1][1] = sr * sp * sy + cr * cy;
+  pOut->m_[1][2] = sr * cp;
+  pOut->m_[2][0] = (cr * sp * cy + -sr * -sy);
+  pOut->m_[2][1] = (cr * sp * sy + -sr * cy);
+  pOut->m_[2][2] = cr * cp;
 }
 
 void RageMatrixTranspose(RageMatrix* pOut, const RageMatrix* pIn) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      pOut->m[j][i] = pIn->m[i][j];
+      pOut->m_[j][i] = pIn->m_[i][j];
     }
   }
 }
@@ -543,69 +546,69 @@ float RageTriangle(float angle) {
 
 float RageQuadratic::Evaluate(float fT) const {
   // optimized (m_fA * fT*fT*fT) + (m_fB * fT*fT) + (m_fC * fT) + m_fD;
-  return ((m_fA * fT + m_fB) * fT + m_fC) * fT + m_fD;
+  return ((a_ * fT + b_) * fT + c_) * fT + d_;
 }
 
 void RageQuadratic::SetFromBezier(float fX1, float fX2, float fX3, float fX4) {
-  m_fD = fX1;
-  m_fC = 3.0f * (fX2 - fX1);
-  m_fB = 3.0f * (fX3 - fX2) - m_fC;
-  m_fA = fX4 - fX1 - m_fC - m_fB;
+  d_ = fX1;
+  c_ = 3.0f * (fX2 - fX1);
+  b_ = 3.0f * (fX3 - fX2) - c_;
+  a_ = fX4 - fX1 - c_ - b_;
 }
 
 void RageQuadratic::GetBezier(
     float& fX1, float& fX2, float& fX3, float& fX4) const {
-  fX1 = m_fD;
-  fX2 = m_fD + m_fC / 3.0f;
-  fX3 = m_fD + 2 * m_fC / 3.0f + m_fB / 3.0f;
-  fX4 = m_fD + m_fC + m_fB + m_fA;
+  fX1 = d_;
+  fX2 = d_ + c_ / 3.0f;
+  fX3 = d_ + 2 * c_ / 3.0f + b_ / 3.0f;
+  fX4 = d_ + c_ + b_ + a_;
 }
 
 /* Cubic polynomial interpolation.  SetFromCubicPoly(-1, 0, 1, 2); Evaluate(p)
  * will interpolate between 0 and 1. */
 void RageQuadratic::SetFromCubic(float fX1, float fX2, float fX3, float fX4) {
-  m_fA = -1.0f / 6.0f * fX1 + +3.0f / 6.0f * fX2 + -3.0f / 6.0f * fX3 +
-         1.0f / 6.0f * fX4;
-  m_fB = 3.0f / 6.0f * fX1 + -6.0f / 6.0f * fX2 + 3.0f / 6.0f * fX3;
-  m_fC = -2.0f / 6.0f * fX1 + -3.0f / 6.0f * fX2 + fX3 + -1.0f / 6.0f * fX4;
-  m_fD = fX2;
+  a_ = -1.0f / 6.0f * fX1 + +3.0f / 6.0f * fX2 + -3.0f / 6.0f * fX3 +
+       1.0f / 6.0f * fX4;
+  b_ = 3.0f / 6.0f * fX1 + -6.0f / 6.0f * fX2 + 3.0f / 6.0f * fX3;
+  c_ = -2.0f / 6.0f * fX1 + -3.0f / 6.0f * fX2 + fX3 + -1.0f / 6.0f * fX4;
+  d_ = fX2;
 }
 
 float RageQuadratic::GetSlope(float fT) const {
-  return 3 * m_fA * fT * fT + 2 * m_fB * fT + m_fC;
+  return 3 * a_ * fT * fT + 2 * b_ * fT + c_;
 }
 
 void RageBezier2D::Evaluate(float fT, float* pX, float* pY) const {
-  *pX = m_X.Evaluate(fT);
-  *pY = m_Y.Evaluate(fT);
+  *pX = x_.Evaluate(fT);
+  *pY = y_.Evaluate(fT);
 }
 
 float RageBezier2D::EvaluateYFromX(float fX) const {
   /* Quickly approximate T using Newton-Raphelson successive optimization (see
    * http://www.tinaja.com/text/bezmath.html).  This usually finds T within an
    * acceptable error margin in a few steps. */
-  float fT = SCALE(fX, m_X.GetBezierStart(), m_X.GetBezierEnd(), 0, 1);
+  float fT = SCALE(fX, x_.GetBezierStart(), x_.GetBezierEnd(), 0, 1);
   // Don't try more than 100 times, the curve might be a bit nonsensical. -Kyz
   for (int i = 0; i < 100; ++i) {
-    float fGuessedX = m_X.Evaluate(fT);
+    float fGuessedX = x_.Evaluate(fT);
     float fError = fX - fGuessedX;
 
     /* If our guess is good enough, evaluate the result Y and return. */
     if (unlikely(std::abs(fError) < 0.0001f)) {
-      return m_Y.Evaluate(fT);
+      return y_.Evaluate(fT);
     }
 
-    float fSlope = m_X.GetSlope(fT);
+    float fSlope = x_.GetSlope(fT);
     fT += fError / fSlope;
   }
-  return m_Y.Evaluate(fT);
+  return y_.Evaluate(fT);
 }
 
 void RageBezier2D::SetFromBezier(
     float fC1X, float fC1Y, float fC2X, float fC2Y, float fC3X, float fC3Y,
     float fC4X, float fC4Y) {
-  m_X.SetFromBezier(fC1X, fC2X, fC3X, fC4X);
-  m_Y.SetFromBezier(fC1Y, fC2Y, fC3Y, fC4Y);
+  x_.SetFromBezier(fC1X, fC2X, fC3X, fC4X);
+  y_.SetFromBezier(fC1Y, fC2Y, fC3Y, fC4Y);
 }
 
 #include "LuaBinding.h"

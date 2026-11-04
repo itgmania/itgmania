@@ -13,7 +13,7 @@ class InputHandler_Linux_Joystick : public InputHandler {
   InputHandler_Linux_Joystick();
   ~InputHandler_Linux_Joystick();
   bool TryDevice(std::string dev);
-  bool DevicesChanged() { return m_bDevicesChanged; }
+  bool DevicesChanged() { return devices_changed_; }
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
  private:
@@ -23,14 +23,14 @@ class InputHandler_Linux_Joystick : public InputHandler {
   void InputThread();
 
   struct FileDescriptor {
-    int fd = -1;
-    std::string description = "";
+    int fd_ = -1;
+    std::string description_ = "";
   };
 
-  std::vector<FileDescriptor> m_files;
-  RageThread m_InputThread;
-  bool m_bShutdown = false;
-  bool m_bDevicesChanged = false;
+  std::vector<FileDescriptor> files_;
+  RageThread input_thread_;
+  bool shutdown_ = false;
+  bool devices_changed_ = false;
 };
 
 #endif

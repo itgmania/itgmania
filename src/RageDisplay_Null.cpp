@@ -70,10 +70,10 @@ void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs& out) const {
 RageSurface* RageDisplay_Null::CreateScreenshot() {
   const RagePixelFormatDesc& desc = PIXEL_FORMAT_DESC[RagePixelFormat_RGB8];
   RageSurface* image = CreateSurface(
-      640, 480, desc.bpp, desc.masks[0], desc.masks[1], desc.masks[2],
-      desc.masks[3]);
+      640, 480, desc.bpp_, desc.masks_[0], desc.masks_[1], desc.masks_[2],
+      desc.masks_[3]);
 
-  memset(image->pixels, 0, 480 * image->pitch);
+  memset(image->pixels_, 0, 480 * image->pitch_);
 
   return image;
 }

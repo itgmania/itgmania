@@ -53,7 +53,7 @@ class Server : public ix::SocketServer {
       debugger.SendRequest(LuaDebug::CreatePauseRequest(0));
     }
 
-    server->m_serverRunning.store(true, std::memory_order_release);
+    server->server_running_.store(true, std::memory_order_release);
     server->start();
     return server;
   }
@@ -61,32 +61,32 @@ class Server : public ix::SocketServer {
   ~Server() { stop(); }
 
   virtual void stop() override {
-    m_serverRunning.store(false, std::memory_order_release);
+    server_running_.store(false, std::memory_order_release);
     ix::SocketServer::stop();
 
     // Resume execution with a fake disconnect request when terminating
     // the server thread.
-    m_debugger.SendRequest(LuaDebug::CreateDisconnectRequest(false));
+    debugger_.SendRequest(LuaDebug::CreateDisconnectRequest(false));
   }
 
   virtual size_t getConnectedClientsCount() override {
-    return m_connectedClients;
+    return connected_clients_;
   }
 
   virtual void handleConnection(
       std::unique_ptr<ix::Socket> socket,
       std::shared_ptr<ix::ConnectionState> connectionState) override {
     LOG->Info("LuaDebugger: client connected");
-    m_connectedClients = 1;
+    connected_clients_ = 1;
 
     Serve(*socket);
     connectionState->setTerminated();
 
     // Send a fake disconnect request in case the connection was closed
     // unexpectedly.
-    m_debugger.SendRequest(LuaDebug::CreateDisconnectRequest(true));
+    debugger_.SendRequest(LuaDebug::CreateDisconnectRequest(true));
     LOG->Info("LuaDebugger: client disconnected");
-    m_connectedClients = 0;
+    connected_clients_ = 0;
   }
 
   void Serve(ix::Socket& socket) {
@@ -96,10 +96,10 @@ class Server : public ix::SocketServer {
     size_t bufferFilled = 0;
     std::unique_ptr<char[]> buffer(new char[bufferLength]);
 
-    while (m_serverRunning.load(std::memory_order_relaxed)) {
+    while (server_running_.load(std::memory_order_relaxed)) {
       bool terminate = false;
       LuaDebug::Message response;
-      while (m_debugger.TryReceiveResponse(response)) {
+      while (debugger_.TryReceiveResponse(response)) {
         if (!initialized) {
           if (response["type"] == "response" &&
               response["command"] == "initialize") {
@@ -196,7 +196,7 @@ class Server : public ix::SocketServer {
               bytesMissing -= chunk.length();
             },
             [this] {
-              return !m_serverRunning.load(std::memory_order_relaxed);
+              return !server_running_.load(std::memory_order_relaxed);
             });
         if (!recvResult.first) {
           LOG->Warn("LuaDebugger: recv failed");
@@ -213,7 +213,7 @@ class Server : public ix::SocketServer {
         break;
       }
 
-      m_debugger.SendRequest(std::move(request));
+      debugger_.SendRequest(std::move(request));
 
       // Move rest of the data to the start of the buffer.
       if (bufferFilled > totalSize) {
@@ -230,12 +230,12 @@ class Server : public ix::SocketServer {
   }
 
  private:
-  std::atomic<bool> m_serverRunning = false;
-  size_t m_connectedClients = 0;
-  LuaDebug::Debugger& m_debugger;
+  std::atomic<bool> server_running_ = false;
+  size_t connected_clients_ = 0;
+  LuaDebug::Debugger& debugger_;
 
   Server(Debugger& debugger, const std::string& host, int port)
-      : ix::SocketServer(port, host, 1, 1), m_debugger(debugger) {}
+      : ix::SocketServer(port, host, 1, 1), debugger_(debugger) {}
 
   bool SendDapMessage(ix::Socket& socket, const LuaDebug::Message& message) {
     std::string body = Json::FastWriter{}.write(message);
@@ -251,7 +251,7 @@ class Server : public ix::SocketServer {
         isFirstTry = false;
         return false;
       }
-      return !m_serverRunning.load(std::memory_order_relaxed);
+      return !server_running_.load(std::memory_order_relaxed);
     });
 
     if (!sendOk) {
@@ -263,20 +263,20 @@ class Server : public ix::SocketServer {
 }  // namespace LuaDebug
 
 LuaDebugManager::LuaDebugManager()
-    : m_debugger(new LuaDebug::Debugger()), m_server(nullptr) {}
+    : debugger_(new LuaDebug::Debugger()), server_(nullptr) {}
 LuaDebugManager::~LuaDebugManager() = default;
 
 void LuaDebugManager::Start(std::string address, bool startPaused) {
   ix::initNetSystem();
-  m_server = LuaDebug::Server::Start(*m_debugger, address, startPaused);
+  server_ = LuaDebug::Server::Start(*debugger_, address, startPaused);
 }
 
 void LuaDebugManager::ActivateState(lua_State* lua) {
-  m_debugger->ActivateState(lua);
+  debugger_->ActivateState(lua);
 }
 
 void LuaDebugManager::DeactivateState(lua_State* lua) {
-  m_debugger->DeactivateState(lua);
+  debugger_->DeactivateState(lua);
 }
 
 /*

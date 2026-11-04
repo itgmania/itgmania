@@ -14,26 +14,26 @@
 typedef bool (*MenuRowUpdateEnabled)();
 
 struct MenuRowDef {
-  int iRowCode;
-  std::string sName;
-  bool bEnabled;
-  MenuRowUpdateEnabled pfnEnabled;  // if ! nullptr, used instead of bEnabled
-  EditMode emShowIn;
-  int iDefaultChoice;
-  std::vector<std::string> choices;
-  bool bThemeTitle;
-  bool bThemeItems;
+  int row_code_;
+  std::string name_;
+  bool b_enabled_;
+  MenuRowUpdateEnabled pfn_enabled_;  // if ! nullptr, used instead of bEnabled
+  EditMode show_in_;
+  int default_choice_;
+  std::vector<std::string> choices_;
+  bool theme_title_;
+  bool theme_items_;
 
   MenuRowDef()
-      : iRowCode(0),
-        sName(""),
-        bEnabled(false),
-        pfnEnabled(),
-        emShowIn(),
-        iDefaultChoice(0),
-        choices(),
-        bThemeTitle(false),
-        bThemeItems(false) {}
+      : row_code_(0),
+        name_(""),
+        b_enabled_(false),
+        pfn_enabled_(),
+        show_in_(),
+        default_choice_(0),
+        choices_(),
+        theme_title_(false),
+        theme_items_(false) {}
   MenuRowDef(
       int r, std::string n, MenuRowUpdateEnabled pe, EditMode s, bool bTT,
       bool bTI, int d, const char* c0 = nullptr, const char* c1 = nullptr,
@@ -49,17 +49,17 @@ struct MenuRowDef {
       const char* c20 = nullptr, const char* c21 = nullptr,
       const char* c22 = nullptr, const char* c23 = nullptr,
       const char* c24 = nullptr, const char* c25 = nullptr)
-      : iRowCode(r),
-        sName(n),
-        bEnabled(true),
-        pfnEnabled(pe),
-        emShowIn(s),
-        iDefaultChoice(d),
-        choices(),
-        bThemeTitle(bTT),
-        bThemeItems(bTI) {
+      : row_code_(r),
+        name_(n),
+        b_enabled_(true),
+        pfn_enabled_(pe),
+        show_in_(s),
+        default_choice_(d),
+        choices_(),
+        theme_title_(bTT),
+        theme_items_(bTI) {
 #define PUSH(c) \
-  if (c) choices.push_back(c);
+  if (c) choices_.push_back(c);
     PUSH(c0);
     PUSH(c1);
     PUSH(c2);
@@ -94,18 +94,18 @@ struct MenuRowDef {
   MenuRowDef(
       int r, std::string n, bool e, EditMode s, bool bTT, bool bTI, int d,
       std::vector<std::string> options)
-      : iRowCode(r),
-        sName(n),
-        bEnabled(e),
-        pfnEnabled(nullptr),
-        emShowIn(s),
-        iDefaultChoice(d),
-        choices(),
-        bThemeTitle(bTT),
-        bThemeItems(bTI) {
+      : row_code_(r),
+        name_(n),
+        b_enabled_(e),
+        pfn_enabled_(nullptr),
+        show_in_(s),
+        default_choice_(d),
+        choices_(),
+        theme_title_(bTT),
+        theme_items_(bTI) {
     for (std::string& str : options) {
       if (str != "") {
-        choices.push_back(str);
+        choices_.push_back(str);
       }
     }
   }
@@ -125,17 +125,17 @@ struct MenuRowDef {
       const char* c20 = nullptr, const char* c21 = nullptr,
       const char* c22 = nullptr, const char* c23 = nullptr,
       const char* c24 = nullptr, const char* c25 = nullptr)
-      : iRowCode(r),
-        sName(n),
-        bEnabled(e),
-        pfnEnabled(nullptr),
-        emShowIn(s),
-        iDefaultChoice(d),
-        choices(),
-        bThemeTitle(bTT),
-        bThemeItems(bTI) {
+      : row_code_(r),
+        name_(n),
+        b_enabled_(e),
+        pfn_enabled_(nullptr),
+        show_in_(s),
+        default_choice_(d),
+        choices_(),
+        theme_title_(bTT),
+        theme_items_(bTI) {
 #define PUSH(c) \
-  if (c) choices.push_back(c);
+  if (c) choices_.push_back(c);
     PUSH(c0);
     PUSH(c1);
     PUSH(c2);
@@ -168,15 +168,15 @@ struct MenuRowDef {
   }
 
   void SetOneUnthemedChoice(const std::string& sChoice) {
-    choices.resize(1);
-    choices[0] = "|" + sChoice;
+    choices_.resize(1);
+    choices_[0] = "|" + sChoice;
   }
 
   bool SetDefaultChoiceIfPresent(std::string sChoice) {
-    iDefaultChoice = 0;
-    for (unsigned i = 0; i < choices.size(); ++i) {
-      if (choices[i] == sChoice) {
-        iDefaultChoice = i;
+    default_choice_ = 0;
+    for (unsigned i = 0; i < choices_.size(); ++i) {
+      if (choices_[i] == sChoice) {
+        default_choice_ = i;
         return true;
       }
     }
@@ -185,8 +185,8 @@ struct MenuRowDef {
 };
 
 struct MenuDef {
-  std::string sClassName;
-  std::vector<MenuRowDef> rows;
+  std::string class_name_;
+  std::vector<MenuRowDef> rows_;
 
   MenuDef(
       std::string c, MenuRowDef r0 = MenuRowDef(), MenuRowDef r1 = MenuRowDef(),
@@ -204,9 +204,9 @@ struct MenuDef {
       MenuRowDef r24 = MenuRowDef(), MenuRowDef r25 = MenuRowDef(),
       MenuRowDef r26 = MenuRowDef(), MenuRowDef r27 = MenuRowDef(),
       MenuRowDef r28 = MenuRowDef(), MenuRowDef r29 = MenuRowDef())
-      : sClassName(c), rows() {
+      : class_name_(c), rows_() {
 #define PUSH(r) \
-  if (!r.sName.empty()) rows.push_back(r);
+  if (!r.name_.empty()) rows_.push_back(r);
     PUSH(r0);
     PUSH(r1);
     PUSH(r2);
@@ -260,17 +260,17 @@ class ScreenMiniMenu : public ScreenOptions {
 
   void LoadMenu(const MenuDef* pDef);
 
-  ScreenMessage m_SMSendOnOK;
-  ScreenMessage m_SMSendOnCancel;
+  ScreenMessage send_on_ok_;
+  ScreenMessage send_on_cancel_;
 
-  std::vector<MenuRowDef> m_vMenuRows;
+  std::vector<MenuRowDef> menu_rows_;
 
  public:
-  ScreenMiniMenu() : m_SMSendOnOK(), m_SMSendOnCancel(), m_vMenuRows() {}
+  ScreenMiniMenu() : send_on_ok_(), send_on_cancel_(), menu_rows_() {}
 
-  static bool s_bCancelled;
-  static int s_iLastRowCode;
-  static std::vector<int> s_viLastAnswers;
+  static bool cancelled_;
+  static int last_row_code_;
+  static std::vector<int> last_answers_;
 };
 
 #endif

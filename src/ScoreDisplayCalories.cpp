@@ -16,8 +16,8 @@ REGISTER_ACTOR_CLASS(ScoreDisplayCalories);
 ScoreDisplayCalories::ScoreDisplayCalories() {}
 
 ScoreDisplayCalories::~ScoreDisplayCalories() {
-  if (m_sMessageOnStep != "") {
-    MESSAGEMAN->Unsubscribe(this, m_sMessageOnStep);
+  if (message_on_step_ != "") {
+    MESSAGEMAN->Unsubscribe(this, message_on_step_);
   }
 }
 
@@ -28,7 +28,7 @@ void ScoreDisplayCalories::LoadFromNode(const XNode* pNode) {
     Lua* L = LUA->Get();
     bool b = pNode->PushAttrValue(L, "PlayerNumber");
     ASSERT(b);
-    LuaHelpers::Pop(L, m_PlayerNumber);
+    LuaHelpers::Pop(L, player_number_);
     LUA->Release(L);
   }
 
@@ -49,7 +49,7 @@ void ScoreDisplayCalories::HandleMessage(const Message& msg) {
   if (msg.GetName() == "Step") {
     PlayerNumber pn;
     msg.GetParam("PlayerNumber", pn);
-    if (pn == m_PlayerNumber) {
+    if (pn == player_number_) {
       UpdateNumber();
     }
   }
@@ -60,9 +60,9 @@ void ScoreDisplayCalories::HandleMessage(const Message& msg) {
 void ScoreDisplayCalories::UpdateNumber() {
   float fCals =
       STATSMAN->GetAccumPlayedStageStats()
-          .m_player[m_PlayerNumber]
-          .m_fCaloriesBurned +
-      STATSMAN->m_CurStageStats.m_player[m_PlayerNumber].m_fCaloriesBurned;
+          .player_[player_number_]
+          .calories_burned_ +
+      STATSMAN->cur_stage_stats_.player_[player_number_].calories_burned_;
 
   SetTargetNumber(fCals);
 }

@@ -32,18 +32,18 @@ class StageStats {
 
   int GetAverageMeter(PlayerNumber pn) const;
 
-  Stage m_Stage;
-  int m_iStageIndex;
-  PlayMode m_playMode;
-  std::vector<Song*> m_vpPlayedSongs;
-  std::vector<Song*> m_vpPossibleSongs;
+  Stage stage_;
+  int stage_index_;
+  PlayMode play_mode_;
+  std::vector<Song*> played_songs_;
+  std::vector<Song*> possible_songs_;
 
   /** @brief Was an extra stage earned this goaround? */
-  EarnedExtraStage m_EarnedExtraStage;
+  EarnedExtraStage earned_extra_stage_;
   /** @brief Was the gameplay exited by the Player giving up? */
-  bool m_bGaveUp;
+  bool gave_up_;
   /** @brief Did the PLayer use Autoplay at any point during gameplay? */
-  bool m_bUsedAutoplay;
+  bool used_autoplay_;
 
   // TODO: These are updated in ScreenGameplay::Update based on fDelta.
   // They should be made more accurate.
@@ -51,21 +51,21 @@ class StageStats {
    * @brief How many seconds were there before gameplay ended?
    *
    * This is updated by Gameplay, and not scaled by the music rate. */
-  float m_fGameplaySeconds;
+  float gameplay_seconds_;
   /**
    * @brief How many seconds are we in a song?
    *
    * This is equivalent to m_fGameplaySeconds unless the song has steps past the
    * end. */
-  float m_fStepsSeconds;
+  float steps_seconds_;
   /** @brief How fast was the music going compared to normal? */
-  float m_fMusicRate;
+  float music_rate_;
 
   // Total number of seconds between first beat and last beat for every song.
   float GetTotalPossibleStepsSeconds() const;
 
-  PlayerStageStats m_player[NUM_PLAYERS];
-  PlayerStageStats m_RoutinePlayer;
+  PlayerStageStats player_[NUM_PLAYERS];
+  PlayerStageStats routine_player_;
 
   void FinalizeScores(bool bSummary);
   /**

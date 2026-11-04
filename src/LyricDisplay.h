@@ -16,10 +16,10 @@ class LyricDisplay : public ActorFrame {
   void Stop();
 
  private:
-  BitmapText m_textLyrics[2];
-  unsigned m_iCurLyricNumber;
-  float m_fLastSecond;
-  bool m_bStopped;
+  BitmapText text_lyrics_[2];
+  unsigned cur_lyric_number_;
+  float last_second_;
+  bool stopped_;
 };
 
 #endif

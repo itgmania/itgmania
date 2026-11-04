@@ -72,33 +72,33 @@ CombinedLifeMeterTug::CombinedLifeMeterTug() {
         THEME->GetPathG("CombinedLifeMeterTug", ssprintf("stream p%d", p + 1));
     std::string sTipPath =
         THEME->GetPathG("CombinedLifeMeterTug", ssprintf("tip p%d", p + 1));
-    m_Stream[p].Load(sStreamPath, METER_WIDTH, sTipPath);
-    this->AddChild(&m_Stream[p]);
+    stream_[p].Load(sStreamPath, METER_WIDTH, sTipPath);
+    this->AddChild(&stream_[p]);
   }
-  m_Stream[PLAYER_2].SetZoomX(-1);
+  stream_[PLAYER_2].SetZoomX(-1);
 
-  m_sprSeparator.Load(THEME->GetPathG("CombinedLifeMeterTug", "separator"));
-  m_sprSeparator->SetName("Separator");
-  LOAD_ALL_COMMANDS(m_sprSeparator);
-  this->AddChild(m_sprSeparator);
+  spr_separator_.Load(THEME->GetPathG("CombinedLifeMeterTug", "separator"));
+  spr_separator_->SetName("Separator");
+  LOAD_ALL_COMMANDS(spr_separator_);
+  this->AddChild(spr_separator_);
 
-  m_sprFrame.Load(THEME->GetPathG("CombinedLifeMeterTug", "frame"));
-  m_sprFrame->SetName("Frame");
-  LOAD_ALL_COMMANDS(m_sprFrame);
-  this->AddChild(m_sprFrame);
+  spr_frame_.Load(THEME->GetPathG("CombinedLifeMeterTug", "frame"));
+  spr_frame_->SetName("Frame");
+  LOAD_ALL_COMMANDS(spr_frame_);
+  this->AddChild(spr_frame_);
 }
 
 void CombinedLifeMeterTug::Update(float fDelta) {
-  float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
+  float fPercentToShow = GAMESTATE->tug_life_percent_p1_;
   rage_clamp(fPercentToShow, 0.f, 1.f);
 
-  m_Stream[PLAYER_1].SetPercent(fPercentToShow);
-  m_Stream[PLAYER_2].SetPercent(1 - fPercentToShow);
+  stream_[PLAYER_1].SetPercent(fPercentToShow);
+  stream_[PLAYER_2].SetPercent(1 - fPercentToShow);
 
   float fSeparatorX =
       SCALE(fPercentToShow, 0.f, 1.f, -METER_WIDTH / 2.f, +METER_WIDTH / 2.f);
 
-  m_sprSeparator->SetX(fSeparatorX);
+  spr_separator_->SetX(fSeparatorX);
 
   ActorFrame::Update(fDelta);
 }
@@ -163,14 +163,14 @@ void CombinedLifeMeterTug::ChangeLife(
 }
 
 void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float fPercentToMove) {
-  if (PREFSMAN->m_bMercifulDrain && fPercentToMove < 0) {
+  if (PREFSMAN->merciful_drain_ && fPercentToMove < 0) {
     float fLifePercentage = 0;
     switch (pn) {
       case PLAYER_1:
-        fLifePercentage = GAMESTATE->m_fTugLifePercentP1;
+        fLifePercentage = GAMESTATE->tug_life_percent_p1_;
         break;
       case PLAYER_2:
-        fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;
+        fLifePercentage = 1 - GAMESTATE->tug_life_percent_p1_;
         break;
       default:
         FAIL_M(ssprintf("Invalid player number: %i", pn));
@@ -183,10 +183,10 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float fPercentToMove) {
 
   switch (pn) {
     case PLAYER_1:
-      GAMESTATE->m_fTugLifePercentP1 += fPercentToMove;
+      GAMESTATE->tug_life_percent_p1_ += fPercentToMove;
       break;
     case PLAYER_2:
-      GAMESTATE->m_fTugLifePercentP1 -= fPercentToMove;
+      GAMESTATE->tug_life_percent_p1_ -= fPercentToMove;
       break;
     default:
       FAIL_M(ssprintf("Invalid player number: %i", pn));
@@ -196,10 +196,10 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float fPercentToMove) {
 void CombinedLifeMeterTug::SetLife(PlayerNumber pn, float value) {
   switch (pn) {
     case PLAYER_1:
-      GAMESTATE->m_fTugLifePercentP1 = value;
+      GAMESTATE->tug_life_percent_p1_ = value;
       break;
     case PLAYER_2:
-      GAMESTATE->m_fTugLifePercentP1 = 1 - value;
+      GAMESTATE->tug_life_percent_p1_ = 1 - value;
       break;
     default:
       FAIL_M(ssprintf("Invalid player number: %i", pn));

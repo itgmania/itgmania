@@ -3,8 +3,8 @@
 void ScoreDisplay::Init(
     const PlayerState* pPlayerState,
     const PlayerStageStats* pPlayerStageStats) {
-  m_pPlayerState = pPlayerState;
-  m_pPlayerStageStats = pPlayerStageStats;
+  player_state_ = pPlayerState;
+  player_stage_stats_ = pPlayerStageStats;
 }
 
 /*

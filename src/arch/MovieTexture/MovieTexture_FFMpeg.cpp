@@ -35,16 +35,16 @@ static void FixLilEndian() {
   }
   Initialized = true;
 
-  for (int i = 0; i < AVPixelFormats[i].bpp; ++i) {
+  for (int i = 0; i < AVPixelFormats[i].bpp_; ++i) {
     AVPixelFormat_t& pf = AVPixelFormats[i];
 
-    if (!pf.bByteSwapOnLittleEndian) {
+    if (!pf.byte_swap_on_little_endian_) {
       continue;
     }
 
     for (int mask = 0; mask < 4; ++mask) {
-      int m = pf.masks[mask];
-      switch (pf.bpp) {
+      int m = pf.masks_[mask];
+      switch (pf.bpp_) {
         case 24:
           m = Swap24(m);
           break;
@@ -52,9 +52,9 @@ static void FixLilEndian() {
           m = Swap32(m);
           break;
         default:
-          FAIL_M(ssprintf("Unsupported BPP value: %i", pf.bpp));
+          FAIL_M(ssprintf("Unsupported BPP value: %i", pf.bpp_));
       }
-      pf.masks[mask] = m;
+      pf.masks_[mask] = m;
     }
   }
 }
@@ -63,19 +63,19 @@ static int FindCompatibleAVFormat(bool bHighColor) {
   if (DISPLAY == nullptr) {
     return -1;
   }
-  for (int i = 0; AVPixelFormats[i].bpp; ++i) {
+  for (int i = 0; AVPixelFormats[i].bpp_; ++i) {
     AVPixelFormat_t& fmt = AVPixelFormats[i];
-    if (fmt.YUV != PixelFormatYCbCr_Invalid) {
-      EffectMode em = MovieTexture_Generic::GetEffectMode(fmt.YUV);
+    if (fmt.yuv_ != PixelFormatYCbCr_Invalid) {
+      EffectMode em = MovieTexture_Generic::GetEffectMode(fmt.yuv_);
       if (!DISPLAY->IsEffectModeSupported(em)) {
         continue;
       }
-    } else if (fmt.bHighColor != bHighColor) {
+    } else if (fmt.high_color_ != bHighColor) {
       continue;
     }
 
     RagePixelFormat pixfmt = DISPLAY->FindPixelFormat(
-        fmt.bpp, fmt.masks[0], fmt.masks[1], fmt.masks[2], fmt.masks[3],
+        fmt.bpp_, fmt.masks_[0], fmt.masks_[1], fmt.masks_[2], fmt.masks_[3],
         true /* realtime */
     );
 
@@ -102,31 +102,31 @@ RageSurface* RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
   if (iAVTexfmtIndex == -1) {
     /* No dice.  Use the first avcodec format of the preferred bit depth,
      * and let the display system convert. */
-    for (iAVTexfmtIndex = 0; AVPixelFormats[iAVTexfmtIndex].bpp;
+    for (iAVTexfmtIndex = 0; AVPixelFormats[iAVTexfmtIndex].bpp_;
          ++iAVTexfmtIndex) {
-      if (AVPixelFormats[iAVTexfmtIndex].bHighColor == bPreferHighColor) {
+      if (AVPixelFormats[iAVTexfmtIndex].high_color_ == bPreferHighColor) {
         break;
       }
     }
-    ASSERT(AVPixelFormats[iAVTexfmtIndex].bpp != 0);
+    ASSERT(AVPixelFormats[iAVTexfmtIndex].bpp_ != 0);
   }
 
   const AVPixelFormat_t* pfd = &AVPixelFormats[iAVTexfmtIndex];
-  iAVTexfmt = pfd->pf;
-  fmtout = pfd->YUV;
+  iAVTexfmt = pfd->pf_;
+  fmtout = pfd->yuv_;
 
   LOG->Trace(
       "Texture pixel format: %i %i (%ibpp, %08x %08x %08x %08x)", iAVTexfmt,
-      fmtout, pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2],
-      pfd->masks[3]);
+      fmtout, pfd->bpp_, pfd->masks_[0], pfd->masks_[1], pfd->masks_[2],
+      pfd->masks_[3]);
 
-  if (pfd->YUV == PixelFormatYCbCr_YUYV422) {
+  if (pfd->yuv_ == PixelFormatYCbCr_YUYV422) {
     iTextureWidth /= 2;
   }
 
   return CreateSurface(
-      iTextureWidth, iTextureHeight, pfd->bpp, pfd->masks[0], pfd->masks[1],
-      pfd->masks[2], pfd->masks[3]);
+      iTextureWidth, iTextureHeight, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
+      pfd->masks_[2], pfd->masks_[3]);
 }
 
 MovieDecoder_FFMpeg::MovieDecoder_FFMpeg() {
@@ -180,7 +180,7 @@ float MovieDecoder_FFMpeg::GetTimestamp() const {
   if (ready_queue_.empty()) {
     return last_pts_;
   }
-  return ready_queue_.front()->pts;
+  return ready_queue_.front()->pts_;
 }
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
@@ -309,17 +309,17 @@ void MovieDecoder_FFMpeg::ConvertFrame(
 
   size_t required_size = static_cast<size_t>(
       target_pitch_ > 0 ? target_pitch_ * target_height_ : 0);
-  if (out_frame.data.size() < required_size) {
-    out_frame.data.resize(required_size);
+  if (out_frame.data_.size() < required_size) {
+    out_frame.data_.resize(required_size);
   }
-  out_frame.width = target_width_;
-  out_frame.height = target_height_;
-  out_frame.pitch = target_pitch_;
+  out_frame.width_ = target_width_;
+  out_frame.height_ = target_height_;
+  out_frame.pitch_ = target_pitch_;
 
-  uint8_t* dst_data[4] = {out_frame.data.data(), nullptr, nullptr, nullptr};
+  uint8_t* dst_data[4] = {out_frame.data_.data(), nullptr, nullptr, nullptr};
   int dst_linesize[4] = {target_pitch_, 0, 0, 0};
 
-  if (av_sws_context_ != nullptr && !out_frame.data.empty()) {
+  if (av_sws_context_ != nullptr && !out_frame.data_.empty()) {
     avcodec::sws_scale(
         av_sws_context_, raw_frame->data, raw_frame->linesize, 0, GetHeight(),
         dst_data, dst_linesize);
@@ -416,7 +416,7 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
         {
           std::unique_lock<std::mutex> lock(queue_mutex_);
           if (!ready_queue_.empty()) {
-            ready_queue_.back()->is_last_frame = true;
+            ready_queue_.back()->is_last_frame_ = true;
           } else {
             end_of_movie_ = true;
           }
@@ -443,9 +443,9 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
     float frame_duration = CalculateDuration(raw_frame);
 
     ConvertFrame(raw_frame, *frame_buf);
-    frame_buf->pts = frame_pts;
-    frame_buf->duration = frame_duration;
-    frame_buf->is_last_frame = false;
+    frame_buf->pts_ = frame_pts;
+    frame_buf->duration_ = frame_duration;
+    frame_buf->is_last_frame_ = false;
 
     {
       std::unique_lock<std::mutex> lock(queue_mutex_);
@@ -471,18 +471,19 @@ int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out) {
   }
   can_produce_cv_.notify_one();
 
-  if (surface_out && surface_out->pixels && !frame->data.empty()) {
-    const uint8_t* src = frame->data.data();
-    uint8_t* dst = static_cast<uint8_t*>(surface_out->pixels);
-    int bytes_per_row = std::min(frame->pitch, surface_out->pitch);
-    int rows = std::min(frame->height, surface_out->h);
+  if (surface_out && surface_out->pixels_ && !frame->data_.empty()) {
+    const uint8_t* src = frame->data_.data();
+    uint8_t* dst = static_cast<uint8_t*>(surface_out->pixels_);
+    int bytes_per_row = std::min(frame->pitch_, surface_out->pitch_);
+    int rows = std::min(frame->height_, surface_out->h_);
     for (int y = 0; y < rows; ++y) {
       memcpy(
-          dst + y * surface_out->pitch, src + y * frame->pitch, bytes_per_row);
+          dst + y * surface_out->pitch_, src + y * frame->pitch_,
+          bytes_per_row);
     }
   }
 
-  bool was_last = frame->is_last_frame;
+  bool was_last = frame->is_last_frame_;
 
   {
     std::lock_guard<std::mutex> lock(queue_mutex_);
@@ -679,9 +680,9 @@ RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(
           *ConvertValue<int>(&av_pixel_format_), fmtout);
 
   if (pSurf != nullptr) {
-    target_width_ = pSurf->w;
-    target_height_ = pSurf->h;
-    target_pitch_ = pSurf->pitch;
+    target_width_ = pSurf->w_;
+    target_height_ = pSurf->h_;
+    target_pitch_ = pSurf->pitch_;
   }
 
   return pSurf;

@@ -2,7 +2,7 @@
 
 #include "global.h"
 
-WindowsDialogBox::WindowsDialogBox() { m_hWnd = nullptr; }
+WindowsDialogBox::WindowsDialogBox() { wnd_ = nullptr; }
 
 void WindowsDialogBox::Run(int iDialog) {
   char szFullAppPath[MAX_PATH];
@@ -25,8 +25,8 @@ WindowsDialogBox::DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     return FALSE;
   }
 
-  if (pThis->m_hWnd == nullptr) {
-    pThis->m_hWnd = hDlg;
+  if (pThis->wnd_ == nullptr) {
+    pThis->wnd_ = hDlg;
   }
 
   return pThis->HandleMessage(msg, wParam, lParam);

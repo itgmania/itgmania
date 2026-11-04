@@ -22,7 +22,7 @@ class RageFileDriverTimeout : public RageFileDriver {
   void SetDeadline(float fSeconds);
 
  private:
-  ThreadedFileWorker* m_pWorker;
+  ThreadedFileWorker* worker_;
 };
 
 #endif

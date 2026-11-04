@@ -16,9 +16,9 @@ class MsdFile {
    * Note that &#35;param:param:param:param; is one whole value. */
   struct value_t {
     /** @brief The list of parameters. */
-    std::vector<std::string> params;
+    std::vector<std::string> params_;
     /** @brief Set up the parameters with default values. */
-    value_t() : params() {}
+    value_t() : params_() {}
 
     /**
      * @brief Access the proper parameter.
@@ -26,14 +26,14 @@ class MsdFile {
      * @return the proper parameter.
      */
     std::string operator[](unsigned i) const {
-      if (i >= params.size()) {
+      if (i >= params_.size()) {
         return std::string();
       }
-      return params[i];
+      return params_[i];
     }
   };
 
-  MsdFile() : values(), error("") {}
+  MsdFile() : values_(), error_("") {}
 
   /** @brief Remove the MSDFile. */
   virtual ~MsdFile() {}
@@ -56,12 +56,12 @@ class MsdFile {
   /**
    * @brief Should an error take place, have an easy place to get it.
    * @return the current error. */
-  std::string GetError() const { return error; }
+  std::string GetError() const { return error_; }
 
   /**
    * @brief Retrieve the number of values for each tag.
    * @return the nmber of values. */
-  unsigned GetNumValues() const { return values.size(); }
+  unsigned GetNumValues() const { return values_.size(); }
   /**
    * @brief Get the number of parameters for the current index.
    * @param val the current value index.
@@ -71,7 +71,7 @@ class MsdFile {
     if (val >= GetNumValues()) {
       return 0;
     }
-    return values[val].params.size();
+    return values_[val].params_.size();
   }
   /**
    * @brief Get the specified value.
@@ -80,7 +80,7 @@ class MsdFile {
    */
   const value_t& GetValue(unsigned val) const {
     ASSERT(val < GetNumValues());
-    return values[val];
+    return values_[val];
   }
   /**
    * @brief Retrieve the specified parameter.
@@ -110,9 +110,9 @@ class MsdFile {
   void AddValue();
 
   /** @brief The list of values. */
-  std::vector<value_t> values;
+  std::vector<value_t> values_;
   /** @brief The error string. */
-  std::string error;
+  std::string error_;
 };
 
 #endif

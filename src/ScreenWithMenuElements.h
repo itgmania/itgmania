@@ -40,22 +40,22 @@ class ScreenWithMenuElements : public Screen {
   // Lua
   virtual void PushSelf(lua_State* L);
 
-  virtual bool AllowLateJoin() const { return m_bShouldAllowLateJoin; }
-  bool m_bShouldAllowLateJoin;  // So that it can be exposed to Lua.
+  virtual bool AllowLateJoin() const { return should_allow_late_join_; }
+  bool should_allow_late_join_;  // So that it can be exposed to Lua.
 
  protected:
   std::string HandleLuaMusicFile(const std::string& path);
   virtual void StartPlayingMusic();
 
-  AutoActor m_sprUnderlay;
-  MemoryCardDisplay* m_MemoryCardDisplay[NUM_PLAYERS];
-  MenuTimer* m_MenuTimer;
-  AutoActor m_sprOverlay;
-  std::vector<Actor*> m_vDecorations;
+  AutoActor spr_underlay_;
+  MemoryCardDisplay* memory_card_display_[NUM_PLAYERS];
+  MenuTimer* menu_timer_;
+  AutoActor spr_overlay_;
+  std::vector<Actor*> decorations_;
 
-  Transition m_In;
-  Transition m_Out;
-  Transition m_Cancel;
+  Transition in_;
+  Transition out_;
+  Transition cancel_;
 
   ThemeMetric<bool> PLAY_MUSIC;
   ThemeMetric<bool> MUSIC_ALIGN_BEAT;
@@ -65,7 +65,7 @@ class ScreenWithMenuElements : public Screen {
   ThemeMetric<std::string> TIMER_METRICS_GROUP;
 
  private:
-  std::string m_sPathToMusic;
+  std::string path_to_music_;
 };
 
 class ScreenWithMenuElementsSimple : public ScreenWithMenuElements {

@@ -20,7 +20,7 @@ class MemoryCardDriverThreaded_Windows : public MemoryCardDriver {
   bool USBStorageDevicesChanged();
   bool TestWrite(UsbStorageDevice* pDevice);
 
-  DWORD m_dwLastLogicalDrives;
+  DWORD last_logical_drives_;
 };
 
 #ifdef ARCH_MEMORY_CARD_DRIVER

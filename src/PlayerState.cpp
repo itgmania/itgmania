@@ -19,71 +19,71 @@
 #include "global.h"
 
 PlayerState::PlayerState() {
-  m_PlayerNumber = PLAYER_INVALID;
+  player_number_ = PLAYER_INVALID;
   Reset();
 }
 
 void PlayerState::Reset() {
-  m_NotefieldZoom = 1.0f;
-  m_PlayerOptions.Init();
+  notefield_zoom_ = 1.0f;
+  player_options_.Init();
 
-  m_fLastDrawnBeat = -100;
+  last_drawn_beat_ = -100;
 
-  m_HealthState = HealthState_Alive;
+  health_state_ = HealthState_Alive;
 
-  m_PlayerController = PC_HUMAN;
+  player_controller_ = PC_HUMAN;
 
-  m_iCpuSkill = 5;
+  cpu_skill_ = 5;
 
-  m_iLastPositiveSumOfAttackLevels = 0;
-  m_fSecondsUntilAttacksPhasedOut = 0;
-  m_bAttackBeganThisUpdate = false;
-  m_bAttackEndedThisUpdate = false;
-  m_ActiveAttacks.clear();
-  m_ModsToApply.clear();
+  last_positive_sum_of_attack_levels_ = 0;
+  seconds_until_attacks_phased_out_ = 0;
+  attack_began_this_update_ = false;
+  attack_ended_this_update_ = false;
+  active_attacks_.clear();
+  mods_to_apply_.clear();
 
-  m_iTapsHitSinceLastHasteUpdate = 0;
-  m_iTapsMissedSinceLastHasteUpdate = 0;
+  taps_hit_since_last_haste_update_ = 0;
+  taps_missed_since_last_haste_update_ = 0;
 
-  m_fSuperMeter = 0;  // between 0 and NUM_ATTACK_LEVELS
-  m_fSuperMeterGrowthScale = 1;
+  super_meter_ = 0;  // between 0 and NUM_ATTACK_LEVELS
+  super_meter_growth_scale_ = 1;
 }
 
 void PlayerState::Update(float fDelta) {
   // TRICKY: GAMESTATE->Update is run before any of the Screen update's,
   // so we'll clear these flags here and let them get turned on later
-  m_bAttackBeganThisUpdate = false;
-  m_bAttackEndedThisUpdate = false;
+  attack_began_this_update_ = false;
+  attack_ended_this_update_ = false;
 
   bool bRebuildPlayerOptions = false;
 
   // See if any delayed attacks are starting or ending.
-  for (unsigned s = 0; s < m_ActiveAttacks.size(); s++) {
-    Attack& attack = m_ActiveAttacks[s];
+  for (unsigned s = 0; s < active_attacks_.size(); s++) {
+    Attack& attack = active_attacks_[s];
 
     // You must add sattack by calling GameState::LaunchAttack,
     // or else the sentinel value won't be
     // converted into the current music time.
-    ASSERT(attack.fStartSecond != ATTACK_STARTS_NOW);
+    ASSERT(attack.start_second_ != ATTACK_STARTS_NOW);
 
     bool bCurrentlyEnabled =
-        attack.bGlobal || (attack.fStartSecond < m_Position.m_fMusicSeconds &&
-                           m_Position.m_fMusicSeconds <
-                               attack.fStartSecond + attack.fSecsRemaining);
+        attack.global_ || (attack.start_second_ < position_.music_seconds_ &&
+                           position_.music_seconds_ <
+                               attack.start_second_ + attack.secs_remaining_);
 
-    if (m_ActiveAttacks[s].bOn == bCurrentlyEnabled) {
+    if (active_attacks_[s].on_ == bCurrentlyEnabled) {
       continue;  // OK
     }
 
-    if (m_ActiveAttacks[s].bOn && !bCurrentlyEnabled) {
-      m_bAttackEndedThisUpdate = true;
-    } else if (!m_ActiveAttacks[s].bOn && bCurrentlyEnabled) {
-      m_bAttackBeganThisUpdate = true;
+    if (active_attacks_[s].on_ && !bCurrentlyEnabled) {
+      attack_ended_this_update_ = true;
+    } else if (!active_attacks_[s].on_ && bCurrentlyEnabled) {
+      attack_began_this_update_ = true;
     }
 
     bRebuildPlayerOptions = true;
 
-    m_ActiveAttacks[s].bOn = bCurrentlyEnabled;
+    active_attacks_[s].on_ = bCurrentlyEnabled;
   }
 
   if (bRebuildPlayerOptions) {
@@ -91,23 +91,23 @@ void PlayerState::Update(float fDelta) {
   }
 
   // Update after enabling attacks, so we approach the new state.
-  m_PlayerOptions.Update(fDelta);
+  player_options_.Update(fDelta);
 
-  if (m_fSecondsUntilAttacksPhasedOut > 0) {
-    m_fSecondsUntilAttacksPhasedOut =
-        std::max(0.0f, m_fSecondsUntilAttacksPhasedOut - fDelta);
+  if (seconds_until_attacks_phased_out_ > 0) {
+    seconds_until_attacks_phased_out_ =
+        std::max(0.0f, seconds_until_attacks_phased_out_ - fDelta);
   }
 }
 
 void PlayerState::SetPlayerNumber(PlayerNumber pn) {
-  m_PlayerNumber = pn;
-  FOREACH_ENUM(ModsLevel, ml) { m_PlayerOptions.Get(ml).m_pn = pn; }
+  player_number_ = pn;
+  FOREACH_ENUM(ModsLevel, ml) { player_options_.Get(ml).pn_ = pn; }
 }
 
 void PlayerState::ResetToDefaultPlayerOptions(ModsLevel l) {
   PlayerOptions po;
   GAMESTATE->GetDefaultPlayerOptions(po);
-  m_PlayerOptions.Assign(l, po);
+  player_options_.Assign(l, po);
 }
 
 /* This is called to launch an attack, or to queue an attack if a.fStartSecond
@@ -115,8 +115,8 @@ void PlayerState::ResetToDefaultPlayerOptions(ModsLevel l) {
  * attack. */
 void PlayerState::LaunchAttack(const Attack& a) {
   LOG->Trace(
-      "Launch attack '%s' against P%d at %f", a.sModifiers.c_str(),
-      m_PlayerNumber + 1, a.fStartSecond);
+      "Launch attack '%s' against P%d at %f", a.modifiers_.c_str(),
+      player_number_ + 1, a.start_second_);
 
   Attack attack = a;
 
@@ -125,67 +125,67 @@ void PlayerState::LaunchAttack(const Attack& a) {
    * know when the attack started so it can be removed later.  For
    * m_ModsToApply, leave the sentinel in, so Player::Update knows to apply
    * attack transforms correctly. (yuck) */
-  m_ModsToApply.push_back(attack);
-  if (attack.fStartSecond == ATTACK_STARTS_NOW) {
-    attack.fStartSecond = m_Position.m_fMusicSeconds;
+  mods_to_apply_.push_back(attack);
+  if (attack.start_second_ == ATTACK_STARTS_NOW) {
+    attack.start_second_ = position_.music_seconds_;
   }
-  m_ActiveAttacks.push_back(attack);
+  active_attacks_.push_back(attack);
 
   RebuildPlayerOptionsFromActiveAttacks();
 }
 
 void PlayerState::RemoveActiveAttacks(AttackLevel al) {
-  for (unsigned s = 0; s < m_ActiveAttacks.size(); s++) {
-    if (al != NUM_ATTACK_LEVELS && al != m_ActiveAttacks[s].level) {
+  for (unsigned s = 0; s < active_attacks_.size(); s++) {
+    if (al != NUM_ATTACK_LEVELS && al != active_attacks_[s].level_) {
       continue;
     }
-    m_ActiveAttacks.erase(
-        m_ActiveAttacks.begin() + s, m_ActiveAttacks.begin() + s + 1);
+    active_attacks_.erase(
+        active_attacks_.begin() + s, active_attacks_.begin() + s + 1);
     --s;
   }
   RebuildPlayerOptionsFromActiveAttacks();
 }
 
 void PlayerState::EndActiveAttacks() {
-  for (Attack& a : m_ActiveAttacks) {
-    a.fSecsRemaining = 0;
+  for (Attack& a : active_attacks_) {
+    a.secs_remaining_ = 0;
   }
 }
 
 void PlayerState::RebuildPlayerOptionsFromActiveAttacks() {
   // rebuild player options
-  PlayerOptions po = m_PlayerOptions.GetStage();
-  SongOptions so = GAMESTATE->m_SongOptions.GetStage();
-  for (unsigned s = 0; s < m_ActiveAttacks.size(); s++) {
-    if (!m_ActiveAttacks[s].bOn) {
+  PlayerOptions po = player_options_.GetStage();
+  SongOptions so = GAMESTATE->song_options_.GetStage();
+  for (unsigned s = 0; s < active_attacks_.size(); s++) {
+    if (!active_attacks_[s].on_) {
       continue; /* hasn't started yet */
     }
-    po.FromString(m_ActiveAttacks[s].sModifiers);
-    so.FromString(m_ActiveAttacks[s].sModifiers);
+    po.FromString(active_attacks_[s].modifiers_);
+    so.FromString(active_attacks_[s].modifiers_);
   }
-  m_PlayerOptions.Assign(ModsLevel_Song, po);
-  if (m_PlayerNumber == GAMESTATE->GetMasterPlayerNumber()) {
-    GAMESTATE->m_SongOptions.Assign(ModsLevel_Song, so);
+  player_options_.Assign(ModsLevel_Song, po);
+  if (player_number_ == GAMESTATE->GetMasterPlayerNumber()) {
+    GAMESTATE->song_options_.Assign(ModsLevel_Song, so);
   }
 
   int iSumOfAttackLevels = GetSumOfActiveAttackLevels();
   if (iSumOfAttackLevels > 0) {
-    m_iLastPositiveSumOfAttackLevels = iSumOfAttackLevels;
-    m_fSecondsUntilAttacksPhasedOut =
+    last_positive_sum_of_attack_levels_ = iSumOfAttackLevels;
+    seconds_until_attacks_phased_out_ =
         10000;  // any positive number that won't run out before the attacks
   } else {
     // don't change!  m_iLastPositiveSumOfAttackLevels[p] = iSumOfAttackLevels;
-    m_fSecondsUntilAttacksPhasedOut = 2;  // 2 seconds to phase out
+    seconds_until_attacks_phased_out_ = 2;  // 2 seconds to phase out
   }
 }
 
 int PlayerState::GetSumOfActiveAttackLevels() const {
   int iSum = 0;
 
-  for (unsigned s = 0; s < m_ActiveAttacks.size(); s++) {
-    if (m_ActiveAttacks[s].fSecsRemaining > 0 &&
-        m_ActiveAttacks[s].level != NUM_ATTACK_LEVELS) {
-      iSum += m_ActiveAttacks[s].level;
+  for (unsigned s = 0; s < active_attacks_.size(); s++) {
+    if (active_attacks_[s].secs_remaining_ > 0 &&
+        active_attacks_[s].level_ != NUM_ATTACK_LEVELS) {
+      iSum += active_attacks_[s].level_;
     }
   }
 
@@ -193,16 +193,16 @@ int PlayerState::GetSumOfActiveAttackLevels() const {
 }
 
 const SongPosition& PlayerState::GetDisplayedPosition() const {
-  if (GAMESTATE->m_bIsUsingStepTiming) {
-    return m_Position;
+  if (GAMESTATE->is_using_step_timing_) {
+    return position_;
   }
-  return GAMESTATE->m_Position;
+  return GAMESTATE->position_;
 }
 
 const TimingData& PlayerState::GetDisplayedTiming() const {
-  Steps* steps = GAMESTATE->m_pCurSteps[m_PlayerNumber];
+  Steps* steps = GAMESTATE->cur_steps_[player_number_];
   if (steps == nullptr) {
-    return GAMESTATE->m_pCurSong->m_SongTiming;
+    return GAMESTATE->cur_song_->song_timing_;
   }
   return *steps->GetTimingData();
 }
@@ -214,47 +214,47 @@ const TimingData& PlayerState::GetDisplayedTiming() const {
 class LunaPlayerState : public Luna<PlayerState> {
  public:
   static int ApplyPreferredOptionsToOtherLevels(T* p, lua_State* L) {
-    p->m_PlayerOptions.Assign(
-        ModsLevel_Preferred, p->m_PlayerOptions.Get(ModsLevel_Preferred));
+    p->player_options_.Assign(
+        ModsLevel_Preferred, p->player_options_.Get(ModsLevel_Preferred));
     return 0;
   }
-  DEFINE_METHOD(GetPlayerNumber, m_PlayerNumber);
+  DEFINE_METHOD(GetPlayerNumber, player_number_);
   static int GetSongPosition(T* p, lua_State* L) {
-    p->m_Position.PushSelf(L);
+    p->position_.PushSelf(L);
     return 1;
   }
-  DEFINE_METHOD(GetPlayerController, m_PlayerController);
+  DEFINE_METHOD(GetPlayerController, player_controller_);
   static int SetPlayerOptions(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
     PlayerOptions po;
     po.FromString(SArg(2));
-    p->m_PlayerOptions.Assign(m, po);
+    p->player_options_.Assign(m, po);
     return 0;
   }
   static int GetPlayerOptions(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
-    p->m_PlayerOptions.Get(m).PushSelf(L);
+    p->player_options_.Get(m).PushSelf(L);
     return 1;
   }
   static int GetPlayerOptionsArray(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
     std::vector<std::string> s;
-    p->m_PlayerOptions.Get(m).GetMods(s);
+    p->player_options_.Get(m).GetMods(s);
     LuaHelpers::CreateTableFromArray<std::string>(s, L);
     return 1;
   }
   static int GetPlayerOptionsString(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
-    std::string s = p->m_PlayerOptions.Get(m).GetString();
+    std::string s = p->player_options_.Get(m).GetString();
     LuaHelpers::Push(L, s);
     return 1;
   }
   static int GetCurrentPlayerOptions(T* p, lua_State* L) {
-    p->m_PlayerOptions.GetCurrent().PushSelf(L);
+    p->player_options_.GetCurrent().PushSelf(L);
     return 1;
   }
-  DEFINE_METHOD(GetHealthState, m_HealthState);
-  DEFINE_METHOD(GetSuperMeterLevel, m_fSuperMeter);
+  DEFINE_METHOD(GetHealthState, health_state_);
+  DEFINE_METHOD(GetSuperMeterLevel, super_meter_);
 
   LunaPlayerState() {
     ADD_METHOD(ApplyPreferredOptionsToOtherLevels);

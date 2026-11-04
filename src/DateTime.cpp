@@ -15,44 +15,44 @@ DateTime::DateTime() { Init(); }
 void DateTime::Init() { ZERO(*this); }
 
 bool DateTime::operator<(const DateTime& other) const {
-  if (tm_year != other.tm_year) {
-    return tm_year < other.tm_year;
+  if (tm_year_ != other.tm_year_) {
+    return tm_year_ < other.tm_year_;
   }
-  if (tm_mon != other.tm_mon) {
-    return tm_mon < other.tm_mon;
+  if (tm_mon_ != other.tm_mon_) {
+    return tm_mon_ < other.tm_mon_;
   }
-  if (tm_mday != other.tm_mday) {
-    return tm_mday < other.tm_mday;
+  if (tm_mday_ != other.tm_mday_) {
+    return tm_mday_ < other.tm_mday_;
   }
-  if (tm_hour != other.tm_hour) {
-    return tm_hour < other.tm_hour;
+  if (tm_hour_ != other.tm_hour_) {
+    return tm_hour_ < other.tm_hour_;
   }
-  if (tm_min != other.tm_min) {
-    return tm_min < other.tm_min;
+  if (tm_min_ != other.tm_min_) {
+    return tm_min_ < other.tm_min_;
   }
-  if (tm_sec != other.tm_sec) {
-    return tm_sec < other.tm_sec;
+  if (tm_sec_ != other.tm_sec_) {
+    return tm_sec_ < other.tm_sec_;
   }
   return false;
 }
 
 bool DateTime::operator==(const DateTime& other) const {
-  if (tm_year != other.tm_year) {
+  if (tm_year_ != other.tm_year_) {
     return false;
   }
-  if (tm_mon != other.tm_mon) {
+  if (tm_mon_ != other.tm_mon_) {
     return false;
   }
-  if (tm_mday != other.tm_mday) {
+  if (tm_mday_ != other.tm_mday_) {
     return false;
   }
-  if (tm_hour != other.tm_hour) {
+  if (tm_hour_ != other.tm_hour_) {
     return false;
   }
-  if (tm_min != other.tm_min) {
+  if (tm_min_ != other.tm_min_) {
     return false;
   }
-  if (tm_sec != other.tm_sec) {
+  if (tm_sec_ != other.tm_sec_) {
     return false;
   }
   return true;
@@ -63,23 +63,23 @@ bool DateTime::operator!=(const DateTime& other) const {
 }
 
 bool DateTime::operator>(const DateTime& other) const {
-  if (tm_year != other.tm_year) {
-    return tm_year > other.tm_year;
+  if (tm_year_ != other.tm_year_) {
+    return tm_year_ > other.tm_year_;
   }
-  if (tm_mon != other.tm_mon) {
-    return tm_mon > other.tm_mon;
+  if (tm_mon_ != other.tm_mon_) {
+    return tm_mon_ > other.tm_mon_;
   }
-  if (tm_mday != other.tm_mday) {
-    return tm_mday > other.tm_mday;
+  if (tm_mday_ != other.tm_mday_) {
+    return tm_mday_ > other.tm_mday_;
   }
-  if (tm_hour != other.tm_hour) {
-    return tm_hour > other.tm_hour;
+  if (tm_hour_ != other.tm_hour_) {
+    return tm_hour_ > other.tm_hour_;
   }
-  if (tm_min != other.tm_min) {
-    return tm_min > other.tm_min;
+  if (tm_min_ != other.tm_min_) {
+    return tm_min_ > other.tm_min_;
   }
-  if (tm_sec != other.tm_sec) {
-    return tm_sec > other.tm_sec;
+  if (tm_sec_ != other.tm_sec_) {
+    return tm_sec_ > other.tm_sec_;
   }
   return false;
 }
@@ -89,7 +89,7 @@ DateTime DateTime::GetNowDateTime() {
   tm tNow;
   localtime_r(&now, &tNow);
   DateTime dtNow;
-#define COPY_M(v) dtNow.v = tNow.v;
+#define COPY_M(v) dtNow.v##_ = tNow.v;
   COPY_M(tm_year);
   COPY_M(tm_mon);
   COPY_M(tm_mday);
@@ -107,17 +107,18 @@ DateTime DateTime::GetNowDate() {
 }
 
 void DateTime::StripTime() {
-  tm_hour = 0;
-  tm_min = 0;
-  tm_sec = 0;
+  tm_hour_ = 0;
+  tm_min_ = 0;
+  tm_sec_ = 0;
 }
 
 // Common SQL/XML format: "YYYY-MM-DD HH:MM:SS"
 std::string DateTime::GetString() const {
-  std::string s = ssprintf("%d-%02d-%02d", tm_year + 1900, tm_mon + 1, tm_mday);
+  std::string s =
+      ssprintf("%d-%02d-%02d", tm_year_ + 1900, tm_mon_ + 1, tm_mday_);
 
-  if (tm_hour != 0 || tm_min != 0 || tm_sec != 0) {
-    s += ssprintf(" %02d:%02d:%02d", tm_hour, tm_min, tm_sec);
+  if (tm_hour_ != 0 || tm_min_ != 0 || tm_sec_ != 0) {
+    s += ssprintf(" %02d:%02d:%02d", tm_hour_, tm_min_, tm_sec_);
   }
 
   return s;
@@ -129,17 +130,17 @@ bool DateTime::FromString(const std::string sDateTime) {
   int ret;
 
   ret = sscanf(
-      sDateTime.c_str(), "%d-%d-%d %d:%d:%d", &tm_year, &tm_mon, &tm_mday,
-      &tm_hour, &tm_min, &tm_sec);
+      sDateTime.c_str(), "%d-%d-%d %d:%d:%d", &tm_year_, &tm_mon_, &tm_mday_,
+      &tm_hour_, &tm_min_, &tm_sec_);
   if (ret != 6) {
-    ret = sscanf(sDateTime.c_str(), "%d-%d-%d", &tm_year, &tm_mon, &tm_mday);
+    ret = sscanf(sDateTime.c_str(), "%d-%d-%d", &tm_year_, &tm_mon_, &tm_mday_);
     if (ret != 3) {
       return false;
     }
   }
 
-  tm_year -= 1900;
-  tm_mon -= 1;
+  tm_year_ -= 1900;
+  tm_mon_ -= 1;
   return true;
 }
 

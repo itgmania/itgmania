@@ -35,13 +35,13 @@ void ExpectTime(TimingData& td, float beat, float time) {
 }
 
 struct TimeBeatCase {
-  float time;
-  float beat;
+  float time_;
+  float beat_;
 };
 
 struct BeatTimeCase {
-  float beat;
-  float time;
+  float beat_;
+  float time_;
 };
 
 }  // namespace
@@ -94,8 +94,8 @@ TEST(TimingDataTest, Stops) {
       {14.0f, 15.0f}, {17.0f, 15.0f}, {18.0f, 16.0f},
   };
   for (const TimeBeatCase& c : timeToBeat) {
-    SCOPED_TRACE(c.time);
-    ExpectBeat(td, c.time, c.beat);
+    SCOPED_TRACE(c.time_);
+    ExpectBeat(td, c.time_, c.beat_);
   }
 
   const BeatTimeCase beatToTime[] = {
@@ -103,17 +103,17 @@ TEST(TimingDataTest, Stops) {
       {10.0f, 7.0f}, {12.0f, 9.0f}, {15.0f, 12.0f}, {16.0f, 18.0f},
   };
   for (const BeatTimeCase& c : beatToTime) {
-    SCOPED_TRACE(c.beat);
-    ExpectTime(td, c.beat, c.time);
+    SCOPED_TRACE(c.beat_);
+    ExpectTime(td, c.beat_, c.time_);
   }
 
   TimingData::GetBeatArgs args;
-  args.elapsed_time = 3.0f;
+  args.elapsed_time_ = 3.0f;
   td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
-  EXPECT_FLOAT_EQ(args.beat, 5.0f);
-  EXPECT_FLOAT_EQ(args.bps_out, 2.0f);
-  EXPECT_TRUE(args.freeze_out);
-  EXPECT_FALSE(args.delay_out);
+  EXPECT_FLOAT_EQ(args.beat_, 5.0f);
+  EXPECT_FLOAT_EQ(args.bps_out_, 2.0f);
+  EXPECT_TRUE(args.freeze_out_);
+  EXPECT_FALSE(args.delay_out_);
 }
 
 TEST(TimingDataTest, StopAtBeatZero) {
@@ -133,11 +133,11 @@ TEST(TimingDataTest, StopAtBeatZero) {
   ExpectTime(td, 2.0f, 2.0f);
 
   TimingData::GetBeatArgs args;
-  args.elapsed_time = 0.5f;
+  args.elapsed_time_ = 0.5f;
   td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
-  EXPECT_FLOAT_EQ(args.beat, 0.0f);
-  EXPECT_TRUE(args.freeze_out);
-  EXPECT_FALSE(args.delay_out);
+  EXPECT_FLOAT_EQ(args.beat_, 0.0f);
+  EXPECT_TRUE(args.freeze_out_);
+  EXPECT_FALSE(args.delay_out_);
 }
 
 TEST(TimingDataTest, DelayAndStopOnSameRow) {
@@ -159,18 +159,18 @@ TEST(TimingDataTest, DelayAndStopOnSameRow) {
   ExpectTime(td, 6.0f, 6.0f);
 
   TimingData::GetBeatArgs delayArgs;
-  delayArgs.elapsed_time = 3.0f;
+  delayArgs.elapsed_time_ = 3.0f;
   td.GetBeatAndBPSFromElapsedTimeNoOffset(delayArgs);
-  EXPECT_FLOAT_EQ(delayArgs.beat, 5.0f);
-  EXPECT_FALSE(delayArgs.freeze_out);
-  EXPECT_TRUE(delayArgs.delay_out);
+  EXPECT_FLOAT_EQ(delayArgs.beat_, 5.0f);
+  EXPECT_FALSE(delayArgs.freeze_out_);
+  EXPECT_TRUE(delayArgs.delay_out_);
 
   TimingData::GetBeatArgs stopArgs;
-  stopArgs.elapsed_time = 4.0f;
+  stopArgs.elapsed_time_ = 4.0f;
   td.GetBeatAndBPSFromElapsedTimeNoOffset(stopArgs);
-  EXPECT_FLOAT_EQ(stopArgs.beat, 5.0f);
-  EXPECT_TRUE(stopArgs.freeze_out);
-  EXPECT_FALSE(stopArgs.delay_out);
+  EXPECT_FLOAT_EQ(stopArgs.beat_, 5.0f);
+  EXPECT_TRUE(stopArgs.freeze_out_);
+  EXPECT_FALSE(stopArgs.delay_out_);
 }
 
 TEST(TimingDataTest, Warps) {
@@ -193,11 +193,11 @@ TEST(TimingDataTest, Warps) {
   ExpectTime(td, 6.0f, 2.0f);
 
   TimingData::GetBeatArgs args;
-  args.elapsed_time = 1.25f;
+  args.elapsed_time_ = 1.25f;
   td.GetBeatAndBPSFromElapsedTimeNoOffset(args);
-  EXPECT_FLOAT_EQ(args.beat, 4.5f);
-  EXPECT_EQ(args.warp_begin_out, BeatToNoteRow(2.0f));
-  EXPECT_FLOAT_EQ(args.warp_dest_out, 4.0f);
+  EXPECT_FLOAT_EQ(args.beat_, 4.5f);
+  EXPECT_EQ(args.warp_begin_out_, BeatToNoteRow(2.0f));
+  EXPECT_FLOAT_EQ(args.warp_dest_out_, 4.0f);
 }
 
 TEST(TimingDataTest, LookupInvalidation) {

@@ -10,7 +10,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "StdString.h"
 
-RandomSample::RandomSample() { m_iIndexLastPlayed = -1; }
+RandomSample::RandomSample() { index_last_played_ = -1; }
 
 RandomSample::~RandomSample() { UnloadAll(); }
 
@@ -23,10 +23,10 @@ bool RandomSample::Load(std::string sFilePath, int iMaxToLoad) {
 }
 
 void RandomSample::UnloadAll() {
-  for (unsigned i = 0; i < m_pSamples.size(); i++) {
-    delete m_pSamples[i];
+  for (unsigned i = 0; i < samples_.size(); i++) {
+    delete samples_[i];
   }
-  m_pSamples.clear();
+  samples_.clear();
 }
 
 bool RandomSample::LoadSoundDir(std::string sDir, int iMaxToLoad) {
@@ -80,26 +80,26 @@ bool RandomSample::LoadSound(std::string sSoundFilePath) {
     return false;
   }
 
-  m_pSamples.push_back(pSS);
+  samples_.push_back(pSS);
 
   return true;
 }
 
 int RandomSample::GetNextToPlay() {
   // play one of the samples
-  if (m_pSamples.empty()) {
+  if (samples_.empty()) {
     return -1;
   }
 
   int iIndexToPlay = 0;
   for (int i = 0; i < 5; i++) {
-    iIndexToPlay = RandomInt(m_pSamples.size());
-    if (iIndexToPlay != m_iIndexLastPlayed) {
+    iIndexToPlay = RandomInt(samples_.size());
+    if (iIndexToPlay != index_last_played_) {
       break;
     }
   }
 
-  m_iIndexLastPlayed = iIndexToPlay;
+  index_last_played_ = iIndexToPlay;
   return iIndexToPlay;
 }
 
@@ -108,15 +108,15 @@ void RandomSample::PlayRandom() {
   if (iIndexToPlay == -1) {
     return;
   }
-  m_pSamples[iIndexToPlay]->Play(true);
+  samples_[iIndexToPlay]->Play(true);
 }
 
 void RandomSample::Stop() {
-  if (m_iIndexLastPlayed == -1) {  // nothing is currently playing
+  if (index_last_played_ == -1) {  // nothing is currently playing
     return;
   }
 
-  m_pSamples[m_iIndexLastPlayed]->Stop();
+  samples_[index_last_played_]->Stop();
 }
 
 /*

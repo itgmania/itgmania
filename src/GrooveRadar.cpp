@@ -32,28 +32,28 @@ static float RADAR_VALUE_ROTATION(int iValueIndex) {
 static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
 
 GrooveRadar::GrooveRadar() {
-  m_sprRadarBase.Load(THEME->GetPathG("GrooveRadar", "base"));
-  m_Frame.AddChild(m_sprRadarBase);
-  m_Frame.SetName("RadarFrame");
-  ActorUtil::LoadAllCommands(m_Frame, "GrooveRadar");
+  spr_radar_base_.Load(THEME->GetPathG("GrooveRadar", "base"));
+  frame_.AddChild(spr_radar_base_);
+  frame_.SetName("RadarFrame");
+  ActorUtil::LoadAllCommands(frame_, "GrooveRadar");
 
   FOREACH_PlayerNumber(p) {
     // todo: remove dependency on radar base being a sprite. -aj
-    m_GrooveRadarValueMap[p].SetRadius(m_sprRadarBase->GetZoomedWidth());
-    m_Frame.AddChild(&m_GrooveRadarValueMap[p]);
-    m_GrooveRadarValueMap[p].SetName(ssprintf("RadarValueMapP%d", p + 1));
-    ActorUtil::LoadAllCommands(m_GrooveRadarValueMap[p], "GrooveRadar");
+    groove_radar_value_map_[p].SetRadius(spr_radar_base_->GetZoomedWidth());
+    frame_.AddChild(&groove_radar_value_map_[p]);
+    groove_radar_value_map_[p].SetName(ssprintf("RadarValueMapP%d", p + 1));
+    ActorUtil::LoadAllCommands(groove_radar_value_map_[p], "GrooveRadar");
   }
 
-  this->AddChild(&m_Frame);
+  this->AddChild(&frame_);
 
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    m_sprRadarLabels[c].SetName(ssprintf("Label%i", c + 1));
-    m_sprRadarLabels[c].Load(THEME->GetPathG("GrooveRadar", "labels 1x5"));
-    m_sprRadarLabels[c].StopAnimating();
-    m_sprRadarLabels[c].SetState(c);
-    ActorUtil::LoadAllCommandsAndSetXY(m_sprRadarLabels[c], "GrooveRadar");
-    this->AddChild(&m_sprRadarLabels[c]);
+    spr_radar_labels_[c].SetName(ssprintf("Label%i", c + 1));
+    spr_radar_labels_[c].Load(THEME->GetPathG("GrooveRadar", "labels 1x5"));
+    spr_radar_labels_[c].StopAnimating();
+    spr_radar_labels_[c].SetState(c);
+    ActorUtil::LoadAllCommandsAndSetXY(spr_radar_labels_[c], "GrooveRadar");
+    this->AddChild(&spr_radar_labels_[c]);
   }
 }
 
@@ -64,73 +64,73 @@ void GrooveRadar::LoadFromNode(const XNode* pNode) {
 void GrooveRadar::SetEmpty(PlayerNumber pn) { SetFromSteps(pn, nullptr); }
 
 void GrooveRadar::SetFromRadarValues(PlayerNumber pn, const RadarValues& rv) {
-  m_GrooveRadarValueMap[pn].SetFromSteps(rv);
+  groove_radar_value_map_[pn].SetFromSteps(rv);
 }
 
 void GrooveRadar::SetFromSteps(
     PlayerNumber pn, Steps* pSteps)  // nullptr means no Song
 {
   if (pSteps == nullptr) {
-    m_GrooveRadarValueMap[pn].SetEmpty();
+    groove_radar_value_map_[pn].SetEmpty();
     return;
   }
 
   const RadarValues& rv = pSteps->GetRadarValues(pn);
-  m_GrooveRadarValueMap[pn].SetFromSteps(rv);
+  groove_radar_value_map_[pn].SetFromSteps(rv);
 }
 
 void GrooveRadar::SetFromValues(PlayerNumber pn, std::vector<float> vals) {
-  m_GrooveRadarValueMap[pn].SetFromValues(vals);
+  groove_radar_value_map_[pn].SetFromValues(vals);
 }
 
 GrooveRadar::GrooveRadarValueMap::GrooveRadarValueMap() {
-  m_bValuesVisible = false;
-  m_PercentTowardNew = 0;
+  values_visible_ = false;
+  percent_toward_new_ = 0;
 
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    m_fValuesNew[c] = 0;
-    m_fValuesOld[c] = 0;
+    values_new_[c] = 0;
+    values_old_[c] = 0;
   }
 }
 
-void GrooveRadar::GrooveRadarValueMap::SetEmpty() { m_bValuesVisible = false; }
+void GrooveRadar::GrooveRadarValueMap::SetEmpty() { values_visible_ = false; }
 
 void GrooveRadar::GrooveRadarValueMap::SetFromSteps(const RadarValues& rv) {
-  m_bValuesVisible = true;
+  values_visible_ = true;
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    const float fValueCurrent = m_fValuesOld[c] * (1 - m_PercentTowardNew) +
-                                m_fValuesNew[c] * m_PercentTowardNew;
-    m_fValuesOld[c] = fValueCurrent;
-    m_fValuesNew[c] = std::clamp(rv[c], 0.0f, 1.0f);
+    const float fValueCurrent = values_old_[c] * (1 - percent_toward_new_) +
+                                values_new_[c] * percent_toward_new_;
+    values_old_[c] = fValueCurrent;
+    values_new_[c] = std::clamp(rv[c], 0.0f, 1.0f);
   }
 
-  if (!m_bValuesVisible) {  // the values WERE invisible
-    m_PercentTowardNew = 1;
+  if (!values_visible_) {  // the values WERE invisible
+    percent_toward_new_ = 1;
   } else {
-    m_PercentTowardNew = 0;
+    percent_toward_new_ = 0;
   }
 }
 
 void GrooveRadar::GrooveRadarValueMap::SetFromValues(std::vector<float> vals) {
-  m_bValuesVisible = true;
+  values_visible_ = true;
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    const float fValueCurrent = m_fValuesOld[c] * (1 - m_PercentTowardNew) +
-                                m_fValuesNew[c] * m_PercentTowardNew;
-    m_fValuesOld[c] = fValueCurrent;
-    m_fValuesNew[c] = vals[c];
+    const float fValueCurrent = values_old_[c] * (1 - percent_toward_new_) +
+                                values_new_[c] * percent_toward_new_;
+    values_old_[c] = fValueCurrent;
+    values_new_[c] = vals[c];
   }
 
-  if (!m_bValuesVisible) {  // the values WERE invisible
-    m_PercentTowardNew = 1;
+  if (!values_visible_) {  // the values WERE invisible
+    percent_toward_new_ = 1;
   } else {
-    m_PercentTowardNew = 0;
+    percent_toward_new_ = 0;
   }
 }
 
 void GrooveRadar::GrooveRadarValueMap::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
-  m_PercentTowardNew = std::min(m_PercentTowardNew + 4.0f * fDeltaTime, 1.0f);
+  percent_toward_new_ = std::min(percent_toward_new_ + 4.0f * fDeltaTime, 1.0f);
 }
 
 void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
@@ -146,33 +146,33 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
 
   // xxx: We could either make the values invisible or draw a dot
   // (simulating real DDR). TODO: Make that choice up to the themer. -aj
-  if (!m_bValuesVisible) {
+  if (!values_visible_) {
     return;
   }
 
   // use a fan to draw the volume
-  RageColor color = this->m_pTempState->diffuse[0];
-  color.a = 0.5f;
-  v[0].p = RageVector3(0, 0, 0);
+  RageColor color = this->temp_state_->diffuse_[0];
+  color.a_ = 0.5f;
+  v[0].p_ = RageVector3(0, 0, 0);
   RageColor midcolor = color;
-  midcolor.a = RADAR_CENTER_ALPHA;
-  v[0].c = midcolor;
-  v[1].c = color;
+  midcolor.a_ = RADAR_CENTER_ALPHA;
+  v[0].c_ = midcolor;
+  v[1].c_ = color;
 
   for (int i = 0; i < NUM_SHOWN_RADAR_CATEGORIES + 1;
        i++)  // do one extra to close the fan
   {
     const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
     const float fDistFromCenter =
-        (m_fValuesOld[c] * (1 - m_PercentTowardNew) +
-         m_fValuesNew[c] * m_PercentTowardNew + 0.07f) *
+        (values_old_[c] * (1 - percent_toward_new_) +
+         values_new_[c] * percent_toward_new_ + 0.07f) *
         fRadius;
     const float fRotation = RADAR_VALUE_ROTATION(i);
     const float fX = std::cos(fRotation) * fDistFromCenter;
     const float fY = -std::sin(fRotation) * fDistFromCenter;
 
-    v[1 + i].p = RageVector3(fX, fY, 0);
-    v[1 + i].c = v[1].c;
+    v[1 + i].p_ = RageVector3(fX, fY, 0);
+    v[1 + i].c_ = v[1].c_;
   }
 
   DISPLAY->DrawFan(v, NUM_SHOWN_RADAR_CATEGORIES + 2);
@@ -181,15 +181,15 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
   for (int i = 0; i <= NUM_SHOWN_RADAR_CATEGORIES; i++) {
     const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
     const float fDistFromCenter =
-        (m_fValuesOld[c] * (1 - m_PercentTowardNew) +
-         m_fValuesNew[c] * m_PercentTowardNew + 0.07f) *
+        (values_old_[c] * (1 - percent_toward_new_) +
+         values_new_[c] * percent_toward_new_ + 0.07f) *
         fRadius;
     const float fRotation = RADAR_VALUE_ROTATION(i);
     const float fX = std::cos(fRotation) * fDistFromCenter;
     const float fY = -std::sin(fRotation) * fDistFromCenter;
 
-    v[i].p = RageVector3(fX, fY, 0);
-    v[i].c = this->m_pTempState->diffuse[0];
+    v[i].p_ = RageVector3(fX, fY, 0);
+    v[i].c_ = this->temp_state_->diffuse_[0];
   }
 
   // TODO: Add this back in -Chris

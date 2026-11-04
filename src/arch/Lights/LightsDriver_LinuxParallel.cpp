@@ -45,8 +45,8 @@ void LightsDriver_LinuxParallel::Set(const LightsState* ls) {
   unsigned char output = 0;
   s += "Cabinet Bits: ";
   FOREACH_CabinetLight(cl) {
-    s += ls->m_bCabinetLights[cl] ? '1' : '0';
-    if (ls->m_bCabinetLights[cl]) {
+    s += ls->cabinet_lights_[cl] ? '1' : '0';
+    if (ls->cabinet_lights_[cl]) {
       output += std::pow((double)2, i);
     }
     i++;
@@ -57,12 +57,12 @@ void LightsDriver_LinuxParallel::Set(const LightsState* ls) {
       INPUTMAPPER->GetInputScheme()->ButtonNameToIndex("Start");
   if (iNumGameButtonsToShow == GameButton_Invalid) {
     iNumGameButtonsToShow =
-        INPUTMAPPER->GetInputScheme()->m_iButtonsPerController;
+        INPUTMAPPER->GetInputScheme()->buttons_per_controller_;
   }
   FOREACH_ENUM(GameController, gc) {
     s += ssprintf("Controller%d Bits: ", gc + 1);
     for (int gb = 0; gb < iNumGameButtonsToShow; gb++) {
-      s += ls->m_bGameButtonLights[gc][gb] ? '1' : '0';
+      s += ls->game_button_lights_[gc][gb] ? '1' : '0';
     }
     s += "\n";
   }

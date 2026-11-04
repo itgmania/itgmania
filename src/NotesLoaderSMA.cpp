@@ -163,10 +163,10 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     return false;
   }
 
-  out.m_SongTiming.m_sFile = sPath;  // songs still have their fallback timing.
-  out.m_sSongFileName = sPath;
+  out.song_timing_.file_ = sPath;  // songs still have their fallback timing.
+  out.song_file_name_ = sPath;
 
-  TimingData* timing = &out.m_SongTiming;
+  TimingData* timing = &out.song_timing_;
   int iRowsPerBeat = -1;  // Start with an invalid value: needed for checking.
   std::vector<std::pair<float, float>> vBPMChanges, vStops;
 
@@ -180,61 +180,61 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     /* Don't use GetMainAndSubTitlesFromFullTitle; that's only for heuristically
      * splitting other formats that *don't* natively support #SUBTITLE. */
     if (sValueName == "TITLE") {
-      out.m_sMainTitle = sParams[1];
+      out.main_title_ = sParams[1];
       this->SetSongTitle(sParams[1]);
     }
 
     else if (sValueName == "SUBTITLE") {
-      out.m_sSubTitle = sParams[1];
+      out.sub_title_ = sParams[1];
     }
 
     else if (sValueName == "ARTIST") {
-      out.m_sArtist = sParams[1];
+      out.artist_ = sParams[1];
     }
 
     else if (sValueName == "TITLETRANSLIT") {
-      out.m_sMainTitleTranslit = sParams[1];
+      out.main_title_translit_ = sParams[1];
     }
 
     else if (sValueName == "SUBTITLETRANSLIT") {
-      out.m_sSubTitleTranslit = sParams[1];
+      out.sub_title_translit_ = sParams[1];
     }
 
     else if (sValueName == "ARTISTTRANSLIT") {
-      out.m_sArtistTranslit = sParams[1];
+      out.artist_translit_ = sParams[1];
     }
 
     else if (sValueName == "GENRE") {
-      out.m_sGenre = sParams[1];
+      out.genre_ = sParams[1];
     }
 
     else if (sValueName == "CREDIT") {
-      out.m_sCredit = sParams[1];
+      out.credit_ = sParams[1];
     }
 
     else if (sValueName == "BANNER") {
-      out.m_sBannerFile = sParams[1];
+      out.banner_file_ = sParams[1];
     }
 
     else if (sValueName == "BACKGROUND") {
-      out.m_sBackgroundFile = sParams[1];
+      out.background_file_ = sParams[1];
     }
 
     else if (sValueName == "PREVIEW") {
-      out.m_sPreviewVidFile = sParams[1];
+      out.preview_vid_file_ = sParams[1];
     }
 
     // Save "#LYRICS" for later, so we can add an internal lyrics tag.
     else if (sValueName == "LYRICSPATH") {
-      out.m_sLyricsFile = sParams[1];
+      out.lyrics_file_ = sParams[1];
     }
 
     else if (sValueName == "CDTITLE") {
-      out.m_sCDTitleFile = sParams[1];
+      out.cd_title_file_ = sParams[1];
     }
 
     else if (sValueName == "MUSIC") {
-      out.m_sMusicFile = sParams[1];
+      out.music_file_ = sParams[1];
     }
 
     else if (sValueName == "MUSICLENGTH") {
@@ -255,11 +255,11 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     }
 
     else if (sValueName == "SAMPLESTART") {
-      out.m_fMusicSampleStartSeconds = HHMMSSToSeconds(sParams[1]);
+      out.music_sample_start_seconds_ = HHMMSSToSeconds(sParams[1]);
     }
 
     else if (sValueName == "SAMPLELENGTH") {
-      out.m_fMusicSampleLengthSeconds = HHMMSSToSeconds(sParams[1]);
+      out.music_sample_length_seconds_ = HHMMSSToSeconds(sParams[1]);
     }
 
     // SamplePath is used when the song has a separate preview clip. -aj
@@ -273,14 +273,14 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     else if (sValueName == "DISPLAYBPM") {
       // #DISPLAYBPM:[xxx][xxx:xxx]|[*];
       if (sParams[1] == "*") {
-        out.m_DisplayBPMType = DISPLAY_BPM_RANDOM;
+        out.display_bpm_type_ = DISPLAY_BPM_RANDOM;
       } else {
-        out.m_DisplayBPMType = DISPLAY_BPM_SPECIFIED;
-        out.m_fSpecifiedBPMMin = StringToFloat(sParams[1]);
+        out.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
+        out.specified_bpm_min_ = StringToFloat(sParams[1]);
         if (sParams[2].empty()) {
-          out.m_fSpecifiedBPMMax = out.m_fSpecifiedBPMMin;
+          out.specified_bpm_max_ = out.specified_bpm_min_;
         } else {
-          out.m_fSpecifiedBPMMax = StringToFloat(sParams[2]);
+          out.specified_bpm_max_ = StringToFloat(sParams[2]);
         }
       }
     }
@@ -314,23 +314,23 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
 
     else if (sValueName == "SELECTABLE") {
       if (EqualsNoCase(sParams[1], "YES")) {
-        out.m_SelectionDisplay = out.SHOW_ALWAYS;
+        out.selection_display_ = out.SHOW_ALWAYS;
       } else if (EqualsNoCase(sParams[1], "NO")) {
-        out.m_SelectionDisplay = out.SHOW_NEVER;
+        out.selection_display_ = out.SHOW_NEVER;
       }
       // ROULETTE from 3.9. It was removed since UnlockManager can serve
       // the same purpose somehow. This, of course, assumes you're using
       // unlocks. -aj
       else if (EqualsNoCase(sParams[1], "ROULETTE")) {
-        out.m_SelectionDisplay = out.SHOW_ALWAYS;
+        out.selection_display_ = out.SHOW_ALWAYS;
       }
       /* The following two cases are just fixes to make sure simfiles that
        * used 3.9+ features are not excluded here */
       else if (
           EqualsNoCase(sParams[1], "ES") || EqualsNoCase(sParams[1], "OMES")) {
-        out.m_SelectionDisplay = out.SHOW_ALWAYS;
+        out.selection_display_ = out.SHOW_ALWAYS;
       } else if (StringToInt(sParams[1]) > 0) {
-        out.m_SelectionDisplay = out.SHOW_ALWAYS;
+        out.selection_display_ = out.SHOW_ALWAYS;
       } else {
         LOG->UserLog(
             "Song file", sPath,
@@ -358,7 +358,7 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     }
 
     else if (sValueName == "OFFSET") {
-      timing->m_fBeat0OffsetInSeconds = StringToFloat(sParams[1]);
+      timing->beat0_offset_in_seconds_ = StringToFloat(sParams[1]);
     }
 
     else if (sValueName == "BPMS") {
@@ -398,13 +398,13 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     }
 
     else if (sValueName == "KEYSOUNDS") {
-      split(sParams[1], ",", out.m_vsKeysoundFile);
+      split(sParams[1], ",", out.keysound_file_);
     }
 
     // Attacks loaded from file
     else if (sValueName == "ATTACKS") {
-      ProcessAttackString(out.m_sAttackString, sParams);
-      ProcessAttacks(out.m_Attacks, sParams);
+      ProcessAttackString(out.attack_string_, sParams);
+      ProcessAttacks(out.attacks_, sParams);
     }
 
     else if (sValueName == "NOTES" || sValueName == "NOTES2") {
@@ -425,7 +425,7 @@ bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
       out.AddSteps(pNewNotes);
 
       // Handle timing changes and convert negative bpms/stops
-      timing = &pNewNotes->m_Timing;
+      timing = &pNewNotes->timing_;
       ProcessBPMsAndStops(*timing, vBPMChanges, vStops);
     } else if (sValueName == "TIMESIGNATURES" || sValueName == "LEADTRACK")
       ;

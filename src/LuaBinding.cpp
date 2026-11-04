@@ -13,13 +13,13 @@ static SubscriptionManager<LuaBinding> m_Subscribers;
 
 namespace {
 void RegisterTypes(lua_State* L) {
-  if (m_Subscribers.m_pSubscribers == nullptr) {
+  if (m_Subscribers.subscribers_ == nullptr) {
     return;
   }
 
   /* Register base classes first. */
   std::map<std::string, LuaBinding*> mapToRegister;
-  for (LuaBinding* binding : *m_Subscribers.m_pSubscribers) {
+  for (LuaBinding* binding : *m_Subscribers.subscribers_) {
     mapToRegister[binding->GetClassName()] = binding;
   }
 

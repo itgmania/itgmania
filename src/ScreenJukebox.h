@@ -16,7 +16,7 @@ class ScreenJukebox : public ScreenGameplayNormal {
   virtual void HandleScreenMessage(const ScreenMessage SM);
 
  protected:
-  bool m_bDemonstration;
+  bool demonstration_;
 
   void SetSong();
   virtual void InitSongQueues();

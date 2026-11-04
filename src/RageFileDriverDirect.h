@@ -19,7 +19,7 @@ class RageFileDriverDirect : public RageFileDriver {
   bool Remount(const std::string& sPath);
 
  private:
-  std::string m_sRoot;
+  std::string root_;
 };
 
 class RageFileDriverDirectReadOnly : public RageFileDriverDirect {
@@ -41,25 +41,25 @@ class RageFileObjDirect : public RageFileObj {
   virtual int FlushInternal();
   virtual int SeekInternal(int offset);
   virtual RageFileObjDirect* Copy() const;
-  virtual std::string GetDisplayPath() const { return m_sPath; }
+  virtual std::string GetDisplayPath() const { return path_; }
   virtual int GetFileSize() const;
   virtual int GetFD();
 
  private:
   bool FinalFlush();
 
-  int m_iFD;
-  int m_iMode;
-  std::string m_sPath; /* for Copy */
+  int fd_;
+  int mode_;
+  std::string path_; /* for Copy */
 
   /*
    * When not streaming to disk, we write to a temporary file, and rename to the
    * real file on completion.  If any write, this is aborted.  When streaming to
    * disk, allow recovering from errors.
    */
-  bool m_bWriteFailed;
+  bool write_failed_;
   bool WriteFailed() const {
-    return !(m_iMode & RageFile::STREAMED) && m_bWriteFailed;
+    return !(mode_ & RageFile::STREAMED) && write_failed_;
   }
 
   // unused

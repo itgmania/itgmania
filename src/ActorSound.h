@@ -8,7 +8,7 @@
 /** @brief RageSound Actor interface. */
 class ActorSound : public Actor {
  public:
-  ActorSound() : m_is_action(false) {}
+  ActorSound() : is_action_(false) {}
   virtual ~ActorSound() {}
   virtual ActorSound* Copy() const;
 
@@ -17,9 +17,9 @@ class ActorSound : public Actor {
   void Pause(bool bPause);
   void Stop();
   void LoadFromNode(const XNode* pNode);
-  void PushSound(lua_State* L) { m_Sound.PushSelf(L); }
+  void PushSound(lua_State* L) { sound_.PushSelf(L); }
 
-  bool m_is_action;
+  bool is_action_;
 
   //
   // Lua
@@ -27,7 +27,7 @@ class ActorSound : public Actor {
   virtual void PushSelf(lua_State* L);
 
  private:
-  RageSound m_Sound;
+  RageSound sound_;
 };
 
 #endif

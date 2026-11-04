@@ -47,18 +47,18 @@ const std::string& LightsModeToString(LightsMode lm);
 LuaDeclareType(LightsMode);
 
 struct LightsState {
-  bool m_bCabinetLights[NUM_CabinetLight] = {};
-  bool m_bGameButtonLights[NUM_GameController][NUM_GameButton] = {};
+  bool cabinet_lights_[NUM_CabinetLight] = {};
+  bool game_button_lights_[NUM_GameController][NUM_GameButton] = {};
 
   // This isn't actually a light, but it's typically implemented in the same
   // way.
-  bool m_bCoinCounter = false;
+  bool coin_counter_ = false;
 
   // equality operator
   bool operator==(const LightsState& rhs) const {
     // compare cabinet lights
     for (int i = 0; i < NUM_CabinetLight; ++i) {
-      if (m_bCabinetLights[i] != rhs.m_bCabinetLights[i]) {
+      if (cabinet_lights_[i] != rhs.cabinet_lights_[i]) {
         return false;
       }
     }
@@ -66,14 +66,14 @@ struct LightsState {
     // compare game button lights
     for (int c = 0; c < NUM_GameController; ++c) {
       for (int b = 0; b < NUM_GameButton; ++b) {
-        if (m_bGameButtonLights[c][b] != rhs.m_bGameButtonLights[c][b]) {
+        if (game_button_lights_[c][b] != rhs.game_button_lights_[c][b]) {
           return false;
         }
       }
     }
 
     // compare coin counter
-    if (m_bCoinCounter != rhs.m_bCoinCounter) {
+    if (coin_counter_ != rhs.coin_counter_) {
       return false;
     }
 
@@ -98,7 +98,7 @@ class LightsManager {
   void BlinkCabinetLight(CabinetLight cl);
   void BlinkGameButton(GameInput gi);
   void TurnOffAllLights();
-  void PulseCoinCounter() { ++m_iQueuedCoinCounterPulses; }
+  void PulseCoinCounter() { ++queued_coin_counter_pulses_; }
   void SetLightsMode(LightsMode lm);
   LightsMode GetLightsMode();
 
@@ -114,26 +114,26 @@ class LightsManager {
   void ChangeTestCabinetLight(int iDir);
   void ChangeTestGameButtonLight(int iDir);
 
-  float m_fSecsLeftInCabinetLightBlink[NUM_CabinetLight];
-  float m_fSecsLeftInGameButtonBlink[NUM_GameController][NUM_GameButton];
+  float secs_left_in_cabinet_light_blink_[NUM_CabinetLight];
+  float secs_left_in_game_button_blink_[NUM_GameController][NUM_GameButton];
+  float actor_lights_[NUM_CabinetLight];  // current "power" of each actor light
   float
-      m_fActorLights[NUM_CabinetLight];  // current "power" of each actor light
-  float m_fSecsLeftInActorLightBlink[NUM_CabinetLight];  // duration to "power"
-                                                         // an actor light
+      secs_left_in_actor_light_blink_[NUM_CabinetLight];  // duration to "power"
+                                                          // an actor light
 
-  std::vector<LightsDriver*> m_vpDrivers;
-  LightsMode m_LightsMode;
+  std::vector<LightsDriver*> drivers_;
+  LightsMode lights_mode_;
 
-  LightsState m_LightsState;
-  LightsState m_PrevLightsState;
+  LightsState lights_state_;
+  LightsState prev_lights_state_;
 
-  int m_iQueuedCoinCounterPulses;
-  RageTimer m_CoinCounterTimer;
+  int queued_coin_counter_pulses_;
+  RageTimer coin_counter_timer_;
 
-  bool m_LightsThreadShutdown;
-  RageThread m_LightsThread;
-  RageEvent* m_LightsMutex;
-  std::queue<LightsState> m_LightsQueue;
+  bool lights_thread_shutdown_;
+  RageThread lights_thread_;
+  RageEvent* lights_mutex_;
+  std::queue<LightsState> lights_queue_;
 
   int LightsManThreadMain();
 
@@ -143,12 +143,12 @@ class LightsManager {
   }
 
   int GetTestAutoCycleCurrentIndex() {
-    return (int)m_fTestAutoCycleCurrentIndex;
+    return (int)test_auto_cycle_current_index_;
   }
 
-  float m_fTestAutoCycleCurrentIndex;
-  CabinetLight m_clTestManualCycleCurrent;
-  int m_iControllerTestManualCycleCurrent;
+  float test_auto_cycle_current_index_;
+  CabinetLight test_manual_cycle_current_;
+  int controller_test_manual_cycle_current_;
 };
 
 extern LightsManager*

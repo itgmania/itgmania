@@ -24,7 +24,7 @@ void ScreenContinue::Init() {
 
   this->SubscribeToMessage(Message_PlayerJoined);
 
-  FORCE_TIMER_WAIT.Load(m_sName, "ForceTimerWait");
+  FORCE_TIMER_WAIT.Load(name_, "ForceTimerWait");
 }
 
 void ScreenContinue::BeginScreen() {
@@ -36,7 +36,7 @@ void ScreenContinue::BeginScreen() {
   // edit Steps.
   FOREACH_ENUM(PlayerNumber, p) {
     if (GAMESTATE->IsHumanPlayer(p)) {
-      bool bPlayerDone = GAMESTATE->m_iPlayerStageTokens[p] <= 0;
+      bool bPlayerDone = GAMESTATE->player_stage_tokens_[p] <= 0;
       if (bPlayerDone) {
         GAMESTATE->UnjoinPlayer(p);
         MEMCARDMAN->UnlockCard(p);
@@ -50,12 +50,12 @@ void ScreenContinue::BeginScreen() {
 }
 
 bool ScreenContinue::Input(const InputEventPlus& input) {
-  if (input.MenuI == GAME_BUTTON_COIN && input.type == IET_FIRST_PRESS) {
+  if (input.menu_i_ == GAME_BUTTON_COIN && input.type_ == IET_FIRST_PRESS) {
     ResetTimer();
   }
 
-  if (input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS &&
-      GAMESTATE->JoinInput(input.pn)) {
+  if (input.menu_i_ == GAME_BUTTON_START && input.type_ == IET_FIRST_PRESS &&
+      GAMESTATE->JoinInput(input.pn_)) {
     return true;  // handled
   }
 
@@ -63,19 +63,19 @@ bool ScreenContinue::Input(const InputEventPlus& input) {
     return true;
   }
 
-  if (input.type == IET_FIRST_PRESS && GAMESTATE->IsHumanPlayer(input.pn) &&
+  if (input.type_ == IET_FIRST_PRESS && GAMESTATE->IsHumanPlayer(input.pn_) &&
       FORCE_TIMER_WAIT) {
-    switch (input.MenuI) {
+    switch (input.menu_i_) {
       case GAME_BUTTON_START:
       case GAME_BUTTON_UP:
       case GAME_BUTTON_DOWN:
       case GAME_BUTTON_LEFT:
       case GAME_BUTTON_RIGHT: {
-        float fSeconds = std::floor(m_MenuTimer->GetSeconds()) - 0.0001f;
+        float fSeconds = std::floor(menu_timer_->GetSeconds()) - 0.0001f;
         fSeconds = std::max(fSeconds, 0.0001f);  // don't set to 0
-        m_MenuTimer->SetSeconds(fSeconds);
+        menu_timer_->SetSeconds(fSeconds);
         Message msg("HurryTimer");
-        msg.SetParam("PlayerNumber", input.pn);
+        msg.SetParam("PlayerNumber", input.pn_);
         this->HandleMessage(msg);
         return true;  // handled
       }
@@ -110,7 +110,7 @@ void ScreenContinue::HandleMessage(const Message& msg) {
     }
 
     if (bAllPlayersAreEnabled) {
-      m_MenuTimer->Stop();
+      menu_timer_->Stop();
       if (!IsTransitioning()) {
         StartTransitioningScreen(SM_GoToNextScreen);
       }

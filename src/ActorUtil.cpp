@@ -123,7 +123,7 @@ bool ActorUtil::ResolvePath(
 
 namespace {
 std::string GetLegacyActorClass(XNode* pActor) {
-  DEBUG_ASSERT(PREFSMAN->m_bQuirksMode);
+  DEBUG_ASSERT(PREFSMAN->quirks_mode_);
   ASSERT(pActor);
 
   // The non-legacy LoadFromNode has already checked the Class and
@@ -138,7 +138,7 @@ std::string GetLegacyActorClass(XNode* pActor) {
     // Backward compatibility hacks for "special" filenames
     if (EqualsNoCase(sFile, "songbackground")) {
       XNodeStringValue* pVal = new XNodeStringValue;
-      Song* pSong = GAMESTATE->m_pCurSong;
+      Song* pSong = GAMESTATE->cur_song_;
       if (pSong && pSong->HasBackground()) {
         pVal->SetValue(pSong->GetBackgroundPath());
       } else {
@@ -148,7 +148,7 @@ std::string GetLegacyActorClass(XNode* pActor) {
       return "Sprite";
     } else if (EqualsNoCase(sFile, "songbanner")) {
       XNodeStringValue* pVal = new XNodeStringValue;
-      Song* pSong = GAMESTATE->m_pCurSong;
+      Song* pSong = GAMESTATE->cur_song_;
       if (pSong && pSong->HasBanner()) {
         pVal->SetValue(pSong->GetBannerPath());
       } else {
@@ -158,7 +158,7 @@ std::string GetLegacyActorClass(XNode* pActor) {
       return "Sprite";
     } else if (EqualsNoCase(sFile, "coursebanner")) {
       XNodeStringValue* pVal = new XNodeStringValue;
-      Course* pCourse = GAMESTATE->m_pCurCourse;
+      Course* pCourse = GAMESTATE->cur_course_;
       if (pCourse && pCourse->HasBanner()) {
         pVal->SetValue(pCourse->GetBannerPath());
       } else {
@@ -170,7 +170,7 @@ std::string GetLegacyActorClass(XNode* pActor) {
   }
 
   // Fallback: use XML tag name for actor class
-  return pActor->m_sName;
+  return pActor->name_;
 }
 }  // namespace
 
@@ -320,7 +320,7 @@ Actor* ActorUtil::MakeActor(const std::string& sPath_, Actor* pParentActor) {
     }
     case FT_Xml: {
       // Legacy actors; only supported in quirks mode
-      if (!PREFSMAN->m_bQuirksMode) {
+      if (!PREFSMAN->quirks_mode_) {
         return new Actor;
       }
 
@@ -358,7 +358,7 @@ Actor* ActorUtil::MakeActor(const std::string& sPath_, Actor* pParentActor) {
     }
     case FT_Sprite: {
       // Legacy actor; only supported in quirks mode
-      if (!PREFSMAN->m_bQuirksMode) {
+      if (!PREFSMAN->quirks_mode_) {
         return new Actor;
       }
 

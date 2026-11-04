@@ -93,7 +93,7 @@ void LightsDriver_Linux_PIUIOBTN_Leds::Set(const LightsState* ls) {
   SetGameControllerLights(GameController_1, player1_lights, ls);
   SetGameControllerLights(GameController_2, player2_lights, ls);
 
-  previousLS = *ls;
+  previous_ls_ = *ls;
 }
 
 /*

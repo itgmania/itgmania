@@ -18,12 +18,12 @@ class ScoreDisplayRave : public ScoreDisplay {
   virtual void Update(float fDelta);
 
  protected:
-  AutoActor m_sprFrameBase;
-  Sprite m_sprMeter[NUM_ATTACK_LEVELS];
-  AutoActor m_sprFrameOverlay;
-  BitmapText m_textLevel;
+  AutoActor spr_frame_base_;
+  Sprite spr_meter_[NUM_ATTACK_LEVELS];
+  AutoActor spr_frame_overlay_;
+  BitmapText text_level_;
 
-  AttackLevel m_lastLevelSeen;
+  AttackLevel last_level_seen_;
 };
 
 #endif

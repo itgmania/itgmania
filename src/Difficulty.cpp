@@ -53,26 +53,26 @@ CourseDifficulty GetNextShownCourseDifficulty(CourseDifficulty cd) {
 }
 
 struct OldStyleStringToDifficultyMapHolder {
-  std::map<std::string, Difficulty> conversion_map;
+  std::map<std::string, Difficulty> conversion_map_;
   OldStyleStringToDifficultyMapHolder() {
-    conversion_map["beginner"] = Difficulty_Beginner;
-    conversion_map["easy"] = Difficulty_Easy;
-    conversion_map["basic"] = Difficulty_Easy;
-    conversion_map["light"] = Difficulty_Easy;
-    conversion_map["medium"] = Difficulty_Medium;
-    conversion_map["another"] = Difficulty_Medium;
-    conversion_map["trick"] = Difficulty_Medium;
-    conversion_map["standard"] = Difficulty_Medium;
-    conversion_map["difficult"] = Difficulty_Medium;
-    conversion_map["hard"] = Difficulty_Hard;
-    conversion_map["ssr"] = Difficulty_Hard;
-    conversion_map["maniac"] = Difficulty_Hard;
-    conversion_map["heavy"] = Difficulty_Hard;
-    conversion_map["smaniac"] = Difficulty_Challenge;
-    conversion_map["challenge"] = Difficulty_Challenge;
-    conversion_map["expert"] = Difficulty_Challenge;
-    conversion_map["oni"] = Difficulty_Challenge;
-    conversion_map["edit"] = Difficulty_Edit;
+    conversion_map_["beginner"] = Difficulty_Beginner;
+    conversion_map_["easy"] = Difficulty_Easy;
+    conversion_map_["basic"] = Difficulty_Easy;
+    conversion_map_["light"] = Difficulty_Easy;
+    conversion_map_["medium"] = Difficulty_Medium;
+    conversion_map_["another"] = Difficulty_Medium;
+    conversion_map_["trick"] = Difficulty_Medium;
+    conversion_map_["standard"] = Difficulty_Medium;
+    conversion_map_["difficult"] = Difficulty_Medium;
+    conversion_map_["hard"] = Difficulty_Hard;
+    conversion_map_["ssr"] = Difficulty_Hard;
+    conversion_map_["maniac"] = Difficulty_Hard;
+    conversion_map_["heavy"] = Difficulty_Hard;
+    conversion_map_["smaniac"] = Difficulty_Challenge;
+    conversion_map_["challenge"] = Difficulty_Challenge;
+    conversion_map_["expert"] = Difficulty_Challenge;
+    conversion_map_["oni"] = Difficulty_Challenge;
+    conversion_map_["edit"] = Difficulty_Edit;
   }
 };
 OldStyleStringToDifficultyMapHolder OldStyleStringToDifficulty_converter;
@@ -80,8 +80,8 @@ Difficulty OldStyleStringToDifficulty(const std::string& sDC) {
   std::string s2 = sDC;
   MakeLower(s2);
   std::map<std::string, Difficulty>::iterator diff =
-      OldStyleStringToDifficulty_converter.conversion_map.find(s2);
-  if (diff != OldStyleStringToDifficulty_converter.conversion_map.end()) {
+      OldStyleStringToDifficulty_converter.conversion_map_.find(s2);
+  if (diff != OldStyleStringToDifficulty_converter.conversion_map_.end()) {
     return diff->second;
   }
   return Difficulty_Invalid;
@@ -155,12 +155,12 @@ LuaFunction(
 
 std::string StepsToCustomDifficulty(const Steps* pSteps) {
   return GetCustomDifficulty(
-      pSteps->m_StepsType, pSteps->GetDifficulty(), CourseType_Invalid);
+      pSteps->steps_type_, pSteps->GetDifficulty(), CourseType_Invalid);
 }
 
 std::string TrailToCustomDifficulty(const Trail* pTrail) {
   return GetCustomDifficulty(
-      pTrail->m_StepsType, pTrail->m_CourseDifficulty, pTrail->m_CourseType);
+      pTrail->steps_type_, pTrail->course_difficulty_, pTrail->course_type_);
 }
 
 #include "LuaBinding.h"

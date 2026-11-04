@@ -37,7 +37,7 @@ static std::string GetPromptText() {
                                           "%s:\n"
                                           "\n")
               .c_str(),
-          GAMESTATE->m_pCurSong->GetDisplayFullTitle().c_str());
+          GAMESTATE->cur_song_->GetDisplayFullTitle().c_str());
 
       s += join("\n", vs) + "\n\n";
     }

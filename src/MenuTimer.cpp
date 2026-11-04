@@ -24,34 +24,36 @@ std::string WARNING_COMMAND_NAME(size_t i) {
 static const float TIMER_PAUSE_SECONDS = 99.99f;
 
 MenuTimer::MenuTimer() {
-  m_fStallSeconds = 0;
-  m_fStallSecondsLeft = 0;
-  m_bPaused = false;
-  m_bSilent = false;
+  stall_seconds_ = 0;
+  stall_seconds_left_ = 0;
+  paused_ = false;
+  silent_ = false;
   WARNING_COMMAND = nullptr;
 }
 
 MenuTimer::~MenuTimer() { delete WARNING_COMMAND; }
 
 void MenuTimer::Load(std::string sMetricsGroup) {
-  m_sprFrame.Load(THEME->GetPathG(sMetricsGroup, "Frame"));
-  m_sprFrame->SetName("Frame");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprFrame, sMetricsGroup);
-  this->AddChild(m_sprFrame);
+  spr_frame_.Load(THEME->GetPathG(sMetricsGroup, "Frame"));
+  spr_frame_->SetName("Frame");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_frame_, sMetricsGroup);
+  this->AddChild(spr_frame_);
 
   for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
-    m_text[i].LoadFromFont(THEME->GetPathF(sMetricsGroup, "numbers"));
-    m_text[i].SetName(ssprintf("Text%d", i + 1));
-    ActorUtil::LoadAllCommandsAndOnCommand(m_text[i], sMetricsGroup);
-    this->AddChild(&m_text[i]);
+    text_[i].LoadFromFont(THEME->GetPathF(sMetricsGroup, "numbers"));
+    text_[i].SetName(ssprintf("Text%d", i + 1));
+    ActorUtil::LoadAllCommandsAndOnCommand(text_[i], sMetricsGroup);
+    this->AddChild(&text_[i]);
   }
 
-  m_exprFormatText[0] = THEME->GetMetricR(sMetricsGroup, "Text1FormatFunction");
-  m_exprFormatText[1] = THEME->GetMetricR(sMetricsGroup, "Text2FormatFunction");
+  expr_format_text_[0] =
+      THEME->GetMetricR(sMetricsGroup, "Text1FormatFunction");
+  expr_format_text_[1] =
+      THEME->GetMetricR(sMetricsGroup, "Text2FormatFunction");
 
   SetSeconds(TIMER_PAUSE_SECONDS);
 
-  m_soundBeep.Load(THEME->GetPathS(sMetricsGroup, "tick"));
+  sound_beep_.Load(THEME->GetPathS(sMetricsGroup, "tick"));
 
   WARNING_START.Load(sMetricsGroup, "WarningStart");
   WARNING_BEEP_START.Load(sMetricsGroup, "WarningBeepStart");
@@ -66,36 +68,36 @@ void MenuTimer::Load(std::string sMetricsGroup) {
   WARNING_COMMAND = new ThemeMetric1D<apActorCommands>(
       sMetricsGroup, WARNING_COMMAND_NAME, WARNING_START + 1);
 
-  m_fStallSecondsLeft = MAX_STALL_SECONDS;
+  stall_seconds_left_ = MAX_STALL_SECONDS;
 }
 
 void MenuTimer::EnableStealth(bool bStealth) {
   EnableSilent(bStealth);
 
   for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
-    m_text[i].SetVisible(!bStealth);
+    text_[i].SetVisible(!bStealth);
   }
 }
 
 void MenuTimer::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
-  if (m_bPaused) {
+  if (paused_) {
     return;
   }
 
   // run down the stall time if any
-  if (m_fStallSeconds > 0) {
-    m_fStallSeconds = std::max(m_fStallSeconds - fDeltaTime, 0.0f);
+  if (stall_seconds_ > 0) {
+    stall_seconds_ = std::max(stall_seconds_ - fDeltaTime, 0.0f);
   }
-  if (m_fStallSeconds > 0) {
+  if (stall_seconds_ > 0) {
     return;
   }
 
-  const float fOldSecondsLeft = m_fSecondsLeft;
-  m_fSecondsLeft -= fDeltaTime;
-  m_fSecondsLeft = std::max(0.0f, m_fSecondsLeft);
-  const float fNewSecondsLeft = m_fSecondsLeft;
+  const float fOldSecondsLeft = seconds_left_;
+  seconds_left_ -= fDeltaTime;
+  seconds_left_ = std::max(0.0f, seconds_left_);
+  const float fNewSecondsLeft = seconds_left_;
 
   SetText(fNewSecondsLeft);
 
@@ -113,13 +115,12 @@ void MenuTimer::Update(float fDeltaTime) {
   {
     if (iCrossed <= WARNING_START) {
       for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
-        m_text[i].RunCommands(WARNING_COMMAND->GetValue(iCrossed));
+        text_[i].RunCommands(WARNING_COMMAND->GetValue(iCrossed));
       }
     }
 
-    if (iCrossed <= WARNING_BEEP_START && m_soundBeep.IsLoaded() &&
-        !m_bSilent) {
-      m_soundBeep.Play(false);
+    if (iCrossed <= WARNING_BEEP_START && sound_beep_.IsLoaded() && !silent_) {
+      sound_beep_.Play(false);
     }
   }
 
@@ -127,17 +128,17 @@ void MenuTimer::Update(float fDeltaTime) {
     Stop();
     SCREENMAN->PostMessageToTopScreen(SM_MenuTimer, 0);
     for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
-      m_text[i].StopEffect();
+      text_[i].StopEffect();
     }
   }
 }
 
-void MenuTimer::Pause() { m_bPaused = true; }
+void MenuTimer::Pause() { paused_ = true; }
 
 void MenuTimer::Stop() {
   /* Don't call SetSeconds if we're already at 0: let the existing tweens
    * finish. */
-  if (m_fSecondsLeft >= 1) {
+  if (seconds_left_ >= 1) {
     SetSeconds(0);
   }
   Pause();
@@ -150,33 +151,33 @@ void MenuTimer::Disable() {
 
 void MenuTimer::Stall() {
   // Max amount of stall time we'll use:
-  const float Amt = std::min(0.5f, m_fStallSecondsLeft);
+  const float Amt = std::min(0.5f, stall_seconds_left_);
 
   // Amount of stall time to add:
-  const float ToAdd = Amt - m_fStallSeconds;
+  const float ToAdd = Amt - stall_seconds_;
 
-  m_fStallSeconds += ToAdd;
-  m_fStallSecondsLeft -= ToAdd;
+  stall_seconds_ += ToAdd;
+  stall_seconds_left_ -= ToAdd;
 }
 
 void MenuTimer::SetSeconds(float fSeconds) {
-  m_fSecondsLeft = fSeconds;
+  seconds_left_ = fSeconds;
 
   for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
-    m_text[i].PlayCommand("On");
+    text_[i].PlayCommand("On");
   }
 
   SetText(fSeconds);
 }
 
-void MenuTimer::Start() { m_bPaused = false; }
+void MenuTimer::Start() { paused_ = false; }
 
 void MenuTimer::SetText(float fSeconds) {
   Lua* L = LUA->Get();
 
   for (int i = 0; i < NUM_MENU_TIMER_TEXTS; i++) {
     // function
-    m_exprFormatText[i].PushSelf(L);
+    expr_format_text_[i].PushSelf(L);
     ASSERT(!lua_isnil(L, -1));
 
     // 1st parameter
@@ -190,7 +191,7 @@ void MenuTimer::SetText(float fSeconds) {
     std::string sText;
     LuaHelpers::Pop(L, sText);
 
-    m_text[i].SetText(sText);
+    text_[i].SetText(sText);
   }
 
   LUA->Release(L);

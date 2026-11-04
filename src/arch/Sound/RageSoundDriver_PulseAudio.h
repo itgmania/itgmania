@@ -19,21 +19,21 @@ class RageSoundDriver_PulseAudio : public RageSoundDriver {
   std::string Init();
 
   int64_t GetPosition() const;
-  inline int GetSampleRate() const { return m_ss.rate; };
+  inline int GetSampleRate() const { return ss_.rate; };
 
  protected:
   int64_t GetPositionUnlocked() const;
 
-  int64_t m_LastPosition;
-  pa_sample_spec m_ss;
-  char* m_Error;
+  int64_t last_position_;
+  pa_sample_spec ss_;
+  char* error_;
 
   void m_InitStream();
-  RageSemaphore m_Sem;
+  RageSemaphore sem_;
 
-  pa_threaded_mainloop* m_PulseMainLoop;
-  pa_context* m_PulseCtx;
-  pa_stream* m_PulseStream;
+  pa_threaded_mainloop* pulse_main_loop_;
+  pa_context* pulse_ctx_;
+  pa_stream* pulse_stream_;
 
  public:
   void CtxStateCb(pa_context* c);

@@ -14,7 +14,7 @@ class ScreenProfileLoad : public ScreenWithMenuElements {
 
   virtual void PushSelf(lua_State* L);
 
-  bool m_bHaveProfileToLoad;
+  bool have_profile_to_load_;
 
   ThemeMetric<bool> LOAD_EDITS;
 };

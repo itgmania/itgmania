@@ -17,15 +17,15 @@
 struct lua_State;
 
 struct CacheDisplayedBeat {
-  float beat;
-  float displayedBeat;
-  float velocity;
+  float beat_;
+  float displayed_beat_;
+  float velocity_;
 };
 
 struct CacheNoteStat {
-  float beat;
-  int notesLower;
-  int notesUpper;
+  float beat_;
+  int notes_lower_;
+  int notes_upper_;
 };
 
 /** @brief The player's indivdual state. */
@@ -48,14 +48,14 @@ class PlayerState {
    * TODO: Remove use of PlayerNumber.  All data about the player should live
    * in PlayerState and callers should not use PlayerNumber to index into
    * GameState. */
-  PlayerNumber m_PlayerNumber;
+  PlayerNumber player_number_;
 
   // This is used by ArrowEffects and the NoteField to zoom both appropriately
   // to fit in the space available. -Kyz
-  float m_NotefieldZoom;
+  float notefield_zoom_;
 
   // Music statistics:
-  SongPosition m_Position;
+  SongPosition position_;
 
   const SongPosition& GetDisplayedPosition() const;
   const TimingData& GetDisplayedTiming() const;
@@ -67,14 +67,14 @@ class PlayerState {
    *        This vector will be populated on Player::Load() be used a lot in
    *        ArrowEffects to determine the target beat in O(log N).
    */
-  std::vector<CacheDisplayedBeat> m_CacheDisplayedBeat;
+  std::vector<CacheDisplayedBeat> cache_displayed_beat_;
 
   /**
    * @brief Holds a vector sorted by beat, the cumulative number of notes from
    *        the start of the song. This will be used by [insert more description
    * here]
    */
-  std::vector<CacheNoteStat> m_CacheNoteStat;
+  std::vector<CacheNoteStat> cache_note_stat_;
 
   /**
    * @brief Change the PlayerOptions to their default.
@@ -82,20 +82,20 @@ class PlayerState {
    */
   void ResetToDefaultPlayerOptions(ModsLevel l);
   /** @brief The PlayerOptions presently in use by the Player. */
-  ModsGroup<PlayerOptions> m_PlayerOptions;
+  ModsGroup<PlayerOptions> player_options_;
 
   /**
    * @brief Used to push note-changing modifiers back so that notes don't pop.
    *
    * This is used during gameplay and set by NoteField. */
-  mutable float m_fLastDrawnBeat;
+  mutable float last_drawn_beat_;
   /** @brief The Player's HealthState in general terms. */
-  HealthState m_HealthState;
+  HealthState health_state_;
 
   /** @brief The type of person/machine controlling the Player. */
-  PlayerController m_PlayerController;
+  PlayerController player_controller_;
 
-  SampleHistory m_EffectHistory;
+  SampleHistory effect_history_;
 
   // Used in Battle and Rave
   void LaunchAttack(const Attack& a);
@@ -103,32 +103,32 @@ class PlayerState {
   void EndActiveAttacks();
   void RebuildPlayerOptionsFromActiveAttacks();
   int GetSumOfActiveAttackLevels() const;
-  int m_iCpuSkill;  // only used when m_PlayerController is PC_CPU
+  int cpu_skill_;  // only used when m_PlayerController is PC_CPU
   // Attacks take a while to transition out of use.  Account for this in
   // PlayerAI by still penalizing it for 1 second after the player options are
   // rebuilt.
-  int m_iLastPositiveSumOfAttackLevels;
-  float m_fSecondsUntilAttacksPhasedOut;  // positive means PlayerAI is still
-                                          // affected
-  bool m_bAttackBeganThisUpdate;  // flag for other objects to watch (play
-                                  // sounds)
-  bool m_bAttackEndedThisUpdate;  // flag for other objects to watch (play
-                                  // sounds)
+  int last_positive_sum_of_attack_levels_;
+  float seconds_until_attacks_phased_out_;  // positive means PlayerAI is still
+                                            // affected
+  bool attack_began_this_update_;  // flag for other objects to watch (play
+                                   // sounds)
+  bool attack_ended_this_update_;  // flag for other objects to watch (play
+                                   // sounds)
 
-  AttackArray m_ActiveAttacks;
-  std::vector<Attack> m_ModsToApply;
+  AttackArray active_attacks_;
+  std::vector<Attack> mods_to_apply_;
 
   // Haste
-  int m_iTapsHitSinceLastHasteUpdate;
-  int m_iTapsMissedSinceLastHasteUpdate;
+  int taps_hit_since_last_haste_update_;
+  int taps_missed_since_last_haste_update_;
 
   // Stores the bpm that was picked for reading the chart if the player is using
   // an mmod.
-  float m_fReadBPM;
+  float read_bpm_;
 
   // Used in Rave
-  float m_fSuperMeter;  // between 0 and NUM_ATTACK_LEVELS
-  float m_fSuperMeterGrowthScale;
+  float super_meter_;  // between 0 and NUM_ATTACK_LEVELS
+  float super_meter_growth_scale_;
 
   // Lua
   void PushSelf(lua_State* L);

@@ -8,29 +8,29 @@
 #include "RageUtil.h"
 
 std::string Command::GetName() const {
-  if (m_vsArgs.empty()) {
+  if (args_.empty()) {
     return std::string();
   }
-  std::string s = m_vsArgs[0];
+  std::string s = args_[0];
   Trim(s);
   return s;
 }
 
 Command::Arg Command::GetArg(unsigned index) const {
   Arg a;
-  if (index < m_vsArgs.size()) {
-    a.s = m_vsArgs[index];
+  if (index < args_.size()) {
+    a.s_ = args_[index];
   }
   return a;
 }
 
 void Command::Load(const std::string& sCommand) {
-  m_vsArgs.clear();
-  split(sCommand, ",", m_vsArgs, false);  // don't ignore empty
+  args_.clear();
+  split(sCommand, ",", args_, false);  // don't ignore empty
 }
 
 std::string Command::GetOriginalCommandString() const {
-  return join(",", m_vsArgs);
+  return join(",", args_);
 }
 
 static void SplitWithQuotes(
@@ -80,7 +80,7 @@ static void SplitWithQuotes(
 
 std::string Commands::GetOriginalCommandString() const {
   return std::accumulate(
-      v.begin(), v.end(), std::string(),
+      v_.begin(), v_.end(), std::string(),
       [](const std::string& res, const Command& c) {
         return res + c.GetOriginalCommandString();
       });
@@ -94,10 +94,10 @@ void ParseCommands(
   } else {
     SplitWithQuotes(sCommands, ';', vsCommands, true);  // do ignore empty
   }
-  vCommandsOut.v.resize(vsCommands.size());
+  vCommandsOut.v_.resize(vsCommands.size());
 
   for (unsigned i = 0; i < vsCommands.size(); i++) {
-    Command& cmd = vCommandsOut.v[i];
+    Command& cmd = vCommandsOut.v_[i];
     cmd.Load(vsCommands[i]);
   }
 }

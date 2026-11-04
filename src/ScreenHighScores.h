@@ -43,19 +43,19 @@ class ScoreScroller : public DynamicActorScroller {
 
  protected:
   virtual void ConfigureActor(Actor* pActor, int iItem);
-  std::vector<DifficultyAndStepsType> m_DifficultiesToShow;
+  std::vector<DifficultyAndStepsType> difficulties_to_show_;
 
   struct ScoreRowItemData  // for all_steps and all_courses
   {
     ScoreRowItemData() {
-      m_pSong = nullptr;
-      m_pCourse = nullptr;
+      song_ = nullptr;
+      course_ = nullptr;
     }
 
-    Song* m_pSong;
-    Course* m_pCourse;
+    Song* song_;
+    Course* course_;
   };
-  std::vector<ScoreRowItemData> m_vScoreRowItemData;
+  std::vector<ScoreRowItemData> score_row_item_data_;
 
   ThemeMetric<int> SCROLLER_ITEMS_TO_DRAW;
   ThemeMetric<float> SCROLLER_SECONDS_PER_ITEM;
@@ -96,7 +96,7 @@ class ScreenHighScores : public ScreenAttract {
   ThemeMetric1D<Difficulty> COLUMN_DIFFICULTY;
   ThemeMetric1D<StepsType> COLUMN_STEPS_TYPE;
   ThemeMetric<int> MAX_ITEMS_TO_SHOW;
-  ScoreScroller m_Scroller;
+  ScoreScroller scroller_;
 };
 
 #endif

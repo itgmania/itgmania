@@ -12,8 +12,8 @@ class InputHandler_Linux_Event;
 
 // Helper struct for keeping track of inputs.
 struct LinuxInputSort {
-  std::string DeviceName;
-  std::string UniqueString;
+  std::string device_name_;
+  std::string unique_string_;
 };
 
 class LinuxInputManager {
@@ -24,16 +24,16 @@ class LinuxInputManager {
   ~LinuxInputManager();
 
  private:
-  std::vector<LinuxInputSort> m_vPreSort;
+  std::vector<LinuxInputSort> pre_sort_;
   void PresortPhysical(
       std::vector<std::string>& sortingArray, std::string sortBy);
 
-  bool m_bEventEnabled;
-  std::vector<std::string> m_vsPendingEventDevices;
+  bool event_enabled_;
+  std::vector<std::string> pending_event_devices_;
 
-  bool m_bJoystickEnabled;
-  InputHandler_Linux_Joystick* m_JoystickDriver;
-  std::vector<std::string> m_vsPendingJoystickDevices;
+  bool joystick_enabled_;
+  InputHandler_Linux_Joystick* joystick_driver_;
+  std::vector<std::string> pending_joystick_devices_;
 };
 
 extern LinuxInputManager*

@@ -67,7 +67,7 @@ void DSound::SetPrimaryBufferMode() {
   waveformat.wFormatTag = WAVE_FORMAT_PCM;
   waveformat.wBitsPerSample = 16;
   waveformat.nChannels = 2;
-  int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+  int preferredSampleRate = PREFSMAN->sound_preferred_sample_rate_;
   if (preferredSampleRate == 0) {
     preferredSampleRate = FALLBACK_SAMPLE_RATE;
   }
@@ -119,12 +119,12 @@ DSound::DSound() {
   if (FAILED(hr = CoInitialize(nullptr))) {
     RageException::Throw(hr_ssprintf(hr, "CoInitialize").c_str());
   }
-  m_pDS = nullptr;
+  ds_ = nullptr;
 }
 
 std::string DSound::Init() {
   HRESULT hr;
-  if (FAILED(hr = DirectSoundCreate(nullptr, &m_pDS, nullptr))) {
+  if (FAILED(hr = DirectSoundCreate(nullptr, &ds_, nullptr))) {
     return hr_ssprintf(hr, "DirectSoundCreate");
   }
 
@@ -135,8 +135,8 @@ std::string DSound::Init() {
 
     DSCAPS Caps;
     Caps.dwSize = sizeof(Caps);
-    if (FAILED(hr = m_pDS->GetCaps(&Caps))) {
-      LOG->Warn(hr_ssprintf(hr, "m_pDS->GetCaps failed").c_str());
+    if (FAILED(hr = ds_->GetCaps(&Caps))) {
+      LOG->Warn(hr_ssprintf(hr, "ds_->GetCaps failed").c_str());
     } else {
       LOG->Info(
           "DirectSound sample rates: %i..%i %s", Caps.dwMinSecondarySampleRate,
@@ -146,7 +146,7 @@ std::string DSound::Init() {
   }
 
   /* Try to set primary mixing privileges */
-  hr = m_pDS->SetCooperativeLevel(GetDesktopWindow(), DSSCL_PRIORITY);
+  hr = ds_->SetCooperativeLevel(GetDesktopWindow(), DSSCL_PRIORITY);
 
   SetPrimaryBufferMode();
 
@@ -154,8 +154,8 @@ std::string DSound::Init() {
 }
 
 DSound::~DSound() {
-  if (m_pDS != nullptr) {
-    m_pDS->Release();
+  if (ds_ != nullptr) {
+    ds_->Release();
   }
   CoUninitialize();
 }
@@ -166,8 +166,8 @@ bool DSound::IsEmulated() const {
   DSCAPS Caps;
   Caps.dwSize = sizeof(Caps);
   HRESULT hr;
-  if (FAILED(hr = m_pDS->GetCaps(&Caps))) {
-    LOG->Warn(hr_ssprintf(hr, "m_pDS->GetCaps failed").c_str());
+  if (FAILED(hr = ds_->GetCaps(&Caps))) {
+    LOG->Warn(hr_ssprintf(hr, "ds_->GetCaps failed").c_str());
     /* This is strange, so let's be conservative. */
     return true;
   }
@@ -176,46 +176,46 @@ bool DSound::IsEmulated() const {
 }
 
 DSoundBuf::DSoundBuf()
-    : m_pBuffer(nullptr),
-      m_iLastCursors{{0, 0}, {0, 0}, {0, 0}, {0, 0}},
-      m_pLockedBuf1(nullptr),
-      m_pLockedBuf2(nullptr),
-      m_pTempBuffer(nullptr),
-      m_iLockedSize1(0),
-      m_iLockedSize2(0),
-      m_iWriteCursor(0),
-      m_iWriteCursorPos(0),
-      m_iBufferBytesFilled(0),
-      m_iExtraWriteahead(0),
-      m_bBufferLocked(false),
-      m_bPlaying(false),
-      m_iBufferSize(0),
-      m_iChannels(0),
-      m_iLastPosition(0),
-      m_iSampleBits(0),
-      m_iSampleRate(0),
-      m_iVolume(-1),
-      m_iWriteAhead(0) {}
+    : buffer_(nullptr),
+      last_cursors_{{0, 0}, {0, 0}, {0, 0}, {0, 0}},
+      locked_buf1_(nullptr),
+      locked_buf2_(nullptr),
+      temp_buffer_(nullptr),
+      locked_size1_(0),
+      locked_size2_(0),
+      write_cursor_(0),
+      write_cursor_pos_(0),
+      buffer_bytes_filled_(0),
+      extra_writeahead_(0),
+      buffer_locked_(false),
+      playing_(false),
+      buffer_size_(0),
+      channels_(0),
+      last_position_(0),
+      sample_bits_(0),
+      sample_rate_(0),
+      volume_(-1),
+      write_ahead_(0) {}
 
 std::string DSoundBuf::Init(
     DSound& ds, DSoundBuf::hw hardware, int iChannels, int iSampleRate,
     int iSampleBits, int iWriteAhead) {
-  m_iChannels = iChannels;
-  m_iSampleRate = iSampleRate;
-  m_iSampleBits = iSampleBits;
-  m_iWriteAhead = iWriteAhead * bytes_per_frame();
-  m_iVolume = -1; /* unset */
-  m_bBufferLocked = false;
-  m_iWriteCursorPos = m_iWriteCursor = m_iBufferBytesFilled = 0;
-  m_iExtraWriteahead = 0;
-  m_iLastPosition = 0;
-  m_bPlaying = false;
-  memset(&(m_iLastCursors), 0, sizeof(m_iLastCursors));
+  channels_ = iChannels;
+  sample_rate_ = iSampleRate;
+  sample_bits_ = iSampleBits;
+  write_ahead_ = iWriteAhead * bytes_per_frame();
+  volume_ = -1; /* unset */
+  buffer_locked_ = false;
+  write_cursor_pos_ = write_cursor_ = buffer_bytes_filled_ = 0;
+  extra_writeahead_ = 0;
+  last_position_ = 0;
+  playing_ = false;
+  memset(&(last_cursors_), 0, sizeof(last_cursors_));
 
   /* The size of the actual DSound buffer.  This can be large; we generally
    * won't fill it completely. */
-  m_iBufferSize = 1024 * 64;
-  m_iBufferSize = std::max(m_iBufferSize, m_iWriteAhead);
+  buffer_size_ = 1024 * 64;
+  buffer_size_ = std::max(buffer_size_, write_ahead_);
 
   WAVEFORMATEX waveformat;
   memset(&waveformat, 0, sizeof(waveformat));
@@ -224,17 +224,17 @@ std::string DSoundBuf::Init(
 
   bool bNeedCtrlFrequency = false;
   // DYNAMIC_SAMPLERATE is usually 0 or some special value
-  if (m_iSampleRate == DYNAMIC_SAMPLERATE) {
-    m_iSampleRate = FALLBACK_SAMPLE_RATE;
+  if (sample_rate_ == DYNAMIC_SAMPLERATE) {
+    sample_rate_ = FALLBACK_SAMPLE_RATE;
     bNeedCtrlFrequency = true;
   }
 
-  int bytes = m_iSampleBits / 8;
-  waveformat.wBitsPerSample = WORD(m_iSampleBits);
-  waveformat.nChannels = WORD(m_iChannels);
-  waveformat.nSamplesPerSec = DWORD(m_iSampleRate);
-  waveformat.nBlockAlign = WORD(bytes * m_iChannels);
-  waveformat.nAvgBytesPerSec = m_iSampleRate * bytes * m_iChannels;
+  int bytes = sample_bits_ / 8;
+  waveformat.wBitsPerSample = WORD(sample_bits_);
+  waveformat.nChannels = WORD(channels_);
+  waveformat.nSamplesPerSec = DWORD(sample_rate_);
+  waveformat.nBlockAlign = WORD(bytes * channels_);
+  waveformat.nAvgBytesPerSec = sample_rate_ * bytes * channels_;
 
   /* Try to create the secondary buffer */
   DSBUFFERDESC format;
@@ -261,30 +261,30 @@ std::string DSoundBuf::Init(
     format.dwFlags |= DSBCAPS_CTRLFREQUENCY;
   }
 
-  format.dwBufferBytes = m_iBufferSize;
+  format.dwBufferBytes = buffer_size_;
 
   format.dwReserved = 0;
 
   format.lpwfxFormat = &waveformat;
 
-  HRESULT hr = ds.GetDS()->CreateSoundBuffer(&format, &m_pBuffer, nullptr);
+  HRESULT hr = ds.GetDS()->CreateSoundBuffer(&format, &buffer_, nullptr);
   if (FAILED(hr)) {
-    return hr_ssprintf(hr, "CreateSoundBuffer failed (%i hz)", m_iSampleBits);
+    return hr_ssprintf(hr, "CreateSoundBuffer failed (%i hz)", sample_bits_);
   }
 
   /* I'm not sure this should ever be needed, but ... */
   DSBCAPS bcaps;
   bcaps.dwSize = sizeof(bcaps);
-  hr = m_pBuffer->GetCaps(&bcaps);
+  hr = buffer_->GetCaps(&bcaps);
   if (FAILED(hr)) {
-    return hr_ssprintf(hr, "m_pBuffer->GetCaps").c_str();
+    return hr_ssprintf(hr, "buffer_->GetCaps").c_str();
   }
-  if (int(bcaps.dwBufferBytes) != m_iBufferSize) {
+  if (int(bcaps.dwBufferBytes) != buffer_size_) {
     LOG->Warn(
-        "bcaps.dwBufferBytes (%i) != m_iBufferSize(%i); adjusting",
-        bcaps.dwBufferBytes, m_iBufferSize);
-    m_iBufferSize = bcaps.dwBufferBytes;
-    m_iWriteAhead = std::min(m_iWriteAhead, m_iBufferSize);
+        "bcaps.dwBufferBytes (%i) != buffer_size_(%i); adjusting",
+        bcaps.dwBufferBytes, buffer_size_);
+    buffer_size_ = bcaps.dwBufferBytes;
+    write_ahead_ = std::min(write_ahead_, buffer_size_);
   }
 
   if (!(bcaps.dwFlags & DSBCAPS_CTRLVOLUME)) {
@@ -295,26 +295,26 @@ std::string DSoundBuf::Init(
   }
 
   DWORD got;
-  hr = m_pBuffer->GetFormat(&waveformat, sizeof(waveformat), &got);
+  hr = buffer_->GetFormat(&waveformat, sizeof(waveformat), &got);
   if (FAILED(hr)) {
     LOG->Warn(hr_ssprintf(hr, "GetFormat on secondary buffer").c_str());
-  } else if ((int)waveformat.nSamplesPerSec != m_iSampleRate) {
+  } else if ((int)waveformat.nSamplesPerSec != sample_rate_) {
     LOG->Warn(
         "Secondary buffer set to %i instead of %i", waveformat.nSamplesPerSec,
-        m_iSampleRate);
+        sample_rate_);
   }
 
-  m_pTempBuffer = new char[m_iBufferSize];
+  temp_buffer_ = new char[buffer_size_];
 
   return std::string();
 }
 
 void DSoundBuf::SetSampleRate(int hz) {
-  m_iSampleRate = hz;
-  HRESULT hr = m_pBuffer->SetFrequency(hz);
+  sample_rate_ = hz;
+  HRESULT hr = buffer_->SetFrequency(hz);
   if (FAILED(hr)) {
     RageException::Throw(
-        hr_ssprintf(hr, "m_pBuffer->SetFrequency(%i)", hz).c_str());
+        hr_ssprintf(hr, "buffer_->SetFrequency(%i)", hz).c_str());
   }
 }
 
@@ -330,11 +330,11 @@ void DSoundBuf::SetVolume(float fVolume) {
    * decibel. */
   const int iNewVolume = std::max(int(1000 * iVolumeLog2), DSBVOLUME_MIN);
 
-  if (m_iVolume == iNewVolume) {
+  if (volume_ == iNewVolume) {
     return;
   }
 
-  HRESULT hr = m_pBuffer->SetVolume(iNewVolume);
+  HRESULT hr = buffer_->SetVolume(iNewVolume);
   if (FAILED(hr)) {
     static bool bWarned = false;
     if (!bWarned) {
@@ -346,7 +346,7 @@ void DSoundBuf::SetVolume(float fVolume) {
     return;
   }
 
-  m_iVolume = iNewVolume;
+  volume_ = iNewVolume;
 }
 
 /* Determine if "pos" is between "start" and "end", for a circular buffer.  Note
@@ -362,10 +362,10 @@ static bool contained(int iStart, int iEnd, int iPos) {
 }
 
 DSoundBuf::~DSoundBuf() {
-  if (m_pBuffer != nullptr) {
-    m_pBuffer->Release();
+  if (buffer_ != nullptr) {
+    buffer_->Release();
   }
-  delete[] m_pTempBuffer;
+  delete[] temp_buffer_;
 }
 
 /* Check to make sure that, given the current writeahead and chunksize, we're
@@ -373,7 +373,7 @@ DSoundBuf::~DSoundBuf() {
  * the writeahead.  If this happens, we're underruning. */
 void DSoundBuf::CheckWriteahead(int iCursorStart, int iCursorEnd) {
   /* If we're in a recovering-from-underrun state, stop. */
-  if (m_iExtraWriteahead) {
+  if (extra_writeahead_) {
     return;
   }
 
@@ -382,7 +382,7 @@ void DSoundBuf::CheckWriteahead(int iCursorStart, int iCursorEnd) {
    * requesting that almost the entire buffer be filled.  There's no reason a
    * driver should ever need more than 8k frames of writeahead. */
   int iPrefetch = iCursorEnd - iCursorStart;
-  wrap(iPrefetch, m_iBufferSize);
+  wrap(iPrefetch, buffer_size_);
 
   constexpr int kMaxAllowedPrefetch = 1024 * 32;  // 32 KB
   if (iPrefetch >= kMaxAllowedPrefetch) {
@@ -399,7 +399,7 @@ void DSoundBuf::CheckWriteahead(int iCursorStart, int iCursorEnd) {
     return;
   }
 
-  if (m_iWriteAhead >= iPrefetch) {
+  if (write_ahead_ >= iPrefetch) {
     return;
   }
 
@@ -407,16 +407,16 @@ void DSoundBuf::CheckWriteahead(int iCursorStart, int iCursorEnd) {
   LOG->Trace(
       "insufficient writeahead: wants %i (cursor at %i..%i), writeahead "
       "adjusted from %i to %i",
-      iPrefetch / bytes_per_frame(), iCursorStart, iCursorEnd, m_iWriteAhead,
+      iPrefetch / bytes_per_frame(), iCursorStart, iCursorEnd, write_ahead_,
       iPrefetch);
 
-  m_iWriteAhead = iPrefetch;
+  write_ahead_ = iPrefetch;
 }
 
 /* Figure out if we've underrun, and act if appropriate. */
 void DSoundBuf::CheckUnderrun(int iCursorStart, int iCursorEnd) {
   /* If the buffer is full, we can't be underrunning. */
-  if (m_iBufferBytesFilled >= m_iBufferSize) {
+  if (buffer_bytes_filled_ >= buffer_size_) {
     return;
   }
 
@@ -426,16 +426,16 @@ void DSoundBuf::CheckUnderrun(int iCursorStart, int iCursorEnd) {
   }
 
   /* If we're already in a recovering-from-underrun state, stop. */
-  if (m_iExtraWriteahead) {
+  if (extra_writeahead_) {
     return;
   }
 
-  int iFirstByteFilled = m_iWriteCursor - m_iBufferBytesFilled;
-  wrap(iFirstByteFilled, m_iBufferSize);
+  int iFirstByteFilled = write_cursor_ - buffer_bytes_filled_;
+  wrap(iFirstByteFilled, buffer_size_);
 
   /* If the end of the play cursor has data, we haven't underrun. */
-  if (m_iBufferBytesFilled > 0 &&
-      contained(iFirstByteFilled, m_iWriteCursor, iCursorEnd)) {
+  if (buffer_bytes_filled_ > 0 &&
+      contained(iFirstByteFilled, write_cursor_, iCursorEnd)) {
     return;
   }
 
@@ -449,30 +449,30 @@ void DSoundBuf::CheckUnderrun(int iCursorStart, int iCursorEnd) {
   /* XXX: What was I doing here?  This isn't working.  We want to know the
    * writeahead value needed to fill from the current iFirstByteFilled all the
    * way to iCursorEnd. */
-  // int iNeededWriteahead = (iCursorStart + writeahead) - m_iWriteCursor;
+  // int iNeededWriteahead = (iCursorStart + writeahead) - write_cursor_;
   int iNeededWriteahead = iCursorEnd - iFirstByteFilled;
-  wrap(iNeededWriteahead, m_iBufferSize);
-  if (iNeededWriteahead > m_iWriteAhead) {
-    m_iExtraWriteahead = iNeededWriteahead - m_iWriteAhead;
-    m_iWriteAhead = iNeededWriteahead;
+  wrap(iNeededWriteahead, buffer_size_);
+  if (iNeededWriteahead > write_ahead_) {
+    extra_writeahead_ = iNeededWriteahead - write_ahead_;
+    write_ahead_ = iNeededWriteahead;
   }
 
-  int iMissedBy = iCursorEnd - m_iWriteCursor;
-  wrap(iMissedBy, m_iBufferSize);
+  int iMissedBy = iCursorEnd - write_cursor_;
+  wrap(iMissedBy, buffer_size_);
 
   std::string s = ssprintf(
       "underrun: %i..%i (%i) filled but cursor at %i..%i; missed it by %i",
-      iFirstByteFilled, m_iWriteCursor, m_iBufferBytesFilled, iCursorStart,
+      iFirstByteFilled, write_cursor_, buffer_bytes_filled_, iCursorStart,
       iCursorEnd, iMissedBy);
 
-  if (m_iExtraWriteahead) {
+  if (extra_writeahead_) {
     s += ssprintf(
-        "; extended writeahead by %i to %i", m_iExtraWriteahead, m_iWriteAhead);
+        "; extended writeahead by %i to %i", extra_writeahead_, write_ahead_);
   }
 
   s += "; last: ";
   for (int i = 0; i < 4; ++i) {
-    s += ssprintf("%i, %i; ", m_iLastCursors[i][0], m_iLastCursors[i][1]);
+    s += ssprintf("%i, %i; ", last_cursors_[i][0], last_cursors_[i][1]);
   }
 
   LOG->Trace("%s", s.c_str());
@@ -480,7 +480,7 @@ void DSoundBuf::CheckUnderrun(int iCursorStart, int iCursorEnd) {
 
 bool DSoundBuf::get_output_buf(
     char** pBuffer, unsigned* pBufferSize, int iChunksize) {
-  ASSERT(!m_bBufferLocked);
+  ASSERT(!buffer_locked_);
 
   iChunksize *= bytes_per_frame();
 
@@ -490,10 +490,10 @@ bool DSoundBuf::get_output_buf(
 
   /* It's easiest to think of the cursor as a block, starting and ending at
    * the two values returned by GetCurrentPosition, that we can't write to. */
-  result = m_pBuffer->GetCurrentPosition(&iCursorStart, &iCursorEnd);
+  result = buffer_->GetCurrentPosition(&iCursorStart, &iCursorEnd);
   if (result == DSERR_BUFFERLOST) {
-    m_pBuffer->Restore();
-    result = m_pBuffer->GetCurrentPosition(&iCursorStart, &iCursorEnd);
+    buffer_->Restore();
+    result = buffer_->GetCurrentPosition(&iCursorStart, &iCursorEnd);
   }
   if (result != DS_OK) {
     LOG->Warn(
@@ -501,14 +501,14 @@ bool DSoundBuf::get_output_buf(
     return false;
   }
 
-  memmove(&m_iLastCursors[0][0], &m_iLastCursors[1][0], sizeof(int) * 6);
-  m_iLastCursors[3][0] = iCursorStart;
-  m_iLastCursors[3][1] = iCursorEnd;
+  memmove(&last_cursors_[0][0], &last_cursors_[1][0], sizeof(int) * 6);
+  last_cursors_[3][0] = iCursorStart;
+  last_cursors_[3][1] = iCursorEnd;
 
   /* Some cards (Creative AudioPCI) have a no-write area even when not playing.
    * I'm not sure what that means, but it breaks the assumption that we can fill
    * the whole writeahead when prebuffering. */
-  if (!m_bPlaying) {
+  if (!playing_) {
     iCursorEnd = iCursorStart;
   }
 
@@ -533,9 +533,9 @@ bool DSoundBuf::get_output_buf(
    */
   {
     int iPrefetch = iCursorEnd - iCursorStart;
-    wrap(iPrefetch, m_iBufferSize);
+    wrap(iPrefetch, buffer_size_);
 
-    if (m_iBufferSize - iPrefetch < 1024 * 4) {
+    if (buffer_size_ - iPrefetch < 1024 * 4) {
       LOG->Trace(
           "Strange DirectSound cursor ignored: %i..%i", iCursorStart,
           iCursorEnd);
@@ -543,31 +543,31 @@ bool DSoundBuf::get_output_buf(
     }
   }
 
-  /* Update m_iBufferBytesFilled. */
+  /* Update buffer_bytes_filled_. */
   {
-    int iFirstByteFilled = m_iWriteCursor - m_iBufferBytesFilled;
-    wrap(iFirstByteFilled, m_iBufferSize);
+    int iFirstByteFilled = write_cursor_ - buffer_bytes_filled_;
+    wrap(iFirstByteFilled, buffer_size_);
 
     /* The number of bytes that have been played since the last time we got
      * here: */
     int bytes_played = iCursorStart - iFirstByteFilled;
-    wrap(bytes_played, m_iBufferSize);
+    wrap(bytes_played, buffer_size_);
 
-    m_iBufferBytesFilled -= bytes_played;
-    m_iBufferBytesFilled = std::max(0, m_iBufferBytesFilled);
+    buffer_bytes_filled_ -= bytes_played;
+    buffer_bytes_filled_ = std::max(0, buffer_bytes_filled_);
 
-    if (m_iExtraWriteahead) {
-      int used = std::min(m_iExtraWriteahead, bytes_played);
+    if (extra_writeahead_) {
+      int used = std::min(extra_writeahead_, bytes_played);
       std::string s = ssprintf(
-          "used %i of %i (%i..%i)", used, m_iExtraWriteahead, iCursorStart,
+          "used %i of %i (%i..%i)", used, extra_writeahead_, iCursorStart,
           iCursorEnd);
       s += "; last: ";
       for (int i = 0; i < 4; ++i) {
-        s += ssprintf("%i, %i; ", m_iLastCursors[i][0], m_iLastCursors[i][1]);
+        s += ssprintf("%i, %i; ", last_cursors_[i][0], last_cursors_[i][1]);
       }
       LOG->Trace("%s", s.c_str());
-      m_iWriteAhead -= used;
-      m_iExtraWriteahead -= used;
+      write_ahead_ -= used;
+      extra_writeahead_ -= used;
     }
   }
 
@@ -575,34 +575,34 @@ bool DSoundBuf::get_output_buf(
   CheckUnderrun(iCursorStart, iCursorEnd);
 
   /* If we already have enough bytes written ahead, stop. */
-  if (m_iBufferBytesFilled >= m_iWriteAhead) {
+  if (buffer_bytes_filled_ >= write_ahead_) {
     return false;
   }
 
   /* If we don't have enough free space in the buffer to fill a whole chunk,
    * stop. */
-  if (m_iBufferSize - m_iBufferBytesFilled < iChunksize) {
+  if (buffer_size_ - buffer_bytes_filled_ < iChunksize) {
     return false;
   }
 
-  int iNumBytesEmpty = m_iWriteAhead - m_iBufferBytesFilled;
+  int iNumBytesEmpty = write_ahead_ - buffer_bytes_filled_;
   iNumBytesEmpty = QuantizeUp(iNumBytesEmpty, iChunksize);
 
   //	LOG->Trace("gave %i at %i (%i, %i) %i filled", iNumBytesEmpty,
-  // m_iWriteCursor, cursor, write, m_iBufferBytesFilled);
+  // write_cursor_, cursor, write, buffer_bytes_filled_);
 
   /* Lock the audio buffer. */
-  result = m_pBuffer->Lock(
-      m_iWriteCursor, iNumBytesEmpty, (LPVOID*)&m_pLockedBuf1,
-      (DWORD*)&m_iLockedSize1, (LPVOID*)&m_pLockedBuf2, (DWORD*)&m_iLockedSize2,
+  result = buffer_->Lock(
+      write_cursor_, iNumBytesEmpty, (LPVOID*)&locked_buf1_,
+      (DWORD*)&locked_size1_, (LPVOID*)&locked_buf2_, (DWORD*)&locked_size2_,
       0);
 
   if (result == DSERR_BUFFERLOST) {
-    m_pBuffer->Restore();
-    result = m_pBuffer->Lock(
-        m_iWriteCursor, iNumBytesEmpty, (LPVOID*)&m_pLockedBuf1,
-        (DWORD*)&m_iLockedSize1, (LPVOID*)&m_pLockedBuf2,
-        (DWORD*)&m_iLockedSize2, 0);
+    buffer_->Restore();
+    result = buffer_->Lock(
+        write_cursor_, iNumBytesEmpty, (LPVOID*)&locked_buf1_,
+        (DWORD*)&locked_size1_, (LPVOID*)&locked_buf2_, (DWORD*)&locked_size2_,
+        0);
   }
 
   if (result != DS_OK) {
@@ -611,37 +611,36 @@ bool DSoundBuf::get_output_buf(
     return false;
   }
 
-  *pBuffer = m_pTempBuffer;
-  *pBufferSize = m_iLockedSize1 + m_iLockedSize2;
+  *pBuffer = temp_buffer_;
+  *pBufferSize = locked_size1_ + locked_size2_;
 
-  m_iWriteCursor += iNumBytesEmpty;
-  if (m_iWriteCursor >= m_iBufferSize) {
-    m_iWriteCursor -= m_iBufferSize;
+  write_cursor_ += iNumBytesEmpty;
+  if (write_cursor_ >= buffer_size_) {
+    write_cursor_ -= buffer_size_;
   }
 
-  m_iBufferBytesFilled += iNumBytesEmpty;
-  m_iWriteCursorPos += iNumBytesEmpty / bytes_per_frame();
+  buffer_bytes_filled_ += iNumBytesEmpty;
+  write_cursor_pos_ += iNumBytesEmpty / bytes_per_frame();
 
-  m_bBufferLocked = true;
+  buffer_locked_ = true;
 
   return true;
 }
 
 void DSoundBuf::release_output_buf(char* pBuffer, unsigned iBufferSize) {
-  memcpy(m_pLockedBuf1, pBuffer, m_iLockedSize1);
-  memcpy(m_pLockedBuf2, pBuffer + m_iLockedSize1, m_iLockedSize2);
-  m_pBuffer->Unlock(
-      m_pLockedBuf1, m_iLockedSize1, m_pLockedBuf2, m_iLockedSize2);
-  m_bBufferLocked = false;
+  memcpy(locked_buf1_, pBuffer, locked_size1_);
+  memcpy(locked_buf2_, pBuffer + locked_size1_, locked_size2_);
+  buffer_->Unlock(locked_buf1_, locked_size1_, locked_buf2_, locked_size2_);
+  buffer_locked_ = false;
 }
 
 int64_t DSoundBuf::GetPosition() const {
   DWORD iCursor, iJunk;
-  HRESULT hr = m_pBuffer->GetCurrentPosition(&iCursor, &iJunk);
+  HRESULT hr = buffer_->GetCurrentPosition(&iCursor, &iJunk);
 
   if (hr == DSERR_BUFFERLOST) {
-    m_pBuffer->Restore();
-    hr = m_pBuffer->GetCurrentPosition(&iCursor, &iJunk);
+    buffer_->Restore();
+    hr = buffer_->GetCurrentPosition(&iCursor, &iJunk);
   }
   if (hr != DS_OK) {
     LOG->Warn(hr_ssprintf(hr, "DirectSound::GetPosition failed").c_str());
@@ -649,14 +648,14 @@ int64_t DSoundBuf::GetPosition() const {
   }
 
   /* This happens occasionally on "Realtek AC97 Audio". */
-  if ((int)iCursor == m_iBufferSize) {
+  if ((int)iCursor == buffer_size_) {
     iCursor = 0;
   }
   ASSERT_M(
-      (int)iCursor < m_iBufferSize, ssprintf("%i, %i", iCursor, m_iBufferSize));
+      (int)iCursor < buffer_size_, ssprintf("%i, %i", iCursor, buffer_size_));
 
   int iCursorFrames = int(iCursor) / bytes_per_frame();
-  int iWriteCursorFrames = m_iWriteCursor / bytes_per_frame();
+  int iWriteCursorFrames = write_cursor_ / bytes_per_frame();
 
   int iFramesBehind = iWriteCursorFrames - iCursorFrames;
   /* iFramesBehind will be 0 if we're called before the buffer starts playing:
@@ -665,46 +664,46 @@ int64_t DSoundBuf::GetPosition() const {
     iFramesBehind += buffersize_frames(); /* unwrap */
   }
 
-  int64_t iRet = m_iWriteCursorPos - iFramesBehind;
+  int64_t iRet = write_cursor_pos_ - iFramesBehind;
 
   /* Failsafe: never return a value smaller than we've already returned.
    * This can happen once in a while in underrun conditions. */
-  iRet = std::max(m_iLastPosition, iRet);
-  m_iLastPosition = iRet;
+  iRet = std::max(last_position_, iRet);
+  last_position_ = iRet;
 
   return iRet;
 }
 
 void DSoundBuf::Play() {
-  if (m_bPlaying) {
+  if (playing_) {
     return;
   }
-  m_pBuffer->Play(0, 0, DSBPLAY_LOOPING);
-  m_bPlaying = true;
+  buffer_->Play(0, 0, DSBPLAY_LOOPING);
+  playing_ = true;
 }
 
 void DSoundBuf::Stop() {
-  if (!m_bPlaying) {
+  if (!playing_) {
     return;
   }
 
-  m_pBuffer->Stop();
-  m_pBuffer->SetCurrentPosition(0);
+  buffer_->Stop();
+  buffer_->SetCurrentPosition(0);
 
-  m_iWriteCursorPos = m_iWriteCursor = m_iBufferBytesFilled = 0;
-  m_iLastPosition = 0;
+  write_cursor_pos_ = write_cursor_ = buffer_bytes_filled_ = 0;
+  last_position_ = 0;
 
-  m_iWriteAhead -= m_iExtraWriteahead;
-  m_iExtraWriteahead = 0;
+  write_ahead_ -= extra_writeahead_;
+  extra_writeahead_ = 0;
 
   /* When stopped and rewound, the play and write cursors should both be 0. */
   /* This isn't true on some broken cards. */
   //	DWORD iPlay, iWrite;
-  //	m_pBuffer->GetCurrentPosition( &iPlay, &iWrite );
+  //	buffer_->GetCurrentPosition( &iPlay, &iWrite );
   //	ASSERT_M( iPlay == 0 && iWrite == 0, ssprintf("%i, %i", iPlay, iWrite)
   //);
 
-  m_bPlaying = false;
+  playing_ = false;
 }
 
 /*

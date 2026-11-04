@@ -23,7 +23,7 @@
 
 static int CompareLyricSegments(
     const LyricSegment& seg1, const LyricSegment& seg2) {
-  return seg1.m_fStartTime < seg2.m_fStartTime;
+  return seg1.start_time_ < seg2.start_time_;
 }
 
 bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
@@ -39,7 +39,7 @@ bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
 
   RageColor CurrentColor = LYRICS_DEFAULT_COLOR;
 
-  out.m_LyricSegments.clear();
+  out.lyric_segments_.clear();
 
   for (;;) {
     std::string line;
@@ -101,19 +101,19 @@ bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
     static Regex timestamp("^([0-9]+:){0,2}[0-9]+(.[0-9]*)?$");
     if (timestamp.Compare(sValueName, dummy)) {
       LyricSegment seg;
-      seg.m_Color = CurrentColor;
-      seg.m_fStartTime = HHMMSSToSeconds(sValueName);
-      seg.m_sLyric = sValueData;
+      seg.color_ = CurrentColor;
+      seg.start_time_ = HHMMSSToSeconds(sValueName);
+      seg.lyric_ = sValueData;
 
       Replace(
-          seg.m_sLyric, "|",
+          seg.lyric_, "|",
           "\n");  // Pipe symbols denote a new line in LRC files
       out.AddLyricSegment(seg);
     }
   }
 
   sort(
-      out.m_LyricSegments.begin(), out.m_LyricSegments.end(),
+      out.lyric_segments_.begin(), out.lyric_segments_.end(),
       CompareLyricSegments);
   LOG->Trace("LyricsLoader::LoadFromLRCFile done");
 

@@ -31,8 +31,8 @@ class ScreenOptionsManageCourses : public ScreenOptions {
  private:
   Course* GetCourseWithFocus() const;
 
-  RageSound m_soundDifficultyChanged;
-  std::vector<Course*> m_vpCourses;
+  RageSound sound_difficulty_changed_;
+  std::vector<Course*> courses_;
   ThemeMetric<EditMode> EDIT_MODE;
   ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };

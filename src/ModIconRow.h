@@ -31,15 +31,15 @@ class ModIconRow : public ActorFrame {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  std::string m_sMetricsGroup;
-  PlayerNumber m_pn;
+  std::string metrics_group_;
+  PlayerNumber pn_;
 
   ThemeMetric<float> SPACING_X;
   ThemeMetric<float> SPACING_Y;
   ThemeMetric<int> NUM_OPTION_ICONS;
   ThemeMetric<std::string> OPTION_ICON_METRICS_GROUP;
 
-  std::vector<ModIcon*> m_vpModIcon;
+  std::vector<ModIcon*> mod_icon_;
 };
 
 #endif

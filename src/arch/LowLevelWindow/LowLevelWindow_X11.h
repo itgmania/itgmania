@@ -23,7 +23,7 @@ class LowLevelWindow_X11 : public LowLevelWindow {
   void SwapBuffers();
 
   const ActualVideoModeParams GetActualVideoModeParams() const {
-    return CurrentParams;
+    return current_params_;
   }
 
   void GetDisplaySpecs(DisplaySpecs& out) const;
@@ -38,11 +38,11 @@ class LowLevelWindow_X11 : public LowLevelWindow {
   void InhibitScreensaver();
   void UninhibitScreensaver();
 
-  bool m_bWasWindowed;
-  ActualVideoModeParams CurrentParams;
+  bool was_windowed_;
+  ActualVideoModeParams current_params_;
 
-  DBusConnection* m_dbus = nullptr;
-  uint32_t m_screensaverCookie = 0;
+  DBusConnection* dbus_ = nullptr;
+  uint32_t screensaver_cookie_ = 0;
 };
 
 #ifdef ARCH_LOW_LEVEL_WINDOW

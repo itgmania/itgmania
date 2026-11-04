@@ -9,9 +9,9 @@
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 
 LightsDriver_snek::LightsDriver_snek()
-    : dev{SNEK_VID, SNEK_PID, SNEK_LIGHTING_INTERFACENUM},
-      stateChanged{false},
-      outputBuffer{0} {}
+    : dev_{SNEK_VID, SNEK_PID, SNEK_LIGHTING_INTERFACENUM},
+      state_changed_{false},
+      output_buffer_{0} {}
 
 LightsDriver_snek::~LightsDriver_snek() {}
 
@@ -24,84 +24,83 @@ void LightsDriver_snek::SetBuffer(int index, bool lightState) {
   uint8_t val = lightState ? 0xFF : 0x00;
 
   // ensure report ID is set.
-  outputBuffer[0] = SNEK_REPORT_ID;
+  output_buffer_[0] = SNEK_REPORT_ID;
 
   // ensure the index is valid and the light value has changed.
-  if (index_offset < SNEK_HIDREPORT_SIZE && outputBuffer[index_offset] != val) {
-    outputBuffer[index_offset] = val;
+  if (index_offset < SNEK_HIDREPORT_SIZE &&
+      output_buffer_[index_offset] != val) {
+    output_buffer_[index_offset] = val;
 
     // signal the loop to push the new buffer to the device.
-    stateChanged = true;
+    state_changed_ = true;
   }
 }
 
 void LightsDriver_snek::Set(const LightsState* ls) {
-  if (!dev.FoundOnce()) {
+  if (!dev_.FoundOnce()) {
     return;
   }
 
-  SetBuffer(SNEK_INDEX_DANCE_M_UL, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]);
-  SetBuffer(
-      SNEK_INDEX_DANCE_M_UR, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]);
-  SetBuffer(SNEK_INDEX_DANCE_M_LL, ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]);
-  SetBuffer(
-      SNEK_INDEX_DANCE_M_LR, ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]);
+  SetBuffer(SNEK_INDEX_DANCE_M_UL, ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]);
+  SetBuffer(SNEK_INDEX_DANCE_M_UR, ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]);
+  SetBuffer(SNEK_INDEX_DANCE_M_LL, ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]);
+  SetBuffer(SNEK_INDEX_DANCE_M_LR, ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]);
 
   SetBuffer(
       SNEK_INDEX_DANCE_P1_START,
-      ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]);
+      ls->game_button_lights_[GameController_1][GAME_BUTTON_START]);
   SetBuffer(
       SNEK_INDEX_DANCE_P2_START,
-      ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]);
+      ls->game_button_lights_[GameController_2][GAME_BUTTON_START]);
 
   SetBuffer(
-      SNEK_INDEX_DANCE_NEON, ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-                                 ls->m_bCabinetLights[LIGHT_BASS_RIGHT]);
+      SNEK_INDEX_DANCE_NEON, ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+                                 ls->cabinet_lights_[LIGHT_BASS_RIGHT]);
 
   SetBuffer(
       SNEK_INDEX_DANCE_P1_UP,
-      ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]);
+      ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP]);
   SetBuffer(
       SNEK_INDEX_DANCE_P1_DOWN,
-      ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]);
+      ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]);
   SetBuffer(
       SNEK_INDEX_DANCE_P1_LEFT,
-      ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]);
+      ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]);
   SetBuffer(
       SNEK_INDEX_DANCE_P1_RIGHT,
-      ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]);
+      ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]);
 
   SetBuffer(
       SNEK_INDEX_DANCE_P2_UP,
-      ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]);
+      ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP]);
   SetBuffer(
       SNEK_INDEX_DANCE_P2_DOWN,
-      ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]);
+      ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]);
   SetBuffer(
       SNEK_INDEX_DANCE_P2_LEFT,
-      ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]);
+      ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]);
   SetBuffer(
       SNEK_INDEX_DANCE_P2_RIGHT,
-      ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]);
+      ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]);
 
   // more lights for custom applications
   SetBuffer(
       SNEK_LIGHTINDEX_CN14_FL1,
-      ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_MENULEFT]);
+      ls->game_button_lights_[GameController_1][GAME_BUTTON_MENULEFT]);
   SetBuffer(
       SNEK_LIGHTINDEX_CN14_FL2,
-      ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_MENULEFT]);
+      ls->game_button_lights_[GameController_2][GAME_BUTTON_MENULEFT]);
   SetBuffer(
       SNEK_LIGHTINDEX_CN14_FL3,
-      ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_SELECT]);
+      ls->game_button_lights_[GameController_1][GAME_BUTTON_SELECT]);
   SetBuffer(
       SNEK_LIGHTINDEX_CN14_FL4,
-      ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_SELECT]);
+      ls->game_button_lights_[GameController_2][GAME_BUTTON_SELECT]);
 
   // only push on changes.
-  if (stateChanged) {
+  if (state_changed_) {
     // TODO: Check for error/reconnect.
-    dev.Write((unsigned char*)&outputBuffer, SNEK_HIDREPORT_SIZE);
-    stateChanged = false;
+    dev_.Write((unsigned char*)&output_buffer_, SNEK_HIDREPORT_SIZE);
+    state_changed_ = false;
   }
 }

@@ -30,7 +30,7 @@ Preference<std::string> g_sInputDeviceOrder(
 
 namespace {
 struct LoadedInputHandler {
-  InputHandler* m_pDevice;
+  InputHandler* device_;
 };
 std::vector<LoadedInputHandler> m_InputHandlers;
 std::map<InputDevice, InputHandler*> g_mapDeviceToHandler;
@@ -54,7 +54,7 @@ RageInput::RageInput() {
 RageInput::~RageInput() {
   // Delete optional devices.
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    delete m_InputHandlers[i].m_pDevice;
+    delete m_InputHandlers[i].device_;
   }
   m_InputHandlers.clear();
   g_mapDeviceToHandler.clear();
@@ -67,7 +67,7 @@ static LocalizedString NO_INPUT_DEVICES_LOADED(
     "RageInput", "No input devices were loaded.");
 void RageInput::LoadDrivers() {
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    delete m_InputHandlers[i].m_pDevice;
+    delete m_InputHandlers[i].device_;
   }
   m_InputHandlers.clear();
   g_mapDeviceToHandler.clear();
@@ -97,14 +97,14 @@ void RageInput::LoadDrivers() {
 void RageInput::Update() {
   // Update optional devices.
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].m_pDevice->Update();
+    m_InputHandlers[i].device_->Update();
   }
 }
 
 bool RageInput::DevicesChanged() {
   // Update optional devices.
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    if (m_InputHandlers[i].m_pDevice->DevicesChanged()) {
+    if (m_InputHandlers[i].device_->DevicesChanged()) {
       return true;
     }
   }
@@ -114,13 +114,13 @@ bool RageInput::DevicesChanged() {
 void RageInput::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) const {
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].m_pDevice->GetDevicesAndDescriptions(vDevicesOut);
+    m_InputHandlers[i].device_->GetDevicesAndDescriptions(vDevicesOut);
   }
 }
 
 void RageInput::WindowReset() {
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].m_pDevice->WindowReset();
+    m_InputHandlers[i].device_->WindowReset();
   }
 }
 
@@ -128,13 +128,13 @@ void RageInput::AddHandler(InputHandler* pHandler) {
   ASSERT(pHandler != nullptr);
 
   LoadedInputHandler hand;
-  hand.m_pDevice = pHandler;
+  hand.device_ = pHandler;
   m_InputHandlers.push_back(hand);
 
   std::vector<InputDeviceInfo> aDeviceInfo;
-  hand.m_pDevice->GetDevicesAndDescriptions(aDeviceInfo);
+  hand.device_->GetDevicesAndDescriptions(aDeviceInfo);
   for (const InputDeviceInfo& idi : aDeviceInfo) {
-    g_mapDeviceToHandler[idi.id] = pHandler;
+    g_mapDeviceToHandler[idi.id_] = pHandler;
   }
 }
 
@@ -149,7 +149,7 @@ InputHandler* RageInput::GetHandlerForDevice(const InputDevice id) {
 }
 
 std::string RageInput::GetDeviceSpecificInputString(const DeviceInput& di) {
-  InputHandler* pDriver = GetHandlerForDevice(di.device);
+  InputHandler* pDriver = GetHandlerForDevice(di.device_);
   if (pDriver != nullptr) {
     return pDriver->GetDeviceSpecificInputString(di);
   } else {
@@ -158,19 +158,19 @@ std::string RageInput::GetDeviceSpecificInputString(const DeviceInput& di) {
 }
 
 std::string RageInput::GetLocalizedInputString(const DeviceInput& di) {
-  InputHandler* pDriver = GetHandlerForDevice(di.device);
+  InputHandler* pDriver = GetHandlerForDevice(di.device_);
   if (pDriver != nullptr) {
     return pDriver->GetLocalizedInputString(di);
   } else {
-    return Capitalize(DeviceButtonToString(di.button));
+    return Capitalize(DeviceButtonToString(di.button_));
   }
 }
 
 wchar_t RageInput::DeviceInputToChar(
     DeviceInput di, bool bUseCurrentKeyModifiers) {
-  InputHandler* pDriver = GetHandlerForDevice(di.device);
+  InputHandler* pDriver = GetHandlerForDevice(di.device_);
   if (pDriver != nullptr) {
-    return pDriver->DeviceButtonToChar(di.button, bUseCurrentKeyModifiers);
+    return pDriver->DeviceButtonToChar(di.button_, bUseCurrentKeyModifiers);
   } else {
     return '\0';
   }
@@ -182,8 +182,8 @@ std::string RageInput::GetDisplayDevicesString() const {
 
   std::vector<std::string> vs;
   for (unsigned i = 0; i < vDevices.size(); ++i) {
-    const std::string& sDescription = vDevices[i].sDesc;
-    InputDevice id = vDevices[i].id;
+    const std::string& sDescription = vDevices[i].desc_;
+    InputDevice id = vDevices[i].id_;
     if (sDescription == "MonkeyKeyboard") {
       continue;  // hide this
     }
@@ -195,12 +195,12 @@ std::string RageInput::GetDisplayDevicesString() const {
 
 void RageInput::StartSensorTest() {
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].m_pDevice->StartSensorDebugging();
+    m_InputHandlers[i].device_->StartSensorDebugging();
   }
 }
 void RageInput::StopSensorTest() {
   for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].m_pDevice->StopSensorDebugging();
+    m_InputHandlers[i].device_->StopSensorDebugging();
   }
 }
 
@@ -215,7 +215,7 @@ class LunaRageInput : public Luna<RageInput> {
     p->GetDevicesAndDescriptions(vDevices);
     std::vector<std::string> vsDescriptions;
     for (const InputDeviceInfo& idi : vDevices) {
-      vsDescriptions.push_back(idi.sDesc);
+      vsDescriptions.push_back(idi.desc_);
     }
     LuaHelpers::CreateTableFromArray(vsDescriptions, L);
     return 1;

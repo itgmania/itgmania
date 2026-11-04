@@ -82,102 +82,104 @@ static std::vector<std::string> GetImageCacheDirs() {
 }
 
 Song::Song() {
-  FOREACH_BackgroundLayer(i) m_BackgroundChanges[i] =
+  FOREACH_BackgroundLayer(i) background_changes_[i] =
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
-  m_ForegroundChanges =
+  foreground_changes_ =
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
 
-  m_LoadedFromProfile = ProfileSlot_Invalid;
-  m_fVersion = STEPFILE_VERSION_NUMBER;
-  m_fMusicSampleStartSeconds = -1;
-  m_fMusicSampleLengthSeconds = DEFAULT_MUSIC_SAMPLE_LENGTH;
-  m_fMusicLengthSeconds = 0;
-  firstSecond = -1;
-  lastSecond = -1;
-  specifiedLastSecond = -1;
-  m_SelectionDisplay = SHOW_ALWAYS;
-  m_bEnabled = true;
-  m_DisplayBPMType = DISPLAY_BPM_ACTUAL;
-  m_fSpecifiedBPMMin = 0;
-  m_fSpecifiedBPMMax = 0;
-  m_bHasMusic = false;
-  m_bHasBanner = false;
-  m_bHasBackground = false;
-  m_loaded_from_autosave = false;
+  loaded_from_profile_ = ProfileSlot_Invalid;
+  version_ = STEPFILE_VERSION_NUMBER;
+  music_sample_start_seconds_ = -1;
+  music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+  music_length_seconds_ = 0;
+  first_second_ = -1;
+  last_second_ = -1;
+  specified_last_second_ = -1;
+  selection_display_ = SHOW_ALWAYS;
+  enabled_ = true;
+  display_bpm_type_ = DISPLAY_BPM_ACTUAL;
+  specified_bpm_min_ = 0;
+  specified_bpm_max_ = 0;
+  has_music_ = false;
+  has_banner_ = false;
+  has_background_ = false;
+  loaded_from_autosave_ = false;
 }
 
 Song::~Song() {
-  for (Steps* s : m_vpSteps) {
+  for (Steps* s : steps_) {
     RageUtil::SafeDelete(s);
   }
-  m_vpSteps.clear();
-  for (Steps* s : m_UnknownStyleSteps) {
+  steps_.clear();
+  for (Steps* s : unknown_style_steps_) {
     RageUtil::SafeDelete(s);
   }
-  m_UnknownStyleSteps.clear();
+  unknown_style_steps_.clear();
 
   // It's the responsibility of the owner of this Song to make sure
   // that all pointers to this Song and its Steps are invalidated.
 }
 
 void Song::DetachSteps() {
-  m_vpSteps.clear();
+  steps_.clear();
   FOREACH_ENUM(StepsType, st)
-  m_vpStepsByType[st].clear();
-  m_UnknownStyleSteps.clear();
+  steps_by_type_[st].clear();
+  unknown_style_steps_.clear();
 }
 
 float Song::GetFirstSecond() const {
   return GetFirstSecondNoOffset() -
-         GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate *
-             PREFSMAN->m_fGlobalOffsetSeconds;
+         GAMESTATE->song_options_.GetCurrent().music_rate_ *
+             PREFSMAN->global_offset_seconds_;
 }
 
 float Song::GetFirstBeat() const {
-  return this->m_SongTiming.GetBeatFromElapsedTimeNoOffset(this->firstSecond);
+  return this->song_timing_.GetBeatFromElapsedTimeNoOffset(this->first_second_);
 }
 
 float Song::GetLastSecond() const {
   return GetLastSecondNoOffset() -
-         GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate *
-             PREFSMAN->m_fGlobalOffsetSeconds;
+         GAMESTATE->song_options_.GetCurrent().music_rate_ *
+             PREFSMAN->global_offset_seconds_;
 }
 
 float Song::GetLastBeat() const {
-  return this->m_SongTiming.GetBeatFromElapsedTimeNoOffset(this->lastSecond);
+  return this->song_timing_.GetBeatFromElapsedTimeNoOffset(this->last_second_);
 }
 
 float Song::GetSpecifiedLastBeat() const {
-  return this->m_SongTiming.GetBeatFromElapsedTimeNoOffset(
-      this->specifiedLastSecond);
+  return this->song_timing_.GetBeatFromElapsedTimeNoOffset(
+      this->specified_last_second_);
 }
 
-float Song::GetFirstSecondNoOffset() const { return this->firstSecond; }
+float Song::GetFirstSecondNoOffset() const { return this->first_second_; }
 
-float Song::GetLastSecondNoOffset() const { return this->lastSecond; }
+float Song::GetLastSecondNoOffset() const { return this->last_second_; }
 
-float Song::GetSpecifiedLastSecond() const { return this->specifiedLastSecond; }
+float Song::GetSpecifiedLastSecond() const {
+  return this->specified_last_second_;
+}
 
-void Song::SetFirstSecondNoOffset(const float f) { this->firstSecond = f; }
+void Song::SetFirstSecondNoOffset(const float f) { this->first_second_ = f; }
 
-void Song::SetLastSecondNoOffset(const float f) { this->lastSecond = f; }
+void Song::SetLastSecondNoOffset(const float f) { this->last_second_ = f; }
 
 void Song::SetSpecifiedLastSecond(const float f) {
-  this->specifiedLastSecond = f;
+  this->specified_last_second_ = f;
 }
 
 // Reset to an empty song.
 void Song::Reset() {
-  for (Steps* s : m_vpSteps) {
+  for (Steps* s : steps_) {
     RageUtil::SafeDelete(s);
   }
-  m_vpSteps.clear();
+  steps_.clear();
   FOREACH_ENUM(StepsType, st)
-  m_vpStepsByType[st].clear();
-  for (Steps* s : m_UnknownStyleSteps) {
+  steps_by_type_[st].clear();
+  for (Steps* s : unknown_style_steps_) {
     RageUtil::SafeDelete(s);
   }
-  m_UnknownStyleSteps.clear();
+  unknown_style_steps_.clear();
 
   Song empty;
   *this = empty;
@@ -191,7 +193,7 @@ void Song::AddBackgroundChange(BackgroundLayer iLayer, BackgroundChange seg) {
   auto& changes = GetBackgroundChanges(iLayer);
   for (std::vector<BackgroundChange>::iterator bgc = changes.begin();
        bgc != changes.end(); ++bgc) {
-    if (bgc->m_fStartBeat == seg.m_fStartBeat) {
+    if (bgc->start_beat_ == seg.start_beat_) {
       GetBackgroundChanges(iLayer).erase(bgc);
       break;
     }
@@ -205,7 +207,7 @@ void Song::AddForegroundChange(BackgroundChange seg) {
   BackgroundUtil::AddBackgroundChange(GetForegroundChanges(), seg);
 }
 
-void Song::AddLyricSegment(LyricSegment seg) { m_LyricSegments.push_back(seg); }
+void Song::AddLyricSegment(LyricSegment seg) { lyric_segments_.push_back(seg); }
 
 Steps* Song::CreateSteps() {
   Steps* pSteps = new Steps(this);
@@ -215,64 +217,64 @@ Steps* Song::CreateSteps() {
 
 void Song::InitSteps(Steps* pSteps) {
   // TimingData is initially empty (i.e. defaults to song timing)
-  pSteps->SetDisplayBPM(this->m_DisplayBPMType);
-  pSteps->SetMinBPM(this->m_fSpecifiedBPMMin);
-  pSteps->SetMaxBPM(this->m_fSpecifiedBPMMax);
+  pSteps->SetDisplayBPM(this->display_bpm_type_);
+  pSteps->SetMinBPM(this->specified_bpm_min_);
+  pSteps->SetMaxBPM(this->specified_bpm_max_);
 }
 
 void Song::GetDisplayBpms(DisplayBpms& AddTo) const {
-  if (m_DisplayBPMType == DISPLAY_BPM_SPECIFIED) {
-    AddTo.Add(m_fSpecifiedBPMMin);
-    AddTo.Add(m_fSpecifiedBPMMax);
+  if (display_bpm_type_ == DISPLAY_BPM_SPECIFIED) {
+    AddTo.Add(specified_bpm_min_);
+    AddTo.Add(specified_bpm_max_);
   } else {
     float fMinBPM, fMaxBPM;
-    m_SongTiming.GetActualBPM(fMinBPM, fMaxBPM);
+    song_timing_.GetActualBPM(fMinBPM, fMaxBPM);
     AddTo.Add(fMinBPM);
     AddTo.Add(fMaxBPM);
   }
 }
 
 std::string Song::GetCacheFilePath() const {
-  return SongCacheIndex::GetCacheFilePath("Songs", m_sSongDir);
+  return SongCacheIndex::GetCacheFilePath("Songs", song_dir_);
 }
 
 // Get the path to the simfile containing this song's data.
 const std::string& Song::GetSongFilePath() const {
   ASSERT_M(
-      !m_sSongFileName.empty(),
+      !song_file_name_.empty(),
       ssprintf(
           "The song %s has no filename associated with it!",
-          this->m_sMainTitle.c_str()));
-  return m_sSongFileName;
+          this->main_title_.c_str()));
+  return song_file_name_;
 }
 
 void Song::SetSongDirAndGroup(
     const std::string& sDir, ProfileSlot from_profile) {
   ASSERT_M(Right(sDir, 1) == "/", sDir);
-  m_sSongDir = sDir;
+  song_dir_ = sDir;
 
   std::vector<std::string> sDirectoryParts;
-  split(m_sSongDir, "/", sDirectoryParts, false);
-  m_sSongName = sDirectoryParts[sDirectoryParts.size() - 2];
-  ASSERT(m_sSongName != "");
+  split(song_dir_, "/", sDirectoryParts, false);
+  song_name_ = sDirectoryParts[sDirectoryParts.size() - 2];
+  ASSERT(song_name_ != "");
   // save group name
   if (from_profile == ProfileSlot_Invalid) {
     ASSERT(sDirectoryParts.size() >= 4); /* e.g. "/Songs/Slow/Taps/" */
-    m_sGroupName =
+    group_name_ =
         sDirectoryParts[sDirectoryParts.size() - 3];  // second from last item
-    ASSERT(m_sGroupName != "");
+    ASSERT(group_name_ != "");
   } else {
     LOG->Trace("Loading song from profile2.");
-    m_sGroupName =
+    group_name_ =
         PROFILEMAN->GetProfile(from_profile)->GetCustomSongsGroupNamePrefix();
 
     bool isSubFolder = sDirectoryParts.size() > 6;
     if (isSubFolder) {
       std::string subFolderName = sDirectoryParts[sDirectoryParts.size() - 3];
-      m_sGroupName += (" - " + subFolderName);
+      group_name_ += (" - " + subFolderName);
     }
   }
-  m_LoadedFromProfile = from_profile;
+  loaded_from_profile_ = from_profile;
 }
 
 /* If PREFSMAN->m_bFastLoad is true, always load from cache if possible.
@@ -285,7 +287,7 @@ bool Song::LoadFromSongDir(
     std::string sDir, bool load_autosave, ProfileSlot from_profile) {
   ASSERT_M(sDir != "", "Songs can't be loaded from an empty directory!");
   ASSERT_M(
-      m_vpSteps.empty() && m_UnknownStyleSteps.empty(),
+      steps_.empty() && unknown_style_steps_.empty(),
       "LoadFromSongDir expects an empty Song; call Reset() first.");
 
   // make sure there is a trailing slash at the end of sDir
@@ -295,19 +297,18 @@ bool Song::LoadFromSongDir(
 
   SetSongDirAndGroup(sDir, from_profile);
 
-  bool use_cache = m_LoadedFromProfile == ProfileSlot_Invalid;
+  bool use_cache = loaded_from_profile_ == ProfileSlot_Invalid;
 
   std::string cache_file_path;
-  if (m_LoadedFromProfile == ProfileSlot_Invalid) {
+  if (loaded_from_profile_ == ProfileSlot_Invalid) {
     // First, look in the cache for this song (without loading NoteData)
-    unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
+    unsigned uCacheHash = SONGINDEX->GetCacheHash(song_dir_);
     cache_file_path = GetCacheFilePath();
 
     if (!DoesFileExist(cache_file_path)) {
       use_cache = false;
     } else if (
-        !PREFSMAN->m_bFastLoad &&
-        GetHashForDirectory(m_sSongDir) != uCacheHash) {
+        !PREFSMAN->fast_load_ && GetHashForDirectory(song_dir_) != uCacheHash) {
       use_cache = false;
     }  // this cache is out of date
     else if (load_autosave) {
@@ -322,7 +323,7 @@ bool Song::LoadFromSongDir(
     if (!bLoadedFromCache) {
       LOG->Warn(
           "Couldn't load cache for '%s'; falling back to source simfiles.",
-          m_sSongDir.c_str());
+          song_dir_.c_str());
       // Read() can fail after partially filling the song, so discard it and
       // rebuild the location fields from the inputs before parsing source.
       Reset();
@@ -330,13 +331,13 @@ bool Song::LoadFromSongDir(
       use_cache = false;
     }
 
-    if (use_cache && (m_sMainTitle == "" ||
-                      (m_sMusicFile == "" && m_vsKeysoundFile.empty()))) {
+    if (use_cache &&
+        (main_title_ == "" || (music_file_ == "" && keysound_file_.empty()))) {
       LOG->Warn(
           "Main title or music file for '%s' came up blank, forced to fall "
           "back on TidyUpData to fix title and paths.  Do not use # or ; in a "
           "song title.",
-          m_sSongDir.c_str());
+          song_dir_.c_str());
       // Tell TidyUpData that it's not loaded from the cache because it needs
       // to hit the song folder to find the files that weren't found. -Kyz
       TidyUpData(false);
@@ -368,7 +369,7 @@ bool Song::LoadFromSongDir(
       std::vector<std::string> folders;
       split(sDir, "/", folders);
       std::string songName = folders[2] + ".ssc";
-      this->m_sSongFileName = sDir + songName;
+      this->song_file_name_ = sDir + songName;
       // Continue on with a blank Song so that people can make adjustments using
       // the editor.
     }
@@ -382,7 +383,7 @@ bool Song::LoadFromSongDir(
     // Songs loaded from removable profile are never cached, on the
     // assumption that they'll change frequently and have invalid cache
     // entries. -Kyz
-    if (!load_autosave && m_LoadedFromProfile == ProfileSlot_Invalid) {
+    if (!load_autosave && loaded_from_profile_ == ProfileSlot_Invalid) {
       // save a cache file so we don't have to parse it all over again next time
       if (!SaveToCacheFile()) {
         cache_file_path = std::string();
@@ -390,30 +391,29 @@ bool Song::LoadFromSongDir(
     }
   }
 
-  if (m_LoadedFromProfile != ProfileSlot_Invalid) {
-    if (m_fMusicLengthSeconds > PREFSMAN->m_custom_songs_max_seconds) {
-      LOG->Trace("Custom song %s is too long.", m_sSongDir.c_str());
+  if (loaded_from_profile_ != ProfileSlot_Invalid) {
+    if (music_length_seconds_ > PREFSMAN->custom_songs_max_seconds_) {
+      LOG->Trace("Custom song %s is too long.", song_dir_.c_str());
       return false;
     }
     RageFile music;
     if (!music.Open(GetMusicPath(), RageFile::READ)) {
-      LOG->Trace("Custom song %s could not open music.", m_sSongDir.c_str());
+      LOG->Trace("Custom song %s could not open music.", song_dir_.c_str());
       return false;
     }
-    if (music.GetFileSize() >
-        PREFSMAN->m_custom_songs_max_megabytes * 1000000) {
-      LOG->Trace("Custom song %s music file is too big.", m_sSongDir.c_str());
+    if (music.GetFileSize() > PREFSMAN->custom_songs_max_megabytes_ * 1000000) {
+      LOG->Trace("Custom song %s music file is too big.", song_dir_.c_str());
       return false;
     }
-    m_pre_customify_song_dir = m_sSongDir;
-    m_sSongDir = custom_songify_path(m_sSongDir);
-    m_sBannerFile.clear();
-    m_sJacketFile.clear();
-    m_sCDFile.clear();
-    m_sDiscFile.clear();
-    m_sLyricsFile.clear();
-    m_sBackgroundFile.clear();
-    m_sCDTitleFile.clear();
+    pre_customify_song_dir_ = song_dir_;
+    song_dir_ = custom_songify_path(song_dir_);
+    banner_file_.clear();
+    jacket_file_.clear();
+    cd_file_.clear();
+    disc_file_.clear();
+    lyrics_file_.clear();
+    background_file_.clear();
+    cd_title_file_.clear();
   }
 
   // Normally TidyUpData would handle setting the m_fBeat0GroupOffsetInSeconds.
@@ -421,15 +421,16 @@ bool Song::LoadFromSongDir(
   // cases. SInce there are cases where TidyUpData isn't called, we still want
   // to guarantee the m_fBeat0GroupOffsetInSeconds is always set so we do that
   // here.
-  float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-  if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr) {
-    fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+  float fOffset =
+      PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
+  if (SONGMAN->GetGroupFromName(group_name_) != nullptr) {
+    fOffset = SONGMAN->GetGroupFromName(group_name_)->GetSyncOffset();
   }
-  m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+  song_timing_.beat0_group_offset_in_seconds_ = fOffset;
 
-  for (Steps* s : m_vpSteps) {
-    s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
-    if (m_LoadedFromProfile != ProfileSlot_Invalid) {
+  for (Steps* s : steps_) {
+    s->timing_.beat0_group_offset_in_seconds_ = fOffset;
+    if (loaded_from_profile_ != ProfileSlot_Invalid) {
       s->ChangeFilenamesForCustomSong();
     }
     /* Compress all Steps. During initial caching, this will remove cached
@@ -438,7 +439,7 @@ bool Song::LoadFromSongDir(
   }
 
   // Load the cached Images, if it's not loaded already.
-  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
+  if (PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_PRELOAD) {
     for (const std::string& Image : GetImageCacheDirs()) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
     }
@@ -447,7 +448,7 @@ bool Song::LoadFromSongDir(
   // Add AutoGen pointers. (These aren't cached.)
   AddAutoGenNotes();
 
-  if (!m_bHasMusic) {
+  if (!has_music_) {
     LOG->UserLog("Song", sDir, "has no music; ignored.");
     return false;  // don't load this song
   }
@@ -465,7 +466,7 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   FILEMAN->FlushDirCache(Dirname(GetCacheFilePath()));
 
   RemoveAutoGenNotes();
-  std::vector<Steps*> vOldSteps = m_vpSteps;
+  std::vector<Steps*> vOldSteps = steps_;
 
   Song copy;
   if (!copy.LoadFromSongDir(sDir)) {
@@ -475,48 +476,48 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   *this = copy;
 
   if (SONGMAN->GetGroup(this) != nullptr) {
-    m_SongTiming.m_fBeat0GroupOffsetInSeconds =
+    song_timing_.beat0_group_offset_in_seconds_ =
         SONGMAN->GetGroup(this)->GetSyncOffset();
   } else {
-    m_SongTiming.m_fBeat0GroupOffsetInSeconds =
-        PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+    song_timing_.beat0_group_offset_in_seconds_ =
+        PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
     LOG->Warn(
         "Song %s has no group, using default sync offset.",
-        m_sMainTitle.c_str());
+        main_title_.c_str());
   }
 
   /* Go through the steps, first setting their Song pointer to this song
    * (instead of the copy used above), and constructing a map to let us
    * easily find the new steps. */
   std::map<StepsID, Steps*> mNewSteps;
-  for (std::vector<Steps*>::const_iterator it = m_vpSteps.begin();
-       it != m_vpSteps.end(); ++it) {
-    (*it)->m_pSong = this;
+  for (std::vector<Steps*>::const_iterator it = steps_.begin();
+       it != steps_.end(); ++it) {
+    (*it)->song_ = this;
     StepsID id;
     id.FromSteps(*it);
     mNewSteps[id] = *it;
 
     // Reapply the Group Offset if the steps have their own timing data.
-    if (mNewSteps[id]->m_Timing.empty()) {
+    if (mNewSteps[id]->timing_.empty()) {
       continue;
     }
     if (SONGMAN->GetGroup(this) != nullptr) {
-      mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds =
+      mNewSteps[id]->timing_.beat0_group_offset_in_seconds_ =
           SONGMAN->GetGroup(this)->GetSyncOffset();
     } else {
-      mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds =
-          PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+      mNewSteps[id]->timing_.beat0_group_offset_in_seconds_ =
+          PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
       LOG->Warn(
           "Song %s has no group, using default sync offset.",
-          m_sMainTitle.c_str());
+          main_title_.c_str());
     }
   }
 
   // Now we wipe out the new pointers, which were shallow copied and not deep
   // copied...
-  m_vpSteps.clear();
+  steps_.clear();
   FOREACH_ENUM(StepsType, i)
-  m_vpStepsByType[i].clear();
+  steps_by_type_[i].clear();
 
   /* Then we copy as many Steps as possible on top of the old pointers.
    * The only pointers that change are pointers to Steps that are not in the
@@ -552,13 +553,13 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   // Reload any images associated with the song. -Kyz
   std::vector<std::string> to_reload;
   to_reload.reserve(7);
-  to_reload.push_back(m_sBannerFile);
-  to_reload.push_back(m_sJacketFile);
-  to_reload.push_back(m_sCDFile);
-  to_reload.push_back(m_sDiscFile);
-  to_reload.push_back(m_sBackgroundFile);
-  to_reload.push_back(m_sCDTitleFile);
-  to_reload.push_back(m_sPreviewVidFile);
+  to_reload.push_back(banner_file_);
+  to_reload.push_back(jacket_file_);
+  to_reload.push_back(cd_file_);
+  to_reload.push_back(disc_file_);
+  to_reload.push_back(background_file_);
+  to_reload.push_back(cd_title_file_);
+  to_reload.push_back(preview_vid_file_);
   for (std::vector<std::string>::iterator file = to_reload.begin();
        file != to_reload.end(); ++file) {
     RageTextureID id(*file);
@@ -594,30 +595,30 @@ void Song::LoadEditsFromSongDir(std::string dir) {
 }
 
 bool Song::HasAutosaveFile() {
-  if (m_sSongFileName.empty()) {
+  if (song_file_name_.empty()) {
     return false;
   }
-  std::string autosave_path = SetExtension(m_sSongFileName, "ats");
+  std::string autosave_path = SetExtension(song_file_name_, "ats");
   return FILEMAN->DoesFileExist(autosave_path);
 }
 
 bool Song::LoadAutosaveFile() {
-  if (m_sSongFileName.empty()) {
+  if (song_file_name_.empty()) {
     return false;
   }
   // Save these strings because they need to be restored after the reset.
   // The filenames need to point to the original instead of the autosave for
   // things like load from disk to work. -Kyz
   std::string dir = GetSongDir();
-  std::string song_timing_file = m_SongTiming.m_sFile;
-  std::string song_file = m_sSongFileName;
+  std::string song_timing_file = song_timing_.file_;
+  std::string song_file = song_file_name_;
   // Reset needs to be used to remove all the steps and other things that
   // will be loaded from the autosave. -Kyz
   Reset();
   if (LoadFromSongDir(dir, true)) {
-    m_loaded_from_autosave = true;
-    m_sSongFileName = song_file;
-    m_SongTiming.m_sFile = song_timing_file;
+    loaded_from_autosave_ = true;
+    song_file_name_ = song_file;
+    song_timing_.file_ = song_timing_file;
     return true;
   }
   // Loading the autosave failed, reload the original. -Kyz
@@ -649,69 +650,70 @@ void Song::TidyUpData(bool from_cache) {
 void Song::TidyUpData(
     bool from_cache, const std::set<std::string>& blacklistedImages) {
   // We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
-  ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir);  // meaningless
-  FixupPath(m_sSongDir, "");
-  FixupPath(m_sMusicFile, m_sSongDir);
-  FixupPath(m_sBannerFile, m_sSongDir);
-  FixupPath(m_sJacketFile, m_sSongDir);
-  FixupPath(m_sCDFile, m_sSongDir);
-  FixupPath(m_sDiscFile, m_sSongDir);
-  FixupPath(m_sLyricsFile, m_sSongDir);
-  FixupPath(m_sBackgroundFile, m_sSongDir);
-  FixupPath(m_sCDTitleFile, m_sSongDir);
+  ASSERT_M(Left(song_dir_, 3) != "../", song_dir_);  // meaningless
+  FixupPath(song_dir_, "");
+  FixupPath(music_file_, song_dir_);
+  FixupPath(banner_file_, song_dir_);
+  FixupPath(jacket_file_, song_dir_);
+  FixupPath(cd_file_, song_dir_);
+  FixupPath(disc_file_, song_dir_);
+  FixupPath(lyrics_file_, song_dir_);
+  FixupPath(background_file_, song_dir_);
+  FixupPath(cd_title_file_, song_dir_);
 
   CHECKPOINT_M("Looking for images...");
 
-  m_SongTiming.TidyUpData(false);
+  song_timing_.TidyUpData(false);
 
   // Apply the group offset to the song timing before we do anything else.
-  float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-  if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr) {
-    fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+  float fOffset =
+      PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
+  if (SONGMAN->GetGroupFromName(group_name_) != nullptr) {
+    fOffset = SONGMAN->GetGroupFromName(group_name_)->GetSyncOffset();
   }
-  m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+  song_timing_.beat0_group_offset_in_seconds_ = fOffset;
 
-  for (Steps* s : m_vpSteps) {
-    s->m_Timing.TidyUpData(true);
+  for (Steps* s : steps_) {
+    s->timing_.TidyUpData(true);
     // Apply the group offset to the step timing as well.
-    s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
+    s->timing_.beat0_group_offset_in_seconds_ = fOffset;
   }
 
   if (!from_cache) {
-    if (this->m_sArtist == "The Dancing Monkeys Project" &&
-        this->m_sMainTitle.find_first_of('-') != std::string::npos) {
+    if (this->artist_ == "The Dancing Monkeys Project" &&
+        this->main_title_.find_first_of('-') != std::string::npos) {
       // Dancing Monkeys had a bug/feature where the artist was replaced.
       // Restore it.
       std::vector<std::string> titleParts;
-      split(this->m_sMainTitle, "-", titleParts);
-      this->m_sArtist = titleParts.front();
-      Trim(this->m_sArtist);
+      split(this->main_title_, "-", titleParts);
+      this->artist_ = titleParts.front();
+      Trim(this->artist_);
       titleParts.erase(titleParts.begin());
-      this->m_sMainTitle = join("-", titleParts);
-      Trim(this->m_sMainTitle);
+      this->main_title_ = join("-", titleParts);
+      Trim(this->main_title_);
     }
 
-    Trim(m_sMainTitle);
-    Trim(m_sSubTitle);
-    Trim(m_sArtist);
+    Trim(main_title_);
+    Trim(sub_title_);
+    Trim(artist_);
 
     // Fall back on the song directory name.
-    if (m_sMainTitle == "") {
+    if (main_title_ == "") {
       NotesLoader::GetMainAndSubTitlesFromFullTitle(
-          Basename(this->GetSongDir()), m_sMainTitle, m_sSubTitle);
+          Basename(this->GetSongDir()), main_title_, sub_title_);
     }
 
-    if (m_sArtist == "") {
-      m_sArtist = "Unknown artist";
+    if (artist_ == "") {
+      artist_ = "Unknown artist";
     }
     TranslateTitles();
 
     // Set the has flags before tidying so that tidying can check them instead
     // of using the has functions that hit the disk. -Kyz
     // These will be written to cache, for Song::LoadFromSongDir to use later.
-    m_bHasMusic = HasMusic();
-    m_bHasBanner = HasBanner();
-    m_bHasBackground = HasBackground();
+    has_music_ = HasMusic();
+    has_banner_ = HasBanner();
+    has_background_ = HasBackground();
 
     for (const std::string& Image : GetImageCacheDirs()) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
@@ -722,7 +724,7 @@ void Song::TidyUpData(
     // files in the dir once, then split that list into the different things
     // we need. -Kyz
     std::vector<std::string> song_dir_listing;
-    FILEMAN->GetDirListing(m_sSongDir + "*", song_dir_listing, false, false);
+    FILEMAN->GetDirListing(song_dir_ + "*", song_dir_listing, false, false);
     std::vector<std::string> music_list;
     std::vector<std::string> image_list;
     std::vector<std::string> movie_list;
@@ -738,7 +740,7 @@ void Song::TidyUpData(
     fill_exts.push_back(&ActorUtil::GetTypeExtensionList(FT_Sound));
     // Disable bg and banner images and movies for custom songs.  Loading
     // them takes too long. -Kyz
-    if (m_LoadedFromProfile == ProfileSlot_Invalid) {
+    if (loaded_from_profile_ == ProfileSlot_Invalid) {
       lists_to_fill.push_back(&image_list);
       fill_exts.push_back(&ActorUtil::GetTypeExtensionList(FT_Bitmap));
       lists_to_fill.push_back(&movie_list);
@@ -768,7 +770,7 @@ void Song::TidyUpData(
       }
     }
 
-    if (!m_bHasMusic) {
+    if (!has_music_) {
       // If the first song is "intro", and we have more than one available,
       // don't use it--it's probably a KSF intro music file, which we don't
       // (yet) support.
@@ -776,119 +778,120 @@ void Song::TidyUpData(
         LOG->Trace(
             "Song '%s' points to a music file that doesn't exist, found music "
             "file '%s'",
-            m_sSongDir.c_str(), music_list[0].c_str());
-        m_bHasMusic = true;
-        m_sMusicFile = music_list[0];
+            song_dir_.c_str(), music_list[0].c_str());
+        has_music_ = true;
+        music_file_ = music_list[0];
         if (music_list.size() > 1 &&
-            !CompareNoCase(Left(m_sMusicFile, 5), "intro")) {
-          m_sMusicFile = music_list[1];
+            !CompareNoCase(Left(music_file_, 5), "intro")) {
+          music_file_ = music_list[1];
         }
       }
     }
     // This must be done before radar calculation.
-    if (m_bHasMusic) {
+    if (has_music_) {
       std::string error;
       RageSoundReader* Sample =
           RageSoundReader_FileReader::OpenFile(GetMusicPath(), error);
       /* XXX: Checking if the music file exists eliminates a warning
        * originating from BMS files (which have no music file, per se)
        * but it's something of a hack. */
-      if (Sample == nullptr && m_sMusicFile != "") {
+      if (Sample == nullptr && music_file_ != "") {
         LOG->UserLog(
             "Sound file", GetMusicPath(), "couldn't be opened: %s",
             error.c_str());
 
         // Don't use this file.
-        m_sMusicFile = "";
+        music_file_ = "";
       } else if (Sample != nullptr) {
-        m_fMusicLengthSeconds = Sample->GetLength() / 1000.0f;
+        music_length_seconds_ = Sample->GetLength() / 1000.0f;
         delete Sample;
 
-        if (m_fMusicLengthSeconds < 0) {
+        if (music_length_seconds_ < 0) {
           // It failed; bad file or something. It's already logged a warning.
-          m_fMusicLengthSeconds = 100;  // guess
-        } else if (m_fMusicLengthSeconds == 0) {
+          music_length_seconds_ = 100;  // guess
+        } else if (music_length_seconds_ == 0) {
           LOG->UserLog("Sound file", GetMusicPath(), "is empty.");
         }
       }
     } else  // ! HasMusic()
     {
-      m_fMusicLengthSeconds = 100;  // guess
+      music_length_seconds_ = 100;  // guess
       LOG->UserLog(
           "Song", GetSongDir(), "has no music file; guessing at %f seconds",
-          m_fMusicLengthSeconds);
+          music_length_seconds_);
     }
-    if (m_fMusicLengthSeconds < 0) {
+    if (music_length_seconds_ < 0) {
       LOG->UserLog(
           "Sound file", GetMusicPath(), "has a negative length %f.",
-          m_fMusicLengthSeconds);
-      m_fMusicLengthSeconds = 0;
+          music_length_seconds_);
+      music_length_seconds_ = 0;
     }
-    if (!m_PreviewFile.empty() &&
-        m_fMusicSampleLengthSeconds <=
+    if (!preview_file_.empty() &&
+        music_sample_length_seconds_ <=
             0.00f) {  // if there's a preview file and sample length isn't
                       // specified, set sample length to length of preview file
       std::string error;
       RageSoundReader* Sample =
           RageSoundReader_FileReader::OpenFile(GetPreviewMusicPath(), error);
-      if (Sample == nullptr && m_sMusicFile != "") {
+      if (Sample == nullptr && music_file_ != "") {
         LOG->UserLog(
             "Sound file", GetPreviewMusicPath(), "couldn't be opened: %s",
             error.c_str());
 
         // Don't use this file.
-        m_PreviewFile = "";
-        m_fMusicSampleLengthSeconds = DEFAULT_MUSIC_SAMPLE_LENGTH;
+        preview_file_ = "";
+        music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
       } else if (Sample != nullptr) {
-        m_fMusicSampleLengthSeconds = Sample->GetLength() / 1000.0f;
+        music_sample_length_seconds_ = Sample->GetLength() / 1000.0f;
         delete Sample;
 
-        if (m_fMusicSampleLengthSeconds < 0) {
+        if (music_sample_length_seconds_ < 0) {
           // It failed; bad file or something. It's already logged a warning.
-          m_fMusicSampleLengthSeconds = DEFAULT_MUSIC_SAMPLE_LENGTH;
-        } else if (m_fMusicSampleLengthSeconds == 0) {
+          music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+        } else if (music_sample_length_seconds_ == 0) {
           LOG->UserLog("Sound file", GetPreviewMusicPath(), "is empty.");
         }
       }
     } else {  // no preview file, calculate sample from music as normal
 
-      if (m_fMusicSampleStartSeconds == -1 ||
-          m_fMusicSampleLengthSeconds == 0 ||
-          m_fMusicSampleStartSeconds + m_fMusicSampleLengthSeconds >
-              this->m_fMusicLengthSeconds) {
-        const TimingData& timing = this->m_SongTiming;
-        m_fMusicSampleStartSeconds = timing.GetElapsedTimeFromBeatNoOffset(100);
+      if (music_sample_start_seconds_ == -1 ||
+          music_sample_length_seconds_ == 0 ||
+          music_sample_start_seconds_ + music_sample_length_seconds_ >
+              this->music_length_seconds_) {
+        const TimingData& timing = this->song_timing_;
+        music_sample_start_seconds_ =
+            timing.GetElapsedTimeFromBeatNoOffset(100);
 
-        if (m_fMusicSampleStartSeconds + m_fMusicSampleLengthSeconds >
-            this->m_fMusicLengthSeconds) {
+        if (music_sample_start_seconds_ + music_sample_length_seconds_ >
+            this->music_length_seconds_) {
           // Attempt to get a reasonable default.
           int iBeat = std::lrint(
-              this->m_SongTiming.GetBeatFromElapsedTimeNoOffset(
+              this->song_timing_.GetBeatFromElapsedTimeNoOffset(
                   this->GetLastSecondNoOffset()) /
               2);
           iBeat -= iBeat % 4;
-          m_fMusicSampleStartSeconds =
+          music_sample_start_seconds_ =
               timing.GetElapsedTimeFromBeatNoOffset((float)iBeat);
         }
       }
 
       // The old logic meant that you couldn't have sample lengths that go
       // forever, e.g. those in Donkey Konga. I never liked that. -freem
-      if (m_fMusicSampleLengthSeconds <= 0.00f) {
-        m_fMusicSampleLengthSeconds = DEFAULT_MUSIC_SAMPLE_LENGTH;
+      if (music_sample_length_seconds_ <= 0.00f) {
+        music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
       }
     }
 
     if (!HasLyrics()) {
       // Check if there is a lyric file in here
       if (!lyric_list.empty()) {
-        m_sLyricsFile = lyric_list[0];
+        lyrics_file_ = lyric_list[0];
       }
     }
 
     // Since banner, bg, and cdtitle are disabled for custom songs, don't try
     // to find them. -Kyz
-    if (m_LoadedFromProfile == ProfileSlot_Invalid) {
+    if (loaded_from_profile_ == ProfileSlot_Invalid) {
       // Here's the problem:  We have a directory full of images. We want to
       // determine which image is the banner, which is the background, and
       // which is the CDTitle.
@@ -902,7 +905,7 @@ void Song::TidyUpData(
       bool has_cdtitle = HasCDTitle();
 
       // First, check the file name for hints.
-      if (!m_bHasBanner) {
+      if (!has_banner_) {
         /* If a nonexistant banner file is specified, and we can't find a
          * replacement, don't wipe out the old value. */
         // m_sBannerFile = "";
@@ -912,18 +915,18 @@ void Song::TidyUpData(
         /* Some people do things differently for the sake of being different.
          * Don't match eg. abnormal, numbness. */
         std::vector<std::string> ends_with(1, " bn");
-        m_bHasBanner = FindFirstFilenameContaining(
-            image_list, m_sBannerFile, empty_list, contains, ends_with);
+        has_banner_ = FindFirstFilenameContaining(
+            image_list, banner_file_, empty_list, contains, ends_with);
       }
 
-      if (!m_bHasBackground) {
+      if (!has_background_) {
         // m_sBackgroundFile = "";
 
         // find an image with "bg" or "background" in the file name
         std::vector<std::string> contains(1, "background");
         std::vector<std::string> ends_with(1, "bg");
-        m_bHasBackground = FindFirstFilenameContaining(
-            image_list, m_sBackgroundFile, empty_list, contains, ends_with);
+        has_background_ = FindFirstFilenameContaining(
+            image_list, background_file_, empty_list, contains, ends_with);
       }
 
       if (!has_jacket) {
@@ -934,7 +937,7 @@ void Song::TidyUpData(
         contains.push_back("jacket");
         contains.push_back("albumart");
         has_jacket = FindFirstFilenameContaining(
-            image_list, m_sJacketFile, starts_with, contains, empty_list);
+            image_list, jacket_file_, starts_with, contains, empty_list);
       }
 
       if (!has_cdimage) {
@@ -942,7 +945,7 @@ void Song::TidyUpData(
         // find an image with "-cd" at the end of the filename.
         std::vector<std::string> ends_with(1, "-cd");
         has_cdimage = FindFirstFilenameContaining(
-            image_list, m_sCDFile, empty_list, empty_list, ends_with);
+            image_list, cd_file_, empty_list, empty_list, ends_with);
       }
 
       if (!has_disc) {
@@ -952,21 +955,21 @@ void Song::TidyUpData(
         ends_with.push_back(" disc");
         ends_with.push_back(" title");
         has_disc = FindFirstFilenameContaining(
-            image_list, m_sDiscFile, empty_list, empty_list, ends_with);
+            image_list, disc_file_, empty_list, empty_list, ends_with);
       }
 
       if (!has_cdtitle) {
         // find an image with "cdtitle" in the file name
         std::vector<std::string> contains(1, "cdtitle");
         has_cdtitle = FindFirstFilenameContaining(
-            image_list, m_sCDTitleFile, empty_list, contains, empty_list);
+            image_list, cd_title_file_, empty_list, contains, empty_list);
       }
 
       /* Now, For the images we still haven't found,
        * look at the image dimensions of the remaining unclassified images. */
       for (unsigned int i = 0; i < image_list.size(); ++i)  // foreach image
       {
-        if (m_bHasBanner && m_bHasBackground && has_cdtitle) {
+        if (has_banner_ && has_background_ && has_cdtitle) {
           break;  // done
         }
 
@@ -979,32 +982,31 @@ void Song::TidyUpData(
 
         // Skip any image that we've already classified
 
-        if (m_bHasBanner && EqualsNoCase(m_sBannerFile, image_list[i])) {
+        if (has_banner_ && EqualsNoCase(banner_file_, image_list[i])) {
           continue;  // skip
         }
 
-        if (m_bHasBackground &&
-            EqualsNoCase(m_sBackgroundFile, image_list[i])) {
+        if (has_background_ && EqualsNoCase(background_file_, image_list[i])) {
           continue;  // skip
         }
 
-        if (has_cdtitle && EqualsNoCase(m_sCDTitleFile, image_list[i])) {
+        if (has_cdtitle && EqualsNoCase(cd_title_file_, image_list[i])) {
           continue;  // skip
         }
 
-        if (has_jacket && EqualsNoCase(m_sJacketFile, image_list[i])) {
+        if (has_jacket && EqualsNoCase(jacket_file_, image_list[i])) {
           continue;  // skip
         }
 
-        if (has_disc && EqualsNoCase(m_sDiscFile, image_list[i])) {
+        if (has_disc && EqualsNoCase(disc_file_, image_list[i])) {
           continue;  // skip
         }
 
-        if (has_cdimage && EqualsNoCase(m_sCDFile, image_list[i])) {
+        if (has_cdimage && EqualsNoCase(cd_file_, image_list[i])) {
           continue;  // skip
         }
 
-        std::string sPath = m_sSongDir + image_list[i];
+        std::string sPath = song_dir_ + image_list[i];
 
         // We only care about the dimensions.
         std::string error;
@@ -1015,28 +1017,28 @@ void Song::TidyUpData(
           continue;
         }
 
-        const int width = img->w;
-        const int height = img->h;
+        const int width = img->w_;
+        const int height = img->h_;
         delete img;
 
-        if (!m_bHasBackground && width >= 320 && height >= 240) {
-          m_sBackgroundFile = image_list[i];
-          m_bHasBackground = true;
+        if (!has_background_ && width >= 320 && height >= 240) {
+          background_file_ = image_list[i];
+          has_background_ = true;
           continue;
         }
 
-        if (!m_bHasBanner && 100 <= width && width <= 320 && 50 <= height &&
+        if (!has_banner_ && 100 <= width && width <= 320 && 50 <= height &&
             height <= 240) {
-          m_sBannerFile = image_list[i];
-          m_bHasBanner = true;
+          banner_file_ = image_list[i];
+          has_banner_ = true;
           continue;
         }
 
         /* Some songs have overlarge banners. Check if the ratio is reasonable
          * (over 2:1; usually over 3:1), and large (not a cdtitle). */
-        if (!m_bHasBanner && width > 200 && float(width) / height > 2.0f) {
-          m_sBannerFile = image_list[i];
-          m_bHasBanner = true;
+        if (!has_banner_ && width > 200 && float(width) / height > 2.0f) {
+          banner_file_ = image_list[i];
+          has_banner_ = true;
           continue;
         }
 
@@ -1056,23 +1058,23 @@ void Song::TidyUpData(
          * I'm keeping this code until I figure out wtf to do -aj
          */
         if (!has_cdtitle && width <= 100 && height <= 48) {
-          m_sCDTitleFile = image_list[i];
+          cd_title_file_ = image_list[i];
           has_cdtitle = true;
           continue;
         }
 
         // Jacket files typically have the same width and height.
         if (!has_jacket && width == height) {
-          m_sJacketFile = image_list[i];
+          jacket_file_ = image_list[i];
           has_jacket = true;
           continue;
         }
 
         // Disc images are typically rectangular; make sure we have a banner
         // already.
-        if (!has_disc && (width > height) && m_bHasBanner) {
-          if (image_list[i] != m_sBannerFile) {
-            m_sDiscFile = image_list[i];
+        if (!has_disc && (width > height) && has_banner_) {
+          if (image_list[i] != banner_file_) {
+            disc_file_ = image_list[i];
             has_disc = true;
           }
           continue;
@@ -1081,7 +1083,7 @@ void Song::TidyUpData(
         // CD images are the same as Jackets, typically the same width and
         // height
         if (!has_cdimage && width == height) {
-          m_sCDFile = image_list[i];
+          cd_file_ = image_list[i];
           has_cdimage = true;
           continue;
         }
@@ -1103,12 +1105,12 @@ void Song::TidyUpData(
   if (!has_name) {                          \
     field_name = "";                        \
   }
-      CLEAR_NOT_HAS(m_bHasBanner, m_sBannerFile);
-      CLEAR_NOT_HAS(m_bHasBackground, m_sBackgroundFile);
-      CLEAR_NOT_HAS(has_jacket, m_sJacketFile);
-      CLEAR_NOT_HAS(has_cdimage, m_sCDFile);
-      CLEAR_NOT_HAS(has_disc, m_sDiscFile);
-      CLEAR_NOT_HAS(has_cdtitle, m_sCDTitleFile);
+      CLEAR_NOT_HAS(has_banner_, banner_file_);
+      CLEAR_NOT_HAS(has_background_, background_file_);
+      CLEAR_NOT_HAS(has_jacket, jacket_file_);
+      CLEAR_NOT_HAS(has_cdimage, cd_file_);
+      CLEAR_NOT_HAS(has_disc, disc_file_);
+      CLEAR_NOT_HAS(has_cdtitle, cd_title_file_);
 #undef CLEAR_NOT_HAS
     }
     // Don't allow multiple Steps of the same StepsType and Difficulty
@@ -1125,8 +1127,8 @@ void Song::TidyUpData(
   }
   // If the music length is suspiciously shorter than the last second, adjust
   // the length.  This prevents the ogg patch from setting a false length. -Kyz
-  if (m_fMusicLengthSeconds < lastSecond - 10.0f) {
-    m_fMusicLengthSeconds = lastSecond;
+  if (music_length_seconds_ < last_second_ - 10.0f) {
+    music_length_seconds_ = last_second_;
   }
 }
 
@@ -1152,7 +1154,7 @@ void Song::FixupBackgroundChanges() {
   bool bHasNoSongBgTag = false;
 
   for (unsigned i = 0; !bHasNoSongBgTag && i < bg.size(); ++i) {
-    if (!CompareNoCase(bg[i].m_def.m_sFile1, NO_SONG_BG_FILE)) {
+    if (!CompareNoCase(bg[i].def_.file1_, NO_SONG_BG_FILE)) {
       bg.erase(bg.begin() + i);
       bHasNoSongBgTag = true;
     }
@@ -1164,13 +1166,13 @@ void Song::FixupBackgroundChanges() {
       float lastBeat = GetLastBeat();
       /* If BGChanges already exist after the last beat, don't add the
        * background in the middle. */
-      if (!bg.empty() && bg.back().m_fStartBeat - 0.0001f >= lastBeat) {
+      if (!bg.empty() && bg.back().start_beat_ - 0.0001f >= lastBeat) {
         break;
       }
 
       // If the last BGA is already the song BGA, don't add a duplicate.
       if (!bg.empty() &&
-          !CompareNoCase(bg.back().m_def.m_sFile1, m_sBackgroundFile)) {
+          !CompareNoCase(bg.back().def_.file1_, background_file_)) {
         break;
       }
 
@@ -1178,7 +1180,7 @@ void Song::FixupBackgroundChanges() {
         break;
       }
 
-      bg.push_back(BackgroundChange(lastBeat, m_sBackgroundFile));
+      bg.push_back(BackgroundChange(lastBeat, background_file_));
     } while (0);
   }
 }
@@ -1188,22 +1190,22 @@ void Song::TranslateTitles() {
 
   TitleFields title;
   title.LoadFromStrings(
-      m_sMainTitle, m_sSubTitle, m_sArtist, m_sMainTitleTranslit,
-      m_sSubTitleTranslit, m_sArtistTranslit);
+      main_title_, sub_title_, artist_, main_title_translit_,
+      sub_title_translit_, artist_translit_);
   tsub.Subst(title);
   title.SaveToStrings(
-      m_sMainTitle, m_sSubTitle, m_sArtist, m_sMainTitleTranslit,
-      m_sSubTitleTranslit, m_sArtistTranslit);
+      main_title_, sub_title_, artist_, main_title_translit_,
+      sub_title_translit_, artist_translit_);
 }
 
 void Song::ReCalculateStepStatsAndLastSecond(bool wipeNoteData) {
   float localFirst = FLT_MAX;  // inf
   // Make sure we're at least as long as the specified amount below.
-  float localLast = this->specifiedLastSecond;
+  float localLast = this->specified_last_second_;
 
-  for (unsigned i = 0; i < m_vpSteps.size(); i++) {
-    Steps* pSteps = m_vpSteps[i];
-    pSteps->CalculateStepStats(m_fMusicLengthSeconds);
+  for (unsigned i = 0; i < steps_.size(); i++) {
+    Steps* pSteps = steps_[i];
+    pSteps->CalculateStepStats(music_length_seconds_);
 
     // Must initialize before the gotos.
     NoteData tempNoteData;
@@ -1215,10 +1217,10 @@ void Song::ReCalculateStepStatsAndLastSecond(bool wipeNoteData) {
      * 2. Don't calculate with edits unless the song only contains an edit
      * chart, like those in Mungyodance 3. Otherwise, edits installed on
      * the machine could extend the length of the song. */
-    if (!pSteps->IsAutogen() && !(pSteps->IsAnEdit() && m_vpSteps.size() > 1)) {
+    if (!pSteps->IsAutogen() && !(pSteps->IsAnEdit() && steps_.size() > 1)) {
       // Don't set first/last beat based on lights.  They often start very
       // early and end very late.
-      if (pSteps->m_StepsType == StepsType_lights_cabinet) {
+      if (pSteps->steps_type_ == StepsType_lights_cabinet) {
         continue;  // no need to wipe this.
       }
 
@@ -1243,8 +1245,8 @@ void Song::ReCalculateStepStatsAndLastSecond(bool wipeNoteData) {
   }
 
   // Yes, for some reason we can have freaky stuff take place here.
-  this->firstSecond = (localFirst < localLast) ? localFirst : 0;
-  this->lastSecond = localLast;
+  this->first_second_ = (localFirst < localLast) ? localFirst : 0;
+  this->last_second_ = localLast;
 }
 
 bool Song::HasStepsType(StepsType st) const {
@@ -1288,7 +1290,7 @@ bool Song::SaveToSMFile() {
   }
 
   std::vector<Steps*> vpStepsToSave;
-  for (Steps* pSteps : m_vpSteps) {
+  for (Steps* pSteps : steps_) {
     if (pSteps->IsAutogen()) {
       continue;  // don't write autogen notes
     }
@@ -1300,7 +1302,7 @@ bool Song::SaveToSMFile() {
 
     vpStepsToSave.push_back(pSteps);
   }
-  for (Steps* s : m_UnknownStyleSteps) {
+  for (Steps* s : unknown_style_steps_) {
     vpStepsToSave.push_back(s);
   }
 
@@ -1321,7 +1323,7 @@ bool Song::SaveToSSCFile(std::string sPath, bool autosave) {
   }
 
   std::vector<Steps*> vpStepsToSave;
-  for (Steps* pSteps : m_vpSteps) {
+  for (Steps* pSteps : steps_) {
     if (pSteps->IsAutogen()) {
       continue;  // don't write autogen notes
     }
@@ -1334,7 +1336,7 @@ bool Song::SaveToSSCFile(std::string sPath, bool autosave) {
     pSteps->SetFilename(path);
     vpStepsToSave.push_back(pSteps);
   }
-  for (Steps* s : m_UnknownStyleSteps) {
+  for (Steps* s : unknown_style_steps_) {
     vpStepsToSave.push_back(s);
   }
 
@@ -1380,41 +1382,41 @@ bool Song::SaveToSSCFile(std::string sPath, bool autosave) {
 }
 
 bool Song::SaveToCacheFile() {
-  if (SONGMAN->IsGroupNeverCached(m_sGroupName)) {
+  if (SONGMAN->IsGroupNeverCached(group_name_)) {
     return true;
   }
-  SONGINDEX->AddCacheIndex(m_sSongDir, GetHashForDirectory(m_sSongDir));
+  SONGINDEX->AddCacheIndex(song_dir_, GetHashForDirectory(song_dir_));
   const std::string sPath = GetCacheFilePath();
   return SongCacheBinary::Write(*this, sPath);
 }
 
 void Song::RemoveAutosave() {
-  std::string autosave_path = SetExtension(m_sSongFileName, "ats");
+  std::string autosave_path = SetExtension(song_file_name_, "ats");
   if (FILEMAN->DoesFileExist(autosave_path)) {
     // Change all the steps to point to the actual file, not the autosave
     // file.  -Kyz
-    std::string extension = GetExtension(m_sSongFileName);
-    for (size_t i = 0; i < m_vpSteps.size(); ++i) {
-      if (!m_vpSteps[i]->IsAutogen()) {
-        m_vpSteps[i]->SetFilename(
-            SetExtension(m_vpSteps[i]->GetFilename(), extension));
+    std::string extension = GetExtension(song_file_name_);
+    for (size_t i = 0; i < steps_.size(); ++i) {
+      if (!steps_[i]->IsAutogen()) {
+        steps_[i]->SetFilename(
+            SetExtension(steps_[i]->GetFilename(), extension));
       }
     }
     FILEMAN->Remove(autosave_path);
-    m_loaded_from_autosave = false;
+    loaded_from_autosave_ = false;
   }
 }
 
 void Song::AddAutoGenNotes() {
   bool HasNotes[NUM_StepsType];
   memset(HasNotes, 0, sizeof(HasNotes));
-  for (unsigned i = 0; i < m_vpSteps.size(); i++)  // foreach Steps
+  for (unsigned i = 0; i < steps_.size(); i++)  // foreach Steps
   {
-    if (m_vpSteps[i]->IsAutogen()) {
+    if (steps_[i]->IsAutogen()) {
       continue;
     }
 
-    StepsType st = m_vpSteps[i]->m_StepsType;
+    StepsType st = steps_[i]->steps_type_;
     HasNotes[st] = true;
   }
 
@@ -1423,15 +1425,15 @@ void Song::AddAutoGenNotes() {
       continue;
     }
 
-    if (!PREFSMAN->m_bAutogenSteps) {
+    if (!PREFSMAN->autogen_steps_) {
       continue;
     }
-    if (!GAMEMAN->GetStepsTypeInfo(stMissing).bAllowAutogen) {
+    if (!GAMEMAN->GetStepsTypeInfo(stMissing).allow_autogen_) {
       continue;
     }
 
     // missing Steps of this type
-    int iNumTracksOfMissing = GAMEMAN->GetStepsTypeInfo(stMissing).iNumTracks;
+    int iNumTracksOfMissing = GAMEMAN->GetStepsTypeInfo(stMissing).num_tracks_;
 
     // look for closest match
     StepsType stBestMatch = StepsType_Invalid;
@@ -1443,7 +1445,7 @@ void Song::AddAutoGenNotes() {
       }
 
       // has (non-autogen) Steps of this type
-      const int iNumTracks = GAMEMAN->GetStepsTypeInfo(st).iNumTracks;
+      const int iNumTracks = GAMEMAN->GetStepsTypeInfo(st).num_tracks_;
       const int iTrackDifference = std::abs(iNumTracks - iNumTracksOfMissing);
       if (iTrackDifference < iBestTrackDifference) {
         stBestMatch = st;
@@ -1460,9 +1462,9 @@ void Song::AddAutoGenNotes() {
 void Song::AutoGen(StepsType ntTo, StepsType ntFrom) {
   // int iNumTracksOfTo = GAMEMAN->StepsTypeToNumTracks(ntTo);
 
-  for (unsigned int j = 0; j < m_vpSteps.size(); j++) {
-    const Steps* pOriginalNotes = m_vpSteps[j];
-    if (pOriginalNotes->m_StepsType == ntFrom) {
+  for (unsigned int j = 0; j < steps_.size(); j++) {
+    const Steps* pOriginalNotes = steps_[j];
+    if (pOriginalNotes->steps_type_ == ntFrom) {
       Steps* pNewNotes = new Steps(this);
       pNewNotes->AutogenFrom(pOriginalNotes, ntTo);
       this->AddSteps(pNewNotes);
@@ -1472,18 +1474,18 @@ void Song::AutoGen(StepsType ntTo, StepsType ntFrom) {
 
 void Song::RemoveAutoGenNotes() {
   FOREACH_ENUM(StepsType, st) {
-    for (int j = m_vpStepsByType[st].size() - 1; j >= 0; j--) {
-      if (m_vpStepsByType[st][j]->IsAutogen()) {
+    for (int j = steps_by_type_[st].size() - 1; j >= 0; j--) {
+      if (steps_by_type_[st][j]->IsAutogen()) {
         // delete m_vpSteps[j]; // delete below
-        m_vpStepsByType[st].erase(m_vpStepsByType[st].begin() + j);
+        steps_by_type_[st].erase(steps_by_type_[st].begin() + j);
       }
     }
   }
 
-  for (int j = m_vpSteps.size() - 1; j >= 0; j--) {
-    if (m_vpSteps[j]->IsAutogen()) {
-      delete m_vpSteps[j];
-      m_vpSteps.erase(m_vpSteps.begin() + j);
+  for (int j = steps_.size() - 1; j >= 0; j--) {
+    if (steps_[j]->IsAutogen()) {
+      delete steps_[j];
+      steps_.erase(steps_.begin() + j);
     }
   }
 }
@@ -1517,8 +1519,8 @@ bool Song::IsEasy(StepsType st) const {
 
 bool Song::IsTutorial() const {
   // A Song is considered a Tutorial if it has only Beginner steps.
-  for (const Steps* s : m_vpSteps) {
-    if (s->m_StepsType == StepsType_lights_cabinet) {
+  for (const Steps* s : steps_) {
+    if (s->steps_type_ == StepsType_lights_cabinet) {
       continue;  // ignore
     }
     if (s->GetDifficulty() != Difficulty_Beginner) {
@@ -1530,11 +1532,9 @@ bool Song::IsTutorial() const {
 }
 
 bool Song::HasEdits(StepsType st) const {
-  return std::any_of(
-      m_vpSteps.begin(), m_vpSteps.end(), [&](const Steps* step) {
-        return step->m_StepsType == st &&
-               step->GetDifficulty() == Difficulty_Edit;
-      });
+  return std::any_of(steps_.begin(), steps_.end(), [&](const Steps* step) {
+    return step->steps_type_ == st && step->GetDifficulty() == Difficulty_Edit;
+  });
 }
 
 bool Song::NormallyDisplayed() const {
@@ -1548,23 +1548,23 @@ bool Song::ShowInDemonstrationAndRanking() const {
 // Hack: see Song::TidyUpData comments.
 bool Song::HasMusic() const {
   // If we have keys, we always have music.
-  if (m_vsKeysoundFile.size() != 0) {
+  if (keysound_file_.size() != 0) {
     return true;
   }
 
-  return m_sMusicFile != "" && IsAFile(GetMusicPath());
+  return music_file_ != "" && IsAFile(GetMusicPath());
 }
 bool Song::HasBanner() const {
-  return m_sBannerFile != "" && IsAFile(GetBannerPath());
+  return banner_file_ != "" && IsAFile(GetBannerPath());
 }
 bool Song::HasLyrics() const {
-  return m_sLyricsFile != "" && IsAFile(GetLyricsPath());
+  return lyrics_file_ != "" && IsAFile(GetLyricsPath());
 }
 bool Song::HasBackground() const {
-  return m_sBackgroundFile != "" && IsAFile(GetBackgroundPath());
+  return background_file_ != "" && IsAFile(GetBackgroundPath());
 }
 bool Song::HasCDTitle() const {
-  return m_sCDTitleFile != "" && IsAFile(GetCDTitlePath());
+  return cd_title_file_ != "" && IsAFile(GetCDTitlePath());
 }
 bool Song::HasBGChanges() const {
   FOREACH_BackgroundLayer(i) {
@@ -1574,33 +1574,33 @@ bool Song::HasBGChanges() const {
   }
   return false;
 }
-bool Song::HasAttacks() const { return !m_Attacks.empty(); }
+bool Song::HasAttacks() const { return !attacks_.empty(); }
 bool Song::HasJacket() const {
-  return m_sJacketFile != "" && IsAFile(GetJacketPath());
+  return jacket_file_ != "" && IsAFile(GetJacketPath());
 }
 bool Song::HasDisc() const {
-  return m_sDiscFile != "" && IsAFile(GetDiscPath());
+  return disc_file_ != "" && IsAFile(GetDiscPath());
 }
 bool Song::HasCDImage() const {
-  return m_sCDFile != "" && IsAFile(GetCDImagePath());
+  return cd_file_ != "" && IsAFile(GetCDImagePath());
 }
 bool Song::HasPreviewVid() const {
-  return m_sPreviewVidFile != "" && IsAFile(GetPreviewVidPath());
+  return preview_vid_file_ != "" && IsAFile(GetPreviewVidPath());
 }
 
 const std::vector<BackgroundChange>& Song::GetBackgroundChanges(
     BackgroundLayer bl) const {
-  return *(m_BackgroundChanges[bl]);
+  return *(background_changes_[bl]);
 }
 std::vector<BackgroundChange>& Song::GetBackgroundChanges(BackgroundLayer bl) {
-  return *(m_BackgroundChanges[bl].Get());
+  return *(background_changes_[bl].Get());
 }
 
 const std::vector<BackgroundChange>& Song::GetForegroundChanges() const {
-  return *m_ForegroundChanges;
+  return *foreground_changes_;
 }
 std::vector<BackgroundChange>& Song::GetForegroundChanges() {
-  return *m_ForegroundChanges.Get();
+  return *foreground_changes_.Get();
 }
 
 // We want to return a filename, We use this function for that.
@@ -1665,77 +1665,77 @@ std::string Song::GetSongAssetPath(
 /* Note that supplying a path relative to the top-level directory is only for
  * compatibility with DWI. We prefer paths relative to the song directory. */
 std::string Song::GetMusicPath() const {
-  return GetSongAssetPath(m_sMusicFile, m_sSongDir);
+  return GetSongAssetPath(music_file_, song_dir_);
 }
 
 std::string Song::GetBannerPath() const {
-  return GetSongAssetPath(m_sBannerFile, m_sSongDir);
+  return GetSongAssetPath(banner_file_, song_dir_);
 }
 
 std::string Song::GetLyricsPath() const {
-  return GetSongAssetPath(m_sLyricsFile, m_sSongDir);
+  return GetSongAssetPath(lyrics_file_, song_dir_);
 }
 
 std::string Song::GetCDTitlePath() const {
-  return GetSongAssetPath(m_sCDTitleFile, m_sSongDir);
+  return GetSongAssetPath(cd_title_file_, song_dir_);
 }
 
 std::string Song::GetBackgroundPath() const {
-  return GetSongAssetPath(m_sBackgroundFile, m_sSongDir);
+  return GetSongAssetPath(background_file_, song_dir_);
 }
 
 std::string Song::GetJacketPath() const {
-  return GetSongAssetPath(m_sJacketFile, m_sSongDir);
+  return GetSongAssetPath(jacket_file_, song_dir_);
 }
 
 std::string Song::GetDiscPath() const {
-  return GetSongAssetPath(m_sDiscFile, m_sSongDir);
+  return GetSongAssetPath(disc_file_, song_dir_);
 }
 
 std::string Song::GetCDImagePath() const {
-  return GetSongAssetPath(m_sCDFile, m_sSongDir);
+  return GetSongAssetPath(cd_file_, song_dir_);
 }
 
 std::string Song::GetPreviewVidPath() const {
-  return GetSongAssetPath(m_sPreviewVidFile, m_sSongDir);
+  return GetSongAssetPath(preview_vid_file_, song_dir_);
 }
 
 std::string Song::GetPreviewMusicPath() const {
-  if (m_PreviewFile.empty()) {
+  if (preview_file_.empty()) {
     return GetMusicPath();
   }
-  return GetSongAssetPath(m_PreviewFile, m_sSongDir);
+  return GetSongAssetPath(preview_file_, song_dir_);
 }
 
 float Song::GetPreviewStartSeconds() const {
-  if (m_PreviewFile.empty()) {
-    return m_fMusicSampleStartSeconds;
+  if (preview_file_.empty()) {
+    return music_sample_start_seconds_;
   }
   return 0.0f;
 }
 
 std::string Song::GetDisplayMainTitle() const {
-  if (!PREFSMAN->m_bShowNativeLanguage) {
+  if (!PREFSMAN->show_native_language_) {
     return GetTranslitMainTitle();
   }
-  return m_sMainTitle;
+  return main_title_;
 }
 
 std::string Song::GetDisplaySubTitle() const {
-  if (!PREFSMAN->m_bShowNativeLanguage) {
+  if (!PREFSMAN->show_native_language_) {
     return GetTranslitSubTitle();
   }
-  return m_sSubTitle;
+  return sub_title_;
 }
 
 std::string Song::GetDisplayArtist() const {
-  if (!PREFSMAN->m_bShowNativeLanguage) {
+  if (!PREFSMAN->show_native_language_) {
     return GetTranslitArtist();
   }
-  return m_sArtist;
+  return artist_;
 }
 
-std::string Song::GetMainTitle() const { return m_sMainTitle; }
+std::string Song::GetMainTitle() const { return main_title_; }
 
 std::string Song::GetDisplayFullTitle() const {
   std::string Title = GetDisplayMainTitle();
@@ -1761,14 +1761,14 @@ void Song::AddSteps(Steps* pSteps) {
   // Songs of unknown stepstype are saved as a forwards compatibility feature
   // so that editing a simfile made by a future version that has a new style
   // won't delete those steps. -Kyz
-  if (pSteps->m_StepsType != StepsType_Invalid) {
-    m_vpSteps.push_back(pSteps);
+  if (pSteps->steps_type_ != StepsType_Invalid) {
+    steps_.push_back(pSteps);
     ASSERT_M(
-        pSteps->m_StepsType < NUM_StepsType,
-        ssprintf("%i", pSteps->m_StepsType));
-    m_vpStepsByType[pSteps->m_StepsType].push_back(pSteps);
+        pSteps->steps_type_ < NUM_StepsType,
+        ssprintf("%i", pSteps->steps_type_));
+    steps_by_type_[pSteps->steps_type_].push_back(pSteps);
   } else {
-    m_UnknownStyleSteps.push_back(pSteps);
+    unknown_style_steps_.push_back(pSteps);
   }
 }
 
@@ -1782,7 +1782,7 @@ void Song::DeleteSteps(const Steps* pSteps, bool bReAutoGen) {
     RemoveAutoGenNotes();
   }
 
-  std::vector<Steps*>& vpSteps = m_vpStepsByType[pSteps->m_StepsType];
+  std::vector<Steps*>& vpSteps = steps_by_type_[pSteps->steps_type_];
   for (int j = vpSteps.size() - 1; j >= 0; j--) {
     if (vpSteps[j] == pSteps) {
       // delete vpSteps[j]; // delete below
@@ -1791,10 +1791,10 @@ void Song::DeleteSteps(const Steps* pSteps, bool bReAutoGen) {
     }
   }
 
-  for (int j = m_vpSteps.size() - 1; j >= 0; j--) {
-    if (m_vpSteps[j] == pSteps) {
-      delete m_vpSteps[j];
-      m_vpSteps.erase(m_vpSteps.begin() + j);
+  for (int j = steps_.size() - 1; j >= 0; j--) {
+    if (steps_[j] == pSteps) {
+      delete steps_[j];
+      steps_.erase(steps_.begin() + j);
       break;
     }
   }
@@ -1805,12 +1805,12 @@ void Song::DeleteSteps(const Steps* pSteps, bool bReAutoGen) {
 }
 
 bool Song::Matches(std::string sGroup, std::string sSong) const {
-  if (sGroup.size() && CompareNoCase(sGroup, this->m_sGroupName) != 0) {
+  if (sGroup.size() && CompareNoCase(sGroup, this->group_name_) != 0) {
     return false;
   }
 
   // match on song dir or title (ala DWI)
-  if (!CompareNoCase(sSong, m_sSongName)) {
+  if (!CompareNoCase(sSong, song_name_)) {
     return true;
   }
   if (!CompareNoCase(sSong, this->GetTranslitFullTitle())) {
@@ -1827,8 +1827,8 @@ void Song::FreeAllLoadedFromProfile(
   /* DeleteSteps will remove and recreate autogen notes, which may reorder
    * m_vpSteps, so be careful not to skip over entries. */
   std::vector<Steps*> apToRemove;
-  for (int s = m_vpSteps.size() - 1; s >= 0; s--) {
-    Steps* pSteps = m_vpSteps[s];
+  for (int s = steps_.size() - 1; s >= 0; s--) {
+    Steps* pSteps = steps_[s];
     if (!pSteps->WasLoadedFromProfile()) {
       continue;
     }
@@ -1849,8 +1849,8 @@ void Song::FreeAllLoadedFromProfile(
 
 void Song::GetStepsLoadedFromProfile(
     ProfileSlot slot, std::vector<Steps*>& vpStepsOut) const {
-  for (unsigned s = 0; s < m_vpSteps.size(); s++) {
-    Steps* pSteps = m_vpSteps[s];
+  for (unsigned s = 0; s < steps_.size(); s++) {
+    Steps* pSteps = steps_[s];
     if (pSteps->GetLoadedFromProfileSlot() == slot) {
       vpStepsOut.push_back(pSteps);
     }
@@ -1859,8 +1859,8 @@ void Song::GetStepsLoadedFromProfile(
 
 int Song::GetNumStepsLoadedFromProfile(ProfileSlot slot) const {
   int iCount = 0;
-  for (unsigned s = 0; s < m_vpSteps.size(); s++) {
-    Steps* pSteps = m_vpSteps[s];
+  for (unsigned s = 0; s < steps_.size(); s++) {
+    Steps* pSteps = steps_[s];
     if (pSteps->GetLoadedFromProfileSlot() == slot) {
       iCount++;
     }
@@ -1875,12 +1875,12 @@ bool Song::IsEditAlreadyLoaded(Steps* pSteps) const {
           "The %s chart for %s is no edit, thus it can't be checked for "
           "loading.",
           DifficultyToString(pSteps->GetDifficulty()).c_str(),
-          this->m_sMainTitle.c_str()));
+          this->main_title_.c_str()));
 
-  for (unsigned i = 0; i < m_vpSteps.size(); i++) {
-    Steps* pOther = m_vpSteps[i];
+  for (unsigned i = 0; i < steps_.size(); i++) {
+    Steps* pOther = steps_[i];
     if (pOther->GetDifficulty() == Difficulty_Edit &&
-        pOther->m_StepsType == pSteps->m_StepsType &&
+        pOther->steps_type_ == pSteps->steps_type_ &&
         pOther->GetHash() == pSteps->GetHash()) {
       return true;
     }
@@ -1891,12 +1891,12 @@ bool Song::IsEditAlreadyLoaded(Steps* pSteps) const {
 
 bool Song::IsStepsUsingDifferentTiming(Steps* pSteps) const {
   // XXX This no longer depends on Song at all
-  return !pSteps->m_Timing.empty();
+  return !pSteps->timing_.empty();
 }
 
 bool Song::AnyChartUsesSplitTiming() const {
-  for (Steps* s : m_vpSteps) {
-    if (!s->m_Timing.empty()) {
+  for (Steps* s : steps_) {
+    if (!s->timing_.empty()) {
       return true;
     }
   }
@@ -1904,17 +1904,17 @@ bool Song::AnyChartUsesSplitTiming() const {
 }
 
 bool Song::HasSignificantBpmChangesOrStops() const {
-  if (m_SongTiming.HasStops() || m_SongTiming.HasDelays()) {
+  if (song_timing_.HasStops() || song_timing_.HasDelays()) {
     return true;
   }
 
   // Don't consider BPM changes that only are only for maintaining sync as
   // a real BpmChange.
-  if (m_DisplayBPMType == DISPLAY_BPM_SPECIFIED) {
-    if (m_fSpecifiedBPMMin != m_fSpecifiedBPMMax) {
+  if (display_bpm_type_ == DISPLAY_BPM_SPECIFIED) {
+    if (specified_bpm_min_ != specified_bpm_max_) {
       return true;
     }
-  } else if (m_SongTiming.HasBpmChanges()) {
+  } else if (song_timing_.HasBpmChanges()) {
     return true;
   }
 
@@ -1926,11 +1926,11 @@ float Song::GetStepsSeconds() const {
 }
 
 bool Song::IsLong() const {
-  return !IsMarathon() && m_fMusicLengthSeconds >= g_fLongVerSongSeconds;
+  return !IsMarathon() && music_length_seconds_ >= g_fLongVerSongSeconds;
 }
 
 bool Song::IsMarathon() const {
-  return m_fMusicLengthSeconds >= g_fMarathonVerSongSeconds;
+  return music_length_seconds_ >= g_fMarathonVerSongSeconds;
 }
 
 // lua start
@@ -1976,11 +1976,11 @@ class LunaSong : public Luna<Song> {
     return 1;
   }
   static int GetGenre(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_sGenre.c_str());
+    lua_pushstring(L, p->genre_.c_str());
     return 1;
   }
   static int GetOrigin(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_sOrigin.c_str());
+    lua_pushstring(L, p->origin_.c_str());
     return 1;
   }
   static int GetAllSteps(T* p, lua_State* L) {
@@ -2097,16 +2097,16 @@ class LunaSong : public Luna<Song> {
     return 1;
   }
   static int IsCustomSong(T* p, lua_State* L) {
-    lua_pushboolean(L, p->m_LoadedFromProfile != ProfileSlot_Invalid);
+    lua_pushboolean(L, p->loaded_from_profile_ != ProfileSlot_Invalid);
     return 1;
   }
   static int GetGroupName(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_sGroupName.c_str());
+    lua_pushstring(L, p->group_name_.c_str());
     return 1;
   }
 
   static int MusicLengthSeconds(T* p, lua_State* L) {
-    lua_pushnumber(L, p->m_fMusicLengthSeconds);
+    lua_pushnumber(L, p->music_length_seconds_);
     return 1;
   }
   static int GetSampleStart(T* p, lua_State* L) {
@@ -2114,7 +2114,7 @@ class LunaSong : public Luna<Song> {
     return 1;
   }
   static int GetSampleLength(T* p, lua_State* L) {
-    lua_pushnumber(L, p->m_fMusicSampleLengthSeconds);
+    lua_pushnumber(L, p->music_sample_length_seconds_);
     return 1;
   }
   static int IsLong(T* p, lua_State* L) {
@@ -2155,7 +2155,7 @@ class LunaSong : public Luna<Song> {
     return 1;
   }
   static int GetTimingData(T* p, lua_State* L) {
-    p->m_SongTiming.PushSelf(L);
+    p->song_timing_.PushSelf(L);
     return 1;
   }
   static int GetBGChanges(T* p, lua_State* L) {
@@ -2164,21 +2164,21 @@ class LunaSong : public Luna<Song> {
     lua_createtable(L, changes.size(), 0);
     for (size_t c = 0; c < changes.size(); ++c) {
       lua_createtable(L, 0, 8);
-      lua_pushnumber(L, changes[c].m_fStartBeat);
+      lua_pushnumber(L, changes[c].start_beat_);
       lua_setfield(L, -2, "start_beat");
-      lua_pushnumber(L, changes[c].m_fRate);
+      lua_pushnumber(L, changes[c].rate_);
       lua_setfield(L, -2, "rate");
-      LuaHelpers::Push(L, changes[c].m_sTransition);
+      LuaHelpers::Push(L, changes[c].transition_);
       lua_setfield(L, -2, "transition");
-      LuaHelpers::Push(L, changes[c].m_def.m_sEffect);
+      LuaHelpers::Push(L, changes[c].def_.effect_);
       lua_setfield(L, -2, "effect");
-      LuaHelpers::Push(L, changes[c].m_def.m_sFile1);
+      LuaHelpers::Push(L, changes[c].def_.file1_);
       lua_setfield(L, -2, "file1");
-      LuaHelpers::Push(L, changes[c].m_def.m_sFile2);
+      LuaHelpers::Push(L, changes[c].def_.file2_);
       lua_setfield(L, -2, "file2");
-      LuaHelpers::Push(L, changes[c].m_def.m_sColor1);
+      LuaHelpers::Push(L, changes[c].def_.color1_);
       lua_setfield(L, -2, "color1");
-      LuaHelpers::Push(L, changes[c].m_def.m_sColor2);
+      LuaHelpers::Push(L, changes[c].def_.color2_);
       lua_setfield(L, -2, "color2");
       lua_rawseti(L, -2, c + 1);
     }
@@ -2296,7 +2296,7 @@ class LunaSong : public Luna<Song> {
     return 1;
   }
   static int IsDisplayBpmRandom(T* p, lua_State* L) {
-    lua_pushboolean(L, p->m_DisplayBPMType == DISPLAY_BPM_RANDOM);
+    lua_pushboolean(L, p->display_bpm_type_ == DISPLAY_BPM_RANDOM);
     return 1;
   }
   static int ReloadFromSongDir(T* p, lua_State* L) {

@@ -7,13 +7,13 @@
 #include "RageModelGeometry.h"
 
 struct ModelManagerPrefs {
-  bool m_bDelayedUnload;
+  bool delayed_unload_;
 
-  ModelManagerPrefs() { m_bDelayedUnload = false; }
-  ModelManagerPrefs(bool bDelayedUnload) { m_bDelayedUnload = bDelayedUnload; }
+  ModelManagerPrefs() { delayed_unload_ = false; }
+  ModelManagerPrefs(bool bDelayedUnload) { delayed_unload_ = bDelayedUnload; }
 
   bool operator!=(const ModelManagerPrefs& rhs) {
-    return m_bDelayedUnload != rhs.m_bDelayedUnload;
+    return delayed_unload_ != rhs.delayed_unload_;
   }
 };
 /**
@@ -35,12 +35,12 @@ class ModelManager {
    * @param prefs the new preferences to set up.
    * @return true if the display needs to be reset, false otherwise. */
   bool SetPrefs(const ModelManagerPrefs& prefs);
-  const ModelManagerPrefs& GetPrefs() { return m_Prefs; }
+  const ModelManagerPrefs& GetPrefs() { return prefs_; }
 
  protected:
-  std::map<std::string, RageModelGeometry*> m_mapFileToGeometry;
+  std::map<std::string, RageModelGeometry*> map_file_to_geometry_;
 
-  ModelManagerPrefs m_Prefs;
+  ModelManagerPrefs prefs_;
 };
 
 extern ModelManager*

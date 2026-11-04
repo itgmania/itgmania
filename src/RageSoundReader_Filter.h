@@ -9,32 +9,30 @@
 #include "RageUtil_AutoPtr.h"
 class RageSoundReader_Filter : public RageSoundReader {
  public:
-  RageSoundReader_Filter(RageSoundReader* pSource) : m_pSource(pSource) {}
+  RageSoundReader_Filter(RageSoundReader* pSource) : source_(pSource) {}
 
-  virtual int GetLength() const { return m_pSource->GetLength(); }
-  virtual int GetLength_Fast() const { return m_pSource->GetLength_Fast(); }
-  virtual int SetPosition(int iFrame) { return m_pSource->SetPosition(iFrame); }
+  virtual int GetLength() const { return source_->GetLength(); }
+  virtual int GetLength_Fast() const { return source_->GetLength_Fast(); }
+  virtual int SetPosition(int iFrame) { return source_->SetPosition(iFrame); }
   virtual int Read(float* pBuf, int iFrames) {
-    return m_pSource->Read(pBuf, iFrames);
+    return source_->Read(pBuf, iFrames);
   }
-  virtual int GetSampleRate() const { return m_pSource->GetSampleRate(); }
-  virtual unsigned GetNumChannels() const {
-    return m_pSource->GetNumChannels();
-  }
+  virtual int GetSampleRate() const { return source_->GetSampleRate(); }
+  virtual unsigned GetNumChannels() const { return source_->GetNumChannels(); }
   virtual bool SetProperty(const std::string& sProperty, float fValue) {
-    return m_pSource->SetProperty(sProperty, fValue);
+    return source_->SetProperty(sProperty, fValue);
   }
   virtual int GetNextSourceFrame() const {
-    return m_pSource->GetNextSourceFrame();
+    return source_->GetNextSourceFrame();
   }
   virtual float GetStreamToSourceRatio() const {
-    return m_pSource->GetStreamToSourceRatio();
+    return source_->GetStreamToSourceRatio();
   }
-  virtual RageSoundReader* GetSource() { return &*m_pSource; }
-  virtual std::string GetError() const { return m_pSource->GetError(); }
+  virtual RageSoundReader* GetSource() { return &*source_; }
+  virtual std::string GetError() const { return source_->GetError(); }
 
  protected:
-  HiddenPtr<RageSoundReader> m_pSource;
+  HiddenPtr<RageSoundReader> source_;
 };
 
 #endif

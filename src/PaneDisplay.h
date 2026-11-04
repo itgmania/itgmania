@@ -51,11 +51,11 @@ class PaneDisplay : public ActorFrame {
       PaneCategory c, std::string& sTextOut, float& fLevelOut);
   void SetContent(PaneCategory c);
 
-  BitmapText m_textContents[NUM_PaneCategory];
-  AutoActor m_Labels[NUM_PaneCategory];
-  ActorFrame m_ContentsFrame;
+  BitmapText text_contents_[NUM_PaneCategory];
+  AutoActor labels_[NUM_PaneCategory];
+  ActorFrame contents_frame_;
 
-  PlayerNumber m_PlayerNumber;
+  PlayerNumber player_number_;
 
   LocalizedString EMPTY_MACHINE_HIGH_SCORE_NAME;
   LocalizedString NOT_AVAILABLE;

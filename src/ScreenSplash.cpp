@@ -8,8 +8,8 @@
 REGISTER_SCREEN_CLASS(ScreenSplash);
 
 void ScreenSplash::Init() {
-  ALLOW_START_TO_SKIP.Load(m_sName, "AllowStartToSkip");
-  PREPARE_SCREEN.Load(m_sName, "PrepareScreen");
+  ALLOW_START_TO_SKIP.Load(name_, "AllowStartToSkip");
+  PREPARE_SCREEN.Load(name_, "PrepareScreen");
 
   ScreenWithMenuElements::Init();
 }

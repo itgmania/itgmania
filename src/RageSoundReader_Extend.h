@@ -25,15 +25,15 @@ class RageSoundReader_Extend : public RageSoundReader_Filter {
   int GetEndFrame() const;
   int GetData(float* pBuffer, int iFrames);
 
-  int m_iPositionFrames;
+  int position_frames_;
 
   enum StopMode { M_LOOP, M_STOP, M_CONTINUE };
-  StopMode m_StopMode;
-  int m_iStartFrames;
-  int m_iLengthFrames;
-  int m_iFadeInFrames;
-  int m_iFadeOutFrames;
-  bool m_bIgnoreFadeInFrames;
+  StopMode stop_mode_;
+  int start_frames_;
+  int length_frames_;
+  int fade_in_frames_;
+  int fade_out_frames_;
+  bool ignore_fade_in_frames_;
 };
 
 #endif

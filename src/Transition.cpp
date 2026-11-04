@@ -6,67 +6,67 @@
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 
-Transition::Transition() { m_State = waiting; }
+Transition::Transition() { state_ = waiting; }
 
 void Transition::Load(std::string sBGAniDir) {
   this->RemoveAllChildren();
 
-  m_sprTransition.Load(sBGAniDir);
-  this->AddChild(m_sprTransition);
+  spr_transition_.Load(sBGAniDir);
+  this->AddChild(spr_transition_);
 
-  m_State = waiting;
+  state_ = waiting;
 }
 
 void Transition::UpdateInternal(float fDeltaTime) {
-  if (m_State != transitioning) {
+  if (state_ != transitioning) {
     return;
   }
 
   // Check this before running Update, so we draw the last frame of the finished
   // transition before sending m_MessageToSendWhenDone.
-  if (m_sprTransition->GetTweenTimeLeft() == 0)  // over
+  if (spr_transition_->GetTweenTimeLeft() == 0)  // over
   {
-    m_State = finished;
-    SCREENMAN->SendMessageToTopScreen(m_MessageToSendWhenDone);
+    state_ = finished;
+    SCREENMAN->SendMessageToTopScreen(message_to_send_when_done_);
   }
 
   ActorFrame::UpdateInternal(fDeltaTime);
 }
 
 void Transition::Reset() {
-  m_State = waiting;
-  m_bFirstUpdate = true;
+  state_ = waiting;
+  first_update_ = true;
 
-  if (m_sprTransition.IsLoaded()) {
-    m_sprTransition->FinishTweening();
+  if (spr_transition_.IsLoaded()) {
+    spr_transition_->FinishTweening();
   }
 }
 
-bool Transition::EarlyAbortDraw() const { return m_State == waiting; }
+bool Transition::EarlyAbortDraw() const { return state_ == waiting; }
 
 void Transition::StartTransitioning(ScreenMessage send_when_done) {
-  if (m_State != waiting) {
+  if (state_ != waiting) {
     return;  // ignore
   }
 
   // If transition isn't loaded don't set state to transitioning.
   // We assume elsewhere that m_sprTransition is loaded.
-  if (!m_sprTransition.IsLoaded()) {
+  if (!spr_transition_.IsLoaded()) {
     return;
   }
 
-  m_sprTransition->PlayCommand("StartTransitioning");
+  spr_transition_->PlayCommand("StartTransitioning");
 
-  m_MessageToSendWhenDone = send_when_done;
-  m_State = transitioning;
+  message_to_send_when_done_ = send_when_done;
+  state_ = transitioning;
 }
 
 float Transition::GetTweenTimeLeft() const {
-  if (m_State != transitioning) {
+  if (state_ != transitioning) {
     return 0;
   }
 
-  return m_sprTransition->GetTweenTimeLeft();
+  return spr_transition_->GetTweenTimeLeft();
 }
 
 /*

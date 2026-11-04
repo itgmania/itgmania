@@ -40,44 +40,44 @@ class NoteData {
   typedef TrackMap::iterator iterator;
   typedef TrackMap::const_iterator const_iterator;
 
-  NoteData() : m_TapNotes() {}
+  NoteData() : tap_notes_() {}
 
-  iterator begin(int iTrack) { return m_TapNotes[iTrack].begin(); }
-  const_iterator begin(int iTrack) const { return m_TapNotes[iTrack].begin(); }
-  iterator end(int iTrack) { return m_TapNotes[iTrack].end(); }
-  const_iterator end(int iTrack) const { return m_TapNotes[iTrack].end(); }
+  iterator begin(int iTrack) { return tap_notes_[iTrack].begin(); }
+  const_iterator begin(int iTrack) const { return tap_notes_[iTrack].begin(); }
+  iterator end(int iTrack) { return tap_notes_[iTrack].end(); }
+  const_iterator end(int iTrack) const { return tap_notes_[iTrack].end(); }
   iterator lower_bound(int iTrack, int iRow);
   const_iterator lower_bound(int iTrack, int iRow) const;
   iterator upper_bound(int iTrack, int iRow);
   const_iterator upper_bound(int iTrack, int iRow) const;
   void swap(NoteData& nd) {
-    m_TapNotes.swap(nd.m_TapNotes);
-    m_atis.swap(nd.m_atis);
-    m_const_atis.swap(nd.m_const_atis);
+    tap_notes_.swap(nd.tap_notes_);
+    atis_.swap(nd.atis_);
+    const_atis_.swap(nd.const_atis_);
   }
 
   // This is ugly to make it templated but I don't want to have to write the
   // same class twice.
   template <typename ND, typename iter, typename TN>
   class _all_tracks_iterator {
-    ND* m_pNoteData;
-    std::vector<iter> m_vBeginIters;
+    ND* note_data_;
+    std::vector<iter> begin_iters_;
 
     /* There isn't a "past the beginning" iterator so this is hard to make a
      * true bidirectional iterator. Use the "past the end" iterator in place of
      * the "past the beginning" iterator when in reverse. */
-    std::vector<iter> m_vCurrentIters;
+    std::vector<iter> current_iters_;
 
-    std::vector<iter> m_vEndIters;
-    int m_iTrack;
-    bool m_bReverse;
+    std::vector<iter> end_iters_;
+    int track_;
+    bool reverse_;
 
     // These exist so that the iterator can be revalidated if the NoteData is
     // transformed during this iterator's lifetime.
-    std::vector<int> m_PrevCurrentRows;
-    bool m_Inclusive;
-    int m_StartRow;
-    int m_EndRow;
+    std::vector<int> prev_current_rows_;
+    bool inclusive_;
+    int start_row_;
+    int end_row_;
 
     void Find(bool bReverse);
 
@@ -91,24 +91,24 @@ class NoteData {
     _all_tracks_iterator operator++(int dummy);  // postincrement
     //_all_tracks_iterator &operator--();		// predecrement
     //_all_tracks_iterator operator--( int dummy );	// postdecrement
-    inline int Track() const { return m_iTrack; }
-    inline int Row() const { return m_vCurrentIters[m_iTrack]->first; }
-    inline bool IsAtEnd() const { return m_iTrack == -1; }
+    inline int Track() const { return track_; }
+    inline int Row() const { return current_iters_[track_]->first; }
+    inline bool IsAtEnd() const { return track_ == -1; }
     inline TN& operator*() {
       DEBUG_ASSERT(!IsAtEnd());
-      return m_vCurrentIters[m_iTrack]->second;
+      return current_iters_[track_]->second;
     }
     inline TN* operator->() {
       DEBUG_ASSERT(!IsAtEnd());
-      return &m_vCurrentIters[m_iTrack]->second;
+      return &current_iters_[track_]->second;
     }
     inline const TN& operator*() const {
       DEBUG_ASSERT(!IsAtEnd());
-      return m_vCurrentIters[m_iTrack]->second;
+      return current_iters_[track_]->second;
     }
     inline const TN* operator->() const {
       DEBUG_ASSERT(!IsAtEnd());
-      return &m_vCurrentIters[m_iTrack]->second;
+      return &current_iters_[track_]->second;
     }
     // Use when transforming the NoteData.
     void Revalidate(
@@ -128,7 +128,7 @@ class NoteData {
  private:
   // There's no point in inserting empty notes into the map.
   // Any blank space in the map is defined to be empty.
-  std::vector<TrackMap> m_TapNotes;
+  std::vector<TrackMap> tap_notes_;
 
   /**
    * @brief Determine whether this note is for Player 1 or Player 2.
@@ -170,8 +170,8 @@ class NoteData {
 
   // These exist so that they can be revalidated when something that transforms
   // the NoteData occurs. -Kyz
-  mutable std::set<all_tracks_iterator*> m_atis;
-  mutable std::set<all_tracks_const_iterator*> m_const_atis;
+  mutable std::set<all_tracks_iterator*> atis_;
+  mutable std::set<all_tracks_const_iterator*> const_atis_;
 
   void AddATIToList(all_tracks_iterator* iter) const;
   void AddATIToList(all_tracks_const_iterator* iter) const;
@@ -181,7 +181,7 @@ class NoteData {
  public:
   void Init();
 
-  int GetNumTracks() const { return m_TapNotes.size(); }
+  int GetNumTracks() const { return tap_notes_.size(); }
   void SetNumTracks(int iNewNumTracks);
   bool IsComposite() const;
 
@@ -310,7 +310,7 @@ class NoteData {
 
   // statistics
   bool IsEmpty() const;
-  bool IsTrackEmpty(int iTrack) const { return m_TapNotes[iTrack].empty(); }
+  bool IsTrackEmpty(int iTrack) const { return tap_notes_[iTrack].empty(); }
   int GetFirstRow() const;  // return the beat number of the first note
   int GetLastRow() const;   // return the beat number of the last note
   float GetFirstBeat() const { return NoteRowToBeat(GetFirstRow()); }

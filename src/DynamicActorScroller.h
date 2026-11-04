@@ -14,7 +14,7 @@ class DynamicActorScroller : public ActorScroller {
   virtual void ShiftSubActors(int iDist);
   virtual void ConfigureActor(Actor* pActor, int iItem);
 
-  LuaReference m_LoadFunction;
+  LuaReference load_function_;
 };
 /** @brief an ActorScroller that deletes its children automatically. */
 class DynamicActorScrollerAutoDeleteChildren : public DynamicActorScroller {

@@ -63,35 +63,35 @@ void RageSurfaceUtils::encodepixel(uint8_t* p, int bpp, uint32_t pixel) {
 // Get and set colors without scaling to 0..255.
 void RageSurfaceUtils::GetRawRGBAV(
     uint32_t pixel, const RageSurfaceFormat& fmt, uint8_t* v) {
-  if (fmt.BytesPerPixel == 1) {
-    v[0] = fmt.palette->colors[pixel].r;
-    v[1] = fmt.palette->colors[pixel].g;
-    v[2] = fmt.palette->colors[pixel].b;
-    v[3] = fmt.palette->colors[pixel].a;
+  if (fmt.bytes_per_pixel_ == 1) {
+    v[0] = fmt.palette_->colors_[pixel].r_;
+    v[1] = fmt.palette_->colors_[pixel].g_;
+    v[2] = fmt.palette_->colors_[pixel].b_;
+    v[3] = fmt.palette_->colors_[pixel].a_;
   } else {
-    v[0] = uint8_t((pixel & fmt.Rmask) >> fmt.Rshift);
-    v[1] = uint8_t((pixel & fmt.Gmask) >> fmt.Gshift);
-    v[2] = uint8_t((pixel & fmt.Bmask) >> fmt.Bshift);
-    v[3] = uint8_t((pixel & fmt.Amask) >> fmt.Ashift);
+    v[0] = uint8_t((pixel & fmt.rmask_) >> fmt.rshift_);
+    v[1] = uint8_t((pixel & fmt.gmask_) >> fmt.gshift_);
+    v[2] = uint8_t((pixel & fmt.bmask_) >> fmt.bshift_);
+    v[3] = uint8_t((pixel & fmt.amask_) >> fmt.ashift_);
   }
 }
 
 void RageSurfaceUtils::GetRawRGBAV(
     const uint8_t* p, const RageSurfaceFormat& fmt, uint8_t* v) {
-  uint32_t pixel = decodepixel(p, fmt.BytesPerPixel);
+  uint32_t pixel = decodepixel(p, fmt.bytes_per_pixel_);
   GetRawRGBAV(pixel, fmt, v);
 }
 
 void RageSurfaceUtils::GetRGBAV(
     uint32_t pixel, const RageSurface* src, uint8_t* v) {
-  GetRawRGBAV(pixel, src->fmt, v);
-  const RageSurfaceFormat* fmt = src->format;
+  GetRawRGBAV(pixel, src->fmt_, v);
+  const RageSurfaceFormat* fmt = src->format_;
   for (int c = 0; c < 4; ++c) {
-    v[c] = v[c] << fmt->Loss[c];
+    v[c] = v[c] << fmt->loss_[c];
   }
 
   // Correct for surfaces that don't have an alpha channel.
-  if (fmt->Loss[3] == 8) {
+  if (fmt->loss_[3] == 8) {
     v[3] = 255;
   }
 }
@@ -99,38 +99,39 @@ void RageSurfaceUtils::GetRGBAV(
 // Inverse of GetRawRGBAV.
 uint32_t RageSurfaceUtils::SetRawRGBAV(
     const RageSurfaceFormat* fmt, const uint8_t* v) {
-  return v[0] << fmt->Rshift | v[1] << fmt->Gshift | v[2] << fmt->Bshift |
-         v[3] << fmt->Ashift;
+  return v[0] << fmt->rshift_ | v[1] << fmt->gshift_ | v[2] << fmt->bshift_ |
+         v[3] << fmt->ashift_;
 }
 
 void RageSurfaceUtils::SetRawRGBAV(
     uint8_t* p, const RageSurface* src, const uint8_t* v) {
-  uint32_t pixel = SetRawRGBAV(src->format, v);
-  encodepixel(p, src->format->BytesPerPixel, pixel);
+  uint32_t pixel = SetRawRGBAV(src->format_, v);
+  encodepixel(p, src->format_->bytes_per_pixel_, pixel);
 }
 
 // Inverse of GetRGBAV.
 uint32_t RageSurfaceUtils::SetRGBAV(
     const RageSurfaceFormat* fmt, const uint8_t* v) {
-  return (v[0] >> fmt->Loss[0]) << fmt->Shift[0] |
-         (v[1] >> fmt->Loss[1]) << fmt->Shift[1] |
-         (v[2] >> fmt->Loss[2]) << fmt->Shift[2] |
-         (v[3] >> fmt->Loss[3]) << fmt->Shift[3];
+  return (v[0] >> fmt->loss_[0]) << fmt->shift_[0] |
+         (v[1] >> fmt->loss_[1]) << fmt->shift_[1] |
+         (v[2] >> fmt->loss_[2]) << fmt->shift_[2] |
+         (v[3] >> fmt->loss_[3]) << fmt->shift_[3];
 }
 
 void RageSurfaceUtils::GetBitsPerChannel(
     const RageSurfaceFormat* fmt, uint32_t bits[4]) {
   // The actual bits stored in each color is 8-loss.
   for (int c = 0; c < 4; ++c) {
-    bits[c] = 8 - fmt->Loss[c];
+    bits[c] = 8 - fmt->loss_[c];
   }
 }
 
 void RageSurfaceUtils::CopySurface(const RageSurface* src, RageSurface* dest) {
   // Copy the palette, if we have one.
-  if (src->format->BitsPerPixel == 8 && dest->format->BitsPerPixel == 8) {
-    ASSERT(dest->fmt.palette != nullptr);
-    *dest->fmt.palette = *src->fmt.palette;
+  if (src->format_->bits_per_pixel_ == 8 &&
+      dest->format_->bits_per_pixel_ == 8) {
+    ASSERT(dest->fmt_.palette_ != nullptr);
+    *dest->fmt_.palette_ = *src->fmt_.palette_;
   }
 
   Blit(src, dest, -1, -1);
@@ -142,8 +143,8 @@ bool RageSurfaceUtils::ConvertSurface(
   dst = CreateSurface(width, height, bpp, R, G, B, A);
 
   // If the formats are the same, no conversion is needed. Ignore the palette.
-  if (width == src->w && height == src->h &&
-      src->format->Equivalent(*dst->format)) {
+  if (width == src->w_ && height == src->h_ &&
+      src->format_->Equivalent(*dst->format_)) {
     delete dst;
     dst = nullptr;
     return false;
@@ -171,41 +172,41 @@ static void FindAlphaRGB(
   r = g = b = 0;
 
   // If we have no alpha, there's no alpha color.
-  if (img->format->BitsPerPixel > 8 && !img->format->Amask) {
+  if (img->format_->bits_per_pixel_ > 8 && !img->format_->amask_) {
     return;
   }
 
   // Eww. Sorry. Iterate front-to-back or in reverse.
-  for (int y = reverse ? img->h - 1 : 0; reverse ? (y >= 0) : (y < img->h);
+  for (int y = reverse ? img->h_ - 1 : 0; reverse ? (y >= 0) : (y < img->h_);
        reverse ? (--y) : (++y)) {
-    uint8_t* row = (uint8_t*)img->pixels + img->pitch * y;
+    uint8_t* row = (uint8_t*)img->pixels_ + img->pitch_ * y;
     if (reverse) {
-      row += img->format->BytesPerPixel * (img->w - 1);
+      row += img->format_->bytes_per_pixel_ * (img->w_ - 1);
     }
 
-    for (int x = 0; x < img->w; ++x) {
+    for (int x = 0; x < img->w_; ++x) {
       uint32_t val =
-          RageSurfaceUtils::decodepixel(row, img->format->BytesPerPixel);
-      if (img->format->BitsPerPixel == 8) {
-        if (img->format->palette->colors[val].a) {
+          RageSurfaceUtils::decodepixel(row, img->format_->bytes_per_pixel_);
+      if (img->format_->bits_per_pixel_ == 8) {
+        if (img->format_->palette_->colors_[val].a_) {
           // This color isn't fully transparent, so grab it.
-          r = img->format->palette->colors[val].r;
-          g = img->format->palette->colors[val].g;
-          b = img->format->palette->colors[val].b;
+          r = img->format_->palette_->colors_[val].r_;
+          g = img->format_->palette_->colors_[val].g_;
+          b = img->format_->palette_->colors_[val].b_;
           return;
         }
       } else {
-        if (val & img->format->Amask) {
+        if (val & img->format_->amask_) {
           // This color isn't fully transparent, so grab it.
-          img->format->GetRGB(val, &r, &g, &b);
+          img->format_->GetRGB(val, &r, &g, &b);
           return;
         }
       }
 
       if (reverse) {
-        row -= img->format->BytesPerPixel;
+        row -= img->format_->bytes_per_pixel_;
       } else {
-        row += img->format->BytesPerPixel;
+        row += img->format_->bytes_per_pixel_;
       }
     }
   }
@@ -219,36 +220,37 @@ static void FindAlphaRGB(
 static void SetAlphaRGB(
     const RageSurface* pImg, uint8_t r, uint8_t g, uint8_t b) {
   // If it's a paletted surface, all we have to do is change the palette.
-  if (pImg->format->BitsPerPixel == 8) {
-    for (int c = 0; c < pImg->format->palette->ncolors; ++c) {
-      if (pImg->format->palette->colors[c].a) {
+  if (pImg->format_->bits_per_pixel_ == 8) {
+    for (int c = 0; c < pImg->format_->palette_->ncolors_; ++c) {
+      if (pImg->format_->palette_->colors_[c].a_) {
         continue;
       }
-      pImg->format->palette->colors[c].r = r;
-      pImg->format->palette->colors[c].g = g;
-      pImg->format->palette->colors[c].b = b;
+      pImg->format_->palette_->colors_[c].r_ = r;
+      pImg->format_->palette_->colors_[c].g_ = g;
+      pImg->format_->palette_->colors_[c].b_ = b;
     }
     return;
   }
 
   // If it's RGBA and there's no alpha channel, we have nothing to do.
-  if (pImg->format->BitsPerPixel > 8 && !pImg->format->Amask) {
+  if (pImg->format_->bits_per_pixel_ > 8 && !pImg->format_->amask_) {
     return;
   }
 
   uint32_t trans;
-  pImg->format->MapRGBA(r, g, b, 0, trans);
-  for (int y = 0; y < pImg->h; ++y) {
-    uint8_t* row = pImg->pixels + pImg->pitch * y;
+  pImg->format_->MapRGBA(r, g, b, 0, trans);
+  for (int y = 0; y < pImg->h_; ++y) {
+    uint8_t* row = pImg->pixels_ + pImg->pitch_ * y;
 
-    for (int x = 0; x < pImg->w; ++x) {
+    for (int x = 0; x < pImg->w_; ++x) {
       uint32_t val =
-          RageSurfaceUtils::decodepixel(row, pImg->format->BytesPerPixel);
-      if (val != trans && !(val & pImg->format->Amask)) {
-        RageSurfaceUtils::encodepixel(row, pImg->format->BytesPerPixel, trans);
+          RageSurfaceUtils::decodepixel(row, pImg->format_->bytes_per_pixel_);
+      if (val != trans && !(val & pImg->format_->amask_)) {
+        RageSurfaceUtils::encodepixel(
+            row, pImg->format_->bytes_per_pixel_, trans);
       }
 
-      row += pImg->format->BytesPerPixel;
+      row += pImg->format_->bytes_per_pixel_;
     }
   }
 }
@@ -270,7 +272,7 @@ static void SetAlphaRGB(
  */
 void RageSurfaceUtils::FixHiddenAlpha(RageSurface* pImg) {
   // If there are no alpha bits, there's nothing to fix.
-  if (pImg->format->BitsPerPixel != 8 && pImg->format->Amask == 0) {
+  if (pImg->format_->bits_per_pixel_ != 8 && pImg->format_->amask_ == 0) {
     return;
   }
 
@@ -296,11 +298,12 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
   int alpha_type = NEEDS_NO_ALPHA;
 
   uint32_t max_alpha;
-  if (img->format->BitsPerPixel == 8) {
+  if (img->format_->bits_per_pixel_ == 8) {
     // Short circuit if we already know we have no transparency.
     bool bHaveNonOpaque = false;
-    for (int c = 0; !bHaveNonOpaque && c < img->format->palette->ncolors; ++c) {
-      if (img->format->palette->colors[c].a != 0xFF) {
+    for (int c = 0; !bHaveNonOpaque && c < img->format_->palette_->ncolors_;
+         ++c) {
+      if (img->format_->palette_->colors_[c].a_ != 0xFF) {
         bHaveNonOpaque = true;
       }
     }
@@ -312,24 +315,24 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
     max_alpha = 0xFF;
   } else {
     // Short circuit if we already know we have no transparency.
-    if (img->format->Amask == 0) {
+    if (img->format_->amask_ == 0) {
       return TRAIT_NO_TRANSPARENCY;
     }
 
-    max_alpha = img->format->Amask;
+    max_alpha = img->format_->amask_;
   }
 
-  for (int y = 0; y < img->h; ++y) {
-    uint8_t* row = (uint8_t*)img->pixels + img->pitch * y;
+  for (int y = 0; y < img->h_; ++y) {
+    uint8_t* row = (uint8_t*)img->pixels_ + img->pitch_ * y;
 
-    for (int x = 0; x < img->w; ++x) {
-      uint32_t val = decodepixel(row, img->format->BytesPerPixel);
+    for (int x = 0; x < img->w_; ++x) {
+      uint32_t val = decodepixel(row, img->format_->bytes_per_pixel_);
 
       uint32_t alpha;
-      if (img->format->BitsPerPixel == 8) {
-        alpha = img->format->palette->colors[val].a;
+      if (img->format_->bits_per_pixel_ == 8) {
+        alpha = img->format_->palette_->colors_[val].a_;
       } else {
-        alpha = (val & img->format->Amask);
+        alpha = (val & img->format_->amask_);
       }
 
       if (alpha == 0) {
@@ -338,7 +341,7 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
         alpha_type = std::max(alpha_type, NEEDS_FULL_ALPHA);
       }
 
-      row += img->format->BytesPerPixel;
+      row += img->format_->bytes_per_pixel_;
     }
   }
 
@@ -369,30 +372,32 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
 static bool blit_same_type(
     const RageSurface* src_surf, const RageSurface* dst_surf, int width,
     int height) {
-  if (src_surf->format->BytesPerPixel != dst_surf->format->BytesPerPixel ||
-      src_surf->format->Rmask != dst_surf->format->Rmask ||
-      src_surf->format->Gmask != dst_surf->format->Gmask ||
-      src_surf->format->Bmask != dst_surf->format->Bmask ||
-      src_surf->format->Amask != dst_surf->format->Amask) {
+  if (src_surf->format_->bytes_per_pixel_ !=
+          dst_surf->format_->bytes_per_pixel_ ||
+      src_surf->format_->rmask_ != dst_surf->format_->rmask_ ||
+      src_surf->format_->gmask_ != dst_surf->format_->gmask_ ||
+      src_surf->format_->bmask_ != dst_surf->format_->bmask_ ||
+      src_surf->format_->amask_ != dst_surf->format_->amask_) {
     return false;
   }
 
-  const uint8_t* src = src_surf->pixels;
-  uint8_t* dst = dst_surf->pixels;
+  const uint8_t* src = src_surf->pixels_;
+  uint8_t* dst = dst_surf->pixels_;
 
   // If possible, memcpy the whole thing.
-  if (src_surf->w == width && dst_surf->w == width &&
-      src_surf->pitch == dst_surf->pitch) {
-    memcpy(dst, src, static_cast<size_t>(height) * src_surf->pitch);
+  if (src_surf->w_ == width && dst_surf->w_ == width &&
+      src_surf->pitch_ == dst_surf->pitch_) {
+    memcpy(dst, src, static_cast<size_t>(height) * src_surf->pitch_);
     return true;
   }
 
   // The rows don't line up, so memcpy row by row.
   while (height--) {
     memcpy(
-        dst, src, static_cast<size_t>(width) * src_surf->format->BytesPerPixel);
-    src += src_surf->pitch;
-    dst += dst_surf->pitch;
+        dst, src,
+        static_cast<size_t>(width) * src_surf->format_->bytes_per_pixel_);
+    src += src_surf->pitch_;
+    dst += dst_surf->pitch_;
   }
 
   return true;
@@ -403,22 +408,24 @@ static bool blit_same_type(
 static bool blit_rgba_to_rgba(
     const RageSurface* src_surf, const RageSurface* dst_surf, int width,
     int height) {
-  if (src_surf->format->BytesPerPixel == 1 ||
-      dst_surf->format->BytesPerPixel == 1) {
+  if (src_surf->format_->bytes_per_pixel_ == 1 ||
+      dst_surf->format_->bytes_per_pixel_ == 1) {
     return false;
   }
 
-  const uint8_t* src = src_surf->pixels;
-  uint8_t* dst = dst_surf->pixels;
+  const uint8_t* src = src_surf->pixels_;
+  uint8_t* dst = dst_surf->pixels_;
 
   // Bytes to skip at the end of a line.
-  const int srcskip = src_surf->pitch - width * src_surf->format->BytesPerPixel;
-  const int dstskip = dst_surf->pitch - width * dst_surf->format->BytesPerPixel;
+  const int srcskip =
+      src_surf->pitch_ - width * src_surf->format_->bytes_per_pixel_;
+  const int dstskip =
+      dst_surf->pitch_ - width * dst_surf->format_->bytes_per_pixel_;
 
-  const std::array<uint32_t, 4>& src_shifts = src_surf->format->Shift;
-  const std::array<uint32_t, 4>& dst_shifts = dst_surf->format->Shift;
-  const std::array<uint32_t, 4>& src_masks = src_surf->format->Mask;
-  const std::array<uint32_t, 4>& dst_masks = dst_surf->format->Mask;
+  const std::array<uint32_t, 4>& src_shifts = src_surf->format_->shift_;
+  const std::array<uint32_t, 4>& dst_shifts = dst_surf->format_->shift_;
+  const std::array<uint32_t, 4>& src_masks = src_surf->format_->mask_;
+  const std::array<uint32_t, 4>& dst_masks = dst_surf->format_->mask_;
 
   uint8_t lookup[4][256];
   for (int c = 0; c < 4; ++c) {
@@ -478,8 +485,8 @@ static bool blit_rgba_to_rgba(
   while (height--) {
     int x = 0;
     while (x++ < width) {
-      unsigned int pixel =
-          RageSurfaceUtils::decodepixel(src, src_surf->format->BytesPerPixel);
+      unsigned int pixel = RageSurfaceUtils::decodepixel(
+          src, src_surf->format_->bytes_per_pixel_);
 
       // Convert pixel to the destination format.
       unsigned int opixel = 0;
@@ -490,10 +497,10 @@ static bool blit_rgba_to_rgba(
 
       // Store it.
       RageSurfaceUtils::encodepixel(
-          dst, dst_surf->format->BytesPerPixel, opixel);
+          dst, dst_surf->format_->bytes_per_pixel_, opixel);
 
-      src += src_surf->format->BytesPerPixel;
-      dst += dst_surf->format->BytesPerPixel;
+      src += src_surf->format_->bytes_per_pixel_;
+      dst += dst_surf->format_->bytes_per_pixel_;
     }
 
     src += srcskip;
@@ -506,38 +513,40 @@ static bool blit_rgba_to_rgba(
 static bool blit_generic(
     const RageSurface* src_surf, const RageSurface* dst_surf, int width,
     int height) {
-  if (src_surf->format->BytesPerPixel != 1 ||
-      dst_surf->format->BytesPerPixel == 1) {
+  if (src_surf->format_->bytes_per_pixel_ != 1 ||
+      dst_surf->format_->bytes_per_pixel_ == 1) {
     return false;
   }
 
-  const uint8_t* src = src_surf->pixels;
-  uint8_t* dst = dst_surf->pixels;
+  const uint8_t* src = src_surf->pixels_;
+  uint8_t* dst = dst_surf->pixels_;
 
   // Bytes to skip at the end of a line.
-  const int srcskip = src_surf->pitch - width * src_surf->format->BytesPerPixel;
-  const int dstskip = dst_surf->pitch - width * dst_surf->format->BytesPerPixel;
+  const int srcskip =
+      src_surf->pitch_ - width * src_surf->format_->bytes_per_pixel_;
+  const int dstskip =
+      dst_surf->pitch_ - width * dst_surf->format_->bytes_per_pixel_;
 
   while (height--) {
     int x = 0;
     while (x++ < width) {
-      unsigned int pixel =
-          RageSurfaceUtils::decodepixel(src, src_surf->format->BytesPerPixel);
+      unsigned int pixel = RageSurfaceUtils::decodepixel(
+          src, src_surf->format_->bytes_per_pixel_);
 
       uint8_t colors[4];
       // Convert pixel to the destination RGBA.
-      colors[0] = src_surf->format->palette->colors[pixel].r;
-      colors[1] = src_surf->format->palette->colors[pixel].g;
-      colors[2] = src_surf->format->palette->colors[pixel].b;
-      colors[3] = src_surf->format->palette->colors[pixel].a;
-      pixel = RageSurfaceUtils::SetRGBAV(dst_surf->format, colors);
+      colors[0] = src_surf->format_->palette_->colors_[pixel].r_;
+      colors[1] = src_surf->format_->palette_->colors_[pixel].g_;
+      colors[2] = src_surf->format_->palette_->colors_[pixel].b_;
+      colors[3] = src_surf->format_->palette_->colors_[pixel].a_;
+      pixel = RageSurfaceUtils::SetRGBAV(dst_surf->format_, colors);
 
       // Store it.
       RageSurfaceUtils::encodepixel(
-          dst, dst_surf->format->BytesPerPixel, pixel);
+          dst, dst_surf->format_->bytes_per_pixel_, pixel);
 
-      src += src_surf->format->BytesPerPixel;
-      dst += dst_surf->format->BytesPerPixel;
+      src += src_surf->format_->bytes_per_pixel_;
+      dst += dst_surf->format_->bytes_per_pixel_;
     }
 
     src += srcskip;
@@ -551,13 +560,13 @@ static bool blit_generic(
 void RageSurfaceUtils::Blit(
     const RageSurface* src, RageSurface* dst, int width, int height) {
   if (width == -1) {
-    width = src->w;
+    width = src->w_;
   }
   if (height == -1) {
-    height = src->h;
+    height = src->h_;
   }
-  width = std::min(src->w, dst->w);
-  height = std::min(src->h, dst->h);
+  width = std::min(src->w_, dst->w_);
+  height = std::min(src->h_, dst->h_);
 
   /* Try each blit until we find one that works; run them in order of
    * efficiency, so we use the fastest blit possible. */
@@ -614,32 +623,33 @@ void RageSurfaceUtils::Blit(
  * without doing any extra copies. */
 void RageSurfaceUtils::CorrectBorderPixels(
     RageSurface* img, int width, int height) {
-  if (width * img->fmt.BytesPerPixel < img->pitch) {
+  if (width * img->fmt_.bytes_per_pixel_ < img->pitch_) {
     // Duplicate the last column.
-    int offset = img->format->BytesPerPixel * (width - 1);
-    uint8_t* p = (uint8_t*)img->pixels + offset;
+    int offset = img->format_->bytes_per_pixel_ * (width - 1);
+    uint8_t* p = (uint8_t*)img->pixels_ + offset;
 
     for (int y = 0; y < height; ++y) {
-      uint32_t pixel = decodepixel(p, img->format->BytesPerPixel);
+      uint32_t pixel = decodepixel(p, img->format_->bytes_per_pixel_);
       encodepixel(
-          p + img->format->BytesPerPixel, img->format->BytesPerPixel, pixel);
+          p + img->format_->bytes_per_pixel_, img->format_->bytes_per_pixel_,
+          pixel);
 
-      p += img->pitch;
+      p += img->pitch_;
     }
   }
 
-  if (height < img->h) {
+  if (height < img->h_) {
     // Duplicate the last row.
-    uint8_t* srcp = img->pixels;
-    srcp += img->pitch * (height - 1);
-    memcpy(srcp + img->pitch, srcp, img->pitch);
+    uint8_t* srcp = img->pixels_;
+    srcp += img->pitch_ * (height - 1);
+    memcpy(srcp + img->pitch_, srcp, img->pitch_);
   }
 }
 
 struct SurfaceHeader {
-  int width, height, pitch;
-  int Rmask, Gmask, Bmask, Amask;
-  int bpp;
+  int width_, height_, pitch_;
+  int rmask_, gmask_, bmask_, amask_;
+  int bpp_;
 };
 
 // Save and load RageSurfaces to disk, in a very fast, nonportable way.
@@ -652,26 +662,27 @@ bool RageSurfaceUtils::SaveSurface(const RageSurface* img, std::string file) {
   SurfaceHeader h;
   memset(&h, 0, sizeof(h));
 
-  h.height = img->h;
-  h.width = img->w;
-  h.pitch = img->pitch;
-  h.Rmask = img->format->Rmask;
-  h.Gmask = img->format->Gmask;
-  h.Bmask = img->format->Bmask;
-  h.Amask = img->format->Amask;
-  h.bpp = img->format->BitsPerPixel;
+  h.height_ = img->h_;
+  h.width_ = img->w_;
+  h.pitch_ = img->pitch_;
+  h.rmask_ = img->format_->rmask_;
+  h.gmask_ = img->format_->gmask_;
+  h.bmask_ = img->format_->bmask_;
+  h.amask_ = img->format_->amask_;
+  h.bpp_ = img->format_->bits_per_pixel_;
 
   f.Write(&h, sizeof(h));
 
-  if (h.bpp == 8) {
+  if (h.bpp_ == 8) {
     f.Write(
-        &img->format->palette->ncolors, sizeof(img->format->palette->ncolors));
+        &img->format_->palette_->ncolors_,
+        sizeof(img->format_->palette_->ncolors_));
     f.Write(
-        img->format->palette->colors,
-        img->format->palette->ncolors * sizeof(RageSurfaceColor));
+        img->format_->palette_->colors_,
+        img->format_->palette_->ncolors_ * sizeof(RageSurfaceColor));
   }
 
-  f.Write(img->pixels, static_cast<size_t>(img->h) * img->pitch);
+  f.Write(img->pixels_, static_cast<size_t>(img->h_) * img->pitch_);
 
   return true;
 }
@@ -688,45 +699,45 @@ RageSurface* RageSurfaceUtils::LoadSurface(std::string file) {
   }
 
   RageSurfacePalette palette;
-  if (h.bpp == 8) {
-    if (f.Read(&palette.ncolors, sizeof(palette.ncolors)) !=
-        sizeof(palette.ncolors)) {
+  if (h.bpp_ == 8) {
+    if (f.Read(&palette.ncolors_, sizeof(palette.ncolors_)) !=
+        sizeof(palette.ncolors_)) {
       return nullptr;
     }
-    ASSERT_M(palette.ncolors <= 256, ssprintf("%i", palette.ncolors));
-    if (f.Read(palette.colors, palette.ncolors * sizeof(RageSurfaceColor)) !=
-        int(palette.ncolors * sizeof(RageSurfaceColor))) {
+    ASSERT_M(palette.ncolors_ <= 256, ssprintf("%i", palette.ncolors_));
+    if (f.Read(palette.colors_, palette.ncolors_ * sizeof(RageSurfaceColor)) !=
+        int(palette.ncolors_ * sizeof(RageSurfaceColor))) {
       return nullptr;
     }
   }
 
   // Create the surface.
   RageSurface* img = CreateSurface(
-      h.width, h.height, h.bpp, h.Rmask, h.Gmask, h.Bmask, h.Amask);
+      h.width_, h.height_, h.bpp_, h.rmask_, h.gmask_, h.bmask_, h.amask_);
   ASSERT(img != nullptr);
 
   /* If the pitch has changed, this surface is either corrupt, or was
    * created with a different version whose CreateSurface() behavior
    * was different. */
-  if (h.pitch != img->pitch) {
+  if (h.pitch_ != img->pitch_) {
     LOG->Trace(
         "Error loading \"%s\": expected pitch %i, got %i (%ibpp, %i width)",
-        file.c_str(), h.pitch, img->pitch, h.bpp, h.width);
+        file.c_str(), h.pitch_, img->pitch_, h.bpp_, h.width_);
     delete img;
     return nullptr;
   }
 
-  const size_t expected_size = static_cast<size_t>(h.height) * h.pitch;
+  const size_t expected_size = static_cast<size_t>(h.height_) * h.pitch_;
   const size_t bytes_read =
-      static_cast<size_t>(f.Read(img->pixels, expected_size));
+      static_cast<size_t>(f.Read(img->pixels_, expected_size));
   if (bytes_read != expected_size) {
     delete img;
     return nullptr;
   }
 
   // Set the palette.
-  if (h.bpp == 8) {
-    *img->fmt.palette = palette;
+  if (h.bpp_ == 8) {
+    *img->fmt_.palette_ = palette;
   }
 
   return img;
@@ -752,13 +763,13 @@ RageSurface* RageSurfaceUtils::LoadSurface(std::string file) {
 RageSurface* RageSurfaceUtils::PalettizeToGrayscale(
     const RageSurface* src_surf, unsigned int GrayBits,
     unsigned int AlphaBits) {
-  AlphaBits = std::min(AlphaBits, 8 - src_surf->format->Loss[3]);
+  AlphaBits = std::min(AlphaBits, 8 - src_surf->format_->loss_[3]);
 
   const unsigned int TotalBits = GrayBits + AlphaBits;
   ASSERT(TotalBits <= 8);
 
   RageSurface* dst_surf =
-      CreateSurface(src_surf->w, src_surf->h, 8, 0, 0, 0, 0);
+      CreateSurface(src_surf->w_, src_surf->h_, 8, 0, 0, 0, 0);
 
   // Set up the palette.
   const unsigned int TotalColors = 1u << TotalBits;
@@ -790,28 +801,31 @@ RageSurface* RageSurfaceUtils::PalettizeToGrayscale(
             : std::clamp(std::lrint(A * (255.0f / (Avalues - 1))), 0L, 255L);
 
     RageSurfaceColor c;
-    c.r = ScaledI;
-    c.g = ScaledI;
-    c.b = ScaledI;
-    c.a = ScaledA;
+    c.r_ = ScaledI;
+    c.g_ = ScaledI;
+    c.b_ = ScaledI;
+    c.a_ = ScaledA;
 
-    dst_surf->fmt.palette->colors[index] = c;
+    dst_surf->fmt_.palette_->colors_[index] = c;
   }
 
-  const uint8_t* src = src_surf->pixels;
-  uint8_t* dst = dst_surf->pixels;
+  const uint8_t* src = src_surf->pixels_;
+  uint8_t* dst = dst_surf->pixels_;
 
-  int height = src_surf->h;
-  int width = src_surf->w;
+  int height = src_surf->h_;
+  int width = src_surf->w_;
 
   // Bytes to skip at the end of a line.
-  const int srcskip = src_surf->pitch - width * src_surf->format->BytesPerPixel;
-  const int dstskip = dst_surf->pitch - width * dst_surf->format->BytesPerPixel;
+  const int srcskip =
+      src_surf->pitch_ - width * src_surf->format_->bytes_per_pixel_;
+  const int dstskip =
+      dst_surf->pitch_ - width * dst_surf->format_->bytes_per_pixel_;
 
   while (height--) {
     int x = 0;
     while (x++ < width) {
-      unsigned int pixel = decodepixel(src, src_surf->format->BytesPerPixel);
+      unsigned int pixel =
+          decodepixel(src, src_surf->format_->bytes_per_pixel_);
 
       uint8_t colors[4];
       GetRGBAV(pixel, src_surf, colors);
@@ -827,8 +841,8 @@ RageSurface* RageSurfaceUtils::PalettizeToGrayscale(
       // Store it.
       *dst = uint8_t(pixel);
 
-      src += src_surf->format->BytesPerPixel;
-      dst += dst_surf->format->BytesPerPixel;
+      src += src_surf->format_->bytes_per_pixel_;
+      dst += dst_surf->format_->bytes_per_pixel_;
     }
 
     src += srcskip;
@@ -842,11 +856,11 @@ RageSurface* RageSurfaceUtils::MakeDummySurface(int height, int width) {
   RageSurface* ret_image = CreateSurface(width, height, 8, 0, 0, 0, 0);
 
   RageSurfaceColor pink(0xFF, 0x10, 0xFF, 0xFF);
-  ret_image->fmt.palette->colors[0] = pink;
+  ret_image->fmt_.palette_->colors_[0] = pink;
 
   memset(
-      ret_image->pixels, 0,
-      static_cast<size_t>(ret_image->h) * ret_image->pitch);
+      ret_image->pixels_, 0,
+      static_cast<size_t>(ret_image->h_) * ret_image->pitch_);
 
   return ret_image;
 }
@@ -855,27 +869,29 @@ RageSurface* RageSurfaceUtils::MakeDummySurface(int height, int width) {
  * Search the edge for it; if we find it, use that as the color key. */
 static bool ImageUsesOffHotPink(const RageSurface* img) {
   uint32_t OffHotPink;
-  if (!img->format->MapRGBA(0xF8, 0, 0xF8, 0xFF, OffHotPink)) {
+  if (!img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, OffHotPink)) {
     return false;
   }
 
-  const uint8_t* p = img->pixels;
-  for (int x = 0; x < img->w; ++x) {
-    uint32_t val = RageSurfaceUtils::decodepixel(p, img->format->BytesPerPixel);
+  const uint8_t* p = img->pixels_;
+  for (int x = 0; x < img->w_; ++x) {
+    uint32_t val =
+        RageSurfaceUtils::decodepixel(p, img->format_->bytes_per_pixel_);
     if (val == OffHotPink) {
       return true;
     }
-    p += img->format->BytesPerPixel;
+    p += img->format_->bytes_per_pixel_;
   }
 
-  p = img->pixels;
-  p += img->pitch * (img->h - 1);
-  for (int i = 0; i < img->w; i++) {
-    uint32_t val = RageSurfaceUtils::decodepixel(p, img->format->BytesPerPixel);
+  p = img->pixels_;
+  p += img->pitch_ * (img->h_ - 1);
+  for (int i = 0; i < img->w_; i++) {
+    uint32_t val =
+        RageSurfaceUtils::decodepixel(p, img->format_->bytes_per_pixel_);
     if (val == OffHotPink) {
       return true;
     }
-    p += img->format->BytesPerPixel;
+    p += img->format_->bytes_per_pixel_;
   }
   return false;
 }
@@ -883,19 +899,19 @@ static bool ImageUsesOffHotPink(const RageSurface* img) {
 /* Set #FF00FF and #F800F8 to transparent. img may be reallocated if it has no
  * alpha bits. */
 void RageSurfaceUtils::ApplyHotPinkColorKey(RageSurface*& img) {
-  if (img->format->BitsPerPixel == 8) {
+  if (img->format_->bits_per_pixel_ == 8) {
     uint32_t color;
-    if (img->format->MapRGBA(0xF8, 0, 0xF8, 0xFF, color)) {
-      img->format->palette->colors[color].a = 0;
+    if (img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, color)) {
+      img->format_->palette_->colors_[color].a_ = 0;
     }
-    if (img->format->MapRGBA(0xFF, 0, 0xFF, 0xFF, color)) {
-      img->format->palette->colors[color].a = 0;
+    if (img->format_->MapRGBA(0xFF, 0, 0xFF, 0xFF, color)) {
+      img->format_->palette_->colors_[color].a_ = 0;
     }
     return;
   }
 
   // RGBA. Make sure we have alpha.
-  if (img->format->Amask == 0) {
+  if (img->format_->amask_ == 0) {
     // We don't have any alpha.  Try to enable it without copying.
     /* XXX: need to scan the surface and make sure the new alpha bit is always 1
      */
@@ -915,9 +931,9 @@ void RageSurfaceUtils::ApplyHotPinkColorKey(RageSurface*& img) {
     }
     */
     // If we didn't have any free bits, convert to make room.
-    if (img->format->Amask == 0) {
+    if (img->format_->amask_ == 0) {
       ConvertSurface(
-          img, img->w, img->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00,
+          img, img->w_, img->h_, 32, 0xFF000000, 0x00FF0000, 0x0000FF00,
           0x000000FF);
     }
   }
@@ -926,38 +942,38 @@ void RageSurfaceUtils::ApplyHotPinkColorKey(RageSurface*& img) {
 
   bool bHaveColorKey;
   if (ImageUsesOffHotPink(img)) {
-    bHaveColorKey = img->format->MapRGBA(0xF8, 0, 0xF8, 0xFF, HotPink);
+    bHaveColorKey = img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, HotPink);
   } else {
-    bHaveColorKey = img->format->MapRGBA(0xFF, 0, 0xFF, 0xFF, HotPink);
+    bHaveColorKey = img->format_->MapRGBA(0xFF, 0, 0xFF, 0xFF, HotPink);
   }
   if (!bHaveColorKey) {
     return;
   }
 
-  for (int y = 0; y < img->h; ++y) {
-    uint8_t* row = img->pixels + img->pitch * y;
+  for (int y = 0; y < img->h_; ++y) {
+    uint8_t* row = img->pixels_ + img->pitch_ * y;
 
-    for (int x = 0; x < img->w; ++x) {
-      uint32_t val = decodepixel(row, img->format->BytesPerPixel);
+    for (int x = 0; x < img->w_; ++x) {
+      uint32_t val = decodepixel(row, img->format_->bytes_per_pixel_);
       if (val == HotPink) {
-        encodepixel(row, img->format->BytesPerPixel, 0);
+        encodepixel(row, img->format_->bytes_per_pixel_, 0);
       }
 
-      row += img->format->BytesPerPixel;
+      row += img->format_->bytes_per_pixel_;
     }
   }
 }
 
 void RageSurfaceUtils::FlipVertically(RageSurface* img) {
-  const int pitch = img->pitch;
-  const int bytes_per_row = img->format->BytesPerPixel * img->w;
+  const int pitch = img->pitch_;
+  const int bytes_per_row = img->format_->bytes_per_pixel_ * img->w_;
   char* row = new char[bytes_per_row];
 
-  for (int y = 0; y < img->h / 2; y++) {
-    int y2 = img->h - 1 - y;
-    memcpy(row, img->pixels + pitch * y, bytes_per_row);
-    memcpy(img->pixels + pitch * y, img->pixels + pitch * y2, bytes_per_row);
-    memcpy(img->pixels + pitch * y2, row, bytes_per_row);
+  for (int y = 0; y < img->h_ / 2; y++) {
+    int y2 = img->h_ - 1 - y;
+    memcpy(row, img->pixels_ + pitch * y, bytes_per_row);
+    memcpy(img->pixels_ + pitch * y, img->pixels_ + pitch * y2, bytes_per_row);
+    memcpy(img->pixels_ + pitch * y2, row, bytes_per_row);
   }
 
   delete[] row;

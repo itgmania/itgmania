@@ -29,9 +29,9 @@ class TextBanner : public ActorFrame {
   void PushSelf(lua_State* L);
 
  private:
-  bool m_bInitted;
-  BitmapText m_textTitle, m_textSubTitle, m_textArtist;
-  std::string m_sArtistPrependString;
+  bool initted_;
+  BitmapText text_title_, text_sub_title_, text_artist_;
+  std::string artist_prepend_string_;
 };
 
 #endif

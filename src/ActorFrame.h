@@ -30,8 +30,8 @@ class ActorFrame : public Actor {
    * @param pActor the Actor to remove. */
   virtual void RemoveChild(Actor* pActor);
   Actor* GetChild(const std::string& sName);
-  std::vector<Actor*> GetChildren() { return m_SubActors; }
-  int GetNumChildren() const { return m_SubActors.size(); }
+  std::vector<Actor*> GetChildren() { return sub_actors_; }
+  int GetNumChildren() const { return sub_actors_.size(); }
 
   /** @brief Remove all of the children from the frame. */
   void RemoveAllChildren();
@@ -44,18 +44,18 @@ class ActorFrame : public Actor {
   void SetDrawByZPosition(bool b);
 
   void SetDrawFunction(const LuaReference& DrawFunction) {
-    m_DrawFunction = DrawFunction;
+    draw_function_ = DrawFunction;
   }
   void SetUpdateFunction(const LuaReference& UpdateFunction) {
-    m_UpdateFunction = UpdateFunction;
+    update_function_ = UpdateFunction;
   }
 
-  LuaReference GetDrawFunction() const { return m_DrawFunction; }
+  LuaReference GetDrawFunction() const { return draw_function_; }
   virtual bool AutoLoadChildren() const {
     return false;
   }  // derived classes override to automatically LoadChildrenFromNode
   void DeleteChildrenWhenDone(bool bDelete = true) {
-    m_bDeleteChildren = bDelete;
+    delete_children_ = bDelete;
   }
   void DeleteAllChildren();
 
@@ -96,20 +96,20 @@ class ActorFrame : public Actor {
 
   void SetUpdateRate(float rate) {
     if (rate > 0.0f) {
-      m_fUpdateRate = rate;
+      update_rate_ = rate;
     }
   }
-  float GetUpdateRate() { return m_fUpdateRate; }
-  void SetFOV(float fFOV) { m_fFOV = fFOV; }
+  float GetUpdateRate() { return update_rate_; }
+  void SetFOV(float fFOV) { fov_ = fFOV; }
   void SetVanishPoint(float fX, float fY) {
-    m_fVanishX = fX;
-    m_fVanishY = fY;
+    vanish_x_ = fX;
+    vanish_y_ = fY;
   }
 
-  void SetAmbientLightColor(RageColor c) { m_ambientColor = c; }
-  void SetDiffuseLightColor(RageColor c) { m_diffuseColor = c; }
-  void SetSpecularLightColor(RageColor c) { m_specularColor = c; }
-  void SetLightDirection(RageVector3 vec) { m_lightDirection = vec; }
+  void SetAmbientLightColor(RageColor c) { ambient_color_ = c; }
+  void SetDiffuseLightColor(RageColor c) { diffuse_color_ = c; }
+  void SetSpecularLightColor(RageColor c) { specular_color_ = c; }
+  void SetLightDirection(RageVector3 vec) { light_direction_ = vec; }
 
   virtual void SetPropagateCommands(bool b);
 
@@ -129,30 +129,30 @@ class ActorFrame : public Actor {
   void LoadChildrenFromNode(const XNode* pNode);
 
   /** @brief The children Actors used by the ActorFrame. */
-  std::vector<Actor*> m_SubActors;
-  bool m_bPropagateCommands;
-  bool m_bDeleteChildren;
-  bool m_bDrawByZPosition;
-  LuaReference m_UpdateFunction;
-  LuaReference m_DrawFunction;
+  std::vector<Actor*> sub_actors_;
+  bool propagate_commands_;
+  bool delete_children_;
+  bool draw_by_z_position_;
+  LuaReference update_function_;
+  LuaReference draw_function_;
 
   // state effects
-  float m_fUpdateRate;
-  float m_fFOV;  // -1 = no change
-  float m_fVanishX;
-  float m_fVanishY;
+  float update_rate_;
+  float fov_;  // -1 = no change
+  float vanish_x_;
+  float vanish_y_;
   /**
    * @brief A flad to see if an override for the lighting is needed.
    *
    * If true, set lightning to m_bLightning. */
-  bool m_bOverrideLighting;
-  bool m_bLighting;
+  bool override_lighting_;
+  bool lighting_;
 
   // lighting variables
-  RageColor m_ambientColor;
-  RageColor m_diffuseColor;
-  RageColor m_specularColor;
-  RageVector3 m_lightDirection;
+  RageColor ambient_color_;
+  RageColor diffuse_color_;
+  RageColor specular_color_;
+  RageVector3 light_direction_;
 };
 /** @brief an ActorFrame that handles deleting children Actors automatically. */
 class ActorFrameAutoDeleteChildren : public ActorFrame {

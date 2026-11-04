@@ -14,9 +14,9 @@
 REGISTER_LIGHTS_DRIVER_CLASS(stac2);
 
 LightsDriver_stac2::LightsDriver_stac2()
-    : devs{{STAC2_VID, STAC2_PID_P1, STAC2_LIGHTING_INTERFACE}, {STAC2_VID, STAC2_PID_P2, STAC2_LIGHTING_INTERFACE}},
-      stateChanged{false},
-      outputBuffer{{0}} {}
+    : devs_{{STAC2_VID, STAC2_PID_P1, STAC2_LIGHTING_INTERFACE}, {STAC2_VID, STAC2_PID_P2, STAC2_LIGHTING_INTERFACE}},
+      state_changed_{false},
+      output_buffer_{{0}} {}
 
 LightsDriver_stac2::~LightsDriver_stac2() {}
 
@@ -30,65 +30,65 @@ void LightsDriver_stac2::SetBuffer(
   uint8_t val = lightState ? 0xFF : 0x00;
 
   // ensure report ID is set.
-  outputBuffer[ctrlNum][0] = STAC2_REPORT_ID;
+  output_buffer_[ctrlNum][0] = STAC2_REPORT_ID;
 
   // ensure the index is valid and the light value has changed.
   if (index_offset < STAC2_HIDREPORT_SIZE &&
-      outputBuffer[ctrlNum][index_offset] != val) {
-    outputBuffer[ctrlNum][index_offset] = val;
+      output_buffer_[ctrlNum][index_offset] != val) {
+    output_buffer_[ctrlNum][index_offset] = val;
 
     // signal the loop to push the new buffer to the device.
-    stateChanged[ctrlNum] = true;
+    state_changed_[ctrlNum] = true;
   }
 }
 
 void LightsDriver_stac2::HandleState(
     const LightsState* ls, GameController ctrlNum) {
   // do not create a message for an disconnected device.
-  if (!devs[ctrlNum].FoundOnce()) {
+  if (!devs_[ctrlNum].FoundOnce()) {
     return;
   }
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  std::string sInputName = pInput->m_szName;
+  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  std::string sInputName = pInput->name_;
 
   if (EqualsNoCase(sInputName, "dance")) {
     SetBuffer(
         STAC2_LIGHTINDEX_BTN1,
-        ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_UP], ctrlNum);
+        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_UP], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN2,
-        ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_DOWN], ctrlNum);
+        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_DOWN], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN3,
-        ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_LEFT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_LEFT], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN4,
-        ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_RIGHT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_RIGHT], ctrlNum);
   } else if (EqualsNoCase(sInputName, "pump")) {
     SetBuffer(
         STAC2_LIGHTINDEX_BTN1,
-        ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPLEFT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_UPLEFT], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN2,
-        ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPRIGHT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_UPRIGHT], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN3,
-        ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_CENTER], ctrlNum);
+        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_CENTER], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN4,
-        ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_DOWNLEFT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_DOWNLEFT], ctrlNum);
     SetBuffer(
         STAC2_LIGHTINDEX_BTN5,
-        ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_DOWNRIGHT], ctrlNum);
+        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_DOWNRIGHT], ctrlNum);
   }
 
   // only push changes.
-  if (stateChanged[ctrlNum]) {
-    devs[ctrlNum].Write(
-        (unsigned char*)&outputBuffer[ctrlNum], STAC2_HIDREPORT_SIZE);
-    stateChanged[ctrlNum] = false;
+  if (state_changed_[ctrlNum]) {
+    devs_[ctrlNum].Write(
+        (unsigned char*)&output_buffer_[ctrlNum], STAC2_HIDREPORT_SIZE);
+    state_changed_[ctrlNum] = false;
   }
 }
 

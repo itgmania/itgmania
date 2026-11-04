@@ -19,12 +19,12 @@ class InputQueue {
 
   void RememberInput(const InputEventPlus& gi);
   const std::vector<InputEventPlus>& GetQueue(GameController c) const {
-    return m_aQueue[c];
+    return queue_[c];
   }
   void ClearQueue(GameController c);
 
  protected:
-  std::vector<InputEventPlus> m_aQueue[NUM_GameController];
+  std::vector<InputEventPlus> queue_[NUM_GameController];
 };
 
 struct InputQueueCode {
@@ -34,22 +34,22 @@ struct InputQueueCode {
  private:
   struct ButtonPress {
     ButtonPress()
-        : m_aButtonsToHold(),
-          m_aButtonsToNotHold(),
-          m_aButtonsToPress(),
-          m_bAllowIntermediatePresses(false) {
-      memset(m_InputTypes, 0, sizeof(m_InputTypes));
-      m_InputTypes[IET_FIRST_PRESS] = true;
+        : buttons_to_hold_(),
+          buttons_to_not_hold_(),
+          buttons_to_press_(),
+          allow_intermediate_presses_(false) {
+      memset(input_types_, 0, sizeof(input_types_));
+      input_types_[IET_FIRST_PRESS] = true;
     }
-    std::vector<GameButton> m_aButtonsToHold;
-    std::vector<GameButton> m_aButtonsToNotHold;
-    std::vector<GameButton> m_aButtonsToPress;
+    std::vector<GameButton> buttons_to_hold_;
+    std::vector<GameButton> buttons_to_not_hold_;
+    std::vector<GameButton> buttons_to_press_;
 
-    bool m_InputTypes[NUM_InputEventType];
-    bool m_bAllowIntermediatePresses;
+    bool input_types_[NUM_InputEventType];
+    bool allow_intermediate_presses_;
   };
 
-  std::vector<std::vector<ButtonPress>> m_aPatterns;
+  std::vector<std::vector<ButtonPress>> patterns_;
 
   bool CheckPattern(
       const std::vector<ButtonPress>& presses, GameController controller) const;

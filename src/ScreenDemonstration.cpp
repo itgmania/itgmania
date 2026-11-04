@@ -20,15 +20,15 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-#define SECONDS_TO_SHOW THEME->GetMetricF(m_sName, "SecondsToShow")
-#define ALLOW_STYLE_TYPES THEME->GetMetric(m_sName, "AllowStyleTypes")
+#define SECONDS_TO_SHOW THEME->GetMetricF(name_, "SecondsToShow")
+#define ALLOW_STYLE_TYPES THEME->GetMetric(name_, "AllowStyleTypes")
 
 REGISTER_SCREEN_CLASS(ScreenDemonstration);
-ScreenDemonstration::ScreenDemonstration() { m_bDemonstration = true; }
+ScreenDemonstration::ScreenDemonstration() { demonstration_ = true; }
 
 void ScreenDemonstration::Init() {
   GAMESTATE->Reset();
-  GAMESTATE->VisitAttractScreen(m_sName);
+  GAMESTATE->VisitAttractScreen(name_);
   ScreenAttract::SetAttractVolume(true);
 
   // Choose a Style
@@ -44,12 +44,12 @@ void ScreenDemonstration::Init() {
 
     std::vector<const Style*> vStylePossible;
     GAMEMAN->GetDemonstrationStylesForGame(
-        GAMESTATE->m_pCurGame, vStylePossible);
+        GAMESTATE->cur_game_, vStylePossible);
     for (int i = (int)(vStylePossible.size()) - 1; i >= 0; i--) {
       bool bAllowThis =
           find(
               vStyleTypeAllow.begin(), vStyleTypeAllow.end(),
-              vStylePossible[i]->m_StyleType) != vStyleTypeAllow.end();
+              vStylePossible[i]->style_type_) != vStyleTypeAllow.end();
       if (!bAllowThis) {
         vStylePossible.erase(vStylePossible.begin() + i);
       }
@@ -60,11 +60,11 @@ void ScreenDemonstration::Init() {
     GAMESTATE->SetCurrentStyle(pStyle, PLAYER_INVALID);
   }
 
-  GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
+  GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
 
   ScreenJukebox::Init();
 
-  if (GAMESTATE->m_pCurSong == nullptr)  // we didn't find a song.
+  if (GAMESTATE->cur_song_ == nullptr)  // we didn't find a song.
   {
     PostScreenMessage(SM_GoToNextScreen, 0);  // Abort demonstration.
     return;
@@ -73,17 +73,17 @@ void ScreenDemonstration::Init() {
   ClearMessageQueue();  // remove all of the messages set in ScreenGameplay that
                         // drive "ready", "go", etc.
 
-  GAMESTATE->m_bGameplayLeadIn.Set(false);
+  GAMESTATE->gameplay_lead_in_.Set(false);
 
-  m_DancingState = STATE_DANCING;
+  dancing_state_ = STATE_DANCING;
   this->PostScreenMessage(
       SM_BeginFadingOut, SECONDS_TO_SHOW);  // TODO: Use MenuTimer instead?
 }
 
 void ScreenDemonstration::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_NotesEnded || SM == SM_BeginFadingOut) {
-    if (!m_Out.IsTransitioning()) {
-      m_Out.StartTransitioning(SM_GoToNextScreen);
+    if (!out_.IsTransitioning()) {
+      out_.StartTransitioning(SM_GoToNextScreen);
     }
     return;
   } else if (SM == SM_LoseFocus) {

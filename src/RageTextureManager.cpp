@@ -50,15 +50,15 @@ std::map<RageTexture*, RageTextureID> m_texture_ids_by_pointer;
 };  // namespace
 
 RageTextureManager::RageTextureManager()
-    : m_TexturePolicy(RageTextureID::TEX_DEFAULT) {}
+    : texture_policy_(RageTextureID::TEX_DEFAULT) {}
 
 RageTextureManager::~RageTextureManager() {
   for (std::pair<const RageTextureID&, RageTexture*> i : m_mapPathToTexture) {
     RageTexture* pTexture = i.second;
-    if (pTexture->m_iRefCount) {
+    if (pTexture->ref_count_) {
       LOG->Trace(
-          "TEXTUREMAN LEAK: '%s', RefCount = %d.", i.first.filename.c_str(),
-          pTexture->m_iRefCount);
+          "TEXTUREMAN LEAK: '%s', RefCount = %d.", i.first.filename_.c_str(),
+          pTexture->ref_count_);
     }
     RageUtil::SafeDelete(pTexture);
   }
@@ -74,12 +74,12 @@ void RageTextureManager::Update(float fDeltaTime) {
 }
 
 void RageTextureManager::AdjustTextureID(RageTextureID& ID) const {
-  if (ID.iColorDepth == -1) {
-    ID.iColorDepth = m_Prefs.m_iTextureColorDepth;
+  if (ID.color_depth_ == -1) {
+    ID.color_depth_ = prefs_.texture_color_depth_;
   }
-  ID.iMaxSize = std::min(ID.iMaxSize, m_Prefs.m_iMaxTextureResolution);
-  if (m_Prefs.m_bMipMaps) {
-    ID.bMipMaps = true;
+  ID.max_size_ = std::min(ID.max_size_, prefs_.max_texture_resolution_);
+  if (prefs_.mip_maps_) {
+    ID.mip_maps_ = true;
   }
 }
 
@@ -102,7 +102,7 @@ void RageTextureManager::RegisterTexture(
   if (p != m_mapPathToTexture.end()) {
     /* Oops, found the texture. */
     RageException::Throw(
-        "Custom texture \"%s\" already registered!", ID.filename.c_str());
+        "Custom texture \"%s\" already registered!", ID.filename_.c_str());
   }
 
   m_mapPathToTexture[ID] = pTexture;
@@ -125,22 +125,22 @@ RageSurface* RageTextureManager::GetScreenSurface() {
 
 class RageTexture_Default : public RageTexture {
  public:
-  RageTexture_Default() : RageTexture(RageTextureID()), m_uTexHandle(0) {
-    m_iSourceWidth = m_iSourceHeight = 1;
-    m_iTextureWidth = m_iTextureHeight = 1;
-    m_iImageWidth = m_iImageHeight = 1;
+  RageTexture_Default() : RageTexture(RageTextureID()), tex_handle_(0) {
+    source_width_ = source_height_ = 1;
+    texture_width_ = texture_height_ = 1;
+    image_width_ = image_height_ = 1;
     CreateFrameRects();
   }
-  uintptr_t GetTexHandle() const { return m_uTexHandle; }
+  uintptr_t GetTexHandle() const { return tex_handle_; }
 
  private:
-  uintptr_t m_uTexHandle;
+  uintptr_t tex_handle_;
 };
 
 // Load and unload textures from disk.
 RageTexture* RageTextureManager::LoadTextureInternal(RageTextureID ID) {
   CHECKPOINT_M(
-      ssprintf("RageTextureManager::LoadTexture(%s).", ID.filename.c_str()));
+      ssprintf("RageTextureManager::LoadTexture(%s).", ID.filename_.c_str()));
 
   AdjustTextureID(ID);
 
@@ -152,16 +152,16 @@ RageTexture* RageTextureManager::LoadTextureInternal(RageTextureID ID) {
   if (p != m_mapPathToTexture.end()) {
     /* Found the texture.  Just increase the refcount and return it. */
     RageTexture* pTexture = p->second;
-    pTexture->m_iRefCount++;
+    pTexture->ref_count_++;
     return pTexture;
   }
 
   // The texture is not already loaded.  Load it.
 
   RageTexture* pTexture;
-  if (ID.filename == g_sDefaultTextureName) {
+  if (ID.filename_ == g_sDefaultTextureName) {
     pTexture = new RageTexture_Default;
-  } else if (ActorUtil::GetFileType(ID.filename) == FT_Movie) {
+  } else if (ActorUtil::GetFileType(ID.filename_) == FT_Movie) {
     pTexture = RageMovieTexture::Create(ID);
   } else {
     pTexture = new RageBitmapTexture(ID);
@@ -177,13 +177,13 @@ RageTexture* RageTextureManager::LoadTextureInternal(RageTextureID ID) {
 RageTexture* RageTextureManager::LoadTexture(RageTextureID ID) {
   RageTexture* pTexture = LoadTextureInternal(ID);
   if (pTexture) {
-    pTexture->m_bWasUsed = true;
+    pTexture->was_used_ = true;
   }
   return pTexture;
 }
 
 RageTexture* RageTextureManager::CopyTexture(RageTexture* pCopy) {
-  ++pCopy->m_iRefCount;
+  ++pCopy->ref_count_;
   return pCopy;
 }
 
@@ -192,12 +192,12 @@ void RageTextureManager::UnloadTexture(RageTexture* t) {
     return;
   }
 
-  t->m_iRefCount--;
+  t->ref_count_--;
   ASSERT_M(
-      t->m_iRefCount >= 0,
-      ssprintf("%i, %s", t->m_iRefCount, t->GetID().filename.c_str()));
+      t->ref_count_ >= 0,
+      ssprintf("%i, %s", t->ref_count_, t->GetID().filename_.c_str()));
 
-  if (t->m_iRefCount) {
+  if (t->ref_count_) {
     return; /* Can't unload textures that are still referenced. */
   }
 
@@ -209,13 +209,12 @@ void RageTextureManager::UnloadTexture(RageTexture* t) {
   }
 
   /* Delete normal textures immediately unless m_bDelayedDelete is is on. */
-  if (t->GetPolicy() == RageTextureID::TEX_DEFAULT &&
-      !m_Prefs.m_bDelayedDelete) {
+  if (t->GetPolicy() == RageTextureID::TEX_DEFAULT && !prefs_.delayed_delete_) {
     bDeleteThis = true;
   }
 
   /* Delete volatile textures after they've been used at least once. */
-  if (t->GetPolicy() == RageTextureID::TEX_VOLATILE && t->m_bWasUsed) {
+  if (t->GetPolicy() == RageTextureID::TEX_VOLATILE && t->was_used_) {
     bDeleteThis = true;
   }
 
@@ -225,7 +224,7 @@ void RageTextureManager::UnloadTexture(RageTexture* t) {
 }
 
 void RageTextureManager::DeleteTexture(RageTexture* t) {
-  ASSERT(t->m_iRefCount == 0);
+  ASSERT(t->ref_count_ == 0);
   // LOG->Trace( "RageTextureManager: deleting '%s'.",
   // t->GetID().filename.c_str() );
 
@@ -260,10 +259,10 @@ void RageTextureManager::GarbageCollect(GCType type) {
     std::map<RageTextureID, RageTexture*>::iterator j = i;
     i++;
 
-    std::string sPath = j->first.filename;
+    std::string sPath = j->first.filename_;
     RageTexture* t = j->second;
 
-    if (t->m_iRefCount) {
+    if (t->ref_count_) {
       continue; /* Can't unload textures that are still referenced. */
     }
 
@@ -275,7 +274,7 @@ void RageTextureManager::GarbageCollect(GCType type) {
           /* If m_bDelayedDelete, wait until delayed_delete.  If
            * !m_bDelayedDelete, it should have been deleted when it reached no
            * references, but we might have just changed the preference. */
-          if (!m_Prefs.m_bDelayedDelete) {
+          if (!prefs_.delayed_delete_) {
             bDeleteThis = true;
           }
           break;
@@ -327,15 +326,15 @@ void RageTextureManager::InvalidateTextures() {
 
 bool RageTextureManager::SetPrefs(RageTextureManagerPrefs prefs) {
   bool bNeedReload = false;
-  if (m_Prefs != prefs) {
+  if (prefs_ != prefs) {
     bNeedReload = true;
   }
 
-  m_Prefs = prefs;
+  prefs_ = prefs;
 
   ASSERT(
-      m_Prefs.m_iTextureColorDepth == 16 || m_Prefs.m_iTextureColorDepth == 32);
-  ASSERT(m_Prefs.m_iMovieColorDepth == 16 || m_Prefs.m_iMovieColorDepth == 32);
+      prefs_.texture_color_depth_ == 16 || prefs_.texture_color_depth_ == 32);
+  ASSERT(prefs_.movie_color_depth_ == 16 || prefs_.movie_color_depth_ == 32);
   return bNeedReload;
 }
 

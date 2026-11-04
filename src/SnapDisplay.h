@@ -16,20 +16,20 @@ class SnapDisplay : public ActorFrame {
   bool PrevSnapMode();
   bool NextSnapMode();
 
-  NoteType GetNoteType() const { return m_NoteType; }
+  NoteType GetNoteType() const { return note_type_; }
 
  protected:
-  int m_iNumCols;
+  int num_cols_;
 
   void SnapModeChanged();
 
   /** @brief the NoteType to snap to. */
-  NoteType m_NoteType;
+  NoteType note_type_;
   /**
    * @brief Indicators showing what NoteType is currently snapped to.
    *
    * TODO: Convert to an AutoActor. -aj */
-  Sprite m_sprIndicators[2];  // left and right side
+  Sprite spr_indicators_[2];  // left and right side
 };
 
 #endif
