@@ -21,31 +21,31 @@ class BGAnimationLayer : public ActorFrame {
   void UpdateInternal(float fDeltaTime);
 
  protected:
-  std::vector<RageVector3> m_vParticleVelocity;
+  std::vector<RageVector3> particle_velocity_;
 
   enum Type {
     TYPE_SPRITE,
     TYPE_PARTICLES,
     TYPE_TILES,
     NUM_TYPES,
-  } m_Type;
+  } type_;
 
   // stretch stuff
-  float m_fTexCoordVelocityX;
-  float m_fTexCoordVelocityY;
+  float tex_coord_velocity_x_;
+  float tex_coord_velocity_y_;
 
   // particles stuff
-  bool m_bParticlesBounce;
+  bool particles_bounce_;
 
   // tiles stuff
-  int m_iNumTilesWide;
-  int m_iNumTilesHigh;
-  float m_fTilesStartX;
-  float m_fTilesStartY;
-  float m_fTilesSpacingX;
-  float m_fTilesSpacingY;
-  float m_fTileVelocityX;
-  float m_fTileVelocityY;
+  int num_tiles_wide_;
+  int num_tiles_high_;
+  float tiles_start_x_;
+  float tiles_start_y_;
+  float tiles_spacing_x_;
+  float tiles_spacing_y_;
+  float tile_velocity_x_;
+  float tile_velocity_y_;
 };
 
 #endif

@@ -15,7 +15,7 @@ HANDLE serialPort;
 
 LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
   // Ensure a non-match the first time
-  lastOutput[0] = 0;
+  last_output_[0] = 0;
 
   std::string sComPort = g_sLightsComPort.Get();
 
@@ -80,12 +80,12 @@ void LightsDriver_Win32Serial::Set(const LightsState* ls) {
     packLine(buffer, ls);
 
     // Only write if the message has changed since the last write.
-    if (memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0) {
+    if (memcmp(buffer, last_output_, FULL_SEXTET_COUNT) != 0) {
       DWORD bytesWritten = 0;
       WriteFile(serialPort, buffer, FULL_SEXTET_COUNT, &bytesWritten, NULL);
 
       // Remember last message
-      memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
+      memcpy(last_output_, buffer, FULL_SEXTET_COUNT);
     }
   }
 }

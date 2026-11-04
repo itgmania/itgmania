@@ -79,17 +79,17 @@ class ScreenManager {
  private:
   // Screen loads, removals, and concurrent prepares are delayed until the next
   // update.
-  std::string m_sDelayedScreen;
-  ScreenMessage m_PopTopScreen;
+  std::string delayed_screen_;
+  ScreenMessage pop_top_screen_;
 
   // Set this to true anywhere we create of delete objects.  These
   // operations take a long time, and will cause a skip on the next update.
-  bool m_bZeroNextUpdate;
+  bool zero_next_update_;
 
   // This exists so the debug overlay can reload the overlay screens without seg
   // faulting. It's "AfterInput" because the debug overlay carries out actions
   // in Input.
-  bool m_bReloadOverlayScreensAfterInput;
+  bool reload_overlay_screens_after_input_;
 
   Screen* MakeNewScreen(const std::string& sName);
   void LoadDelayedScreen();
@@ -106,14 +106,14 @@ class ScreenManager {
   void PlayScreenshotSound();
 
  private:
-  RageSound m_soundStart;
+  RageSound sound_start_;
   /** @brief The sound played when a coin has been put into the machine. */
-  RageSound m_soundCoin;
-  RageSound m_soundCancel;
-  RageSound m_soundInvalid;
+  RageSound sound_coin_;
+  RageSound sound_cancel_;
+  RageSound sound_invalid_;
   /** @brief The sound played when a Player wishes to take a picture of their
    * Score. */
-  RageSound m_soundScreenshot;
+  RageSound sound_screenshot_;
 };
 
 extern ScreenManager*

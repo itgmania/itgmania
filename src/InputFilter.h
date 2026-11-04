@@ -34,19 +34,19 @@ const std::string& InputEventTypeToLocalizedString(InputEventType cat);
 LuaDeclareType(InputEventType);
 
 struct InputEvent {
-  InputEvent() : type(IET_FIRST_PRESS) {}
+  InputEvent() : type_(IET_FIRST_PRESS) {}
 
-  DeviceInput di;
-  InputEventType type;
+  DeviceInput di_;
+  InputEventType type_;
 
   // A list of all buttons that were pressed at the time of this event:
-  DeviceInputList m_ButtonState;
+  DeviceInputList button_state_;
 };
 
 struct MouseCoordinates {
-  float fX;
-  float fY;
-  float fZ;
+  float x_;
+  float y_;
+  float z_;
 };
 
 // describes each of the panels of a single player dance pad
@@ -81,31 +81,32 @@ enum PadSensor {
 
 struct PadSensorState {
  private:
-  unsigned int currentValue[NUM_PadPanel][NUM_PadSensor] = {};
-  unsigned int min = 0;
-  unsigned int max = 100;
+  unsigned int current_value_[NUM_PadPanel][NUM_PadSensor] = {};
+  unsigned int min_ = 0;
+  unsigned int max_ = 100;
 
  public:
   float GetIntensity(PadPanel panel, PadSensor sensor) const {
     return static_cast<float>(
-               currentValue[static_cast<int>(panel)][static_cast<int>(sensor)] -
-               min) /
-           static_cast<float>(max - min);
+               current_value_[static_cast<int>(panel)]
+                             [static_cast<int>(sensor)] -
+               min_) /
+           static_cast<float>(max_ - min_);
   }
 
   void Set(PadPanel panel, PadSensor sensor, unsigned int value) {
-    value = std::clamp(value, min, max);
-    this->currentValue[static_cast<int>(panel)][static_cast<int>(sensor)] =
+    value = std::clamp(value, min_, max_);
+    this->current_value_[static_cast<int>(panel)][static_cast<int>(sensor)] =
         value;
   }
 
   void SetBinary(PadPanel panel, PadSensor sensor, bool isPressed) {
-    Set(panel, sensor, isPressed ? max : min);
+    Set(panel, sensor, isPressed ? max_ : min_);
   }
 
-  void SetMax(unsigned int value) { max = std::max(value, min); }
+  void SetMax(unsigned int value) { max_ = std::max(value, min_); }
 
-  void Clear() { std::memset(currentValue, 0, sizeof(currentValue)); }
+  void Clear() { std::memset(current_value_, 0, sizeof(current_value_)); }
 };
 
 class RageMutex;
@@ -144,13 +145,13 @@ class InputFilter {
   // cursor
   void UpdateCursorLocation(float _fX, float _fY);
   void UpdateMouseWheel(float _fZ);
-  float GetCursorX() { return m_MouseCoords.fX; }
-  float GetCursorY() { return m_MouseCoords.fY; }
-  float GetMouseWheel() { return m_MouseCoords.fZ; }
+  float GetCursorX() { return mouse_coords_.x_; }
+  float GetCursorY() { return mouse_coords_.y_; }
+  float GetMouseWheel() { return mouse_coords_.z_; }
 
   PadSensorState* getFullSensorState(PlayerNumber pn) {
     if (pn < NUM_PLAYERS) {
-      return &m_Sensors[pn];
+      return &sensors_[pn];
     }
     return nullptr;
   }
@@ -166,12 +167,12 @@ class InputFilter {
   void ReportButtonChange(const DeviceInput& di, InputEventType t);
   void MakeButtonStateList(std::vector<DeviceInput>& aInputOut) const;
 
-  std::vector<InputEvent> queue;
-  RageMutex* queuemutex;
-  MouseCoordinates m_MouseCoords;
+  std::vector<InputEvent> queue_;
+  RageMutex* queuemutex_;
+  MouseCoordinates mouse_coords_;
 
   // debug sensors.
-  PadSensorState m_Sensors[NUM_PLAYERS];
+  PadSensorState sensors_[NUM_PLAYERS];
 
   InputFilter(const InputFilter& rhs);
   InputFilter& operator=(const InputFilter& rhs);

@@ -56,9 +56,9 @@
 #define SNEK_CONFIG_NUM_SENSORS 4
 
 struct SnekBitMapping {
-  uint32_t bitPosition;
-  PlayerNumber pn;
-  PadPanel panel;
+  uint32_t bit_position_;
+  PlayerNumber pn_;
+  PadPanel panel_;
 };
 
 class InputHandler_SnekConfig : public InputHandler {
@@ -69,7 +69,7 @@ class InputHandler_SnekConfig : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-  bool IsConnected() { return dev.IsConnected(); }
+  bool IsConnected() { return dev_.IsConnected(); }
 
   void StartSensorDebugging();
   void StopSensorDebugging();
@@ -77,13 +77,13 @@ class InputHandler_SnekConfig : public InputHandler {
  private:
   // ensure auto reconnect and blocking reads (we need to ask it a question then
   // get an answer)
-  HidDevice dev = HidDevice(
+  HidDevice dev_ = HidDevice(
       SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM, true, false);
 
-  std::atomic<bool> m_bShutdown;
-  RageThread* DebugThread = nullptr;
+  std::atomic<bool> shutdown_;
+  RageThread* debug_thread_ = nullptr;
 
-  uint32_t sensorState[SNEK_CONFIG_NUM_SENSORS] = {};
+  uint32_t sensor_state_[SNEK_CONFIG_NUM_SENSORS] = {};
 
   static int InputThread_Start(void* p);
   void InputThreadMain();

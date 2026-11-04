@@ -21,7 +21,7 @@ class RageSoundDriver : public RageDriver {
  public:
   /* Pass an empty string to get the default sound driver list. */
   static RageSoundDriver* Create(const std::string& sDrivers);
-  static DriverList m_pDriverList;
+  static DriverList driver_list_;
   static std::vector<std::string> GetSoundDriverList();
 
   friend class RageSoundManager;
@@ -111,25 +111,25 @@ class RageSoundDriver : public RageDriver {
 
  private:
   struct MixingPositionInfo {
-    int64_t m_iSourceFrame;
-    int m_iFrames;
-    float m_fSourceToStreamRatio;
-    int m_iFramesConsumed;
+    int64_t source_frame_;
+    int frames_;
+    float source_to_stream_ratio_;
+    int frames_consumed_;
     MixingPositionInfo()
-        : m_iSourceFrame(0),
-          m_iFrames(0),
-          m_fSourceToStreamRatio(1.0f),
-          m_iFramesConsumed(0) {}
+        : source_frame_(0),
+          frames_(0),
+          source_to_stream_ratio_(1.0f),
+          frames_consumed_(0) {}
   };
 
   /* This mutex is used for serializing with the decoder thread.  Locking this
    * mutex can take a while. */
-  RageMutex m_Mutex;
+  RageMutex mutex_;
 
   /* This mutex locks all sounds[] which are "available".  (Other sound may
    * safely be accessed, and sounds may be set to available, without locking
    * this.) */
-  RageMutex m_SoundListMutex;
+  RageMutex sound_list_mutex_;
 
   /*
    * Thread safety and state transitions:
@@ -164,7 +164,7 @@ class RageSoundDriver : public RageDriver {
    * next iteration.
    *
    * The only state change made by the decoding thread is on EOF: the state is
-   * changed from PLAYING to STOPPING.  This is done while m_Mutex is held, to
+   * changed from PLAYING to STOPPING.  This is done while mutex_ is held, to
    * prevent races with other threads.
    *
    * The only state change made by the mixing thread is from HALTING to STOPPED.
@@ -176,20 +176,20 @@ class RageSoundDriver : public RageDriver {
    * thread.
    */
   struct sound_block {
-    float m_Buffer[samples_per_block];
-    float* m_BufferNext;   // beginning of the unread data
-    int m_FramesInBuffer;  // total number of frames at m_BufferNext
+    float buffer_[samples_per_block];
+    float* buffer_next_;    // beginning of the unread data
+    int frames_in_buffer_;  // total number of frames at buffer_next_
     // A span is one contiguous decoded segment with a known source-frame
     // range. The mixer uses these spans to map hardware playback time back to
     // the original sound position, even when one buffer contains several cuts.
-    MixingPositionInfo m_PositionSpans[samples_per_block];
-    int m_iPositionSpanCount;
-    int m_iCurrentPositionSpan;
+    MixingPositionInfo position_spans_[samples_per_block];
+    int position_span_count_;
+    int current_position_span_;
     sound_block()
-        : m_BufferNext(m_Buffer),
-          m_FramesInBuffer(0),
-          m_iPositionSpanCount(0),
-          m_iCurrentPositionSpan(0) {}
+        : buffer_next_(buffer_),
+          frames_in_buffer_(0),
+          position_span_count_(0),
+          current_position_span_(0) {}
   };
 
   struct Sound {
@@ -197,21 +197,21 @@ class RageSoundDriver : public RageDriver {
     void Allocate(int iFrames);
     void Deallocate();
 
-    RageSoundBase* m_pSound;
-    RageTimer m_StartTime;
-    CircBuf<sound_block> m_Buffer;
+    RageSoundBase* sound_;
+    RageTimer start_time_;
+    CircBuf<sound_block> buffer_;
 
-    bool m_bPaused;
+    bool paused_;
 
     struct PlaybackPositionInfo {
-      int iFrames;
-      int64_t iHardwareFrame;
-      int64_t iSourceFrame;
-      float m_fSourceToStreamRatio;
+      int frames_;
+      int64_t hardware_frame_;
+      int64_t source_frame_;
+      float source_to_stream_ratio_;
     };
 
-    CircBuf<PlaybackPositionInfo> m_MixedPositionQueue;
-    std::deque<PlaybackPositionInfo> m_PlaybackHistory;
+    CircBuf<PlaybackPositionInfo> mixed_position_queue_;
+    std::deque<PlaybackPositionInfo> playback_history_;
 
     enum {
       AVAILABLE,
@@ -225,22 +225,22 @@ class RageSoundDriver : public RageDriver {
 
       HALTING, /* stop immediately */
       PLAYING
-    } m_State;
+    } state_;
   };
 
   /* List of currently playing sounds: XXX no vector */
-  Sound m_Sounds[32];
+  Sound sounds_[32];
 
   int64_t ClampHardwareFrame(int64_t iHardwareFrame) const;
-  mutable int64_t m_iMaxHardwareFrame;
+  mutable int64_t max_hardware_frame_;
 
-  bool m_bShutdownDecodeThread;
+  bool shutdown_decode_thread_;
 
   static int DecodeThread_start(void* p);
   void DecodeThread();
   RageSoundMixBuffer& MixIntoBuffer(
       int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame);
-  RageThread m_DecodeThread;
+  RageThread decode_thread_;
 
   void PlaybackQueueDrain(Sound& s);
   void PlaybackHistoryCleanup(Sound& s, int64_t iCurrentHardwareFrame);
@@ -252,7 +252,7 @@ class RageSoundDriver : public RageDriver {
 // Can't use Create##name because many of these have -sw suffixes.
 #define REGISTER_SOUND_DRIVER_CLASS2(name, x) \
   static RegisterRageDriver register_##x(     \
-      &RageSoundDriver::m_pDriverList, name,  \
+      &RageSoundDriver::driver_list_, name,   \
       CreateClass<RageSoundDriver_##x, RageDriver>)
 #define REGISTER_SOUND_DRIVER_CLASS(name) \
   REGISTER_SOUND_DRIVER_CLASS2(#name, name)

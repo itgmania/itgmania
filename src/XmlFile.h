@@ -39,7 +39,7 @@ class XNodeValue {
 
 class XNodeStringValue : public XNodeValue {
  public:
-  std::string m_sValue;
+  std::string value_;
 
   XNodeValue* Copy() const { return new XNodeStringValue(*this); }
 
@@ -61,13 +61,13 @@ typedef std::map<std::string, XNodeValue*> XAttrs;
 class XNode;
 typedef std::vector<XNode*> XNodes;
 /** @brief Loop through each node. */
-#define FOREACH_Attr(pNode, Var)                        \
-  for (XAttrs::iterator Var = (pNode)->m_attrs.begin(); \
-       Var != (pNode)->m_attrs.end(); ++Var)
+#define FOREACH_Attr(pNode, Var)                       \
+  for (XAttrs::iterator Var = (pNode)->attrs_.begin(); \
+       Var != (pNode)->attrs_.end(); ++Var)
 /** @brief Loop through each node, using a constant iterator. */
-#define FOREACH_CONST_Attr(pNode, Var)                        \
-  for (XAttrs::const_iterator Var = (pNode)->m_attrs.begin(); \
-       Var != (pNode)->m_attrs.end(); ++Var)
+#define FOREACH_CONST_Attr(pNode, Var)                       \
+  for (XAttrs::const_iterator Var = (pNode)->attrs_.begin(); \
+       Var != (pNode)->attrs_.end(); ++Var)
 /** @brief Loop through each child. */
 #define FOREACH_Child(pNode, Var)                                             \
   XNode* Var = nullptr;                                                       \
@@ -85,20 +85,20 @@ typedef std::vector<XNode*> XNodes;
 
 class XNode {
  private:
-  XNodes m_childs;  // child nodes
-  std::multimap<std::string, XNode*> m_children_by_name;
+  XNodes childs_;  // child nodes
+  std::multimap<std::string, XNode*> children_by_name_;
 
  public:
-  std::string m_sName;
-  XAttrs m_attrs;  // attributes
+  std::string name_;
+  XAttrs attrs_;  // attributes
 
-  void SetName(const std::string& sName) { m_sName = sName; }
-  const std::string& GetName() const { return m_sName; }
+  void SetName(const std::string& sName) { name_ = sName; }
+  const std::string& GetName() const { return name_; }
 
-  static const std::string TEXT_ATTRIBUTE;
+  static const std::string kTextAttribute;
   template <typename T>
   void GetTextValue(T& out) const {
-    GetAttrValue(TEXT_ATTRIBUTE, out);
+    GetAttrValue(kTextAttribute, out);
   }
 
   // in own attribute list
@@ -115,11 +115,11 @@ class XNode {
   }
   bool PushAttrValue(lua_State* L, const std::string& sName) const;
 
-  XNodes::iterator GetChildrenBegin() { return m_childs.begin(); }
-  XNodes::const_iterator GetChildrenBegin() const { return m_childs.begin(); }
-  XNodes::iterator GetChildrenEnd() { return m_childs.end(); }
-  XNodes::const_iterator GetChildrenEnd() const { return m_childs.end(); }
-  bool ChildrenEmpty() const { return m_childs.empty(); }
+  XNodes::iterator GetChildrenBegin() { return childs_.begin(); }
+  XNodes::const_iterator GetChildrenBegin() const { return childs_.begin(); }
+  XNodes::iterator GetChildrenEnd() { return childs_.end(); }
+  XNodes::const_iterator GetChildrenEnd() const { return childs_.end(); }
+  bool ChildrenEmpty() const { return childs_.empty(); }
 
   // in one level child nodes
   const XNode* GetChild(const std::string& sName) const;
@@ -137,7 +137,7 @@ class XNode {
   template <typename T>
   XNode* AppendChild(const std::string& sName, T value) {
     XNode* p = AppendChild(sName);
-    p->AppendAttr(XNode::TEXT_ATTRIBUTE, value);
+    p->AppendAttr(XNode::kTextAttribute, value);
     return p;
   }
   XNode* AppendChild(const std::string& sName) {

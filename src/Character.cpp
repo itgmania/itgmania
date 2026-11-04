@@ -14,51 +14,51 @@
 std::string GetRandomFileInDir(std::string sDir);
 
 Character::Character()
-    : m_sCharDir(""),
-      m_sCharacterID(""),
-      m_sDisplayName(""),
-      m_sCardPath(""),
-      m_sIconPath("") {}
+    : char_dir_(""),
+      character_id_(""),
+      display_name_(""),
+      card_path_(""),
+      icon_path_("") {}
 
 bool Character::Load(std::string sCharDir) {
   // Save character directory
   if (Right(sCharDir, 1) != "/") {
     sCharDir += "/";
   }
-  m_sCharDir = sCharDir;
+  char_dir_ = sCharDir;
 
   // save ID
   {
     std::vector<std::string> as;
     split(sCharDir, "/", as);
-    m_sCharacterID = as.back();
+    character_id_ = as.back();
   }
 
   {
     std::vector<std::string> as;
-    GetDirListing(m_sCharDir + "card.png", as, false, true);
-    GetDirListing(m_sCharDir + "card.jpg", as, false, true);
-    GetDirListing(m_sCharDir + "card.jpeg", as, false, true);
-    GetDirListing(m_sCharDir + "card.gif", as, false, true);
-    GetDirListing(m_sCharDir + "card.bmp", as, false, true);
+    GetDirListing(char_dir_ + "card.png", as, false, true);
+    GetDirListing(char_dir_ + "card.jpg", as, false, true);
+    GetDirListing(char_dir_ + "card.jpeg", as, false, true);
+    GetDirListing(char_dir_ + "card.gif", as, false, true);
+    GetDirListing(char_dir_ + "card.bmp", as, false, true);
     if (as.empty()) {
-      m_sCardPath = "";
+      card_path_ = "";
     } else {
-      m_sCardPath = as[0];
+      card_path_ = as[0];
     }
   }
 
   {
     std::vector<std::string> as;
-    GetDirListing(m_sCharDir + "icon.png", as, false, true);
-    GetDirListing(m_sCharDir + "icon.jpg", as, false, true);
-    GetDirListing(m_sCharDir + "icon.jpeg", as, false, true);
-    GetDirListing(m_sCharDir + "icon.gif", as, false, true);
-    GetDirListing(m_sCharDir + "icon.bmp", as, false, true);
+    GetDirListing(char_dir_ + "icon.png", as, false, true);
+    GetDirListing(char_dir_ + "icon.jpg", as, false, true);
+    GetDirListing(char_dir_ + "icon.jpeg", as, false, true);
+    GetDirListing(char_dir_ + "icon.gif", as, false, true);
+    GetDirListing(char_dir_ + "icon.bmp", as, false, true);
     if (as.empty()) {
-      m_sIconPath = "";
+      icon_path_ = "";
     } else {
-      m_sIconPath = as[0];
+      icon_path_ = as[0];
     }
   }
 
@@ -71,17 +71,17 @@ bool Character::Load(std::string sCharDir) {
     for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
       ini.GetValue(
           "Character", ssprintf("Level%dAttack%d", i + 1, j + 1),
-          m_sAttacks[i][j]);
+          attacks_[i][j]);
     }
   }
 
   // get optional display name
-  ini.GetValue("Character", "DisplayName", m_sDisplayName);
+  ini.GetValue("Character", "DisplayName", display_name_);
 
   // get optional InitCommand
   std::string s;
   ini.GetValue("Character", "InitCommand", s);
-  m_cmdInit = ActorUtil::ParseActorCommands(s);
+  init_ = ActorUtil::ParseActorCommands(s);
 
   return true;
 }
@@ -97,7 +97,7 @@ std::string GetRandomFileInDir(std::string sDir) {
 }
 
 std::string Character::GetModelPath() const {
-  std::string s = m_sCharDir + "model.txt";
+  std::string s = char_dir_ + "model.txt";
   if (DoesFileExist(s)) {
     return s;
   } else {
@@ -106,31 +106,31 @@ std::string Character::GetModelPath() const {
 }
 
 std::string Character::GetRestAnimationPath() const {
-  return DerefRedir(GetRandomFileInDir(m_sCharDir + "Rest/"));
+  return DerefRedir(GetRandomFileInDir(char_dir_ + "Rest/"));
 }
 std::string Character::GetWarmUpAnimationPath() const {
-  return DerefRedir(GetRandomFileInDir(m_sCharDir + "WarmUp/"));
+  return DerefRedir(GetRandomFileInDir(char_dir_ + "WarmUp/"));
 }
 std::string Character::GetDanceAnimationPath() const {
-  return DerefRedir(GetRandomFileInDir(m_sCharDir + "Dance/"));
+  return DerefRedir(GetRandomFileInDir(char_dir_ + "Dance/"));
 }
 std::string Character::GetSongSelectIconPath() const {
   std::vector<std::string> as;
   // first try and find an icon specific to the select music screen
   // so you can have different icons for music select / char select
-  GetDirListing(m_sCharDir + "selectmusicicon.png", as, false, true);
-  GetDirListing(m_sCharDir + "selectmusicicon.jpg", as, false, true);
-  GetDirListing(m_sCharDir + "selectmusicicon.jpeg", as, false, true);
-  GetDirListing(m_sCharDir + "selectmusicicon.gif", as, false, true);
-  GetDirListing(m_sCharDir + "selectmusicicon.bmp", as, false, true);
+  GetDirListing(char_dir_ + "selectmusicicon.png", as, false, true);
+  GetDirListing(char_dir_ + "selectmusicicon.jpg", as, false, true);
+  GetDirListing(char_dir_ + "selectmusicicon.jpeg", as, false, true);
+  GetDirListing(char_dir_ + "selectmusicicon.gif", as, false, true);
+  GetDirListing(char_dir_ + "selectmusicicon.bmp", as, false, true);
 
   if (as.empty()) {
     // if that failed, try using the regular icon
-    GetDirListing(m_sCharDir + "icon.png", as, false, true);
-    GetDirListing(m_sCharDir + "icon.jpg", as, false, true);
-    GetDirListing(m_sCharDir + "icon.jpeg", as, false, true);
-    GetDirListing(m_sCharDir + "icon.gif", as, false, true);
-    GetDirListing(m_sCharDir + "icon.bmp", as, false, true);
+    GetDirListing(char_dir_ + "icon.png", as, false, true);
+    GetDirListing(char_dir_ + "icon.jpg", as, false, true);
+    GetDirListing(char_dir_ + "icon.jpeg", as, false, true);
+    GetDirListing(char_dir_ + "icon.gif", as, false, true);
+    GetDirListing(char_dir_ + "icon.bmp", as, false, true);
     if (as.empty()) {
       return std::string();
     } else {
@@ -145,19 +145,19 @@ std::string Character::GetStageIconPath() const {
   std::vector<std::string> as;
   // first try and find an icon specific to the select music screen
   // so you can have different icons for music select / char select
-  GetDirListing(m_sCharDir + "stageicon.png", as, false, true);
-  GetDirListing(m_sCharDir + "stageicon.jpg", as, false, true);
-  GetDirListing(m_sCharDir + "stageicon.jpeg", as, false, true);
-  GetDirListing(m_sCharDir + "stageicon.gif", as, false, true);
-  GetDirListing(m_sCharDir + "stageicon.bmp", as, false, true);
+  GetDirListing(char_dir_ + "stageicon.png", as, false, true);
+  GetDirListing(char_dir_ + "stageicon.jpg", as, false, true);
+  GetDirListing(char_dir_ + "stageicon.jpeg", as, false, true);
+  GetDirListing(char_dir_ + "stageicon.gif", as, false, true);
+  GetDirListing(char_dir_ + "stageicon.bmp", as, false, true);
 
   if (as.empty()) {
     // if that failed, try using the regular icon
-    GetDirListing(m_sCharDir + "card.png", as, false, true);
-    GetDirListing(m_sCharDir + "card.jpg", as, false, true);
-    GetDirListing(m_sCharDir + "card.jpeg", as, false, true);
-    GetDirListing(m_sCharDir + "card.gif", as, false, true);
-    GetDirListing(m_sCharDir + "card.bmp", as, false, true);
+    GetDirListing(char_dir_ + "card.png", as, false, true);
+    GetDirListing(char_dir_ + "card.jpg", as, false, true);
+    GetDirListing(char_dir_ + "card.jpeg", as, false, true);
+    GetDirListing(char_dir_ + "card.gif", as, false, true);
+    GetDirListing(char_dir_ + "card.bmp", as, false, true);
     if (as.empty()) {
       return std::string();
     } else {
@@ -207,11 +207,11 @@ class LunaCharacter : public Luna<Character> {
     return 1;
   }
   static int GetCharacterDir(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_sCharDir.c_str());
+    lua_pushstring(L, p->char_dir_.c_str());
     return 1;
   }
   static int GetCharacterID(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_sCharacterID.c_str());
+    lua_pushstring(L, p->character_id_.c_str());
     return 1;
   }
   static int GetDisplayName(T* p, lua_State* L) {

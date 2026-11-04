@@ -27,8 +27,8 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
 
   virtual int GetLength() const;
   virtual int GetLength_Fast() const;
-  virtual int GetSampleRate() const { return m_iSampleRate; }
-  virtual unsigned GetNumChannels() const { return m_iChannels; }
+  virtual int GetSampleRate() const { return sample_rate_; }
+  virtual unsigned GetNumChannels() const { return channels_; }
   virtual bool SetProperty(const std::string& sProperty, float fValue);
   virtual float GetStreamToSourceRatio() const;
   virtual RageSoundReader* GetSource() { return nullptr; }
@@ -51,31 +51,31 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
   int FillBlock();
   int GetFilledFrames() const;
   int GetEmptyFrames() const;
-  int m_iSampleRate;
-  int m_iChannels;
+  int sample_rate_;
+  int channels_;
 
-  CircBuf<float> m_DataBuffer;
+  CircBuf<float> data_buffer_;
 
   struct Mapping {
-    int iFramesBuffered;
-    int iPositionOfFirstFrame;
-    float fRate;
-    Mapping() : iFramesBuffered(0), iPositionOfFirstFrame(0), fRate(1.0f) {}
+    int frames_buffered_;
+    int position_of_first_frame_;
+    float rate_;
+    Mapping() : frames_buffered_(0), position_of_first_frame_(0), rate_(1.0f) {}
   };
-  std::list<Mapping> m_StreamPosition;
+  std::list<Mapping> stream_position_;
 
-  bool m_bEOF;
+  bool eof_;
 
-  bool m_bEnabled;
+  bool enabled_;
 
   /* If this is true, the buffering thread owns m_pSource, even
    * if m_Event is unlocked. */
-  bool m_bFilling;
+  bool filling_;
 
-  mutable RageEvent m_Event;
+  mutable RageEvent event_;
 
-  RageThread m_Thread;
-  bool m_bShutdownThread;
+  RageThread thread_;
+  bool shutdown_thread_;
   static int StartBufferingThread(void* p) {
     ((RageSoundReader_ThreadedBuffer*)p)->BufferingThread();
     return 0;

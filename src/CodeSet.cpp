@@ -15,14 +15,14 @@ void InputQueueCodeSet::Load(const std::string& sType) {
   //
   // Load codes
   //
-  split(CODE_NAMES, ",", m_asCodeNames, true);
+  split(CODE_NAMES, ",", code_names_, true);
 
-  for (unsigned c = 0; c < m_asCodeNames.size(); c++) {
+  for (unsigned c = 0; c < code_names_.size(); c++) {
     std::vector<std::string> asBits;
-    split(m_asCodeNames[c], "=", asBits, true);
+    split(code_names_[c], "=", asBits, true);
     std::string sCodeName = asBits[0];
     if (asBits.size() > 1) {
-      m_asCodeNames[c] = asBits[1];
+      code_names_[c] = asBits[1];
     }
 
     InputQueueCode code;
@@ -31,17 +31,17 @@ void InputQueueCodeSet::Load(const std::string& sType) {
     // and m_aCodes are the same size to prevent off by ones.
     code.Load(CODE(sCodeName));
 
-    m_aCodes.push_back(code);
+    codes_.push_back(code);
   }
 }
 
 std::string InputQueueCodeSet::Input(const InputEventPlus& input) const {
-  for (unsigned i = 0; i < m_aCodes.size(); ++i) {
-    if (!m_aCodes[i].EnteredCode(input.GameI.controller)) {
+  for (unsigned i = 0; i < codes_.size(); ++i) {
+    if (!codes_[i].EnteredCode(input.game_i_.controller_)) {
       continue;
     }
 
-    return m_asCodeNames[i];
+    return code_names_[i];
   }
   return "";
 }
@@ -54,7 +54,7 @@ bool InputQueueCodeSet::InputMessage(
   }
 
   msg.SetName("Code");
-  msg.SetParam("PlayerNumber", input.pn);
+  msg.SetParam("PlayerNumber", input.pn_);
   msg.SetParam("Name", sCodeName);
   return true;
 }

@@ -79,25 +79,25 @@ static bool HaveAllCharAnimations() {
 
 REGISTER_SCREEN_CLASS(ScreenHowToPlay);
 ScreenHowToPlay::ScreenHowToPlay() {
-  m_iW2s = 0;
-  m_iNumW2s = NUM_W2S;
+  w2s_ = 0;
+  num_w2s_ = NUM_W2S;
 
   // initialize these because they might not be used.
-  m_pLifeMeterBar = nullptr;
-  m_pmCharacter = nullptr;
-  m_pmDancePad = nullptr;
+  life_meter_bar_ = nullptr;
+  character_ = nullptr;
+  dance_pad_ = nullptr;
 }
 
 void ScreenHowToPlay::Init() {
   ScreenAttract::Init();
 
   if ((bool)USE_PAD && DoesFileExist(GetAnimPath(ANIM_DANCE_PAD))) {
-    m_pmDancePad = new Model;
-    m_pmDancePad->SetName("Pad");
-    m_pmDancePad->LoadMilkshapeAscii(GetAnimPath(ANIM_DANCE_PAD));
+    dance_pad_ = new Model;
+    dance_pad_->SetName("Pad");
+    dance_pad_->LoadMilkshapeAscii(GetAnimPath(ANIM_DANCE_PAD));
     // xxx: hardcoded rotation. can be undone, but still. -freem
-    m_pmDancePad->SetRotationX(35);
-    ActorUtil::LoadAllCommandsAndSetXY(m_pmDancePad, m_sName);
+    dance_pad_->SetRotationX(35);
+    ActorUtil::LoadAllCommandsAndSetXY(dance_pad_, name_);
   }
 
   // Display a character
@@ -114,121 +114,117 @@ void ScreenHowToPlay::Init() {
 
     std::string sModelPath = displayChar->GetModelPath();
     if (sModelPath != "") {
-      m_pmCharacter = new Model;
-      m_pmCharacter->SetName("Character");
-      m_pmCharacter->LoadMilkshapeAscii(displayChar->GetModelPath());
-      m_pmCharacter->LoadMilkshapeAsciiBones(
-          "Step-LEFT", GetAnimPath(ANIM_LEFT));
-      m_pmCharacter->LoadMilkshapeAsciiBones(
-          "Step-DOWN", GetAnimPath(ANIM_DOWN));
-      m_pmCharacter->LoadMilkshapeAsciiBones("Step-UP", GetAnimPath(ANIM_UP));
-      m_pmCharacter->LoadMilkshapeAsciiBones(
+      character_ = new Model;
+      character_->SetName("Character");
+      character_->LoadMilkshapeAscii(displayChar->GetModelPath());
+      character_->LoadMilkshapeAsciiBones("Step-LEFT", GetAnimPath(ANIM_LEFT));
+      character_->LoadMilkshapeAsciiBones("Step-DOWN", GetAnimPath(ANIM_DOWN));
+      character_->LoadMilkshapeAsciiBones("Step-UP", GetAnimPath(ANIM_UP));
+      character_->LoadMilkshapeAsciiBones(
           "Step-RIGHT", GetAnimPath(ANIM_RIGHT));
-      m_pmCharacter->LoadMilkshapeAsciiBones(
+      character_->LoadMilkshapeAsciiBones(
           "Step-JUMPLR", GetAnimPath(ANIM_JUMPLR));
       std::string sRestFile = displayChar->GetRestAnimationPath();
       ASSERT(!sRestFile.empty());
-      m_pmCharacter->LoadMilkshapeAsciiBones(
+      character_->LoadMilkshapeAsciiBones(
           "rest", displayChar->GetRestAnimationPath());
-      m_pmCharacter->SetDefaultAnimation("rest");
-      m_pmCharacter->PlayAnimation(
+      character_->SetDefaultAnimation("rest");
+      character_->PlayAnimation(
           "rest");  // Stay bouncing after a step has finished animating.
 
       // xxx: hardcoded rotation. can be undone, but still. -freem
-      m_pmCharacter->SetRotationX(40);
-      m_pmCharacter->SetCullMode(
-          CULL_NONE);  // many of the models floating around have the vertex
-                       // order flipped
-      m_pmCharacter->RunCommands(
-          displayChar->m_cmdInit);  // run InitCommand from file
-      ActorUtil::LoadAllCommandsAndSetXY(m_pmCharacter, m_sName);
+      character_->SetRotationX(40);
+      character_->SetCullMode(CULL_NONE);  // many of the models floating around
+                                           // have the vertex order flipped
+      character_->RunCommands(displayChar->init_);  // run InitCommand from file
+      ActorUtil::LoadAllCommandsAndSetXY(character_, name_);
     }
   }
 
   GAMESTATE->SetCurrentStyle(
-      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID);
+      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID);
 
   if (USE_PLAYER) {
     GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
 
-    m_pLifeMeterBar = new LifeMeterBar;
-    m_pLifeMeterBar->Load(
-        GAMESTATE->m_pPlayerState[PLAYER_1],
-        &STATSMAN->m_CurStageStats.m_player[PLAYER_1]);
-    m_pLifeMeterBar->SetName("LifeMeterBar");
-    ActorUtil::LoadAllCommandsAndSetXY(m_pLifeMeterBar, m_sName);
-    m_pLifeMeterBar->FillForHowToPlay(NUM_W2S, NUM_MISSES);
+    life_meter_bar_ = new LifeMeterBar;
+    life_meter_bar_->Load(
+        GAMESTATE->player_state_[PLAYER_1],
+        &STATSMAN->cur_stage_stats_.player_[PLAYER_1]);
+    life_meter_bar_->SetName("LifeMeterBar");
+    ActorUtil::LoadAllCommandsAndSetXY(life_meter_bar_, name_);
+    life_meter_bar_->FillForHowToPlay(NUM_W2S, NUM_MISSES);
 
     // Allow themers to use either a .ssc or .sm file for this. -aj
-    std::string sStepsPath = THEME->GetPathO(m_sName, "steps");
+    std::string sStepsPath = THEME->GetPathO(name_, "steps");
     SSCLoader loaderSSC;
     SMLoader loaderSM;
     if (Right(sStepsPath, 4) == ".ssc") {
-      loaderSSC.LoadFromSimfile(sStepsPath, m_Song);
+      loaderSSC.LoadFromSimfile(sStepsPath, song_);
     } else {
-      loaderSM.LoadFromSimfile(sStepsPath, m_Song);
+      loaderSM.LoadFromSimfile(sStepsPath, song_);
     }
-    m_Song.AddAutoGenNotes();
+    song_.AddAutoGenNotes();
 
     const Style* pStyle = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
 
     Steps* pSteps = SongUtil::GetClosestNotes(
-        &m_Song, pStyle->m_StepsType, Difficulty_Beginner);
+        &song_, pStyle->steps_type_, Difficulty_Beginner);
     if (pSteps == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
           "No playable steps of StepsType '%s' for ScreenHowToPlay in file %s",
-          StringConversion::ToString(pStyle->m_StepsType).c_str(),
+          StringConversion::ToString(pStyle->steps_type_).c_str(),
           sStepsPath.c_str());
     } else {
-      m_Song.m_SongTiming.TidyUpData(false);
-      pSteps->m_Timing.TidyUpData(true);
+      song_.song_timing_.TidyUpData(false);
+      pSteps->timing_.TidyUpData(true);
       NoteData tempNoteData;
       pSteps->GetNoteData(tempNoteData);
       pStyle->GetTransformedNoteDataForStyle(
-          PLAYER_1, tempNoteData, m_NoteData);
+          PLAYER_1, tempNoteData, note_data_);
 
-      GAMESTATE->m_pCurSong.Set(&m_Song);
-      GAMESTATE->m_pCurSteps[PLAYER_1].Set(pSteps);
-      GAMESTATE->m_bGameplayLeadIn.Set(false);
-      GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = PC_AUTOPLAY;
+      GAMESTATE->cur_song_.Set(&song_);
+      GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+      GAMESTATE->gameplay_lead_in_.Set(false);
+      GAMESTATE->player_state_[PLAYER_1]->player_controller_ = PC_AUTOPLAY;
 
-      m_Player->Init(
-          "Player", GAMESTATE->m_pPlayerState[PLAYER_1], nullptr,
-          m_pLifeMeterBar, nullptr, nullptr, nullptr, nullptr, nullptr);
-      m_Player.Load(m_NoteData);
-      m_Player->SetName("Player");
-      this->AddChild(m_Player);
-      ActorUtil::LoadAllCommandsAndSetXY(m_Player, m_sName);
+      player_->Init(
+          "Player", GAMESTATE->player_state_[PLAYER_1], nullptr,
+          life_meter_bar_, nullptr, nullptr, nullptr, nullptr, nullptr);
+      player_.Load(note_data_);
+      player_->SetName("Player");
+      this->AddChild(player_);
+      ActorUtil::LoadAllCommandsAndSetXY(player_, name_);
 
       // Don't show judgment
       PO_GROUP_ASSIGN(
-          GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage,
-          m_fBlind, 1.0f);
-      GAMESTATE->m_bDemonstrationOrJukebox = true;
+          GAMESTATE->player_state_[PLAYER_1]->player_options_, ModsLevel_Stage,
+          blind_, 1.0f);
+      GAMESTATE->demonstration_or_jukebox_ = true;
     }
   }
 
   // deferred until after the player, so the notes go under it
-  if (m_pLifeMeterBar) {
-    this->AddChild(m_pLifeMeterBar);
+  if (life_meter_bar_) {
+    this->AddChild(life_meter_bar_);
   }
-  if (m_pmDancePad) {
-    this->AddChild(m_pmDancePad);
+  if (dance_pad_) {
+    this->AddChild(dance_pad_);
   }
-  if (m_pmCharacter) {
-    this->AddChild(m_pmCharacter);
+  if (character_) {
+    this->AddChild(character_);
   }
 
-  m_fFakeSecondsIntoSong = 0;
+  fake_seconds_into_song_ = 0;
 
-  this->MoveToTail(&m_In);
-  this->MoveToTail(&m_Out);
+  this->MoveToTail(&in_);
+  this->MoveToTail(&out_);
 }
 
 ScreenHowToPlay::~ScreenHowToPlay() {
-  delete m_pLifeMeterBar;
-  delete m_pmCharacter;
-  delete m_pmDancePad;
+  delete life_meter_bar_;
+  delete character_;
+  delete dance_pad_;
 }
 
 void ScreenHowToPlay::Step() {
@@ -242,87 +238,86 @@ void ScreenHowToPlay::Step() {
 
   int iStep = 0;
   const int iNoteRow =
-      BeatToNoteRowNotRounded(GAMESTATE->m_Position.m_fSongBeat + 0.6f);
+      BeatToNoteRowNotRounded(GAMESTATE->position_.song_beat_ + 0.6f);
   // if we want to miss from here on out, don't process steps.
-  if (m_iW2s < m_iNumW2s && m_NoteData.IsThereATapAtRow(iNoteRow)) {
-    const int iNumTracks = m_NoteData.GetNumTracks();
+  if (w2s_ < num_w2s_ && note_data_.IsThereATapAtRow(iNoteRow)) {
+    const int iNumTracks = note_data_.GetNumTracks();
     for (int k = 0; k < iNumTracks; k++) {
-      if (m_NoteData.GetTapNote(k, iNoteRow).type == TapNoteType_Tap) {
+      if (note_data_.GetTapNote(k, iNoteRow).type_ == TapNoteType_Tap) {
         iStep |= 1 << k;
       }
     }
 
     switch (iStep) {
       case ST_LEFT:
-        m_pmCharacter->PlayAnimation("Step-LEFT", 1.8f);
+        character_->PlayAnimation("Step-LEFT", 1.8f);
         break;
       case ST_RIGHT:
-        m_pmCharacter->PlayAnimation("Step-RIGHT", 1.8f);
+        character_->PlayAnimation("Step-RIGHT", 1.8f);
         break;
       case ST_UP:
-        m_pmCharacter->PlayAnimation("Step-UP", 1.8f);
+        character_->PlayAnimation("Step-UP", 1.8f);
         break;
       case ST_DOWN:
-        m_pmCharacter->PlayAnimation("Step-DOWN", 1.8f);
+        character_->PlayAnimation("Step-DOWN", 1.8f);
         break;
       case ST_JUMPLR:
-        m_pmCharacter->PlayAnimation("Step-JUMPLR", 1.8f);
+        character_->PlayAnimation("Step-JUMPLR", 1.8f);
         break;
       case ST_JUMPUD:
         // Until I can get an UP+DOWN jump animation, this will have to do.
-        m_pmCharacter->PlayAnimation("Step-JUMPLR", 1.8f);
+        character_->PlayAnimation("Step-JUMPLR", 1.8f);
 
-        m_pmCharacter->StopTweening();
-        m_pmCharacter->BeginTweening(
-            GAMESTATE->m_Position.m_fCurBPS / 8, TWEEN_LINEAR);
-        m_pmCharacter->SetRotationY(90);
-        m_pmCharacter->BeginTweening(
-            (1 / (GAMESTATE->m_Position.m_fCurBPS *
+        character_->StopTweening();
+        character_->BeginTweening(
+            GAMESTATE->position_.cur_bps_ / 8, TWEEN_LINEAR);
+        character_->SetRotationY(90);
+        character_->BeginTweening(
+            (1 / (GAMESTATE->position_.cur_bps_ *
                   2)));  // sleep between jump-frames
-        m_pmCharacter->BeginTweening(
-            GAMESTATE->m_Position.m_fCurBPS / 6, TWEEN_LINEAR);
-        m_pmCharacter->SetRotationY(0);
+        character_->BeginTweening(
+            GAMESTATE->position_.cur_bps_ / 6, TWEEN_LINEAR);
+        character_->SetRotationY(0);
         break;
     }
   }
 }
 
 void ScreenHowToPlay::Update(float fDelta) {
-  if (GAMESTATE->m_pCurSong != nullptr) {
+  if (GAMESTATE->cur_song_ != nullptr) {
     RageTimer tm;
     GAMESTATE->UpdateSongPosition(
-        m_fFakeSecondsIntoSong, GAMESTATE->m_pCurSong->m_SongTiming, tm);
-    m_fFakeSecondsIntoSong += fDelta;
+        fake_seconds_into_song_, GAMESTATE->cur_song_->song_timing_, tm);
+    fake_seconds_into_song_ += fDelta;
 
     static int iLastNoteRowCounted = 0;
-    int iCurNoteRow =
-        BeatToNoteRowNotRounded(GAMESTATE->m_Position.m_fSongBeat);
+    int iCurNoteRow = BeatToNoteRowNotRounded(GAMESTATE->position_.song_beat_);
 
     if (iCurNoteRow != iLastNoteRowCounted &&
-        m_NoteData.IsThereATapAtRow(iCurNoteRow)) {
-      if (m_pLifeMeterBar && !m_Player) {
-        if (m_iW2s < m_iNumW2s) {
-          m_pLifeMeterBar->ChangeLife(TNS_W2);
+        note_data_.IsThereATapAtRow(iCurNoteRow)) {
+      if (life_meter_bar_ && !player_) {
+        if (w2s_ < num_w2s_) {
+          life_meter_bar_->ChangeLife(TNS_W2);
         } else {
-          m_pLifeMeterBar->ChangeLife(TNS_Miss);
+          life_meter_bar_->ChangeLife(TNS_Miss);
         }
       }
-      m_iW2s++;
+      w2s_++;
       iLastNoteRowCounted = iCurNoteRow;
     }
 
     // Once we hit the number of perfects we want, we want to fail. Switch
     // the controller to HUMAN. Since we aren't taking input, the steps will
     // always be misses.
-    if (m_iW2s > m_iNumW2s) {
-      GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = PC_HUMAN;
+    if (w2s_ > num_w2s_) {
+      GAMESTATE->player_state_[PLAYER_1]->player_controller_ = PC_HUMAN;
     }
 
     // Per the above code, we don't always want the character stepping.
     // If they try to make all of the steps in the miss part, they look
     // silly. Have then stand still instead. - freem
-    if (m_pmCharacter) {
-      if (m_iW2s <= m_iNumW2s) {
+    if (character_) {
+      if (w2s_ <= num_w2s_) {
         Step();
       }
     }
@@ -352,7 +347,7 @@ class LunaScreenHowToPlay : public Luna<ScreenHowToPlay> {
   static int GetLifeMeter(T* p, lua_State* L) {
     // PlayerNumber pn = Enum::Check<PlayerNumber>( L, 1 );
 
-    p->m_pLifeMeterBar->PushSelf(L);
+    p->life_meter_bar_->PushSelf(L);
     return 1;
   }
 

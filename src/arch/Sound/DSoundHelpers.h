@@ -16,7 +16,7 @@ struct IDirectSoundBuffer;
 
 class DSound {
  public:
-  IDirectSound* GetDS() const { return m_pDS; }
+  IDirectSound* GetDS() const { return ds_; }
   bool IsEmulated() const;
 
   DSound();
@@ -24,7 +24,7 @@ class DSound {
   std::string Init();
 
  private:
-  IDirectSound* m_pDS;
+  IDirectSound* ds_;
   static BOOL CALLBACK EnumCallback(
       LPGUID lpGuid, LPCSTR lpcstrDescription, LPCSTR lpcstrModule,
       LPVOID lpContext);
@@ -52,38 +52,38 @@ class DSoundBuf {
   void Stop();
   void SetVolume(float fVolume);
   void SetSampleRate(int iRate);
-  int GetSampleRate() const { return m_iSampleRate; }
+  int GetSampleRate() const { return sample_rate_; }
 
   ~DSoundBuf();
   int64_t GetPosition() const;
-  int64_t GetOutputPosition() const { return m_iWriteCursorPos; }
+  int64_t GetOutputPosition() const { return write_cursor_pos_; }
 
  private:
-  int buffersize_frames() const { return m_iBufferSize / bytes_per_frame(); }
-  int bytes_per_frame() const { return m_iChannels * m_iSampleBits / 8; }
+  int buffersize_frames() const { return buffer_size_ / bytes_per_frame(); }
+  int bytes_per_frame() const { return channels_ * sample_bits_ / 8; }
 
   void CheckWriteahead(int iCursorStart, int iCursorEnd);
   void CheckUnderrun(int iCursorStart, int iCursorEnd);
 
-  IDirectSoundBuffer* m_pBuffer;
+  IDirectSoundBuffer* buffer_;
 
-  int m_iChannels, m_iSampleRate, m_iSampleBits, m_iWriteAhead;
-  int m_iVolume;
+  int channels_, sample_rate_, sample_bits_, write_ahead_;
+  int volume_;
 
-  int m_iBufferSize;
+  int buffer_size_;
 
-  int m_iWriteCursor, m_iBufferBytesFilled; /* bytes */
-  int m_iExtraWriteahead;
-  int64_t m_iWriteCursorPos; /* frames */
-  mutable int64_t m_iLastPosition;
-  bool m_bPlaying;
+  int write_cursor_, buffer_bytes_filled_; /* bytes */
+  int extra_writeahead_;
+  int64_t write_cursor_pos_; /* frames */
+  mutable int64_t last_position_;
+  bool playing_;
 
-  bool m_bBufferLocked;
-  char *m_pLockedBuf1, *m_pLockedBuf2;
-  int m_iLockedSize1, m_iLockedSize2;
-  char* m_pTempBuffer;
+  bool buffer_locked_;
+  char *locked_buf1_, *locked_buf2_;
+  int locked_size1_, locked_size2_;
+  char* temp_buffer_;
 
-  int m_iLastCursors[4][2];
+  int last_cursors_[4][2];
 };
 
 #endif

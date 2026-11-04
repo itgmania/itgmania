@@ -23,7 +23,7 @@ class ActiveAttackList : public BitmapText {
  protected:
   /** @brief the PlayerState of the Player who is dealing with the attack list.
    */
-  const PlayerState* m_pPlayerState;
+  const PlayerState* player_state_;
 };
 
 #endif

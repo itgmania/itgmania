@@ -201,13 +201,13 @@ const int NUM_EDIT_TO_MENU_SLOTS = 2;
  * input in g_MapEditToDIHold must be held when pressing any key in
  * g_MapEditToDI for the input to occur. */
 struct MapEditToDI {
-  DeviceInput button[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
-  DeviceInput hold[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
+  DeviceInput button_[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
+  DeviceInput hold_[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
   void Clear() {
     FOREACH_EditButton(e) for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS;
                                ++slot) {
-      button[e][slot].MakeInvalid();
-      hold[e][slot].MakeInvalid();
+      button_[e][slot].MakeInvalid();
+      hold_[e][slot].MakeInvalid();
     }
   }
 };
@@ -216,11 +216,11 @@ struct MapEditToDI {
  * @brief This is similar to MapEditToDI,
  * but maps GameButton instead of DeviceInput. */
 struct MapEditButtonToMenuButton {
-  GameButton button[NUM_EditButton][NUM_EDIT_TO_MENU_SLOTS];
+  GameButton button_[NUM_EditButton][NUM_EDIT_TO_MENU_SLOTS];
   MapEditButtonToMenuButton() { Clear(); }
   void Clear() {
     FOREACH_EditButton(e) for (int slot = 0; slot < NUM_EDIT_TO_MENU_SLOTS;
-                               ++slot) button[e][slot] = GameButton_Invalid;
+                               ++slot) button_[e][slot] = GameButton_Invalid;
   }
 };
 /** @brief Edit, record, playback, and synchronize notes. */
@@ -242,11 +242,11 @@ class ScreenEdit : public ScreenWithMenuElements {
   virtual void HandleScreenMessage(const ScreenMessage SM);
 
   void SetDirty(bool dirty);
-  bool IsDirty() const { return m_dirty; }
+  bool IsDirty() const { return dirty_; }
 
   void PerformSave(bool autosave);
 
-  EditState GetEditState() { return m_EditState; }
+  EditState GetEditState() { return edit_state_; }
 
   // For seeking through the song instantly.
   void SeekSong(float second);
@@ -256,7 +256,7 @@ class ScreenEdit : public ScreenWithMenuElements {
 
  protected:
   virtual ScreenType GetScreenType() const {
-    return m_EditState == STATE_PLAYING
+    return edit_state_ == STATE_PLAYING
                ? gameplay
                : ScreenWithMenuElements::GetScreenType();
   }
@@ -325,33 +325,33 @@ class ScreenEdit : public ScreenWithMenuElements {
     menu_is_for_shifting,
     menu_is_for_clearing
   };
-  TimingChangeMenuPurpose m_timing_change_menu_purpose;
-  int m_timing_rows_being_shitted;  // How far the timing is being shitted.
+  TimingChangeMenuPurpose timing_change_menu_purpose_;
+  int timing_rows_being_shitted_;  // How far the timing is being shitted.
   void DisplayTimingChangeMenu();
 
-  EditState m_EditState;
+  EditState edit_state_;
 
-  Song* m_pSong;
-  Steps* m_pSteps;
+  Song* song_;
+  Steps* steps_;
 
-  PlayerNumber m_InputPlayerNumber;
+  PlayerNumber input_player_number_;
   PlayerNumber main_player_;
-  PlayerState m_PlayerStateEdit;
-  NoteField m_NoteFieldEdit;
-  NoteData m_NoteDataEdit;
-  SnapDisplay m_SnapDisplay;
+  PlayerState player_state_edit_;
+  NoteField note_field_edit_;
+  NoteData note_data_edit_;
+  SnapDisplay snap_display_;
 
-  BitmapText m_textInputTips;
+  BitmapText text_input_tips_;
 
   /** @brief The player options before messing with attacks. */
-  ModsGroup<PlayerOptions> originalPlayerOptions;
+  ModsGroup<PlayerOptions> original_player_options_;
 
   /**
    * @brief Keep a backup of the present Step TimingData when
    * entering a playing or recording state.
    *
    * This is mainly to allow playing a chart with Song Timing. */
-  TimingData backupStepTiming;
+  TimingData backup_step_timing_;
 
   /**
    * @brief Allow for copying and pasting a song's (or steps's) full Timing
@@ -359,127 +359,127 @@ class ScreenEdit : public ScreenWithMenuElements {
    *
    * Static so this persists across ScreenEdit instances (see m_Clipboard).
    */
-  static TimingData clipboardFullTiming;
+  static TimingData clipboard_full_timing_;
 
   /** @brief The current TapNote that would be inserted. */
-  TapNote m_selectedTap;
+  TapNote selected_tap_;
 
   /** @brief The type of segment users will jump back and forth between. */
-  TimingSegmentType currentCycleSegment;
+  TimingSegmentType current_cycle_segment_;
 
   /** @brief Runs while the music is being analyzed for its BPM and offset. */
-  TempoDetector* m_pTempoDetector;
-  std::vector<TempoResult> m_TempoResults;
-  std::string m_sTempoProgress;
+  TempoDetector* tempo_detector_;
+  std::vector<TempoResult> tempo_results_;
+  std::string tempo_progress_;
 
   void UpdateTextInfo();
-  BitmapText m_textInfo;  // status information that changes
-  bool m_bTextInfoNeedsUpdate;
+  BitmapText text_info_;  // status information that changes
+  bool text_info_needs_update_;
 
-  BitmapText m_textPlayRecordHelp;
+  BitmapText text_play_record_help_;
 
   // keep track of where we are and what we're doing
-  float m_fTrailingBeat;
+  float trailing_beat_;
   // the above approaches GAMESTATE->m_fSongBeat, which is the actual beat
   /**
    * @brief The location we were at when shift was pressed.
    *
    * If shift wasn't pressed, this will be -1. */
-  int m_iShiftAnchor;
+  int shift_anchor_;
 
   /**
    * @brief The NoteData that has been cut or copied.
    *
    * This is static so that the clipboard persists when switching between
    * charts/difficulties, which destroys and recreates ScreenEdit. */
-  static NoteData m_Clipboard;
+  static NoteData clipboard_;
 
   /** @brief Whether the last cut/copy also captured the timing segments in
    * the selection, so that pasting can restore them. */
-  static bool s_bClipboardHasTiming;
+  static bool clipboard_has_timing_;
 
   /** @brief The marquee used to select an area with the mouse. */
-  bool m_bMouseDragging;
-  float m_fMouseDragStartX, m_fMouseDragStartY;
-  float m_fMouseDragCurrentX, m_fMouseDragCurrentY;
-  Quad m_rectMouseSelection;
+  bool mouse_dragging_;
+  float mouse_drag_start_x_, mouse_drag_start_y_;
+  float mouse_drag_current_x_, mouse_drag_current_y_;
+  Quad rect_mouse_selection_;
 
   /** @brief One saved state in the undo/redo history. */
   struct UndoState {
-    NoteData m_NoteData;
-    std::string m_sDescription;
+    NoteData note_data_;
+    std::string description_;
   };
-  static const size_t MAX_UNDO_STATES = 50;
+  static const size_t kMaxUndoStates = 50;
   /** @brief States that can be restored via Undo(), most recent last. */
-  std::vector<UndoState> m_UndoStack;
+  std::vector<UndoState> undo_stack_;
   /** @brief States that can be restored via Redo(), most recent last. */
-  std::vector<UndoState> m_RedoStack;
+  std::vector<UndoState> redo_stack_;
 
   /** @brief Has the NoteData been changed such that a user should be prompted
    * to save? */
-  bool m_dirty;
-  float m_next_autosave_time;
+  bool dirty_;
+  float next_autosave_time_;
 
   /** @brief The sound that is played when a note is added. */
-  RageSound m_soundAddNote;
+  RageSound sound_add_note_;
   /** @brief The sound that is played when a note is removed. */
-  RageSound m_soundRemoveNote;
-  RageSound m_soundChangeLine;
-  RageSound m_soundChangeSnap;
-  RageSound m_soundMarker;
-  RageSound m_soundValueIncrease;
-  RageSound m_soundValueDecrease;
+  RageSound sound_remove_note_;
+  RageSound sound_change_line_;
+  RageSound sound_change_snap_;
+  RageSound sound_marker_;
+  RageSound sound_value_increase_;
+  RageSound sound_value_decrease_;
   /** @brief The sound that is played when switching players for Routine. */
-  RageSound m_soundSwitchPlayer;
+  RageSound sound_switch_player_;
   /** @brief The sound that is played when switching song/step timing. */
-  RageSound m_soundSwitchTiming;
+  RageSound sound_switch_timing_;
   /** @brief The sound that is played when switching to a different chart. */
-  RageSound m_soundSwitchSteps;
+  RageSound sound_switch_steps_;
   /** @brief The sound that is played when the chart is saved. */
-  RageSound m_soundSave;
+  RageSound sound_save_;
 
   // used for reverting
   void CopyToLastSave();
   void CopyFromLastSave();
   void RevertFromDisk();
 
-  Song m_SongLastSave;
-  std::vector<Steps> m_vStepsLastSave;
+  Song song_last_save_;
+  std::vector<Steps> steps_last_save_;
 
   // for MODE_RECORD
-  NoteField m_NoteFieldRecord;
-  NoteData m_NoteDataRecord;
-  RageTimer m_RemoveNoteButtonLastChanged;
-  bool m_bRemoveNoteButtonDown;
+  NoteField note_field_record_;
+  NoteData note_data_record_;
+  RageTimer remove_note_button_last_changed_;
+  bool remove_note_button_down_;
 
   // for MODE_PLAY
   EditModePlayerManager player_manager_;
   void SetupCourseAttacks();
-  Background m_Background;
-  Foreground m_Foreground;
-  bool m_bReturnToRecordMenuAfterPlay;
+  Background background_;
+  Foreground foreground_;
+  bool return_to_record_menu_after_play_;
 
   // for MODE_RECORD and MODE_PLAY
-  int m_iStartPlayingAt, m_iStopPlayingAt;
-  float m_fBeatToReturnTo;
+  int start_playing_at_, stop_playing_at_;
+  float beat_to_return_to_;
 
-  AutoKeysounds m_AutoKeysounds;
-  RageSound* m_pSoundMusic;
-  GameplayAssist m_GameplayAssist;
+  AutoKeysounds auto_keysounds_;
+  RageSound* sound_music_;
+  GameplayAssist gameplay_assist_;
 
   ThemeMetric<EditMode> EDIT_MODE;
 
   // Scroll acceleration tracking for mouse wheel
-  RageTimer m_LastWheelScrollTime;
-  int m_iConsecutiveWheelScrolls;
-  float m_fScrollAccelerationMultiplier;
-  static const float SCROLL_ACCELERATION_RESET_TIME;  // Time in seconds to
-                                                      // reset scroll counter
-  static const float MAX_SCROLL_ACCELERATION_MULTIPLIER;
+  RageTimer last_wheel_scroll_time_;
+  int consecutive_wheel_scrolls_;
+  float scroll_acceleration_multiplier_;
+  static const float kScrollAccelerationResetTime;  // Time in seconds to
+                                                    // reset scroll counter
+  static const float kMaxScrollAccelerationMultiplier;
 
   // Scroll-speed presets stepped through by EDIT_BUTTON_SCROLL_SPEED_UP/DOWN
   // (CTRL+Up/Down) and CTRL+wheel; parsed from the ScrollSpeedPresets metric.
-  std::vector<float> m_vScrollSpeedPresets;
+  std::vector<float> scroll_speed_presets_;
 
  public:
   /** @brief What are the choices that one can make on the main menu? */
@@ -511,7 +511,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     const std::vector<int> v;
     HandleMainMenuChoice(c, v);
   }
-  MainMenuChoice m_CurrentAction;
+  MainMenuChoice current_action_;
 
   /** @brief How does one alter a selection of NoteData? */
   enum AlterMenuChoice {
@@ -804,14 +804,14 @@ class ScreenEdit : public ScreenWithMenuElements {
   const MapEditButtonToMenuButton* GetCurrentMenuButtonMap() const;
   void LoadKeymapSectionIntoMappingsMember(
       const XNode* section, MapEditToDI& mappings);
-  MapEditToDI m_EditMappingsDeviceInput;
-  MapEditToDI m_PlayMappingsDeviceInput;
-  MapEditToDI m_RecordMappingsDeviceInput;
-  MapEditToDI m_RecordPausedMappingsDeviceInput;
-  MapEditButtonToMenuButton m_EditMappingsMenuButton;
-  MapEditButtonToMenuButton m_PlayMappingsMenuButton;
-  MapEditButtonToMenuButton m_RecordMappingsMenuButton;
-  MapEditButtonToMenuButton m_RecordPausedMappingsMenuButton;
+  MapEditToDI edit_mappings_device_input_;
+  MapEditToDI play_mappings_device_input_;
+  MapEditToDI record_mappings_device_input_;
+  MapEditToDI record_paused_mappings_device_input_;
+  MapEditButtonToMenuButton edit_mappings_menu_button_;
+  MapEditButtonToMenuButton play_mappings_menu_button_;
+  MapEditButtonToMenuButton record_mappings_menu_button_;
+  MapEditButtonToMenuButton record_paused_mappings_menu_button_;
 
   void MakeFilteredMenuDef(const MenuDef* pDef, MenuDef& menu);
   void EditMiniMenu(
@@ -819,14 +819,14 @@ class ScreenEdit : public ScreenWithMenuElements {
       ScreenMessage SM_SendOnCancel = SM_None);
 
  private:
-  int modInProcess;
+  int mod_in_process_;
 
   enum class AttackSource { Song, Steps };
   struct SelectedAttack {
-    AttackSource source;
-    int index;
+    AttackSource source_;
+    int index_;
   };
-  std::optional<SelectedAttack> selectedAttack;
+  std::optional<SelectedAttack> selected_attack_;
 
   AttackArray GetAttacksForEditing() const;
   AttackArray& GetAttackArray(AttackSource source);

@@ -36,15 +36,15 @@ class LifeMeterTime : public LifeMeter {
   void SendLifeChangedMessage(
       float fOldLife, TapNoteScore tns, HoldNoteScore hns);
 
-  AutoActor m_sprBackground;
-  Quad m_quadDangerGlow;
-  StreamDisplay* m_pStream;
-  AutoActor m_sprFrame;
+  AutoActor spr_background_;
+  Quad quad_danger_glow_;
+  StreamDisplay* stream_;
+  AutoActor spr_frame_;
 
-  float m_fLifeTotalGainedSeconds;
-  float m_fLifeTotalLostSeconds;
+  float life_total_gained_seconds_;
+  float life_total_lost_seconds_;
   /** @brief The sound played when time is gained at the start of each Song. */
-  RageSound m_soundGainLife;
+  RageSound sound_gain_life_;
 };
 
 #endif

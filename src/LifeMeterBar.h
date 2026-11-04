@@ -27,7 +27,7 @@ class LifeMeterBar : public LifeMeter {
   virtual bool IsInDanger() const;
   virtual bool IsHot() const;
   virtual bool IsFailing() const;
-  virtual float GetLife() const { return m_fLifePercentage; }
+  virtual float GetLife() const { return life_percentage_; }
 
   void UpdateNonstopLifebar();
   void FillForHowToPlay(int NumT2s, int NumMisses);
@@ -42,28 +42,28 @@ class LifeMeterBar : public LifeMeter {
   ThemeMetric<TapNoteScore> MIN_STAY_ALIVE;
   ThemeMetric<float> EXTRA_STAGE_LIFE_DIFFICULTY;
 
-  ThemeMetric1D<float> m_fLifePercentChange;
+  ThemeMetric1D<float> life_percent_change_;
 
-  AutoActor m_sprUnder;
-  AutoActor m_sprDanger;
-  StreamDisplay* m_pStream;
-  AutoActor m_sprOver;
+  AutoActor spr_under_;
+  AutoActor spr_danger_;
+  StreamDisplay* stream_;
+  AutoActor spr_over_;
 
-  float m_fLifePercentage;
+  float life_percentage_;
 
-  float m_fPassingAlpha;
-  float m_fHotAlpha;
+  float passing_alpha_;
+  float hot_alpha_;
 
-  bool m_bMercifulBeginnerInEffect;
-  float m_fBaseLifeDifficulty;
-  float m_fLifeDifficulty;  // essentially same as pref
+  bool merciful_beginner_in_effect_;
+  float base_life_difficulty_;
+  float life_difficulty_;  // essentially same as pref
 
-  int m_iProgressiveLifebar;  // cached from prefs
+  int progressive_lifebar_;  // cached from prefs
   /** @brief The current number of progressive W5/miss rankings. */
-  int m_iMissCombo;
+  int miss_combo_;
   /** @brief The combo needed before the life bar starts to fill up after a
    * Player failed. */
-  int m_iComboToRegainLife;
+  int combo_to_regain_life_;
 };
 
 #endif

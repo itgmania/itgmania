@@ -28,7 +28,7 @@ class ScreenOptionsExportPackage : public ScreenOptions {
 
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
-  std::vector<std::string> m_vsPackageTypes;
+  std::vector<std::string> package_types_;
 };
 
 class ScreenOptionsExportPackageSubPage : public ScreenOptions {
@@ -42,7 +42,7 @@ class ScreenOptionsExportPackageSubPage : public ScreenOptions {
 
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
-  std::vector<std::string> m_vsPossibleDirsToExport;
+  std::vector<std::string> possible_dirs_to_export_;
 };
 
 #endif

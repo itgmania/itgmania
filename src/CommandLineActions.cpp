@@ -67,7 +67,7 @@ static void Version() {
 void CommandLineActions::Handle(LoadingWindow* pLW) {
   CommandLineArgs args;
   for (int i = 0; i < g_argc; ++i) {
-    args.argv.push_back(g_argv[i]);
+    args.argv_.push_back(g_argv[i]);
   }
   ToProcess.push_back(args);
 

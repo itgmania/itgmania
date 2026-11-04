@@ -27,16 +27,16 @@ void ScreenSelectLanguage::Init() {
     const LanguageInfo* pLI = GetLanguageInfo(s);
 
     GameCommand gc;
-    gc.m_iIndex = index++;
-    gc.m_sName = s;
-    gc.m_bInvalid = false;
+    gc.index_ = index++;
+    gc.name_ = s;
+    gc.invalid_ = false;
     if (pLI) {
-      gc.m_sText = THEME->GetString("NativeLanguageNames", pLI->szEnglishName);
+      gc.text_ = THEME->GetString("NativeLanguageNames", pLI->english_name_);
     } else {
-      gc.m_sText = s;
+      gc.text_ = s;
     }
 
-    m_aGameCommands.push_back(gc);
+    game_commands_.push_back(gc);
   }
 
   ScreenSelectMaster::Init();
@@ -45,15 +45,15 @@ void ScreenSelectLanguage::Init() {
 void ScreenSelectLanguage::BeginScreen() { ScreenSelectMaster::BeginScreen(); }
 
 bool ScreenSelectLanguage::MenuStart(const InputEventPlus& input) {
-  int iIndex = this->GetSelectionIndex(input.pn);
-  std::string sLangCode = m_aGameCommands[iIndex].m_sName;
-  PREFSMAN->m_sLanguage.Set(sLangCode);
+  int iIndex = this->GetSelectionIndex(input.pn_);
+  std::string sLangCode = game_commands_[iIndex].name_;
+  PREFSMAN->language_.Set(sLangCode);
   PREFSMAN->SavePrefsToDisk();
   THEME->SwitchThemeAndLanguage(
-      THEME->GetCurThemeName(), PREFSMAN->m_sLanguage,
-      PREFSMAN->m_bPseudoLocalize);
+      THEME->GetCurThemeName(), PREFSMAN->language_,
+      PREFSMAN->pseudo_localize_);
 
-  m_soundStart.Play(true);
+  sound_start_.Play(true);
   this->PostScreenMessage(SM_BeginFadingOut, 0);
   return true;
 }

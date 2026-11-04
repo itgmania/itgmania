@@ -26,7 +26,7 @@ void ScreenGameplayShared::FillPlayerInfo(
 
 PlayerInfo& ScreenGameplayShared::GetPlayerInfoForInput(
     const InputEventPlus& iep) {
-  return m_vPlayerInfo[GAMESTATE->GetMasterPlayerNumber()];
+  return player_info_[GAMESTATE->GetMasterPlayerNumber()];
 }
 
 /*

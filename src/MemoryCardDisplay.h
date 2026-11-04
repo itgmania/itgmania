@@ -16,10 +16,10 @@ class MemoryCardDisplay : public ActorFrame {
   void Update(float fDelta);
 
  protected:
-  PlayerNumber m_PlayerNumber;
-  MemoryCardState m_LastSeenState;
+  PlayerNumber player_number_;
+  MemoryCardState last_seen_state_;
   // todo: make this an AutoActor eventually -aj
-  Sprite m_spr[NUM_MemoryCardState];
+  Sprite spr_[NUM_MemoryCardState];
 };
 
 #endif

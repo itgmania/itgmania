@@ -84,19 +84,19 @@ void ConvertLittleEndian32BitToFloat(void* pBuf, int iSamples) {
 
 struct WavReader {
   WavReader(RageFileBasic& f, const RageSoundReader_WAV::WavData& data)
-      : m_File(f), m_WavData(data) {}
+      : file_(f), wav_data_(data) {}
   virtual ~WavReader() {}
   virtual int Read(float* pBuf, int iFrames) = 0;
   virtual int GetLength() const = 0;
   virtual bool Init() = 0;
   virtual int SetPosition(int iFrame) = 0;
   virtual int GetNextSourceFrame() const = 0;
-  std::string GetError() const { return m_sError; }
+  std::string GetError() const { return error_; }
 
  protected:
-  RageFileBasic& m_File;
-  const RageSoundReader_WAV::WavData& m_WavData;
-  std::string m_sError;
+  RageFileBasic& file_;
+  const RageSoundReader_WAV::WavData& wav_data_;
+  std::string error_;
 };
 
 struct WavReaderPCM : public WavReader {
@@ -104,40 +104,39 @@ struct WavReaderPCM : public WavReader {
       : WavReader(f, data) {}
 
   bool Init() {
-    if (QuantizeUp(m_WavData.m_iBitsPerSample, 8) < 8 ||
-        QuantizeUp(m_WavData.m_iBitsPerSample, 8) > 32) {
-      m_sError =
-          ssprintf("Unsupported sample size %i", m_WavData.m_iBitsPerSample);
+    if (QuantizeUp(wav_data_.bits_per_sample_, 8) < 8 ||
+        QuantizeUp(wav_data_.bits_per_sample_, 8) > 32) {
+      error_ =
+          ssprintf("Unsupported sample size %i", wav_data_.bits_per_sample_);
       return false;
     }
 
-    if (m_WavData.m_iFormatTag == 3 && m_WavData.m_iBitsPerSample != 32) {
-      m_sError = ssprintf(
-          "Unsupported float sample size %i", m_WavData.m_iBitsPerSample);
+    if (wav_data_.format_tag_ == 3 && wav_data_.bits_per_sample_ != 32) {
+      error_ = ssprintf(
+          "Unsupported float sample size %i", wav_data_.bits_per_sample_);
       return false;
     }
 
-    m_File.Seek(m_WavData.m_iDataChunkPos);
+    file_.Seek(wav_data_.data_chunk_pos_);
     return true;
   }
 
   int Read(float* buf, int iFrames) {
-    int iBytesPerSample = QuantizeUp(m_WavData.m_iBitsPerSample, 8) / 8;
-    int len = iFrames * m_WavData.m_iChannels;
+    int iBytesPerSample = QuantizeUp(wav_data_.bits_per_sample_, 8) / 8;
+    int len = iFrames * wav_data_.channels_;
     len *= iBytesPerSample;
 
     const int iBytesLeftInDataChunk =
-        m_WavData.m_iDataChunkSize -
-        (m_File.Tell() - m_WavData.m_iDataChunkPos);
+        wav_data_.data_chunk_size_ - (file_.Tell() - wav_data_.data_chunk_pos_);
     if (!iBytesLeftInDataChunk) {
       return RageSoundReader::END_OF_FILE;
     }
 
     len = std::min(len, iBytesLeftInDataChunk);
-    int iGot = m_File.Read(buf, len);
+    int iGot = file_.Read(buf, len);
 
     int iGotSamples = iGot / iBytesPerSample;
-    if (m_WavData.m_iFormatTag == 1) {
+    if (wav_data_.format_tag_ == 1) {
       switch (iBytesPerSample) {
         case 1:
           Convert8bitToFloat(buf, iGotSamples);
@@ -154,163 +153,162 @@ struct WavReaderPCM : public WavReader {
           break;
       }
     }
-    return iGotSamples / m_WavData.m_iChannels;
+    return iGotSamples / wav_data_.channels_;
   }
 
   int GetLength() const {
-    const int iBytesPerSec = m_WavData.m_iSampleRate * m_WavData.m_iChannels *
-                             m_WavData.m_iBitsPerSample / 8;
-    int64_t iMS = (int64_t(m_WavData.m_iDataChunkSize) * 1000) / iBytesPerSec;
+    const int iBytesPerSec = wav_data_.sample_rate_ * wav_data_.channels_ *
+                             wav_data_.bits_per_sample_ / 8;
+    int64_t iMS = (int64_t(wav_data_.data_chunk_size_) * 1000) / iBytesPerSec;
     return (int)iMS;
   }
 
   int SetPosition(int iFrame) {
-    int iByte = (int)(int64_t(iFrame) * m_WavData.m_iChannels *
-                      m_WavData.m_iBitsPerSample / 8);
-    if (iByte > m_WavData.m_iDataChunkSize) {
-      m_File.Seek(m_WavData.m_iDataChunkSize + m_WavData.m_iDataChunkPos);
+    int iByte = (int)(int64_t(iFrame) * wav_data_.channels_ *
+                      wav_data_.bits_per_sample_ / 8);
+    if (iByte > wav_data_.data_chunk_size_) {
+      file_.Seek(wav_data_.data_chunk_size_ + wav_data_.data_chunk_pos_);
       return 0;
     }
 
-    m_File.Seek(iByte + m_WavData.m_iDataChunkPos);
+    file_.Seek(iByte + wav_data_.data_chunk_pos_);
     return 1;
   }
 
   // XXX: untested
   int GetNextSourceFrame() const {
-    int iByte = m_File.Tell() - m_WavData.m_iDataChunkPos;
-    int iFrame =
-        iByte / (m_WavData.m_iChannels * m_WavData.m_iBitsPerSample / 8);
+    int iByte = file_.Tell() - wav_data_.data_chunk_pos_;
+    int iFrame = iByte / (wav_data_.channels_ * wav_data_.bits_per_sample_ / 8);
     return iFrame;
   }
 };
 
 struct WavReaderADPCM : public WavReader {
  public:
-  std::vector<int16_t> m_iaCoef1, m_iaCoef2;
-  int16_t m_iFramesPerBlock;
-  float* m_pBuffer;
-  int m_iBufferAvail, m_iBufferUsed;
+  std::vector<int16_t> coef1_, coef2_;
+  int16_t frames_per_block_;
+  float* buffer_;
+  int buffer_avail_, buffer_used_;
 
   WavReaderADPCM(RageFileBasic& f, const RageSoundReader_WAV::WavData& data)
       : WavReader(f, data) {
-    m_pBuffer = nullptr;
+    buffer_ = nullptr;
   }
 
-  virtual ~WavReaderADPCM() { delete[] m_pBuffer; }
+  virtual ~WavReaderADPCM() { delete[] buffer_; }
 
   bool Init() {
-    if (m_WavData.m_iBitsPerSample != 4) {
-      m_sError = ssprintf(
-          "Unsupported ADPCM sample size %i", m_WavData.m_iBitsPerSample);
+    if (wav_data_.bits_per_sample_ != 4) {
+      error_ = ssprintf(
+          "Unsupported ADPCM sample size %i", wav_data_.bits_per_sample_);
       return false;
     }
 
-    m_File.Seek(m_WavData.m_iExtraFmtPos);
+    file_.Seek(wav_data_.extra_fmt_pos_);
 
-    m_iFramesPerBlock = FileReading::read_16_le(m_File, m_sError);
-    int16_t iNumCoef = FileReading::read_16_le(m_File, m_sError);
-    m_iaCoef1.resize(iNumCoef);
-    m_iaCoef2.resize(iNumCoef);
+    frames_per_block_ = FileReading::read_16_le(file_, error_);
+    int16_t iNumCoef = FileReading::read_16_le(file_, error_);
+    coef1_.resize(iNumCoef);
+    coef2_.resize(iNumCoef);
     for (int i = 0; i < iNumCoef; ++i) {
-      m_iaCoef1[i] = FileReading::read_16_le(m_File, m_sError);
-      m_iaCoef2[i] = FileReading::read_16_le(m_File, m_sError);
+      coef1_[i] = FileReading::read_16_le(file_, error_);
+      coef2_[i] = FileReading::read_16_le(file_, error_);
     }
 
-    if (m_sError.size() != 0) {
+    if (error_.size() != 0) {
       return false;
     }
 
-    m_pBuffer = new float[m_iFramesPerBlock * m_WavData.m_iChannels];
-    m_iBufferAvail = m_iBufferUsed = 0;
+    buffer_ = new float[frames_per_block_ * wav_data_.channels_];
+    buffer_avail_ = buffer_used_ = 0;
 
-    m_File.Seek(m_WavData.m_iDataChunkPos);
+    file_.Seek(wav_data_.data_chunk_pos_);
     return true;
   }
 
   void SetEOF() {
-    m_iBufferUsed = m_iBufferAvail = 0;
-    m_File.Seek(m_WavData.m_iDataChunkSize + m_WavData.m_iDataChunkPos);
+    buffer_used_ = buffer_avail_ = 0;
+    file_.Seek(wav_data_.data_chunk_size_ + wav_data_.data_chunk_pos_);
   }
 
   /* Return false on error, true on success (even if we hit EOF). */
   bool DecodeADPCMBlock() {
-    ASSERT_M(m_iBufferUsed == m_iBufferAvail, ssprintf("%i", m_iBufferUsed));
+    ASSERT_M(buffer_used_ == buffer_avail_, ssprintf("%i", buffer_used_));
 
-    m_iBufferUsed = m_iBufferAvail = 0;
-    m_sError = "";
+    buffer_used_ = buffer_avail_ = 0;
+    error_ = "";
 
-    if (m_File.Tell() >=
-            m_WavData.m_iDataChunkSize + m_WavData.m_iDataChunkPos ||
-        m_File.AtEOF()) {
+    if (file_.Tell() >=
+            wav_data_.data_chunk_size_ + wav_data_.data_chunk_pos_ ||
+        file_.AtEOF()) {
       return true; /* past the data chunk */
     }
 
     int8_t iPredictor[2];
     int16_t iDelta[2], iSamp1[2], iSamp2[2];
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      iPredictor[i] = FileReading::read_8(m_File, m_sError);
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      iPredictor[i] = FileReading::read_8(file_, error_);
     }
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      iDelta[i] = FileReading::read_16_le(m_File, m_sError);
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      iDelta[i] = FileReading::read_16_le(file_, error_);
     }
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      iSamp1[i] = FileReading::read_16_le(m_File, m_sError);
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      iSamp1[i] = FileReading::read_16_le(file_, error_);
     }
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      iSamp2[i] = FileReading::read_16_le(m_File, m_sError);
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      iSamp2[i] = FileReading::read_16_le(file_, error_);
     }
 
-    if (m_sError.size() != 0) {
+    if (error_.size() != 0) {
       return false;
     }
 
-    float* pBuffer = m_pBuffer;
+    float* pBuffer = buffer_;
     int iCoef1[2], iCoef2[2];
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      if (iPredictor[i] >= (int)m_iaCoef1.size()) {
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      if (iPredictor[i] >= (int)coef1_.size()) {
         LOG->Trace(
-            "%s: predictor out of range", m_File.GetDisplayPath().c_str());
+            "%s: predictor out of range", file_.GetDisplayPath().c_str());
 
         /* XXX: silence this block? */
         iPredictor[i] = 0;
       }
 
-      iCoef1[i] = m_iaCoef1[iPredictor[i]];
-      iCoef2[i] = m_iaCoef2[iPredictor[i]];
+      iCoef1[i] = coef1_[iPredictor[i]];
+      iCoef2[i] = coef2_[iPredictor[i]];
     }
 
     /* We've read the block header; read the rest.  Don't read past the end of
      * the data chunk. */
     int iMaxSize = std::min(
-        (int)m_WavData.m_iBlockAlign - 7 * m_WavData.m_iChannels,
-        (m_WavData.m_iDataChunkSize + m_WavData.m_iDataChunkPos) -
-            m_File.Tell());
+        (int)wav_data_.block_align_ - 7 * wav_data_.channels_,
+        (wav_data_.data_chunk_size_ + wav_data_.data_chunk_pos_) -
+            file_.Tell());
 
     char* pBuf = (char*)alloca(iMaxSize);
 
-    int iBlockSize = m_File.Read(pBuf, iMaxSize);
+    int iBlockSize = file_.Read(pBuf, iMaxSize);
     if (iBlockSize == 0) {
       return true;
     }
     if (iBlockSize == -1) {
-      m_sError = m_File.GetError();
+      error_ = file_.GetError();
       return false;
     }
 
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      pBuffer[m_iBufferAvail++] = (int16_t)iSamp2[i] / 32768.0f;
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      pBuffer[buffer_avail_++] = (int16_t)iSamp2[i] / 32768.0f;
     }
-    for (int i = 0; i < m_WavData.m_iChannels; ++i) {
-      pBuffer[m_iBufferAvail++] = (int16_t)iSamp1[i] / 32768.0f;
+    for (int i = 0; i < wav_data_.channels_; ++i) {
+      pBuffer[buffer_avail_++] = (int16_t)iSamp1[i] / 32768.0f;
     }
 
     int8_t iBufSize = 0;
     uint8_t iBuf = 0;
 
     bool bDone = false;
-    for (int i = 2; !bDone && i < m_iFramesPerBlock; ++i) {
-      for (int c = 0; !bDone && c < m_WavData.m_iChannels; ++c) {
+    for (int i = 2; !bDone && i < frames_per_block_; ++i) {
+      for (int c = 0; !bDone && c < wav_data_.channels_; ++c) {
         if (iBufSize == 0) {
           if (!iBlockSize) {
             bDone = true;
@@ -338,7 +336,7 @@ struct WavReaderADPCM : public WavReader {
         }
 
         int16_t iNewSample = (int16_t)iPredSample + (iDelta[c] * iErrorDelta);
-        pBuffer[m_iBufferAvail++] = iNewSample / 32768.0f;
+        pBuffer[buffer_avail_++] = iNewSample / 32768.0f;
 
         static const int aAdaptionTable[] = {230, 230, 230, 230, 307, 409,
                                              512, 614, 768, 614, 512, 409,
@@ -361,20 +359,20 @@ struct WavReaderADPCM : public WavReader {
     int iSample = 0;
 
     while (iGotFrames < (int)iFrames) {
-      if (m_iBufferUsed == m_iBufferAvail) {
+      if (buffer_used_ == buffer_avail_) {
         if (!DecodeADPCMBlock()) {
           return RageSoundReader::ERROR;
         }
       }
-      if (m_iBufferAvail == 0) {
+      if (buffer_avail_ == 0) {
         if (!iGotFrames) {
           return RageSoundReader::END_OF_FILE;
         } else {
           return iGotFrames;
         }
       }
-      for (int c = 0; c < m_WavData.m_iChannels; c++) {
-        buf[iSample++] = m_pBuffer[m_iBufferUsed++];
+      for (int c = 0; c < wav_data_.channels_; c++) {
+        buf[iSample++] = buffer_[buffer_used_++];
       }
       iGotFrames++;
     }
@@ -383,47 +381,47 @@ struct WavReaderADPCM : public WavReader {
 
   int GetLength() const {
     const int iNumWholeBlocks =
-        m_WavData.m_iDataChunkSize / m_WavData.m_iBlockAlign;
-    const int iExtraBytes = m_WavData.m_iDataChunkSize -
-                            (iNumWholeBlocks * m_WavData.m_iBlockAlign);
+        wav_data_.data_chunk_size_ / wav_data_.block_align_;
+    const int iExtraBytes =
+        wav_data_.data_chunk_size_ - (iNumWholeBlocks * wav_data_.block_align_);
 
-    int iFrames = iNumWholeBlocks * m_iFramesPerBlock;
+    int iFrames = iNumWholeBlocks * frames_per_block_;
 
-    const int iBlockHeaderSize = 7 * m_WavData.m_iChannels;
+    const int iBlockHeaderSize = 7 * wav_data_.channels_;
     if (iExtraBytes > iBlockHeaderSize) {
       const int iExtraADPCMNibbles =
           std::max(0, iExtraBytes - iBlockHeaderSize) * 2;
-      const int iExtraADPCMFrames = iExtraADPCMNibbles / m_WavData.m_iChannels;
+      const int iExtraADPCMFrames = iExtraADPCMNibbles / wav_data_.channels_;
 
       iFrames += 2 + iExtraADPCMFrames;
     }
 
-    int iMS = int((int64_t(iFrames) * 1000) / m_WavData.m_iSampleRate);
+    int iMS = int((int64_t(iFrames) * 1000) / wav_data_.sample_rate_);
     return iMS;
   }
 
   int SetPosition(int iFrame) {
-    const int iBlock = iFrame / m_iFramesPerBlock;
+    const int iBlock = iFrame / frames_per_block_;
 
-    m_iBufferUsed = m_iBufferAvail = 0;
+    buffer_used_ = buffer_avail_ = 0;
 
     {
-      const int iByte = iBlock * m_WavData.m_iBlockAlign;
-      if (iByte >= m_WavData.m_iDataChunkSize) {
+      const int iByte = iBlock * wav_data_.block_align_;
+      if (iByte >= wav_data_.data_chunk_size_) {
         /* Past EOF. */
         SetEOF();
         return 0;
       }
-      m_File.Seek(iByte + m_WavData.m_iDataChunkPos);
+      file_.Seek(iByte + wav_data_.data_chunk_pos_);
     }
 
     if (!DecodeADPCMBlock()) {
       return -1;
     }
 
-    const int iRemainingFrames = iFrame - iBlock * m_iFramesPerBlock;
-    m_iBufferUsed = iRemainingFrames * m_WavData.m_iChannels;
-    if (m_iBufferUsed > m_iBufferAvail) {
+    const int iRemainingFrames = iFrame - iBlock * frames_per_block_;
+    buffer_used_ = iRemainingFrames * wav_data_.channels_;
+    if (buffer_used_ > buffer_avail_) {
       SetEOF();
       return 0;
     }
@@ -433,13 +431,13 @@ struct WavReaderADPCM : public WavReader {
 
   // XXX: untested
   int GetNextSourceFrame() const {
-    int iByte = m_File.Tell() - m_WavData.m_iDataChunkPos;
-    int iBlock = iByte / m_WavData.m_iBlockAlign;
-    int iFrame = iBlock * m_iFramesPerBlock;
+    int iByte = file_.Tell() - wav_data_.data_chunk_pos_;
+    int iBlock = iByte / wav_data_.block_align_;
+    int iFrame = iBlock * frames_per_block_;
 
-    int iBufferRemainingBytes = m_iBufferAvail - m_iBufferUsed;
+    int iBufferRemainingBytes = buffer_avail_ - buffer_used_;
     int iBufferRemainingFrames =
-        iBufferRemainingBytes / (m_WavData.m_iChannels * sizeof(int16_t));
+        iBufferRemainingBytes / (wav_data_.channels_ * sizeof(int16_t));
     iFrame -= iBufferRemainingFrames;
 
     return iFrame;
@@ -468,33 +466,33 @@ std::string ReadString(RageFileBasic& f, int iSize, std::string& sError) {
 
 RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
     RageFileBasic* pFile) {
-  m_pFile = pFile;
+  file_ = pFile;
 
   std::string sError;
 
   /* RIFF header: */
-  if (ReadString(*m_pFile, 4, sError) != "RIFF") {
+  if (ReadString(*file_, 4, sError) != "RIFF") {
     SetError("Not a WAV file");
     return OPEN_UNKNOWN_FILE_FORMAT;
   }
 
-  FileReading::read_32_le(*m_pFile, sError); /* file size */
-  if (ReadString(*m_pFile, 4, sError) != "WAVE") {
+  FileReading::read_32_le(*file_, sError); /* file size */
+  if (ReadString(*file_, 4, sError) != "WAVE") {
     SetError("Not a WAV file");
     return OPEN_UNKNOWN_FILE_FORMAT;
   }
 
   bool bGotFormatChunk = false, bGotDataChunk = false;
   while (!bGotFormatChunk || !bGotDataChunk) {
-    std::string ChunkID = ReadString(*m_pFile, 4, sError);
-    int32_t iChunkSize = FileReading::read_32_le(*m_pFile, sError);
+    std::string ChunkID = ReadString(*file_, 4, sError);
+    int32_t iChunkSize = FileReading::read_32_le(*file_, sError);
 
     if (sError.size() != 0) {
       SetError(sError);
       return OPEN_FATAL_ERROR;
     }
 
-    int iNextChunk = m_pFile->Tell() + iChunkSize;
+    int iNextChunk = file_->Tell() + iChunkSize;
     /* Chunks are always word-aligned: */
     iNextChunk = (iNextChunk + 1) & ~1;
 
@@ -502,51 +500,51 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
       if (bGotFormatChunk) {
         LOG->Warn(
             "File %s has more than one fmt chunk",
-            m_pFile->GetDisplayPath().c_str());
+            file_->GetDisplayPath().c_str());
       }
 
-      m_WavData.m_iFormatTag = FileReading::read_16_le(*m_pFile, sError);
-      m_WavData.m_iChannels = FileReading::read_16_le(*m_pFile, sError);
-      m_WavData.m_iSampleRate = FileReading::read_32_le(*m_pFile, sError);
-      FileReading::read_32_le(*m_pFile, sError); /* BytesPerSec */
-      m_WavData.m_iBlockAlign = FileReading::read_16_le(*m_pFile, sError);
-      m_WavData.m_iBitsPerSample = FileReading::read_16_le(*m_pFile, sError);
-      m_WavData.m_iExtraFmtBytes = FileReading::read_16_le(*m_pFile, sError);
+      wav_data_.format_tag_ = FileReading::read_16_le(*file_, sError);
+      wav_data_.channels_ = FileReading::read_16_le(*file_, sError);
+      wav_data_.sample_rate_ = FileReading::read_32_le(*file_, sError);
+      FileReading::read_32_le(*file_, sError); /* BytesPerSec */
+      wav_data_.block_align_ = FileReading::read_16_le(*file_, sError);
+      wav_data_.bits_per_sample_ = FileReading::read_16_le(*file_, sError);
+      wav_data_.extra_fmt_bytes_ = FileReading::read_16_le(*file_, sError);
 
-      if (m_WavData.m_iChannels < 1 || m_WavData.m_iChannels > 2) {
+      if (wav_data_.channels_ < 1 || wav_data_.channels_ > 2) {
         FATAL_ERROR(
-            ssprintf("Unsupported channel count: %i", m_WavData.m_iChannels));
+            ssprintf("Unsupported channel count: %i", wav_data_.channels_));
       }
 
-      if (m_WavData.m_iSampleRate < 4000 ||
-          m_WavData.m_iSampleRate > 100000) { /* unlikely */
+      if (wav_data_.sample_rate_ < 4000 ||
+          wav_data_.sample_rate_ > 100000) { /* unlikely */
         FATAL_ERROR(
-            ssprintf("Invalid sample rate: %i", m_WavData.m_iSampleRate));
+            ssprintf("Invalid sample rate: %i", wav_data_.sample_rate_));
       }
 
-      m_WavData.m_iExtraFmtPos = m_pFile->Tell();
+      wav_data_.extra_fmt_pos_ = file_->Tell();
 
       bGotFormatChunk = true;
     }
 
     if (ChunkID == "data") {
-      m_WavData.m_iDataChunkPos = m_pFile->Tell();
-      m_WavData.m_iDataChunkSize = iChunkSize;
+      wav_data_.data_chunk_pos_ = file_->Tell();
+      wav_data_.data_chunk_size_ = iChunkSize;
 
-      int iFileSize = m_pFile->GetFileSize();
-      int iMaxSize = iFileSize - m_WavData.m_iDataChunkPos;
-      if (iMaxSize < m_WavData.m_iDataChunkSize) {
+      int iFileSize = file_->GetFileSize();
+      int iMaxSize = iFileSize - wav_data_.data_chunk_pos_;
+      if (iMaxSize < wav_data_.data_chunk_size_) {
         LOG->Warn(
             "File %s truncated (%i < data chunk size %i)",
-            m_pFile->GetDisplayPath().c_str(), iMaxSize,
-            m_WavData.m_iDataChunkSize);
+            file_->GetDisplayPath().c_str(), iMaxSize,
+            wav_data_.data_chunk_size_);
 
-        m_WavData.m_iDataChunkSize = iMaxSize;
+        wav_data_.data_chunk_size_ = iMaxSize;
       }
 
       bGotDataChunk = true;
     }
-    m_pFile->Seek(iNextChunk);
+    file_->Seek(iNextChunk);
   }
 
   if (sError.size() != 0) {
@@ -554,13 +552,13 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
     return OPEN_FATAL_ERROR;
   }
 
-  switch (m_WavData.m_iFormatTag) {
+  switch (wav_data_.format_tag_) {
     case 1:  // PCM
     case 3:  // FLOAT
-      m_pImpl = new WavReaderPCM(*m_pFile, m_WavData);
+      impl_ = new WavReaderPCM(*file_, wav_data_);
       break;
     case 2:  // ADPCM
-      m_pImpl = new WavReaderADPCM(*m_pFile, m_WavData);
+      impl_ = new WavReaderADPCM(*file_, wav_data_);
       break;
     case 85:  // MP3
       /* Return unknown, so other decoders will be tried.  MAD can read MP3s
@@ -568,11 +566,11 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
       return OPEN_UNKNOWN_FILE_FORMAT;
     default:
       FATAL_ERROR(
-          ssprintf("Unsupported data format %i", m_WavData.m_iFormatTag));
+          ssprintf("Unsupported data format %i", wav_data_.format_tag_));
   }
 
-  if (!m_pImpl->Init()) {
-    SetError(m_pImpl->GetError());
+  if (!impl_->Init()) {
+    SetError(impl_->GetError());
     return OPEN_FATAL_ERROR;
   }
 
@@ -580,32 +578,32 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
 }
 
 int RageSoundReader_WAV::GetLength() const {
-  ASSERT(m_pImpl != nullptr);
-  return m_pImpl->GetLength();
+  ASSERT(impl_ != nullptr);
+  return impl_->GetLength();
 }
 
 int RageSoundReader_WAV::SetPosition(int iFrame) {
-  ASSERT(m_pImpl != nullptr);
-  return m_pImpl->SetPosition(iFrame);
+  ASSERT(impl_ != nullptr);
+  return impl_->SetPosition(iFrame);
 }
 
 int RageSoundReader_WAV::GetNextSourceFrame() const {
-  ASSERT(m_pImpl != nullptr);
-  return m_pImpl->GetNextSourceFrame();
+  ASSERT(impl_ != nullptr);
+  return impl_->GetNextSourceFrame();
 }
 
 int RageSoundReader_WAV::Read(float* pBuf, int iFrames) {
-  ASSERT(m_pImpl != nullptr);
-  return m_pImpl->Read(pBuf, iFrames);
+  ASSERT(impl_ != nullptr);
+  return impl_->Read(pBuf, iFrames);
 }
 
-RageSoundReader_WAV::RageSoundReader_WAV() { m_pImpl = nullptr; }
+RageSoundReader_WAV::RageSoundReader_WAV() { impl_ = nullptr; }
 
-RageSoundReader_WAV::~RageSoundReader_WAV() { delete m_pImpl; }
+RageSoundReader_WAV::~RageSoundReader_WAV() { delete impl_; }
 
 RageSoundReader_WAV* RageSoundReader_WAV::Copy() const {
   RageSoundReader_WAV* ret = new RageSoundReader_WAV;
-  RageFileBasic* pFile = m_pFile->Copy();
+  RageFileBasic* pFile = file_->Copy();
   pFile->Seek(0);
   ret->Open(pFile);
   return ret;

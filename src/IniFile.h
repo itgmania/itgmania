@@ -17,11 +17,11 @@ class IniFile : public XNode {
   /**
    * @brief Retrieve the filename of the last file loaded.
    * @return the filename. */
-  std::string GetPath() const { return m_sPath; }
+  std::string GetPath() const { return path_; }
   /**
    * @brief Retrieve any errors that have occurred.
    * @return the latest error. */
-  const std::string& GetError() const { return m_sError; }
+  const std::string& GetError() const { return error_; }
 
   bool ReadFile(const std::string& sPath);
   bool ReadFile(RageFileBasic& sFile);
@@ -65,9 +65,9 @@ class IniFile : public XNode {
   bool RenameKey(const std::string& from, const std::string& to);
 
  private:
-  std::string m_sPath;
+  std::string path_;
 
-  mutable std::string m_sError;
+  mutable std::string error_;
 };
 
 #endif

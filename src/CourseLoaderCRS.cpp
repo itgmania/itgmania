@@ -79,34 +79,34 @@ bool CourseLoaderCRS::LoadFromMsd(
 
     // handle the data
     if (EqualsNoCase(sValueName, "COURSE")) {
-      out.m_sMainTitle = sParams[1];
+      out.main_title_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "COURSETRANSLIT")) {
-      out.m_sMainTitleTranslit = sParams[1];
+      out.main_title_translit_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "SCRIPTER")) {
-      out.m_sScripter = sParams[1];
+      out.scripter_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "DESCRIPTION")) {
-      out.m_sDescription = sParams[1];
+      out.description_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "REPEAT")) {
       std::string str = sParams[1];
       MakeLower(str);
       if (str.find("yes") != std::string::npos) {
-        out.m_bRepeat = true;
+        out.repeat_ = true;
       }
     }
 
     else if (EqualsNoCase(sValueName, "BANNER")) {
-      out.m_sBannerPath = sParams[1];
+      out.banner_path_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "BACKGROUND")) {
-      out.m_sBackgroundPath = sParams[1];
+      out.background_path_ = sParams[1];
     } else if (EqualsNoCase(sValueName, "LIVES")) {
-      out.m_iLives = std::max(StringToInt(sParams[1]), 0);
+      out.lives_ = std::max(StringToInt(sParams[1]), 0);
     } else if (EqualsNoCase(sValueName, "GAINSECONDS")) {
       fGainSeconds = StringToFloat(sParams[1]);
     } else if (EqualsNoCase(sValueName, "METER")) {
-      if (sParams.params.size() == 2) {
-        out.m_iCustomMeter[Difficulty_Medium] =
+      if (sParams.params_.size() == 2) {
+        out.custom_meter_[Difficulty_Medium] =
             std::max(StringToInt(sParams[1]), 0); /* compat */
-      } else if (sParams.params.size() == 3) {
+      } else if (sParams.params_.size() == 3) {
         const CourseDifficulty cd = CRSStringToDifficulty(sParams[1]);
         if (cd == Difficulty_Invalid) {
           LOG->UserLog(
@@ -114,7 +114,7 @@ bool CourseLoaderCRS::LoadFromMsd(
               sParams[1].c_str());
           continue;
         }
-        out.m_iCustomMeter[cd] = std::max(StringToInt(sParams[2]), 0);
+        out.custom_meter_[cd] = std::max(StringToInt(sParams[2]), 0);
       }
     }
 
@@ -124,27 +124,27 @@ bool CourseLoaderCRS::LoadFromMsd(
       CourseEntry new_entry;
       if (CourseLoaderCRS::ParseCourseSong(sParams, new_entry, sPath) ==
           false) {
-        out.m_bIncomplete = true;
+        out.incomplete_ = true;
         continue;  // Skip this #SONG
       }
 
-      new_entry.attacks = attacks;
-      new_entry.fGainSeconds = fGainSeconds;
+      new_entry.attacks_ = attacks;
+      new_entry.gain_seconds_ = fGainSeconds;
       attacks.clear();
-      out.m_vEntries.push_back(new_entry);
+      out.entries_.push_back(new_entry);
     } else if (EqualsNoCase(sValueName, "SONGSELECT")) {
       CourseEntry new_entry;
-      new_entry.bUseSongSelect = true;
+      new_entry.use_song_select_ = true;
       if (CourseLoaderCRS::ParseCourseSongSelect(sParams, new_entry, sPath) ==
           false) {
-        out.m_bIncomplete = true;
+        out.incomplete_ = true;
         continue;  // Skip this #SONGSELECT
       }
-      new_entry.attacks = attacks;
+      new_entry.attacks_ = attacks;
       // new_entry.fGainSeconds = fGainSeconds; // SONGSELECT already has a
       // GAINSECONDS option, so we probably don't need this?
       attacks.clear();
-      out.m_vEntries.push_back(new_entry);
+      out.entries_.push_back(new_entry);
     } else if (
         !EqualsNoCase(sValueName, "DISPLAYCOURSE") ||
         !EqualsNoCase(sValueName, "COMBO") ||
@@ -158,13 +158,13 @@ bool CourseLoaderCRS::LoadFromMsd(
 
       RadarValues rv;
       rv.FromString(sParams[3]);
-      out.m_RadarCache[Course::CacheEntry(st, cd)] = rv;
+      out.radar_cache_[Course::CacheEntry(st, cd)] = rv;
     } else if (EqualsNoCase(sValueName, "STYLE")) {
       std::string sStyles = sParams[1];
       std::vector<std::string> asStyles;
       split(sStyles, ",", asStyles);
       for (const std::string& s : asStyles) {
-        out.m_setStyles.insert(s);
+        out.set_styles_.insert(s);
       }
 
     } else {
@@ -174,8 +174,8 @@ bool CourseLoaderCRS::LoadFromMsd(
     }
   }
 
-  if (out.m_sBannerPath.empty()) {
-    const std::string sFName = SetExtension(out.m_sPath, "");
+  if (out.banner_path_.empty()) {
+    const std::string sFName = SetExtension(out.path_, "");
 
     std::vector<std::string> arrayPossibleBanners;
     GetDirListing(sFName + "*.png", arrayPossibleBanners, false, false);
@@ -184,25 +184,25 @@ bool CourseLoaderCRS::LoadFromMsd(
     GetDirListing(sFName + "*.bmp", arrayPossibleBanners, false, false);
     GetDirListing(sFName + "*.gif", arrayPossibleBanners, false, false);
     if (!arrayPossibleBanners.empty()) {
-      out.m_sBannerPath = arrayPossibleBanners[0];
+      out.banner_path_ = arrayPossibleBanners[0];
     }
   }
 
   static TitleSubst tsub("Courses");
 
   TitleFields title;
-  title.Title = out.m_sMainTitle;
-  title.TitleTranslit = out.m_sMainTitleTranslit;
+  title.title_ = out.main_title_;
+  title.title_translit_ = out.main_title_translit_;
   tsub.Subst(title);
-  out.m_sMainTitle = title.Title;
-  out.m_sMainTitleTranslit = title.TitleTranslit;
+  out.main_title_ = title.title_;
+  out.main_title_translit_ = title.title_translit_;
 
   /* Cache and load the course banner. Only bother doing this if at least one
    * song was found in the course. */
-  if (out.m_vEntries.empty()) {
+  if (out.entries_.empty()) {
     return true;
   }
-  if (out.m_sBannerPath != "") {
+  if (out.banner_path_ != "") {
     IMAGECACHE->CacheImage("Banner", out.GetBannerPath());
   }
 
@@ -220,14 +220,14 @@ bool CourseLoaderCRS::LoadFromCRSFile(const std::string& _sPath, Course& out) {
 
   out.Init();
 
-  out.m_sPath = sPath;  // save path
+  out.path_ = sPath;  // save path
 
   // save group name
   {
     std::vector<std::string> parts;
     split(sPath, "/", parts, false);
     if (parts.size() >= 4) {  // e.g. "/Courses/blah/fun.crs"
-      out.m_sGroupName = parts[parts.size() - 2];
+      out.group_name_ = parts[parts.size() - 2];
     }
   }
 
@@ -236,12 +236,12 @@ bool CourseLoaderCRS::LoadFromCRSFile(const std::string& _sPath, Course& out) {
     /* First look in the cache for this course. Don't bother honoring
      * FastLoad for checking the course hash, since courses are normally
      * grouped into a few directories, not one directory per course. */
-    unsigned uHash = SONGINDEX->GetCacheHash(out.m_sPath);
+    unsigned uHash = SONGINDEX->GetCacheHash(out.path_);
     if (!DoesFileExist(out.GetCacheFilePath())) {
       bUseCache = false;
     }
     // XXX: if !FastLoad, regen cache if the used songs have changed
-    if (!PREFSMAN->m_bFastLoad && GetHashForFile(out.m_sPath) != uHash) {
+    if (!PREFSMAN->fast_load_ && GetHashForFile(out.path_) != uHash) {
       bUseCache = false;  // this cache is out of date
     }
   }
@@ -272,10 +272,10 @@ bool CourseLoaderCRS::LoadFromCRSFile(const std::string& _sPath, Course& out) {
 
   if (!bUseCache) {
     // If we have any cache data, write the cache file.
-    if (out.m_RadarCache.size()) {
+    if (out.radar_cache_.size()) {
       std::string sCachePath = out.GetCacheFilePath();
       if (CourseWriterCRS::Write(out, sCachePath, true)) {
-        SONGINDEX->AddCacheIndex(out.m_sPath, GetHashForFile(out.m_sPath));
+        SONGINDEX->AddCacheIndex(out.path_, GetHashForFile(out.path_));
       }
     }
   }
@@ -306,10 +306,10 @@ bool CourseLoaderCRS::LoadEditFromFile(
   }
   Course* pCourse = new Course;
 
-  pCourse->m_sPath = sEditFilePath;
+  pCourse->path_ = sEditFilePath;
   LoadFromMsd(sEditFilePath, msd, *pCourse, true);
 
-  pCourse->m_LoadedFromProfile = slot;
+  pCourse->loaded_from_profile_ = slot;
 
   SONGMAN->AddCourse(pCourse);
   return true;
@@ -320,7 +320,7 @@ bool CourseLoaderCRS::ParseCourseMods(
     const std::string& sPath) {
   Attack attack;
   float end = -9999;
-  for (unsigned j = 1; j < sParams.params.size(); ++j) {
+  for (unsigned j = 1; j < sParams.params_.size(); ++j) {
     std::vector<std::string> sBits;
     split(sParams[j], "=", sBits, false);
     if (sBits.size() < 2) {
@@ -329,28 +329,28 @@ bool CourseLoaderCRS::ParseCourseMods(
 
     Trim(sBits[0]);
     if (!CompareNoCase(sBits[0], "TIME")) {
-      attack.fStartSecond = std::max(StringToFloat(sBits[1]), 0.0f);
+      attack.start_second_ = std::max(StringToFloat(sBits[1]), 0.0f);
     } else if (!CompareNoCase(sBits[0], "LEN")) {
-      attack.fSecsRemaining = StringToFloat(sBits[1]);
+      attack.secs_remaining_ = StringToFloat(sBits[1]);
     } else if (!CompareNoCase(sBits[0], "END")) {
       end = StringToFloat(sBits[1]);
     } else if (!CompareNoCase(sBits[0], "MODS")) {
-      attack.sModifiers = sBits[1];
+      attack.modifiers_ = sBits[1];
 
       if (end != -9999) {
-        attack.fSecsRemaining = end - attack.fStartSecond;
+        attack.secs_remaining_ = end - attack.start_second_;
         end = -9999;
       }
 
-      if (attack.fSecsRemaining <= 0.0f) {
+      if (attack.secs_remaining_ <= 0.0f) {
         LOG->UserLog(
             "Course file", sPath, "has an attack with a nonpositive length: %s",
             sBits[1].c_str());
-        attack.fSecsRemaining = 0.0f;
+        attack.secs_remaining_ = 0.0f;
       }
 
       // warn on invalid so we catch typos on load
-      CourseUtil::WarnOnInvalidMods(attack.sModifiers);
+      CourseUtil::WarnOnInvalidMods(attack.modifiers_);
 
       attacks.push_back(attack);
     } else {
@@ -383,9 +383,9 @@ bool CourseLoaderCRS::ParseCourseSong(
       return false;  // skip this #SONG
     }
 
-    new_entry.iChooseIndex = iChooseIndex;
-    rage_clamp(new_entry.iChooseIndex, 0, 500);
-    new_entry.songSort = SongSort_MostPlays;
+    new_entry.choose_index_ = iChooseIndex;
+    rage_clamp(new_entry.choose_index_, 0, 500);
+    new_entry.song_sort_ = SongSort_MostPlays;
   }
   // least played
   else if (Left(sParams[1], strlen("WORST")) == "WORST") {
@@ -401,39 +401,39 @@ bool CourseLoaderCRS::ParseCourseSong(
       return false;  // skip this #SONG
     }
 
-    new_entry.iChooseIndex = iChooseIndex;
-    rage_clamp(new_entry.iChooseIndex, 0, 500);
-    new_entry.songSort = SongSort_FewestPlays;
+    new_entry.choose_index_ = iChooseIndex;
+    rage_clamp(new_entry.choose_index_, 0, 500);
+    new_entry.song_sort_ = SongSort_FewestPlays;
   }
   // best grades
   else if (Left(sParams[1], strlen("GRADEBEST")) == "GRADEBEST") {
-    new_entry.iChooseIndex =
+    new_entry.choose_index_ =
         StringToInt(
             Right(sParams[1], sParams[1].size() - strlen("GRADEBEST"))) -
         1;
-    rage_clamp(new_entry.iChooseIndex, 0, 500);
-    new_entry.songSort = SongSort_TopGrades;
+    rage_clamp(new_entry.choose_index_, 0, 500);
+    new_entry.song_sort_ = SongSort_TopGrades;
   }
   // worst grades
   else if (Left(sParams[1], strlen("GRADEWORST")) == "GRADEWORST") {
-    new_entry.iChooseIndex =
+    new_entry.choose_index_ =
         StringToInt(
             Right(sParams[1], sParams[1].size() - strlen("GRADEWORST"))) -
         1;
-    rage_clamp(new_entry.iChooseIndex, 0, 500);
-    new_entry.songSort = SongSort_LowestGrades;
+    rage_clamp(new_entry.choose_index_, 0, 500);
+    new_entry.song_sort_ = SongSort_LowestGrades;
   } else if (sParams[1] == "*") {
-    new_entry.bSecret = true;
+    new_entry.secret_ = true;
   }
   // group random
   else if (Right(sParams[1], 1) == "*") {
-    new_entry.bSecret = true;
+    new_entry.secret_ = true;
     std::string sSong = sParams[1];
     Replace(sSong, "\\", "/");
     std::vector<std::string> bits;
     split(sSong, "/", bits);
     if (bits.size() == 2) {
-      new_entry.songCriteria.m_vsGroupNames.push_back(bits[0]);
+      new_entry.song_criteria_.group_names_.push_back(bits[0]);
     } else {
       LOG->UserLog(
           "Course file", sPath,
@@ -459,12 +459,12 @@ bool CourseLoaderCRS::ParseCourseSong(
 
     Song* pSong = nullptr;
     if (bits.size() == 2) {
-      new_entry.songCriteria.m_vsGroupNames.push_back(bits[0]);
+      new_entry.song_criteria_.group_names_.push_back(bits[0]);
       pSong = SONGMAN->FindSong(bits[0], bits[1]);
     } else if (bits.size() == 1) {
       pSong = SONGMAN->FindSong("", sSong);
     }
-    new_entry.songID.FromSong(pSong);
+    new_entry.song_id_.FromSong(pSong);
 
     if (pSong == nullptr) {
       LOG->UserLog(
@@ -476,33 +476,34 @@ bool CourseLoaderCRS::ParseCourseSong(
     }
   }
 
-  new_entry.stepsCriteria.m_difficulty = OldStyleStringToDifficulty(sParams[2]);
+  new_entry.steps_criteria_.difficulty_ =
+      OldStyleStringToDifficulty(sParams[2]);
   // most CRS files use old-style difficulties, but Difficulty enum values can
   // be used in SM5. Test for those too.
-  if (new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid) {
-    new_entry.stepsCriteria.m_difficulty = StringToDifficulty(sParams[2]);
+  if (new_entry.steps_criteria_.difficulty_ == Difficulty_Invalid) {
+    new_entry.steps_criteria_.difficulty_ = StringToDifficulty(sParams[2]);
   }
 
-  if (new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid) {
+  if (new_entry.steps_criteria_.difficulty_ == Difficulty_Invalid) {
     int retval = sscanf(
-        sParams[2].c_str(), "%d..%d", &new_entry.stepsCriteria.m_iLowMeter,
-        &new_entry.stepsCriteria.m_iHighMeter);
+        sParams[2].c_str(), "%d..%d", &new_entry.steps_criteria_.low_meter_,
+        &new_entry.steps_criteria_.high_meter_);
     if (retval == 1) {
-      new_entry.stepsCriteria.m_iHighMeter =
-          new_entry.stepsCriteria.m_iLowMeter;
+      new_entry.steps_criteria_.high_meter_ =
+          new_entry.steps_criteria_.low_meter_;
     } else if (retval != 2) {
       LOG->UserLog(
           "Course file", sPath,
           "contains an invalid difficulty setting: \"%s\", 3..6 used instead",
           sParams[2].c_str());
-      new_entry.stepsCriteria.m_iLowMeter = 3;
-      new_entry.stepsCriteria.m_iHighMeter = 6;
+      new_entry.steps_criteria_.low_meter_ = 3;
+      new_entry.steps_criteria_.high_meter_ = 6;
     }
-    new_entry.stepsCriteria.m_iLowMeter =
-        std::max(new_entry.stepsCriteria.m_iLowMeter, 1);
-    new_entry.stepsCriteria.m_iHighMeter = std::max(
-        new_entry.stepsCriteria.m_iHighMeter,
-        new_entry.stepsCriteria.m_iLowMeter);
+    new_entry.steps_criteria_.low_meter_ =
+        std::max(new_entry.steps_criteria_.low_meter_, 1);
+    new_entry.steps_criteria_.high_meter_ = std::max(
+        new_entry.steps_criteria_.high_meter_,
+        new_entry.steps_criteria_.low_meter_);
   }
 
   {
@@ -515,19 +516,19 @@ bool CourseLoaderCRS::ParseCourseSong(
       TrimLeft(sMod);
       TrimRight(sMod);
       if (!CompareNoCase(sMod, "showcourse")) {
-        new_entry.bSecret = false;
+        new_entry.secret_ = false;
       } else if (!CompareNoCase(sMod, "noshowcourse")) {
-        new_entry.bSecret = true;
+        new_entry.secret_ = true;
       } else if (!CompareNoCase(sMod, "nodifficult")) {
-        new_entry.bNoDifficult = true;
+        new_entry.no_difficult_ = true;
       } else if (sMod.length() > 5 && !CompareNoCase(Left(sMod, 5), "award")) {
-        new_entry.iGainLives = StringToInt(sMod.substr(5));
+        new_entry.gain_lives_ = StringToInt(sMod.substr(5));
       } else {
         continue;
       }
       mods.erase(mods.begin() + j);
     }
-    new_entry.sModifiers = join(",", mods);
+    new_entry.modifiers_ = join(",", mods);
   }
   return true;
 }
@@ -535,7 +536,7 @@ bool CourseLoaderCRS::ParseCourseSong(
 bool CourseLoaderCRS::ParseCourseSongSelect(
     const MsdFile::value_t& sParams, CourseEntry& new_entry,
     const std::string& sPath) {
-  for (unsigned i = 1; i < sParams.params.size(); ++i) {
+  for (unsigned i = 1; i < sParams.params_.size(); ++i) {
     std::vector<std::string> sParamParts;
     split_minding_escaped_delims(sParams[i], "=", sParamParts);
 
@@ -555,29 +556,29 @@ bool CourseLoaderCRS::ParseCourseSongSelect(
 
     if (EqualsNoCase(sParamName, "TITLE")) {
       if (ParseCommaSeparatedList(
-              sParamValue, new_entry.songCriteria.m_vsSongNames, sParamName,
+              sParamValue, new_entry.song_criteria_.song_names_, sParamName,
               sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "GROUP")) {
       if (ParseCommaSeparatedList(
-              sParamValue, new_entry.songCriteria.m_vsGroupNames, sParamName,
+              sParamValue, new_entry.song_criteria_.group_names_, sParamName,
               sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "ARTIST")) {
       if (ParseCommaSeparatedList(
-              sParamValue, new_entry.songCriteria.m_vsArtistNames, sParamName,
+              sParamValue, new_entry.song_criteria_.artist_names_, sParamName,
               sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "GENRE")) {
       if (ParseCommaSeparatedList(
-              sParamValue, new_entry.songCriteria.m_vsSongGenreAllowedList,
+              sParamValue, new_entry.song_criteria_.song_genre_allowed_list_,
               sParamName, sPath) == false) {
         return false;
       }
-      new_entry.songCriteria.m_bUseSongGenreAllowedList = true;
+      new_entry.song_criteria_.use_song_genre_allowed_list_ = true;
     } else if (EqualsNoCase(sParamName, "DIFFICULTY")) {
       std::vector<std::string> difficultyStrs;
       std::vector<Difficulty> difficulties;
@@ -598,8 +599,8 @@ bool CourseLoaderCRS::ParseCourseSongSelect(
               difficultyStrs[d].c_str());
         }
       }
-      new_entry.stepsCriteria.m_vDifficulties.insert(
-          new_entry.stepsCriteria.m_vDifficulties.end(), difficulties.begin(),
+      new_entry.steps_criteria_.difficulties_.insert(
+          new_entry.steps_criteria_.difficulties_.end(), difficulties.begin(),
           difficulties.end());
     } else if (EqualsNoCase(sParamName, "SORT")) {
       std::vector<std::string> sortParams;
@@ -629,28 +630,28 @@ bool CourseLoaderCRS::ParseCourseSongSelect(
       }
     } else if (EqualsNoCase(sParamName, "DURATION")) {
       if (ParseRangedValue(
-              sParamValue, new_entry.songCriteria.m_fMinDurationSeconds,
-              new_entry.songCriteria.m_fMaxDurationSeconds, sParamName,
+              sParamValue, new_entry.song_criteria_.min_duration_seconds_,
+              new_entry.song_criteria_.max_duration_seconds_, sParamName,
               sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "BPMRANGE")) {
       if (ParseRangedValue(
-              sParamValue, new_entry.songCriteria.m_fMinBPM,
-              new_entry.songCriteria.m_fMaxBPM, sParamName, sPath) == false) {
+              sParamValue, new_entry.song_criteria_.min_bpm_,
+              new_entry.song_criteria_.max_bpm_, sParamName, sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "METER")) {
       if (ParseRangedValue(
-              sParamValue, new_entry.stepsCriteria.m_iLowMeter,
-              new_entry.stepsCriteria.m_iHighMeter, sParamName,
+              sParamValue, new_entry.steps_criteria_.low_meter_,
+              new_entry.steps_criteria_.high_meter_, sParamName,
               sPath) == false) {
         return false;
       }
     } else if (EqualsNoCase(sParamName, "GAINLIVES")) {
-      new_entry.iGainLives = StringToInt(sParamValue);
+      new_entry.gain_lives_ = StringToInt(sParamValue);
     } else if (EqualsNoCase(sParamName, "GAINSECONDS")) {
-      new_entry.fGainSeconds = StringToInt(sParamValue);
+      new_entry.gain_seconds_ = StringToInt(sParamValue);
     } else if (EqualsNoCase(sParamName, "MODS")) {
       std::vector<std::string> mods;
       split(sParamValue, ",", mods, true);
@@ -659,17 +660,17 @@ bool CourseLoaderCRS::ParseCourseSongSelect(
         TrimLeft(sMod);
         TrimRight(sMod);
         if (!CompareNoCase(sMod, "showcourse")) {
-          new_entry.bSecret = false;
+          new_entry.secret_ = false;
         } else if (!CompareNoCase(sMod, "noshowcourse")) {
-          new_entry.bSecret = true;
+          new_entry.secret_ = true;
         } else if (!CompareNoCase(sMod, "nodifficult")) {
-          new_entry.bNoDifficult = true;
+          new_entry.no_difficult_ = true;
         } else {
           continue;
         }
         mods.erase(mods.begin() + j);
       }
-      new_entry.sModifiers = join(",", mods);
+      new_entry.modifiers_ = join(",", mods);
     } else {
       LOG->UserLog(
           "Course file", sPath,
@@ -747,7 +748,7 @@ bool CourseLoaderCRS::SetCourseSongSort(
     return false;
   }
   if (sort == SongSort_Randomize) {
-    new_entry.songSort = sort;
+    new_entry.song_sort_ = sort;
     return true;
   }
 
@@ -764,8 +765,8 @@ bool CourseLoaderCRS::SetCourseSongSort(
   }
 
   rage_clamp(iChooseIndex, 0, 500);
-  new_entry.iChooseIndex = iChooseIndex;
-  new_entry.songSort = sort;
+  new_entry.choose_index_ = iChooseIndex;
+  new_entry.song_sort_ = sort;
   return true;
 }
 

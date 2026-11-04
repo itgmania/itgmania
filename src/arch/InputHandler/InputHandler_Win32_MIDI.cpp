@@ -33,10 +33,10 @@ InputHandler_Win32_MIDI::InputHandler_Win32_MIDI() {
   g_device = nullptr;
 
   if (device_id >= (int)midiInGetNumDevs()) {
-    m_bFoundDevice = false;
+    found_device_ = false;
     return;
   }
-  m_bFoundDevice = true;
+  found_device_ = true;
 
   MMRESULT result = midiInOpen(
       &g_device, device_id, reinterpret_cast<DWORD_PTR>(&midiCallback),
@@ -71,7 +71,7 @@ InputHandler_Win32_MIDI::~InputHandler_Win32_MIDI() {
 
 void InputHandler_Win32_MIDI::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
-  if (m_bFoundDevice) {
+  if (found_device_) {
     vDevicesOut.push_back(InputDeviceInfo(DEVICE_MIDI, "Win32_MIDI"));
   }
 }
@@ -93,7 +93,7 @@ static void CALLBACK midiCallback(
     if (iType == 144) {
       DeviceInput di =
           DeviceInput(DEVICE_MIDI, enum_add2(MIDI_FIRST, iChannel), iValue > 0);
-      di.ts.Touch();
+      di.ts_.Touch();
       (reinterpret_cast<InputHandler_Win32_MIDI*>(instancePtr))->SetDev(di);
     }
   }

@@ -32,14 +32,14 @@ class ScreenPrompt : public ScreenWithMenuElements {
   virtual void BeginScreen();
   virtual bool Input(const InputEventPlus& input);
 
-  static PromptAnswer s_LastAnswer;
-  static bool s_bCancelledLast;
+  static PromptAnswer last_answer_;
+  static bool cancelled_last_;
 
   // Lua
   // virtual void PushSelf( lua_State *L );
 
  protected:
-  bool CanGoLeft() { return m_Answer > 0; }
+  bool CanGoLeft() { return answer_ > 0; }
   bool CanGoRight();
   void Change(int dir);
   bool MenuLeft(const InputEventPlus& input);
@@ -52,12 +52,12 @@ class ScreenPrompt : public ScreenWithMenuElements {
 
   virtual void TweenOffScreen();
 
-  BitmapText m_textQuestion;
-  AutoActor m_sprCursor;
-  BitmapText m_textAnswer[NUM_PromptAnswer];
-  PromptAnswer m_Answer;
+  BitmapText text_question_;
+  AutoActor spr_cursor_;
+  BitmapText text_answer_[NUM_PromptAnswer];
+  PromptAnswer answer_;
 
-  RageSound m_sndChange;
+  RageSound snd_change_;
 };
 
 #endif

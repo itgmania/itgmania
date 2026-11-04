@@ -18,11 +18,11 @@ class RageSoundMixBuffer {
   void read(int16_t* pBuf);
   void read(float* pBuf);
   void read_deinterlace(float** pBufs, int channels);
-  inline size_t size() const { return m_pMixbuf.size(); }
+  inline size_t size() const { return mixbuf_.size(); }
 
  private:
-  std::vector<float> m_pMixbuf;
-  unsigned m_iOffset;
+  std::vector<float> mixbuf_;
+  unsigned offset_;
 };
 
 #endif  // RAGESOUNDMIXBUFFER_H

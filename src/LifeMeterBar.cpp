@@ -37,79 +37,79 @@ LifeMeterBar::LifeMeterBar() {
   FORCE_LIFE_DIFFICULTY_ON_EXTRA_STAGE.Load(
       "LifeMeterBar", "ForceLifeDifficultyOnExtraStage");
   EXTRA_STAGE_LIFE_DIFFICULTY.Load("LifeMeterBar", "ExtraStageLifeDifficulty");
-  m_fLifePercentChange.Load(
+  life_percent_change_.Load(
       "LifeMeterBar", LIFE_PERCENT_CHANGE_NAME, NUM_ScoreEvent);
 
-  m_pPlayerState = nullptr;
+  player_state_ = nullptr;
 
   const std::string sType = "LifeMeterBar";
 
-  m_fPassingAlpha = 0;
-  m_fHotAlpha = 0;
+  passing_alpha_ = 0;
+  hot_alpha_ = 0;
 
-  m_fBaseLifeDifficulty = PREFSMAN->m_fLifeDifficultyScale;
-  m_fLifeDifficulty = m_fBaseLifeDifficulty;
+  base_life_difficulty_ = PREFSMAN->life_difficulty_scale_;
+  life_difficulty_ = base_life_difficulty_;
 
   // set up progressive lifebar
-  m_iProgressiveLifebar = PREFSMAN->m_iProgressiveLifebar;
-  m_iMissCombo = 0;
+  progressive_lifebar_ = PREFSMAN->progressive_lifebar_;
+  miss_combo_ = 0;
 
   // set up combotoregainlife
-  m_iComboToRegainLife = 0;
+  combo_to_regain_life_ = 0;
 
   bool bExtra = GAMESTATE->IsAnExtraStage();
   std::string sExtra = bExtra ? "extra " : "";
 
-  m_sprUnder.Load(THEME->GetPathG(sType, sExtra + "Under"));
-  m_sprUnder->SetName("Under");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprUnder, sType);
-  this->AddChild(m_sprUnder);
+  spr_under_.Load(THEME->GetPathG(sType, sExtra + "Under"));
+  spr_under_->SetName("Under");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_under_, sType);
+  this->AddChild(spr_under_);
 
-  m_sprDanger.Load(THEME->GetPathG(sType, sExtra + "Danger"));
-  m_sprDanger->SetName("Danger");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprDanger, sType);
-  this->AddChild(m_sprDanger);
+  spr_danger_.Load(THEME->GetPathG(sType, sExtra + "Danger"));
+  spr_danger_->SetName("Danger");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_danger_, sType);
+  this->AddChild(spr_danger_);
 
-  m_pStream = new StreamDisplay;
-  m_pStream->Load(bExtra ? "StreamDisplayExtra" : "StreamDisplay");
-  m_pStream->SetName("Stream");
-  ActorUtil::LoadAllCommandsAndSetXY(m_pStream, sType);
-  this->AddChild(m_pStream);
+  stream_ = new StreamDisplay;
+  stream_->Load(bExtra ? "StreamDisplayExtra" : "StreamDisplay");
+  stream_->SetName("Stream");
+  ActorUtil::LoadAllCommandsAndSetXY(stream_, sType);
+  this->AddChild(stream_);
 
-  m_sprOver.Load(THEME->GetPathG(sType, sExtra + "Over"));
-  m_sprOver->SetName("Over");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprOver, sType);
-  this->AddChild(m_sprOver);
+  spr_over_.Load(THEME->GetPathG(sType, sExtra + "Over"));
+  spr_over_->SetName("Over");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_over_, sType);
+  this->AddChild(spr_over_);
 }
 
-LifeMeterBar::~LifeMeterBar() { RageUtil::SafeDelete(m_pStream); }
+LifeMeterBar::~LifeMeterBar() { RageUtil::SafeDelete(stream_); }
 
 void LifeMeterBar::Load(
     const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
   LifeMeter::Load(pPlayerState, pPlayerStageStats);
 
-  PlayerNumber pn = pPlayerState->m_PlayerNumber;
+  PlayerNumber pn = pPlayerState->player_number_;
 
-  DrainType dtype = pPlayerState->m_PlayerOptions.GetStage().m_DrainType;
+  DrainType dtype = pPlayerState->player_options_.GetStage().drain_type_;
   switch (dtype) {
     case DrainType_Normal:
-      m_fLifePercentage = INITIAL_VALUE;
+      life_percentage_ = INITIAL_VALUE;
       break;
       /* These types only go down, so they always start at full. */
     case DrainType_NoRecover:
     case DrainType_SuddenDeath:
-      m_fLifePercentage = 1.0f;
+      life_percentage_ = 1.0f;
       break;
     default:
       FAIL_M(ssprintf("Invalid DrainType: %i", dtype));
   }
 
   // Change life difficulty to really easy if merciful beginner on
-  m_bMercifulBeginnerInEffect =
-      GAMESTATE->m_PlayMode == PLAY_MODE_REGULAR &&
+  merciful_beginner_in_effect_ =
+      GAMESTATE->play_mode_ == PLAY_MODE_REGULAR &&
       GAMESTATE->IsPlayerEnabled(pPlayerState) &&
-      GAMESTATE->m_pCurSteps[pn]->GetDifficulty() == Difficulty_Beginner &&
-      PREFSMAN->m_bMercifulBeginner;
+      GAMESTATE->cur_steps_[pn]->GetDifficulty() == Difficulty_Beginner &&
+      PREFSMAN->merciful_beginner_;
 
   AfterLifeChanged();
 }
@@ -119,45 +119,45 @@ void LifeMeterBar::ChangeLife(TapNoteScore score) {
   switch (score) {
     DEFAULT_FAIL(score);
     case TNS_W1:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_W1);
+      fDeltaLife = life_percent_change_.GetValue(SE_W1);
       break;
     case TNS_W2:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_W2);
+      fDeltaLife = life_percent_change_.GetValue(SE_W2);
       break;
     case TNS_W3:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_W3);
+      fDeltaLife = life_percent_change_.GetValue(SE_W3);
       break;
     case TNS_W4:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_W4);
+      fDeltaLife = life_percent_change_.GetValue(SE_W4);
       break;
     case TNS_W5:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_W5);
+      fDeltaLife = life_percent_change_.GetValue(SE_W5);
       break;
     case TNS_Miss:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_Miss);
+      fDeltaLife = life_percent_change_.GetValue(SE_Miss);
       break;
     case TNS_HitMine:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_HitMine);
+      fDeltaLife = life_percent_change_.GetValue(SE_HitMine);
       break;
     case TNS_None:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_Miss);
+      fDeltaLife = life_percent_change_.GetValue(SE_Miss);
       break;
     case TNS_CheckpointHit:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_CheckpointHit);
+      fDeltaLife = life_percent_change_.GetValue(SE_CheckpointHit);
       break;
     case TNS_CheckpointMiss:
-      fDeltaLife = m_fLifePercentChange.GetValue(SE_CheckpointMiss);
+      fDeltaLife = life_percent_change_.GetValue(SE_CheckpointMiss);
       break;
   }
 
   // this was previously if( IsHot()  &&  score < TNS_GOOD ) in 3.9... -freem
-  if (PREFSMAN->m_HarshHotLifePenalty && IsHot() && fDeltaLife < 0) {
+  if (PREFSMAN->harsh_hot_life_penalty_ && IsHot() && fDeltaLife < 0) {
     fDeltaLife = std::min(
         fDeltaLife, -0.10f);  // make it take a while to get back to "hot"
   }
 
-  switch (m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType) {
-    DEFAULT_FAIL(m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType);
+  switch (player_state_->player_options_.GetSong().drain_type_) {
+    DEFAULT_FAIL(player_state_->player_options_.GetSong().drain_type_);
     case DrainType_Normal:
       break;
     case DrainType_NoRecover:
@@ -177,23 +177,23 @@ void LifeMeterBar::ChangeLife(TapNoteScore score) {
 
 void LifeMeterBar::ChangeLife(HoldNoteScore score, TapNoteScore tscore) {
   float fDeltaLife = 0.f;
-  DrainType dtype = m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType;
+  DrainType dtype = player_state_->player_options_.GetSong().drain_type_;
   switch (dtype) {
     case DrainType_Normal:
       switch (score) {
         case HNS_Held:
-          fDeltaLife = m_fLifePercentChange.GetValue(SE_Held);
+          fDeltaLife = life_percent_change_.GetValue(SE_Held);
           break;
         case HNS_LetGo:
-          fDeltaLife = m_fLifePercentChange.GetValue(SE_LetGo);
+          fDeltaLife = life_percent_change_.GetValue(SE_LetGo);
           break;
         case HNS_Missed:
-          fDeltaLife = m_fLifePercentChange.GetValue(SE_Missed);
+          fDeltaLife = life_percent_change_.GetValue(SE_Missed);
           break;
         default:
           FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));
       }
-      if (PREFSMAN->m_HarshHotLifePenalty && IsHot() && score == HNS_LetGo) {
+      if (PREFSMAN->harsh_hot_life_penalty_ && IsHot() && score == HNS_LetGo) {
         fDeltaLife = -0.10f;  // make it take a while to get back to "hot"
       }
       break;
@@ -203,7 +203,7 @@ void LifeMeterBar::ChangeLife(HoldNoteScore score, TapNoteScore tscore) {
           fDeltaLife = +0.000f;
           break;
         case HNS_LetGo:
-          fDeltaLife = m_fLifePercentChange.GetValue(SE_LetGo);
+          fDeltaLife = life_percent_change_.GetValue(SE_LetGo);
           break;
         case HNS_Missed:
           fDeltaLife = +0.000f;
@@ -236,45 +236,46 @@ void LifeMeterBar::ChangeLife(HoldNoteScore score, TapNoteScore tscore) {
 
 void LifeMeterBar::ChangeLife(float fDeltaLife) {
   bool bUseMercifulDrain =
-      m_bMercifulBeginnerInEffect || PREFSMAN->m_bMercifulDrain;
+      merciful_beginner_in_effect_ || PREFSMAN->merciful_drain_;
   if (bUseMercifulDrain && fDeltaLife < 0) {
-    fDeltaLife *= SCALE(m_fLifePercentage, 0.f, 1.f, 0.5f, 1.f);
+    fDeltaLife *= SCALE(life_percentage_, 0.f, 1.f, 0.5f, 1.f);
   }
 
   // handle progressiveness and ComboToRegainLife here
   if (fDeltaLife >= 0) {
-    m_iMissCombo = 0;
-    m_iComboToRegainLife = std::max(m_iComboToRegainLife - 1, 0);
-    if (m_iComboToRegainLife > 0) {
+    miss_combo_ = 0;
+    combo_to_regain_life_ = std::max(combo_to_regain_life_ - 1, 0);
+    if (combo_to_regain_life_ > 0) {
       fDeltaLife = 0.0f;
     }
   } else {
-    fDeltaLife *= 1 + (float)m_iProgressiveLifebar / 8 * m_iMissCombo;
+    fDeltaLife *= 1 + (float)progressive_lifebar_ / 8 * miss_combo_;
     // do this after; only successive W5/miss will increase the amount of life
     // lost.
-    m_iMissCombo++;
+    miss_combo_++;
     /* Increase by m_iRegenComboAfterMiss; never push it beyond
      * m_iMaxRegenComboAfterMiss but don't reduce it if it's already past. */
     const int NewComboToRegainLife = std::min(
-        (int)PREFSMAN->m_iMaxRegenComboAfterMiss,
-        m_iComboToRegainLife + PREFSMAN->m_iRegenComboAfterMiss);
+        (int)PREFSMAN->max_regen_combo_after_miss_,
+        combo_to_regain_life_ + PREFSMAN->regen_combo_after_miss_);
 
-    m_iComboToRegainLife = std::max(m_iComboToRegainLife, NewComboToRegainLife);
+    combo_to_regain_life_ =
+        std::max(combo_to_regain_life_, NewComboToRegainLife);
   }
 
   // If we've already failed, there's no point in letting them fill up the bar
   // again.
-  if (m_pPlayerStageStats->m_bFailed) {
+  if (player_stage_stats_->failed_) {
     return;
   }
 
-  switch (m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType) {
+  switch (player_state_->player_options_.GetSong().drain_type_) {
     case DrainType_Normal:
     case DrainType_NoRecover:
       if (fDeltaLife > 0) {
-        fDeltaLife *= m_fLifeDifficulty;
+        fDeltaLife *= life_difficulty_;
       } else {
-        fDeltaLife /= m_fLifeDifficulty;
+        fDeltaLife /= life_difficulty_;
       }
       break;
     case DrainType_SuddenDeath:
@@ -289,14 +290,14 @@ void LifeMeterBar::ChangeLife(float fDeltaLife) {
       break;
   }
 
-  m_fLifePercentage += fDeltaLife;
-  rage_clamp(m_fLifePercentage, 0, LIFE_MULTIPLIER);
+  life_percentage_ += fDeltaLife;
+  rage_clamp(life_percentage_, 0, LIFE_MULTIPLIER);
   AfterLifeChanged();
 }
 
 void LifeMeterBar::SetLife(float value) {
-  m_fLifePercentage = value;
-  rage_clamp(m_fLifePercentage, 0, LIFE_MULTIPLIER);
+  life_percentage_ = value;
+  rage_clamp(life_percentage_, 0, LIFE_MULTIPLIER);
   AfterLifeChanged();
 }
 
@@ -308,61 +309,61 @@ void LifeMeterBar::HandleTapScoreNone() {
 }
 
 void LifeMeterBar::AfterLifeChanged() {
-  m_pStream->SetPercent(m_fLifePercentage);
+  stream_->SetPercent(life_percentage_);
 
   Message msg("LifeChanged");
-  msg.SetParam("Player", m_pPlayerState->m_PlayerNumber);
+  msg.SetParam("Player", player_state_->player_number_);
   msg.SetParam("LifeMeter", LuaReference::CreateFromPush(*this));
   MESSAGEMAN->Broadcast(msg);
 }
 
-bool LifeMeterBar::IsHot() const { return m_fLifePercentage >= HOT_VALUE; }
+bool LifeMeterBar::IsHot() const { return life_percentage_ >= HOT_VALUE; }
 
 bool LifeMeterBar::IsInDanger() const {
-  return m_fLifePercentage < DANGER_THRESHOLD;
+  return life_percentage_ < DANGER_THRESHOLD;
 }
 
 bool LifeMeterBar::IsFailing() const {
-  return m_fLifePercentage <=
-         m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPassmark;
+  return life_percentage_ <=
+         player_state_->player_options_.GetCurrent().passmark_;
 }
 
 void LifeMeterBar::Update(float fDeltaTime) {
   LifeMeter::Update(fDeltaTime);
 
-  m_fPassingAlpha += !IsFailing() ? +fDeltaTime * 2 : -fDeltaTime * 2;
-  rage_clamp(m_fPassingAlpha, 0, 1);
+  passing_alpha_ += !IsFailing() ? +fDeltaTime * 2 : -fDeltaTime * 2;
+  rage_clamp(passing_alpha_, 0, 1);
 
-  m_fHotAlpha += IsHot() ? +fDeltaTime * 2 : -fDeltaTime * 2;
-  rage_clamp(m_fHotAlpha, 0, 1);
+  hot_alpha_ += IsHot() ? +fDeltaTime * 2 : -fDeltaTime * 2;
+  rage_clamp(hot_alpha_, 0, 1);
 
-  m_pStream->SetPassingAlpha(m_fPassingAlpha);
-  m_pStream->SetHotAlpha(m_fHotAlpha);
+  stream_->SetPassingAlpha(passing_alpha_);
+  stream_->SetHotAlpha(hot_alpha_);
 
-  if (m_pPlayerState->m_HealthState == HealthState_Danger) {
-    m_sprDanger->SetVisible(true);
+  if (player_state_->health_state_ == HealthState_Danger) {
+    spr_danger_->SetVisible(true);
   } else {
-    m_sprDanger->SetVisible(false);
+    spr_danger_->SetVisible(false);
   }
 }
 
 void LifeMeterBar::UpdateNonstopLifebar() {
   int iCleared, iTotal, iProgressiveLifebarDifficulty;
 
-  switch (GAMESTATE->m_PlayMode) {
+  switch (GAMESTATE->play_mode_) {
     case PLAY_MODE_REGULAR:
-      if (GAMESTATE->IsEventMode() || GAMESTATE->m_bDemonstrationOrJukebox) {
+      if (GAMESTATE->IsEventMode() || GAMESTATE->demonstration_or_jukebox_) {
         return;
       }
 
-      iCleared = GAMESTATE->m_iCurrentStageIndex;
-      iTotal = PREFSMAN->m_iSongsPerPlay;
-      iProgressiveLifebarDifficulty = PREFSMAN->m_iProgressiveStageLifebar;
+      iCleared = GAMESTATE->current_stage_index_;
+      iTotal = PREFSMAN->songs_per_play_;
+      iProgressiveLifebarDifficulty = PREFSMAN->progressive_stage_lifebar_;
       break;
     case PLAY_MODE_NONSTOP:
       iCleared = GAMESTATE->GetCourseSongIndex();
-      iTotal = GAMESTATE->m_pCurCourse->GetEstimatedNumStages();
-      iProgressiveLifebarDifficulty = PREFSMAN->m_iProgressiveNonstopLifebar;
+      iTotal = GAMESTATE->cur_course_->GetEstimatedNumStages();
+      iProgressiveLifebarDifficulty = PREFSMAN->progressive_nonstop_lifebar_;
       break;
     default:
       return;
@@ -376,21 +377,21 @@ void LifeMeterBar::UpdateNonstopLifebar() {
     // and it should be as difficult as life 4
     // (e.g. it should not depend on life settings)
 
-    m_iProgressiveLifebar = 0;
-    m_fLifeDifficulty = EXTRA_STAGE_LIFE_DIFFICULTY;
+    progressive_lifebar_ = 0;
+    life_difficulty_ = EXTRA_STAGE_LIFE_DIFFICULTY;
     return;
   }
 
   if (iTotal > 1) {
-    m_fLifeDifficulty =
-        m_fBaseLifeDifficulty -
+    life_difficulty_ =
+        base_life_difficulty_ -
         0.2f * (int)(iProgressiveLifebarDifficulty * iCleared / (iTotal - 1));
   } else {
-    m_fLifeDifficulty =
-        m_fBaseLifeDifficulty - 0.2f * iProgressiveLifebarDifficulty;
+    life_difficulty_ =
+        base_life_difficulty_ - 0.2f * iProgressiveLifebarDifficulty;
   }
 
-  if (m_fLifeDifficulty >= 0.4f) {
+  if (life_difficulty_ >= 0.4f) {
     return;
   }
 
@@ -421,7 +422,7 @@ void LifeMeterBar::UpdateNonstopLifebar() {
   // the lifebar is pretty harsh at 0.4 already (you lose
   // about 20% of your lifebar); at 0.2 it would be 40%, which
   // is too harsh at one difficulty level higher.  Override.
-  int iLifeDifficulty = int((1.8f - m_fLifeDifficulty) / 0.2f);
+  int iLifeDifficulty = int((1.8f - life_difficulty_) / 0.2f);
 
   // first eight values don't matter
   float fDifficultyValues[16] = {0,     0,     0,     0,     0,    0,
@@ -430,22 +431,22 @@ void LifeMeterBar::UpdateNonstopLifebar() {
 
   if (iLifeDifficulty >= 16) {
     // judge 16 or higher
-    m_fLifeDifficulty = 0.04f;
+    life_difficulty_ = 0.04f;
     return;
   }
 
-  m_fLifeDifficulty = fDifficultyValues[iLifeDifficulty];
+  life_difficulty_ = fDifficultyValues[iLifeDifficulty];
   return;
 }
 
 void LifeMeterBar::FillForHowToPlay(int NumW2s, int NumMisses) {
-  m_iProgressiveLifebar = 0;  // disable progressive lifebar
+  progressive_lifebar_ = 0;  // disable progressive lifebar
 
-  float AmountForW2 = NumW2s * m_fLifeDifficulty * 0.008f;
-  float AmountForMiss = NumMisses / m_fLifeDifficulty * 0.08f;
+  float AmountForW2 = NumW2s * life_difficulty_ * 0.008f;
+  float AmountForMiss = NumMisses / life_difficulty_ * 0.08f;
 
-  m_fLifePercentage = AmountForMiss - AmountForW2;
-  rage_clamp(m_fLifePercentage, 0.0f, 1.0f);
+  life_percentage_ = AmountForMiss - AmountForW2;
+  rage_clamp(life_percentage_, 0.0f, 1.0f);
   AfterLifeChanged();
 }
 

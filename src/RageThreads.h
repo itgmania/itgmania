@@ -14,8 +14,8 @@ class RageThread {
   RageThread(const RageThread& cpy);
   ~RageThread();
 
-  void SetName(const std::string& n) { m_sName = n; }
-  std::string GetName() const { return m_sName; }
+  void SetName(const std::string& n) { name_ = n; }
+  std::string GetName() const { return name_; }
   void Create(int (*fn)(void*), void* data);
 
   void Halt(bool Kill = false);
@@ -34,17 +34,17 @@ class RageThread {
   static const char* GetThreadNameByID(uint64_t iID);
   static bool EnumThreadIDs(int n, uint64_t& iID);
   int Wait();
-  bool IsCreated() const { return m_pSlot != nullptr; }
+  bool IsCreated() const { return slot_ != nullptr; }
 
-  static bool GetIsShowingDialog() { return s_bIsShowingDialog.load(); }
-  static void SetIsShowingDialog(bool b) { s_bIsShowingDialog.store(b); }
+  static bool GetIsShowingDialog() { return is_showing_dialog_.load(); }
+  static void SetIsShowingDialog(bool b) { is_showing_dialog_.store(b); }
   static uint64_t GetInvalidThreadID();
 
  private:
-  ThreadSlot* m_pSlot;
-  std::string m_sName;
+  ThreadSlot* slot_;
+  std::string name_;
 
-  static std::atomic<bool> s_bIsShowingDialog;
+  static std::atomic<bool> is_showing_dialog_;
 
   // Swallow up warnings. If they must be used, define them.
   RageThread& operator=(const RageThread& rhs);
@@ -61,7 +61,7 @@ class RageThreadRegister {
   ~RageThreadRegister();
 
  private:
-  ThreadSlot* m_pSlot;
+  ThreadSlot* slot_;
   // Swallow up warnings. If they must be used, define them.
   RageThreadRegister& operator=(const RageThreadRegister& rhs);
   RageThreadRegister(const RageThreadRegister& rhs);
@@ -85,8 +85,8 @@ void GetLogs(char* pBuf, int iSize, const char* delim);
 class MutexImpl;
 class RageMutex {
  public:
-  std::string GetName() const { return m_sName; }
-  void SetName(const std::string& s) { m_sName = s; }
+  std::string GetName() const { return name_; }
+  void SetName(const std::string& s) { name_ = s; }
   virtual void Lock();
   virtual bool TryLock();
   virtual void Unlock();
@@ -96,11 +96,11 @@ class RageMutex {
   virtual ~RageMutex();
 
  protected:
-  MutexImpl* m_pMutex;
-  std::string m_sName;
+  MutexImpl* mutex_;
+  std::string name_;
 
-  uint64_t m_LockedBy;
-  int m_LockCnt;
+  uint64_t locked_by_;
+  int lock_cnt_;
 
  private:
   // Swallow up warnings. If they must be used, define them.
@@ -113,31 +113,31 @@ class RageMutex {
  *
  * Helps for functions with more than one return path. */
 class LockMutex {
-  RageMutex& mutex;
+  RageMutex& mutex_;
 
-  const char* file;
-  int line;
-  uint64_t locked_at;
-  bool locked;
+  const char* file_;
+  int line_;
+  uint64_t locked_at_;
+  bool locked_;
 
  public:
   LockMutex(RageMutex& mut, const char* file, int line);
   LockMutex(RageMutex& mut)
-      : mutex(mut),
-        file(nullptr),
-        line(-1),
-        locked_at(UINT64_MAX),
-        locked(true) {
-    mutex.Lock();
+      : mutex_(mut),
+        file_(nullptr),
+        line_(-1),
+        locked_at_(UINT64_MAX),
+        locked_(true) {
+    mutex_.Lock();
   }
   ~LockMutex();
   LockMutex(LockMutex& cpy)
-      : mutex(cpy.mutex),
-        file(nullptr),
-        line(-1),
-        locked_at(cpy.locked_at),
-        locked(true) {
-    mutex.Lock();
+      : mutex_(cpy.mutex_),
+        file_(nullptr),
+        line_(-1),
+        locked_at_(cpy.locked_at_),
+        locked_(true) {
+    mutex_.Lock();
   }
 
   /**
@@ -174,7 +174,7 @@ class RageEvent : public RageMutex {
   RageEvent(const RageEvent& rhs);
 
  private:
-  EventImpl* m_pEvent;
+  EventImpl* event_;
 };
 
 class SemaImpl;
@@ -183,13 +183,13 @@ class RageSemaphore {
   RageSemaphore(std::string sName, int iInitialValue = 0);
   ~RageSemaphore();
 
-  std::string GetName() const { return m_sName; }
+  std::string GetName() const { return name_; }
   void Post();
   void Wait(bool bFailOnTimeout = true);
 
  private:
-  SemaImpl* m_pSema;
-  std::string m_sName;
+  SemaImpl* sema_;
+  std::string name_;
 
   // Swallow up warnings. If they must be used, define them.
   RageSemaphore& operator=(const RageSemaphore& rhs);

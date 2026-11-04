@@ -20,18 +20,18 @@ class StepsCriteria {
    * @brief the Difficulty to search for.
    *
    * Don't filter here if the Difficulty is Difficulty_Invalid. */
-  Difficulty m_difficulty;
-  std::vector<Difficulty> m_vDifficulties;
+  Difficulty difficulty_;
+  std::vector<Difficulty> difficulties_;
   /**
    * @brief The lowest meter to search for.
    *
    * Don't filter here if the meter is -1. */
-  int m_iLowMeter;
+  int low_meter_;
   /**
    * @brief The highest meter to search for.
    *
    * Don't filter here if the meter is -1. */
-  int m_iHighMeter;
+  int high_meter_;
   // Currently, Songs have BPM since TimingData is by Song. These are just
   // here for the inevitable chart-based BPMs future. -aj
   // float m_fLowBPM;		// don't filter if -1
@@ -40,22 +40,22 @@ class StepsCriteria {
    * @brief the step type to search for.
    *
    * Don't filter here if the StepsType is StepsType_Invalid. */
-  StepsType m_st;
+  StepsType st_;
   /** @brief Check a song's locked status for searching. */
   enum Locked {
     Locked_Locked,   /**< We want songs that are locked. */
     Locked_Unlocked, /**< We want songs that are unlocked. */
     Locked_DontCare  /**< We don't care if the songs are locked or not. */
-  } /** @brief The Song's locked status. */ m_Locked;
+  } /** @brief The Song's locked status. */ locked_;
 
   /** @brief Set up the initial criteria. */
   StepsCriteria()
-      : m_difficulty(Difficulty_Invalid),
-        m_vDifficulties(),
-        m_iLowMeter(-1),
-        m_iHighMeter(-1),
-        m_st(StepsType_Invalid),
-        m_Locked(Locked_DontCare) {
+      : difficulty_(Difficulty_Invalid),
+        difficulties_(),
+        low_meter_(-1),
+        high_meter_(-1),
+        st_(StepsType_Invalid),
+        locked_(Locked_DontCare) {
     // m_fLowBPM = -1;
     // m_fHighBPM = -1;
   }
@@ -74,8 +74,8 @@ class StepsCriteria {
    * @return true if they are equal, false otherwise. */
   bool operator==(const StepsCriteria& other) const {
 #define X(x) (x == other.x)
-    return X(m_difficulty) && X(m_iLowMeter) && X(m_iHighMeter) && X(m_st) &&
-           X(m_Locked);
+    return X(difficulty_) && X(low_meter_) && X(high_meter_) && X(st_) &&
+           X(locked_);
 #undef X
   }
   /**
@@ -91,25 +91,25 @@ class StepsCriteria {
 class SongAndSteps {
  public:
   /** @brief the Song we're using. */
-  Song* pSong;
+  Song* song_;
   /** @brief the Steps we're using. */
-  Steps* pSteps;
+  Steps* steps_;
   /** @brief Set up a blank Song and
    * <a class="el" href="class_steps.html">Step</a>. */
-  SongAndSteps() : pSong(nullptr), pSteps(nullptr) {}
+  SongAndSteps() : song_(nullptr), steps_(nullptr) {}
   /**
    * @brief Set up the specified Song and
    * <a class="el" href="class_steps.html">Step</a>.
    * @param pSong_ the new Song.
    * @param pSteps_ the new <a class="el" href="class_steps.html">Step</a>. */
-  SongAndSteps(Song* pSong_, Steps* pSteps_) : pSong(pSong_), pSteps(pSteps_) {}
+  SongAndSteps(Song* pSong_, Steps* pSteps_) : song_(pSong_), steps_(pSteps_) {}
   /**
    * @brief Compare two sets of Songs and Steps to see if they are equal.
    * @param other the other set of SongAndSteps.
    * @return true if the two sets of Songs and Steps are equal, false otherwise.
    */
   bool operator==(const SongAndSteps& other) const {
-    return pSong == other.pSong && pSteps == other.pSteps;
+    return song_ == other.song_ && steps_ == other.steps_;
   }
   /**
    * @brief Compare two sets of Songs and Steps to see if they are not equal.
@@ -117,10 +117,10 @@ class SongAndSteps {
    * @return true if the two sets of Songs and Steps are not equal, false
    * otherwise. */
   bool operator<(const SongAndSteps& other) const {
-    if (pSong != other.pSong) {
-      return pSong < other.pSong;
+    if (song_ != other.song_) {
+      return song_ < other.song_;
     }
-    return pSteps < other.pSteps;
+    return steps_ < other.steps_;
   }
 };
 
@@ -169,10 +169,10 @@ void RemoveLockedSteps(const Song* pSong, std::vector<Steps*>& vpStepsInOut);
 }  // namespace StepsUtil
 
 class StepsID {
-  StepsType st;
-  Difficulty dc;
-  std::string sDescription;
-  unsigned uHash;
+  StepsType st_;
+  Difficulty dc_;
+  std::string description_;
+  unsigned hash_;
 
  public:
   /**
@@ -181,10 +181,10 @@ class StepsID {
    * This used to call Unset(), which set the variables to
    * the same thing. */
   StepsID()
-      : st(StepsType_Invalid),
-        dc(Difficulty_Invalid),
-        sDescription(""),
-        uHash(0) {}
+      : st_(StepsType_Invalid),
+        dc_(Difficulty_Invalid),
+        description_(""),
+        hash_(0) {}
   void Unset() { FromSteps(nullptr); }
   void FromSteps(const Steps* p);
   Steps* ToSteps(const Song* p, bool bAllowNull) const;
@@ -207,15 +207,15 @@ class StepsID {
   // description field isn't always going to be unique.
   // -Kyz
   bool operator<(const StepsID& rhs) const;
-  bool MatchesStepsType(StepsType s) const { return st == s; }
+  bool MatchesStepsType(StepsType s) const { return st_ == s; }
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
   std::string ToString() const;
   bool IsValid() const;
 
-  StepsType GetStepsType() const { return st; }
-  Difficulty GetDifficulty() const { return dc; }
+  StepsType GetStepsType() const { return st_; }
+  Difficulty GetDifficulty() const { return dc_; }
 };
 
 #endif

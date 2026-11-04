@@ -24,54 +24,54 @@ struct lua_State;
 class Style {
  public:
   /** @brief Can this style be used for gameplay purposes? */
-  bool m_bUsedForGameplay;
+  bool used_for_gameplay_;
   /** @brief Can this style be used for making edits? */
-  bool m_bUsedForEdit;
+  bool used_for_edit_;
   /** @brief Can this style be used in a demonstration? */
-  bool m_bUsedForDemonstration;
+  bool used_for_demonstration_;
   /** @brief Can this style be used to explain how to play the game? */
-  bool m_bUsedForHowToPlay;
+  bool used_for_how_to_play_;
 
   /**
    * @brief The name of the style.
    *
    * Used by GameManager::GameAndStringToStyle to determine whether this is the
    * style that matches the string. */
-  const char* m_szName;
+  const char* name_;
 
   /**
    * @brief Steps format used for each player.
    *
    * For example, "dance versus" reads the Steps with the tag "dance-single". */
-  StepsType m_StepsType;
+  StepsType steps_type_;
 
   /** @brief Style format used for each player. */
-  StyleType m_StyleType;
+  StyleType style_type_;
 
   /**
    * @brief The number of total tracks/columns this style expects.
    *
    * As an example, 4 is expected for ITG style versus, but 8 for ITG style
    * double. */
-  int m_iColsPerPlayer;
+  int cols_per_player_;
   /** @brief Some general column infromation */
   struct ColumnInfo {
-    int track;      /**< Take note data from this track. */
-    float fXOffset; /**< This is the x position of the column relative to the
-                       player's center. */
-    const char* pzName; /**< The name of the column, or nullptr to use the
+    int track_;        /**< Take note data from this track. */
+    float x_offset_;   /**< This is the x position of the column relative to the
+                         player's center. */
+    const char* name_; /**< The name of the column, or nullptr to use the
                            button name mapped to it. */
   };
 
   /** @brief Map each players' colun to a track in the NoteData. */
-  ColumnInfo m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
+  ColumnInfo column_info_[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
 
   /* This maps from game inputs to columns. More than one button may map to a
    * single column. */
   enum { NO_MAPPING = -1, END_MAPPING = -2 };
   /** @brief Map each input to a column, or GameButton_Invalid. */
-  int m_iInputColumn[NUM_GameController][NUM_GameButton];
-  int m_iColumnDrawOrder[MAX_COLS_PER_PLAYER];
+  int input_column_[NUM_GameController][NUM_GameButton];
+  int column_draw_order_[MAX_COLS_PER_PLAYER];
   /** @brief Does this style need to be zoomed out with two players due to too
    * many columns? */
   // Design change:  Instead of having a flag in the style that toggles a
@@ -81,12 +81,12 @@ class Style {
   // bool		m_bNeedsZoomOutWith2Players;
   /** @brief Can this style use the BeginnerHelper for assisting new people to
    * the game? */
-  bool m_bCanUseBeginnerHelper;
+  bool can_use_beginner_helper_;
   /**
    * @brief Should difficulty selection be locked when using this style?
    *
    * This is primarily for Couple and Routine styles. */
-  bool m_bLockDifficulties;
+  bool lock_difficulties_;
 
   void StyleInputToGameInput(
       int iCol, PlayerNumber pn, std::vector<GameInput>& ret) const;

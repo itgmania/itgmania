@@ -10,13 +10,13 @@
 
 class Alsa9Buf {
  private:
-  unsigned samplerate;
-  int64_t last_cursor_pos;
+  unsigned samplerate_;
+  int64_t last_cursor_pos_;
 
-  snd_pcm_uframes_t preferred_writeahead, preferred_chunksize;
-  snd_pcm_uframes_t writeahead, chunksize;
+  snd_pcm_uframes_t preferred_writeahead_, preferred_chunksize_;
+  snd_pcm_uframes_t writeahead_, chunksize_;
 
-  snd_pcm_t* pcm;
+  snd_pcm_t* pcm_;
 
   bool SetHWParams();
   bool SetSWParams();
@@ -37,10 +37,10 @@ class Alsa9Buf {
   void Write(const int16_t* buffer, int frames);
 
   void SetVolume(float vol);
-  int GetSampleRate() const { return samplerate; }
+  int GetSampleRate() const { return samplerate_; }
 
   int64_t GetPosition() const;
-  int64_t GetPlayPos() const { return last_cursor_pos; }
+  int64_t GetPlayPos() const { return last_cursor_pos_; }
 };
 #endif
 

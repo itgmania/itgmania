@@ -59,7 +59,7 @@ struct NoteColorActor {
   Actor* Get(const std::string& Color);
 
  private:
-  std::map<std::string, NoteResource*> m_p;
+  std::map<std::string, NoteResource*> p_;
 };
 
 struct NoteColorSprite {
@@ -71,7 +71,7 @@ struct NoteColorSprite {
   Sprite* Get(const std::string& Color);
 
  private:
-  std::map<std::string, NoteResource*> m_p;
+  std::map<std::string, NoteResource*> p_;
 };
 /** @brief What types of holds are there? */
 enum HoldType {
@@ -104,20 +104,20 @@ LuaDeclareType(NoteColumnSplineMode);
 // A little pod struct to carry the data the NoteField needs to pass to the
 // NoteDisplay during rendering.
 struct NoteFieldRenderArgs {
-  const PlayerState* player_state;  // to look up PlayerOptions
-  float reverse_offset_pixels;
-  ReceptorArrowRow* receptor_row;
-  GhostArrowRow* ghost_row;
-  const NoteData* note_data;
-  int first_row;
-  int last_row;
-  float draw_pixels_before_targets;
-  float draw_pixels_after_targets;
-  int* selection_begin_marker;
-  int* selection_end_marker;
-  float selection_glow;
-  float fail_fade;
-  float fade_before_targets;
+  const PlayerState* player_state_;  // to look up PlayerOptions
+  float reverse_offset_pixels_;
+  ReceptorArrowRow* receptor_row_;
+  GhostArrowRow* ghost_row_;
+  const NoteData* note_data_;
+  int first_row_;
+  int last_row_;
+  float draw_pixels_before_targets_;
+  float draw_pixels_after_targets_;
+  int* selection_begin_marker_;
+  int* selection_end_marker_;
+  float selection_glow_;
+  float fail_fade_;
+  float fade_before_targets_;
 };
 
 // NCSplineHandler exists to allow NoteColumnRenderer to have separate
@@ -125,12 +125,12 @@ struct NoteFieldRenderArgs {
 // same interface for all three.
 struct NCSplineHandler {
   NCSplineHandler() {
-    m_spline.redimension(3);
-    m_spline.m_owned_by_actor = true;
-    m_spline_mode = NCSM_Disabled;
-    m_receptor_t = 0.0f;
-    m_beats_per_t = 1.0f;
-    m_subtract_song_beat_from_curr = true;
+    spline_.redimension(3);
+    spline_.owned_by_actor_ = true;
+    spline_mode_ = NCSM_Disabled;
+    receptor_t_ = 0.0f;
+    beats_per_t_ = 1.0f;
+    subtract_song_beat_from_curr_ = true;
   }
   float BeatToTValue(float song_beat, float note_beat) const;
   void EvalForBeat(float song_beat, float note_beat, RageVector3& ret) const;
@@ -141,11 +141,11 @@ struct NCSplineHandler {
       NCSplineHandler& out, const NCSplineHandler& from,
       const NCSplineHandler& to, float between);
 
-  CubicSplineN m_spline;
-  NoteColumnSplineMode m_spline_mode;
-  float m_receptor_t;
-  float m_beats_per_t;
-  bool m_subtract_song_beat_from_curr;
+  CubicSplineN spline_;
+  NoteColumnSplineMode spline_mode_;
+  float receptor_t_;
+  float beats_per_t_;
+  bool subtract_song_beat_from_curr_;
 
   void PushSelf(lua_State* L);
 };
@@ -161,13 +161,13 @@ struct NoteColumnRenderArgs {
       Actor* actor, const RageVector3& sp_pos, const RageVector3& ae_pos,
       const RageVector3& sp_rot, const RageVector3& ae_rot,
       const RageVector3& sp_zoom, const RageVector3& ae_zoom) const;
-  const NCSplineHandler* pos_handler;
-  const NCSplineHandler* rot_handler;
-  const NCSplineHandler* zoom_handler;
-  RageColor diffuse;
-  RageColor glow;
-  float song_beat;
-  int column;
+  const NCSplineHandler* pos_handler_;
+  const NCSplineHandler* rot_handler_;
+  const NCSplineHandler* zoom_handler_;
+  RageColor diffuse_;
+  RageColor glow_;
+  float song_beat_;
+  int column_;
 };
 
 /** @brief Draws TapNotes and HoldNotes. */
@@ -234,19 +234,19 @@ class NoteDisplay {
       float fNoteBeat, bool bIsRoll, bool bIsBeingHeld);
 
   struct draw_hold_part_args {
-    int y_step;
-    float percent_fade_to_fail;
-    float color_scale;
-    float overlapped_time;
-    float y_top;
-    float y_bottom;
-    float y_start_pos;
-    float y_end_pos;
-    float top_beat;
-    float bottom_beat;
-    bool wrapping;
-    bool anchor_to_top;
-    bool flip_texture_vertically;
+    int y_step_;
+    float percent_fade_to_fail_;
+    float color_scale_;
+    float overlapped_time_;
+    float y_top_;
+    float y_bottom_;
+    float y_start_pos_;
+    float y_end_pos_;
+    float top_beat_;
+    float bottom_beat_;
+    bool wrapping_;
+    bool anchor_to_top_;
+    bool flip_texture_vertically_;
   };
 
   void DrawActor(
@@ -273,19 +273,19 @@ class NoteDisplay {
       float y_head, float y_tail, float percent_fade_to_fail, float color_scale,
       float top_beat, float bottom_beat);
 
-  const PlayerState* m_pPlayerState;  // to look up PlayerOptions
-  NoteMetricCache_t* cache;
+  const PlayerState* player_state_;  // to look up PlayerOptions
+  NoteMetricCache_t* cache_;
 
-  NoteColorActor m_TapNote;
-  NoteColorActor m_TapMine;
-  NoteColorActor m_TapLift;
-  NoteColorActor m_TapFake;
-  NoteColorActor m_HoldHead[NUM_HoldType][NUM_ActiveType];
-  NoteColorSprite m_HoldTopCap[NUM_HoldType][NUM_ActiveType];
-  NoteColorSprite m_HoldBody[NUM_HoldType][NUM_ActiveType];
-  NoteColorSprite m_HoldBottomCap[NUM_HoldType][NUM_ActiveType];
-  NoteColorActor m_HoldTail[NUM_HoldType][NUM_ActiveType];
-  float m_fYReverseOffsetPixels;
+  NoteColorActor tap_note_;
+  NoteColorActor tap_mine_;
+  NoteColorActor tap_lift_;
+  NoteColorActor tap_fake_;
+  NoteColorActor hold_head_[NUM_HoldType][NUM_ActiveType];
+  NoteColorSprite hold_top_cap_[NUM_HoldType][NUM_ActiveType];
+  NoteColorSprite hold_body_[NUM_HoldType][NUM_ActiveType];
+  NoteColorSprite hold_bottom_cap_[NUM_HoldType][NUM_ActiveType];
+  NoteColorActor hold_tail_[NUM_HoldType][NUM_ActiveType];
+  float y_reverse_offset_pixels_;
 };
 
 // So, this is a bit screwy, and it's partly because routine forces rendering
@@ -299,10 +299,10 @@ class NoteDisplay {
 // state of their rows and the parent state of the column. -Kyz
 
 struct NoteColumnRenderer : public Actor {
-  NoteDisplay* m_displays[PLAYER_INVALID + 1];
-  NoteFieldRenderArgs* m_field_render_args;
-  NoteColumnRenderArgs m_column_render_args;
-  int m_column;
+  NoteDisplay* displays_[PLAYER_INVALID + 1];
+  NoteFieldRenderArgs* field_render_args_;
+  NoteColumnRenderArgs column_render_args_;
+  int column_;
 
   // UpdateReceptorGhostStuff takes care of the logic for making the ghost
   // and receptor positions follow the splines.  It's called by their row
@@ -313,9 +313,9 @@ struct NoteColumnRenderer : public Actor {
 
   struct NCR_TweenState {
     NCR_TweenState();
-    NCSplineHandler m_pos_handler;
-    NCSplineHandler m_rot_handler;
-    NCSplineHandler m_zoom_handler;
+    NCSplineHandler pos_handler_;
+    NCSplineHandler rot_handler_;
+    NCSplineHandler zoom_handler_;
     static void MakeWeightedAverage(
         NCR_TweenState& out, const NCR_TweenState& from,
         const NCR_TweenState& to, float between);
@@ -326,10 +326,10 @@ struct NoteColumnRenderer : public Actor {
   };
 
   NCR_TweenState& NCR_DestTweenState() {
-    if (NCR_Tweens.empty()) {
-      return NCR_current;
+    if (ncr_tweens_.empty()) {
+      return ncr_current_;
     } else {
-      return NCR_Tweens.back();
+      return ncr_tweens_.back();
     }
   }
   const NCR_TweenState& NCR_DestTweenState() const {
@@ -344,19 +344,19 @@ struct NoteColumnRenderer : public Actor {
   virtual void FinishTweening() override;
 
   NCSplineHandler* GetPosHandler() {
-    return &NCR_DestTweenState().m_pos_handler;
+    return &NCR_DestTweenState().pos_handler_;
   }
   NCSplineHandler* GetRotHandler() {
-    return &NCR_DestTweenState().m_rot_handler;
+    return &NCR_DestTweenState().rot_handler_;
   }
   NCSplineHandler* GetZoomHandler() {
-    return &NCR_DestTweenState().m_zoom_handler;
+    return &NCR_DestTweenState().zoom_handler_;
   }
 
  private:
-  std::vector<NCR_TweenState> NCR_Tweens;
-  NCR_TweenState NCR_current;
-  NCR_TweenState NCR_start;
+  std::vector<NCR_TweenState> ncr_tweens_;
+  NCR_TweenState ncr_current_;
+  NCR_TweenState ncr_start_;
 };
 
 #endif

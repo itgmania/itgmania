@@ -15,12 +15,12 @@ class ScreenUnlockStatus : public ScreenAttract {
   ~ScreenUnlockStatus();
 
  protected:
-  BitmapText PointsUntilNextUnlock;
-  std::vector<Sprite*> Unlocks;
-  std::vector<BitmapText*> item;   // scrolling text
-  std::vector<Sprite*> ItemIcons;  // icons for scrolling text
+  BitmapText points_until_next_unlock_;
+  std::vector<Sprite*> unlocks_;
+  std::vector<BitmapText*> item_;    // scrolling text
+  std::vector<Sprite*> item_icons_;  // icons for scrolling text
 
-  std::vector<int> LastUnlocks;  // used for "last few" method
+  std::vector<int> last_unlocks_;  // used for "last few" method
 };
 
 #endif

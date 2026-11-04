@@ -16,7 +16,7 @@
 static int g_currentSerial = 0;
 
 MemoryCardDriverThreaded_Folder::MemoryCardDriverThreaded_Folder() {
-  m_LastDevices = 0;
+  last_devices_ = 0;
 }
 
 MemoryCardDriverThreaded_Folder::~MemoryCardDriverThreaded_Folder() {}
@@ -57,7 +57,7 @@ int MemoryCardDriverThreaded_Folder::GetActivePlayerMask() {
   int ret = 0;
 
   FOREACH_PlayerNumber(p) {
-    const std::string folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+    const std::string folder = MEMCARDMAN->memory_card_os_mount_point_[p];
 
     if (FolderExists(folder)) {
       ret |= 1 << p;
@@ -68,7 +68,7 @@ int MemoryCardDriverThreaded_Folder::GetActivePlayerMask() {
 }
 
 bool MemoryCardDriverThreaded_Folder::USBStorageDevicesChanged() {
-  return GetActivePlayerMask() != m_LastDevices;
+  return GetActivePlayerMask() != last_devices_;
 }
 
 void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices(
@@ -76,14 +76,14 @@ void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices(
   LOG->Trace("GetUSBStorageDevices");
 
   vDevicesOut.clear();
-  m_LastDevices = GetActivePlayerMask();
+  last_devices_ = GetActivePlayerMask();
 
   FOREACH_PlayerNumber(p) {
-    if ((m_LastDevices & (1 << p)) > 0) {
+    if ((last_devices_ & (1 << p)) > 0) {
       UsbStorageDevice usbd;
-      usbd.sSerial = StringConversion::ToString(g_currentSerial++);
-      usbd.sSysPath = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
-      usbd.sOsMountDir = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+      usbd.serial_ = StringConversion::ToString(g_currentSerial++);
+      usbd.sys_path_ = MEMCARDMAN->memory_card_os_mount_point_[p];
+      usbd.os_mount_dir_ = MEMCARDMAN->memory_card_os_mount_point_[p];
 
       vDevicesOut.push_back(usbd);
     }

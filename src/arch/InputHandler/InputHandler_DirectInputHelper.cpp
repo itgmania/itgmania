@@ -19,75 +19,75 @@ static BOOL CALLBACK
 DIMouse_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data);
 
 DIDevice::DIDevice() {
-  buttons = axes = hats = 0;
-  dev = InputDevice_Invalid;
-  buffered = true;
-  memset(&JoystickInst, 0, sizeof(JoystickInst));
-  Device = nullptr;
+  buttons_ = axes_ = hats_ = 0;
+  dev_ = InputDevice_Invalid;
+  buffered_ = true;
+  memset(&joystick_inst_, 0, sizeof(joystick_inst_));
+  device_ = nullptr;
 }
 
 bool DIDevice::Open() {
-  m_sName = ConvertACPToUTF8(JoystickInst.tszProductName);
+  name_ = ConvertACPToUTF8(joystick_inst_.tszProductName);
 
-  LOG->Trace("Opening device '%s'", m_sName.c_str());
-  buffered = true;
+  LOG->Trace("Opening device '%s'", name_.c_str());
+  buffered_ = true;
 
   LPDIRECTINPUTDEVICE8 tmpdevice;
 
   // load joystick
   HRESULT hr =
-      g_dinput->CreateDevice(JoystickInst.guidInstance, &tmpdevice, nullptr);
+      g_dinput->CreateDevice(joystick_inst_.guidInstance, &tmpdevice, nullptr);
   if (hr != DI_OK) {
     LOG->Info(hr_ssprintf(hr, "OpenDevice: IDirectInput_CreateDevice").c_str());
     return false;
   }
-  hr = tmpdevice->QueryInterface(IID_IDirectInputDevice8, (LPVOID*)&Device);
+  hr = tmpdevice->QueryInterface(IID_IDirectInputDevice8, (LPVOID*)&device_);
   tmpdevice->Release();
   if (hr != DI_OK) {
     LOG->Info(hr_ssprintf(
                   hr, "OpenDevice(%s): IDirectInputDevice::QueryInterface",
-                  m_sName.c_str())
+                  name_.c_str())
                   .c_str());
     return false;
   }
 
   int coop = DISCL_NONEXCLUSIVE | DISCL_BACKGROUND;
-  if (type == KEYBOARD) {
+  if (type_ == KEYBOARD) {
     coop = DISCL_NONEXCLUSIVE | DISCL_FOREGROUND;
   }
 
-  hr = Device->SetCooperativeLevel(GraphicsWindow::GetHwnd(), coop);
+  hr = device_->SetCooperativeLevel(GraphicsWindow::GetHwnd(), coop);
   if (hr != DI_OK) {
     LOG->Info(hr_ssprintf(
                   hr,
                   "OpenDevice(%s): IDirectInputDevice2::SetCooperativeLevel",
-                  m_sName.c_str())
+                  name_.c_str())
                   .c_str());
     return false;
   }
 
-  switch (type) {
+  switch (type_) {
     case KEYBOARD:
-      hr = Device->SetDataFormat(&c_dfDIKeyboard);
+      hr = device_->SetDataFormat(&c_dfDIKeyboard);
       break;
     case JOYSTICK:
-      hr = Device->SetDataFormat(&c_dfDIJoystick);
+      hr = device_->SetDataFormat(&c_dfDIJoystick);
       break;
     case MOUSE:
-      hr = Device->SetDataFormat(&c_dfDIMouse);
+      hr = device_->SetDataFormat(&c_dfDIMouse);
       break;
   }
   if (hr != DI_OK) {
     LOG->Info(hr_ssprintf(
                   hr, "OpenDevice(%s): IDirectInputDevice2::SetDataFormat",
-                  m_sName.c_str())
+                  name_.c_str())
                   .c_str());
     return false;
   }
 
-  switch (type) {
+  switch (type_) {
     case JOYSTICK:
-      Device->EnumObjects(
+      device_->EnumObjects(
           DIJoystick_EnumDevObjectsProc, this,
           DIDFT_BUTTON | DIDFT_AXIS | DIDFT_POV);
       break;
@@ -95,16 +95,16 @@ bool DIDevice::Open() {
       // Always 256-button.
       for (int b = 0; b < 256; ++b) {
         input_t in;
-        in.type = in.KEY;
+        in.type_ = in.KEY;
 
-        in.num = ConvertScancodeToKey(b);
-        in.ofs = b;
-        buttons++;
-        Inputs.push_back(in);
+        in.num_ = ConvertScancodeToKey(b);
+        in.ofs_ = b;
+        buttons_++;
+        inputs_.push_back(in);
       }
       break;
     case MOUSE:
-      Device->EnumObjects(
+      device_->EnumObjects(
           DIMouse_EnumDevObjectsProc, this,
           DIDFT_BUTTON | DIDFT_AXIS | DIDFT_ANYINSTANCE);
       break;
@@ -118,15 +118,15 @@ bool DIDevice::Open() {
     dipdw.diph.dwObj = 0;
     dipdw.diph.dwHow = DIPH_DEVICE;
     dipdw.dwData = INPUT_QSIZE;
-    hr = Device->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+    hr = device_->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
     if (hr == DI_POLLEDDEVICE) {
       /* This device doesn't support buffering, so we're forced
        * to use less reliable polling. */
-      buffered = false;
+      buffered_ = false;
     } else if (hr != DI_OK) {
       LOG->Info(hr_ssprintf(
                     hr, "OpenDevice(%s): IDirectInputDevice2::SetProperty",
-                    m_sName.c_str())
+                    name_.c_str())
                     .c_str());
       return false;
     }
@@ -137,14 +137,14 @@ bool DIDevice::Open() {
 
 void DIDevice::Close() {
   // Don't try to close a device that isn't open.
-  ASSERT(Device != nullptr);
+  ASSERT(device_ != nullptr);
 
-  Device->Unacquire();
-  Device->Release();
+  device_->Unacquire();
+  device_->Release();
 
-  Device = nullptr;
-  buttons = axes = hats = 0;
-  Inputs.clear();
+  device_ = nullptr;
+  buttons_ = axes_ = hats_ = 0;
+  inputs_.clear();
 }
 
 static BOOL CALLBACK
@@ -159,17 +159,17 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
   }
 
   if (dev->dwType & DIDFT_BUTTON) {
-    if (device->buttons == 24) {
+    if (device->buttons_ == 24) {
       return DIENUM_CONTINUE;  // too many buttons
     }
 
-    in.ofs = DIJOFS_BUTTON(device->buttons);
-    in.type = in.BUTTON;
-    in.num = device->buttons;
+    in.ofs_ = DIJOFS_BUTTON(device->buttons_);
+    in.type_ = in.BUTTON;
+    in.num_ = device->buttons_;
   } else if (dev->dwType & DIDFT_POV) {
-    in.ofs = DIJOFS_POV(device->hats);
-    in.type = in.HAT;
-    in.num = device->hats;
+    in.ofs_ = DIJOFS_POV(device->hats_);
+    in.type_ = in.HAT;
+    in.num_ = device->hats_;
   } else {  // dev->dwType & DIDFT_AXIS
     DIPROPRANGE diprg;
     DIPROPDWORD dilong;
@@ -177,24 +177,24 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
     // Figure out which axis we're looking at and store the correct DIJOFS_*
     // value.
     if (dev->guidType == GUID_XAxis) {
-      in.ofs = DIJOFS_X;
+      in.ofs_ = DIJOFS_X;
     } else if (dev->guidType == GUID_YAxis) {
-      in.ofs = DIJOFS_Y;
+      in.ofs_ = DIJOFS_Y;
     } else if (dev->guidType == GUID_ZAxis) {
-      in.ofs = DIJOFS_Z;
+      in.ofs_ = DIJOFS_Z;
     } else if (dev->guidType == GUID_RxAxis) {
-      in.ofs = DIJOFS_RX;
+      in.ofs_ = DIJOFS_RX;
     } else if (dev->guidType == GUID_RyAxis) {
-      in.ofs = DIJOFS_RY;
+      in.ofs_ = DIJOFS_RY;
     } else if (dev->guidType == GUID_RzAxis) {
-      in.ofs = DIJOFS_RZ;
+      in.ofs_ = DIJOFS_RZ;
     } else {
       // No idea what this is so ignore it.
       return DIENUM_CONTINUE;
     }
 
-    in.type = in.AXIS;
-    in.num = device->axes;
+    in.type_ = in.AXIS;
+    in.num_ = device->axes_;
 
     diprg.diph.dwSize = sizeof(diprg);
     diprg.diph.dwHeaderSize = sizeof(diprg.diph);
@@ -203,7 +203,7 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
     diprg.lMin = -100;
     diprg.lMax = 100;
 
-    hr = device->Device->SetProperty(DIPROP_RANGE, &diprg.diph);
+    hr = device->device_->SetProperty(DIPROP_RANGE, &diprg.diph);
     if (hr != DI_OK) {
       return DIENUM_CONTINUE;  // don't use this axis
     }
@@ -214,7 +214,7 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
     dilong.diph.dwObj = dev->dwType;
     dilong.diph.dwHow = DIPH_BYID;
     dilong.dwData = 0;
-    hr = device->Device->SetProperty(DIPROP_DEADZONE, &dilong.diph);
+    hr = device->device_->SetProperty(DIPROP_DEADZONE, &dilong.diph);
     if (hr != DI_OK) {
       return DIENUM_CONTINUE;  // don't use this axis
     }
@@ -226,22 +226,22 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
    * already been added.
    */
   if (std::find_if(
-          device->Inputs.begin(), device->Inputs.end(),
-          input_t::Compare(in.ofs)) == device->Inputs.end()) {
-    device->Inputs.push_back(in);
+          device->inputs_.begin(), device->inputs_.end(),
+          input_t::Compare(in.ofs_)) == device->inputs_.end()) {
+    device->inputs_.push_back(in);
 
     // Increment the number of buttons/axes/hats only after it has been added.
-    switch (in.type) {
+    switch (in.type_) {
       case input_t::BUTTON:
-        ++device->buttons;
+        ++device->buttons_;
         break;
 
       case input_t::AXIS:
-        ++device->axes;
+        ++device->axes_;
         break;
 
       case input_t::HAT:
-        ++device->hats;
+        ++device->hats_;
         break;
     }
   }
@@ -487,26 +487,26 @@ DIMouse_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
     return DIENUM_CONTINUE;  // unsupported
   }
 
-  in.ofs = dev->dwOfs;
+  in.ofs_ = dev->dwOfs;
 
   if (dev->dwType & DIDFT_BUTTON) {
-    in.type = in.BUTTON;
-    in.num = device->buttons;
-    device->buttons++;
+    in.type_ = in.BUTTON;
+    in.num_ = device->buttons_;
+    device->buttons_++;
   } else if (dev->dwType & DIDFT_AXIS) {
     // todo: how to handle this correctly? -aj
-    in.type = in.AXIS;
-    in.num = device->axes;
+    in.type_ = in.AXIS;
+    in.num_ = device->axes_;
 
-    device->axes++;
+    device->axes_++;
   }
 
-  device->Inputs.push_back(in);
+  device->inputs_.push_back(in);
 
   return DIENUM_CONTINUE;
 }
 
-XIDevice::XIDevice() { dev = InputDevice_Invalid; }
+XIDevice::XIDevice() { dev_ = InputDevice_Invalid; }
 
 /*
  * (c) 2003-2011 Glenn Maynard, AJ Kelly

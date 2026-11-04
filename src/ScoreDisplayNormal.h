@@ -17,11 +17,11 @@ class ScoreDisplayNormal : public ScoreDisplay {
       const PlayerStageStats* pPlayerStageStats);
 
   virtual void SetScore(int iNewScore);
-  virtual void SetText(std::string s) { m_text.SetText(s); }
+  virtual void SetText(std::string s) { text_.SetText(s); }
 
  protected:
-  AutoActor m_sprFrame;
-  RollingNumbers m_text;
+  AutoActor spr_frame_;
+  RollingNumbers text_;
 };
 
 #endif

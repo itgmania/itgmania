@@ -71,7 +71,7 @@ bool RageMovieTexture::GetFourCC(
 #undef HANDLE_ERROR
 }
 
-DriverList RageMovieTextureDriver::m_pDriverList;
+DriverList RageMovieTextureDriver::driver_list_;
 
 // Helper for MakeRageMovieTexture()
 static void DumpAVIDebugInfo(const std::string& fn) {
@@ -93,7 +93,7 @@ static LocalizedString MOVIE_DRIVERS_EMPTY(
 static LocalizedString COULDNT_CREATE_MOVIE_DRIVER(
     "Arch", "Couldn't create a movie driver.");
 RageMovieTexture* RageMovieTexture::Create(RageTextureID ID) {
-  DumpAVIDebugInfo(ID.filename);
+  DumpAVIDebugInfo(ID.filename_);
 
   std::string sDrivers = g_sMovieDrivers;
   std::vector<std::string> DriversToTry;
@@ -114,7 +114,7 @@ RageMovieTexture* RageMovieTexture::Create(RageTextureID ID) {
     const char* driverString = Driver.c_str();
     LOG->Trace("Initializing driver: %s", driverString);
     RageDriver* pDriverBase =
-        RageMovieTextureDriver::m_pDriverList.Create(Driver);
+        RageMovieTextureDriver::driver_list_.Create(Driver);
 
     if (pDriverBase == nullptr) {
       LOG->Trace("Unknown movie driver name: %s", driverString);
@@ -135,7 +135,7 @@ RageMovieTexture* RageMovieTexture::Create(RageTextureID ID) {
       continue;
     }
     LOG->Trace(
-        "Created movie texture \"%s\" with driver \"%s\"", ID.filename.c_str(),
+        "Created movie texture \"%s\" with driver \"%s\"", ID.filename_.c_str(),
         driverString);
     break;
   }

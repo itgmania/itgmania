@@ -13,14 +13,14 @@
 ActiveAttackList::ActiveAttackList() {}
 
 void ActiveAttackList::Init(const PlayerState* pPlayerState) {
-  m_pPlayerState = pPlayerState;
+  player_state_ = pPlayerState;
 }
 
 void ActiveAttackList::Update(float fDelta) {
   bool bTimeToRefresh =
       IsFirstUpdate() ||  // check this before running Actor::Update()
-      m_pPlayerState->m_bAttackBeganThisUpdate ||
-      m_pPlayerState->m_bAttackEndedThisUpdate;
+      player_state_->attack_began_this_update_ ||
+      player_state_->attack_ended_this_update_;
 
   BitmapText::Update(fDelta);
 
@@ -30,21 +30,21 @@ void ActiveAttackList::Update(float fDelta) {
 }
 
 void ActiveAttackList::Refresh() {
-  const AttackArray& attacks = m_pPlayerState->m_ActiveAttacks;
+  const AttackArray& attacks = player_state_->active_attacks_;
 
   std::vector<std::string> vsThemedMods;
   for (unsigned i = 0; i < attacks.size(); i++) {
     const Attack& attack = attacks[i];
 
-    if (!attack.bOn) {
+    if (!attack.on_) {
       continue;  // hasn't started yet
     }
-    if (!attack.bShowInAttackList) {
+    if (!attack.show_in_attack_list_) {
       continue;
     }
 
     PlayerOptions po;
-    po.FromString(attack.sModifiers);
+    po.FromString(attack.modifiers_);
     po.GetLocalizedMods(vsThemedMods);
   }
 

@@ -200,7 +200,7 @@ void LightsDriver_Linux_PIUIO_Leds::Set(const LightsState* ls) {
 
   SetCoinCounter(coin_counter_index, ls);
 
-  previousLS = *ls;
+  previous_ls_ = *ls;
 }
 
 /*

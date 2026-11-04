@@ -26,10 +26,10 @@ class ComboGraph : public ActorFrame {
  private:
   ThemeMetric<float> BODY_WIDTH;
   ThemeMetric<float> BODY_HEIGHT;
-  Actor* m_pBacking;
-  Actor* m_pNormalCombo;
-  Actor* m_pMaxCombo;
-  BitmapText* m_pComboNumber;
+  Actor* backing_;
+  Actor* normal_combo_;
+  Actor* max_combo_;
+  BitmapText* combo_number_;
 };
 
 #endif

@@ -89,14 +89,14 @@ bool USBDevice::Open(
     }
     CloseHandle(h);
 
-    m_IO.Open(path, iBlockSize);
+    io_.Open(path, iBlockSize);
     return true;
   }
 
   return false;
 }
 
-bool USBDevice::IsOpen() const { return m_IO.IsOpen(); }
+bool USBDevice::IsOpen() const { return io_.IsOpen(); }
 
 int USBDevice::GetPadEvent() {
   if (!IsOpen()) {
@@ -104,7 +104,7 @@ int USBDevice::GetPadEvent() {
   }
 
   long iBuf;
-  if (m_IO.read(&iBuf) <= 0) {
+  if (io_.read(&iBuf) <= 0) {
     return -1;
   }
 
@@ -112,36 +112,36 @@ int USBDevice::GetPadEvent() {
 }
 
 WindowsFileIO::WindowsFileIO() {
-  ZeroMemory(&m_Overlapped, sizeof(m_Overlapped));
-  m_Handle = INVALID_HANDLE_VALUE;
-  m_pBuffer = nullptr;
+  ZeroMemory(&overlapped_, sizeof(overlapped_));
+  handle_ = INVALID_HANDLE_VALUE;
+  buffer_ = nullptr;
 }
 
 WindowsFileIO::~WindowsFileIO() {
-  if (m_Handle != INVALID_HANDLE_VALUE) {
-    CloseHandle(m_Handle);
+  if (handle_ != INVALID_HANDLE_VALUE) {
+    CloseHandle(handle_);
   }
-  delete[] m_pBuffer;
+  delete[] buffer_;
 }
 
 bool WindowsFileIO::Open(std::string path, int iBlockSize) {
   LOG->Trace("WindowsFileIO::open(%s)", path.c_str());
-  m_iBlockSize = iBlockSize;
+  block_size_ = iBlockSize;
 
-  if (m_pBuffer) {
-    delete[] m_pBuffer;
+  if (buffer_) {
+    delete[] buffer_;
   }
-  m_pBuffer = new char[m_iBlockSize];
+  buffer_ = new char[block_size_];
 
-  if (m_Handle != INVALID_HANDLE_VALUE) {
-    CloseHandle(m_Handle);
+  if (handle_ != INVALID_HANDLE_VALUE) {
+    CloseHandle(handle_);
   }
 
-  m_Handle = CreateFile(
+  handle_ = CreateFile(
       path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
       OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
-  if (m_Handle == INVALID_HANDLE_VALUE) {
+  if (handle_ == INVALID_HANDLE_VALUE) {
     return false;
   }
 
@@ -153,16 +153,16 @@ bool WindowsFileIO::Open(std::string path, int iBlockSize) {
 void WindowsFileIO::queue_read() {
   /* Request feedback from the device. */
   unsigned long iRead;
-  ReadFile(m_Handle, m_pBuffer, m_iBlockSize, &iRead, &m_Overlapped);
+  ReadFile(handle_, buffer_, block_size_, &iRead, &overlapped_);
 }
 
 int WindowsFileIO::finish_read(void* p) {
   LOG->Trace("this %p, %p", this, p);
-  /* We do; get the result.  It'll go into the original m_pBuffer
-   * we supplied on the original call; that's why m_pBuffer is a
+  /* We do; get the result.  It'll go into the original buffer_
+   * we supplied on the original call; that's why buffer_ is a
    * member instead of a local. */
   unsigned long iCnt;
-  int iRet = GetOverlappedResult(m_Handle, &m_Overlapped, &iCnt, FALSE);
+  int iRet = GetOverlappedResult(handle_, &overlapped_, &iCnt, FALSE);
 
   if (iRet == 0 && (GetLastError() == ERROR_IO_PENDING ||
                     GetLastError() == ERROR_IO_INCOMPLETE)) {
@@ -177,7 +177,7 @@ int WindowsFileIO::finish_read(void* p) {
     return -1;
   }
 
-  memcpy(p, m_pBuffer, iCnt);
+  memcpy(p, buffer_, iCnt);
   return iCnt;
 }
 
@@ -186,7 +186,7 @@ int WindowsFileIO::read(void* p) {
 
   /* See if we have a response for our request (which we may
    * have made on a previous call): */
-  if (WaitForSingleObjectEx(m_Handle, 0, TRUE) == WAIT_TIMEOUT) {
+  if (WaitForSingleObjectEx(handle_, 0, TRUE) == WAIT_TIMEOUT) {
     return -1;
   }
 
@@ -198,7 +198,7 @@ int WindowsFileIO::read_several(
     float timeout) {
   HANDLE* Handles = new HANDLE[sources.size()];
   for (unsigned i = 0; i < sources.size(); ++i) {
-    Handles[i] = sources[i]->m_Handle;
+    Handles[i] = sources[i]->handle_;
   }
 
   int ret = WaitForMultipleObjectsEx(
@@ -219,7 +219,7 @@ int WindowsFileIO::read_several(
   return 0;
 }
 
-bool WindowsFileIO::IsOpen() const { return m_Handle != INVALID_HANDLE_VALUE; }
+bool WindowsFileIO::IsOpen() const { return handle_ != INVALID_HANDLE_VALUE; }
 
 /*
  * (c) 2002-2005 Glenn Maynard

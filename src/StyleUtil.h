@@ -8,11 +8,11 @@ class Song;
 class XNode;
 
 class StyleID {
-  std::string sGame;
-  std::string sStyle;
+  std::string game_;
+  std::string style_;
 
  public:
-  StyleID() : sGame(""), sStyle("") {}
+  StyleID() : game_(""), style_("") {}
   void Unset() { FromStyle(nullptr); }
   void FromStyle(const Style* p);
   bool operator<(const StyleID& rhs) const;

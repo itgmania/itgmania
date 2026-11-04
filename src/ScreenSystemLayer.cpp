@@ -51,7 +51,7 @@ std::string GetCreditsMessage(PlayerNumber pn) {
   } else if (MEMCARDMAN->GetCardLocked(pn)) {
     bShowCreditsMessage = !GAMESTATE->IsPlayerEnabled(pn);
   } else {
-    bShowCreditsMessage = !GAMESTATE->m_bSideIsJoined[pn];
+    bShowCreditsMessage = !GAMESTATE->side_is_joined_[pn];
   }
 
   if (!bShowCreditsMessage) {
@@ -125,18 +125,18 @@ std::string GetCreditsMessage(PlayerNumber pn) {
       case CoinMode_Pay:
         // GCC is picky and needs this to be bracketed
         {
-          int iCredits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
-          int iCoins = GAMESTATE->m_iCoins % PREFSMAN->m_iCoinsPerCredit;
+          int iCredits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
+          int iCoins = GAMESTATE->coins_ % PREFSMAN->coins_per_credit_;
           std::string sCredits = CREDITS_CREDITS;
           // todo: allow themers to change these strings -aj
-          if (iCredits > 0 || PREFSMAN->m_iCoinsPerCredit == 1) {
+          if (iCredits > 0 || PREFSMAN->coins_per_credit_ == 1) {
             sCredits += ssprintf("  %d", iCredits);
           }
-          if (PREFSMAN->m_iCoinsPerCredit > 1) {
+          if (PREFSMAN->coins_per_credit_ > 1) {
             sCredits +=
-                ssprintf("  %d/%d", iCoins, PREFSMAN->m_iCoinsPerCredit.Get());
+                ssprintf("  %d/%d", iCoins, PREFSMAN->coins_per_credit_.Get());
           }
-          if (iCredits >= PREFSMAN->m_iMaxNumCredits) {
+          if (iCredits >= PREFSMAN->max_num_credits_) {
             sCredits += "  " + CREDITS_MAX.GetValue();
           }
           return sCredits;
@@ -175,10 +175,10 @@ REGISTER_SCREEN_CLASS(ScreenSystemLayer);
 void ScreenSystemLayer::Init() {
   Screen::Init();
 
-  m_sprOverlay.Load(THEME->GetPathB(m_sName, "overlay"));
-  this->AddChild(m_sprOverlay);
-  m_errLayer.Load(THEME->GetPathB(m_sName, "error"));
-  this->AddChild(m_errLayer);
+  spr_overlay_.Load(THEME->GetPathB(name_, "overlay"));
+  this->AddChild(spr_overlay_);
+  err_layer_.Load(THEME->GetPathB(name_, "error"));
+  this->AddChild(err_layer_);
 }
 
 /*

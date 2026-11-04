@@ -8,68 +8,68 @@
 CombinedLifeMeterShared::CombinedLifeMeterShared(
     const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats,
     LifeType lifeType)
-    : m_pLifeMeter(LifeMeter::MakeLifeMeter(lifeType)) {
-  ASSERT(m_pLifeMeter != nullptr);
-  m_pLifeMeter->Load(pPlayerState, pPlayerStageStats);
-  m_pLifeMeter->SetName("CoopLifeMeterInternal");
-  this->AddChild(m_pLifeMeter);
+    : life_meter_(LifeMeter::MakeLifeMeter(lifeType)) {
+  ASSERT(life_meter_ != nullptr);
+  life_meter_->Load(pPlayerState, pPlayerStageStats);
+  life_meter_->SetName("CoopLifeMeterInternal");
+  this->AddChild(life_meter_);
 }
 
 CombinedLifeMeterShared::~CombinedLifeMeterShared() {
-  this->RemoveChild(m_pLifeMeter);
-  RageUtil::SafeDelete(m_pLifeMeter);
+  this->RemoveChild(life_meter_);
+  RageUtil::SafeDelete(life_meter_);
 }
 
 void CombinedLifeMeterShared::OnLoadSong() {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->OnLoadSong();
+  if (life_meter_) {
+    life_meter_->OnLoadSong();
   }
 }
 
 void CombinedLifeMeterShared::ChangeLife(
     PlayerNumber /*pn*/, TapNoteScore tns) {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->ChangeLife(tns);
+  if (life_meter_) {
+    life_meter_->ChangeLife(tns);
   }
 }
 
 void CombinedLifeMeterShared::ChangeLife(
     PlayerNumber /*pn*/, HoldNoteScore hns, TapNoteScore tns) {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->ChangeLife(hns, tns);
+  if (life_meter_) {
+    life_meter_->ChangeLife(hns, tns);
   }
 }
 
 void CombinedLifeMeterShared::ChangeLife(PlayerNumber /*pn*/, float delta) {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->ChangeLife(delta);
+  if (life_meter_) {
+    life_meter_->ChangeLife(delta);
   }
 }
 
 void CombinedLifeMeterShared::SetLife(PlayerNumber /*pn*/, float value) {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->SetLife(value);
+  if (life_meter_) {
+    life_meter_->SetLife(value);
   }
 }
 
 void CombinedLifeMeterShared::HandleTapScoreNone(PlayerNumber /*pn*/) {
-  if (m_pLifeMeter) {
-    m_pLifeMeter->HandleTapScoreNone();
+  if (life_meter_) {
+    life_meter_->HandleTapScoreNone();
   }
 }
 
 bool CombinedLifeMeterShared::IsInDanger() const {
-  return m_pLifeMeter ? m_pLifeMeter->IsInDanger() : false;
+  return life_meter_ ? life_meter_->IsInDanger() : false;
 }
 
 bool CombinedLifeMeterShared::IsHot() const {
-  return m_pLifeMeter ? m_pLifeMeter->IsHot() : false;
+  return life_meter_ ? life_meter_->IsHot() : false;
 }
 
 bool CombinedLifeMeterShared::IsFailing() const {
-  return m_pLifeMeter ? m_pLifeMeter->IsFailing() : false;
+  return life_meter_ ? life_meter_->IsFailing() : false;
 }
 
 LifeMeter* CombinedLifeMeterShared::GetInnerLifeMeter() const {
-  return m_pLifeMeter;
+  return life_meter_;
 }

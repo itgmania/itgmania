@@ -18,9 +18,9 @@ class InputHandler_Win32_Pump : public InputHandler {
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
  private:
-  USBDevice* m_pDevice;
-  RageThread InputThread;
-  bool m_bShutdown;
+  USBDevice* device_;
+  RageThread input_thread_;
+  bool shutdown_;
 
   static int InputThread_Start(void* p);
   void InputThreadMain();

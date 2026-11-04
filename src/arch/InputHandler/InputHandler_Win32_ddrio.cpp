@@ -48,9 +48,9 @@ HINSTANCE hDDRIOdll = nullptr;
 REGISTER_INPUT_HANDLER_CLASS2(ddrio, Win32_ddrio);
 
 struct shim_ctx {
-  HANDLE barrier;
-  int (*proc)(void*);
-  void* ctx;
+  HANDLE barrier_;
+  int (*proc_)(void*);
+  void* ctx_;
 };
 
 static unsigned int crt_thread_shim(void* outer_ctx) {
@@ -60,10 +60,10 @@ static unsigned int crt_thread_shim(void* outer_ctx) {
   int (*proc)(void*);
   void* inner_ctx;
 
-  proc = sctx->proc;
-  inner_ctx = sctx->ctx;
+  proc = sctx->proc_;
+  inner_ctx = sctx->ctx_;
 
-  SetEvent(sctx->barrier);
+  SetEvent(sctx->barrier_);
 
   return proc(inner_ctx);
 }
@@ -75,14 +75,14 @@ int crt_thread_create(
   struct shim_ctx sctx;
   uintptr_t thread_id;
 
-  sctx.barrier = CreateEvent(NULL, TRUE, FALSE, NULL);
-  sctx.proc = proc;
-  sctx.ctx = ctx;
+  sctx.barrier_ = CreateEvent(NULL, TRUE, FALSE, NULL);
+  sctx.proc_ = proc;
+  sctx.ctx_ = ctx;
 
   thread_id = _beginthreadex(NULL, stack_sz, crt_thread_shim, &sctx, 0, NULL);
 
-  WaitForSingleObject(sctx.barrier, INFINITE);
-  CloseHandle(sctx.barrier);
+  WaitForSingleObject(sctx.barrier_, INFINITE);
+  CloseHandle(sctx.barrier_);
 
   LOG->Trace("crt_thread_create %d", thread_id);
 
@@ -171,19 +171,19 @@ InputHandler_Win32_ddrio::InputHandler_Win32_ddrio() {
     LOG->Warn("Could not init ddrio.dll");
   }
 
-  m_bShutdown = false;
+  shutdown_ = false;
 
-  if (_ddriodll_loaded && ddrInit && PREFSMAN->m_bThreadedInput) {
-    InputThread.SetName("ddrio thread");
-    InputThread.Create(InputThread_Start, this);
+  if (_ddriodll_loaded && ddrInit && PREFSMAN->threaded_input_) {
+    input_thread_.SetName("ddrio thread");
+    input_thread_.Create(InputThread_Start, this);
   }
 }
 
 InputHandler_Win32_ddrio::~InputHandler_Win32_ddrio() {
-  if (InputThread.IsCreated()) {
-    m_bShutdown = true;
+  if (input_thread_.IsCreated()) {
+    shutdown_ = true;
     LOG->Trace("Shutting down ddrio thread ...");
-    InputThread.Wait();
+    input_thread_.Wait();
     LOG->Trace("ddrio thread shut down.");
 
     if (ddrio_fini != nullptr) {
@@ -196,7 +196,7 @@ InputHandler_Win32_ddrio::~InputHandler_Win32_ddrio() {
 
 std::string InputHandler_Win32_ddrio::GetDeviceSpecificInputString(
     const DeviceInput& di) {
-  switch (di.button) {
+  switch (di.button_) {
     case JOY_BUTTON_1:
       return "ddrio P1 Menu Up";
     case JOY_BUTTON_2:
@@ -282,7 +282,7 @@ void InputHandler_Win32_ddrio::InputThreadMain() {
   LightsState prevLS = {0};
   LightsState newLS = {0};
 
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     InputHandler::UpdateTimer();
 
     // Btools API states that this method will sleep/halt
@@ -312,8 +312,8 @@ void InputHandler_Win32_ddrio::PushInputState(uint32_t newInput) {
     DeviceInput di(DDRIO_DEVICEID, enum_add2(JOY_BUTTON_1, i), pressed);
 
     // If we're in a thread, our timestamp is accurate.
-    if (InputThread.IsCreated()) {
-      di.ts.Touch();
+    if (input_thread_.IsCreated()) {
+      di.ts_.Touch();
     }
 
     ButtonPressed(di);
@@ -328,78 +328,78 @@ void InputHandler_Win32_ddrio::PushLightState(LightsState newLS) {
   // lighting state has already been verified to have changed in this method, so
   // create the new one from scratch.
 
-  if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
     p3io |= (1 << LIGHT_P1_MENU);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
     p3io |= (1 << LIGHT_P2_MENU);
   }
-  if (newLS.m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+  if (newLS.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
     p3io |= (1 << LIGHT_P2_LOWER_LAMP);
   }
-  if (newLS.m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+  if (newLS.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
     p3io |= (1 << LIGHT_P2_UPPER_LAMP);
   }
-  if (newLS.m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+  if (newLS.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
     p3io |= (1 << LIGHT_P1_LOWER_LAMP);
   }
-  if (newLS.m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+  if (newLS.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
     p3io |= (1 << LIGHT_P1_UPPER_LAMP);
   }
 
   // hdxs device has one light for both MenuLeft and MenuRight as well as MenuUp
   // and MenuDown.
-  if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
     hdxs |= (1 << LIGHT_HD_P1_START);
   }
-  if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENUUP] ||
-      newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENUDOWN]) {
+  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENUUP] ||
+      newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENUDOWN]) {
     hdxs |= (1 << LIGHT_HD_P1_UP_DOWN);
   }
-  if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENULEFT] ||
-      newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENURIGHT]) {
+  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENULEFT] ||
+      newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENURIGHT]) {
     hdxs |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
     hdxs |= (1 << LIGHT_HD_P2_START);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENUUP] ||
-      newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENUDOWN]) {
+  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENUUP] ||
+      newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENUDOWN]) {
     hdxs |= (1 << LIGHT_HD_P2_UP_DOWN);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENULEFT] ||
-      newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENURIGHT]) {
+  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENULEFT] ||
+      newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENURIGHT]) {
     hdxs |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
   }
 
-  if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
     extio |= (1 << LIGHT_P2_RIGHT);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
     extio |= (1 << LIGHT_P2_LEFT);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
     extio |= (1 << LIGHT_P2_DOWN);
   }
-  if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
     extio |= (1 << LIGHT_P2_UP);
   }
 
-  if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
     extio |= (1 << LIGHT_P1_RIGHT);
   }
-  if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
     extio |= (1 << LIGHT_P1_LEFT);
   }
-  if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
     extio |= (1 << LIGHT_P1_DOWN);
   }
-  if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
     extio |= (1 << LIGHT_P1_UP);
   }
 
-  if (newLS.m_bCabinetLights[LIGHT_BASS_LEFT] ||
-      newLS.m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+  if (newLS.cabinet_lights_[LIGHT_BASS_LEFT] ||
+      newLS.cabinet_lights_[LIGHT_BASS_RIGHT]) {
     extio |= (1 << LIGHT_NEONS);
   }
 

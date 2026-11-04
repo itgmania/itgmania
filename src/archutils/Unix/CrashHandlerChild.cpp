@@ -45,11 +45,11 @@ static void output_stack_trace(FILE* out, const void** BacktracePointers) {
     bn.Demangle();
 
     /* Don't show the main module name. */
-    if (bn.File == g_pCrashHandlerArgv0 && !bn.Symbol.empty()) {
-      bn.File = "";
+    if (bn.file_ == g_pCrashHandlerArgv0 && !bn.symbol_.empty()) {
+      bn.file_ = "";
     }
 
-    if (bn.Symbol == "__libc_start_main") {
+    if (bn.symbol_ == "__libc_start_main") {
       break;
     }
 
@@ -214,32 +214,32 @@ static void child_process() {
   fprintf(CrashDump, "\n");
 
   std::string reason;
-  switch (crash.type) {
+  switch (crash.type_) {
     case CrashData::SIGNAL: {
       reason = ssprintf(
-          "%s - %s", SignalName(crash.signal),
-          SignalCodeName(crash.signal, crash.si.si_code));
+          "%s - %s", SignalName(crash.signal_),
+          SignalCodeName(crash.signal_, crash.si_.si_code));
 
       /* Linux puts the PID that sent the signal in si_addr for SI_USER. */
-      if (crash.si.si_code == SI_USER) {
-        reason += ssprintf(" from pid %li", (long)crash.si.si_addr);
+      if (crash.si_.si_code == SI_USER) {
+        reason += ssprintf(" from pid %li", (long)crash.si_.si_addr);
       } else {
-        switch (crash.signal) {
+        switch (crash.signal_) {
           case SIGILL:
           case SIGFPE:
           case SIGSEGV:
           case SIGBUS:
             reason += ssprintf(
                 " at 0x%0*lx", int(sizeof(void*) * 2),
-                (unsigned long)crash.si.si_addr);
+                (unsigned long)crash.si_.si_addr);
         }
         break;
       }
       [[fallthrough]];
     }
     case CrashData::FORCE_CRASH:
-      crash.reason[sizeof(crash.reason) - 1] = 0;
-      reason = crash.reason;
+      crash.reason_[sizeof(crash.reason_) - 1] = 0;
+      reason = crash.reason_;
       break;
   }
 
@@ -254,11 +254,11 @@ static void child_process() {
   fprintf(CrashDump, "\n");
 
   for (int i = 0; i < CrashData::MAX_BACKTRACE_THREADS; ++i) {
-    if (!crash.BacktracePointers[i][0]) {
+    if (!crash.backtrace_pointers_[i][0]) {
       break;
     }
-    fprintf(CrashDump, "Thread: %s\n", crash.m_ThreadName[i]);
-    output_stack_trace(CrashDump, crash.BacktracePointers[i]);
+    fprintf(CrashDump, "Thread: %s\n", crash.thread_name_[i]);
+    output_stack_trace(CrashDump, crash.backtrace_pointers_[i]);
     fprintf(CrashDump, "\n");
   }
 

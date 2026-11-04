@@ -26,15 +26,15 @@
 
 RageFileObjInflate::RageFileObjInflate(
     RageFileBasic* pFile, int iUncompressedSize) {
-  m_bFileOwned = false;
-  m_pFile = pFile;
-  decomp_buf_avail = 0;
-  m_pInflate = new z_stream;
-  memset(m_pInflate, 0, sizeof(z_stream));
+  file_owned_ = false;
+  file_ = pFile;
+  decomp_buf_avail_ = 0;
+  inflate_ = new z_stream;
+  memset(inflate_, 0, sizeof(z_stream));
 
-  m_iUncompressedSize = iUncompressedSize;
+  uncompressed_size_ = iUncompressedSize;
 
-  int err = inflateInit2(m_pInflate, -MAX_WBITS);
+  int err = inflateInit2(inflate_, -MAX_WBITS);
   if (err == Z_MEM_ERROR) {
     RageException::Throw("inflateInit2( %i ): out of memory.", -MAX_WBITS);
   }
@@ -42,24 +42,24 @@ RageFileObjInflate::RageFileObjInflate(
     WARN(ssprintf("Huh? inflateInit2() err = %i", err));
   }
 
-  decomp_buf_ptr = decomp_buf;
-  m_iFilePos = 0;
+  decomp_buf_ptr_ = decomp_buf_;
+  file_pos_ = 0;
 }
 
 RageFileObjInflate::RageFileObjInflate(const RageFileObjInflate& cpy)
     : RageFileObj(cpy) {
   /* XXX completely untested */
   /* Copy the entire decode state. */
-  m_pFile = cpy.m_pFile->Copy();
-  m_bFileOwned = true;
-  m_pInflate = new z_stream;
-  m_iUncompressedSize = cpy.m_iUncompressedSize;
-  m_iFilePos = cpy.m_iFilePos;
-  inflateCopy(m_pInflate, const_cast<z_stream*>(cpy.m_pInflate));
+  file_ = cpy.file_->Copy();
+  file_owned_ = true;
+  inflate_ = new z_stream;
+  uncompressed_size_ = cpy.uncompressed_size_;
+  file_pos_ = cpy.file_pos_;
+  inflateCopy(inflate_, const_cast<z_stream*>(cpy.inflate_));
 
-  decomp_buf_ptr = decomp_buf + (cpy.decomp_buf_ptr - cpy.decomp_buf);
-  decomp_buf_avail = cpy.decomp_buf_avail;
-  memcpy(decomp_buf, cpy.decomp_buf, decomp_buf_avail);
+  decomp_buf_ptr_ = decomp_buf_ + (cpy.decomp_buf_ptr_ - cpy.decomp_buf_);
+  decomp_buf_avail_ = cpy.decomp_buf_avail_;
+  memcpy(decomp_buf_, cpy.decomp_buf_, decomp_buf_avail_);
 }
 
 RageFileObjInflate* RageFileObjInflate::Copy() const {
@@ -67,16 +67,16 @@ RageFileObjInflate* RageFileObjInflate::Copy() const {
 }
 
 RageFileObjInflate::~RageFileObjInflate() {
-  if (m_bFileOwned) {
-    delete m_pFile;
+  if (file_owned_) {
+    delete file_;
   }
 
-  int err = inflateEnd(m_pInflate);
+  int err = inflateEnd(inflate_);
   if (err != Z_OK) {
     WARN(ssprintf("Huh? inflateEnd() err = %i", err));
   }
 
-  delete m_pInflate;
+  delete inflate_;
 }
 
 int RageFileObjInflate::ReadInternal(void* buf, size_t bytes) {
@@ -84,31 +84,31 @@ int RageFileObjInflate::ReadInternal(void* buf, size_t bytes) {
    * it's possible for a .gz to contain a header claiming 500k of data, but to
    * actually contain much more deflated data. */
   ASSERT_M(
-      m_iFilePos <= m_iUncompressedSize,
-      ssprintf("%i, %i", m_iFilePos, m_iUncompressedSize));
-  bytes = std::min(bytes, size_t(m_iUncompressedSize - m_iFilePos));
+      file_pos_ <= uncompressed_size_,
+      ssprintf("%i, %i", file_pos_, uncompressed_size_));
+  bytes = std::min(bytes, size_t(uncompressed_size_ - file_pos_));
 
   bool done = false;
   int ret = 0;
   while (bytes && !done) {
-    if (!decomp_buf_avail) {
-      decomp_buf_ptr = decomp_buf;
-      decomp_buf_avail = 0;
-      int got = m_pFile->Read(decomp_buf, sizeof(decomp_buf));
+    if (!decomp_buf_avail_) {
+      decomp_buf_ptr_ = decomp_buf_;
+      decomp_buf_avail_ = 0;
+      int got = file_->Read(decomp_buf_, sizeof(decomp_buf_));
       if (got == -1) {
-        SetError(m_pFile->GetError());
+        SetError(file_->GetError());
         return -1;
       }
 
-      decomp_buf_avail = got;
+      decomp_buf_avail_ = got;
     }
 
-    m_pInflate->next_in = (Bytef*)decomp_buf_ptr;
-    m_pInflate->avail_in = decomp_buf_avail;
-    m_pInflate->next_out = (Bytef*)buf;
-    m_pInflate->avail_out = bytes;
+    inflate_->next_in = (Bytef*)decomp_buf_ptr_;
+    inflate_->avail_in = decomp_buf_avail_;
+    inflate_->next_out = (Bytef*)buf;
+    inflate_->avail_out = bytes;
 
-    int err = inflate(m_pInflate, Z_SYNC_FLUSH);
+    int err = inflate(inflate_, Z_SYNC_FLUSH);
     switch (err) {
       case Z_DATA_ERROR:
         SetError("Data error");
@@ -128,12 +128,12 @@ int RageFileObjInflate::ReadInternal(void* buf, size_t bytes) {
         WARN(ssprintf("Huh? inflate err %i", err));
     }
 
-    const int used = (char*)m_pInflate->next_in - decomp_buf_ptr;
-    decomp_buf_ptr += used;
-    decomp_buf_avail -= used;
+    const int used = (char*)inflate_->next_in - decomp_buf_ptr_;
+    decomp_buf_ptr_ += used;
+    decomp_buf_avail_ -= used;
 
-    const int got = (char*)m_pInflate->next_out - (char*)buf;
-    m_iFilePos += got;
+    const int got = (char*)inflate_->next_out - (char*)buf;
+    file_pos_ += got;
     ret += got;
     buf = (char*)buf + got;
     bytes -= got;
@@ -145,25 +145,25 @@ int RageFileObjInflate::ReadInternal(void* buf, size_t bytes) {
 int RageFileObjInflate::SeekInternal(int iPos) {
   /* Optimization: if offset is the end of the file, it's a lseek(0,SEEK_END).
    * Don't decode anything. */
-  if (iPos >= m_iUncompressedSize) {
-    m_iFilePos = m_iUncompressedSize;
-    m_pFile->Seek(m_pFile->GetFileSize());
-    decomp_buf_ptr = decomp_buf;
-    decomp_buf_avail = 0;
-    inflateReset(m_pInflate);
-    return m_iUncompressedSize;
+  if (iPos >= uncompressed_size_) {
+    file_pos_ = uncompressed_size_;
+    file_->Seek(file_->GetFileSize());
+    decomp_buf_ptr_ = decomp_buf_;
+    decomp_buf_avail_ = 0;
+    inflateReset(inflate_);
+    return uncompressed_size_;
   }
 
-  if (iPos < m_iFilePos) {
-    inflateReset(m_pInflate);
-    decomp_buf_ptr = decomp_buf;
-    decomp_buf_avail = 0;
+  if (iPos < file_pos_) {
+    inflateReset(inflate_);
+    decomp_buf_ptr_ = decomp_buf_;
+    decomp_buf_avail_ = 0;
 
-    m_pFile->Seek(0);
-    m_iFilePos = 0;
+    file_->Seek(0);
+    file_pos_ = 0;
   }
 
-  int iOffset = iPos - m_iFilePos;
+  int iOffset = iPos - file_pos_;
 
   /* Can this be optimized? */
   char buf[1024 * 4];
@@ -179,18 +179,18 @@ int RageFileObjInflate::SeekInternal(int iPos) {
     iOffset -= got;
   }
 
-  return m_iFilePos;
+  return file_pos_;
 }
 
 RageFileObjDeflate::RageFileObjDeflate(RageFileBasic* pFile) {
-  m_pFile = pFile;
-  m_bFileOwned = false;
+  file_ = pFile;
+  file_owned_ = false;
 
-  m_pDeflate = new z_stream;
-  memset(m_pDeflate, 0, sizeof(z_stream));
+  deflate_ = new z_stream;
+  memset(deflate_, 0, sizeof(z_stream));
 
   int err = deflateInit2(
-      m_pDeflate, 3, Z_DEFLATED,
+      deflate_, 3, Z_DEFLATED,
       -15,  // windowBits
       8,    // memLevel
       Z_DEFAULT_STRATEGY);
@@ -206,40 +206,40 @@ RageFileObjDeflate::RageFileObjDeflate(RageFileBasic* pFile) {
 RageFileObjDeflate::~RageFileObjDeflate() {
   FlushInternal();
 
-  if (m_bFileOwned) {
-    delete m_pFile;
+  if (file_owned_) {
+    delete file_;
   }
 
-  int err = deflateEnd(m_pDeflate);
+  int err = deflateEnd(deflate_);
   if (err != Z_OK) {
     WARN(ssprintf("Huh? deflateEnd() err = %i", err));
   }
 
-  delete m_pDeflate;
+  delete deflate_;
 }
 
 int RageFileObjDeflate::WriteInternal(const void* pBuffer, size_t iBytes) {
   if (iBytes == 0) {
     return 0;
   }
-  m_pDeflate->next_in = (Bytef*)pBuffer;
-  m_pDeflate->avail_in = iBytes;
+  deflate_->next_in = (Bytef*)pBuffer;
+  deflate_->avail_in = iBytes;
 
   for (;;) {
     char buf[1024 * 4];
-    m_pDeflate->next_out = (Bytef*)buf;
-    m_pDeflate->avail_out = sizeof(buf);
+    deflate_->next_out = (Bytef*)buf;
+    deflate_->avail_out = sizeof(buf);
 
-    int err = deflate(m_pDeflate, Z_NO_FLUSH);
+    int err = deflate(deflate_, Z_NO_FLUSH);
 
     if (err != Z_OK) {
       FAIL_M(ssprintf("deflate: err %i", err));
     }
-    if (m_pDeflate->avail_out < sizeof(buf)) {
-      int lBytes = sizeof(buf) - m_pDeflate->avail_out;
-      int iRet = m_pFile->Write(buf, lBytes);
+    if (deflate_->avail_out < sizeof(buf)) {
+      int lBytes = sizeof(buf) - deflate_->avail_out;
+      int iRet = file_->Write(buf, lBytes);
       if (iRet == -1) {
-        SetError(m_pFile->GetError());
+        SetError(file_->GetError());
         return -1;
       }
       if (iRet < lBytes) {
@@ -248,7 +248,7 @@ int RageFileObjDeflate::WriteInternal(const void* pBuffer, size_t iBytes) {
       }
     }
 
-    if (m_pDeflate->avail_in == 0 && m_pDeflate->avail_out != 0) {
+    if (deflate_->avail_in == 0 && deflate_->avail_out != 0) {
       break;
     }
   }
@@ -259,22 +259,22 @@ int RageFileObjDeflate::WriteInternal(const void* pBuffer, size_t iBytes) {
  * calling this *does* change the result of the output if you continue writing
  * data. */
 int RageFileObjDeflate::FlushInternal() {
-  m_pDeflate->avail_in = 0;
+  deflate_->avail_in = 0;
 
   for (;;) {
     char buf[1024 * 4];
-    m_pDeflate->next_out = (Bytef*)buf;
-    m_pDeflate->avail_out = sizeof(buf);
+    deflate_->next_out = (Bytef*)buf;
+    deflate_->avail_out = sizeof(buf);
 
-    int err = deflate(m_pDeflate, Z_FINISH);
+    int err = deflate(deflate_, Z_FINISH);
     if (err != Z_OK && err != Z_STREAM_END) {
       FAIL_M(ssprintf("deflate: err %i", err));
     }
-    if (m_pDeflate->avail_out < sizeof(buf)) {
-      int iBytes = sizeof(buf) - m_pDeflate->avail_out;
-      int iRet = m_pFile->Write(buf, iBytes);
+    if (deflate_->avail_out < sizeof(buf)) {
+      int iBytes = sizeof(buf) - deflate_->avail_out;
+      int iRet = file_->Write(buf, iBytes);
       if (iRet == -1) {
-        SetError(m_pFile->GetError());
+        SetError(file_->GetError());
         return -1;
       }
       if (iRet < iBytes) {
@@ -283,8 +283,8 @@ int RageFileObjDeflate::FlushInternal() {
       }
     }
 
-    if (err == Z_STREAM_END && m_pDeflate->avail_out != 0) {
-      return m_pFile->Flush();
+    if (err == Z_STREAM_END && deflate_->avail_out != 0) {
+      return file_->Flush();
     }
   }
 }
@@ -428,7 +428,7 @@ RageFileObjInflate* GunzipFile(
  */
 RageFileObjGzip::RageFileObjGzip(RageFileBasic* pFile)
     : RageFileObjDeflate(pFile) {
-  m_iDataStartOffset = -1;
+  data_start_offset_ = -1;
 }
 
 /* Write the gzip header. */
@@ -445,11 +445,11 @@ int RageFileObjGzip::Start() {
       '\xFF'                 // unknown os
   };
 
-  if (m_pFile->Write(header, sizeof(header)) == -1) {
+  if (file_->Write(header, sizeof(header)) == -1) {
     return -1;
   }
 
-  m_iDataStartOffset = Tell();
+  data_start_offset_ = Tell();
 
   /* Enable and reset the CRC32 for the uncompressed data about to be
    * written to this file. */
@@ -472,25 +472,25 @@ int RageFileObjGzip::Finish() {
   ASSERT(bOK);
 
   /* Figure out the size of the data. */
-  uint32_t iSize = Tell() - m_iDataStartOffset;
+  uint32_t iSize = Tell() - data_start_offset_;
 
   /* Write the CRC and size directly to the file, so they don't get compressed.
    */
   iCRC = Swap32LE(iCRC);
-  if (m_pFile->Write(&iCRC, sizeof(iCRC)) == -1) {
-    SetError(m_pFile->GetError());
+  if (file_->Write(&iCRC, sizeof(iCRC)) == -1) {
+    SetError(file_->GetError());
     return -1;
   }
 
   /* Write the size. */
   iSize = Swap32LE(iSize);
-  if (m_pFile->Write(&iSize, sizeof(iSize)) == -1) {
-    SetError(m_pFile->GetError());
+  if (file_->Write(&iSize, sizeof(iSize)) == -1) {
+    SetError(file_->GetError());
     return -1;
   }
 
   /* Flush the CRC and wize that we just wrote directly to the file. */
-  return m_pFile->Flush();
+  return file_->Flush();
 }
 
 #include "RageFileDriverMemory.h"

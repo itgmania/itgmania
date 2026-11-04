@@ -27,15 +27,15 @@ float GetTotalSeconds(const Trail* pTrail);
 };  // namespace TrailUtil
 
 class TrailID {
-  StepsType st;
-  CourseDifficulty cd;
+  StepsType st_;
+  CourseDifficulty cd_;
 
  public:
-  TrailID() : st(StepsType_Invalid), cd(Difficulty_Invalid) {}
+  TrailID() : st_(StepsType_Invalid), cd_(Difficulty_Invalid) {}
   void Unset() { FromTrail(nullptr); }
   void FromTrail(const Trail* p);
   bool operator<(const TrailID& rhs) const;
-  bool MatchesStepsType(StepsType s) const { return st == s; }
+  bool MatchesStepsType(StepsType s) const { return st_ == s; }
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);

@@ -21,7 +21,7 @@ class GradeDisplay : public ActorFrame {
   void PushSelf(lua_State* L);
 
  protected:
-  std::vector<AutoActor> m_vSpr;
+  std::vector<AutoActor> spr_;
 };
 
 #endif

@@ -66,17 +66,17 @@ void SerializeAnnotation(const NoteAnnotation& ann, std::vector<uint8_t>& out) {
   out.resize(offset + 11);
 
   // 4 bytes: beat (float)
-  std::memcpy(&out[offset], &ann.beat, 4);
+  std::memcpy(&out[offset], &ann.beat_, 4);
   offset += 4;
 
   // 5 bytes: whereTheFeetAre (int8_t each, -1 = no position)
   for (int i = 0; i < 5; i++) {
-    out[offset++] = static_cast<int8_t>(ann.whereTheFeetAre[i]);
+    out[offset++] = static_cast<int8_t>(ann.where_the_feet_are_[i]);
   }
 
   // 2 bytes: tech bitmask
   uint16_t techMask = 0;
-  for (TechCountsCategory cat : ann.tech) {
+  for (TechCountsCategory cat : ann.tech_) {
     if (cat < NUM_TechCountsCategory) {
       techMask |= (1u << cat);
     }
@@ -90,21 +90,21 @@ NoteAnnotation DeserializeAnnotation(const uint8_t* buf) {
   size_t offset = 0;
 
   // 4 bytes: beat
-  std::memcpy(&ann.beat, &buf[offset], 4);
+  std::memcpy(&ann.beat_, &buf[offset], 4);
   offset += 4;
 
   // 5 bytes: whereTheFeetAre
-  ann.whereTheFeetAre.resize(5);
+  ann.where_the_feet_are_.resize(5);
   for (int i = 0; i < 5; i++) {
-    ann.whereTheFeetAre[i] = static_cast<int8_t>(buf[offset++]);
+    ann.where_the_feet_are_[i] = static_cast<int8_t>(buf[offset++]);
   }
 
   // 2 bytes: tech bitmask
   uint16_t techMask = buf[offset] | (buf[offset + 1] << 8);
-  ann.tech.clear();
+  ann.tech_.clear();
   for (int i = 0; i < NUM_TechCountsCategory; i++) {
     if (techMask & (1u << i)) {
-      ann.tech.push_back(static_cast<TechCountsCategory>(i));
+      ann.tech_.push_back(static_cast<TechCountsCategory>(i));
     }
   }
 
@@ -154,22 +154,22 @@ std::string NoteAnnotation::ToString(std::vector<NoteAnnotation>& annotations) {
 }
 
 const std::string& NoteAnnotationCache::GetCompressed() const {
-  return compressed;
+  return compressed_;
 }
 
 const std::vector<NoteAnnotation>& NoteAnnotationCache::GetNoteAnnotations()
     const {
-  if (decompressed.empty() && !compressed.empty()) {
-    NoteAnnotation::FromString(compressed, decompressed);
+  if (decompressed_.empty() && !compressed_.empty()) {
+    NoteAnnotation::FromString(compressed_, decompressed_);
   }
-  return decompressed;
+  return decompressed_;
 }
 
 void NoteAnnotationCache::Compress() {
-  if (decompressed.size() > 0) {
-    compressed = NoteAnnotation::ToString(decompressed);
+  if (decompressed_.size() > 0) {
+    compressed_ = NoteAnnotation::ToString(decompressed_);
   } else {
-    compressed = "";
+    compressed_ = "";
   }
-  decompressed.clear();
+  decompressed_.clear();
 }

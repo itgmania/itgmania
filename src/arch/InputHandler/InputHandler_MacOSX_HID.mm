@@ -58,8 +58,8 @@ static void RunLoopStarted(CFRunLoopObserverRef o, CFRunLoopActivity a, void* se
 int InputHandler_MacOSX_HID::Run(void* data) {
   InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)data;
 
-  This->m_LoopRef = CFRunLoopGetCurrent();
-  CFRetain(This->m_LoopRef);
+  This->loop_ref_ = CFRunLoopGetCurrent();
+  CFRetain(This->loop_ref_);
 
   This->StartDevices();
   {
@@ -72,10 +72,10 @@ int InputHandler_MacOSX_HID::Run(void* data) {
   {
     /* The function copies the information out of the structure, so the memory
      * pointed to by context does not need to persist beyond the function call. */
-    CFRunLoopObserverContext context = {0, &This->m_Sem, nullptr, nullptr, nullptr};
+    CFRunLoopObserverContext context = {0, &This->sem_, nullptr, nullptr, nullptr};
     CFRunLoopObserverRef o = CFRunLoopObserverCreate(
         kCFAllocatorDefault, kCFRunLoopEntry, false, 0, RunLoopStarted, &context);
-    CFRunLoopAddObserver(This->m_LoopRef, o, kCFRunLoopDefaultMode);
+    CFRunLoopAddObserver(This->loop_ref_, o, kCFRunLoopDefaultMode);
   }
 
   /* Add a source for ending the run loop. This serves two purposes:
@@ -86,16 +86,16 @@ int InputHandler_MacOSX_HID::Run(void* data) {
     /* Being a little tricky here, the perform callback takes a void* and
      * returns nothing. CFRunLoopStop takes a CFRunLoopRef (a pointer) so
      * cast the function and pass the loop ref. */
-    void* info = This->m_LoopRef;
+    void* info = This->loop_ref_;
     void (*perform)(void*) = (void (*)(void*))CFRunLoopStop;
     // { version, info, retain, release, copyDescription, equal, hash, schedule, cancel, perform }
     CFRunLoopSourceContext context = {0,       info,    nullptr, nullptr, nullptr,
                                       nullptr, nullptr, nullptr, nullptr, perform};
 
     // Pass 1 so that it is called after all inputs have been handled (they will have order = 0)
-    This->m_SourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, 1, &context);
+    This->source_ref_ = CFRunLoopSourceCreate(kCFAllocatorDefault, 1, &context);
 
-    CFRunLoopAddSource(This->m_LoopRef, This->m_SourceRef, kCFRunLoopDefaultMode);
+    CFRunLoopAddSource(This->loop_ref_, This->source_ref_, kCFRunLoopDefaultMode);
   }
   CFRunLoopRun();
   LOG->Trace("Shutting down input handler thread...");
@@ -105,8 +105,8 @@ int InputHandler_MacOSX_HID::Run(void* data) {
 void InputHandler_MacOSX_HID::DeviceAdded(void* refCon, io_iterator_t) {
   InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)refCon;
 
-  LockMut(This->m_ChangeLock);
-  This->m_bChanged = true;
+  LockMut(This->change_lock_);
+  This->changed_ = true;
 }
 
 void InputHandler_MacOSX_HID::DeviceChanged(
@@ -114,40 +114,40 @@ void InputHandler_MacOSX_HID::DeviceChanged(
   if (messageType == kIOMessageServiceIsTerminated) {
     InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)refCon;
 
-    LockMut(This->m_ChangeLock);
-    This->m_bChanged = true;
+    LockMut(This->change_lock_);
+    This->changed_ = true;
   }
 }
 
-// m_LoopRef needs to be set before this is called
+// loop_ref_ needs to be set before this is called
 void InputHandler_MacOSX_HID::StartDevices() {
-  ASSERT(m_LoopRef);
-  for (HIDDevice* i : m_vDevices) {
-    i->StartQueue(m_LoopRef, InputHandler_MacOSX_HID::QueueCallback, this);
+  ASSERT(loop_ref_);
+  for (HIDDevice* i : devices_) {
+    i->StartQueue(loop_ref_, InputHandler_MacOSX_HID::QueueCallback, this);
   }
 
-  CFRunLoopSourceRef runLoopSource = IONotificationPortGetRunLoopSource(m_NotifyPort);
+  CFRunLoopSourceRef runLoopSource = IONotificationPortGetRunLoopSource(notify_port_);
 
-  CFRunLoopAddSource(m_LoopRef, runLoopSource, kCFRunLoopDefaultMode);
+  CFRunLoopAddSource(loop_ref_, runLoopSource, kCFRunLoopDefaultMode);
 }
 
 InputHandler_MacOSX_HID::~InputHandler_MacOSX_HID() {
-  for (HIDDevice* i : m_vDevices) {
+  for (HIDDevice* i : devices_) {
     delete i;
   }
-  if (PREFSMAN->m_bThreadedInput) {
-    CFRunLoopSourceSignal(m_SourceRef);
-    CFRunLoopWakeUp(m_LoopRef);
-    m_InputThread.Wait();
-    CFRelease(m_SourceRef);
-    CFRelease(m_LoopRef);
+  if (PREFSMAN->threaded_input_) {
+    CFRunLoopSourceSignal(source_ref_);
+    CFRunLoopWakeUp(loop_ref_);
+    input_thread_.Wait();
+    CFRelease(source_ref_);
+    CFRelease(loop_ref_);
     LOG->Trace("Input handler thread shut down.");
   }
 
-  for (io_iterator_t& i : m_vIters) {
+  for (io_iterator_t& i : iters_) {
     IOObjectRelease(i);
   }
-  IONotificationPortDestroy(m_NotifyPort);
+  IONotificationPortDestroy(notify_port_);
 }
 
 static CFDictionaryRef GetMatchingDictionary(int usagePage, int usage) {
@@ -193,7 +193,7 @@ void InputHandler_MacOSX_HID::AddDevices(int usagePage, int usage, InputDevice& 
   io_iterator_t iter;
   CFDictionaryRef dict = GetMatchingDictionary(usagePage, usage);
   kern_return_t ret = IOServiceAddMatchingNotification(
-      m_NotifyPort, kIOFirstMatchNotification, dict, InputHandler_MacOSX_HID::DeviceAdded, this,
+      notify_port_, kIOFirstMatchNotification, dict, InputHandler_MacOSX_HID::DeviceAdded, this,
       &iter);
   io_object_t device;
 
@@ -201,7 +201,7 @@ void InputHandler_MacOSX_HID::AddDevices(int usagePage, int usage, InputDevice& 
     return;
   }
 
-  m_vIters.push_back(iter);
+  iters_.push_back(iter);
 
   // Iterate over the devices and add them
   while ((device = IOIteratorNext(iter))) {
@@ -224,13 +224,13 @@ void InputHandler_MacOSX_HID::AddDevices(int usagePage, int usage, InputDevice& 
     io_iterator_t i;
 
     enum_add(id, num);
-    m_vDevices.push_back(dev);
+    devices_.push_back(dev);
 
     ret = IOServiceAddInterestNotification(
-        m_NotifyPort, device, kIOGeneralInterest, InputHandler_MacOSX_HID::DeviceChanged, this, &i);
+        notify_port_, device, kIOGeneralInterest, InputHandler_MacOSX_HID::DeviceChanged, this, &i);
 
     if (ret == KERN_SUCCESS) {
-      m_vIters.push_back(i);
+      iters_.push_back(i);
     } else {
       LOG->Trace("\t\tFailed to add device changed notification, deleting device");
     }
@@ -239,11 +239,11 @@ void InputHandler_MacOSX_HID::AddDevices(int usagePage, int usage, InputDevice& 
 }
 
 InputHandler_MacOSX_HID::InputHandler_MacOSX_HID()
-    : m_Sem("Input thread started"), m_ChangeLock("Input handler change lock") {
+    : sem_("Input thread started"), change_lock_("Input handler change lock") {
   InputDevice id = DEVICE_KEYBOARD;
 
   // Set up the notify ports.
-  m_NotifyPort = IONotificationPortCreate(kIOMasterPortDefault);
+  notify_port_ = IONotificationPortCreate(kIOMasterPortDefault);
 
   // Add devices.
 #if !OSX_KEYBOARD_USE_NSEVENT
@@ -263,30 +263,30 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID()
   AddDevices(
       kHIDPage_VendorDefinedStart, 0x0001,
       id);  // Pump pads use the first vendor specific usage page.
-  m_bChanged = false;
+  changed_ = false;
 
-  if (PREFSMAN->m_bThreadedInput) {
-    m_InputThread.SetName("Input thread");
-    m_InputThread.Create(InputHandler_MacOSX_HID::Run, this);
+  if (PREFSMAN->threaded_input_) {
+    input_thread_.SetName("Input thread");
+    input_thread_.Create(InputHandler_MacOSX_HID::Run, this);
     // Wait for the run loop to start before returning.
-    m_Sem.Wait();
+    sem_.Wait();
   } else {
-    m_LoopRef = CFRunLoopRef(GetCFRunLoopFromEventLoop(GetMainEventLoop()));
-    CFRetain(m_LoopRef);
+    loop_ref_ = CFRunLoopRef(GetCFRunLoopFromEventLoop(GetMainEventLoop()));
+    CFRetain(loop_ref_);
     StartDevices();
   }
 }
 
 void InputHandler_MacOSX_HID::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) {
-  for (HIDDevice* i : m_vDevices) {
+  for (HIDDevice* i : devices_) {
     i->GetDevicesAndDescriptions(vDevices);
   }
 }
 
 std::string InputHandler_MacOSX_HID::GetDeviceSpecificInputString(const DeviceInput& di) {
-  if (di.device == DEVICE_KEYBOARD) {
+  if (di.device_ == DEVICE_KEYBOARD) {
 #define OTHER(n) (Enum::to_integral(KEY_OTHER_0) + (n))
-    switch (Enum::to_integral(di.button)) {
+    switch (Enum::to_integral(di.button_)) {
       case KEY_DEL:
         return "del";
       case KEY_BACK:
@@ -410,8 +410,8 @@ std::string InputHandler_MacOSX_HID::GetDeviceSpecificInputString(const DeviceIn
     }
 #undef OTHER
   }
-  if (di.device == DEVICE_PUMP1 || di.device == DEVICE_PUMP2) {
-    switch (di.button) {
+  if (di.device_ == DEVICE_PUMP1 || di.device_ == DEVICE_PUMP2) {
+    switch (di.button_) {
       case JOY_BUTTON_1:
         return "UL";
       case JOY_BUTTON_2:

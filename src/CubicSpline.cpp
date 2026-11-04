@@ -26,8 +26,8 @@
 
 struct SplineSolutionCache {
   struct Entry {
-    std::vector<float> diagonals;
-    std::vector<float> multiples;
+    std::vector<float> diagonals_;
+    std::vector<float> multiples_;
   };
   void solve_diagonals_straight(
       std::vector<float>& diagonals, std::vector<float>& multiples);
@@ -42,8 +42,8 @@ struct SplineSolutionCache {
   void add_to_cache(
       std::list<Entry>& cache, std::vector<float>& outd,
       std::vector<float>& outm);
-  std::list<Entry> straight_diagonals;
-  std::list<Entry> looped_diagonals;
+  std::list<Entry> straight_diagonals_;
+  std::list<Entry> looped_diagonals_;
 };
 
 const size_t solution_cache_limit = 16;
@@ -54,13 +54,13 @@ bool SplineSolutionCache::find_in_cache(
   size_t out_size = outd.size();
   for (std::list<Entry>::iterator entry = cache.begin(); entry != cache.end();
        ++entry) {
-    if (out_size == entry->diagonals.size()) {
+    if (out_size == entry->diagonals_.size()) {
       for (size_t i = 0; i < out_size; ++i) {
-        outd[i] = entry->diagonals[i];
+        outd[i] = entry->diagonals_[i];
       }
-      outm.resize(entry->multiples.size());
-      for (size_t i = 0; i < entry->multiples.size(); ++i) {
-        outm[i] = entry->multiples[i];
+      outm.resize(entry->multiples_.size());
+      for (size_t i = 0; i < entry->multiples_.size(); ++i) {
+        outm[i] = entry->multiples_[i];
       }
       return true;
     }
@@ -75,8 +75,8 @@ void SplineSolutionCache::add_to_cache(
     cache.pop_back();
   }
   cache.push_front(Entry());
-  cache.front().diagonals = outd;
-  cache.front().multiples = outm;
+  cache.front().diagonals_ = outd;
+  cache.front().multiples_ = outm;
 }
 
 void SplineSolutionCache::prep_inner(size_t last, std::vector<float>& out) {
@@ -87,7 +87,7 @@ void SplineSolutionCache::prep_inner(size_t last, std::vector<float>& out) {
 
 void SplineSolutionCache::solve_diagonals_straight(
     std::vector<float>& diagonals, std::vector<float>& multiples) {
-  if (find_in_cache(straight_diagonals, diagonals, multiples)) {
+  if (find_in_cache(straight_diagonals_, diagonals, multiples)) {
     return;
   }
 
@@ -125,12 +125,12 @@ void SplineSolutionCache::solve_diagonals_straight(
     multiples.push_back(1.0f / diagonals[i]);
   }
   // Solving finished.
-  add_to_cache(straight_diagonals, diagonals, multiples);
+  add_to_cache(straight_diagonals_, diagonals, multiples);
 }
 
 void SplineSolutionCache::solve_diagonals_looped(
     std::vector<float>& diagonals, std::vector<float>& multiples) {
-  if (find_in_cache(looped_diagonals, diagonals, multiples)) {
+  if (find_in_cache(looped_diagonals_, diagonals, multiples)) {
     return;
   }
 
@@ -209,7 +209,7 @@ void SplineSolutionCache::solve_diagonals_looped(
   }
 
   // Solving finished.
-  add_to_cache(looped_diagonals, diagonals, multiples);
+  add_to_cache(looped_diagonals_, diagonals, multiples);
 }
 
 SplineSolutionCache solution_cache;
@@ -249,17 +249,17 @@ void CubicSpline::solve_looped() {
   if (check_minimum_size()) {
     return;
   }
-  size_t last = m_points.size();
-  std::vector<float> results(m_points.size());
-  std::vector<float> diagonals(m_points.size());
+  size_t last = points_.size();
+  std::vector<float> results(points_.size());
+  std::vector<float> diagonals(points_.size());
   std::vector<float> multiples;
   solution_cache.solve_diagonals_looped(diagonals, multiples);
   results[0] = 3 * loop_space_difference(
-                       m_points[1].a, m_points[last - 1].a, m_spatial_extent);
+                       points_[1].a_, points_[last - 1].a_, spatial_extent_);
   prep_inner(last, results);
   results[last - 1] =
       3 * loop_space_difference(
-              m_points[0].a, m_points[last - 2].a, m_spatial_extent);
+              points_[0].a_, points_[last - 2].a_, spatial_extent_);
 
   // Steps explained in detail in SplineSolutionCache.
   // Only the operations on the results column are performed here.
@@ -297,16 +297,16 @@ void CubicSpline::solve_straight() {
   if (check_minimum_size()) {
     return;
   }
-  size_t last = m_points.size();
-  std::vector<float> results(m_points.size());
-  std::vector<float> diagonals(m_points.size());
+  size_t last = points_.size();
+  std::vector<float> results(points_.size());
+  std::vector<float> diagonals(points_.size());
   std::vector<float> multiples;
   solution_cache.solve_diagonals_straight(diagonals, multiples);
-  results[0] = 3 * (m_points[1].a - m_points[0].a);
+  results[0] = 3 * (points_[1].a_ - points_[0].a_);
   prep_inner(last, results);
   results[last - 1] =
       3 * loop_space_difference(
-              m_points[last - 1].a, m_points[last - 2].a, m_spatial_extent);
+              points_[last - 1].a_, points_[last - 2].a_, spatial_extent_);
 
   // Steps explained in detail in SplineSolutionCache.
   // Only the operations on the results column are performed here.
@@ -330,36 +330,36 @@ void CubicSpline::solve_polygonal() {
   if (check_minimum_size()) {
     return;
   }
-  size_t last = m_points.size() - 1;
+  size_t last = points_.size() - 1;
   for (size_t i = 0; i < last; ++i) {
-    m_points[i].b = loop_space_difference(
-        m_points[i + 1].a, m_points[i].a, m_spatial_extent);
+    points_[i].b_ = loop_space_difference(
+        points_[i + 1].a_, points_[i].a_, spatial_extent_);
   }
-  m_points[last].b =
-      loop_space_difference(m_points[0].a, m_points[last].a, m_spatial_extent);
+  points_[last].b_ =
+      loop_space_difference(points_[0].a_, points_[last].a_, spatial_extent_);
 }
 
 bool CubicSpline::check_minimum_size() {
-  size_t last = m_points.size();
+  size_t last = points_.size();
   if (last < 2) {
-    m_points[0].b = m_points[0].c = m_points[0].d = 0.0f;
+    points_[0].b_ = points_[0].c_ = points_[0].d_ = 0.0f;
     return true;
   }
   if (last == 2) {
-    m_points[0].b =
-        loop_space_difference(m_points[1].a, m_points[0].a, m_spatial_extent);
-    m_points[0].c = m_points[0].d = 0.0f;
+    points_[0].b_ =
+        loop_space_difference(points_[1].a_, points_[0].a_, spatial_extent_);
+    points_[0].c_ = points_[0].d_ = 0.0f;
     // These will be used in the looping case.
-    m_points[1].b =
-        loop_space_difference(m_points[0].a, m_points[1].a, m_spatial_extent);
-    m_points[1].c = m_points[1].d = 0.0f;
+    points_[1].b_ =
+        loop_space_difference(points_[0].a_, points_[1].a_, spatial_extent_);
+    points_[1].c_ = points_[1].d_ = 0.0f;
     return true;
   }
-  float a = m_points[0].a;
+  float a = points_[0].a_;
   bool all_points_identical = true;
-  for (size_t i = 0; i < m_points.size(); ++i) {
-    m_points[i].b = m_points[i].c = m_points[i].d = 0.0f;
-    if (m_points[i].a != a) {
+  for (size_t i = 0; i < points_.size(); ++i) {
+    points_[i].b_ = points_[i].c_ = points_[i].d_ = 0.0f;
+    if (points_[i].a_ != a) {
       all_points_identical = false;
     }
   }
@@ -368,9 +368,8 @@ bool CubicSpline::check_minimum_size() {
 
 void CubicSpline::prep_inner(size_t last, std::vector<float>& results) {
   for (size_t i = 1; i < last - 1; ++i) {
-    results[i] =
-        3 * loop_space_difference(
-                m_points[i + 1].a, m_points[i - 1].a, m_spatial_extent);
+    results[i] = 3 * loop_space_difference(
+                         points_[i + 1].a_, points_[i - 1].a_, spatial_extent_);
   }
 }
 
@@ -384,18 +383,18 @@ void CubicSpline::set_results(
   // b, c, d values of the last point are not set because they are unused.
   for (size_t i = 0; i < last; ++i) {
     size_t next = (i + 1) % last;
-    float diff = loop_space_difference(
-        m_points[next].a, m_points[i].a, m_spatial_extent);
-    m_points[i].b = results[i];
-    m_points[i].c = (3 * diff) - (2 * results[i]) - results[next];
-    m_points[i].d = (2 * -diff) + results[i] + results[next];
+    float diff =
+        loop_space_difference(points_[next].a_, points_[i].a_, spatial_extent_);
+    points_[i].b_ = results[i];
+    points_[i].c_ = (3 * diff) - (2 * results[i]) - results[next];
+    points_[i].d_ = (2 * -diff) + results[i] + results[next];
 #define UNNAN(n) \
   if (n != n) {  \
     n = 0.0f;    \
   }
-    UNNAN(m_points[i].b);
-    UNNAN(m_points[i].c);
-    UNNAN(m_points[i].d);
+    UNNAN(points_[i].b_);
+    UNNAN(points_[i].c_);
+    UNNAN(points_[i].d_);
 #undef UNNAN
   }
   // Solving is now complete.
@@ -404,7 +403,7 @@ void CubicSpline::set_results(
 void CubicSpline::p_and_tfrac_from_t(
     float t, bool loop, size_t& p, float& tfrac) const {
   if (loop) {
-    float max_t = static_cast<float>(m_points.size());
+    float max_t = static_cast<float>(points_.size());
     t = std::fmod(t, max_t);
     if (t < 0.0f) {
       t += max_t;
@@ -416,8 +415,8 @@ void CubicSpline::p_and_tfrac_from_t(
     if (flort < 0) {
       p = 0;
       tfrac = 0;
-    } else if (static_cast<size_t>(flort) >= m_points.size() - 1) {
-      p = m_points.size() - 1;
+    } else if (static_cast<size_t>(flort) >= points_.size() - 1) {
+      p = points_.size() - 1;
       tfrac = 0;
     } else {
       p = static_cast<size_t>(flort);
@@ -426,9 +425,9 @@ void CubicSpline::p_and_tfrac_from_t(
   }
 }
 
-#define RETURN_IF_EMPTY   \
-  if (m_points.empty()) { \
-    return 0.0f;          \
+#define RETURN_IF_EMPTY  \
+  if (points_.empty()) { \
+    return 0.0f;         \
   }
 #define DECLARE_P_AND_TFRAC \
   size_t p = 0;             \
@@ -440,28 +439,28 @@ float CubicSpline::evaluate(float t, bool loop) const {
   DECLARE_P_AND_TFRAC;
   float tsq = tfrac * tfrac;
   float tcub = tsq * tfrac;
-  return m_points[p].a + (m_points[p].b * tfrac) + (m_points[p].c * tsq) +
-         (m_points[p].d * tcub);
+  return points_[p].a_ + (points_[p].b_ * tfrac) + (points_[p].c_ * tsq) +
+         (points_[p].d_ * tcub);
 }
 
 float CubicSpline::evaluate_derivative(float t, bool loop) const {
   RETURN_IF_EMPTY;
   DECLARE_P_AND_TFRAC;
   float tsq = tfrac * tfrac;
-  return m_points[p].b + (2.0f * m_points[p].c * tfrac) +
-         (3.0f * m_points[p].d * tsq);
+  return points_[p].b_ + (2.0f * points_[p].c_ * tfrac) +
+         (3.0f * points_[p].d_ * tsq);
 }
 
 float CubicSpline::evaluate_second_derivative(float t, bool loop) const {
   RETURN_IF_EMPTY;
   DECLARE_P_AND_TFRAC;
-  return (2.0f * m_points[p].c) + (6.0f * m_points[p].d * tfrac);
+  return (2.0f * points_[p].c_) + (6.0f * points_[p].d_ * tfrac);
 }
 
 float CubicSpline::evaluate_third_derivative(float t, bool loop) const {
   RETURN_IF_EMPTY;
   DECLARE_P_AND_TFRAC;
-  return 6.0f * m_points[p].d;
+  return 6.0f * points_[p].d_;
 }
 
 #undef RETURN_IF_EMPTY
@@ -469,48 +468,48 @@ float CubicSpline::evaluate_third_derivative(float t, bool loop) const {
 
 void CubicSpline::set_point(size_t i, float v) {
   ASSERT_M(
-      i < m_points.size(),
+      i < points_.size(),
       "CubicSpline::set_point requires the index to be less than the number of "
       "points.");
-  m_points[i].a = v;
+  points_[i].a_ = v;
 }
 
 void CubicSpline::set_coefficients(size_t i, float b, float c, float d) {
   ASSERT_M(
-      i < m_points.size(),
+      i < points_.size(),
       "CubicSpline: point index must be less than the number of points.");
-  m_points[i].b = b;
-  m_points[i].c = c;
-  m_points[i].d = d;
+  points_[i].b_ = b;
+  points_[i].c_ = c;
+  points_[i].d_ = d;
 }
 
 void CubicSpline::get_coefficients(
     size_t i, float& b, float& c, float& d) const {
   ASSERT_M(
-      i < m_points.size(),
+      i < points_.size(),
       "CubicSpline: point index must be less than the number of points.");
-  b = m_points[i].b;
-  c = m_points[i].c;
-  d = m_points[i].d;
+  b = points_[i].b_;
+  c = points_[i].c_;
+  d = points_[i].d_;
 }
 
 void CubicSpline::set_point_and_coefficients(
     size_t i, float a, float b, float c, float d) {
   set_coefficients(i, b, c, d);
-  m_points[i].a = a;
+  points_[i].a_ = a;
 }
 
 void CubicSpline::get_point_and_coefficients(
     size_t i, float& a, float& b, float& c, float& d) const {
   get_coefficients(i, b, c, d);
-  a = m_points[i].a;
+  a = points_[i].a_;
 }
 
-void CubicSpline::resize(size_t s) { m_points.resize(s); }
+void CubicSpline::resize(size_t s) { points_.resize(s); }
 
-size_t CubicSpline::size() const { return m_points.size(); }
+size_t CubicSpline::size() const { return points_.size(); }
 
-bool CubicSpline::empty() const { return m_points.empty(); }
+bool CubicSpline::empty() const { return points_.empty(); }
 
 void CubicSplineN::weighted_average(
     CubicSplineN& out, const CubicSplineN& from, const CubicSplineN& to,
@@ -546,16 +545,16 @@ void CubicSplineN::weighted_average(
   rage_clamp(out_size, 0, limit);
   out.resize(out_size);
 
-  for (size_t spli = 0; spli < out.m_splines.size(); ++spli) {
+  for (size_t spli = 0; spli < out.splines_.size(); ++spli) {
     for (size_t p = 0; p < out_size; ++p) {
       float fc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
       float tc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
       if (p < from_size) {
-        from.m_splines[spli].get_point_and_coefficients(
+        from.splines_[spli].get_point_and_coefficients(
             p, fc[0], fc[1], fc[2], fc[3]);
       }
       if (p < to_size) {
-        to.m_splines[spli].get_point_and_coefficients(
+        to.splines_[spli].get_point_and_coefficients(
             p, tc[0], tc[1], tc[2], tc[3]);
       } else {
         for (int i = 0; i < 4; ++i) {
@@ -571,7 +570,7 @@ void CubicSplineN::weighted_average(
       for (int i = 0; i < 4; ++i) {
         oc[i] = lerp(between, fc[i], tc[i]);
       }
-      out.m_splines[spli].set_point_and_coefficients(
+      out.splines_[spli].set_point_and_coefficients(
           p, oc[0], oc[1], oc[2], oc[3]);
     }
   }
@@ -588,32 +587,32 @@ void CubicSplineN::weighted_average(
 }
 
 void CubicSplineN::solve() {
-  if (!m_dirty) {
+  if (!dirty_) {
     return;
   }
-#define SOLVE_LOOP(solvent)                                \
-  for (spline_cont_t::iterator spline = m_splines.begin(); \
-       spline != m_splines.end(); ++spline) {              \
-    spline->solvent();                                     \
+#define SOLVE_LOOP(solvent)                               \
+  for (spline_cont_t::iterator spline = splines_.begin(); \
+       spline != splines_.end(); ++spline) {              \
+    spline->solvent();                                    \
   }
-  if (m_polygonal) {
+  if (polygonal_) {
     SOLVE_LOOP(solve_polygonal);
   } else {
-    if (m_loop) {
+    if (loop_) {
       SOLVE_LOOP(solve_looped);
     } else {
       SOLVE_LOOP(solve_straight);
     }
   }
 #undef SOLVE_LOOP
-  m_dirty = false;
+  dirty_ = false;
 }
 
 #define CSN_EVAL_SOMETHING(something)                                  \
   void CubicSplineN::something(float t, std::vector<float>& v) const { \
-    for (spline_cont_t::const_iterator spline = m_splines.begin();     \
-         spline != m_splines.end(); ++spline) {                        \
-      v.push_back(spline->something(t, m_loop));                       \
+    for (spline_cont_t::const_iterator spline = splines_.begin();      \
+         spline != splines_.end(); ++spline) {                         \
+      v.push_back(spline->something(t, loop_));                        \
     }                                                                  \
   }
 
@@ -626,10 +625,10 @@ CSN_EVAL_SOMETHING(evaluate_third_derivative);
 
 #define CSN_EVAL_RV_SOMETHING(something)                        \
   void CubicSplineN::something(float t, RageVector3& v) const { \
-    ASSERT(m_splines.size() == 3);                              \
-    v.x = m_splines[0].something(t, m_loop);                    \
-    v.y = m_splines[1].something(t, m_loop);                    \
-    v.z = m_splines[2].something(t, m_loop);                    \
+    ASSERT(splines_.size() == 3);                               \
+    v.x_ = splines_[0].something(t, loop_);                     \
+    v.y_ = splines_[1].something(t, loop_);                     \
+    v.z_ = splines_[2].something(t, loop_);                     \
   }
 
 CSN_EVAL_RV_SOMETHING(evaluate);
@@ -639,13 +638,13 @@ CSN_EVAL_RV_SOMETHING(evaluate_derivative);
 
 void CubicSplineN::set_point(size_t i, const std::vector<float>& v) {
   ASSERT_M(
-      v.size() == m_splines.size(),
+      v.size() == splines_.size(),
       "CubicSplineN::set_point requires the passed point to be the same "
       "dimension as the spline.");
-  for (size_t n = 0; n < m_splines.size(); ++n) {
-    m_splines[n].set_point(i, v[n]);
+  for (size_t n = 0; n < splines_.size(); ++n) {
+    splines_[n].set_point(i, v[n]);
   }
-  m_dirty = true;
+  dirty_ = true;
 }
 
 void CubicSplineN::set_coefficients(
@@ -653,13 +652,13 @@ void CubicSplineN::set_coefficients(
     const std::vector<float>& d) {
   ASSERT_M(
       b.size() == c.size() && c.size() == d.size() &&
-          d.size() == m_splines.size(),
+          d.size() == splines_.size(),
       "CubicSplineN: coefficient vectors must be "
       "the same dimension as the spline.");
-  for (size_t n = 0; n < m_splines.size(); ++n) {
-    m_splines[n].set_coefficients(i, b[n], c[n], d[n]);
+  for (size_t n = 0; n < splines_.size(); ++n) {
+    splines_[n].set_coefficients(i, b[n], c[n], d[n]);
   }
-  m_dirty = true;
+  dirty_ = true;
 }
 
 void CubicSplineN::get_coefficients(
@@ -667,69 +666,69 @@ void CubicSplineN::get_coefficients(
     std::vector<float>& d) {
   ASSERT_M(
       b.size() == c.size() && c.size() == d.size() &&
-          d.size() == m_splines.size(),
+          d.size() == splines_.size(),
       "CubicSplineN: coefficient vectors must be "
       "the same dimension as the spline.");
-  for (size_t n = 0; n < m_splines.size(); ++n) {
-    m_splines[n].get_coefficients(i, b[n], c[n], d[n]);
+  for (size_t n = 0; n < splines_.size(); ++n) {
+    splines_[n].get_coefficients(i, b[n], c[n], d[n]);
   }
 }
 
 void CubicSplineN::set_spatial_extent(size_t i, float extent) {
   ASSERT_M(
-      i < m_splines.size(),
+      i < splines_.size(),
       "CubicSplineN: index of spline to set extent"
       " of is out of range.");
-  m_splines[i].m_spatial_extent = extent;
-  m_dirty = true;
+  splines_[i].spatial_extent_ = extent;
+  dirty_ = true;
 }
 
 float CubicSplineN::get_spatial_extent(size_t i) {
   ASSERT_M(
-      i < m_splines.size(),
+      i < splines_.size(),
       "CubicSplineN: index of spline to get extent"
       " of is out of range.");
-  return m_splines[i].m_spatial_extent;
+  return splines_[i].spatial_extent_;
 }
 
 void CubicSplineN::resize(size_t s) {
-  for (spline_cont_t::iterator spline = m_splines.begin();
-       spline != m_splines.end(); ++spline) {
+  for (spline_cont_t::iterator spline = splines_.begin();
+       spline != splines_.end(); ++spline) {
     spline->resize(s);
   }
-  m_dirty = true;
+  dirty_ = true;
 }
 
 size_t CubicSplineN::size() const {
-  if (!m_splines.empty()) {
-    return m_splines[0].size();
+  if (!splines_.empty()) {
+    return splines_[0].size();
   }
   return 0;
 }
 
 bool CubicSplineN::empty() const {
-  return m_splines.empty() || m_splines[0].empty();
+  return splines_.empty() || splines_[0].empty();
 }
 
 void CubicSplineN::redimension(size_t d) {
-  m_splines.resize(d);
-  m_dirty = true;
+  splines_.resize(d);
+  dirty_ = true;
 }
 
-size_t CubicSplineN::dimension() const { return m_splines.size(); }
+size_t CubicSplineN::dimension() const { return splines_.size(); }
 
 // m_dirty is set before the member so that the set_dirty that is created
 // can actually be used to set the dirty flag. -Kyz
 #define SET_GET_MEM(member, name)         \
   void CubicSplineN::set_##name(bool b) { \
-    m_dirty = true;                       \
+    dirty_ = true;                        \
     member = b;                           \
   }                                       \
   bool CubicSplineN::get_##name() const { return member; }
 
-SET_GET_MEM(m_loop, loop);
-SET_GET_MEM(m_polygonal, polygonal);
-SET_GET_MEM(m_dirty, dirty);
+SET_GET_MEM(loop_, loop);
+SET_GET_MEM(polygonal_, polygonal);
+SET_GET_MEM(dirty_, dirty);
 
 #undef SET_GET_MEM
 
@@ -864,7 +863,7 @@ struct LunaCubicSplineN : Luna<CubicSplineN> {
     return 1;
   }
   static int set_dimension(T* p, lua_State* L) {
-    if (p->m_owned_by_actor) {
+    if (p->owned_by_actor_) {
       luaL_error(
           L,
           "This spline cannot be redimensioned because it is "
@@ -899,7 +898,7 @@ struct LunaCubicSplineN : Luna<CubicSplineN> {
   SET_GET_LUA(dirty);
 #undef SET_GET_LUA
   static int destroy(T* p, lua_State* L) {
-    if (p->m_owned_by_actor) {
+    if (p->owned_by_actor_) {
       luaL_error(
           L,
           "This spline cannot be destroyed because it is "

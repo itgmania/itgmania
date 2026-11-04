@@ -19,8 +19,8 @@ class RageSoundReader_PitchChange : public RageSoundReader_Filter {
   virtual int Read(float* pBuf, int iFrames);
   virtual bool SetProperty(const std::string& sProperty, float fValue);
 
-  void SetSpeedRatio(float fRatio) { m_fSpeedRatio = fRatio; }
-  void SetPitchRatio(float fRatio) { m_fPitchRatio = fRatio; }
+  void SetSpeedRatio(float fRatio) { speed_ratio_ = fRatio; }
+  void SetPitchRatio(float fRatio) { pitch_ratio_ = fRatio; }
 
   virtual RageSoundReader_PitchChange* Copy() const {
     return new RageSoundReader_PitchChange(*this);
@@ -28,14 +28,13 @@ class RageSoundReader_PitchChange : public RageSoundReader_Filter {
 
  private:
   RageSoundReader_SpeedChange*
-      m_pSpeedChange;  // freed by RageSoundReader_Filter
-  RageSoundReader_Resample_Good*
-      m_pResample;  // freed by RageSoundReader_Filter
+      speed_change_;                         // freed by RageSoundReader_Filter
+  RageSoundReader_Resample_Good* resample_;  // freed by RageSoundReader_Filter
 
-  float m_fSpeedRatio;
-  float m_fPitchRatio;
-  float m_fLastSetSpeedRatio;
-  float m_fLastSetPitchRatio;
+  float speed_ratio_;
+  float pitch_ratio_;
+  float last_set_speed_ratio_;
+  float last_set_pitch_ratio_;
   // Swallow up warnings. If they must be used, define them.
   RageSoundReader_PitchChange& operator=(
       const RageSoundReader_PitchChange& rhs);

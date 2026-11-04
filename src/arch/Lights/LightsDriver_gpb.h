@@ -68,10 +68,10 @@ static_assert(
 
 class LightsDriver_gpb : public LightsDriver {
  private:
-  HidDevice dev;
+  HidDevice dev_;
 
-  uint8_t outputBuffer[GPB_LIGHTINDEX_MAX];
-  uint8_t prevOutputBuffer[GPB_LIGHTINDEX_MAX];
+  uint8_t output_buffer_[GPB_LIGHTINDEX_MAX];
+  uint8_t prev_output_buffer_[GPB_LIGHTINDEX_MAX];
 
  public:
   LightsDriver_gpb();

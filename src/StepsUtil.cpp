@@ -23,29 +23,29 @@
 #include "global.h"
 
 bool StepsCriteria::Matches(const Song* pSong, const Steps* pSteps) const {
-  if (m_difficulty != Difficulty_Invalid &&
-      pSteps->GetDifficulty() != m_difficulty) {
+  if (difficulty_ != Difficulty_Invalid &&
+      pSteps->GetDifficulty() != difficulty_) {
     return false;
   }
 
-  if (m_vDifficulties.size() > 0 &&
+  if (difficulties_.size() > 0 &&
       std::find(
-          m_vDifficulties.begin(), m_vDifficulties.end(),
-          pSteps->GetDifficulty()) == m_vDifficulties.end()) {
+          difficulties_.begin(), difficulties_.end(),
+          pSteps->GetDifficulty()) == difficulties_.end()) {
     return false;
   }
 
-  if (m_iLowMeter != -1 && pSteps->GetMeter() < m_iLowMeter) {
+  if (low_meter_ != -1 && pSteps->GetMeter() < low_meter_) {
     return false;
   }
-  if (m_iHighMeter != -1 && pSteps->GetMeter() > m_iHighMeter) {
+  if (high_meter_ != -1 && pSteps->GetMeter() > high_meter_) {
     return false;
   }
-  if (m_st != StepsType_Invalid && pSteps->m_StepsType != m_st) {
+  if (st_ != StepsType_Invalid && pSteps->steps_type_ != st_) {
     return false;
   }
-  switch (m_Locked) {
-    DEFAULT_FAIL(m_Locked);
+  switch (locked_) {
+    DEFAULT_FAIL(locked_);
     case Locked_Locked:
       if (UNLOCKMAN && !UNLOCKMAN->StepsIsLocked(pSong, pSteps)) {
         return false;
@@ -66,7 +66,7 @@ bool StepsCriteria::Matches(const Song* pSong, const Steps* pSteps) const {
 void StepsUtil::GetAllMatching(
     const SongCriteria& soc, const StepsCriteria& stc,
     std::vector<SongAndSteps>& out) {
-  std::vector<std::string> groupNames = soc.m_vsGroupNames;
+  std::vector<std::string> groupNames = soc.group_names_;
   if (groupNames.size() == 0) {
     groupNames.push_back(GROUP_ALL);
   }
@@ -87,8 +87,8 @@ void StepsUtil::GetAllMatching(
 void StepsUtil::GetAllMatching(
     Song* pSong, const StepsCriteria& stc, std::vector<SongAndSteps>& out) {
   const std::vector<Steps*>& vSteps =
-      (stc.m_st == StepsType_Invalid ? pSong->GetAllSteps()
-                                     : pSong->GetStepsByStepsType(stc.m_st));
+      (stc.st_ == StepsType_Invalid ? pSong->GetAllSteps()
+                                    : pSong->GetStepsByStepsType(stc.st_));
 
   for (Steps* st : vSteps) {
     if (stc.Matches(pSong, st)) {
@@ -100,8 +100,8 @@ void StepsUtil::GetAllMatching(
 void StepsUtil::GetAllMatchingEndless(
     Song* pSong, const StepsCriteria& stc, std::vector<SongAndSteps>& out) {
   const std::vector<Steps*>& vSteps =
-      (stc.m_st == StepsType_Invalid ? pSong->GetAllSteps()
-                                     : pSong->GetStepsByStepsType(stc.m_st));
+      (stc.st_ == StepsType_Invalid ? pSong->GetAllSteps()
+                                    : pSong->GetStepsByStepsType(stc.st_));
   const size_t previousSize = out.size();
   int successful = false;
 
@@ -165,10 +165,10 @@ void StepsUtil::SortNotesArrayByDifficulty(std::vector<Steps*>& arraySteps) {
 
 bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(
     const Steps* pStep1, const Steps* pStep2) {
-  if (pStep1->m_StepsType < pStep2->m_StepsType) {
+  if (pStep1->steps_type_ < pStep2->steps_type_) {
     return true;
   }
-  if (pStep1->m_StepsType > pStep2->m_StepsType) {
+  if (pStep1->steps_type_ > pStep2->steps_type_) {
     return false;
   }
   return pStep1->GetDifficulty() < pStep2->GetDifficulty();
@@ -207,19 +207,19 @@ void StepsUtil::RemoveLockedSteps(
 
 void StepsID::FromSteps(const Steps* p) {
   if (p == nullptr) {
-    st = StepsType_Invalid;
-    dc = Difficulty_Invalid;
-    sDescription = "";
-    uHash = 0;
+    st_ = StepsType_Invalid;
+    dc_ = Difficulty_Invalid;
+    description_ = "";
+    hash_ = 0;
   } else {
-    st = p->m_StepsType;
-    dc = p->GetDifficulty();
-    if (dc == Difficulty_Edit) {
-      sDescription = p->GetDescription();
-      uHash = p->GetHash();
+    st_ = p->steps_type_;
+    dc_ = p->GetDifficulty();
+    if (dc_ == Difficulty_Edit) {
+      description_ = p->GetDescription();
+      hash_ = p->GetHash();
     } else {
-      sDescription = "";
-      uHash = 0;
+      description_ = "";
+      hash_ = 0;
     }
   }
 }
@@ -235,7 +235,7 @@ void StepsID::FromSteps(const Steps* p) {
  * instead, but then it'd have to have access to Song::m_LoadedFromProfile. */
 
 Steps* StepsID::ToSteps(const Song* p, bool bAllowNull) const {
-  if (st == StepsType_Invalid || dc == Difficulty_Invalid) {
+  if (st_ == StepsType_Invalid || dc_ == Difficulty_Invalid) {
     return nullptr;
   }
 
@@ -243,15 +243,15 @@ Steps* StepsID::ToSteps(const Song* p, bool bAllowNull) const {
   songID.FromSong(p);
 
   Steps* pRet = nullptr;
-  if (dc == Difficulty_Edit) {
-    pRet =
-        SongUtil::GetOneSteps(p, st, dc, -1, -1, sDescription, "", uHash, true);
+  if (dc_ == Difficulty_Edit) {
+    pRet = SongUtil::GetOneSteps(
+        p, st_, dc_, -1, -1, description_, "", hash_, true);
   } else {
-    pRet = SongUtil::GetOneSteps(p, st, dc, -1, -1, "", "", 0, true);
+    pRet = SongUtil::GetOneSteps(p, st_, dc_, -1, -1, "", "", 0, true);
   }
 
   if (!bAllowNull && pRet == nullptr) {
-    FAIL_M(ssprintf("%i, %i, \"%s\"", st, dc, sDescription.c_str()));
+    FAIL_M(ssprintf("%i, %i, \"%s\"", st_, dc_, description_.c_str()));
   }
 
   return pRet;
@@ -260,11 +260,11 @@ Steps* StepsID::ToSteps(const Song* p, bool bAllowNull) const {
 XNode* StepsID::CreateNode() const {
   XNode* pNode = new XNode("Steps");
 
-  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st).szName);
-  pNode->AppendAttr("Difficulty", DifficultyToString(dc));
-  if (dc == Difficulty_Edit) {
-    pNode->AppendAttr("Description", sDescription);
-    pNode->AppendAttr("Hash", uHash);
+  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st_).name_);
+  pNode->AppendAttr("Difficulty", DifficultyToString(dc_));
+  if (dc_ == Difficulty_Edit) {
+    pNode->AppendAttr("Description", description_);
+    pNode->AppendAttr("Hash", hash_);
   }
 
   return pNode;
@@ -276,44 +276,44 @@ void StepsID::LoadFromNode(const XNode* pNode) {
   std::string sTemp;
 
   pNode->GetAttrValue("StepsType", sTemp);
-  st = GAMEMAN->StringToStepsType(sTemp);
+  st_ = GAMEMAN->StringToStepsType(sTemp);
 
   pNode->GetAttrValue("Difficulty", sTemp);
-  dc = StringToDifficulty(sTemp);
+  dc_ = StringToDifficulty(sTemp);
 
-  if (dc == Difficulty_Edit) {
-    pNode->GetAttrValue("Description", sDescription);
-    pNode->GetAttrValue("Hash", uHash);
+  if (dc_ == Difficulty_Edit) {
+    pNode->GetAttrValue("Description", description_);
+    pNode->GetAttrValue("Hash", hash_);
   } else {
-    sDescription = "";
-    uHash = 0;
+    description_ = "";
+    hash_ = 0;
   }
 }
 
 std::string StepsID::ToString() const {
-  std::string s = GAMEMAN->GetStepsTypeInfo(st).szName;
-  s += " " + DifficultyToString(dc);
-  if (dc == Difficulty_Edit) {
-    s += " " + sDescription;
-    s += ssprintf(" %u", uHash);
+  std::string s = GAMEMAN->GetStepsTypeInfo(st_).name_;
+  s += " " + DifficultyToString(dc_);
+  if (dc_ == Difficulty_Edit) {
+    s += " " + description_;
+    s += ssprintf(" %u", hash_);
   }
   return s;
 }
 
 bool StepsID::IsValid() const {
-  return st != StepsType_Invalid && dc != Difficulty_Invalid;
+  return st_ != StepsType_Invalid && dc_ != Difficulty_Invalid;
 }
 
 bool StepsID::operator<(const StepsID& rhs) const {
 #define COMP(a)               \
   if (a < rhs.a) return true; \
   if (a > rhs.a) return false;
-  COMP(st);
-  COMP(dc);
-  COMP(sDescription);
+  COMP(st_);
+  COMP(dc_);
+  COMP(description_);
   // See explanation in class declaration. -Kyz
-  if (uHash != 0 && rhs.uHash != 0) {
-    COMP(uHash);
+  if (hash_ != 0 && rhs.hash_ != 0) {
+    COMP(hash_);
   }
 #undef COMP
   return false;

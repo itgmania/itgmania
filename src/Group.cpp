@@ -52,17 +52,17 @@ Group::Group(
   // songs from profile
   if (prof_slot != ProfileSlot_Invalid) {
     sPackIniPath = sDir + "/" + INI_FILE;
-    m_sPath = sDir;
-    m_sGroupName = GetInternalGroupName(prof_slot, sGroupDirName);
+    path_ = sDir;
+    group_name_ = GetInternalGroupName(prof_slot, sGroupDirName);
   } else {
     sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
-    m_sPath = sDir + sGroupDirName;
-    m_sGroupName = Basename(sGroupDirName);
+    path_ = sDir + sGroupDirName;
+    group_name_ = Basename(sGroupDirName);
   }
-  m_sDisplayTitle = m_sGroupName;
-  m_sSortTitle = m_sGroupName;
-  m_sTranslitTitle = m_sGroupName;
-  m_sSeries = "";
+  display_title_ = group_name_;
+  sort_title_ = group_name_;
+  translit_title_ = group_name_;
+  series_ = "";
   // The m_DefaultSyncOffset preference corresponds to what offset the user
   // would like to assume as a "default" for packs without a Pack.ini.
   //
@@ -71,12 +71,12 @@ Group::Group(
   //
   // We can start with that as our default value, and potentially update it
   // below.
-  m_fSyncOffset =
-      (PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL) ? 0.0f : -0.009f;
-  m_bHasPackIni = false;
-  m_iYearReleased = 0;
-  m_sBannerPath = "";
-  m_sSeriesBannerPath = "";
+  sync_offset_ =
+      (PREFSMAN->default_sync_offset_ == SyncOffset_NULL) ? 0.0f : -0.009f;
+  has_pack_ini_ = false;
+  year_released_ = 0;
+  banner_path_ = "";
+  series_banner_path_ = "";
 
   if (FILEMAN->DoesFileExist(sPackIniPath)) {
     IniFile ini;
@@ -94,16 +94,16 @@ Group::Group(
     // Only read the Pack.ini if the version is set
     // Otherwise log a warning and use default Pack.ini values
     if (!sVersion.empty()) {
-      m_bHasPackIni = true;
+      has_pack_ini_ = true;
 
       // Define a vector of key-value pairs to cleanly iterate
       std::vector<std::pair<std::string, std::string&>> vPackfields = {
-          {"DisplayTitle", m_sDisplayTitle},
-          {"SortTitle", m_sSortTitle},
-          {"TranslitTitle", m_sTranslitTitle},
-          {"Series", m_sSeries},
-          {"Banner", m_sBannerPath},
-          {"SeriesBanner", m_sSeriesBannerPath}};
+          {"DisplayTitle", display_title_},
+          {"SortTitle", sort_title_},
+          {"TranslitTitle", translit_title_},
+          {"Series", series_},
+          {"Banner", banner_path_},
+          {"SeriesBanner", series_banner_path_}};
 
       for (auto& [key, value] : vPackfields) {
         ini.GetValue("Group", key, value);
@@ -111,9 +111,9 @@ Group::Group(
 
         if (value.empty()) {
           if (key == "DisplayTitle" || key == "SortTitle") {
-            value = m_sGroupName;
+            value = group_name_;
           } else if (key == "TranslitTitle") {
-            value = m_sDisplayTitle;
+            value = display_title_;
           }
         }
 
@@ -135,9 +135,9 @@ Group::Group(
       // it's already NULL synced, which is what we shift everything to.
       if (!sValue.empty()) {
         if (sValue == "NULL") {
-          m_fSyncOffset = 0.0f;
+          sync_offset_ = 0.0f;
         } else if (sValue == "ITG") {
-          m_fSyncOffset = -0.009f;
+          sync_offset_ = -0.009f;
         } else {
           LOG->Warn(
               "Group::Group: Invalid SyncOffset value: %s in Pack.ini file "
@@ -146,7 +146,7 @@ Group::Group(
         }
       }
 
-      ini.GetValue("Group", "Year", m_iYearReleased);
+      ini.GetValue("Group", "Year", year_released_);
     } else {
       LOG->Warn(
           "Group::Group: Pack.ini version not set in file \"%s\". Using "

@@ -124,7 +124,7 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const {
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
-    : MixingThread(),
+    : mixing_thread_(),
       waveout_handle_(nullptr),
       soundevent_handle_(CreateEvent(nullptr, false, true, nullptr)),
       wo_buffers_{},
@@ -138,7 +138,7 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 
 std::string RageSoundDriver_WaveOut::Init() {
   wo_init_success_ = false;
-  wo_samplerate_ = PREFSMAN->m_iSoundPreferredSampleRate;
+  wo_samplerate_ = PREFSMAN->sound_preferred_sample_rate_;
   if (wo_samplerate_ == 0) {
     wo_samplerate_ = FALLBACK_SAMPLE_RATE;
   }
@@ -166,9 +166,9 @@ std::string RageSoundDriver_WaveOut::Init() {
   fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
 
   std::vector<UINT> deviceIds;
-  if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
+  if (!PREFSMAN->sound_device_.Get().empty()) {
     std::vector<std::string> portNames;
-    split(PREFSMAN->m_iSoundDevice.Get(), ",", portNames, true);
+    split(PREFSMAN->sound_device_.Get(), ",", portNames, true);
     for (const std::string& device : portNames) {
       int id = StringToInt(device, /*pos=*/0, /*base=*/10, /*exceptVal=*/-1);
       if (id != -1) {
@@ -210,8 +210,8 @@ std::string RageSoundDriver_WaveOut::Init() {
   SetDecodeBufferSize(wo_frames_per_block_ * 3 / 2);
   StartDecodeThread();
 
-  MixingThread.SetName("Mixer thread");
-  MixingThread.Create(MixerThread_start, this);
+  mixing_thread_.SetName("Mixer thread");
+  mixing_thread_.Create(MixerThread_start, this);
 
   wo_init_success_ = true;
   return std::string();
@@ -219,11 +219,11 @@ std::string RageSoundDriver_WaveOut::Init() {
 
 RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut() {
   /* Signal the mixing thread to quit. */
-  if (MixingThread.IsCreated()) {
+  if (mixing_thread_.IsCreated()) {
     wo_shutdown_ = true;
     SetEvent(soundevent_handle_);
     LOG->Trace("Shutting down mixer thread ...");
-    MixingThread.Wait();
+    mixing_thread_.Wait();
     LOG->Trace("Mixer thread shut down.");
   }
 

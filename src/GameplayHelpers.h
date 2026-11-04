@@ -7,8 +7,8 @@
 // sides of a player's notefield margins. 40 is an arbitrary default value for
 // the margins.
 struct NotefieldMargins {
-  float left = 40;
-  float right = 40;
+  float left_ = 40;
+  float right_ = 40;
 };
 
 // Use the lua MarginFunction (defined in metrics.ini) to calculate where the

@@ -16,9 +16,9 @@ class Sprite : public Actor {
  public:
   /** @brief The Sprite's present state. */
   struct State {
-    RectF rect;
+    RectF rect_;
     /** @brief The number of "seconds to show". */
-    float fDelay;
+    float delay_;
   };
 
   Sprite();
@@ -50,20 +50,20 @@ class Sprite : public Actor {
   void SetTexture(RageTexture* pTexture);
 
   void UnloadTexture();
-  RageTexture* GetTexture() { return m_pTexture; };
+  RageTexture* GetTexture() { return texture_; };
 
   virtual void EnableAnimation(bool bEnable) override;
 
   virtual int GetNumStates() const override;
   virtual void SetState(int iNewState) override;
-  int GetState() { return m_iCurState; }
+  int GetState() { return cur_state_; }
   virtual float GetAnimationLengthSeconds() const override {
-    return m_animation_length_seconds;
+    return animation_length_seconds_;
   }
   virtual void RecalcAnimationLengthSeconds();
   virtual void SetSecondsIntoAnimation(float fSeconds) override;
   void SetStateProperties(const std::vector<State>& new_states) {
-    m_States = new_states;
+    states_ = new_states;
     RecalcAnimationLengthSeconds();
     SetState(0);
   }
@@ -81,7 +81,7 @@ class Sprite : public Actor {
   void GetActiveTextureCoords(float fTexCoordsOut[8]) const;
   void StretchTexCoords(float fX, float fY);
   void AddImageCoords(float fX, float fY);  // in image pixel space
-  void SetEffectMode(EffectMode em) { m_EffectMode = em; }
+  void SetEffectMode(EffectMode em) { effect_mode_ = em; }
 
   void LoadFromCached(const std::string& sDir, const std::string& sPath);
 
@@ -100,9 +100,9 @@ class Sprite : public Actor {
 
   void SetAllStateDelays(float fDelay);
 
-  bool m_DecodeMovie;
+  bool decode_movie_;
 
-  bool m_use_effect_clock_for_texcoords;
+  bool use_effect_clock_for_texcoords_;
 
  protected:
   void LoadFromTexture(RageTextureID ID);
@@ -112,26 +112,26 @@ class Sprite : public Actor {
 
   void DrawTexture(const TweenState* state);
 
-  RageTexture* m_pTexture;
+  RageTexture* texture_;
 
-  std::vector<State> m_States;
-  int m_iCurState;
+  std::vector<State> states_;
+  int cur_state_;
   /** @brief The number of seconds that have elapsed since we switched to this
    * frame. */
-  float m_fSecsIntoState;
-  float m_animation_length_seconds;
+  float secs_into_state_;
+  float animation_length_seconds_;
 
-  EffectMode m_EffectMode;
-  bool m_bUsingCustomTexCoords;
-  bool m_bUsingCustomPosCoords;
-  bool m_bSkipNextUpdate;
+  EffectMode effect_mode_;
+  bool using_custom_tex_coords_;
+  bool using_custom_pos_coords_;
+  bool skip_next_update_;
   /**
    * @brief Set up the coordinates for the texture.
    *
    * The first two parameters are the (x, y) coordinates for the top left.
    * The remaining six are for the (x, y) coordinates for bottom left,
    * bottom right, and top right respectively. */
-  float m_CustomTexCoords[8];
+  float custom_tex_coords_[8];
   /**
    * @brief Set up the coordinates for the position.
    *
@@ -141,14 +141,14 @@ class Sprite : public Actor {
    * bottom right, and top right respectively.
    * These are offsets instead of a replacement for m_size to avoid
    * complicating the cropping code. */
-  float m_CustomPosCoords[8];
+  float custom_pos_coords_[8];
 
   // Remembered clipped dimensions are applied on Load().
   // -1 means no remembered dimensions;
-  float m_fRememberedClipWidth, m_fRememberedClipHeight;
+  float remembered_clip_width_, remembered_clip_height_;
 
-  float m_fTexCoordVelocityX;
-  float m_fTexCoordVelocityY;
+  float tex_coord_velocity_x_;
+  float tex_coord_velocity_y_;
 };
 
 #endif

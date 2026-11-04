@@ -27,13 +27,13 @@ static const char* FormatOSError(OSStatus status) {
 }
 
 RageSoundDriver_AU::RageSoundDriver_AU()
-    : m_OutputUnit(nullptr),
-      m_iSampleRate(0),
-      m_bDone(false),
-      m_bStarted(false),
-      m_pIOThread(nullptr),
-      m_pNotificationThread(nullptr),
-      m_Semaphore("Sound") {}
+    : output_unit_(nullptr),
+      sample_rate_(0),
+      done_(false),
+      started_(false),
+      io_thread_(nullptr),
+      notification_thread_(nullptr),
+      semaphore_("Sound") {}
 
 static void SetSampleRate(AudioUnit au, Float64 desiredRate) {
   AudioDeviceID OutputDevice;
@@ -119,9 +119,9 @@ std::string RageSoundDriver_AU::Init() {
     return "Failed to find the default output unit.";
   }
 
-  OSStatus error = AudioComponentInstanceNew(comp, &m_OutputUnit);
+  OSStatus error = AudioComponentInstanceNew(comp, &output_unit_);
 
-  if (error != noErr || m_OutputUnit == nullptr) {
+  if (error != noErr || output_unit_ == nullptr) {
     return ssprintf("Could not open the default output unit: %s", FormatOSError(error));
   }
 
@@ -131,7 +131,7 @@ std::string RageSoundDriver_AU::Init() {
   input.inputProcRefCon = this;
 
   error = AudioUnitSetProperty(
-      m_OutputUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &input,
+      output_unit_, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &input,
       sizeof(input));
   if (error != noErr) {
     return ssprintf("Failed to set render callback: %s", FormatOSError(error));
@@ -139,7 +139,7 @@ std::string RageSoundDriver_AU::Init() {
 
   AudioStreamBasicDescription streamFormat;
 
-  streamFormat.mSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+  streamFormat.mSampleRate = PREFSMAN->sound_preferred_sample_rate_;
   streamFormat.mFormatID = kAudioFormatLinearPCM;
   streamFormat.mFormatFlags = kFormatFlags;
   streamFormat.mBytesPerPacket = kBytesPerPacket;
@@ -151,14 +151,14 @@ std::string RageSoundDriver_AU::Init() {
   if (streamFormat.mSampleRate <= 0.0) {
     streamFormat.mSampleRate = FALLBACK_SAMPLE_RATE;
   }
-  m_iSampleRate = int(streamFormat.mSampleRate);
-  m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
+  sample_rate_ = int(streamFormat.mSampleRate);
+  time_scale_ = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
   // Try to set the hardware sample rate.
-  SetSampleRate(m_OutputUnit, streamFormat.mSampleRate);
+  SetSampleRate(output_unit_, streamFormat.mSampleRate);
 
   error = AudioUnitSetProperty(
-      m_OutputUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &streamFormat,
+      output_unit_, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &streamFormat,
       sizeof(AudioStreamBasicDescription));
   if (error != noErr) {
     return ssprintf("Failed to set AU stream format: %s", FormatOSError(error));
@@ -166,42 +166,42 @@ std::string RageSoundDriver_AU::Init() {
   UInt32 renderQuality = kRenderQuality_Max;
 
   error = AudioUnitSetProperty(
-      m_OutputUnit, kAudioUnitProperty_RenderQuality, kAudioUnitScope_Global, 0, &renderQuality,
+      output_unit_, kAudioUnitProperty_RenderQuality, kAudioUnitScope_Global, 0, &renderQuality,
       sizeof(renderQuality));
   if (error != noErr) {
     LOG->Warn("Failed to set the maximum render quality: %s", FormatOSError(error));
   }
 
   // Initialize the AU.
-  if ((error = AudioUnitInitialize(m_OutputUnit))) {
+  if ((error = AudioUnitInitialize(output_unit_))) {
     return ssprintf("Could not initialize the AudioUnit: %s", FormatOSError(error));
   }
 
   StartDecodeThread();
 
-  if ((error = AudioOutputUnitStart(m_OutputUnit))) {
+  if ((error = AudioOutputUnitStart(output_unit_))) {
     return ssprintf("Could not start the AudioUnit: %s", FormatOSError(error));
   }
-  m_bStarted = true;
+  started_ = true;
   return std::string();
 }
 
 RageSoundDriver_AU::~RageSoundDriver_AU() {
-  if (!m_OutputUnit) {
+  if (!output_unit_) {
     return;
   }
-  if (m_bStarted) {
-    m_bDone = true;
-    m_Semaphore.Wait();
+  if (started_) {
+    done_ = true;
+    semaphore_.Wait();
   }
-  AudioUnitUninitialize(m_OutputUnit);
-  AudioComponentInstanceDispose(m_OutputUnit);
-  delete m_pIOThread;
-  delete m_pNotificationThread;
+  AudioUnitUninitialize(output_unit_);
+  AudioComponentInstanceDispose(output_unit_);
+  delete io_thread_;
+  delete notification_thread_;
 }
 
 int64_t RageSoundDriver_AU::GetPosition() const {
-  return int64_t(m_TimeScale * AudioGetCurrentHostTime());
+  return int64_t(time_scale_ * AudioGetCurrentHostTime());
 }
 
 void RageSoundDriver_AU::SetupDecodingThread() {
@@ -220,7 +220,7 @@ float RageSoundDriver_AU::GetPlayLatency() const {
   Float64 sampleRate;
 
   if ((error = AudioUnitGetProperty(
-           m_OutputUnit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
+           output_unit_, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
            &OutputDevice, &size))) {
     LOG->Warn("No output device: %s", FormatOSError(error));
     return 0.0f;
@@ -318,18 +318,18 @@ OSStatus RageSoundDriver_AU::Render(
     UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData) {
   RageSoundDriver_AU* This = (RageSoundDriver_AU*)inRefCon;
 
-  if (unlikely(This->m_pIOThread == nullptr)) {
-    This->m_pIOThread = new RageThreadRegister("HAL I/O thread");
+  if (unlikely(This->io_thread_ == nullptr)) {
+    This->io_thread_ = new RageThreadRegister("HAL I/O thread");
   }
 
   AudioBuffer& buf = ioData->mBuffers[0];
-  int64_t now = int64_t(This->m_TimeScale * AudioGetCurrentHostTime());
-  int64_t next = int64_t(This->m_TimeScale * inTimeStamp->mHostTime);
+  int64_t now = int64_t(This->time_scale_ * AudioGetCurrentHostTime());
+  int64_t next = int64_t(This->time_scale_ * inTimeStamp->mHostTime);
 
   This->Mix((float*)buf.mData, inNumberFrames, next, now);
-  if (unlikely(This->m_bDone)) {
-    AudioOutputUnitStop(This->m_OutputUnit);
-    This->m_Semaphore.Post();
+  if (unlikely(This->done_)) {
+    AudioOutputUnitStop(This->output_unit_);
+    This->semaphore_.Post();
   }
   return noErr;
 }

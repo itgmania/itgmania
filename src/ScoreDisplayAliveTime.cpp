@@ -15,7 +15,7 @@
 REGISTER_ACTOR_CLASS(ScoreDisplayAliveTime);
 
 ScoreDisplayAliveTime::ScoreDisplayAliveTime() {
-  m_PlayerNumber = PLAYER_INVALID;
+  player_number_ = PLAYER_INVALID;
 }
 
 ScoreDisplayAliveTime::~ScoreDisplayAliveTime() {}
@@ -26,7 +26,7 @@ void ScoreDisplayAliveTime::LoadFromNode(const XNode* pNode) {
   {
     Lua* L = LUA->Get();
     bool b = pNode->PushAttrValue(L, "PlayerNumber");
-    LuaHelpers::Pop(L, m_PlayerNumber);
+    LuaHelpers::Pop(L, player_number_);
     ASSERT(b);
     LUA->Release(L);
   }
@@ -44,14 +44,14 @@ void ScoreDisplayAliveTime::HandleMessage(const Message& msg) {
 
 void ScoreDisplayAliveTime::UpdateNumber() {
   float fSecsIntoPlay = 0;
-  ASSERT(m_PlayerNumber != PLAYER_INVALID);
-  if (m_PlayerNumber != PLAYER_INVALID &&
-      GAMESTATE->IsPlayerEnabled(m_PlayerNumber)) {
+  ASSERT(player_number_ != PLAYER_INVALID);
+  if (player_number_ != PLAYER_INVALID &&
+      GAMESTATE->IsPlayerEnabled(player_number_)) {
     fSecsIntoPlay =
         STATSMAN->GetAccumPlayedStageStats()
-            .m_player[m_PlayerNumber]
-            .m_fAliveSeconds +
-        STATSMAN->m_CurStageStats.m_player[m_PlayerNumber].m_fAliveSeconds;
+            .player_[player_number_]
+            .alive_seconds_ +
+        STATSMAN->cur_stage_stats_.player_[player_number_].alive_seconds_;
   }
 
   SetText(SecondsToMMSSMsMs(fSecsIntoPlay));

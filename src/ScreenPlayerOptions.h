@@ -18,21 +18,21 @@ class ScreenPlayerOptions : public ScreenOptionsMaster {
 
   virtual bool Input(const InputEventPlus& input);
   virtual void HandleScreenMessage(const ScreenMessage SM);
-  bool GetGoToOptions() const { return m_bGoToOptions; }
+  bool GetGoToOptions() const { return go_to_options_; }
 
   // Lua
   virtual void PushSelf(lua_State* L);
 
  private:
-  std::vector<bool> m_bRowCausesDisqualified[NUM_PLAYERS];
+  std::vector<bool> row_causes_disqualified_[NUM_PLAYERS];
   void UpdateDisqualified(int row, PlayerNumber pn);
 
-  bool m_bAcceptedChoices;
-  bool m_bGoToOptions;
-  bool m_bAskOptionsMessage;
+  bool accepted_choices_;
+  bool go_to_options_;
+  bool ask_options_message_;
 
   // show if the current selections will disqualify a high score
-  AutoActor m_sprDisqualify[NUM_PLAYERS];
+  AutoActor spr_disqualify_[NUM_PLAYERS];
 };
 
 #endif

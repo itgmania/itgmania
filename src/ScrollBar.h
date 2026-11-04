@@ -14,13 +14,13 @@ class ScrollBar : public ActorFrame {
   void SetPercentage(float fCenterPercent, float fSizePercent);
 
  protected:
-  int m_iBarHeight;
+  int bar_height_;
 
-  AutoActor m_sprMiddle;
-  AutoActor m_sprTop;
-  AutoActor m_sprBottom;
-  AutoActor m_sprScrollTickThumb;
-  AutoActor m_sprScrollStretchThumb[2];
+  AutoActor spr_middle_;
+  AutoActor spr_top_;
+  AutoActor spr_bottom_;
+  AutoActor spr_scroll_tick_thumb_;
+  AutoActor spr_scroll_stretch_thumb_[2];
 };
 
 #endif

@@ -26,53 +26,53 @@ WheelNotifyIcon::WheelNotifyIcon() {
 }
 
 void WheelNotifyIcon::SetFlags(Flags flags) {
-  m_vIconsToShow.clear();
+  icons_to_show_.clear();
 
   // push onto vector in highest to lowest priority
 
-  switch (flags.iPlayersBestNumber) {
+  switch (flags.players_best_number_) {
     case 1:
-      m_vIconsToShow.push_back(best1);
+      icons_to_show_.push_back(best1);
       break;
     case 2:
-      m_vIconsToShow.push_back(best2);
+      icons_to_show_.push_back(best2);
       break;
     case 3:
-      m_vIconsToShow.push_back(best3);
+      icons_to_show_.push_back(best3);
       break;
   }
 
-  if (flags.bEdits) {
-    m_vIconsToShow.push_back(edits);
+  if (flags.edits_) {
+    icons_to_show_.push_back(edits);
   }
 
-  switch (flags.iStagesForSong) {
+  switch (flags.stages_for_song_) {
     case 1:
       break;
     case 2:
-      m_vIconsToShow.push_back(long_ver);
+      icons_to_show_.push_back(long_ver);
       break;
     case 3:
-      m_vIconsToShow.push_back(marathon);
+      icons_to_show_.push_back(marathon);
       break;
     default:
-      FAIL_M(ssprintf("flags.iStagesForSong = %d", flags.iStagesForSong));
+      FAIL_M(ssprintf("flags.stages_for_song_ = %d", flags.stages_for_song_));
   }
 
-  if (flags.bHasBeginnerOr1Meter && (bool)SHOW_TRAINING) {
-    m_vIconsToShow.push_back(training);
+  if (flags.has_beginner_or1_meter_ && (bool)SHOW_TRAINING) {
+    icons_to_show_.push_back(training);
   }
 
   // If BLINK_BEST_ICON, make player's best icon blink if it's the only icon.
-  if (m_vIconsToShow.size() == 1 && BLINK_BEST_ICON) {
-    if (m_vIconsToShow[0] >= best1 && m_vIconsToShow[0] <= best3) {
-      m_vIconsToShow.push_back(empty);
+  if (icons_to_show_.size() == 1 && BLINK_BEST_ICON) {
+    if (icons_to_show_[0] >= best1 && icons_to_show_[0] <= best3) {
+      icons_to_show_.push_back(empty);
     }
   }
 
   const unsigned int newSize = std::min<unsigned int>(
-      m_vIconsToShow.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
-  m_vIconsToShow.resize(newSize);
+      icons_to_show_.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
+  icons_to_show_.resize(newSize);
 
   // Broadcast Set message so items can react. (futures) -aj
   // Message msg("Set");
@@ -84,21 +84,21 @@ void WheelNotifyIcon::SetFlags(Flags flags) {
 }
 
 bool WheelNotifyIcon::EarlyAbortDraw() const {
-  if (m_vIconsToShow.empty()) {
+  if (icons_to_show_.empty()) {
     return true;
   }
   return Sprite::EarlyAbortDraw();
 }
 
 void WheelNotifyIcon::Update(float fDeltaTime) {
-  if (m_vIconsToShow.size() > 0) {
+  if (icons_to_show_.size() > 0) {
     /* We should probably end up parsing the vector and then dynamically
      * insert flag icons based on "priority". Easy to do, hopefully
             - Midiman */
     static uint_fast32_t updateCounter = 0;
     updateCounter++;
-    const int index = updateCounter % m_vIconsToShow.size();
-    Sprite::SetState(m_vIconsToShow[index]);
+    const int index = updateCounter % icons_to_show_.size();
+    Sprite::SetState(icons_to_show_[index]);
   }
 
   Sprite::Update(fDeltaTime);

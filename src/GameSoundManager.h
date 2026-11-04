@@ -20,25 +20,25 @@ class GameSoundManager {
 
   struct PlayMusicParams {
     PlayMusicParams() {
-      pTiming = nullptr;
-      bForceLoop = false;
-      fStartSecond = 0;
-      fLengthSeconds = -1;
-      fFadeInLengthSeconds = 0;
-      fFadeOutLengthSeconds = 0;
-      bAlignBeat = true;
-      bApplyMusicRate = false;
+      timing_ = nullptr;
+      force_loop_ = false;
+      start_second_ = 0;
+      length_seconds_ = -1;
+      fade_in_length_seconds_ = 0;
+      fade_out_length_seconds_ = 0;
+      align_beat_ = true;
+      apply_music_rate_ = false;
     }
 
-    std::string sFile;
-    const TimingData* pTiming;
-    bool bForceLoop;
-    float fStartSecond;
-    float fLengthSeconds;
-    float fFadeInLengthSeconds;
-    float fFadeOutLengthSeconds;
-    bool bAlignBeat;
-    bool bApplyMusicRate;
+    std::string file_;
+    const TimingData* timing_;
+    bool force_loop_;
+    float start_second_;
+    float length_seconds_;
+    float fade_in_length_seconds_;
+    float fade_out_length_seconds_;
+    bool align_beat_;
+    bool apply_music_rate_;
   };
   void PlayMusic(
       PlayMusicParams params,

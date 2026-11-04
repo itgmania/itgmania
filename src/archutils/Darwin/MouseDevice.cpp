@@ -11,16 +11,16 @@
 #include "RageUtil.h"
 
 Mouse::Mouse()
-    : id(InputDevice_Invalid),
-      x_axis(0),
-      y_axis(0),
-      z_axis(0),
-      x_min(0),
-      x_max(0),
-      y_min(0),
-      y_max(0),
-      z_min(0),
-      z_max(0) {}
+    : id_(InputDevice_Invalid),
+      x_axis_(0),
+      y_axis_(0),
+      z_axis_(0),
+      x_min_(0),
+      x_max_(0),
+      y_min_(0),
+      y_max_(0),
+      z_min_(0),
+      z_max_(0) {}
 
 bool MouseDevice::AddLogicalDevice(int usagePage, int usage) {
   if (usagePage != kHIDPage_GenericDesktop) {
@@ -36,7 +36,7 @@ bool MouseDevice::AddLogicalDevice(int usagePage, int usage) {
       return false;
   }
   // Init only a single mouse for now.
-  m_Mouse = Mouse();
+  mouse_ = Mouse();
   return true;
 }
 
@@ -47,7 +47,7 @@ void MouseDevice::AddElement(
     return;
   }
 
-  Mouse& m = m_Mouse;
+  Mouse& m = mouse_;
 
   switch (usagePage) {
     case kHIDPage_GenericDesktop: {  // ease scope
@@ -61,20 +61,20 @@ void MouseDevice::AddElement(
       // based on usage
       switch (usage) {
         case kHIDUsage_GD_X:
-          m.x_axis = cookie;
-          m.x_min = iMin;
-          m.x_max = iMax;
+          m.x_axis_ = cookie;
+          m.x_min_ = iMin;
+          m.x_max_ = iMax;
           break;
         case kHIDUsage_GD_Y:
-          m.y_axis = cookie;
-          m.y_min = iMin;
-          m.y_max = iMax;
+          m.y_axis_ = cookie;
+          m.y_min_ = iMin;
+          m.y_max_ = iMax;
           break;
         case kHIDUsage_GD_Z:
         case kHIDUsage_GD_Wheel:  // also handle wheel
-          m.z_axis = cookie;
-          m.z_min = iMin;
-          m.z_max = iMax;
+          m.z_axis_ = cookie;
+          m.z_min_ = iMin;
+          m.z_max_ = iMax;
           break;
         default:
           // LOG->Warn( "Unknown usagePage usage pair: (kHIDPage_GenericDesktop,
@@ -87,7 +87,7 @@ void MouseDevice::AddElement(
           enum_add2(MOUSE_LEFT, usage - kHIDUsage_Button_1);
 
       if (buttonID <= MOUSE_MIDDLE) {
-        m_Mapping[cookie] = buttonID;
+        mapping_[cookie] = buttonID;
       } else {
         LOG->Warn("Button id too large: %d.", int(buttonID));
       }
@@ -101,16 +101,16 @@ void MouseDevice::AddElement(
 }
 
 void MouseDevice::Open() {
-  const Mouse& m = m_Mouse;
+  const Mouse& m = mouse_;
 #define ADD(x) \
   if (m.x) AddElementToQueue(m.x)
-  ADD(x_axis);
-  ADD(y_axis);
-  ADD(z_axis);
+  ADD(x_axis_);
+  ADD(y_axis_);
+  ADD(z_axis_);
 #undef ADD
   for (std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator i =
-           m_Mapping.begin();
-       i != m_Mapping.end(); ++i) {
+           mapping_.begin();
+       i != mapping_.end(); ++i) {
     AddElementToQueue(i->first);
   }
 }
@@ -119,28 +119,28 @@ void MouseDevice::GetButtonPresses(
     std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   // todo: add mouse axis stuff -aj
-  const Mouse& m = m_Mouse;
+  const Mouse& m = mouse_;
   HRESULT result;
   IOHIDEventStruct hidEvent;
   // result =
-  // (*m_Interface)->getElementValue(hidDeviceInterface,cookie,&hidEvent);
+  // (*interface_)->getElementValue(hidDeviceInterface,cookie,&hidEvent);
 
-  if (m.x_axis == cookie) {
-    // INPUTFILTER->UpdateCursorLocation(value,m.y_axis);
+  if (m.x_axis_ == cookie) {
+    // INPUTFILTER->UpdateCursorLocation(value,m.y_axis_);
     LOG->Trace("Mouse X: Value = %i", value);
-  } else if (m.y_axis == cookie) {
-    // INPUTFILTER->UpdateCursorLocation(m.x_axis,value);
+  } else if (m.y_axis_ == cookie) {
+    // INPUTFILTER->UpdateCursorLocation(m.x_axis_,value);
     LOG->Trace("Mouse Y: Value = %i", value);
-  } else if (m.z_axis == cookie) {
-    float level = SCALE(value, m.z_min, m.z_max, -1.0f, 1.0f);
+  } else if (m.z_axis_ == cookie) {
+    float level = SCALE(value, m.z_min_, m.z_max_, -1.0f, 1.0f);
     INPUTFILTER->ButtonPressed(
         DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP, std::max(-level, 0.0f), now));
     INPUTFILTER->ButtonPressed(DeviceInput(
         DEVICE_MOUSE, MOUSE_WHEELDOWN, std::max(+level, 0.0f), now));
   } else {
     std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter =
-        m_Mapping.find(cookie);
-    if (iter != m_Mapping.end()) {
+        mapping_.find(cookie);
+    if (iter != mapping_.end()) {
       vPresses.push_back(DeviceInput(DEVICE_MOUSE, iter->second, value, now));
     }
   }

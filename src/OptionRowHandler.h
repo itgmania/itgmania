@@ -51,29 +51,29 @@ LuaDeclareType(ReloadChanged);
 /** @brief Define the purpose of the OptionRow. */
 struct OptionRowDefinition {
   /** @brief the name of the option row. */
-  std::string m_sName;
+  std::string name_;
   /** @brief an explanation of the row's purpose. */
-  std::string m_sExplanationName;
+  std::string explanation_name_;
   /** @brief Do all players have to share one option from the row? */
-  bool m_bOneChoiceForAllPlayers;
-  SelectType m_selectType;
-  LayoutType m_layoutType;
-  std::vector<std::string> m_vsChoices;
-  std::set<PlayerNumber> m_vEnabledForPlayers;  // only players in this set may
+  bool one_choice_for_all_players_;
+  SelectType select_type_;
+  LayoutType layout_type_;
+  std::vector<std::string> choices_;
+  std::set<PlayerNumber> enabled_for_players_;  // only players in this set may
                                                 // change focus to this row
-  int m_iDefault;
-  bool m_bExportOnChange;
-  bool m_bHideOnDisable;
+  int default_;
+  bool export_on_change_;
+  bool hide_on_disable_;
   /**
    * @brief Are theme items allowed here?
    *
    * This should be true for dynamic strings. */
-  bool m_bAllowThemeItems;
+  bool allow_theme_items_;
   /**
    * @brief Are theme titles allowed here?
    *
    * This should be true for dynamic strings. */
-  bool m_bAllowThemeTitle;
+  bool allow_theme_title_;
   /**
    * @brief Are explanations allowed for this row?
    *
@@ -81,47 +81,47 @@ struct OptionRowDefinition {
    * metric.
    *
    * This should be true for dynamic strings. */
-  bool m_bAllowExplanation;
+  bool allow_explanation_;
 
   /**
    * @brief Is this option enabled for the Player?
    * @param pn the Player the PlayerNumber represents.
    * @return true if the option is enabled, false otherwise. */
   bool IsEnabledForPlayer(PlayerNumber pn) const {
-    return m_vEnabledForPlayers.find(pn) != m_vEnabledForPlayers.end();
+    return enabled_for_players_.find(pn) != enabled_for_players_.end();
   }
 
   OptionRowDefinition()
-      : m_sName(""),
-        m_sExplanationName(""),
-        m_bOneChoiceForAllPlayers(false),
-        m_selectType(SELECT_ONE),
-        m_layoutType(LAYOUT_SHOW_ALL_IN_ROW),
-        m_vsChoices(),
-        m_vEnabledForPlayers(),
-        m_iDefault(-1),
-        m_bExportOnChange(false),
-        m_bHideOnDisable(false),
-        m_bAllowThemeItems(true),
-        m_bAllowThemeTitle(true),
-        m_bAllowExplanation(true) {
-    FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
+      : name_(""),
+        explanation_name_(""),
+        one_choice_for_all_players_(false),
+        select_type_(SELECT_ONE),
+        layout_type_(LAYOUT_SHOW_ALL_IN_ROW),
+        choices_(),
+        enabled_for_players_(),
+        default_(-1),
+        export_on_change_(false),
+        hide_on_disable_(false),
+        allow_theme_items_(true),
+        allow_theme_title_(true),
+        allow_explanation_(true) {
+    FOREACH_PlayerNumber(pn) enabled_for_players_.insert(pn);
   }
   void Init() {
-    m_sName = "";
-    m_sExplanationName = "";
-    m_bOneChoiceForAllPlayers = false;
-    m_selectType = SELECT_ONE;
-    m_layoutType = LAYOUT_SHOW_ALL_IN_ROW;
-    m_vsChoices.clear();
-    m_vEnabledForPlayers.clear();
-    FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
-    m_iDefault = -1;
-    m_bExportOnChange = false;
-    m_bHideOnDisable = false;
-    m_bAllowThemeItems = true;
-    m_bAllowThemeTitle = true;
-    m_bAllowExplanation = true;
+    name_ = "";
+    explanation_name_ = "";
+    one_choice_for_all_players_ = false;
+    select_type_ = SELECT_ONE;
+    layout_type_ = LAYOUT_SHOW_ALL_IN_ROW;
+    choices_.clear();
+    enabled_for_players_.clear();
+    FOREACH_PlayerNumber(pn) enabled_for_players_.insert(pn);
+    default_ = -1;
+    export_on_change_ = false;
+    hide_on_disable_ = false;
+    allow_theme_items_ = true;
+    allow_theme_title_ = true;
+    allow_explanation_ = true;
   }
 
   OptionRowDefinition(
@@ -135,23 +135,23 @@ struct OptionRowDefinition {
       const char* c14 = nullptr, const char* c15 = nullptr,
       const char* c16 = nullptr, const char* c17 = nullptr,
       const char* c18 = nullptr, const char* c19 = nullptr)
-      : m_sName(n),
-        m_sExplanationName(""),
-        m_bOneChoiceForAllPlayers(b),
-        m_selectType(SELECT_ONE),
-        m_layoutType(LAYOUT_SHOW_ALL_IN_ROW),
-        m_vsChoices(),
-        m_vEnabledForPlayers(),
-        m_iDefault(-1),
-        m_bExportOnChange(false),
-        m_bHideOnDisable(false),
-        m_bAllowThemeItems(true),
-        m_bAllowThemeTitle(true),
-        m_bAllowExplanation(true) {
-    FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
+      : name_(n),
+        explanation_name_(""),
+        one_choice_for_all_players_(b),
+        select_type_(SELECT_ONE),
+        layout_type_(LAYOUT_SHOW_ALL_IN_ROW),
+        choices_(),
+        enabled_for_players_(),
+        default_(-1),
+        export_on_change_(false),
+        hide_on_disable_(false),
+        allow_theme_items_(true),
+        allow_theme_title_(true),
+        allow_explanation_(true) {
+    FOREACH_PlayerNumber(pn) enabled_for_players_.insert(pn);
 
 #define PUSH(c) \
-  if (c) m_vsChoices.push_back(c);
+  if (c) choices_.push_back(c);
     PUSH(c0);
     PUSH(c1);
     PUSH(c2);
@@ -179,15 +179,15 @@ struct OptionRowDefinition {
 /** @brief Shows PlayerOptions and SongOptions in icon form. */
 class OptionRowHandler {
  public:
-  OptionRowDefinition m_Def;
+  OptionRowDefinition def_;
   std::vector<std::string>
-      m_vsReloadRowMessages;  // refresh this row on on these messages
+      reload_row_messages_;  // refresh this row on on these messages
 
-  OptionRowHandler() : m_Def(), m_vsReloadRowMessages() {}
+  OptionRowHandler() : def_(), reload_row_messages_() {}
   virtual ~OptionRowHandler() {}
   virtual void Init() {
-    m_Def.Init();
-    m_vsReloadRowMessages.clear();
+    def_.Init();
+    reload_row_messages_.clear();
   }
   bool Load(const Commands& cmds) {
     Init();

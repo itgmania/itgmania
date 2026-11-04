@@ -20,13 +20,13 @@ class ActorFrameTexture : public ActorFrame {
    * to load the texture.  If no name is supplied, a unique one will
    * be generated.
    * @param sName the new name. */
-  void SetTextureName(const std::string& sName) { m_sTextureName = sName; }
-  RageTextureRenderTarget* GetTexture() { return m_pRenderTarget; }
+  void SetTextureName(const std::string& sName) { texture_name_ = sName; }
+  RageTextureRenderTarget* GetTexture() { return render_target_; }
 
-  void EnableDepthBuffer(bool b) { m_bDepthBuffer = b; }
-  void EnableAlphaBuffer(bool b) { m_bAlphaBuffer = b; }
-  void EnableFloat(bool b) { m_bFloat = b; }
-  void EnablePreserveTexture(bool b) { m_bPreserveTexture = b; }
+  void EnableDepthBuffer(bool b) { depth_buffer_ = b; }
+  void EnableAlphaBuffer(bool b) { alpha_buffer_ = b; }
+  void EnableFloat(bool b) { float_ = b; }
+  void EnablePreserveTexture(bool b) { preserve_texture_ = b; }
 
   void Create();
 
@@ -36,14 +36,14 @@ class ActorFrameTexture : public ActorFrame {
   virtual void PushSelf(lua_State* L);
 
  private:
-  RageTextureRenderTarget* m_pRenderTarget;
+  RageTextureRenderTarget* render_target_;
 
-  bool m_bDepthBuffer;
-  bool m_bAlphaBuffer;
-  bool m_bFloat;
-  bool m_bPreserveTexture;
+  bool depth_buffer_;
+  bool alpha_buffer_;
+  bool float_;
+  bool preserve_texture_;
   /** @brief the name of this ActorFrameTexture. */
-  std::string m_sTextureName;
+  std::string texture_name_;
 };
 
 class ActorFrameTextureAutoDeleteChildren : public ActorFrameTexture {

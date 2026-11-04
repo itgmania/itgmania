@@ -9,14 +9,14 @@ class RageTimer {
  public:
   /* Initialize the m_secs and m_us values to 0 and then fill them with the
    * current time. */
-  RageTimer() : m_secs(0), m_us(0) { Touch(); }
-  RageTimer(uint64_t secs, uint64_t us) : m_secs(secs), m_us(us) {}
+  RageTimer() : secs_(0), us_(0) { Touch(); }
+  RageTimer(uint64_t secs, uint64_t us) : secs_(secs), us_(us) {}
 
   /* Time ago this RageTimer represents. */
   float Ago() const;
   void Touch();
-  inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-  inline void SetZero() { m_secs = m_us = 0; }
+  inline bool IsZero() const { return secs_ == 0 && us_ == 0; }
+  inline void SetZero() { secs_ = us_ = 0; }
 
   /* Time between last call to GetDeltaTime() (Ago() + Touch()): */
   float GetDeltaTime();
@@ -47,7 +47,7 @@ class RageTimer {
    * microseconds values into two integers and combining them later allows for
    * better precision. Use caution when changing data types, since resolution
    * mismatch errors are easy to cause when changing things in RageTimer. */
-  uint64_t m_secs, m_us;
+  uint64_t secs_, us_;
 
  private:
   static RageTimer Sum(const RageTimer& lhs, float tm);

@@ -63,67 +63,67 @@ class ScreenEvaluation : public ScreenWithMenuElements {
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuRestart(const InputEventPlus& input);
   virtual void PushSelf(lua_State* L);
-  StageStats* GetStageStats() { return m_pStageStats; }
+  StageStats* GetStageStats() { return stage_stats_; }
 
  protected:
   void HandleMenuStart();
 
-  StageStats* m_pStageStats;
-  StageStats m_FinalEvalStageStats;
+  StageStats* stage_stats_;
+  StageStats final_eval_stage_stats_;
 
   // banner area
-  Banner m_LargeBanner;
-  AutoActor m_sprLargeBannerFrame;
-  BitmapText m_textPlayerOptions[NUM_PLAYERS];
-  BitmapText m_textSongOptions;
-  AutoActor m_sprDisqualified[NUM_PLAYERS];
-  Banner m_SmallBanner[MAX_SONGS_TO_SHOW];
-  AutoActor m_sprSmallBannerFrame[MAX_SONGS_TO_SHOW];
+  Banner large_banner_;
+  AutoActor spr_large_banner_frame_;
+  BitmapText text_player_options_[NUM_PLAYERS];
+  BitmapText text_song_options_;
+  AutoActor spr_disqualified_[NUM_PLAYERS];
+  Banner small_banner_[MAX_SONGS_TO_SHOW];
+  AutoActor spr_small_banner_frame_[MAX_SONGS_TO_SHOW];
 
   // grade area
-  AutoActor m_sprGradeFrame[NUM_PLAYERS];
-  GradeDisplay m_Grades[NUM_PLAYERS];
+  AutoActor spr_grade_frame_[NUM_PLAYERS];
+  GradeDisplay grades_[NUM_PLAYERS];
 
   // points area
-  PercentageDisplay m_Percent[NUM_PLAYERS];
-  AutoActor m_sprPercentFrame[NUM_PLAYERS];
+  PercentageDisplay percent_[NUM_PLAYERS];
+  AutoActor spr_percent_frame_[NUM_PLAYERS];
 
   // bonus area
-  AutoActor m_sprBonusFrame[NUM_PLAYERS];
-  Sprite m_sprPossibleBar[NUM_PLAYERS][NUM_RadarCategory];
-  Sprite m_sprActualBar[NUM_PLAYERS][NUM_RadarCategory];
+  AutoActor spr_bonus_frame_[NUM_PLAYERS];
+  Sprite spr_possible_bar_[NUM_PLAYERS][NUM_RadarCategory];
+  Sprite spr_actual_bar_[NUM_PLAYERS][NUM_RadarCategory];
 
   // survived area
-  AutoActor m_sprSurvivedFrame[NUM_PLAYERS];
-  BitmapText m_textSurvivedNumber[NUM_PLAYERS];
+  AutoActor spr_survived_frame_[NUM_PLAYERS];
+  BitmapText text_survived_number_[NUM_PLAYERS];
 
   // win area
-  AutoActor m_sprWinFrame[NUM_PLAYERS];
-  Sprite m_sprWin[NUM_PLAYERS];
+  AutoActor spr_win_frame_[NUM_PLAYERS];
+  Sprite spr_win_[NUM_PLAYERS];
 
   // judgment area
-  AutoActor m_sprSharedJudgmentLineLabels[NUM_JudgmentLine];
-  RollingNumbers m_textJudgmentLineNumber[NUM_JudgmentLine][NUM_PLAYERS];
+  AutoActor spr_shared_judgment_line_labels_[NUM_JudgmentLine];
+  RollingNumbers text_judgment_line_number_[NUM_JudgmentLine][NUM_PLAYERS];
 
   // stats area
-  AutoActor m_sprDetailFrame[NUM_PLAYERS];
-  BitmapText m_textDetailText[NUM_DetailLine][NUM_PLAYERS];
+  AutoActor spr_detail_frame_[NUM_PLAYERS];
+  BitmapText text_detail_text_[NUM_DetailLine][NUM_PLAYERS];
 
   // score area
-  AutoActor m_sprScoreLabel;
-  RollingNumbers m_textScore[NUM_PLAYERS];
+  AutoActor spr_score_label_;
+  RollingNumbers text_score_[NUM_PLAYERS];
 
   // time area
-  AutoActor m_sprTimeLabel;
-  BitmapText m_textTime[NUM_PLAYERS];
+  AutoActor spr_time_label_;
+  BitmapText text_time_[NUM_PLAYERS];
 
-  RageSound m_soundStart;  // sound played if the player passes or fails
+  RageSound sound_start_;  // sound played if the player passes or fails
 
   ThemeMetric<bool> SUMMARY;
   ThemeMetric<std::string> ROLLING_NUMBERS_CLASS;
   ThemeMetric<std::string> ROLLING_NUMBERS_MAX_COMBO_CLASS;
   /** @brief Did a player save a screenshot of their score? */
-  bool m_bSavedScreenshot[NUM_PLAYERS];
+  bool saved_screenshot_[NUM_PLAYERS];
 };
 
 #endif

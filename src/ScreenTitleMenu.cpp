@@ -18,8 +18,7 @@
 #include "ScreenSelectMaster.h"
 #include "ThemeManager.h"
 
-#define COIN_MODE_CHANGE_SCREEN \
-  THEME->GetMetric(m_sName, "CoinModeChangeScreen")
+#define COIN_MODE_CHANGE_SCREEN THEME->GetMetric(name_, "CoinModeChangeScreen")
 
 REGISTER_SCREEN_CLASS(ScreenTitleMenu);
 ScreenTitleMenu::ScreenTitleMenu() {
@@ -45,39 +44,41 @@ static LocalizedString ANNOUNCER_("ScreenTitleMenu", "Announcer");
 bool ScreenTitleMenu::Input(const InputEventPlus& input) {
 #if defined(DEBUG)
   LOG->Trace(
-      "ScreenTitleMenu::Input( %d-%d )", input.DeviceI.device,
-      input.DeviceI.button);  // debugging gameport joystick problem
+      "ScreenTitleMenu::Input( %d-%d )", input.device_i_.device_,
+      input.device_i_.button_);  // debugging gameport joystick problem
 #endif
 
-  if (m_In.IsTransitioning() || m_Cancel.IsTransitioning()) { /* not m_Out */
+  if (in_.IsTransitioning() || cancel_.IsTransitioning()) { /* not m_Out */
     return false;
   }
 
   bool bHandled = false;
-  if (input.type == IET_FIRST_PRESS) {
+  if (input.type_ == IET_FIRST_PRESS) {
     // detect codes
-    if (CodeDetector::EnteredCode(input.GameI.controller, CODE_OPERATOR_MENU)) {
+    if (CodeDetector::EnteredCode(
+            input.game_i_.controller_, CODE_OPERATOR_MENU)) {
       SCREENMAN->SetNewScreen(CommonMetrics::OPERATOR_MENU_SCREEN);
       return true;
     }
     // Theme changing pad codes are marked as deprecated in _fallback's
     // metrics.ini, remove them after SM5? -Kyz
-    if (CodeDetector::EnteredCode(input.GameI.controller, CODE_NEXT_THEME) ||
-        CodeDetector::EnteredCode(input.GameI.controller, CODE_NEXT_THEME2)) {
+    if (CodeDetector::EnteredCode(input.game_i_.controller_, CODE_NEXT_THEME) ||
+        CodeDetector::EnteredCode(
+            input.game_i_.controller_, CODE_NEXT_THEME2)) {
       GameLoop::ChangeTheme(THEME->GetNextSelectableTheme());
       bHandled = true;
     }
     if (CodeDetector::EnteredCode(
-            input.GameI.controller, CODE_NEXT_ANNOUNCER) ||
+            input.game_i_.controller_, CODE_NEXT_ANNOUNCER) ||
         CodeDetector::EnteredCode(
-            input.GameI.controller, CODE_NEXT_ANNOUNCER2)) {
+            input.game_i_.controller_, CODE_NEXT_ANNOUNCER2)) {
       ANNOUNCER->NextAnnouncer();
       std::string sName = ANNOUNCER->GetCurAnnouncerName();
       if (sName == "") {
         sName = "(none)";
       }
       SCREENMAN->SystemMessage(ANNOUNCER_.GetValue() + ": " + sName);
-      SCREENMAN->SetNewScreen(m_sName);
+      SCREENMAN->SetNewScreen(name_);
       bHandled = true;
     }
   }

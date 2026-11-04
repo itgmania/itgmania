@@ -19,7 +19,7 @@ class LuaReference {
   LuaReference& operator=(const LuaReference& cpy);
 
   // Convenience constructor.
-  LuaReference(Lua* L) : m_iReference(LUA_NOREF) { SetFromStack(L); }
+  LuaReference(Lua* L) : reference_(LUA_NOREF) { SetFromStack(L); }
 
   /* Create a reference pointing to the item at the top of the stack, and pop
    * the stack. */
@@ -78,7 +78,7 @@ class LuaReference {
 
  private:
   void Unregister();
-  int m_iReference;
+  int reference_;
 };
 
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;

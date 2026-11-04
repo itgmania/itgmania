@@ -32,19 +32,19 @@ LuaXType(SoundEffectType);
 
 void SongOptions::Approach(const SongOptions& other, float fDeltaSeconds) {
 #define APPROACH(opt) \
-  fapproach(m_##opt, other.m_##opt, fDeltaSeconds* other.m_Speed##opt);
+  fapproach(opt, other.opt, fDeltaSeconds* other.speed_##opt);
 #define DO_COPY(x) x = other.x;
 
-  APPROACH(fMusicRate);
-  APPROACH(fHaste);
-  DO_COPY(m_bAssistClap);
-  DO_COPY(m_bAssistMetronome);
-  DO_COPY(m_AutosyncType);
-  DO_COPY(m_SoundEffectType);
-  DO_COPY(m_bStaticBackground);
-  DO_COPY(m_bRandomBGOnly);
-  DO_COPY(m_bSaveScore);
-  DO_COPY(m_bSaveReplay);
+  APPROACH(music_rate_);
+  APPROACH(haste_);
+  DO_COPY(assist_clap_);
+  DO_COPY(assist_metronome_);
+  DO_COPY(autosync_type_);
+  DO_COPY(sound_effect_type_);
+  DO_COPY(static_background_);
+  DO_COPY(random_bg_only_);
+  DO_COPY(save_score_);
+  DO_COPY(save_replay_);
 #undef APPROACH
 #undef DO_COPY
 }
@@ -63,17 +63,17 @@ static void AddPart(
 }
 
 void SongOptions::GetMods(std::vector<std::string>& AddTo) const {
-  if (m_fMusicRate != 1) {
-    std::string s = ssprintf("%2.2f", m_fMusicRate);
+  if (music_rate_ != 1) {
+    std::string s = ssprintf("%2.2f", music_rate_);
     if (s[s.size() - 1] == '0') {
       s.erase(s.size() - 1);
     }
     AddTo.push_back(s + "xMusic");
   }
 
-  AddPart(AddTo, m_fHaste, "Haste");
+  AddPart(AddTo, haste_, "Haste");
 
-  switch (m_AutosyncType) {
+  switch (autosync_type_) {
     case AutosyncType_Off:
       break;
     case AutosyncType_Song:
@@ -86,10 +86,10 @@ void SongOptions::GetMods(std::vector<std::string>& AddTo) const {
       AddTo.push_back("AutosyncTempo");
       break;
     default:
-      FAIL_M(ssprintf("Invalid autosync type: %i", m_AutosyncType));
+      FAIL_M(ssprintf("Invalid autosync type: %i", autosync_type_));
   }
 
-  switch (m_SoundEffectType) {
+  switch (sound_effect_type_) {
     case SoundEffectType_Off:
       break;
     case SoundEffectType_Speed:
@@ -99,20 +99,20 @@ void SongOptions::GetMods(std::vector<std::string>& AddTo) const {
       AddTo.push_back("EffectPitch");
       break;
     default:
-      FAIL_M(ssprintf("Invalid sound effect type: %i", m_SoundEffectType));
+      FAIL_M(ssprintf("Invalid sound effect type: %i", sound_effect_type_));
   }
 
-  if (m_bAssistClap) {
+  if (assist_clap_) {
     AddTo.push_back("Clap");
   }
-  if (m_bAssistMetronome) {
+  if (assist_metronome_) {
     AddTo.push_back("Metronome");
   }
 
-  if (m_bStaticBackground) {
+  if (static_background_) {
     AddTo.push_back("StaticBG");
   }
-  if (m_bRandomBGOnly) {
+  if (random_bg_only_) {
     AddTo.push_back("RandomBG");
   }
 }
@@ -157,7 +157,7 @@ bool SongOptions::FromOneModString(
   Regex mult("^([0-9]+(\\.[0-9]+)?)xmusic$");
   std::vector<std::string> matches;
   if (mult.Compare(sBit, matches)) {
-    m_fMusicRate = StringToFloat(matches[0]);
+    music_rate_ = StringToFloat(matches[0]);
     return true;
   }
 
@@ -174,31 +174,31 @@ bool SongOptions::FromOneModString(
   }
 
   if (sBit == "clap") {
-    m_bAssistClap = on;
+    assist_clap_ = on;
   } else if (sBit == "metronome") {
-    m_bAssistMetronome = on;
+    assist_metronome_ = on;
   } else if (sBit == "autosync" || sBit == "autosyncsong") {
-    m_AutosyncType = on ? AutosyncType_Song : AutosyncType_Off;
+    autosync_type_ = on ? AutosyncType_Song : AutosyncType_Off;
   } else if (sBit == "autosyncmachine") {
-    m_AutosyncType = on ? AutosyncType_Machine : AutosyncType_Off;
+    autosync_type_ = on ? AutosyncType_Machine : AutosyncType_Off;
   } else if (sBit == "autosynctempo") {
-    m_AutosyncType = on ? AutosyncType_Tempo : AutosyncType_Off;
+    autosync_type_ = on ? AutosyncType_Tempo : AutosyncType_Off;
   } else if (sBit == "effect" && !on) {
-    m_SoundEffectType = SoundEffectType_Off;
+    sound_effect_type_ = SoundEffectType_Off;
   } else if (sBit == "effectspeed") {
-    m_SoundEffectType = on ? SoundEffectType_Speed : SoundEffectType_Off;
+    sound_effect_type_ = on ? SoundEffectType_Speed : SoundEffectType_Off;
   } else if (sBit == "effectpitch") {
-    m_SoundEffectType = on ? SoundEffectType_Pitch : SoundEffectType_Off;
+    sound_effect_type_ = on ? SoundEffectType_Pitch : SoundEffectType_Off;
   } else if (sBit == "staticbg") {
-    m_bStaticBackground = on;
+    static_background_ = on;
   } else if (sBit == "randombg") {
-    m_bRandomBGOnly = on;
+    random_bg_only_ = on;
   } else if (sBit == "savescore") {
-    m_bSaveScore = on;
+    save_score_ = on;
   } else if (sBit == "savereplay") {
-    m_bSaveReplay = on;
+    save_replay_ = on;
   } else if (sBit == "haste") {
-    m_fHaste = on ? 1.0f : 0.0f;
+    haste_ = on ? 1.0f : 0.0f;
   } else {
     return false;
   }
@@ -207,34 +207,34 @@ bool SongOptions::FromOneModString(
 }
 
 bool SongOptions::operator==(const SongOptions& other) const {
-  if (m_fMusicRate != other.m_fMusicRate) {
+  if (music_rate_ != other.music_rate_) {
     return false;
   }
-  if (m_fHaste != other.m_fHaste) {
+  if (haste_ != other.haste_) {
     return false;
   }
-  if (m_bAssistClap != other.m_bAssistClap) {
+  if (assist_clap_ != other.assist_clap_) {
     return false;
   }
-  if (m_bAssistMetronome != other.m_bAssistMetronome) {
+  if (assist_metronome_ != other.assist_metronome_) {
     return false;
   }
-  if (m_AutosyncType != other.m_AutosyncType) {
+  if (autosync_type_ != other.autosync_type_) {
     return false;
   }
-  if (m_SoundEffectType != other.m_SoundEffectType) {
+  if (sound_effect_type_ != other.sound_effect_type_) {
     return false;
   }
-  if (m_bStaticBackground != other.m_bStaticBackground) {
+  if (static_background_ != other.static_background_) {
     return false;
   }
-  if (m_bRandomBGOnly != other.m_bRandomBGOnly) {
+  if (random_bg_only_ != other.random_bg_only_) {
     return false;
   }
-  if (m_bSaveScore != other.m_bSaveScore) {
+  if (save_score_ != other.save_score_) {
     return false;
   }
-  if (m_bSaveReplay != other.m_bSaveReplay) {
+  if (save_replay_ != other.save_replay_) {
     return false;
   }
   return true;
@@ -247,21 +247,21 @@ bool SongOptions::operator==(const SongOptions& other) const {
 /** @brief Allow Lua to have access to SongOptions. */
 class LunaSongOptions : public Luna<SongOptions> {
  public:
-  ENUM_INTERFACE(AutosyncSetting, AutosyncType, AutosyncType);
+  ENUM_INTERFACE(AutosyncSetting, autosync_type_, AutosyncType);
   // ENUM_INTERFACE(SoundEffectSetting, SoundEffectType, SoundEffectType);
   //  Broken, SoundEffectType_Speed disables rate mod, other settings have no
   //  effect. -Kyz
-  BOOL_INTERFACE(AssistClap, AssistClap);
-  BOOL_INTERFACE(AssistMetronome, AssistMetronome);
-  BOOL_INTERFACE(StaticBackground, StaticBackground);
-  BOOL_INTERFACE(RandomBGOnly, RandomBGOnly);
-  BOOL_INTERFACE(SaveScore, SaveScore);
-  BOOL_INTERFACE(SaveReplay, SaveReplay);
+  BOOL_INTERFACE(AssistClap, assist_clap_);
+  BOOL_INTERFACE(AssistMetronome, assist_metronome_);
+  BOOL_INTERFACE(StaticBackground, static_background_);
+  BOOL_INTERFACE(RandomBGOnly, random_bg_only_);
+  BOOL_INTERFACE(SaveScore, save_score_);
+  BOOL_INTERFACE(SaveReplay, save_replay_);
   FLOAT_INTERFACE(
-      MusicRate, MusicRate,
+      MusicRate, music_rate_,
       (v > 0.0f && v <= 3.0f));  // Greater than 3 seems to crash frequently,
                                  // haven't investigated why. -Kyz
-  FLOAT_INTERFACE(Haste, Haste, (v >= -1.0f && v <= 1.0f));
+  FLOAT_INTERFACE(Haste, haste_, (v >= -1.0f && v <= 1.0f));
 
   LunaSongOptions() {
     ADD_METHOD(AutosyncSetting);

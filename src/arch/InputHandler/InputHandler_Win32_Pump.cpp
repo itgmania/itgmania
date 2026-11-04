@@ -14,13 +14,13 @@
 REGISTER_INPUT_HANDLER_CLASS2(Pump, Win32_Pump);
 
 InputHandler_Win32_Pump::InputHandler_Win32_Pump() {
-  m_bShutdown = false;
+  shutdown_ = false;
   const int pump_usb_vid = 0x0d2f;
   const int pump_usb_pids[2] = {
       0x0001 /* older model */, 0x0003 /* shipped with Exceed */
   };
 
-  m_pDevice = new USBDevice[NUM_PUMPS];
+  device_ = new USBDevice[NUM_PUMPS];
 
   int iNumFound = 0;
   // TODO: Use C++1x semantics to loop through the pids.
@@ -28,7 +28,7 @@ InputHandler_Win32_Pump::InputHandler_Win32_Pump() {
   for (int p = 0; p < 2; ++p) {
     const int pump_usb_pid = pump_usb_pids[p];
     for (int i = 0; i < NUM_PUMPS; ++i) {
-      if (m_pDevice[i].Open(
+      if (device_[i].Open(
               pump_usb_vid, pump_usb_pid, sizeof(long), i, nullptr)) {
         iNumFound++;
         LOG->Info("Found Pump pad %i", iNumFound);
@@ -37,21 +37,21 @@ InputHandler_Win32_Pump::InputHandler_Win32_Pump() {
   }
 
   /* Don't start a thread if we have no pads. */
-  if (iNumFound > 0 && PREFSMAN->m_bThreadedInput) {
-    InputThread.SetName("Pump thread");
-    InputThread.Create(InputThread_Start, this);
+  if (iNumFound > 0 && PREFSMAN->threaded_input_) {
+    input_thread_.SetName("Pump thread");
+    input_thread_.Create(InputThread_Start, this);
   }
 }
 
 InputHandler_Win32_Pump::~InputHandler_Win32_Pump() {
-  if (InputThread.IsCreated()) {
-    m_bShutdown = true;
+  if (input_thread_.IsCreated()) {
+    shutdown_ = true;
     LOG->Trace("Shutting down Pump thread ...");
-    InputThread.Wait();
+    input_thread_.Wait();
     LOG->Trace("Pump thread shut down.");
   }
 
-  delete[] m_pDevice;
+  delete[] device_;
 }
 
 void InputHandler_Win32_Pump::HandleInput(int iDevice, int iEvent) {
@@ -68,8 +68,8 @@ void InputHandler_Win32_Pump::HandleInput(int iDevice, int iEvent) {
         id, enum_add2(JOY_BUTTON_1, iButton), !(iEvent & bits[iButton]));
 
     /* If we're in a thread, our timestamp is accurate. */
-    if (InputThread.IsCreated()) {
-      di.ts.Touch();
+    if (input_thread_.IsCreated()) {
+      di.ts_.Touch();
     }
 
     ButtonPressed(di);
@@ -78,7 +78,7 @@ void InputHandler_Win32_Pump::HandleInput(int iDevice, int iEvent) {
 
 std::string InputHandler_Win32_Pump::GetDeviceSpecificInputString(
     const DeviceInput& di) {
-  switch (di.button) {
+  switch (di.button_) {
     case JOY_BUTTON_1:
       return "UL";
     case JOY_BUTTON_2:
@@ -109,7 +109,7 @@ std::string InputHandler_Win32_Pump::GetDeviceSpecificInputString(
 void InputHandler_Win32_Pump::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
   for (int i = 0; i < NUM_PUMPS; ++i) {
-    if (m_pDevice[i].IsOpen()) {
+    if (device_[i].IsOpen()) {
       vDevicesOut.push_back(
           InputDeviceInfo(InputDevice(DEVICE_PUMP1 + i), "Pump USB"));
     }
@@ -133,12 +133,12 @@ void InputHandler_Win32_Pump::InputThreadMain() {
 
   std::vector<WindowsFileIO*> apSources;
   for (int i = 0; i < NUM_PUMPS; ++i) {
-    if (m_pDevice[i].m_IO.IsOpen()) {
-      apSources.push_back(&m_pDevice[i].m_IO);
+    if (device_[i].io_.IsOpen()) {
+      apSources.push_back(&device_[i].io_);
     }
   }
 
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     CHECKPOINT;
     int iActual = 0, iVal = 0;
     int iRet = WindowsFileIO::read_several(apSources, &iVal, iActual, 0.100f);
@@ -155,9 +155,9 @@ void InputHandler_Win32_Pump::InputThreadMain() {
 }
 
 void InputHandler_Win32_Pump::Update() {
-  if (!InputThread.IsCreated()) {
+  if (!input_thread_.IsCreated()) {
     for (int i = 0; i < NUM_PUMPS; ++i) {
-      int iRet = m_pDevice[i].GetPadEvent();
+      int iRet = device_[i].GetPadEvent();
 
       if (iRet == -1) {
         continue; /* no event */

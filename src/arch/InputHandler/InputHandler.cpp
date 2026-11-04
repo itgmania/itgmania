@@ -16,23 +16,23 @@
 #include <vector>
 
 void InputHandler::UpdateTimer() {
-  m_LastUpdate.Touch();
-  m_iInputsSinceUpdate = 0;
+  last_update_.Touch();
+  inputs_since_update_ = 0;
 }
 
 void InputHandler::ButtonPressed(DeviceInput di) {
-  if (di.ts.IsZero()) {
-    di.ts = m_LastUpdate.Half();
-    ++m_iInputsSinceUpdate;
+  if (di.ts_.IsZero()) {
+    di.ts_ = last_update_.Half();
+    ++inputs_since_update_;
   }
 
   INPUTFILTER->ButtonPressed(di);
 
-  if (m_iInputsSinceUpdate >= 1000) {
+  if (inputs_since_update_ >= 1000) {
     /*
      * We haven't received an update in a long time, so warn about it.  We
      * expect to receive input events before the first UpdateTimer call only on
-     * the first update.  Leave m_iInputsSinceUpdate where it is, so we only
+     * the first update.  Leave inputs_since_update_ where it is, so we only
      * warn once.  Only updates that didn't provide a timestamp are counted; if
      * the driver provides its own timestamps, UpdateTimer is optional.
      */
@@ -176,31 +176,31 @@ static LocalizedString PGDN("DeviceButton", "PgDn");
 static LocalizedString BACKSLASH("DeviceButton", "Backslash");
 
 std::string InputHandler::GetDeviceSpecificInputString(const DeviceInput& di) {
-  if (di.device == InputDevice_Invalid) {
+  if (di.device_ == InputDevice_Invalid) {
     return std::string();
   }
 
-  if (di.device == DEVICE_KEYBOARD) {
-    if (di.button >= KEY_KP_C0 && di.button <= KEY_KP_ENTER) {
-      return DeviceButtonToString(di.button);
+  if (di.device_ == DEVICE_KEYBOARD) {
+    if (di.button_ >= KEY_KP_C0 && di.button_ <= KEY_KP_ENTER) {
+      return DeviceButtonToString(di.button_);
     }
 
-    wchar_t c = DeviceButtonToChar(di.button, false);
+    wchar_t c = DeviceButtonToChar(di.button_, false);
     if (c && c != L' ') {  // Don't show "Key  " for space.
-      return InputDeviceToString(di.device) + " " +
+      return InputDeviceToString(di.device_) + " " +
              Capitalize(WStringToRString(std::wstring() + c));
     }
   }
 
-  std::string s = DeviceButtonToString(di.button);
-  if (di.device != DEVICE_KEYBOARD) {
-    s = InputDeviceToString(di.device) + " " + s;
+  std::string s = DeviceButtonToString(di.button_);
+  if (di.device_ != DEVICE_KEYBOARD) {
+    s = InputDeviceToString(di.device_) + " " + s;
   }
   return s;
 }
 
 std::string InputHandler::GetLocalizedInputString(const DeviceInput& di) {
-  switch (di.button) {
+  switch (di.button_) {
     case KEY_HOME:
       return HOME.GetValue();
     case KEY_END:
@@ -231,16 +231,16 @@ std::string InputHandler::GetLocalizedInputString(const DeviceInput& di) {
     case KEY_BACKSLASH:
       return BACKSLASH.GetValue();
     default:
-      wchar_t c = DeviceButtonToChar(di.button, false);
+      wchar_t c = DeviceButtonToChar(di.button_, false);
       if (c && c != L' ') {  // Don't show "Key  " for space.
         return Capitalize(WStringToRString(std::wstring() + c));
       }
 
-      return DeviceButtonToString(di.button);
+      return DeviceButtonToString(di.button_);
   }
 }
 
-DriverList InputHandler::m_pDriverList;
+DriverList InputHandler::driver_list_;
 
 static LocalizedString INPUT_HANDLERS_EMPTY(
     "Arch", "Input Handlers cannot be empty.");
@@ -255,7 +255,7 @@ void InputHandler::Create(
   }
 
   for (const std::string& s : driversToTry) {
-    RageDriver* pDriver = InputHandler::m_pDriverList.Create(s);
+    RageDriver* pDriver = InputHandler::driver_list_.Create(s);
     if (pDriver == nullptr) {
       LOG->Trace("Unknown Input Handler name: %s", s.c_str());
       continue;

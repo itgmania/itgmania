@@ -9,25 +9,25 @@
 
 RageSoundReader_Pan::RageSoundReader_Pan(RageSoundReader* pSource)
     : RageSoundReader_Filter(pSource) {
-  m_fPan = 0;
+  pan_ = 0;
 }
 
 int RageSoundReader_Pan::Read(float* pBuf, int iFrames) {
-  iFrames = m_pSource->Read(pBuf, iFrames);
+  iFrames = source_->Read(pBuf, iFrames);
   if (iFrames < 0) {
     return iFrames;
   }
 
-  int iSamples = iFrames * m_pSource->GetNumChannels();
+  int iSamples = iFrames * source_->GetNumChannels();
 
-  if (m_pSource->GetNumChannels() == 1) {
+  if (source_->GetNumChannels() == 1) {
     RageSoundUtil::ConvertMonoToStereoInPlace(pBuf, iSamples);
     iSamples *= 2;
   }
 
   /* This block goes from iStreamFrame to iStreamFrame+iGotFrames. */
-  if (GetNumChannels() == 2 && m_fPan != 0.0) {
-    RageSoundUtil::Pan(pBuf, iFrames, m_fPan);
+  if (GetNumChannels() == 2 && pan_ != 0.0) {
+    RageSoundUtil::Pan(pBuf, iFrames, pan_);
   }
 
   return iFrames;
@@ -40,7 +40,7 @@ unsigned RageSoundReader_Pan::GetNumChannels() const {
 bool RageSoundReader_Pan::SetProperty(
     const std::string& sProperty, float fValue) {
   if (sProperty == "Pan") {
-    m_fPan = fValue;
+    pan_ = fValue;
     return true;
   }
 

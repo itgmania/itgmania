@@ -32,12 +32,12 @@ const std::string NEXT_ROW_NAME = "NextRow";
 const std::string EXIT_NAME = "Exit";
 
 std::string OptionRow::GetThemedItemText(int iChoice) const {
-  std::string s = m_pHand->GetThemedItemText(iChoice);
+  std::string s = hand_->GetThemedItemText(iChoice);
 
   // HACK: Always theme the NEXT_ROW and EXIT items.
-  if (m_bFirstItemGoesDown && iChoice == 0) {
+  if (first_item_goes_down_ && iChoice == 0) {
     s = CommonMetrics::LocalizeOptionItem(NEXT_ROW_NAME, false);
-  } else if (m_RowType == OptionRow::RowType_Exit) {
+  } else if (row_type_ == OptionRow::RowType_Exit) {
     s = CommonMetrics::LocalizeOptionItem(EXIT_NAME, false);
   }
 
@@ -52,14 +52,14 @@ std::string MOD_ICON_X_NAME(size_t p) {
 }
 
 OptionRow::OptionRow(const OptionRowType* pSource) {
-  m_pParentType = pSource;
-  m_pHand = nullptr;
+  parent_type_ = pSource;
+  hand_ = nullptr;
 
-  m_textTitle = nullptr;
-  ZERO(m_ModIcons);
+  text_title_ = nullptr;
+  ZERO(mod_icons_);
 
   Clear();
-  this->AddChild(&m_Frame);
+  this->AddChild(&frame_);
 }
 
 OptionRow::~OptionRow() { Clear(); }
@@ -67,26 +67,26 @@ OptionRow::~OptionRow() { Clear(); }
 void OptionRow::Clear() {
   ActorFrame::RemoveAllChildren();
 
-  FOREACH_PlayerNumber(p) m_vbSelected[p].clear();
+  FOREACH_PlayerNumber(p) selected_[p].clear();
 
-  m_Frame.DeleteAllChildren();
-  m_textItems.clear();
-  FOREACH_PlayerNumber(p) m_Underline[p].clear();
+  frame_.DeleteAllChildren();
+  text_items_.clear();
+  FOREACH_PlayerNumber(p) underline_[p].clear();
 
-  if (m_pHand != nullptr) {
-    for (const std::string& m : m_pHand->m_vsReloadRowMessages) {
+  if (hand_ != nullptr) {
+    for (const std::string& m : hand_->reload_row_messages_) {
       MESSAGEMAN->Unsubscribe(this, m);
     }
   }
-  RageUtil::SafeDelete(m_pHand);
+  RageUtil::SafeDelete(hand_);
 
-  m_bFirstItemGoesDown = false;
-  ZERO(m_bRowHasFocus);
-  ZERO(m_iChoiceInRowWithFocus);
+  first_item_goes_down_ = false;
+  ZERO(row_has_focus_);
+  ZERO(choice_in_row_with_focus_);
 }
 
 void OptionRowType::Load(const std::string& sMetricsGroup, Actor* pParent) {
-  m_sMetricsGroup = sMetricsGroup;
+  metrics_group_ = sMetricsGroup;
 
   ITEMS_START_X.Load(sMetricsGroup, "ItemsStartX");
   ITEMS_END_X.Load(sMetricsGroup, "ItemsEndX");
@@ -104,41 +104,41 @@ void OptionRowType::Load(const std::string& sMetricsGroup, Actor* pParent) {
   SHOW_UNDERLINES.Load(sMetricsGroup, "ShowUnderlines");
   MOD_ICON_METRICS_GROUP.Load(sMetricsGroup, "ModIconMetricsGroup");
 
-  m_textItem.LoadFromFont(THEME->GetPathF(sMetricsGroup, "Item"));
-  m_textItem.SetName("Item");
-  ActorUtil::LoadAllCommands(m_textItem, sMetricsGroup);
+  text_item_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "Item"));
+  text_item_.SetName("Item");
+  ActorUtil::LoadAllCommands(text_item_, sMetricsGroup);
 
   if (SHOW_UNDERLINES) {
-    FOREACH_PlayerNumber(p) m_Underline[p].Load(
+    FOREACH_PlayerNumber(p) underline_[p].Load(
         "OptionsUnderline" + PlayerNumberToString(p), false);
   }
 
-  m_textTitle.LoadFromFont(THEME->GetPathF(sMetricsGroup, "title"));
-  m_textTitle.SetName("Title");
-  ActorUtil::LoadAllCommandsAndSetXY(m_textTitle, sMetricsGroup);
+  text_title_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "title"));
+  text_title_.SetName("Title");
+  ActorUtil::LoadAllCommandsAndSetXY(text_title_, sMetricsGroup);
 
   Actor* pActor =
       ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "Frame"), pParent);
   if (pActor == nullptr) {
     pActor = new Actor;
   }
-  m_sprFrame.Load(pActor);
-  m_sprFrame->SetName("Frame");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprFrame, sMetricsGroup);
+  spr_frame_.Load(pActor);
+  spr_frame_->SetName("Frame");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_frame_, sMetricsGroup);
 
   if (SHOW_MOD_ICONS) {
-    m_ModIcon.Load(MOD_ICON_METRICS_GROUP);
-    m_ModIcon.SetName("ModIcon");
-    ActorUtil::LoadAllCommands(m_ModIcon, sMetricsGroup);
+    mod_icon_.Load(MOD_ICON_METRICS_GROUP);
+    mod_icon_.SetName("ModIcon");
+    ActorUtil::LoadAllCommands(mod_icon_, sMetricsGroup);
   }
 }
 
 void OptionRow::LoadNormal(OptionRowHandler* pHand, bool bFirstItemGoesDown) {
-  m_RowType = OptionRow::RowType_Normal;
-  m_pHand = pHand;
-  m_bFirstItemGoesDown = bFirstItemGoesDown;
+  row_type_ = OptionRow::RowType_Normal;
+  hand_ = pHand;
+  first_item_goes_down_ = bFirstItemGoesDown;
 
-  for (const std::string& m : m_pHand->m_vsReloadRowMessages) {
+  for (const std::string& m : hand_->reload_row_messages_) {
     MESSAGEMAN->Subscribe(this, m);
   }
 
@@ -146,46 +146,43 @@ void OptionRow::LoadNormal(OptionRowHandler* pHand, bool bFirstItemGoesDown) {
 }
 
 void OptionRow::LoadExit() {
-  m_RowType = OptionRow::RowType_Exit;
+  row_type_ = OptionRow::RowType_Exit;
   OptionRowHandler* pHand = OptionRowHandlerUtil::MakeNull();
-  pHand->m_Def.m_selectType = SELECT_NONE;
-  pHand->m_Def.m_sName = EXIT_NAME;
-  pHand->m_Def.m_vsChoices.push_back(EXIT_NAME);
-  pHand->m_Def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
-  pHand->m_Def.m_bOneChoiceForAllPlayers = true;
-  m_pHand = pHand;
+  pHand->def_.select_type_ = SELECT_NONE;
+  pHand->def_.name_ = EXIT_NAME;
+  pHand->def_.choices_.push_back(EXIT_NAME);
+  pHand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
+  pHand->def_.one_choice_for_all_players_ = true;
+  hand_ = pHand;
 
   ChoicesChanged(RowType_Exit);
 }
 
 void OptionRow::ChoicesChanged(RowType type, bool reset_focus) {
   ASSERT_M(
-      !m_pHand->m_Def.m_vsChoices.empty(),
-      m_pHand->m_Def.m_sName + " has no choices");
+      !hand_->def_.choices_.empty(), hand_->def_.name_ + " has no choices");
 
   // Remove the NextRow marker before reloading choices
-  if (m_pHand->m_Def.m_vsChoices[0] == NEXT_ROW_NAME) {
-    m_pHand->m_Def.m_vsChoices.erase(m_pHand->m_Def.m_vsChoices.begin());
-    FOREACH_PlayerNumber(p) m_vbSelected[p].erase(m_vbSelected[p].begin());
+  if (hand_->def_.choices_[0] == NEXT_ROW_NAME) {
+    hand_->def_.choices_.erase(hand_->def_.choices_.begin());
+    FOREACH_PlayerNumber(p) selected_[p].erase(selected_[p].begin());
   }
 
   FOREACH_PlayerNumber(p) {
-    std::vector<bool>& vbSelected = m_vbSelected[p];
+    std::vector<bool>& vbSelected = selected_[p];
     vbSelected.resize(0);
-    vbSelected.resize(m_pHand->m_Def.m_vsChoices.size(), false);
+    vbSelected.resize(hand_->def_.choices_.size(), false);
 
     // set select the first item if a SELECT_ONE row
-    if (vbSelected.size() && m_pHand->m_Def.m_selectType == SELECT_ONE) {
+    if (vbSelected.size() && hand_->def_.select_type_ == SELECT_ONE) {
       vbSelected[0] = true;
     }
   }
 
   // TRICKY: Insert a down arrow as the first choice in the row.
-  if (m_bFirstItemGoesDown) {
-    m_pHand->m_Def.m_vsChoices.insert(
-        m_pHand->m_Def.m_vsChoices.begin(), NEXT_ROW_NAME);
-    FOREACH_PlayerNumber(p) m_vbSelected[p].insert(
-        m_vbSelected[p].begin(), false);
+  if (first_item_goes_down_) {
+    hand_->def_.choices_.insert(hand_->def_.choices_.begin(), NEXT_ROW_NAME);
+    FOREACH_PlayerNumber(p) selected_[p].insert(selected_[p].begin(), false);
   }
 
   InitText(type);
@@ -197,21 +194,21 @@ void OptionRow::ChoicesChanged(RowType type, bool reset_focus) {
     FOREACH_PlayerNumber(p) SetChoiceInRowWithFocus(p, 0);
   }
 
-  m_textTitle->SetText(GetRowTitle());
+  text_title_->SetText(GetRowTitle());
 }
 
 std::string OptionRow::GetRowTitle() const {
-  std::string sTitle = m_pHand->OptionTitle();
+  std::string sTitle = hand_->OptionTitle();
 
   // HACK: tack the BPM onto the name of the speed line
-  if (CompareNoCase(m_pHand->m_Def.m_sName, "speed") == 0) {
-    bool bShowBpmInSpeedTitle = m_pParentType->SHOW_BPM_IN_SPEED_TITLE;
+  if (CompareNoCase(hand_->def_.name_, "speed") == 0) {
+    bool bShowBpmInSpeedTitle = parent_type_->SHOW_BPM_IN_SPEED_TITLE;
 
-    if (GAMESTATE->m_pCurCourse) {
+    if (GAMESTATE->cur_course_) {
       const Trail* pTrail =
-          GAMESTATE->m_pCurTrail[GAMESTATE->GetMasterPlayerNumber()];
+          GAMESTATE->cur_trail_[GAMESTATE->GetMasterPlayerNumber()];
       ASSERT(pTrail != nullptr);
-      const int iNumCourseEntries = pTrail->m_vEntries.size();
+      const int iNumCourseEntries = pTrail->entries_.size();
       if (iNumCourseEntries >
           CommonMetrics::MAX_COURSE_ENTRIES_BEFORE_VARIOUS) {
         bShowBpmInSpeedTitle = false;
@@ -220,14 +217,14 @@ std::string OptionRow::GetRowTitle() const {
 
     if (bShowBpmInSpeedTitle) {
       DisplayBpms bpms;
-      if (GAMESTATE->m_pCurSong) {
-        const Song* pSong = GAMESTATE->m_pCurSong;
+      if (GAMESTATE->cur_song_) {
+        const Song* pSong = GAMESTATE->cur_song_;
         pSong->GetDisplayBpms(bpms);
-      } else if (GAMESTATE->m_pCurCourse) {
-        const Course* pCourse = GAMESTATE->m_pCurCourse;
+      } else if (GAMESTATE->cur_course_) {
+        const Course* pCourse = GAMESTATE->cur_course_;
         StepsType st =
             GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-                ->m_StepsType;
+                ->steps_type_;
         const Trail* pTrail = pCourse->GetTrail(st);
         ASSERT(pTrail != nullptr);
         pTrail->GetDisplayBpms(bpms);
@@ -253,26 +250,26 @@ std::string OptionRow::GetRowTitle() const {
 void OptionRow::InitText(RowType type) {
   /* If we have elements already, we're being updated from a new set of options.
    * Delete the old ones. */
-  m_Frame.DeleteAllChildren();
-  m_textItems.clear();
-  FOREACH_PlayerNumber(p) m_Underline[p].clear();
+  frame_.DeleteAllChildren();
+  text_items_.clear();
+  FOREACH_PlayerNumber(p) underline_[p].clear();
 
-  m_textTitle = new BitmapText(m_pParentType->m_textTitle);
-  m_Frame.AddChild(m_textTitle);
+  text_title_ = new BitmapText(parent_type_->text_title_);
+  frame_.AddChild(text_title_);
 
-  m_sprFrame = m_pParentType->m_sprFrame->Copy();
-  m_sprFrame->SetDrawOrder(-1);  // under title
-  m_Frame.AddChild(m_sprFrame);
+  spr_frame_ = parent_type_->spr_frame_->Copy();
+  spr_frame_->SetDrawOrder(-1);  // under title
+  frame_.AddChild(spr_frame_);
 
-  if (m_pParentType->SHOW_MOD_ICONS) {
-    switch (m_RowType) {
+  if (parent_type_->SHOW_MOD_ICONS) {
+    switch (row_type_) {
       case RowType_Normal:
         FOREACH_PlayerNumber(p) {
-          m_ModIcons[p] = new ModIcon(m_pParentType->m_ModIcon);
-          m_ModIcons[p]->SetDrawOrder(-1);  // under title
-          m_ModIcons[p]->PlayCommand("On");
+          mod_icons_[p] = new ModIcon(parent_type_->mod_icon_);
+          mod_icons_[p]->SetDrawOrder(-1);  // under title
+          mod_icons_[p]->PlayCommand("On");
 
-          m_Frame.AddChild(m_ModIcons[p]);
+          frame_.AddChild(mod_icons_[p]);
 
           GameCommand gc;
           SetModIcon(p, "", gc);
@@ -287,71 +284,70 @@ void OptionRow::InitText(RowType type) {
   // LAYOUT_SHOW_ONE_IN_ROW.
   float fBaseZoom = 1.0f;
   {
-    BitmapText bt(m_pParentType->m_textItem);
+    BitmapText bt(parent_type_->text_item_);
     bt.PlayCommand("On");
 
     // Figure out the width of the row.
     float fWidth = 0;
-    for (unsigned c = 0; c < m_pHand->m_Def.m_vsChoices.size(); c++) {
+    for (unsigned c = 0; c < hand_->def_.choices_.size(); c++) {
       std::string sText = GetThemedItemText(c);
       bt.SetText(sText);
 
       fWidth += bt.GetZoomedWidth();
 
-      if (c != m_pHand->m_Def.m_vsChoices.size() - 1) {
-        fWidth += m_pParentType->ITEMS_GAP_X;
+      if (c != hand_->def_.choices_.size() - 1) {
+        fWidth += parent_type_->ITEMS_GAP_X;
       }
     }
 
     // Try to fit everything on one line.
-    float fTotalWidth =
-        m_pParentType->ITEMS_END_X - m_pParentType->ITEMS_START_X;
+    float fTotalWidth = parent_type_->ITEMS_END_X - parent_type_->ITEMS_START_X;
     if (fWidth > fTotalWidth) {
       float fPossibleBaseZoom = fTotalWidth / fWidth;
-      if (fPossibleBaseZoom >= m_pParentType->ITEMS_MIN_BASE_ZOOM) {
+      if (fPossibleBaseZoom >= parent_type_->ITEMS_MIN_BASE_ZOOM) {
         fBaseZoom = fPossibleBaseZoom;
       } else {
-        m_pHand->m_Def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
+        hand_->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
       }
     }
   }
 
   // load m_textItems
-  switch (m_pHand->m_Def.m_layoutType) {
+  switch (hand_->def_.layout_type_) {
     case LAYOUT_SHOW_ONE_IN_ROW: {
       if (IsShowOneValueWithGoDown()) {
         // Show a persistent ▼.
-        BitmapText* pArrow = new BitmapText(m_pParentType->m_textItem);
-        m_textItems.push_back(pArrow);
+        BitmapText* pArrow = new BitmapText(parent_type_->text_item_);
+        text_items_.push_back(pArrow);
         pArrow->PlayCommand("On");
         pArrow->SetText(GetThemedItemText(0));
         pArrow->SetX(
-            m_pParentType->ITEMS_START_X + pArrow->GetZoomedWidth() / 2);
+            parent_type_->ITEMS_START_X + pArrow->GetZoomedWidth() / 2);
       }
 
       // init text
       FOREACH_PlayerNumber(p) {
-        BitmapText* pText = new BitmapText(m_pParentType->m_textItem);
-        m_textItems.push_back(pText);
+        BitmapText* pText = new BitmapText(parent_type_->text_item_);
+        text_items_.push_back(pText);
 
         pText->PlayCommand("On");
 
-        if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
-          pText->SetX(m_pParentType->ITEMS_LONG_ROW_SHARED_X);
+        if (hand_->def_.one_choice_for_all_players_) {
+          pText->SetX(parent_type_->ITEMS_LONG_ROW_SHARED_X);
           break;  // only initialize one item since it's shared
         } else {
-          pText->SetX(m_pParentType->ITEMS_LONG_ROW_X.GetValue(p));
+          pText->SetX(parent_type_->ITEMS_LONG_ROW_X.GetValue(p));
         }
 
         // Set the text now, so SetWidthXY below is correct.
         UpdateText(p);
 
         // init underlines
-        if (m_pParentType->SHOW_UNDERLINES &&
+        if (parent_type_->SHOW_UNDERLINES &&
             GetRowType() != OptionRow::RowType_Exit) {
           OptionsCursor* pCursor =
-              new OptionsCursor(m_pParentType->m_Underline[p]);
-          m_Underline[p].push_back(pCursor);
+              new OptionsCursor(parent_type_->underline_[p]);
+          underline_[p].push_back(pCursor);
 
           int iWidth, iX, iY;
           GetWidthXY(p, 0, iWidth, iX, iY);
@@ -363,11 +359,11 @@ void OptionRow::InitText(RowType type) {
     }
 
     case LAYOUT_SHOW_ALL_IN_ROW: {
-      float fX = m_pParentType->ITEMS_START_X;
-      for (unsigned c = 0; c < m_pHand->m_Def.m_vsChoices.size(); c++) {
+      float fX = parent_type_->ITEMS_START_X;
+      for (unsigned c = 0; c < hand_->def_.choices_.size(); c++) {
         // init text
-        BitmapText* bt = new BitmapText(m_pParentType->m_textItem);
-        m_textItems.push_back(bt);
+        BitmapText* bt = new BitmapText(parent_type_->text_item_);
+        text_items_.push_back(bt);
         bt->SetBaseZoomX(fBaseZoom);
         bt->PlayCommand("On");
         // Set text after running OnCommand so e.g. uppercase,true works -aj
@@ -380,39 +376,38 @@ void OptionRow::InitText(RowType type) {
         bt->SetX(fX);
 
         // init underlines
-        if (m_pParentType->SHOW_UNDERLINES) {
+        if (parent_type_->SHOW_UNDERLINES) {
           FOREACH_PlayerNumber(p) {
-            OptionsCursor* ul =
-                new OptionsCursor(m_pParentType->m_Underline[p]);
-            m_Underline[p].push_back(ul);
+            OptionsCursor* ul = new OptionsCursor(parent_type_->underline_[p]);
+            underline_[p].push_back(ul);
             ul->SetX(fX);
             ul->SetBarWidth(int(fItemWidth));
           }
         }
 
-        fX += fItemWidth / 2 + m_pParentType->ITEMS_GAP_X * fBaseZoom;
+        fX += fItemWidth / 2 + parent_type_->ITEMS_GAP_X * fBaseZoom;
       }
     } break;
 
     default:
-      FAIL_M(ssprintf(
-          "Invalid option row layout: %i", m_pHand->m_Def.m_layoutType));
+      FAIL_M(
+          ssprintf("Invalid option row layout: %i", hand_->def_.layout_type_));
   }
 
-  for (unsigned c = 0; c < m_textItems.size(); c++) {
-    m_Frame.AddChild(m_textItems[c]);
+  for (unsigned c = 0; c < text_items_.size(); c++) {
+    frame_.AddChild(text_items_[c]);
   }
-  FOREACH_PlayerNumber(p) for (unsigned c = 0; c < m_Underline[p].size(); c++)
-      m_Frame.AddChild(m_Underline[p][c]);
+  FOREACH_PlayerNumber(p) for (unsigned c = 0; c < underline_[p].size(); c++)
+      frame_.AddChild(underline_[p][c]);
 
   // This is set in OptionRow::AfterImportOptions, so if we're reused with a
   // different song selected, SHOW_BPM_IN_SPEED_TITLE will show the new BPM.
   // m_textTitle->SetText( GetRowTitle() );
-  m_textTitle->PlayCommand("On");
+  text_title_->PlayCommand("On");
 
-  m_sprFrame->PlayCommand("On");
+  spr_frame_->PlayCommand("On");
 
-  m_Frame.SortByDrawOrder();
+  frame_.SortByDrawOrder();
   this->SortByDrawOrder();
 }
 
@@ -420,39 +415,39 @@ void OptionRow::InitText(RowType type) {
 void OptionRow::AfterImportOptions(PlayerNumber pn) {
   /* We load items for both players on start, since we don't know which players
    * will be joined when we're displayed. Hide items for inactive players. */
-  if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW &&
-      !m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.layout_type_ == LAYOUT_SHOW_ONE_IN_ROW &&
+      !hand_->def_.one_choice_for_all_players_) {
     unsigned item_no = pn + (IsShowOneValueWithGoDown() ? 1 : 0);
-    m_textItems[item_no]->SetVisible(GAMESTATE->IsHumanPlayer(pn));
+    text_items_[item_no]->SetVisible(GAMESTATE->IsHumanPlayer(pn));
   }
 
   // Hide underlines for disabled players or disabled options.
   if (!GAMESTATE->IsHumanPlayer(pn) ||
-      m_pHand->m_Def.m_vEnabledForPlayers.find(pn) ==
-          m_pHand->m_Def.m_vEnabledForPlayers.end()) {
-    for (unsigned c = 0; c < m_Underline[pn].size(); c++) {
-      m_Underline[pn][c]->SetVisible(false);
+      hand_->def_.enabled_for_players_.find(pn) ==
+          hand_->def_.enabled_for_players_.end()) {
+    for (unsigned c = 0; c < underline_[pn].size(); c++) {
+      underline_[pn][c]->SetVisible(false);
     }
   }
 
   // Make all selections the same if bOneChoiceForAllPlayers.
   // Hack: we only import active players, so if only player 2 is imported,
   // we need to copy p2 to p1, not p1 to p2.
-  if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.one_choice_for_all_players_) {
     PlayerNumber pnCopyFrom = GAMESTATE->GetMasterPlayerNumber();
     if (GAMESTATE->GetMasterPlayerNumber() == PLAYER_INVALID) {
       pnCopyFrom = PLAYER_1;
     }
-    FOREACH_PlayerNumber(p) m_vbSelected[p] = m_vbSelected[pnCopyFrom];
+    FOREACH_PlayerNumber(p) selected_[p] = selected_[pnCopyFrom];
   }
 
-  switch (m_pHand->m_Def.m_selectType) {
+  switch (hand_->def_.select_type_) {
     case SELECT_ONE: {
       // Make sure the row actually has a selection.
       int iSelection = GetOneSelection(pn, true);
       if (iSelection == -1) {
-        ASSERT(!m_vbSelected[pn].empty());
-        m_vbSelected[pn][0] = true;
+        ASSERT(!selected_[pn].empty());
+        selected_[pn][0] = true;
       }
     }
     default:
@@ -465,21 +460,20 @@ void OptionRow::AfterImportOptions(PlayerNumber pn) {
 }
 
 void OptionRow::PositionUnderlines(PlayerNumber pn) {
-  std::vector<OptionsCursor*>& vpUnderlines = m_Underline[pn];
+  std::vector<OptionsCursor*>& vpUnderlines = underline_[pn];
   if (vpUnderlines.empty()) {
     return;
   }
 
   PlayerNumber pnTakeSelectedFrom =
-      m_pHand->m_Def.m_bOneChoiceForAllPlayers ? PLAYER_1 : pn;
+      hand_->def_.one_choice_for_all_players_ ? PLAYER_1 : pn;
 
   for (int i = 0; i < (int)vpUnderlines.size(); i++) {
     OptionsCursor& ul = *vpUnderlines[i];
 
-    int iChoiceWithFocus =
-        (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW)
-            ? GetChoiceInRowWithFocus(pn)
-            : i;
+    int iChoiceWithFocus = (hand_->def_.layout_type_ == LAYOUT_SHOW_ONE_IN_ROW)
+                               ? GetChoiceInRowWithFocus(pn)
+                               : i;
 
     if (IsShowOneValueWithGoDown() && iChoiceWithFocus == 0) {
       int iSelected = GetOneSelection(pn, true);
@@ -487,17 +481,17 @@ void OptionRow::PositionUnderlines(PlayerNumber pn) {
     }
 
     float fAlpha = 1.0f;
-    if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW) {
-      bool bRowEnabled = m_pHand->m_Def.m_vEnabledForPlayers.find(pn) !=
-                         m_pHand->m_Def.m_vEnabledForPlayers.end();
+    if (hand_->def_.layout_type_ == LAYOUT_SHOW_ONE_IN_ROW) {
+      bool bRowEnabled = hand_->def_.enabled_for_players_.find(pn) !=
+                         hand_->def_.enabled_for_players_.end();
 
-      if (!m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
-        if (m_bRowHasFocus[pn]) {
-          fAlpha = m_pParentType->COLOR_SELECTED.GetValue().a;
+      if (!hand_->def_.one_choice_for_all_players_) {
+        if (row_has_focus_[pn]) {
+          fAlpha = parent_type_->COLOR_SELECTED.GetValue().a_;
         } else if (bRowEnabled) {
-          fAlpha = m_pParentType->COLOR_NOT_SELECTED.GetValue().a;
+          fAlpha = parent_type_->COLOR_NOT_SELECTED.GetValue().a_;
         } else {
-          fAlpha = m_pParentType->COLOR_DISABLED.GetValue().a;
+          fAlpha = parent_type_->COLOR_DISABLED.GetValue().a_;
         }
       }
     }
@@ -511,35 +505,33 @@ void OptionRow::PositionUnderlines(PlayerNumber pn) {
     // only set alpha, in case a theme tries to color underlines. -aj
     ul.SetDiffuseAlpha(fAlpha);
 
-    ASSERT(
-        m_vbSelected[pnTakeSelectedFrom].size() ==
-        m_pHand->m_Def.m_vsChoices.size());
+    ASSERT(selected_[pnTakeSelectedFrom].size() == hand_->def_.choices_.size());
 
     bool bSelected = (iChoiceWithFocus == -1)
                          ? false
-                         : m_vbSelected[pnTakeSelectedFrom][iChoiceWithFocus];
+                         : selected_[pnTakeSelectedFrom][iChoiceWithFocus];
     bool bVisible = bSelected && GAMESTATE->IsHumanPlayer(pn);
 
-    ul.BeginTweening(m_pParentType->TWEEN_SECONDS);
+    ul.BeginTweening(parent_type_->TWEEN_SECONDS);
     ul.SetVisible(bVisible);
     ul.SetBarWidth(iWidth);
   }
 }
 
 void OptionRow::PositionIcons(PlayerNumber pn) {
-  ModIcon* pIcon = m_ModIcons[pn];
+  ModIcon* pIcon = mod_icons_[pn];
   if (pIcon == nullptr) {
     return;
   }
 
-  pIcon->SetX(m_pParentType->MOD_ICON_X.GetValue(pn));
+  pIcon->SetX(parent_type_->MOD_ICON_X.GetValue(pn));
 }
 
 // This is called when the focus changes, to update "long row" text.
 void OptionRow::UpdateText(PlayerNumber p) {
-  if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW) {
-    unsigned pn = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : p;
-    int iChoiceWithFocus = m_iChoiceInRowWithFocus[pn];
+  if (hand_->def_.layout_type_ == LAYOUT_SHOW_ONE_IN_ROW) {
+    unsigned pn = hand_->def_.one_choice_for_all_players_ ? 0 : p;
+    int iChoiceWithFocus = choice_in_row_with_focus_[pn];
     if (iChoiceWithFocus == -1) {
       return;
     }
@@ -549,7 +541,7 @@ void OptionRow::UpdateText(PlayerNumber p) {
 
     if (bValueArrow) {
       // Always display the ▼.
-      m_textItems[0]->SetText(GetThemedItemText(0));
+      text_items_[0]->SetText(GetThemedItemText(0));
 
       if (iChoiceWithFocus == 0) {
         // Focus is on the ▼; show the actively-selected value instead.
@@ -562,34 +554,34 @@ void OptionRow::UpdateText(PlayerNumber p) {
 
     int index = std::min(
         static_cast<int>(pn) + (bValueArrow ? 1 : 0),
-        static_cast<int>(m_textItems.size()) - 1);
+        static_cast<int>(text_items_.size()) - 1);
 
-    m_textItems[index]->SetText(sText);
+    text_items_[index]->SetText(sText);
   }
 }
 
 void OptionRow::SetRowHasFocus(PlayerNumber pn, bool bRowHasFocus) {
-  m_bRowHasFocus[pn] = bRowHasFocus;
+  row_has_focus_[pn] = bRowHasFocus;
 }
 
 void OptionRow::SetDestination(Actor::TweenState& ts, bool bTween) {
-  if (m_Frame.DestTweenState() != ts) {
-    m_Frame.StopTweening();
-    if (bTween && m_pParentType->TWEEN_SECONDS != 0.0f) {
-      m_Frame.BeginTweening(m_pParentType->TWEEN_SECONDS);
+  if (frame_.DestTweenState() != ts) {
+    frame_.StopTweening();
+    if (bTween && parent_type_->TWEEN_SECONDS != 0.0f) {
+      frame_.BeginTweening(parent_type_->TWEEN_SECONDS);
     }
-    m_Frame.DestTweenState() = ts;
+    frame_.DestTweenState() = ts;
   }
 }
 
 void OptionRow::UpdateEnabledDisabled() {
   bool bThisRowHasFocusByAny = false;
-  FOREACH_HumanPlayer(p) bThisRowHasFocusByAny |= m_bRowHasFocus[p];
+  FOREACH_HumanPlayer(p) bThisRowHasFocusByAny |= row_has_focus_[p];
 
   bool bThisRowHasFocusByAll = true;
-  FOREACH_HumanPlayer(p) bThisRowHasFocusByAll &= m_bRowHasFocus[p];
+  FOREACH_HumanPlayer(p) bThisRowHasFocusByAll &= row_has_focus_[p];
 
-  bool bRowEnabled = !m_pHand->m_Def.m_vEnabledForPlayers.empty();
+  bool bRowEnabled = !hand_->def_.enabled_for_players_.empty();
 
   // Don't tween selection colors at all.
   std::string sCmdName;
@@ -603,20 +595,20 @@ void OptionRow::UpdateEnabledDisabled() {
 
   RageColor color;
   if (bThisRowHasFocusByAny) {
-    color = m_pParentType->COLOR_SELECTED;
+    color = parent_type_->COLOR_SELECTED;
   } else if (bRowEnabled) {
-    color = m_pParentType->COLOR_NOT_SELECTED;
+    color = parent_type_->COLOR_NOT_SELECTED;
   } else {
-    color = m_pParentType->COLOR_DISABLED;
+    color = parent_type_->COLOR_DISABLED;
   }
 
-  m_sprFrame->PlayCommand(sCmdName);
-  m_textTitle->PlayCommand(sCmdName);
+  spr_frame_->PlayCommand(sCmdName);
+  text_title_->PlayCommand(sCmdName);
 
-  for (unsigned j = 0; j < m_textItems.size(); j++) {
+  for (unsigned j = 0; j < text_items_.size(); j++) {
     bool bThisItemHasFocusByAny = false;
     FOREACH_HumanPlayer(p) {
-      if (m_bRowHasFocus[p]) {
+      if (row_has_focus_[p]) {
         if ((int)j == GetChoiceInRowWithFocus(p)) {
           bThisItemHasFocusByAny = true;
           break;
@@ -625,22 +617,22 @@ void OptionRow::UpdateEnabledDisabled() {
     }
 
     if (bThisItemHasFocusByAny) {
-      m_textItems[j]->PlayCommand("GainFocus");
+      text_items_[j]->PlayCommand("GainFocus");
     } else {
-      m_textItems[j]->PlayCommand("LoseFocus");
+      text_items_[j]->PlayCommand("LoseFocus");
     }
   }
 
-  switch (m_pHand->m_Def.m_layoutType) {
+  switch (hand_->def_.layout_type_) {
     case LAYOUT_SHOW_ALL_IN_ROW:
-      for (unsigned j = 0; j < m_textItems.size(); j++) {
-        if (m_textItems[j]->DestTweenState().diffuse[0] == color) {
+      for (unsigned j = 0; j < text_items_.size(); j++) {
+        if (text_items_[j]->DestTweenState().diffuse_[0] == color) {
           continue;
         }
 
-        m_textItems[j]->StopTweening();
-        m_textItems[j]->BeginTweening(m_pParentType->TWEEN_SECONDS);
-        m_textItems[j]->SetDiffuse(color);
+        text_items_[j]->StopTweening();
+        text_items_[j]->BeginTweening(parent_type_->TWEEN_SECONDS);
+        text_items_[j]->SetDiffuse(color);
       }
 
       break;
@@ -649,52 +641,52 @@ void OptionRow::UpdateEnabledDisabled() {
 
       if (bValueArrow) {
         // Color the ▼ with the row-level color.
-        BitmapText& arrow = *m_textItems[0];
-        if (arrow.DestTweenState().diffuse[0] != color) {
+        BitmapText& arrow = *text_items_[0];
+        if (arrow.DestTweenState().diffuse_[0] != color) {
           arrow.StopTweening();
-          arrow.BeginTweening(m_pParentType->TWEEN_SECONDS);
+          arrow.BeginTweening(parent_type_->TWEEN_SECONDS);
           arrow.SetDiffuse(color);
         }
       }
 
       FOREACH_HumanPlayer(pn) {
-        bRowEnabled = m_pHand->m_Def.m_vEnabledForPlayers.find(pn) !=
-                      m_pHand->m_Def.m_vEnabledForPlayers.end();
+        bRowEnabled = hand_->def_.enabled_for_players_.find(pn) !=
+                      hand_->def_.enabled_for_players_.end();
 
-        if (!m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+        if (!hand_->def_.one_choice_for_all_players_) {
           bool bValueFocused =
-              m_bRowHasFocus[pn] &&
+              row_has_focus_[pn] &&
               (!bValueArrow || GetChoiceInRowWithFocus(pn) >= 1);
           if (bValueFocused) {
-            color = m_pParentType->COLOR_SELECTED;
+            color = parent_type_->COLOR_SELECTED;
           } else if (bRowEnabled) {
-            color = m_pParentType->COLOR_NOT_SELECTED;
+            color = parent_type_->COLOR_NOT_SELECTED;
           } else {
-            color = m_pParentType->COLOR_DISABLED;
+            color = parent_type_->COLOR_DISABLED;
           }
         }
 
-        unsigned item_no = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : pn;
+        unsigned item_no = hand_->def_.one_choice_for_all_players_ ? 0 : pn;
         if (bValueArrow) {
           item_no += 1;
         }
 
         // If player_no is 2 and there is no player 1:
-        item_no = std::min<unsigned int>(item_no, m_textItems.size() - 1);
+        item_no = std::min<unsigned int>(item_no, text_items_.size() - 1);
 
-        BitmapText& bt = *m_textItems[item_no];
+        BitmapText& bt = *text_items_[item_no];
 
-        if (bt.DestTweenState().diffuse[0] != color) {
+        if (bt.DestTweenState().diffuse_[0] != color) {
           bt.StopTweening();
-          bt.BeginTweening(m_pParentType->TWEEN_SECONDS);
+          bt.BeginTweening(parent_type_->TWEEN_SECONDS);
           bt.SetDiffuse(color);
         }
       }
       break;
     }
     default:
-      FAIL_M(ssprintf(
-          "Invalid option row layout: %i", m_pHand->m_Def.m_layoutType));
+      FAIL_M(
+          ssprintf("Invalid option row layout: %i", hand_->def_.layout_type_));
   }
 }
 
@@ -704,17 +696,17 @@ void OptionRow::SetModIcon(
   Message msg("Refresh");
   msg.SetParam("GameCommand", &gc);
   msg.SetParam("Text", sText);
-  m_sprFrame->HandleMessage(msg);
-  if (m_ModIcons[pn] != nullptr) {
-    m_ModIcons[pn]->Set(sText);
+  spr_frame_->HandleMessage(msg);
+  if (mod_icons_[pn] != nullptr) {
+    mod_icons_[pn]->Set(sText);
   }
 }
 
 const BitmapText& OptionRow::GetTextItemForRow(
     PlayerNumber pn, int iChoiceOnRow) const {
-  bool bOneChoice = m_pHand->m_Def.m_bOneChoiceForAllPlayers;
+  bool bOneChoice = hand_->def_.one_choice_for_all_players_;
   int index = -1;
-  switch (m_pHand->m_Def.m_layoutType) {
+  switch (hand_->def_.layout_type_) {
     case LAYOUT_SHOW_ONE_IN_ROW:
       if (IsShowOneValueWithGoDown()) {
         if (iChoiceOnRow == 0) {
@@ -724,7 +716,7 @@ const BitmapText& OptionRow::GetTextItemForRow(
         }
       } else {
         index = bOneChoice ? 0 : pn;
-        if (m_textItems.size() == 1) {
+        if (text_items_.size() == 1) {
           index = 0;
         }
       }
@@ -733,14 +725,14 @@ const BitmapText& OptionRow::GetTextItemForRow(
       index = iChoiceOnRow;
       break;
     default:
-      FAIL_M(ssprintf(
-          "Invalid option row layout: %i", m_pHand->m_Def.m_layoutType));
+      FAIL_M(
+          ssprintf("Invalid option row layout: %i", hand_->def_.layout_type_));
   }
 
   ASSERT_M(
-      index < (int)m_textItems.size(),
-      ssprintf("%i < %i", index, (int)m_textItems.size()));
-  return *m_textItems[index];
+      index < (int)text_items_.size(),
+      ssprintf("%i < %i", index, (int)text_items_.size()));
+  return *text_items_[index];
 }
 
 void OptionRow::GetWidthXY(
@@ -750,12 +742,12 @@ void OptionRow::GetWidthXY(
 
   iWidthOut = std::lrint(text.GetZoomedWidth());
   iXOut = std::lrint(text.GetDestX());
-  iYOut = std::lrint(m_Frame.GetDestY());
+  iYOut = std::lrint(frame_.GetDestY());
 }
 
 int OptionRow::GetOneSelection(PlayerNumber pn, bool bAllowFail) const {
-  for (unsigned i = 0; i < m_vbSelected[pn].size(); i++) {
-    if (m_vbSelected[pn][i]) {
+  for (unsigned i = 0; i < selected_[pn].size(); i++) {
+    if (selected_[pn][i]) {
       return i;
     }
   }
@@ -770,7 +762,7 @@ int OptionRow::GetOneSharedSelection(bool bAllowFail) const {
 }
 
 void OptionRow::SetOneSelection(PlayerNumber pn, int iChoice) {
-  std::vector<bool>& vb = m_vbSelected[pn];
+  std::vector<bool>& vb = selected_[pn];
   if (vb.empty()) {
     return;
   }
@@ -784,8 +776,8 @@ void OptionRow::SetOneSharedSelection(int iChoice) {
 }
 
 void OptionRow::SetOneSharedSelectionIfPresent(const std::string& sChoice) {
-  for (unsigned i = 0; i < m_pHand->m_Def.m_vsChoices.size(); i++) {
-    if (sChoice == m_pHand->m_Def.m_vsChoices[i]) {
+  for (unsigned i = 0; i < hand_->def_.choices_.size(); i++) {
+    if (sChoice == hand_->def_.choices_[i]) {
       SetOneSharedSelection(i);
       break;
     }
@@ -793,22 +785,22 @@ void OptionRow::SetOneSharedSelectionIfPresent(const std::string& sChoice) {
 }
 
 int OptionRow::GetChoiceInRowWithFocus(PlayerNumber pn) const {
-  if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.one_choice_for_all_players_) {
     pn = PLAYER_1;
   }
-  if (m_pHand->m_Def.m_vsChoices.empty()) {
+  if (hand_->def_.choices_.empty()) {
     return -1;
   }
-  int iChoice = m_iChoiceInRowWithFocus[pn];
+  int iChoice = choice_in_row_with_focus_[pn];
   return iChoice;
 }
 
 void OptionRow::SetChoiceInRowWithFocus(PlayerNumber pn, int iChoice) {
-  if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.one_choice_for_all_players_) {
     pn = PLAYER_1;
   }
-  ASSERT(iChoice >= 0 && iChoice < (int)m_pHand->m_Def.m_vsChoices.size());
-  m_iChoiceInRowWithFocus[pn] = iChoice;
+  ASSERT(iChoice >= 0 && iChoice < (int)hand_->def_.choices_.size());
+  choice_in_row_with_focus_[pn] = iChoice;
 
   UpdateText(pn);
   // PositionUnderlines( pn );
@@ -816,7 +808,7 @@ void OptionRow::SetChoiceInRowWithFocus(PlayerNumber pn, int iChoice) {
 
 void OptionRow::ResetFocusFromSelection(PlayerNumber pn) {
   int iSelection = -1;
-  switch (m_pHand->m_Def.m_selectType) {
+  switch (hand_->def_.select_type_) {
     case SELECT_ONE:
       // Import the focus from the selected option.
       iSelection = GetOneSelection(pn, true);
@@ -825,7 +817,7 @@ void OptionRow::ResetFocusFromSelection(PlayerNumber pn) {
   }
 
   // HACK: Set focus to one item in the row, which is "go down"
-  if (m_bFirstItemGoesDown) {
+  if (first_item_goes_down_) {
     iSelection = 0;
   }
 
@@ -835,30 +827,28 @@ void OptionRow::ResetFocusFromSelection(PlayerNumber pn) {
 }
 
 bool OptionRow::GetSelected(PlayerNumber pn, int iChoice) const {
-  if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.one_choice_for_all_players_) {
     pn = PLAYER_1;
   }
-  return m_vbSelected[pn][iChoice];
+  return selected_[pn][iChoice];
 }
 
-const OptionRowDefinition& OptionRow::GetRowDef() const {
-  return m_pHand->m_Def;
-}
+const OptionRowDefinition& OptionRow::GetRowDef() const { return hand_->def_; }
 
-OptionRowDefinition& OptionRow::GetRowDef() { return m_pHand->m_Def; }
+OptionRowDefinition& OptionRow::GetRowDef() { return hand_->def_; }
 
 bool OptionRow::SetSelected(PlayerNumber pn, int iChoice, bool b) {
-  if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
+  if (hand_->def_.one_choice_for_all_players_) {
     pn = PLAYER_1;
   }
-  m_vbSelected[pn][iChoice] = b;
+  selected_[pn][iChoice] = b;
   return NotifyHandlerOfSelection(pn, iChoice);
 }
 
 bool OptionRow::NotifyHandlerOfSelection(PlayerNumber pn, int choice) {
-  bool changed = m_pHand->NotifyOfSelection(pn, choice - m_bFirstItemGoesDown);
+  bool changed = hand_->NotifyOfSelection(pn, choice - first_item_goes_down_);
   if (changed) {
-    ChoicesChanged(m_RowType, false);
+    ChoicesChanged(row_type_, false);
     std::vector<PlayerNumber> vpns;
     FOREACH_HumanPlayer(p) vpns.push_back(p);
     ImportOptions(vpns);
@@ -869,12 +859,12 @@ bool OptionRow::NotifyHandlerOfSelection(PlayerNumber pn, int choice) {
 }
 
 bool OptionRow::IsShowOneValueWithGoDown() const {
-  return m_bFirstItemGoesDown &&
-         m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW &&
-         m_pHand->m_Def.m_selectType == SELECT_ONE;
+  return first_item_goes_down_ &&
+         hand_->def_.layout_type_ == LAYOUT_SHOW_ONE_IN_ROW &&
+         hand_->def_.select_type_ == SELECT_ONE;
 }
 
-bool OptionRow::GoToFirstOnStart() { return m_pHand->GoToFirstOnStart(); }
+bool OptionRow::GoToFirstOnStart() { return hand_->GoToFirstOnStart(); }
 
 void OptionRow::Reload() {
   // TODO: Nothing uses this yet and it causes skips when changing options.
@@ -887,12 +877,12 @@ void OptionRow::Reload() {
   }
   */
 
-  switch (m_pHand->Reload()) {
+  switch (hand_->Reload()) {
     case RELOAD_CHANGED_NONE:
       break;
 
     case RELOAD_CHANGED_ALL: {
-      ChoicesChanged(m_RowType);
+      ChoicesChanged(row_type_);
 
       std::vector<PlayerNumber> vpns;
       FOREACH_HumanPlayer(p) vpns.push_back(p);
@@ -923,7 +913,7 @@ void OptionRow::Reload() {
 
 void OptionRow::HandleMessage(const Message& msg) {
   bool bReload = false;
-  for (const std::string& m : m_pHand->m_vsReloadRowMessages) {
+  for (const std::string& m : hand_->reload_row_messages_) {
     if (m == msg.GetName()) {
       bReload = true;
       break;
@@ -944,57 +934,55 @@ void OptionRow::HandleMessage(const Message& msg) {
   if (GetFirstItemGoesDown()) vbSelected.insert(vbSelected.begin(), false);
 
 void OptionRow::ImportOptions(const std::vector<PlayerNumber>& vpns) {
-  ASSERT(m_pHand->m_Def.m_vsChoices.size() > 0);
+  ASSERT(hand_->def_.choices_.size() > 0);
 
   for (const PlayerNumber& p : vpns) {
-    std::fill_n(m_vbSelected[p].begin(), m_vbSelected[p].size(), false);
+    std::fill_n(selected_[p].begin(), selected_[p].size(), false);
 
-    ASSERT(m_vbSelected[p].size() == m_pHand->m_Def.m_vsChoices.size());
-    ERASE_ONE_BOOL_AT_FRONT_IF_NEEDED(m_vbSelected[p]);
+    ASSERT(selected_[p].size() == hand_->def_.choices_.size());
+    ERASE_ONE_BOOL_AT_FRONT_IF_NEEDED(selected_[p]);
   }
 
-  m_pHand->ImportOption(this, vpns, m_vbSelected);
+  hand_->ImportOption(this, vpns, selected_);
 
   for (const PlayerNumber& p : vpns) {
-    INSERT_ONE_BOOL_AT_FRONT_IF_NEEDED(m_vbSelected[p]);
-    VerifySelected(
-        m_pHand->m_Def.m_selectType, m_vbSelected[p], m_pHand->m_Def.m_sName);
+    INSERT_ONE_BOOL_AT_FRONT_IF_NEEDED(selected_[p]);
+    VerifySelected(hand_->def_.select_type_, selected_[p], hand_->def_.name_);
   }
 }
 
 int OptionRow::ExportOptions(
     const std::vector<PlayerNumber>& vpns, bool bRowHasFocus[NUM_PLAYERS]) {
-  ASSERT(m_pHand->m_Def.m_vsChoices.size() > 0);
+  ASSERT(hand_->def_.choices_.size() > 0);
 
   int iChangeMask = 0;
 
   for (const PlayerNumber& p : vpns) {
     bool bFocus = bRowHasFocus[p];
 
-    VerifySelected(
-        m_pHand->m_Def.m_selectType, m_vbSelected[p], m_pHand->m_Def.m_sName);
-    ASSERT(m_vbSelected[p].size() == m_pHand->m_Def.m_vsChoices.size());
-    ERASE_ONE_BOOL_AT_FRONT_IF_NEEDED(m_vbSelected[p]);
+    VerifySelected(hand_->def_.select_type_, selected_[p], hand_->def_.name_);
+    ASSERT(selected_[p].size() == hand_->def_.choices_.size());
+    ERASE_ONE_BOOL_AT_FRONT_IF_NEEDED(selected_[p]);
 
     // SELECT_NONE rows get exported if they have focus when the user presses
     // Start.
     int iChoice = GetChoiceInRowWithFocus(p);
-    if (m_pHand->m_Def.m_selectType == SELECT_NONE && bFocus) {
-      m_vbSelected[p][iChoice] = true;
+    if (hand_->def_.select_type_ == SELECT_NONE && bFocus) {
+      selected_[p][iChoice] = true;
     }
   }
 
-  iChangeMask |= m_pHand->ExportOption(vpns, m_vbSelected);
+  iChangeMask |= hand_->ExportOption(vpns, selected_);
 
   for (const PlayerNumber& p : vpns) {
     bool bFocus = bRowHasFocus[p];
 
     int iChoice = GetChoiceInRowWithFocus(p);
-    if (m_pHand->m_Def.m_selectType == SELECT_NONE && bFocus) {
-      m_vbSelected[p][iChoice] = false;
+    if (hand_->def_.select_type_ == SELECT_NONE && bFocus) {
+      selected_[p][iChoice] = false;
     }
 
-    INSERT_ONE_BOOL_AT_FRONT_IF_NEEDED(m_vbSelected[p]);
+    INSERT_ONE_BOOL_AT_FRONT_IF_NEEDED(selected_[p]);
   }
 
   return iChangeMask;
@@ -1011,23 +999,23 @@ class LunaOptionRow : public Luna<OptionRow> {
         L, p->GetChoiceInRowWithFocus(Enum::Check<PlayerNumber>(L, 1)));
     return 1;
   }
-  DEFINE_METHOD(GetLayoutType, GetHandler()->m_Def.m_layoutType)
+  DEFINE_METHOD(GetLayoutType, GetHandler()->def_.layout_type_)
   static int GetName(T* p, lua_State* L) {
-    lua_pushstring(L, p->GetHandler()->m_Def.m_sName.c_str());
+    lua_pushstring(L, p->GetHandler()->def_.name_.c_str());
     return 1;
   }
   static int GetNumChoices(T* p, lua_State* L) {
-    lua_pushnumber(L, p->GetHandler()->m_Def.m_vsChoices.size());
+    lua_pushnumber(L, p->GetHandler()->def_.choices_.size());
     return 1;
   }
-  DEFINE_METHOD(GetSelectType, GetHandler()->m_Def.m_selectType)
+  DEFINE_METHOD(GetSelectType, GetHandler()->def_.select_type_)
   DEFINE_METHOD(GetRowTitle, GetRowTitle())
   static int HasFocus(T* p, lua_State* L) {
     lua_pushboolean(L, p->GetRowHasFocus(Enum::Check<PlayerNumber>(L, 1)));
     return 1;
   }
   static int OneChoiceForAllPlayers(T* p, lua_State* L) {
-    lua_pushboolean(L, p->GetHandler()->m_Def.m_bOneChoiceForAllPlayers);
+    lua_pushboolean(L, p->GetHandler()->def_.one_choice_for_all_players_);
     return 1;
   }
 

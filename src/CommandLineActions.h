@@ -17,7 +17,7 @@ void Handle(LoadingWindow* pLW);
 class CommandLineArgs {
  public:
   /** @brief the arguments in question. */
-  std::vector<std::string> argv;
+  std::vector<std::string> argv_;
 };
 /**
  * @brief A list of command line arguemnts to process while the game is running.

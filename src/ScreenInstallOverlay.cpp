@@ -23,25 +23,25 @@ class Song;
 #include "StepMania.h"
 
 struct PlayAfterLaunchInfo {
-  std::string sSongDir;
-  std::string sTheme;
-  bool bAnySongChanged;
-  bool bAnyThemeChanged;
+  std::string song_dir_;
+  std::string theme_;
+  bool any_song_changed_;
+  bool any_theme_changed_;
 
   PlayAfterLaunchInfo() {
-    bAnySongChanged = false;
-    bAnyThemeChanged = false;
+    any_song_changed_ = false;
+    any_theme_changed_ = false;
   }
 
   void OverlayWith(const PlayAfterLaunchInfo& other) {
-    if (!other.sSongDir.empty()) {
-      sSongDir = other.sSongDir;
+    if (!other.song_dir_.empty()) {
+      song_dir_ = other.song_dir_;
     }
-    if (!other.sTheme.empty()) {
-      sTheme = other.sTheme;
+    if (!other.theme_.empty()) {
+      theme_ = other.theme_;
     }
-    bAnySongChanged |= other.bAnySongChanged;
-    bAnyThemeChanged |= other.bAnyThemeChanged;
+    any_song_changed_ |= other.any_song_changed_;
+    any_theme_changed_ |= other.any_theme_changed_;
   }
 };
 
@@ -52,9 +52,9 @@ static void Parse(const std::string& sDir, PlayAfterLaunchInfo& out) {
   std::vector<std::string> vsDirParts;
   split(sDir, "/", vsDirParts, true);
   if (vsDirParts.size() == 3 && EqualsNoCase(vsDirParts[0], "Songs")) {
-    out.sSongDir = "/" + sDir;
+    out.song_dir_ = "/" + sDir;
   } else if (vsDirParts.size() == 2 && EqualsNoCase(vsDirParts[0], "Themes")) {
-    out.sTheme = vsDirParts[1];
+    out.theme_ = vsDirParts[1];
   }
 }
 
@@ -96,7 +96,7 @@ static void InstallSmzip(
     splitpath(sDestFile, sDir, sThrowAway, sThrowAway);
 
     Parse(sDir, out);
-    out.bAnySongChanged = true;
+    out.any_song_changed_ = true;
 
     FILEMAN->CreateDir(sDir);
 
@@ -132,8 +132,8 @@ static bool IsPackageFile(const std::string& arg) {
 
 PlayAfterLaunchInfo DoInstalls(CommandLineActions::CommandLineArgs args) {
   PlayAfterLaunchInfo ret;
-  for (int i = 0; i < (int)args.argv.size(); i++) {
-    std::string s = args.argv[i];
+  for (int i = 0; i < (int)args.argv_.size(); i++) {
+    std::string s = args.argv_[i];
     if (IsPackageFile(s)) {
       InstallSmzipOsArg(s, ret);
     }
@@ -147,10 +147,10 @@ ScreenInstallOverlay::~ScreenInstallOverlay() {}
 void ScreenInstallOverlay::Init() {
   Screen::Init();
 
-  m_textStatus.LoadFromFont(THEME->GetPathF("ScreenInstallOverlay", "status"));
-  m_textStatus.SetName("Status");
-  ActorUtil::LoadAllCommandsAndSetXY(m_textStatus, "ScreenInstallOverlay");
-  this->AddChild(&m_textStatus);
+  text_status_.LoadFromFont(THEME->GetPathF("ScreenInstallOverlay", "status"));
+  text_status_.SetName("Status");
+  ActorUtil::LoadAllCommandsAndSetXY(text_status_, "ScreenInstallOverlay");
+  this->AddChild(&text_status_);
 }
 
 bool ScreenInstallOverlay::Input(const InputEventPlus& input) {
@@ -167,26 +167,26 @@ void ScreenInstallOverlay::Update(float fDeltaTime) {
     PlayAfterLaunchInfo pali2 = DoInstalls(args);
     playAfterLaunchInfo.OverlayWith(pali2);
   }
-  if (playAfterLaunchInfo.bAnySongChanged) {
+  if (playAfterLaunchInfo.any_song_changed_) {
     SONGMAN->Reload(false);
   }
 
-  if (!playAfterLaunchInfo.sSongDir.empty()) {
+  if (!playAfterLaunchInfo.song_dir_.empty()) {
     Song* pSong = nullptr;
     GAMESTATE->Reset();
     std::string sInitialScreen;
-    if (playAfterLaunchInfo.sSongDir.length() > 0) {
-      pSong = SONGMAN->GetSongFromDir(playAfterLaunchInfo.sSongDir);
+    if (playAfterLaunchInfo.song_dir_.length() > 0) {
+      pSong = SONGMAN->GetSongFromDir(playAfterLaunchInfo.song_dir_);
     }
     if (pSong) {
       std::vector<const Style*> vpStyle;
-      GAMEMAN->GetStylesForGame(GAMESTATE->m_pCurGame, vpStyle, false);
-      GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
-      GAMESTATE->m_bSideIsJoined[0] = true;
+      GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_, vpStyle, false);
+      GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
+      GAMESTATE->side_is_joined_[0] = true;
       GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
       GAMESTATE->SetCurrentStyle(vpStyle[0], PLAYER_1);
-      GAMESTATE->m_pCurSong.Set(pSong);
-      GAMESTATE->m_pPreferredSong = pSong;
+      GAMESTATE->cur_song_.Set(pSong);
+      GAMESTATE->preferred_song_ = pSong;
       sInitialScreen = StepMania::GetSelectMusicScreen();
     } else {
       sInitialScreen = StepMania::GetInitialScreen();

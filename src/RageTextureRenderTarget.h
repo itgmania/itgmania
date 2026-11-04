@@ -14,9 +14,9 @@ class RageTextureRenderTarget : public RageTexture {
  public:
   RageTextureRenderTarget(RageTextureID name, const RenderTargetParam& param);
   virtual ~RageTextureRenderTarget();
-  virtual void Invalidate() { m_iTexHandle = 0; /* don't Destroy() */ }
+  virtual void Invalidate() { tex_handle_ = 0; /* don't Destroy() */ }
   virtual void Reload();
-  virtual uintptr_t GetTexHandle() const { return m_iTexHandle; }
+  virtual uintptr_t GetTexHandle() const { return tex_handle_; }
 
   void BeginRenderingTo(bool bPreserveTexture = true);
   void FinishRenderingTo();
@@ -24,12 +24,12 @@ class RageTextureRenderTarget : public RageTexture {
   virtual void PushSelf(lua_State* L);
 
  private:
-  const RenderTargetParam m_Param;
+  const RenderTargetParam param_;
 
   void Create();
   void Destroy();
-  uintptr_t m_iTexHandle;
-  uintptr_t m_iPreviousRenderTarget;
+  uintptr_t tex_handle_;
+  uintptr_t previous_render_target_;
 };
 
 #endif

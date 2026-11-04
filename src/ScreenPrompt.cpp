@@ -17,10 +17,10 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-PromptAnswer ScreenPrompt::s_LastAnswer = ANSWER_YES;
-bool ScreenPrompt::s_bCancelledLast = false;
+PromptAnswer ScreenPrompt::last_answer_ = ANSWER_YES;
+bool ScreenPrompt::cancelled_last_ = false;
 
-#define ANSWER_TEXT(s) THEME->GetString(m_sName, s)
+#define ANSWER_TEXT(s) THEME->GetString(name_, s)
 
 static const char* PromptAnswerNames[] = {
     "Yes",
@@ -64,46 +64,46 @@ REGISTER_SCREEN_CLASS(ScreenPrompt);
 void ScreenPrompt::Init() {
   ScreenWithMenuElements::Init();
 
-  m_textQuestion.LoadFromFont(THEME->GetPathF(m_sName, "question"));
-  m_textQuestion.SetName("Question");
-  LOAD_ALL_COMMANDS(m_textQuestion);
-  this->AddChild(&m_textQuestion);
+  text_question_.LoadFromFont(THEME->GetPathF(name_, "question"));
+  text_question_.SetName("Question");
+  LOAD_ALL_COMMANDS(text_question_);
+  this->AddChild(&text_question_);
 
-  m_sprCursor.Load(THEME->GetPathG(m_sName, "cursor"));
-  m_sprCursor->SetName("Cursor");
-  LOAD_ALL_COMMANDS(m_sprCursor);
-  this->AddChild(m_sprCursor);
+  spr_cursor_.Load(THEME->GetPathG(name_, "cursor"));
+  spr_cursor_->SetName("Cursor");
+  LOAD_ALL_COMMANDS(spr_cursor_);
+  this->AddChild(spr_cursor_);
 
   for (int i = 0; i < NUM_PromptAnswer; i++) {
-    m_textAnswer[i].LoadFromFont(THEME->GetPathF(m_sName, "answer"));
+    text_answer_[i].LoadFromFont(THEME->GetPathF(name_, "answer"));
     // The name of the actor isn't set because it is not known at this point
     // how many answers there will be, and the name depends on the number of
     // answers as a clumsy way of letting the themer set different positions
     // for different answer groups.  The name is set in BeginScreen, and
     // then the commands are loaded. -Kyz (At least, that seems like the
     // explanation to me, reading the code years after the author left)
-    this->AddChild(&m_textAnswer[i]);
+    this->AddChild(&text_answer_[i]);
   }
 
-  m_sndChange.Load(THEME->GetPathS(m_sName, "change"), true);
+  snd_change_.Load(THEME->GetPathS(name_, "change"), true);
 }
 
 void ScreenPrompt::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 
-  m_Answer = g_defaultAnswer;
-  enum_clamp(m_Answer, PromptAnswer(0), PromptAnswer(g_PromptType));
+  answer_ = g_defaultAnswer;
+  enum_clamp(answer_, PromptAnswer(0), PromptAnswer(g_PromptType));
 
-  m_textQuestion.SetText(g_sText);
-  SET_XY(m_textQuestion);
-  m_textQuestion.PlayCommand("On");
+  text_question_.SetText(g_sText);
+  SET_XY(text_question_);
+  text_question_.PlayCommand("On");
 
-  m_sprCursor->PlayCommand("On");
+  spr_cursor_->PlayCommand("On");
 
   for (int i = 0; i <= g_PromptType; i++) {
     std::string sElem = ssprintf("Answer%dOf%d", i + 1, g_PromptType + 1);
-    m_textAnswer[i].SetName(sElem);
-    LOAD_ALL_COMMANDS(m_textAnswer[i]);
+    text_answer_[i].SetName(sElem);
+    LOAD_ALL_COMMANDS(text_answer_[i]);
     // Side note:  Because LOAD_ALL_COMMANDS occurs here, InitCommand will
     // not be run for the actors.  People can just use OnCommand instead.
     std::string sAnswer = PromptAnswerToString((PromptAnswer)i);
@@ -112,13 +112,13 @@ void ScreenPrompt::BeginScreen() {
       sAnswer = "OK";
     }
 
-    m_textAnswer[i].SetText(ANSWER_TEXT(sAnswer));
-    m_textAnswer[i].PlayCommand("On");
-    SET_XY(m_textAnswer[i]);
+    text_answer_[i].SetText(ANSWER_TEXT(sAnswer));
+    text_answer_[i].PlayCommand("On");
+    SET_XY(text_answer_[i]);
   }
 
   for (int i = g_PromptType + 1; i < NUM_PromptAnswer; i++) {
-    m_textAnswer[i].SetText("");
+    text_answer_[i].SetText("");
   }
 
   PositionCursor();
@@ -129,12 +129,12 @@ bool ScreenPrompt::Input(const InputEventPlus& input) {
     return false;
   }
 
-  if (input.type == IET_RELEASE) {
+  if (input.type_ == IET_RELEASE) {
     return false;
   }
 
-  if (input.DeviceI.device == DEVICE_KEYBOARD) {
-    switch (input.DeviceI.button) {
+  if (input.device_i_.device_ == DEVICE_KEYBOARD) {
+    switch (input.device_i_.button_) {
       case KEY_LEFT:
         return this->MenuLeft(input);
       case KEY_RIGHT:
@@ -152,22 +152,22 @@ bool ScreenPrompt::CanGoRight() {
     case PROMPT_OK:
       return false;
     case PROMPT_YES_NO:
-      return m_Answer < ANSWER_NO;
+      return answer_ < ANSWER_NO;
     case PROMPT_YES_NO_CANCEL:
-      return m_Answer < ANSWER_CANCEL;
+      return answer_ < ANSWER_CANCEL;
     default:
       FAIL_M(ssprintf("Invalid PromptType: %i", g_PromptType));
   }
 }
 
 void ScreenPrompt::Change(int dir) {
-  m_textAnswer[m_Answer].StopEffect();
-  m_Answer = (PromptAnswer)(m_Answer + dir);
-  ASSERT(m_Answer >= 0 && m_Answer < NUM_PromptAnswer);
+  text_answer_[answer_].StopEffect();
+  answer_ = (PromptAnswer)(answer_ + dir);
+  ASSERT(answer_ >= 0 && answer_ < NUM_PromptAnswer);
 
   PositionCursor();
 
-  m_sndChange.Play(true);
+  snd_change_.Play(true);
 }
 
 bool ScreenPrompt::MenuLeft(const InputEventPlus& input) {
@@ -187,7 +187,7 @@ bool ScreenPrompt::MenuRight(const InputEventPlus& input) {
 }
 
 bool ScreenPrompt::MenuStart(const InputEventPlus& input) {
-  if (m_Out.IsTransitioning() || m_Cancel.IsTransitioning()) {
+  if (out_.IsTransitioning() || cancel_.IsTransitioning()) {
     return false;
   }
 
@@ -196,7 +196,7 @@ bool ScreenPrompt::MenuStart(const InputEventPlus& input) {
 }
 
 bool ScreenPrompt::MenuBack(const InputEventPlus& input) {
-  if (m_Out.IsTransitioning() || m_Cancel.IsTransitioning()) {
+  if (out_.IsTransitioning() || cancel_.IsTransitioning()) {
     return false;
   }
 
@@ -213,12 +213,12 @@ bool ScreenPrompt::MenuBack(const InputEventPlus& input) {
 }
 
 void ScreenPrompt::End(bool bCancelled) {
-  switch (m_Answer) {
+  switch (answer_) {
     case ANSWER_YES:
-      m_smSendOnPop = SM_Success;
+      send_on_pop_ = SM_Success;
       break;
     case ANSWER_NO:
-      m_smSendOnPop = SM_Failure;
+      send_on_pop_ = SM_Failure;
       break;
     default:
       break;
@@ -231,7 +231,7 @@ void ScreenPrompt::End(bool bCancelled) {
     StartTransitioningScreen(SM_GoToNextScreen);
   }
 
-  switch (m_Answer) {
+  switch (answer_) {
     case ANSWER_YES:
       if (g_pOnYes) {
         g_pOnYes(g_pCallbackData);
@@ -246,20 +246,20 @@ void ScreenPrompt::End(bool bCancelled) {
       break;
   }
 
-  s_LastAnswer = bCancelled ? ANSWER_CANCEL : m_Answer;
-  s_bCancelledLast = bCancelled;
+  last_answer_ = bCancelled ? ANSWER_CANCEL : answer_;
+  cancelled_last_ = bCancelled;
 }
 
 void ScreenPrompt::PositionCursor() {
-  BitmapText& bt = m_textAnswer[m_Answer];
-  m_sprCursor->SetXY(bt.GetX(), bt.GetY());
+  BitmapText& bt = text_answer_[answer_];
+  spr_cursor_->SetXY(bt.GetX(), bt.GetY());
 }
 
 void ScreenPrompt::TweenOffScreen() {
-  m_textQuestion.PlayCommand("Off");
-  m_sprCursor->PlayCommand("Off");
+  text_question_.PlayCommand("Off");
+  spr_cursor_->PlayCommand("Off");
   for (int i = 0; i <= g_PromptType; i++) {
-    m_textAnswer[i].PlayCommand("Off");
+    text_answer_[i].PlayCommand("Off");
   }
 
   ScreenWithMenuElements::TweenOffScreen();

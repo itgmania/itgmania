@@ -25,7 +25,7 @@ class ScreenOptionsEditProfile : public ScreenOptions {
   virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
-  Profile m_Original;  // restore this on revert
+  Profile original_;  // restore this on revert
 };
 
 #endif

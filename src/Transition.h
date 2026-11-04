@@ -22,16 +22,16 @@ class Transition : public ActorFrame {
   virtual float GetTweenTimeLeft() const;
   void Reset();  // explicitly allow transitioning again
 
-  bool IsWaiting() const { return m_State == waiting; };
-  bool IsTransitioning() const { return m_State == transitioning; };
-  bool IsFinished() const { return m_State == finished; };
+  bool IsWaiting() const { return state_ == waiting; };
+  bool IsTransitioning() const { return state_ == transitioning; };
+  bool IsFinished() const { return state_ == finished; };
 
  protected:
-  enum State { waiting, transitioning, finished } m_State;
+  enum State { waiting, transitioning, finished } state_;
 
-  AutoActor m_sprTransition;
+  AutoActor spr_transition_;
 
-  ScreenMessage m_MessageToSendWhenDone;
+  ScreenMessage message_to_send_when_done_;
 };
 
 #endif

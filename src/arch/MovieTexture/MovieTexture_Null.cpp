@@ -17,33 +17,33 @@ class MovieTexture_Null : public RageMovieTexture {
  public:
   MovieTexture_Null(RageTextureID ID);
   virtual ~MovieTexture_Null();
-  void Invalidate() { texHandle = 0; }
-  uintptr_t GetTexHandle() const { return texHandle; }
+  void Invalidate() { tex_handle_ = 0; }
+  uintptr_t GetTexHandle() const { return tex_handle_; }
   void Update(float /* delta */) {}
   void Reload() {}
   void SetPosition(float /* seconds */) {}
   void SetPlaybackRate(float) {}
 
  private:
-  uintptr_t texHandle;
+  uintptr_t tex_handle_;
 };
 
 MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID) {
   LOG->Trace("MovieTexture_Null::MovieTexture_Null(ID)");
-  texHandle = 0;
+  tex_handle_ = 0;
 
   RageTextureID actualID = GetID();
 
-  actualID.iAlphaBits = 0;
+  actualID.alpha_bits_ = 0;
   int size = 64;
-  m_iSourceWidth = size;
-  m_iSourceHeight = size;
-  m_iImageWidth = size;
-  m_iImageHeight = size;
-  m_iTextureWidth = power_of_two(size);
-  m_iTextureHeight = m_iTextureWidth;
-  m_iFramesWide = 1;
-  m_iFramesHigh = 1;
+  source_width_ = size;
+  source_height_ = size;
+  image_width_ = size;
+  image_height_ = size;
+  texture_width_ = power_of_two(size);
+  texture_height_ = texture_width_;
+  frames_wide_ = 1;
+  frames_high_ = 1;
 
   CreateFrameRects();
 
@@ -56,16 +56,16 @@ MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID) {
   const RageDisplay::RagePixelFormatDesc* pfd =
       DISPLAY->GetPixelFormatDesc(pixfmt);
   RageSurface* img = CreateSurface(
-      size, size, pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2],
-      pfd->masks[3]);
-  memset(img->pixels, 0, static_cast<size_t>(img->pitch) * img->h);
+      size, size, pfd->bpp_, pfd->masks_[0], pfd->masks_[1], pfd->masks_[2],
+      pfd->masks_[3]);
+  memset(img->pixels_, 0, static_cast<size_t>(img->pitch_) * img->h_);
 
-  texHandle = DISPLAY->CreateTexture(pixfmt, img, false);
+  tex_handle_ = DISPLAY->CreateTexture(pixfmt, img, false);
 
   delete img;
 }
 
-MovieTexture_Null::~MovieTexture_Null() { DISPLAY->DeleteTexture(texHandle); }
+MovieTexture_Null::~MovieTexture_Null() { DISPLAY->DeleteTexture(tex_handle_); }
 
 REGISTER_MOVIE_TEXTURE_CLASS(Null);
 

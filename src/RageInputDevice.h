@@ -68,14 +68,14 @@ inline bool IsMouse(InputDevice id) { return id == DEVICE_MOUSE; }
 
 struct InputDeviceInfo {
   InputDeviceInfo(InputDevice id_, std::string sDesc_)
-      : id(id_), sDesc(sDesc_) {}
+      : id_(id_), desc_(sDesc_) {}
 
-  InputDevice id;
-  std::string sDesc;
+  InputDevice id_;
+  std::string desc_;
 };
 
 inline bool operator==(const InputDeviceInfo& lhs, const InputDeviceInfo& rhs) {
-  return lhs.id == rhs.id && lhs.sDesc == rhs.sDesc;
+  return lhs.id_ == rhs.id_ && lhs.desc_ == rhs.desc_;
 }
 
 inline bool operator!=(const InputDeviceInfo& lhs, const InputDeviceInfo& rhs) {
@@ -367,57 +367,62 @@ DeviceButton StringToDeviceButton(const std::string& s);
 
 struct DeviceInput {
  public:
-  InputDevice device;
-  DeviceButton button;
+  InputDevice device_;
+  DeviceButton button_;
 
   /* This is usually 0 or 1. Analog joystick inputs can set this to a percentage
    * (0..1). This should be 0 for analog axes within the dead zone. */
-  float level;
+  float level_;
 
   // Mouse coordinates
   // unsigned x;
   // unsigned y;
-  int z;  // mousewheel
+  int z_;  // mousewheel
 
   /* Whether this button is pressed. This is level with a threshold and
    * debouncing applied. */
-  bool bDown;
+  bool down_;
 
-  RageTimer ts;
+  RageTimer ts_;
 
   DeviceInput()
-      : device(InputDevice_Invalid),
-        button(DeviceButton_Invalid),
-        level(0),
-        z(0),
-        bDown(false),
-        ts(RageZeroTimer) {}
+      : device_(InputDevice_Invalid),
+        button_(DeviceButton_Invalid),
+        level_(0),
+        z_(0),
+        down_(false),
+        ts_(RageZeroTimer) {}
   DeviceInput(InputDevice d, DeviceButton b, float l = 0)
-      : device(d),
-        button(b),
-        level(l),
-        z(0),
-        bDown(l > 0.5f),
-        ts(RageZeroTimer) {}
+      : device_(d),
+        button_(b),
+        level_(l),
+        z_(0),
+        down_(l > 0.5f),
+        ts_(RageZeroTimer) {}
   DeviceInput(InputDevice d, DeviceButton b, float l, const RageTimer& t)
-      : device(d), button(b), level(l), z(0), bDown(level > 0.5f), ts(t) {}
+      : device_(d),
+        button_(b),
+        level_(l),
+        z_(0),
+        down_(level_ > 0.5f),
+        ts_(t) {}
   DeviceInput(InputDevice d, DeviceButton b, const RageTimer& t, int zVal = 0)
-      : device(d), button(b), level(0), z(zVal), bDown(false), ts(t) {}
+      : device_(d), button_(b), level_(0), z_(zVal), down_(false), ts_(t) {}
 
   std::string ToString() const;
   bool FromString(const std::string& s);
 
-  bool IsValid() const { return device != InputDevice_Invalid; };
-  void MakeInvalid() { device = InputDevice_Invalid; };
+  bool IsValid() const { return device_ != InputDevice_Invalid; };
+  void MakeInvalid() { device_ = InputDevice_Invalid; };
 
-  bool IsJoystick() const { return ::IsJoystick(device); }
-  bool IsMouse() const { return ::IsMouse(device); }
+  bool IsJoystick() const { return ::IsJoystick(device_); }
+  bool IsMouse() const { return ::IsMouse(device_); }
 };
 
 inline bool operator==(const DeviceInput& lhs, const DeviceInput& rhs) {
   /* Return true if we represent the same button on the same device.
    * Don't compare level or ts. */
-  return lhs.device == rhs.device && lhs.button == rhs.button;
+  return lhs.device_ == rhs.device_ && lhs.button_ == rhs.button_;
 }
 inline bool operator!=(const DeviceInput& lhs, const DeviceInput& rhs) {
   return !operator==(lhs, rhs);
@@ -425,10 +430,10 @@ inline bool operator!=(const DeviceInput& lhs, const DeviceInput& rhs) {
 
 inline bool operator<(const DeviceInput& lhs, const DeviceInput& rhs) {
   /* Only the devices and buttons matter here. */
-  if (lhs.device != rhs.device) {
-    return lhs.device < rhs.device;
+  if (lhs.device_ != rhs.device_) {
+    return lhs.device_ < rhs.device_;
   }
-  return lhs.button < rhs.button;
+  return lhs.button_ < rhs.button_;
 }
 inline bool operator>(const DeviceInput& lhs, const DeviceInput& rhs) {
   return operator<(rhs, lhs);

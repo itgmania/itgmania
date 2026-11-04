@@ -8,18 +8,18 @@
 
 REGISTER_CLASS_TRAITS(LuaReference, new LuaReference(*pCopy))
 
-LuaReference::LuaReference() { m_iReference = LUA_NOREF; }
+LuaReference::LuaReference() { reference_ = LUA_NOREF; }
 
 LuaReference::~LuaReference() { Unregister(); }
 
 LuaReference::LuaReference(const LuaReference& cpy) {
-  if (cpy.m_iReference == LUA_NOREF || cpy.m_iReference == LUA_REFNIL) {
-    m_iReference = cpy.m_iReference;
+  if (cpy.reference_ == LUA_NOREF || cpy.reference_ == LUA_REFNIL) {
+    reference_ = cpy.reference_;
   } else {
     /* Make a new reference. */
     Lua* L = LUA->Get();
-    lua_rawgeti(L, LUA_REGISTRYINDEX, cpy.m_iReference);
-    m_iReference = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, cpy.reference_);
+    reference_ = luaL_ref(L, LUA_REGISTRYINDEX);
     LUA->Release(L);
   }
 }
@@ -31,13 +31,13 @@ LuaReference& LuaReference::operator=(const LuaReference& cpy) {
 
   Unregister();
 
-  if (cpy.m_iReference == LUA_NOREF || cpy.m_iReference == LUA_REFNIL) {
-    m_iReference = cpy.m_iReference;
+  if (cpy.reference_ == LUA_NOREF || cpy.reference_ == LUA_REFNIL) {
+    reference_ = cpy.reference_;
   } else {
     /* Make a new reference. */
     Lua* L = LUA->Get();
-    lua_rawgeti(L, LUA_REGISTRYINDEX, cpy.m_iReference);
-    m_iReference = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, cpy.reference_);
+    reference_ = luaL_ref(L, LUA_REGISTRYINDEX);
     LUA->Release(L);
   }
 
@@ -45,15 +45,15 @@ LuaReference& LuaReference::operator=(const LuaReference& cpy) {
 }
 
 void LuaReference::SetFromStack(Lua* L) {
-  if (m_iReference != LUA_NOREF) {
-    luaL_unref(L, LUA_REGISTRYINDEX, m_iReference);
+  if (reference_ != LUA_NOREF) {
+    luaL_unref(L, LUA_REGISTRYINDEX, reference_);
   }
-  m_iReference = luaL_ref(L, LUA_REGISTRYINDEX);
+  reference_ = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void LuaReference::SetFromNil() {
   Unregister();
-  m_iReference = LUA_REFNIL;
+  reference_ = LUA_REFNIL;
 }
 
 void LuaReference::DeepCopy() {
@@ -76,12 +76,12 @@ void LuaReference::DeepCopy() {
 }
 
 void LuaReference::PushSelf(lua_State* L) const {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, m_iReference);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, reference_);
 }
 
-bool LuaReference::IsSet() const { return m_iReference != LUA_NOREF; }
+bool LuaReference::IsSet() const { return reference_ != LUA_NOREF; }
 
-bool LuaReference::IsNil() const { return m_iReference == LUA_REFNIL; }
+bool LuaReference::IsNil() const { return reference_ == LUA_REFNIL; }
 
 int LuaReference::GetLuaType() const {
   Lua* L = LUA->Get();
@@ -94,14 +94,14 @@ int LuaReference::GetLuaType() const {
 }
 
 void LuaReference::Unregister() {
-  if (LUA == nullptr || m_iReference == LUA_NOREF) {
+  if (LUA == nullptr || reference_ == LUA_NOREF) {
     return;  // nothing to do
   }
 
   Lua* L = LUA->Get();
-  luaL_unref(L, LUA_REGISTRYINDEX, m_iReference);
+  luaL_unref(L, LUA_REGISTRYINDEX, reference_);
   LUA->Release(L);
-  m_iReference = LUA_NOREF;
+  reference_ = LUA_NOREF;
 }
 
 bool LuaReference::SetFromExpression(const std::string& sExpression) {

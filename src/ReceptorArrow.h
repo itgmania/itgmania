@@ -15,18 +15,18 @@ class ReceptorArrow : public ActorFrame {
   virtual void DrawPrimitives();
   virtual void Update(float fDeltaTime);
   void Step(TapNoteScore score);
-  void SetPressed() { m_bIsPressed = true; };
+  void SetPressed() { is_pressed_ = true; };
   void SetNoteUpcoming(bool b);
 
  private:
-  const PlayerState* m_pPlayerState;
-  int m_iColNo;
+  const PlayerState* player_state_;
+  int col_no_;
 
-  AutoActor m_pReceptor;
+  AutoActor receptor_;
 
-  bool m_bIsPressed;
-  bool m_bWasPressed;  // set in Update
-  bool m_bWasReverse;
+  bool is_pressed_;
+  bool was_pressed_;  // set in Update
+  bool was_reverse_;
 };
 
 #endif

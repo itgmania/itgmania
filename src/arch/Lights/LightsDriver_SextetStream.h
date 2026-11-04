@@ -28,7 +28,7 @@ class LightsDriver_SextetStream : public LightsDriver {
   virtual void Set(const LightsState* ls);
 
  protected:
-  void* _impl;
+  void* impl_;
 };
 
 class LightsDriver_SextetStreamToFile : public LightsDriver_SextetStream {

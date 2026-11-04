@@ -35,15 +35,15 @@ class ScreenSetTime : public ScreenWithMenuElements {
   virtual bool MenuBack(const InputEventPlus& input);
 
  private:
-  SetTimeSelection m_Selection;
-  time_t m_TimeOffset;
+  SetTimeSelection selection_;
+  time_t time_offset_;
   void ChangeSelection(int iDirection);
   void ChangeValue(int iDirection);
 
-  RageSound m_soundChangeValue;
-  RageSound m_soundChangeSelection;
-  BitmapText m_textTitle[NUM_SetTimeSelection];
-  BitmapText m_textValue[NUM_SetTimeSelection];
+  RageSound sound_change_value_;
+  RageSound sound_change_selection_;
+  BitmapText text_title_[NUM_SetTimeSelection];
+  BitmapText text_value_[NUM_SetTimeSelection];
 };
 
 #endif

@@ -17,45 +17,45 @@ REGISTER_SCREEN_CLASS(ScreenStatsOverlay);
 void ScreenStatsOverlay::Init() {
   Screen::Init();
 
-  m_textStats.LoadFromFont(THEME->GetPathF(m_sName, "stats"));
-  m_textStats.SetName("Stats");
-  LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_textStats);
-  this->AddChild(&m_textStats);
+  text_stats_.LoadFromFont(THEME->GetPathF(name_, "stats"));
+  text_stats_.SetName("Stats");
+  LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(text_stats_);
+  this->AddChild(&text_stats_);
 
   /* "Was that a skip?"  This displays a message when an update takes
    * abnormally long, to quantify skips more precisely, verify them
    * when they're subtle, and show the time it happened, so you can pinpoint
    * the time in the log. */
-  m_LastSkip = 0;
+  last_skip_ = 0;
 
-  SHOW_SKIPS.Load(m_sName, "ShowSkips");
+  SHOW_SKIPS.Load(name_, "ShowSkips");
   if (SHOW_SKIPS) {
-    SKIP_X.Load(m_sName, "SkipX");
-    SKIP_Y.Load(m_sName, "SkipY");
-    SKIP_SPACING_Y.Load(m_sName, "SkipSpacingY");
-    SKIP_WIDTH.Load(m_sName, "SkipWidth");
+    SKIP_X.Load(name_, "SkipX");
+    SKIP_Y.Load(name_, "SkipY");
+    SKIP_SPACING_Y.Load(name_, "SkipSpacingY");
+    SKIP_WIDTH.Load(name_, "SkipWidth");
 
     RectF rectSkips = RectF(
         SKIP_X - SKIP_WIDTH / 2,
         SKIP_Y - (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 - 10,
         SKIP_X + SKIP_WIDTH / 2,
         SKIP_Y + (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 + 10);
-    m_quadSkipBackground.StretchTo(rectSkips);
-    m_quadSkipBackground.SetDiffuse(RageColor(0, 0, 0, 0.4f));
-    this->AddChild(&m_quadSkipBackground);
+    quad_skip_background_.StretchTo(rectSkips);
+    quad_skip_background_.SetDiffuse(RageColor(0, 0, 0, 0.4f));
+    this->AddChild(&quad_skip_background_);
 
     for (int i = 0; i < NUM_SKIPS_TO_SHOW; i++) {
       /* This is somewhat big.  Let's put it on the right side, where it'll
        * obscure the 2P side during gameplay; there's nowhere to put it that
        * doesn't obscure something, and it's just a diagnostic. */
-      m_textSkips[i].LoadFromFont(THEME->GetPathF("Common", "normal"));
-      m_textSkips[i].SetX(SKIP_X);
-      m_textSkips[i].SetY(SCALE(
-          i, 0, NUM_SKIPS_TO_SHOW - 1, rectSkips.top + 10,
-          rectSkips.bottom - 10));
-      m_textSkips[i].SetDiffuse(RageColor(1, 1, 1, 0));
-      m_textSkips[i].SetShadowLength(0);
-      this->AddChild(&m_textSkips[i]);
+      text_skips_[i].LoadFromFont(THEME->GetPathF("Common", "normal"));
+      text_skips_[i].SetX(SKIP_X);
+      text_skips_[i].SetY(SCALE(
+          i, 0, NUM_SKIPS_TO_SHOW - 1, rectSkips.top_ + 10,
+          rectSkips.bottom_ - 10));
+      text_skips_[i].SetDiffuse(RageColor(1, 1, 1, 0));
+      text_skips_[i].SetShadowLength(0);
+      this->AddChild(&text_skips_[i]);
     }
   }
 
@@ -67,16 +67,16 @@ void ScreenStatsOverlay::Update(float fDeltaTime) {
 
   static bool bShowStatsWasOn = false;
 
-  if (PREFSMAN->m_bShowStats && !bShowStatsWasOn) {
+  if (PREFSMAN->show_stats_ && !bShowStatsWasOn) {
     // Reset skip timer when we toggle Stats on so we don't show a large skip
     // from the span when stats were turned off.
-    m_timerSkip.Touch();
+    timer_skip_.Touch();
   }
-  bShowStatsWasOn = PREFSMAN->m_bShowStats.Get();
+  bShowStatsWasOn = PREFSMAN->show_stats_.Get();
 
-  this->SetVisible(PREFSMAN->m_bShowStats);
-  if (PREFSMAN->m_bShowStats) {
-    m_textStats.SetText(DISPLAY->GetStats());
+  this->SetVisible(PREFSMAN->show_stats_);
+  if (PREFSMAN->show_stats_) {
+    text_stats_.SetText(DISPLAY->GetStats());
     if (SHOW_SKIPS) {
       UpdateSkips();
     }
@@ -85,22 +85,22 @@ void ScreenStatsOverlay::Update(float fDeltaTime) {
 
 void ScreenStatsOverlay::AddTimestampLine(
     const std::string& txt, const RageColor& color) {
-  m_textSkips[m_LastSkip].SetText(txt);
-  m_textSkips[m_LastSkip].StopTweening();
-  m_textSkips[m_LastSkip].SetDiffuse(RageColor(1, 1, 1, 1));
-  m_textSkips[m_LastSkip].BeginTweening(0.2f);
-  m_textSkips[m_LastSkip].SetDiffuse(color);
-  m_textSkips[m_LastSkip].BeginTweening(3.0f);
-  m_textSkips[m_LastSkip].BeginTweening(0.2f);
-  m_textSkips[m_LastSkip].SetDiffuse(RageColor(1, 1, 1, 0));
+  text_skips_[last_skip_].SetText(txt);
+  text_skips_[last_skip_].StopTweening();
+  text_skips_[last_skip_].SetDiffuse(RageColor(1, 1, 1, 1));
+  text_skips_[last_skip_].BeginTweening(0.2f);
+  text_skips_[last_skip_].SetDiffuse(color);
+  text_skips_[last_skip_].BeginTweening(3.0f);
+  text_skips_[last_skip_].BeginTweening(0.2f);
+  text_skips_[last_skip_].SetDiffuse(RageColor(1, 1, 1, 0));
 
-  m_LastSkip++;
-  m_LastSkip %= NUM_SKIPS_TO_SHOW;
+  last_skip_++;
+  last_skip_ %= NUM_SKIPS_TO_SHOW;
 }
 
 void ScreenStatsOverlay::UpdateSkips() {
   /* Use our own timer, so we ignore `/tab. */
-  const float UpdateTime = m_timerSkip.GetDeltaTime();
+  const float UpdateTime = timer_skip_.GetDeltaTime();
 
   /* FPS is 0 for a little while after we load a screen; don't report
    * during this time. Do clear the timer, though, so we don't report
@@ -139,7 +139,7 @@ void ScreenStatsOverlay::UpdateSkips() {
             UpdateTime / ExpectedUpdate),
         colors[skip]);
 
-    if (PREFSMAN->m_bLogSkips) {
+    if (PREFSMAN->log_skips_) {
       LOG->Trace(
           "Frame skip: %.0fms (%.0f)", 1000 * UpdateTime,
           UpdateTime / ExpectedUpdate);

@@ -17,10 +17,10 @@ class InputHandler_Linux_PIUIO : public InputHandler {
   static int InputThread_Start(void* p);
   void InputThread();
 
-  int fd;
-  unsigned char lastInputs[8];
-  RageThread m_InputThread;
-  bool m_bShutdown;
+  int fd_;
+  unsigned char last_inputs_[8];
+  RageThread input_thread_;
+  bool shutdown_;
 };
 
 #endif

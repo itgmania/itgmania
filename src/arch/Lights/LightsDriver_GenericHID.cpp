@@ -44,8 +44,8 @@ LightsDriver_GenericHID::LightsDriver_GenericHID() {
       "Better implementation of the PacDrive driver is now available.\n"
       "Try it out. Set LightsDriver=PacDrive in Preferences.ini.");
 
-  DeviceHandle = NULL;
-  iLightsOrder = 0;
+  device_handle_ = NULL;
+  lights_order_ = 0;
 
   OpenDevice();
 
@@ -55,7 +55,7 @@ LightsDriver_GenericHID::LightsDriver_GenericHID() {
   std::string lightOrder = g_sGenericHIDLightsOrdering.Get();
   if (CompareNoCase(lightOrder, "lumenar") == 0 ||
       CompareNoCase(lightOrder, "openitg") == 0) {
-    iLightsOrder = 1;
+    lights_order_ = 1;
   }
 }
 
@@ -66,13 +66,13 @@ LightsDriver_GenericHID::~LightsDriver_GenericHID() {
 }
 
 void LightsDriver_GenericHID::Set(const LightsState* ls) {
-  if (!DeviceHandle) {
+  if (!device_handle_) {
     return;
   }
 
   uint16_t outb = 0;
 
-  switch (iLightsOrder) {
+  switch (lights_order_) {
     case 1:
       // Sets the cabinet light values to follow LumenAR/OpenITG wiring
       // standards
@@ -96,60 +96,60 @@ void LightsDriver_GenericHID::Set(const LightsState* ls) {
        * 12,13,14,15: P2 L R U D
        */
 
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
         outb |= BIT(0);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
         outb |= BIT(1);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
         outb |= BIT(2);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
         outb |= BIT(3);
       }
 
-      if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+      if (ls->game_button_lights_[GameController_1][GAME_BUTTON_START]) {
         outb |= BIT(4);
       }
-      if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+      if (ls->game_button_lights_[GameController_2][GAME_BUTTON_START]) {
         outb |= BIT(5);
       }
 
       // Most PacDrive/Cabinet setups only have *one* bass light, so mux them
       // together here.
-      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+          ls->cabinet_lights_[LIGHT_BASS_RIGHT]) {
         outb |= BIT(6);
       }
-      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+          ls->cabinet_lights_[LIGHT_BASS_RIGHT]) {
         outb |= BIT(7);
       }
 
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
         outb |= BIT(8);
       }
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
         outb |= BIT(9);
       }
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
         outb |= BIT(10);
       }
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
         outb |= BIT(11);
       }
 
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
         outb |= BIT(12);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
         outb |= BIT(13);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
         outb |= BIT(14);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
         outb |= BIT(15);
       }
 
@@ -162,55 +162,55 @@ void LightsDriver_GenericHID::Set(const LightsState* ls) {
       // http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
 
       // these are lights 1->8
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
         outb |= BIT(8);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
         outb |= BIT(9);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
         outb |= BIT(10);
       }
-      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
         outb |= BIT(11);
       }
 
-      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+      if (ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+          ls->cabinet_lights_[LIGHT_BASS_RIGHT]) {
         outb |= BIT(12);
       }
 
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
         outb |= BIT(13);
       }
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
         outb |= BIT(14);
       }
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
         outb |= BIT(15);
       }
       // these are lights 8->16, note the byte swap to match PacDrive
       // endianness.
-      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+      if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
         outb |= BIT(0);
       }
-      if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+      if (ls->game_button_lights_[GameController_1][GAME_BUTTON_START]) {
         outb |= BIT(1);
       }
 
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
         outb |= BIT(2);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
         outb |= BIT(3);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
         outb |= BIT(4);
       }
-      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+      if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
         outb |= BIT(5);
       }
-      if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+      if (ls->game_button_lights_[GameController_2][GAME_BUTTON_START]) {
         outb |= BIT(6);
       }
       // Bit index 7 is unused, this is LED16.
@@ -266,29 +266,29 @@ void LightsDriver_GenericHID::OpenDevice() {
     return;
   }
 
-  result = libusb_open(dev, &DeviceHandle);
+  result = libusb_open(dev, &device_handle_);
   if (result < 0) {
     LOG->Warn("libusb_open failed: %s", libusb_error_name(result));
-    DeviceHandle = NULL;
+    device_handle_ = NULL;
     libusb_free_device_list(devs, 1);
     return;
   }
 
   libusb_free_device_list(devs, 1);
 
-  if (libusb_kernel_driver_active(DeviceHandle, 0) == 1) {
+  if (libusb_kernel_driver_active(device_handle_, 0) == 1) {
     LOG->Warn("Kernel Driver Active");
-    if (libusb_detach_kernel_driver(DeviceHandle, 0) == 0) {
+    if (libusb_detach_kernel_driver(device_handle_, 0) == 0) {
       LOG->Warn("Kernel Driver Detached!");
     }
   }
 
-  result = libusb_claim_interface(DeviceHandle, 0);
+  result = libusb_claim_interface(device_handle_, 0);
   if (result < 0) {
     LOG->Warn(
         "libusb_claim_interface: cannot claim interface: %s",
         libusb_error_name(result));
-    libusb_close(DeviceHandle);
+    libusb_close(device_handle_);
     return;
   }
 
@@ -296,23 +296,23 @@ void LightsDriver_GenericHID::OpenDevice() {
 }
 
 void LightsDriver_GenericHID::CloseDevice() {
-  if (!DeviceHandle) {
+  if (!device_handle_) {
     return;
   }
 
   ssize_t result;
 
-  result = libusb_release_interface(DeviceHandle, 0);
+  result = libusb_release_interface(device_handle_, 0);
   if (result != 0) {
     LOG->Warn("libusb_release_interface: %s", libusb_error_name(result));
   }
 
-  libusb_close(DeviceHandle);
-  DeviceHandle = NULL;
+  libusb_close(device_handle_);
+  device_handle_ = NULL;
 }
 
 void LightsDriver_GenericHID::WriteDevice(uint16_t out) {
-  if (!DeviceHandle) {
+  if (!device_handle_) {
     return;
   }
 
@@ -322,7 +322,7 @@ void LightsDriver_GenericHID::WriteDevice(uint16_t out) {
   int expected = sizeof(data);
 
   ssize_t result = libusb_control_transfer(
-      DeviceHandle,
+      device_handle_,
       LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS |
           LIBUSB_RECIPIENT_INTERFACE,
       HID_SET_REPORT, HID_IFACE_OUT, 0, (unsigned char*)&data, expected,

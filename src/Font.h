@@ -18,18 +18,18 @@ class IniFile;
 /** @brief The textures used by the font. */
 struct FontPageTextures {
   /** @brief The primary texture drawn underneath Main. */
-  RageTexture* m_pTextureMain;
+  RageTexture* texture_main_;
   /** @brief an optional texture drawn underneath Main.
    *
    * This can help to acheive complicated layer styles. */
-  RageTexture* m_pTextureStroke;
+  RageTexture* texture_stroke_;
 
   /** @brief Set up the initial textures. */
-  FontPageTextures() : m_pTextureMain(nullptr), m_pTextureStroke(nullptr) {}
+  FontPageTextures() : texture_main_(nullptr), texture_stroke_(nullptr) {}
 
   bool operator==(const struct FontPageTextures& other) const {
-    return m_pTextureMain == other.m_pTextureMain &&
-           m_pTextureStroke == other.m_pTextureStroke;
+    return texture_main_ == other.texture_main_ &&
+           texture_stroke_ == other.texture_stroke_;
   }
 
   bool operator!=(const struct FontPageTextures& other) const {
@@ -40,68 +40,67 @@ struct FontPageTextures {
 /** @brief The components of a glyph (not technically a character). */
 struct glyph {
   /** @brief the FontPage that is needed. */
-  FontPage* m_pPage;
+  FontPage* page_;
   /** @brief the textures for the glyph. */
-  FontPageTextures m_FontPageTextures;
+  FontPageTextures font_page_textures_;
   FontPageTextures* GetFontPageTextures() const {
-    return const_cast<FontPageTextures*>(&m_FontPageTextures);
+    return const_cast<FontPageTextures*>(&font_page_textures_);
   }
 
   /** @brief Number of pixels to advance horizontally after drawing this
    * character. */
-  int m_iHadvance;
+  int hadvance_;
 
   /** @brief Width of the actual rendered character. */
-  float m_fWidth;
+  float width_;
   /** @brief Height of the actual rendered character. */
-  float m_fHeight;
+  float height_;
 
   /** @brief Number of pixels to offset this character when rendering. */
-  float m_fHshift;  // , m_fVshift;
+  float hshift_;  // , m_fVshift;
 
   /** @brief Texture coordinate rect. */
-  RectF m_TexRect;
+  RectF tex_rect_;
 
   /** @brief Set up the glyph with default values. */
   glyph()
-      : m_pPage(nullptr),
-        m_FontPageTextures(),
-        m_iHadvance(0),
-        m_fWidth(0),
-        m_fHeight(0),
-        m_fHshift(0),
-        m_TexRect() {}
+      : page_(nullptr),
+        font_page_textures_(),
+        hadvance_(0),
+        width_(0),
+        height_(0),
+        hshift_(0),
+        tex_rect_() {}
 };
 
 /** @brief The settings used for the FontPage. */
 struct FontPageSettings {
-  std::string m_sTexturePath;
+  std::string texture_path_;
 
-  int m_iDrawExtraPixelsLeft, m_iDrawExtraPixelsRight, m_iAddToAllWidths,
-      m_iLineSpacing, m_iTop, m_iBaseline, m_iDefaultWidth,
-      m_iAdvanceExtraPixels;
-  float m_fScaleAllWidthsBy;
-  std::string m_sTextureHints;
+  int draw_extra_pixels_left_, draw_extra_pixels_right_, add_to_all_widths_,
+      line_spacing_, top_, baseline_, default_width_, advance_extra_pixels_;
+  float scale_all_widths_by_;
+  std::string texture_hints_;
 
-  std::map<wchar_t, int> CharToGlyphNo;
+  std::map<wchar_t, int> char_to_glyph_no_;
   // If a value is missing, the width of the texture frame is used.
-  std::map<int, int> m_mapGlyphWidths;
+  std::map<int, int> map_glyph_widths_;
 
   /** @brief The initial settings for the FontPage. */
   FontPageSettings()
-      : m_sTexturePath(""),
-        m_iDrawExtraPixelsLeft(0),
-        m_iDrawExtraPixelsRight(0),
-        m_iAddToAllWidths(0),
-        m_iLineSpacing(-1),
-        m_iTop(-1),
-        m_iBaseline(-1),
-        m_iDefaultWidth(-1),
-        m_iAdvanceExtraPixels(1),
-        m_fScaleAllWidthsBy(1),
-        m_sTextureHints("default"),
-        CharToGlyphNo(),
-        m_mapGlyphWidths() {}
+      : texture_path_(""),
+        draw_extra_pixels_left_(0),
+        draw_extra_pixels_right_(0),
+        add_to_all_widths_(0),
+        line_spacing_(-1),
+        top_(-1),
+        baseline_(-1),
+        default_width_(-1),
+        advance_extra_pixels_(1),
+        scale_all_widths_by_(1),
+        texture_hints_("default"),
+        char_to_glyph_no_(),
+        map_glyph_widths_() {}
 
   /**
    * @brief Map a range from a character map to glyphs.
@@ -122,23 +121,23 @@ class FontPage {
   void Load(const FontPageSettings& cfg);
 
   // Page-global properties.
-  int m_iHeight;
-  int m_iLineSpacing;
-  float m_fVshift;
-  int GetCenter() const { return m_iHeight / 2; }
+  int height_;
+  int line_spacing_;
+  float vshift_;
+  int GetCenter() const { return height_ / 2; }
 
   // Remember these only for GetLineWidthInSourcePixels.
-  int m_iDrawExtraPixelsLeft, m_iDrawExtraPixelsRight;
+  int draw_extra_pixels_left_, draw_extra_pixels_right_;
 
-  FontPageTextures m_FontPageTextures;
+  FontPageTextures font_page_textures_;
 
   // XXX: remove?
-  std::string m_sTexturePath;
+  std::string texture_path_;
 
   /** @brief All glyphs in this list will point to m_pTexture. */
-  std::vector<glyph> m_aGlyphs;
+  std::vector<glyph> glyphs_;
 
-  std::map<wchar_t, int> m_iCharToGlyphNo;
+  std::map<wchar_t, int> char_to_glyph_no_;
 
  private:
   void SetExtraPixels(int iDrawExtraPixelsLeft, int DrawExtraPixelsRight);
@@ -148,8 +147,8 @@ class FontPage {
 
 class Font {
  public:
-  int m_iRefCount;
-  std::string path;
+  int ref_count_;
+  std::string path_;
 
   Font();
   ~Font();
@@ -178,48 +177,48 @@ class Font {
   // Load font-wide settings.
   void CapsOnly();
 
-  int GetHeight() const { return m_pDefault->m_iHeight; }
-  int GetCenter() const { return m_pDefault->GetCenter(); }
-  int GetLineSpacing() const { return m_pDefault->m_iLineSpacing; }
+  int GetHeight() const { return default_->height_; }
+  int GetCenter() const { return default_->GetCenter(); }
+  int GetLineSpacing() const { return default_->line_spacing_; }
 
   void SetDefaultGlyph(FontPage* pPage);
 
-  bool IsRightToLeft() const { return m_bRightToLeft; };
-  bool IsDistanceField() const { return m_bDistanceField; };
+  bool IsRightToLeft() const { return right_to_left_; };
+  bool IsDistanceField() const { return distance_field_; };
   const RageColor& GetDefaultStrokeColor() const {
-    return m_DefaultStrokeColor;
+    return default_stroke_color_;
   };
 
  private:
   /** @brief List of pages and fonts that we use (and are responsible for
    * freeing). */
-  std::vector<FontPage*> m_apPages;
+  std::vector<FontPage*> pages_;
 
   /**
    * @brief This is the primary fontpage of this font.
    *
    * The font-wide height, center, etc. is pulled from it.
    * (This is one of pages[].) */
-  FontPage* m_pDefault;
+  FontPage* default_;
 
   /** @brief Map from characters to glyphs. */
-  std::map<wchar_t, glyph*> m_iCharToGlyph;
+  std::map<wchar_t, glyph*> char_to_glyph_;
   /** @brief Each glyph is part of one of the pages[]. */
-  glyph* m_iCharToGlyphCache[128];
+  glyph* char_to_glyph_cache_[128];
 
   /**
    * @brief True for Hebrew, Arabic, Urdu fonts.
    *
    * This will also change the way glyphs from the default FontPage are
    * rendered. There may be a better way to handle this. */
-  bool m_bRightToLeft;
+  bool right_to_left_;
 
-  bool m_bDistanceField;
+  bool distance_field_;
 
-  RageColor m_DefaultStrokeColor;
+  RageColor default_stroke_color_;
 
   /** @brief We keep this around only for reloading. */
-  std::string m_sChars;
+  std::string chars_;
 
   void LoadFontPageSettings(
       FontPageSettings& cfg, IniFile& ini, const std::string& sTexturePath,

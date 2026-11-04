@@ -52,66 +52,65 @@ class ScreenMapControllers : public ScreenWithMenuElements {
   void SetCursorFromSetListCurrent();
   void StartWaitingForPress();
 
-  unsigned int m_CurController;
-  unsigned int m_CurButton;
-  unsigned int m_CurSlot;
-  unsigned int m_MaxDestItem;
+  unsigned int cur_controller_;
+  unsigned int cur_button_;
+  unsigned int cur_slot_;
+  unsigned int max_dest_item_;
 
-  bool m_ChangeOccurred;
+  bool change_occurred_;
 
-  RageTimer m_WaitingForPress;
-  DeviceInput m_DeviceIToMap;
+  RageTimer waiting_for_press_;
+  DeviceInput device_i_to_map_;
 
   struct KeyToMap {
-    GameButton m_GameButton;
+    GameButton game_button_;
 
     // owned by m_Line
-    BitmapText* m_textMappedTo[NUM_GameController]
-                              [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
-  };
-  std::vector<KeyToMap> m_KeysToMap;
-
-  BitmapText m_textDevices;
-
-  BitmapText m_textLabel[NUM_GameController];
-  BitmapText m_ListHeaderCenter;
-  BitmapText m_ListHeaderLabels[NUM_GameController]
+    BitmapText* text_mapped_to_[NUM_GameController]
                                [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
+  };
+  std::vector<KeyToMap> keys_to_map_;
 
-  float m_AutoDismissWarningSecs;
-  AutoActor m_Warning;
+  BitmapText text_devices_;
 
-  float m_AutoDismissNoSetListPromptSecs;
-  AutoActor m_NoSetListPrompt;
+  BitmapText text_label_[NUM_GameController];
+  BitmapText list_header_center_;
+  BitmapText list_header_labels_[NUM_GameController]
+                                [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
 
-  float m_AutoDismissSanitySecs;
-  AutoActor m_SanityMessage;
+  float auto_dismiss_warning_secs_;
+  AutoActor warning_;
+
+  float auto_dismiss_no_set_list_prompt_secs_;
+  AutoActor no_set_list_prompt_;
+
+  float auto_dismiss_sanity_secs_;
+  AutoActor sanity_message_;
 
   struct SetListEntry {
-    int m_button;
-    int m_controller;
-    int m_slot;
-    SetListEntry(int b, int c, int s)
-        : m_button(b), m_controller(c), m_slot(s) {}
+    int button_;
+    int controller_;
+    int slot_;
+    SetListEntry(int b, int c, int s) : button_(b), controller_(c), slot_(s) {}
     bool operator<(const SetListEntry& rhs) const {
-      if (m_controller != rhs.m_controller) {
-        return m_controller < rhs.m_controller;
+      if (controller_ != rhs.controller_) {
+        return controller_ < rhs.controller_;
       }
-      if (m_button != rhs.m_button) {
-        return m_button < rhs.m_button;
+      if (button_ != rhs.button_) {
+        return button_ < rhs.button_;
       }
-      return m_slot < rhs.m_slot;
+      return slot_ < rhs.slot_;
     }
   };
-  std::set<SetListEntry> m_SetList;
-  std::set<SetListEntry>::iterator m_SetListCurrent;
-  bool m_InSetListMode;
+  std::set<SetListEntry> set_list_;
+  std::set<SetListEntry>::iterator set_list_current_;
+  bool in_set_list_mode_;
 
   typedef void (ScreenMapControllers::*action_fun_t)();
   struct ActionRow {
-    std::string m_name;
-    AutoActor m_actor;
-    action_fun_t m_action;
+    std::string name_;
+    AutoActor actor_;
+    action_fun_t action_;
     void Load(
         const std::string& scr_name, const std::string& name,
         ScreenMapControllers::action_fun_t action, ActorFrame* line,
@@ -124,13 +123,13 @@ class ScreenMapControllers : public ScreenWithMenuElements {
   void ExitAction();
   bool SanityCheckWrapper();
 
-  std::vector<ActionRow> m_Actions;
+  std::vector<ActionRow> actions_;
 
-  std::vector<ActorFrame*> m_Line;
-  ActorScroller m_LineScroller;
+  std::vector<ActorFrame*> line_;
+  ActorScroller line_scroller_;
 
-  RageSound m_soundChange;
-  RageSound m_soundDelete;
+  RageSound sound_change_;
+  RageSound sound_delete_;
 };
 
 #endif

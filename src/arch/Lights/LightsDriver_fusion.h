@@ -74,10 +74,10 @@ static_assert(
 
 class LightsDriver_fusion : public LightsDriver {
  private:
-  HidDevice dev;
+  HidDevice dev_;
 
-  uint8_t outputBuffer[FUISON_REPORT_MAX];
-  uint8_t prevOutputBuffer[FUISON_REPORT_MAX];
+  uint8_t output_buffer_[FUISON_REPORT_MAX];
+  uint8_t prev_output_buffer_[FUISON_REPORT_MAX];
 
  public:
   LightsDriver_fusion();

@@ -38,39 +38,39 @@ class LineReader {
  private:
   // The buffer size isn't critical; the std::string will simply be
   // extended until the line is done.
-  static const size_t BUFFER_SIZE = 64;
-  char buffer[BUFFER_SIZE];
-  std::FILE* file;
-  int timeout_ms;
+  static const size_t kBufferSize = 64;
+  char buffer_[kBufferSize];
+  std::FILE* file_;
+  int timeout_ms_;
 
  public:
   LineReader(const std::string& filename) {
-    timeout_ms = DEFAULT_TIMEOUT_MS;
+    timeout_ms_ = DEFAULT_TIMEOUT_MS;
 
     LOG->Info(
         "Starting InputHandler_SextetStreamFromFile from std::FILE with "
         "filename '%s'",
         filename.c_str());
-    file = std::fopen(filename.c_str(), "rb");
+    file_ = std::fopen(filename.c_str(), "rb");
 
-    if (file == nullptr) {
+    if (file_ == nullptr) {
       LOG->Warn(
           "Error opening file '%s' for input (cstdio): %s", filename.c_str(),
           std::strerror(errno));
     } else {
       LOG->Info("File opened");
       // Disable buffering on the file
-      std::setbuf(file, nullptr);
+      std::setbuf(file_, nullptr);
     }
   }
 
   ~LineReader() {
-    if (file != nullptr) {
-      std::fclose(file);
+    if (file_ != nullptr) {
+      std::fclose(file_);
     }
   }
 
-  bool IsValid() { return file != nullptr; }
+  bool IsValid() { return file_ != nullptr; }
 
   // Ideally, this method should return if timeout_ms passes
   // before a line becomes available. Actually doing this may
@@ -101,10 +101,10 @@ class LineReader {
 
     line = "";
 
-    if (file != nullptr) {
-      while (fgets(buffer, BUFFER_SIZE, file) != nullptr) {
+    if (file_ != nullptr) {
+      while (fgets(buffer_, kBufferSize, file_) != nullptr) {
         afterFirst = true;
-        line += buffer;
+        line += buffer_;
         len = line.length();
         if (len > 0 && line[len - 1] == 0xA) {
           break;
@@ -119,27 +119,29 @@ class LineReader {
 
 class InputHandler_SextetStream::Impl {
  private:
-  InputHandler_SextetStream* handler;
-  std::string filename;
+  InputHandler_SextetStream* handler_;
+  std::string filename_;
 
  protected:
-  void ButtonPressed(const DeviceInput& di) { handler->ButtonPressed(di); }
+  void ButtonPressed(const DeviceInput& di) { handler_->ButtonPressed(di); }
 
-  uint8_t stateBuffer[STATE_BUFFER_SIZE];
-  size_t timeout_ms;
-  RageThread inputThread;
-  bool continueInputThread;
+  uint8_t state_buffer_[STATE_BUFFER_SIZE];
+  size_t timeout_ms_;
+  RageThread input_thread_;
+  bool continue_input_thread_;
 
-  inline void clearStateBuffer() { memset(stateBuffer, 0, STATE_BUFFER_SIZE); }
+  inline void clearStateBuffer() {
+    memset(state_buffer_, 0, STATE_BUFFER_SIZE);
+  }
 
   inline void createThread() {
-    continueInputThread = true;
-    inputThread.SetName("SextetStream input thread");
-    inputThread.Create(StartInputThread, this);
+    continue_input_thread_ = true;
+    input_thread_.SetName("SextetStream input thread");
+    input_thread_.Create(StartInputThread, this);
   }
 
   LineReader* getLineReader() {
-    LineReader* linereader = new LineReader(filename);
+    LineReader* linereader = new LineReader(filename_);
     if (!linereader->IsValid()) {
       delete linereader;
       linereader = nullptr;
@@ -153,19 +155,19 @@ class InputHandler_SextetStream::Impl {
         "Number of button states supported by current "
         "InputHandler_SextetStream: %u",
         (unsigned)BUTTON_COUNT);
-    continueInputThread = false;
-    timeout_ms = DEFAULT_TIMEOUT_MS;
+    continue_input_thread_ = false;
+    timeout_ms_ = DEFAULT_TIMEOUT_MS;
 
-    this->filename = filename;
-    handler = _this;
+    this->filename_ = filename;
+    handler_ = _this;
     clearStateBuffer();
     createThread();
   }
 
   ~Impl() {
-    if (inputThread.IsCreated()) {
-      continueInputThread = false;
-      inputThread.Wait();
+    if (input_thread_.IsCreated()) {
+      continue_input_thread_ = false;
+      input_thread_.Wait();
     }
   }
 
@@ -217,7 +219,7 @@ class InputHandler_SextetStream::Impl {
 
     // XOR to find differences
     for (size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
-      changes[i] = stateBuffer[i] ^ newStateBuffer[i];
+      changes[i] = state_buffer_[i] ^ newStateBuffer[i];
     }
 
     // Report on changes
@@ -237,7 +239,7 @@ class InputHandler_SextetStream::Impl {
     }
 
     // Update current state
-    memcpy(stateBuffer, newStateBuffer, STATE_BUFFER_SIZE);
+    memcpy(state_buffer_, newStateBuffer, STATE_BUFFER_SIZE);
   }
 
   void RunInputThread() {
@@ -251,7 +253,7 @@ class InputHandler_SextetStream::Impl {
       LOG->Warn("Could not open line reader for SextetStream input");
     } else {
       LOG->Trace("Got line reader");
-      while (continueInputThread) {
+      while (continue_input_thread_) {
         LOG->Trace("Reading line");
         if (linereader->ReadLine(line)) {
           LOG->Trace("Got line: '%s'", line.c_str());
@@ -263,7 +265,7 @@ class InputHandler_SextetStream::Impl {
         } else {
           // Error or EOF condition.
           LOG->Trace("Reached end of SextetStream input");
-          continueInputThread = false;
+          continue_input_thread_ = false;
         }
       }
       LOG->Info("SextetStream input stopped");
@@ -274,16 +276,16 @@ class InputHandler_SextetStream::Impl {
 
 void InputHandler_SextetStream::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
-  if (_impl != nullptr) {
-    _impl->GetDevicesAndDescriptions(vDevicesOut);
+  if (impl_ != nullptr) {
+    impl_->GetDevicesAndDescriptions(vDevicesOut);
   }
 }
 
-InputHandler_SextetStream::InputHandler_SextetStream() { _impl = nullptr; }
+InputHandler_SextetStream::InputHandler_SextetStream() { impl_ = nullptr; }
 
 InputHandler_SextetStream::~InputHandler_SextetStream() {
-  if (_impl != nullptr) {
-    delete _impl;
+  if (impl_ != nullptr) {
+    delete impl_;
   }
 }
 
@@ -300,7 +302,7 @@ static Preference<std::string> g_sSextetStreamInputFilename(
     "SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
 
 InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile() {
-  _impl = new Impl(this, g_sSextetStreamInputFilename);
+  impl_ = new Impl(this, g_sSextetStreamInputFilename);
 }
 
 /*

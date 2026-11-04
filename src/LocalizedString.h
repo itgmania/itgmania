@@ -25,8 +25,8 @@ class LocalizedString {
 
  private:
   void CreateImpl();
-  std::string m_sGroup, m_sName;
-  ILocalizedStringImpl* m_pImpl;
+  std::string group_, name_;
+  ILocalizedStringImpl* impl_;
   // Swallow up warnings. If they must be used, define them.
   LocalizedString& operator=(const LocalizedString& rhs);
 };

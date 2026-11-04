@@ -66,8 +66,8 @@ static void InitEntities() {
   }
 
   static struct Entity {
-    char c;
-    const char* pEntity;
+    char c_;
+    const char* entity_;
   } const EntityTable[] = {
       {
           '&',
@@ -92,8 +92,8 @@ static void InitEntities() {
 
   for (unsigned i = 0; i < ARRAYLEN(EntityTable); ++i) {
     const Entity& ent = EntityTable[i];
-    g_mapEntitiesToChars[ent.pEntity] = std::string(1, ent.c);
-    g_mapCharsToEntities[ent.c] = ent.pEntity;
+    g_mapEntitiesToChars[ent.entity_] = std::string(1, ent.c_);
+    g_mapCharsToEntities[ent.c_] = ent.entity_;
   }
 }
 
@@ -315,7 +315,7 @@ std::string::size_type LoadInternal(
 
   // open/close tag <TAG ..> ... </TAG>
   //                        ^- current pointer
-  if (pNode->GetAttr(XNode::TEXT_ATTRIBUTE) == nullptr) {
+  if (pNode->GetAttr(XNode::kTextAttribute) == nullptr) {
     // Text Value
     ++iOffset;
     std::string::size_type iEnd = xml.find(chXMLTagOpen, iOffset);
@@ -335,7 +335,7 @@ std::string::size_type LoadInternal(
     iOffset = iEnd;
     ReplaceEntityText(sValue, g_mapEntitiesToChars);
 
-    pNode->AppendAttr(XNode::TEXT_ATTRIBUTE, sValue);
+    pNode->AppendAttr(XNode::kTextAttribute, sValue);
   }
 
   // generate child nodes
@@ -395,7 +395,7 @@ std::string::size_type LoadInternal(
       }
     } else  // Alone child Tag Loaded
     {
-      if (pNode->GetAttr(XNode::TEXT_ATTRIBUTE) == nullptr &&
+      if (pNode->GetAttr(XNode::kTextAttribute) == nullptr &&
           iOffset < xml.size() && xml[iOffset] != chXMLTagOpen) {
         // Text Value
         std::string::size_type iEnd = xml.find(chXMLTagOpen, iOffset);
@@ -413,7 +413,7 @@ std::string::size_type LoadInternal(
 
         iOffset = iEnd;
         ReplaceEntityText(sValue, g_mapEntitiesToChars);
-        pNode->AppendAttr(XNode::TEXT_ATTRIBUTE, sValue);
+        pNode->AppendAttr(XNode::kTextAttribute, sValue);
       }
     }
   }
@@ -439,7 +439,7 @@ bool GetXMLInternal(
 
   // <TAG Attr1="Val1"
   FOREACH_CONST_Attr(pNode, p) {
-    if (p->first == XNode::TEXT_ATTRIBUTE) {
+    if (p->first == XNode::kTextAttribute) {
       continue;
     }
     std::string attr(p->second->GetValue<std::string>());
@@ -452,7 +452,7 @@ bool GetXMLInternal(
   }
 
   if (pNode->ChildrenEmpty() &&
-      pNode->GetAttr(XNode::TEXT_ATTRIBUTE) == nullptr) {
+      pNode->GetAttr(XNode::kTextAttribute) == nullptr) {
     // <TAG Attr1="Val1"/> alone tag
     WRITE("/>");
   } else {
@@ -467,7 +467,7 @@ bool GetXMLInternal(
         pNode, p) if (!GetXMLInternal(p, f, bWriteTabs, iTabBase)) return false;
 
     // Text Value
-    const XNodeValue* pText = pNode->GetAttr(XNode::TEXT_ATTRIBUTE);
+    const XNodeValue* pText = pNode->GetAttr(XNode::kTextAttribute);
     if (pText != nullptr) {
       if (!pNode->ChildrenEmpty()) {
         WRITE("\r\n");
@@ -556,7 +556,7 @@ bool XmlFileUtil::SaveToFile(
 #include "LuaReference.h"
 class XNodeLuaValue : public XNodeValue {
  public:
-  LuaReference m_Value;
+  LuaReference value_;
   XNodeValue* Copy() const { return new XNodeLuaValue(*this); }
 
   template <typename T>
@@ -580,7 +580,7 @@ class XNodeLuaValue : public XNodeValue {
   void SetValueFromStack(lua_State* L);
 };
 
-void XNodeLuaValue::PushValue(lua_State* L) const { m_Value.PushSelf(L); }
+void XNodeLuaValue::PushValue(lua_State* L) const { value_.PushSelf(L); }
 
 void XNodeLuaValue::GetValue(std::string& out) const {
   Lua* L = LUA->Get();
@@ -615,7 +615,7 @@ void XNodeLuaValue::GetValue(unsigned& out) const {
   LUA->Release(L);
 }
 
-void XNodeLuaValue::SetValueFromStack(lua_State* L) { m_Value.SetFromStack(L); }
+void XNodeLuaValue::SetValueFromStack(lua_State* L) { value_.SetFromStack(L); }
 
 void XNodeLuaValue::SetValue(const std::string& v) {
   Lua* L = LUA->Get();
@@ -719,7 +719,7 @@ XNode* XNodeFromTableRecursive(
     XNodeLuaValue* pValue = new XNodeLuaValue;
     lua_pushvalue(L, -1);
     pValue->SetValueFromStack(L);
-    pNode->AppendAttrFrom(XNode::TEXT_ATTRIBUTE, pValue);
+    pNode->AppendAttrFrom(XNode::kTextAttribute, pValue);
   }
 
   // Iterate over the table, pulling out attributes and tables to process.

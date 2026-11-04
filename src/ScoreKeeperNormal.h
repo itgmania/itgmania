@@ -24,32 +24,32 @@ class ScoreKeeperNormal : public ScoreKeeper {
   void AddScoreInternal(TapNoteScore score);
   int CalcNextToastyAt(int level);
 
-  int m_iScoreRemainder;
-  int m_iMaxPossiblePoints;
-  int m_iTapNotesHit;  // number of notes judged so far, needed by scoring
+  int score_remainder_;
+  int max_possible_points_;
+  int tap_notes_hit_;  // number of notes judged so far, needed by scoring
 
-  int m_iNumTapsAndHolds;
-  int m_iMaxScoreSoFar;  // for nonstop scoring
-  int m_iPointBonus;     // the difference to award at the end
-  int m_cur_toasty_combo;
-  int m_cur_toasty_level;
-  int m_next_toasty_at;
-  bool m_bIsLastSongInCourse;
-  bool m_bIsBeginner;
+  int num_taps_and_holds_;
+  int max_score_so_far_;  // for nonstop scoring
+  int point_bonus_;       // the difference to award at the end
+  int cur_toasty_combo_;
+  int cur_toasty_level_;
+  int next_toasty_at_;
+  bool is_last_song_in_course_;
+  bool is_beginner_;
 
-  ThemeMetric<bool> m_ComboIsPerRow;
-  ThemeMetric<bool> m_MissComboIsPerRow;
-  ThemeMetric<TapNoteScore> m_MinScoreToContinueCombo;
-  ThemeMetric<TapNoteScore> m_MinScoreToMaintainCombo;
-  ThemeMetric<TapNoteScore> m_MaxScoreToIncrementMissCombo;
-  ThemeMetric<bool> m_MineHitIncrementsMissCombo;
-  ThemeMetric<bool> m_AvoidMineIncrementsCombo;
-  ThemeMetric<bool> m_UseInternalScoring;
+  ThemeMetric<bool> combo_is_per_row_;
+  ThemeMetric<bool> miss_combo_is_per_row_;
+  ThemeMetric<TapNoteScore> min_score_to_continue_combo_;
+  ThemeMetric<TapNoteScore> min_score_to_maintain_combo_;
+  ThemeMetric<TapNoteScore> max_score_to_increment_miss_combo_;
+  ThemeMetric<bool> mine_hit_increments_miss_combo_;
+  ThemeMetric<bool> avoid_mine_increments_combo_;
+  ThemeMetric<bool> use_internal_scoring_;
 
-  ThemeMetric<TapNoteScore> m_toasty_min_tns;
-  ThemeMetric<LuaReference> m_toasty_trigger;
+  ThemeMetric<TapNoteScore> toasty_min_tns_;
+  ThemeMetric<LuaReference> toasty_trigger_;
 
-  std::vector<Steps*> m_apSteps;
+  std::vector<Steps*> steps_;
 
   virtual void AddTapScore(TapNoteScore tns);
   virtual void AddHoldScore(HoldNoteScore hns);
@@ -58,8 +58,8 @@ class ScoreKeeperNormal : public ScoreKeeper {
   /* Configuration: */
   /* Score after each tap will be rounded to the nearest m_iRoundTo; 1 to do
    * nothing. */
-  int m_iRoundTo;
-  int m_ComboBonusFactor[NUM_TapNoteScore];
+  int round_to_;
+  int combo_bonus_factor_[NUM_TapNoteScore];
 
  public:
   ScoreKeeperNormal(

@@ -34,37 +34,37 @@ ThemeMetric<bool> USE_CREDIT("NotesWriterSM", "DescriptionUsesCreditField");
  * @param f the file in question.
  * @param out the Song in question. */
 static void WriteGlobalTags(RageFileBasic& f, Song& out) {
-  TimingData& timing = out.m_SongTiming;
-  f.PutLine(ssprintf("#TITLE:%s;", SmEscape(out.m_sMainTitle).c_str()));
-  f.PutLine(ssprintf("#SUBTITLE:%s;", SmEscape(out.m_sSubTitle).c_str()));
-  f.PutLine(ssprintf("#ARTIST:%s;", SmEscape(out.m_sArtist).c_str()));
+  TimingData& timing = out.song_timing_;
+  f.PutLine(ssprintf("#TITLE:%s;", SmEscape(out.main_title_).c_str()));
+  f.PutLine(ssprintf("#SUBTITLE:%s;", SmEscape(out.sub_title_).c_str()));
+  f.PutLine(ssprintf("#ARTIST:%s;", SmEscape(out.artist_).c_str()));
   f.PutLine(ssprintf(
-      "#TITLETRANSLIT:%s;", SmEscape(out.m_sMainTitleTranslit).c_str()));
+      "#TITLETRANSLIT:%s;", SmEscape(out.main_title_translit_).c_str()));
   f.PutLine(ssprintf(
-      "#SUBTITLETRANSLIT:%s;", SmEscape(out.m_sSubTitleTranslit).c_str()));
+      "#SUBTITLETRANSLIT:%s;", SmEscape(out.sub_title_translit_).c_str()));
   f.PutLine(
-      ssprintf("#ARTISTTRANSLIT:%s;", SmEscape(out.m_sArtistTranslit).c_str()));
-  f.PutLine(ssprintf("#GENRE:%s;", SmEscape(out.m_sGenre).c_str()));
-  f.PutLine(ssprintf("#CREDIT:%s;", SmEscape(out.m_sCredit).c_str()));
-  f.PutLine(ssprintf("#BANNER:%s;", SmEscape(out.m_sBannerFile).c_str()));
+      ssprintf("#ARTISTTRANSLIT:%s;", SmEscape(out.artist_translit_).c_str()));
+  f.PutLine(ssprintf("#GENRE:%s;", SmEscape(out.genre_).c_str()));
+  f.PutLine(ssprintf("#CREDIT:%s;", SmEscape(out.credit_).c_str()));
+  f.PutLine(ssprintf("#BANNER:%s;", SmEscape(out.banner_file_).c_str()));
   f.PutLine(
-      ssprintf("#BACKGROUND:%s;", SmEscape(out.m_sBackgroundFile).c_str()));
-  f.PutLine(ssprintf("#LYRICSPATH:%s;", SmEscape(out.m_sLyricsFile).c_str()));
-  f.PutLine(ssprintf("#CDTITLE:%s;", SmEscape(out.m_sCDTitleFile).c_str()));
-  f.PutLine(ssprintf("#MUSIC:%s;", SmEscape(out.m_sMusicFile).c_str()));
+      ssprintf("#BACKGROUND:%s;", SmEscape(out.background_file_).c_str()));
+  f.PutLine(ssprintf("#LYRICSPATH:%s;", SmEscape(out.lyrics_file_).c_str()));
+  f.PutLine(ssprintf("#CDTITLE:%s;", SmEscape(out.cd_title_file_).c_str()));
+  f.PutLine(ssprintf("#MUSIC:%s;", SmEscape(out.music_file_).c_str()));
   f.PutLine(
-      ssprintf("#OFFSET:%.6f;", out.m_SongTiming.m_fBeat0OffsetInSeconds));
-  f.PutLine(ssprintf("#SAMPLESTART:%.6f;", out.m_fMusicSampleStartSeconds));
-  f.PutLine(ssprintf("#SAMPLELENGTH:%.6f;", out.m_fMusicSampleLengthSeconds));
+      ssprintf("#OFFSET:%.6f;", out.song_timing_.beat0_offset_in_seconds_));
+  f.PutLine(ssprintf("#SAMPLESTART:%.6f;", out.music_sample_start_seconds_));
+  f.PutLine(ssprintf("#SAMPLELENGTH:%.6f;", out.music_sample_length_seconds_));
   float specBeat = out.GetSpecifiedLastBeat();
   if (specBeat > 0) {
     f.PutLine(ssprintf("#LASTBEATHINT:%.6f;", specBeat));
   }
 
   f.Write("#SELECTABLE:");
-  switch (out.m_SelectionDisplay) {
+  switch (out.selection_display_) {
     default:
-      FAIL_M(ssprintf("Invalid selection display: %i", out.m_SelectionDisplay));
+      FAIL_M(ssprintf("Invalid selection display: %i", out.selection_display_));
     case Song::SHOW_ALWAYS:
       f.Write("YES");
       break;
@@ -75,17 +75,17 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
   }
   f.PutLine(";");
 
-  switch (out.m_DisplayBPMType) {
+  switch (out.display_bpm_type_) {
     case DISPLAY_BPM_ACTUAL:
       // write nothing
       break;
     case DISPLAY_BPM_SPECIFIED:
-      if (out.m_fSpecifiedBPMMin == out.m_fSpecifiedBPMMax) {
-        f.PutLine(ssprintf("#DISPLAYBPM:%.6f;", out.m_fSpecifiedBPMMin));
+      if (out.specified_bpm_min_ == out.specified_bpm_max_) {
+        f.PutLine(ssprintf("#DISPLAYBPM:%.6f;", out.specified_bpm_min_));
       } else {
         f.PutLine(ssprintf(
-            "#DISPLAYBPM:%.6f:%.6f;", out.m_fSpecifiedBPMMin,
-            out.m_fSpecifiedBPMMax));
+            "#DISPLAYBPM:%.6f:%.6f;", out.specified_bpm_min_,
+            out.specified_bpm_max_));
       }
       break;
     case DISPLAY_BPM_RANDOM:
@@ -121,7 +121,7 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
     for (unsigned i = 0; i < wSize; i++) {
       const WarpSegment* ws = static_cast<WarpSegment*>(warps[i]);
       int iRow = ws->GetRow();
-      float fBPS = 60 / out.m_SongTiming.GetBPMAtRow(iRow);
+      float fBPS = 60 / out.song_timing_.GetBPMAtRow(iRow);
       float fSkip = fBPS * ws->GetLength();
       allPauses.insert(std::pair<float, float>(ws->GetBeat(), -fSkip));
     }
@@ -195,9 +195,9 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
   }
 
   f.Write("#KEYSOUNDS:");
-  for (unsigned i = 0; i < out.m_vsKeysoundFile.size(); i++) {
-    f.Write(out.m_vsKeysoundFile[i]);
-    if (i != out.m_vsKeysoundFile.size() - 1) {
+  for (unsigned i = 0; i < out.keysound_file_.size(); i++) {
+    f.Write(out.keysound_file_[i]);
+    if (i != out.keysound_file_.size() - 1) {
       f.Write(",");
     }
   }
@@ -236,10 +236,10 @@ static std::string GetSMNotesTag(const Song& song, const Steps& in) {
   lines.push_back("");
   // Escape to prevent some clown from making a comment of "\r\n;"
   lines.push_back(ssprintf(
-      "//---------------%s - %s----------------", in.m_StepsTypeStr.c_str(),
+      "//---------------%s - %s----------------", in.steps_type_str_.c_str(),
       SmEscape(in.GetDescription()).c_str()));
-  lines.push_back(song.m_vsKeysoundFile.empty() ? "#NOTES:" : "#NOTES2:");
-  lines.push_back(ssprintf("     %s:", in.m_StepsTypeStr.c_str()));
+  lines.push_back(song.keysound_file_.empty() ? "#NOTES:" : "#NOTES2:");
+  lines.push_back(ssprintf("     %s:", in.steps_type_str_.c_str()));
   std::string desc = (USE_CREDIT ? in.GetCredit() : in.GetChartName());
   lines.push_back(ssprintf("     %s:", SmEscape(desc).c_str()));
   lines.push_back(
@@ -324,7 +324,7 @@ std::string NotesWriterSM::GetEditFileName(
       pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
 
   // HACK:
-  if (pSteps->m_StepsType == StepsType_dance_double) {
+  if (pSteps->steps_type_ == StepsType_dance_double) {
     sFile += " (doubles)";
   }
 

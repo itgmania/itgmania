@@ -19,11 +19,11 @@ MeterDisplay::MeterDisplay() {}
 
 void MeterDisplay::Load(
     std::string sStreamPath, float fStreamWidth, std::string sTipPath) {
-  m_sprStream.Load(sStreamPath);
-  this->AddChild(m_sprStream);
+  spr_stream_.Load(sStreamPath);
+  this->AddChild(spr_stream_);
 
-  m_sprTip.Load(sTipPath);
-  this->AddChild(m_sprTip);
+  spr_tip_.Load(sTipPath);
+  this->AddChild(spr_tip_);
 
   SetStreamWidth(fStreamWidth);
   SetPercent(0.5f);
@@ -40,17 +40,17 @@ void MeterDisplay::LoadFromNode(const XNode* pNode) {
         ActorUtil::GetWhere(pNode).c_str());
     return;
   }
-  m_sprStream.LoadActorFromNode(pStream, this);
-  m_sprStream->SetName("Stream");
+  spr_stream_.LoadActorFromNode(pStream, this);
+  spr_stream_->SetName("Stream");
   // LOAD_ALL_COMMANDS( m_sprStream );
-  this->AddChild(m_sprStream);
+  this->AddChild(spr_stream_);
 
   const XNode* pChild = pNode->GetChild("Tip");
   if (pChild != nullptr) {
-    m_sprTip.LoadActorFromNode(pChild, this);
-    m_sprTip->SetName("Tip");
+    spr_tip_.LoadActorFromNode(pChild, this);
+    spr_tip_->SetName("Tip");
     // LOAD_ALL_COMMANDS( m_sprTip );
-    this->AddChild(m_sprTip);
+    this->AddChild(spr_tip_);
   }
 
   float fStreamWidth = 0;
@@ -65,26 +65,26 @@ void MeterDisplay::LoadFromNode(const XNode* pNode) {
 void MeterDisplay::SetPercent(float fPercent) {
   ASSERT(fPercent >= 0 && fPercent <= 1);
 
-  m_sprStream->SetCropRight(1 - fPercent);
+  spr_stream_->SetCropRight(1 - fPercent);
 
-  if (m_sprTip.IsLoaded()) {
-    m_sprTip->SetX(
-        SCALE(fPercent, 0.f, 1.f, -m_fStreamWidth / 2, m_fStreamWidth / 2));
+  if (spr_tip_.IsLoaded()) {
+    spr_tip_->SetX(
+        SCALE(fPercent, 0.f, 1.f, -stream_width_ / 2, stream_width_ / 2));
   }
 }
 
 void MeterDisplay::SetStreamWidth(float fStreamWidth) {
-  m_fStreamWidth = fStreamWidth;
-  m_sprStream->SetZoomX(m_fStreamWidth / m_sprStream->GetUnzoomedWidth());
+  stream_width_ = fStreamWidth;
+  spr_stream_->SetZoomX(stream_width_ / spr_stream_->GetUnzoomedWidth());
 }
 
 void SongMeterDisplay::Update(float fDeltaTime) {
-  if (GAMESTATE->m_pCurSong) {
-    float fSongStartSeconds = GAMESTATE->m_pCurSong->GetFirstSecond();
-    float fSongEndSeconds = GAMESTATE->m_pCurSong->GetLastSecond();
+  if (GAMESTATE->cur_song_) {
+    float fSongStartSeconds = GAMESTATE->cur_song_->GetFirstSecond();
+    float fSongEndSeconds = GAMESTATE->cur_song_->GetLastSecond();
     float fPercentPositionSong = SCALE(
-        GAMESTATE->m_Position.m_fMusicSeconds, fSongStartSeconds,
-        fSongEndSeconds, 0.0f, 1.0f);
+        GAMESTATE->position_.music_seconds_, fSongStartSeconds, fSongEndSeconds,
+        0.0f, 1.0f);
     rage_clamp(fPercentPositionSong, 0, 1);
 
     SetPercent(fPercentPositionSong);

@@ -136,20 +136,20 @@ class SongManager {
    * Popularity is determined specifically by the number of times
    * a song is chosen.
    * @return all of the popular songs. */
-  const std::vector<Song*>& GetPopularSongs() const { return m_pPopularSongs; }
+  const std::vector<Song*>& GetPopularSongs() const { return popular_songs_; }
 
   std::map<int, std::vector<Song*>> GetMeterToSongsMap() const {
-    return m_mapSongsByDifficulty;
+    return map_songs_by_difficulty_;
   }
   void GetPreferredSortSongs(std::vector<Song*>& AddTo) const;
   std::map<std::string, std::vector<Song*>> GetPreferredSortSongsMap() const {
-    return m_mapPreferredSectionToSongs;
+    return map_preferred_section_to_songs_;
   };
   std::string SongToPreferredSortSectionName(const Song* pSong) const;
   struct Series {
-    std::string sName;
-    std::unordered_set<Group*> groups;
-    std::string sBannerPath;
+    std::string name_;
+    std::unordered_set<Group*> groups_;
+    std::string banner_path_;
   };
   std::unordered_set<Group*> GetGroupsInSeries(
       const std::string& sSeriesName) const;
@@ -158,7 +158,7 @@ class SongManager {
   void GetPreferredSortSongsBySectionName(
       const std::string& sSectionName, std::vector<Song*>& AddTo) const;
   const std::vector<Course*>& GetPopularCourses(CourseType ct) const {
-    return m_pPopularCourses[ct];
+    return popular_courses_[ct];
   }
   Song* FindSong(std::string sPath) const;
   Song* FindSong(std::string sGroup, std::string sSong) const;
@@ -181,7 +181,7 @@ class SongManager {
   Course* GetRandomCourse();
   // sm-ssc addition:
   std::string GetSongGroupByIndex(unsigned index) {
-    return m_sSongGroupNames[index];
+    return song_group_names_[index];
   }
   int GetSongRank(Song* pSong);
 
@@ -242,39 +242,39 @@ class SongManager {
 
   void AddSongToList(Song* new_song);
   /** @brief All of the songs that can be played. */
-  std::vector<Song*> m_pSongs;
+  std::vector<Song*> songs_;
 
-  std::map<std::string, Song*> m_SongsByDir;
-  std::set<std::string> m_GroupsToNeverCache;
+  std::map<std::string, Song*> songs_by_dir_;
+  std::set<std::string> groups_to_never_cache_;
 
   /** @brief Hold pointers to all the songs that have been deleted from disk but
    * must at least be kept temporarily alive for smooth audio transitions. */
-  std::vector<Song*> m_pDeletedSongs;
+  std::vector<Song*> deleted_songs_;
 
   /** @brief The most popular songs ranked by number of plays. */
-  std::vector<Song*> m_pPopularSongs;
-  std::vector<Song*> m_pShuffledSongs;  // used by GetRandomSong
+  std::vector<Song*> popular_songs_;
+  std::vector<Song*> shuffled_songs_;  // used by GetRandomSong
 
   /** @brief Meter numbers and the songs with Steps that are within.*/
-  std::map<int, std::vector<Song*>> m_mapSongsByDifficulty;
+  std::map<int, std::vector<Song*>> map_songs_by_difficulty_;
 
   struct PreferredSortSection {
-    std::string sName;
-    std::vector<Song*> vpSongs;
+    std::string name_;
+    std::vector<Song*> songs_;
   };
   /** @brief All preferred songs, keyed by section */
-  std::map<std::string, std::vector<Song*>> m_mapPreferredSectionToSongs;
-  std::vector<PreferredSortSection> m_vPreferredSongSort;
-  std::vector<std::string> m_sSongGroupNames;
+  std::map<std::string, std::vector<Song*>> map_preferred_section_to_songs_;
+  std::vector<PreferredSortSection> preferred_song_sort_;
+  std::vector<std::string> song_group_names_;
   std::vector<std::string>
-      m_sSongGroupBannerPaths;  // each song group may have a banner associated
-                                // with it
+      song_group_banner_paths_;  // each song group may have a banner associated
+                                 // with it
 
   std::unordered_map<std::string, Group*>
-      m_mapNameToGroup;  // maps a group's name on disk (folder) to a Group
-                         // object
+      map_name_to_group_;  // maps a group's name on disk (folder) to a Group
+                           // object
   // maps a series name to Series object
-  std::map<std::string, Series> m_mapNameToSeries;
+  std::map<std::string, Series> map_name_to_series_;
 
   struct Comp {
     bool operator()(const std::string& s, const std::string& t) const {
@@ -282,20 +282,20 @@ class SongManager {
     }
   };
   typedef std::vector<Song*> SongPointerVector;
-  std::map<std::string, SongPointerVector, Comp> m_mapSongGroupIndex;
+  std::map<std::string, SongPointerVector, Comp> map_song_group_index_;
 
-  std::vector<Course*> m_pCourses;
-  std::vector<Course*> m_pPopularCourses[NUM_CourseType];
-  std::vector<Course*> m_pShuffledCourses;  // used by GetRandomCourse
+  std::vector<Course*> courses_;
+  std::vector<Course*> popular_courses_[NUM_CourseType];
+  std::vector<Course*> shuffled_courses_;  // used by GetRandomCourse
   struct CourseGroupInfo {
-    std::string m_sBannerPath;
+    std::string banner_path_;
     // std::string m_sBackgroundPath;
   };
-  std::map<std::string, CourseGroupInfo> m_mapCourseGroupToInfo;
+  std::map<std::string, CourseGroupInfo> map_course_group_to_info_;
   typedef std::vector<Course*> CoursePointerVector;
-  std::vector<CoursePointerVector> m_vPreferredCourseSort;
+  std::vector<CoursePointerVector> preferred_course_sort_;
 
-  RageTexturePreloader m_TexturePreload;
+  RageTexturePreloader texture_preload_;
 
   ThemeMetric<int> NUM_SONG_GROUP_COLORS;
   ThemeMetric1D<RageColor> SONG_GROUP_COLOR;

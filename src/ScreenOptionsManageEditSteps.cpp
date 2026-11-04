@@ -57,7 +57,7 @@ REGISTER_SCREEN_CLASS(ScreenOptionsManageEditSteps);
 void ScreenOptionsManageEditSteps::Init() {
   ScreenOptions::Init();
 
-  CREATE_NEW_SCREEN.Load(m_sName, "CreateNewScreen");
+  CREATE_NEW_SCREEN.Load(name_, "CreateNewScreen");
 }
 
 void ScreenOptionsManageEditSteps::BeginScreen() {
@@ -68,8 +68,8 @@ void ScreenOptionsManageEditSteps::BeginScreen() {
       PROFILEMAN->GetProfileDir(ProfileSlot_Machine), ProfileSlot_Machine);
   SONGMAN->LoadCourseEditsFromProfileDir(
       PROFILEMAN->GetProfileDir(ProfileSlot_Machine), ProfileSlot_Machine);
-  GAMESTATE->m_pCurSong.Set(nullptr);
-  GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
+  GAMESTATE->cur_song_.Set(nullptr);
+  GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
 
   std::vector<OptionRowHandler*> vHands;
 
@@ -77,32 +77,32 @@ void ScreenOptionsManageEditSteps::BeginScreen() {
 
   {
     vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->m_Def;
-    def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
-    def.m_bOneChoiceForAllPlayers = true;
-    def.m_sName = "Create New Edit Steps";
-    def.m_sExplanationName = "Create New Edit Steps";
-    def.m_vsChoices.clear();
-    def.m_vsChoices.push_back("");
+    OptionRowDefinition& def = vHands.back()->def_;
+    def.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
+    def.one_choice_for_all_players_ = true;
+    def.name_ = "Create New Edit Steps";
+    def.explanation_name_ = "Create New Edit Steps";
+    def.choices_.clear();
+    def.choices_.push_back("");
     iIndex++;
   }
 
-  SONGMAN->GetStepsLoadedFromProfile(m_vpSteps, ProfileSlot_Machine);
+  SONGMAN->GetStepsLoadedFromProfile(steps_, ProfileSlot_Machine);
 
-  for (const Steps* s : m_vpSteps) {
+  for (const Steps* s : steps_) {
     vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->m_Def;
+    OptionRowDefinition& def = vHands.back()->def_;
 
-    Song* pSong = s->m_pSong;
+    Song* pSong = s->song_;
 
-    def.m_sName = pSong->GetTranslitFullTitle() + " - " + s->GetDescription();
-    def.m_bAllowThemeTitle = false;  // not themable
-    def.m_sExplanationName = "Select Edit Steps";
-    def.m_vsChoices.clear();
-    StepsType st = s->m_StepsType;
+    def.name_ = pSong->GetTranslitFullTitle() + " - " + s->GetDescription();
+    def.allow_theme_title_ = false;  // not themable
+    def.explanation_name_ = "Select Edit Steps";
+    def.choices_.clear();
+    StepsType st = s->steps_type_;
     std::string sType = GAMEMAN->GetStepsTypeInfo(st).GetLocalizedString();
-    def.m_vsChoices.push_back(sType);
-    def.m_bAllowThemeItems = false;  // already themed
+    def.choices_.push_back(sType);
+    def.allow_theme_items_ = false;  // already themed
     iIndex++;
   }
 
@@ -111,11 +111,11 @@ void ScreenOptionsManageEditSteps::BeginScreen() {
   ScreenOptions::BeginScreen();
 
   // select the last chosen course
-  if (GAMESTATE->m_pCurSteps[PLAYER_1]) {
-    std::vector<Steps*>::const_iterator iter = find(
-        m_vpSteps.begin(), m_vpSteps.end(), GAMESTATE->m_pCurSteps[PLAYER_1]);
-    if (iter != m_vpSteps.end()) {
-      iIndex = iter - m_vpSteps.begin();
+  if (GAMESTATE->cur_steps_[PLAYER_1]) {
+    std::vector<Steps*>::const_iterator iter =
+        find(steps_.begin(), steps_.end(), GAMESTATE->cur_steps_[PLAYER_1]);
+    if (iter != steps_.end()) {
+      iIndex = iter - steps_.begin();
       this->MoveRowAbsolute(PLAYER_1, 1 + iIndex);
     }
   }
@@ -131,34 +131,34 @@ static LocalizedString ENTER_NAME_FOR_STEPS(
     "ScreenOptionsManageEditSteps", "Enter a name for these steps.");
 void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_GoToNextScreen) {
-    int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
+    int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
 
     if (iCurRow == 0)  // "create new"
     {
       SCREENMAN->SetNewScreen(CREATE_NEW_SCREEN);
       return;  // don't call base
-    } else if (m_pRows[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
+    } else if (rows_[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
       this->HandleScreenMessage(SM_GoToPrevScreen);
       return;  // don't call base
     } else     // a Steps
     {
-      Steps* pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+      Steps* pSteps = GAMESTATE->cur_steps_[PLAYER_1];
       ASSERT(pSteps != nullptr);
       const Style* pStyle =
-          GAMEMAN->GetEditorStyleForStepsType(pSteps->m_StepsType);
+          GAMEMAN->GetEditorStyleForStepsType(pSteps->steps_type_);
       GAMESTATE->SetCurrentStyle(pStyle, PLAYER_INVALID);
       // do base behavior
     }
   } else if (SM == SM_BackFromRename) {
-    if (!ScreenTextEntry::s_bCancelledLast) {
+    if (!ScreenTextEntry::cancelled_last_) {
       ASSERT(
-          ScreenTextEntry::s_sLastAnswer !=
+          ScreenTextEntry::last_answer_ !=
           "");  // validate should have assured this
 
-      Steps* pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
-      Song* pSong = pSteps->m_pSong;
+      Steps* pSteps = GAMESTATE->cur_steps_[PLAYER_1];
+      Song* pSong = pSteps->song_;
 
-      pSteps->SetDescription(ScreenTextEntry::s_sLastAnswer);
+      pSteps->SetDescription(ScreenTextEntry::last_answer_);
 
       std::string sError;
       if (!NotesWriterSM::WriteEditFileToMachine(pSong, pSteps, sError)) {
@@ -166,33 +166,33 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage SM) {
         return;
       }
 
-      SCREENMAN->SetNewScreen(this->m_sName);  // reload
+      SCREENMAN->SetNewScreen(this->name_);  // reload
     }
   } else if (SM == SM_BackFromDelete) {
-    if (ScreenPrompt::s_LastAnswer == ANSWER_YES) {
+    if (ScreenPrompt::last_answer_ == ANSWER_YES) {
       LOG->Trace("Delete successful; deleting Steps from memory");
 
       Steps* pSteps = GetStepsWithFocus();
       FILEMAN->Remove(pSteps->GetFilename());
       SONGMAN->DeleteSteps(pSteps);
-      GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
-      SCREENMAN->SetNewScreen(this->m_sName);  // reload
+      GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
+      SCREENMAN->SetNewScreen(this->name_);  // reload
     }
   } else if (SM == SM_BackFromContextMenu) {
-    if (!ScreenMiniMenu::s_bCancelled) {
-      switch (ScreenMiniMenu::s_iLastRowCode) {
+    if (!ScreenMiniMenu::cancelled_) {
+      switch (ScreenMiniMenu::last_row_code_) {
         case StepsEditAction_Edit: {
           Steps* pSteps = GetStepsWithFocus();
-          Song* pSong = pSteps->m_pSong;
-          GAMESTATE->m_pCurSong.Set(pSong);
-          GAMESTATE->m_pCurSteps[PLAYER_1].Set(pSteps);
+          Song* pSong = pSteps->song_;
+          GAMESTATE->cur_song_.Set(pSong);
+          GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
 
           ScreenOptions::BeginFadingOut();
         } break;
         case StepsEditAction_Rename: {
           ScreenTextEntry::TextEntry(
               SM_BackFromRename, ENTER_NAME_FOR_STEPS,
-              GAMESTATE->m_pCurSteps[PLAYER_1]->GetDescription(),
+              GAMESTATE->cur_steps_[PLAYER_1]->GetDescription(),
               MAX_STEPS_DESCRIPTION_LENGTH,
               SongUtil::ValidateCurrentEditStepsDescription);
         } break;
@@ -216,10 +216,10 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage SM) {
 
 void ScreenOptionsManageEditSteps::AfterChangeRow(PlayerNumber pn) {
   Steps* pSteps = GetStepsWithFocus();
-  Song* pSong = pSteps ? pSteps->m_pSong : nullptr;
+  Song* pSong = pSteps ? pSteps->song_ : nullptr;
 
-  GAMESTATE->m_pCurSong.Set(pSong);
-  GAMESTATE->m_pCurSteps[PLAYER_1].Set(pSteps);
+  GAMESTATE->cur_song_.Set(pSong);
+  GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
 
   ScreenOptions::AfterChangeRow(pn);
 }
@@ -235,7 +235,7 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart(const InputEventPlus&) {
     return;
   }
 
-  int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
+  int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
 
   if (iCurRow == 0)  // "create new"
   {
@@ -252,17 +252,17 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart(const InputEventPlus&) {
     }
     SCREENMAN->PlayStartSound();
     this->BeginFadingOut();
-  } else if (m_pRows[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
+  } else if (rows_[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
     SCREENMAN->PlayStartSound();
     this->BeginFadingOut();
   } else  // a Steps
   {
-    g_TempMenu.rows.clear();
+    g_TempMenu.rows_.clear();
     FOREACH_StepsEditAction(i) {
       MenuRowDef mrd(
           i, StepsEditActionToString(i), true, EditMode_Home, true, true, 0,
           "");
-      g_TempMenu.rows.push_back(mrd);
+      g_TempMenu.rows_.push_back(mrd);
     }
 
     int iWidth, iX, iY;
@@ -280,16 +280,16 @@ void ScreenOptionsManageEditSteps::ExportOptions(
     int iRow, const std::vector<PlayerNumber>& vpns) {}
 
 Steps* ScreenOptionsManageEditSteps::GetStepsWithFocus() const {
-  int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
+  int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
   if (iCurRow == 0) {
     return nullptr;
-  } else if (m_pRows[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
+  } else if (rows_[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
     return nullptr;
   }
 
   // a Steps
   int iStepsIndex = iCurRow - 1;
-  return m_vpSteps[iStepsIndex];
+  return steps_[iStepsIndex];
 }
 
 /*

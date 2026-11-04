@@ -46,13 +46,13 @@ class ThemeMetric : public IThemeMetric {
   /** @brief the metric's group.
    *
    * In metrics.ini, it is usually done as such: [GroupName] */
-  std::string m_sGroup;
+  std::string group_;
   /** @brief the metric's name. */
-  std::string m_sName;
+  std::string name_;
   /** @brief the metric's value. */
-  LuaReference m_Value;
-  mutable T m_currentValue;
-  bool m_bCallEachTime;
+  LuaReference value_;
+  mutable T current_value_;
+  bool call_each_time_;
 
  public:
   /* Initializing with no group and name is allowed; if you do this, you must
@@ -60,19 +60,19 @@ class ThemeMetric : public IThemeMetric {
    * in one place for classes that don't receive their m_sName in the
    * constructor (everything except screens). */
   ThemeMetric(const std::string& sGroup = "", const std::string& sName = "")
-      : m_sGroup(sGroup),
-        m_sName(sName),
-        m_Value(),
-        m_currentValue(T()),
-        m_bCallEachTime(false) {
+      : group_(sGroup),
+        name_(sName),
+        value_(),
+        current_value_(T()),
+        call_each_time_(false) {
     ThemeManager::Subscribe(this);
   }
 
   ThemeMetric(const ThemeMetric<T>& cpy)
       : IThemeMetric(cpy),
-        m_sGroup(cpy.m_sGroup),
-        m_sName(cpy.m_sName),
-        m_Value(cpy.m_Value)
+        group_(cpy.group_),
+        name_(cpy.name_),
+        value_(cpy.value_)
   // do we transfer the current value or bCallEachTime?
   {
     ThemeManager::Subscribe(this);
@@ -84,70 +84,70 @@ class ThemeMetric : public IThemeMetric {
    * @param sGroup the group the metric is in.
    * @param sName the name of the metric. */
   void Load(const std::string& sGroup, const std::string& sName) {
-    m_sGroup = sGroup;
-    m_sName = sName;
+    group_ = sGroup;
+    name_ = sName;
     Read();
   }
   /**
    * @brief Actually read the metric and get its data. */
   void Read() {
-    if (m_sName != "" && THEME && THEME->IsThemeLoaded()) {
+    if (name_ != "" && THEME && THEME->IsThemeLoaded()) {
       Lua* L = LUA->Get();
-      THEME->GetMetric(m_sGroup, m_sName, m_Value);
-      m_Value.PushSelf(L);
-      LuaHelpers::FromStack(L, m_currentValue, -1);
+      THEME->GetMetric(group_, name_, value_);
+      value_.PushSelf(L);
+      LuaHelpers::FromStack(L, current_value_, -1);
       lua_pop(L, 1);
       LUA->Release(L);
 
       /* If the value is a function, evaluate it every time. */
-      m_bCallEachTime = ThemeMetricTypeTraits<T>::Callable &&
-                        m_Value.GetLuaType() == LUA_TFUNCTION;
+      call_each_time_ = ThemeMetricTypeTraits<T>::Callable &&
+                        value_.GetLuaType() == LUA_TFUNCTION;
     } else {
-      m_Value.Unset();
-      m_bCallEachTime = false;
+      value_.Unset();
+      call_each_time_ = false;
     }
   }
 
   void PushSelf(Lua* L) {
-    ASSERT(m_Value.IsSet());
-    m_Value.PushSelf(L);
+    ASSERT(value_.IsSet());
+    value_.PushSelf(L);
   }
 
-  void Clear() { m_Value.Unset(); }
+  void Clear() { value_.Unset(); }
 
   /**
    * @brief Retrieve the metric's name.
    * @return the metric's name. */
-  const std::string& GetName() const { return m_sName; }
+  const std::string& GetName() const { return name_; }
 
   /**
    * @brief Retrieve the metric's value.
    * @return the metric's value. */
   const T& GetValue() const {
-    ASSERT(m_sName != "");
-    ASSERT_M(m_Value.IsSet(), m_sGroup + " " + m_sName);
+    ASSERT(name_ != "");
+    ASSERT_M(value_.IsSet(), group_ + " " + name_);
 
-    if (m_bCallEachTime) {
+    if (call_each_time_) {
       Lua* L = LUA->Get();
 
       // call function with 0 arguments and 1 result
-      m_Value.PushSelf(L);
-      std::string error = m_sGroup + ": " + m_sName + ": ";
+      value_.PushSelf(L);
+      std::string error = group_ + ": " + name_ + ": ";
       LuaHelpers::RunScriptOnStack(L, error, 0, 1, true);
       if (!lua_isnil(L, -1)) {
-        LuaHelpers::Pop(L, m_currentValue);
+        LuaHelpers::Pop(L, current_value_);
       } else {
         lua_pop(L, 1);
       }
       LUA->Release(L);
     }
 
-    return m_currentValue;
+    return current_value_;
   }
 
   operator const T&() const { return GetValue(); }
 
-  bool IsLoaded() const { return m_Value.IsSet(); }
+  bool IsLoaded() const { return value_.IsSet(); }
 
   // Hacks for VC6 for all boolean operators.
   // These three no longer appear to be required:
@@ -164,7 +164,7 @@ typedef std::string (*MetricName1D)(size_t N);
 template <class T>
 class ThemeMetric1D {
   typedef ThemeMetric<T> ThemeMetricT;
-  std::vector<ThemeMetricT> m_metric;
+  std::vector<ThemeMetricT> metric_;
 
  public:
   ThemeMetric1D(const std::string& sGroup, MetricName1D pfn, size_t N) {
@@ -172,17 +172,17 @@ class ThemeMetric1D {
   }
   ThemeMetric1D() { Load(std::string(), nullptr, 0); }
   void Load(const std::string& sGroup, MetricName1D pfn, size_t N) {
-    m_metric.resize(N);
+    metric_.resize(N);
     for (unsigned i = 0; i < N; i++) {
-      m_metric[i].Load(sGroup, pfn(i));
+      metric_[i].Load(sGroup, pfn(i));
     }
   }
   void Clear() {
-    for (unsigned i = 0; i < m_metric.size(); i++) {
-      m_metric[i].Clear();
+    for (unsigned i = 0; i < metric_.size(); i++) {
+      metric_[i].Clear();
     }
   }
-  const T& GetValue(size_t i) const { return m_metric[i].GetValue(); }
+  const T& GetValue(size_t i) const { return metric_[i].GetValue(); }
 };
 
 typedef std::string (*MetricName2D)(size_t N, size_t M);
@@ -191,7 +191,7 @@ template <class T>
 class ThemeMetric2D {
   typedef ThemeMetric<T> ThemeMetricT;
   typedef std::vector<ThemeMetricT> ThemeMetricTVector;
-  std::vector<ThemeMetricTVector> m_metric;
+  std::vector<ThemeMetricTVector> metric_;
 
  public:
   ThemeMetric2D(
@@ -200,16 +200,16 @@ class ThemeMetric2D {
     Load(sGroup, pfn, N, M);
   }
   void Load(const std::string& sGroup, MetricName2D pfn, size_t N, size_t M) {
-    m_metric.resize(N);
+    metric_.resize(N);
     for (unsigned i = 0; i < N; i++) {
-      m_metric[i].resize(M);
+      metric_[i].resize(M);
       for (unsigned j = 0; j < M; j++) {
-        m_metric[i][j].Load(sGroup, pfn(i, j));
+        metric_[i][j].Load(sGroup, pfn(i, j));
       }
     }
   }
   const T& GetValue(size_t i, size_t j) const {
-    return m_metric[i][j].GetValue();
+    return metric_[i][j].GetValue();
   }
 };
 
@@ -218,7 +218,7 @@ typedef std::string (*MetricNameMap)(std::string s);
 template <class T>
 class ThemeMetricMap {
   typedef ThemeMetric<T> ThemeMetricT;
-  std::map<std::string, ThemeMetricT> m_metric;
+  std::map<std::string, ThemeMetricT> metric_;
 
  public:
   ThemeMetricMap(
@@ -230,17 +230,17 @@ class ThemeMetricMap {
   void Load(
       const std::string& sGroup, MetricNameMap pfn,
       const std::vector<std::string> vsValueNames) {
-    m_metric.clear();
+    metric_.clear();
     for (const std::string& s : vsValueNames) {
-      m_metric[s].Load(sGroup, pfn(s));
+      metric_[s].Load(sGroup, pfn(s));
     }
   }
   const T& GetValue(std::string s) const {
     // HACK: GCC (3.4) takes this and pretty much nothing else.
     // I don't know why.
     typename std::map<std::string, ThemeMetric<T> >::const_iterator iter =
-        m_metric.find(s);
-    ASSERT(iter != m_metric.end());
+        metric_.find(s);
+    ASSERT(iter != metric_.end());
     return iter->second.GetValue();
   }
 };

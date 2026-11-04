@@ -42,21 +42,21 @@
 #include "global.h"
 
 void AutoKeysounds::Load(PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly) {
-  m_ndAutoKeysoundsOnly[pn] = ndAutoKeysoundsOnly;
+  auto_keysounds_only_[pn] = ndAutoKeysoundsOnly;
 }
 
 void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain) {
   //
   // Load sounds.
   //
-  Song* pSong = GAMESTATE->m_pCurSong;
+  Song* pSong = GAMESTATE->cur_song_;
   std::string sSongDir = pSong->GetSongDir();
 
   /*
    * Add all current autoplay sounds in both players to the chain.
    */
   int iNumTracks =
-      m_ndAutoKeysoundsOnly[GAMESTATE->GetMasterPlayerNumber()].GetNumTracks();
+      auto_keysounds_only_[GAMESTATE->GetMasterPlayerNumber()].GetNumTracks();
   for (int t = 0; t < iNumTracks; t++) {
     int iRow = -1;
     for (;;) {
@@ -64,7 +64,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain) {
       int iNextRow = INT_MAX;
       FOREACH_EnabledPlayer(pn) {
         // XXX Hack. Enabled players need not have their own note data.
-        if (t >= m_ndAutoKeysoundsOnly[pn].GetNumTracks()) {
+        if (t >= auto_keysounds_only_[pn].GetNumTracks()) {
           continue;
         }
         int iNextRowForPlayer = iRow;
@@ -72,7 +72,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain) {
          * this will prevent any keysounds from loading.
          * This leads to failure later on.
          * We need a better way to prevent this. */
-        if (m_ndAutoKeysoundsOnly[pn].GetNextTapNoteRowForTrack(
+        if (auto_keysounds_only_[pn].GetNextTapNoteRowForTrack(
                 t, iNextRowForPlayer)) {
           iNextRow = std::min(iNextRow, iNextRowForPlayer);
         }
@@ -85,19 +85,19 @@ void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain) {
 
       TapNote tn[NUM_PLAYERS];
       FOREACH_EnabledPlayer(pn) tn[pn] =
-          m_ndAutoKeysoundsOnly[pn].GetTapNote(t, iRow);
+          auto_keysounds_only_[pn].GetTapNote(t, iRow);
 
       FOREACH_EnabledPlayer(pn) {
         if (tn[pn] == TAP_EMPTY) {
           continue;
         }
 
-        ASSERT(tn[pn].type == TapNoteType_AutoKeysound);
-        if (tn[pn].iKeysoundIndex >= 0) {
+        ASSERT(tn[pn].type_ == TapNoteType_AutoKeysound);
+        if (tn[pn].keysound_index_ >= 0) {
           std::string sKeysoundFilePath =
-              sSongDir + pSong->m_vsKeysoundFile[tn[pn].iKeysoundIndex];
+              sSongDir + pSong->keysound_file_[tn[pn].keysound_index_];
           float fSeconds =
-              GAMESTATE->m_pCurSteps[pn]
+              GAMESTATE->cur_steps_[pn]
                   ->GetTimingData()
                   ->GetElapsedTimeFromBeatNoOffset(NoteRowToBeat(iRow)) +
               SOUNDMAN->GetPlayLatency();
@@ -120,8 +120,7 @@ void AutoKeysounds::LoadTracks(RageSoundReader*& pShared) {
   pShared = nullptr;
 
   const std::string sMusicPath =
-      GAMESTATE->m_pCurSteps[GAMESTATE->GetMasterPlayerNumber()]
-          ->GetMusicPath();
+      GAMESTATE->cur_steps_[GAMESTATE->GetMasterPlayerNumber()]->GetMusicPath();
   if (sMusicPath.empty()) {
     return;
   }
@@ -143,11 +142,11 @@ void AutoKeysounds::LoadTracks(RageSoundReader*& pShared) {
 }
 
 void AutoKeysounds::FinishLoading() {
-  m_sSound.Unload();
+  sound_.Unload();
 
-  Song* pSong = GAMESTATE->m_pCurSong;
+  Song* pSong = GAMESTATE->cur_song_;
 
-  LoadTracks(m_pSharedSound);
+  LoadTracks(shared_sound_);
 
   // Load autoplay sounds, if any.
   {
@@ -155,28 +154,27 @@ void AutoKeysounds::FinishLoading() {
     pChain->SetPreferredSampleRate(SOUNDMAN->GetDriverSampleRate());
     LoadAutoplaySoundsInto(pChain);
 
-    if (pChain->GetNumSounds() > 0 || !m_pSharedSound) {
-      if (m_pSharedSound) {
-        int iIndex = pChain->LoadSound(m_pSharedSound);
+    if (pChain->GetNumSounds() > 0 || !shared_sound_) {
+      if (shared_sound_) {
+        int iIndex = pChain->LoadSound(shared_sound_);
         pChain->AddSound(iIndex, 0.0f, 0);
       }
       pChain->Finish();
-      m_pSharedSound = new RageSoundReader_Extend(pChain);
+      shared_sound_ = new RageSoundReader_Extend(pChain);
     } else {
       delete pChain;
     }
   }
   ASSERT_M(
-      m_pSharedSound != nullptr,
-      ssprintf(
-          "No keysounds were loaded for the song %s!",
-          pSong->m_sMainTitle.c_str()));
+      shared_sound_ != nullptr, ssprintf(
+                                    "No keysounds were loaded for the song %s!",
+                                    pSong->main_title_.c_str()));
 
-  m_pSharedSound = new RageSoundReader_PitchChange(m_pSharedSound);
-  m_pSharedSound = new RageSoundReader_PostBuffering(m_pSharedSound);
-  m_pSharedSound = new RageSoundReader_Pan(m_pSharedSound);
+  shared_sound_ = new RageSoundReader_PitchChange(shared_sound_);
+  shared_sound_ = new RageSoundReader_PostBuffering(shared_sound_);
+  shared_sound_ = new RageSoundReader_Pan(shared_sound_);
 
-  m_sSound.LoadSoundReader(m_pSharedSound);
+  sound_.LoadSoundReader(shared_sound_);
 }
 
 /*

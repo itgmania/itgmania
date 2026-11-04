@@ -18,32 +18,32 @@ class RageFileDriverZip : public RageFileDriver {
   RageFileBasic* Open(const std::string& sPath, int iMode, int& iErr);
   void FlushDirCache(const std::string& sPath);
 
-  void DeleteFileWhenFinished() { m_bFileOwned = true; }
+  void DeleteFileWhenFinished() { file_owned_ = true; }
 
   /* Lower-level access: */
   enum ZipCompressionMethod { STORED = 0, DEFLATED = 8 };
   struct FileInfo {
-    std::string m_sName;
-    int m_iOffset;
-    int m_iDataOffset;
+    std::string name_;
+    int offset_;
+    int data_offset_;
 
-    ZipCompressionMethod m_iCompressionMethod;
-    int m_iCRC32;
-    int m_iCompressedSize, m_iUncompressedSize;
+    ZipCompressionMethod compression_method_;
+    int crc32_;
+    int compressed_size_, uncompressed_size_;
   };
 
  private:
-  bool m_bFileOwned;
+  bool file_owned_;
 
-  RageFileBasic* m_pZip;
-  std::vector<FileInfo*> m_pFiles;
+  RageFileBasic* zip_;
+  std::vector<FileInfo*> files_;
 
-  std::string m_sPath;
-  std::string m_sComment;
+  std::string path_;
+  std::string comment_;
 
   /* Open() must be threadsafe.  Mutex access to "zip", since we seek
    * around in it when reading files. */
-  RageMutex m_Mutex;
+  RageMutex mutex_;
 
   bool ParseZipfile();
   bool ReadEndCentralRecord(

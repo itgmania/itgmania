@@ -24,11 +24,11 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-#define NEXT_SCREEN THEME->GetMetric(m_sName, "NextScreen")
-#define PREV_SCREEN THEME->GetMetric(m_sName, "PrevScreen")
-#define PREPARE_SCREENS THEME->GetMetric(m_sName, "PrepareScreens")
-#define PERSIST_SCREENS THEME->GetMetric(m_sName, "PersistScreens")
-#define GROUPED_SCREENS THEME->GetMetric(m_sName, "GroupedScreens")
+#define NEXT_SCREEN THEME->GetMetric(name_, "NextScreen")
+#define PREV_SCREEN THEME->GetMetric(name_, "PrevScreen")
+#define PREPARE_SCREENS THEME->GetMetric(name_, "PrepareScreens")
+#define PERSIST_SCREENS THEME->GetMetric(name_, "PersistScreens")
+#define GROUPED_SCREENS THEME->GetMetric(name_, "GroupedScreens")
 
 static const char* ScreenTypeNames[] = {
     "Attract",
@@ -46,26 +46,26 @@ Screen::~Screen() {}
 bool Screen::SortMessagesByDelayRemaining(
     const Screen::QueuedScreenMessage& m1,
     const Screen::QueuedScreenMessage& m2) {
-  return m1.fDelayRemaining < m2.fDelayRemaining;
+  return m1.delay_remaining_ < m2.delay_remaining_;
 }
 
 void Screen::Init() {
-  ALLOW_OPERATOR_MENU_BUTTON.Load(m_sName, "AllowOperatorMenuButton");
-  HANDLE_BACK_BUTTON.Load(m_sName, "HandleBackButton");
-  REPEAT_RATE.Load(m_sName, "RepeatRate");
-  REPEAT_DELAY.Load(m_sName, "RepeatDelay");
-  LIGHTS_MODE.Load(m_sName, "LightsMode");
+  ALLOW_OPERATOR_MENU_BUTTON.Load(name_, "AllowOperatorMenuButton");
+  HANDLE_BACK_BUTTON.Load(name_, "HandleBackButton");
+  REPEAT_RATE.Load(name_, "RepeatRate");
+  REPEAT_DELAY.Load(name_, "RepeatDelay");
+  LIGHTS_MODE.Load(name_, "LightsMode");
 
-  m_Codes.Load(m_sName);
+  codes_.Load(name_);
 
   SetFOV(0);
 
-  m_smSendOnPop = SM_None;
-  m_bRunning = false;
+  send_on_pop_ = SM_None;
+  running_ = false;
 
-  m_CallingInputCallbacks = false;
+  calling_input_callbacks_ = false;
 
-  ActorUtil::LoadAllCommandsFromName(*this, m_sName, "Screen");
+  ActorUtil::LoadAllCommandsFromName(*this, name_, "Screen");
 
   PlayCommandNoRecurse(Message("Init"));
 
@@ -73,7 +73,7 @@ void Screen::Init() {
   split(PREPARE_SCREENS, ",", asList);
   for (unsigned i = 0; i < asList.size(); ++i) {
     LOG->Trace(
-        "Screen \"%s\" preparing \"%s\"", m_sName.c_str(), asList[i].c_str());
+        "Screen \"%s\" preparing \"%s\"", name_.c_str(), asList[i].c_str());
     SCREENMAN->PrepareScreen(asList[i]);
   }
 
@@ -91,20 +91,20 @@ void Screen::Init() {
 }
 
 void Screen::BeginScreen() {
-  m_bRunning = true;
-  m_bFirstUpdate = true;
+  running_ = true;
+  first_update_ = true;
 
   /* Screens set these when they determine their next screen dynamically. Reset
    * them here, so a reused screen doesn't inherit these from the last time it
    * was used. */
-  m_sNextScreen = std::string();
+  next_screen_ = std::string();
 
-  m_fLockInputSecs = 0;
+  lock_input_secs_ = 0;
 
-  this->RunCommands(THEME->GetMetricA(m_sName, "ScreenOnCommand"));
+  this->RunCommands(THEME->GetMetricA(name_, "ScreenOnCommand"));
 
-  if (m_fLockInputSecs == 0) {
-    m_fLockInputSecs =
+  if (lock_input_secs_ == 0) {
+    lock_input_secs_ =
         0.0001f;  // always lock for a tiny amount of time so that we throw away
                   // any queued inputs during the load.
   }
@@ -114,16 +114,16 @@ void Screen::BeginScreen() {
 
 void Screen::EndScreen() {
   this->PlayCommand("End");
-  m_bRunning = false;
+  running_ = false;
 
-  m_InputCallbacks.clear();
-  m_DelayedCallbackRemovals.clear();
+  input_callbacks_.clear();
+  delayed_callback_removals_.clear();
 }
 
 void Screen::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
-  m_fLockInputSecs = std::max(0.0f, m_fLockInputSecs - fDeltaTime);
+  lock_input_secs_ = std::max(0.0f, lock_input_secs_ - fDeltaTime);
 
   /* We need to ensure two things:
    * 1. Messages must be sent in the order of delay. If two messages are sent
@@ -134,11 +134,11 @@ void Screen::Update(float fDeltaTime) {
    *
    * Sort by time to ensure #1; use a stable sort to ensure #2. */
   stable_sort(
-      m_QueuedMessages.begin(), m_QueuedMessages.end(),
+      queued_messages_.begin(), queued_messages_.end(),
       SortMessagesByDelayRemaining);
 
   // Update the times of queued ScreenMessages.
-  for (unsigned i = 0; i < m_QueuedMessages.size(); i++) {
+  for (unsigned i = 0; i < queued_messages_.size(); i++) {
     /* Hack:
      * If we simply subtract time and then send messages, we have a problem.
      * Messages are queued to arrive at specific times, and those times line
@@ -149,12 +149,12 @@ void Screen::Update(float fDeltaTime) {
      * which causes everything to stop in place; this results in actors
      * occasionally not quite finishing their tweens.
      * Let's delay all messages that have a non-zero time an extra frame. */
-    if (m_QueuedMessages[i].fDelayRemaining > 0.0001f) {
-      m_QueuedMessages[i].fDelayRemaining -= fDeltaTime;
-      m_QueuedMessages[i].fDelayRemaining =
-          std::max(m_QueuedMessages[i].fDelayRemaining, 0.0001f);
+    if (queued_messages_[i].delay_remaining_ > 0.0001f) {
+      queued_messages_[i].delay_remaining_ -= fDeltaTime;
+      queued_messages_[i].delay_remaining_ =
+          std::max(queued_messages_[i].delay_remaining_, 0.0001f);
     } else {
-      m_QueuedMessages[i].fDelayRemaining -= fDeltaTime;
+      queued_messages_[i].delay_remaining_ -= fDeltaTime;
     }
   }
 
@@ -162,17 +162,17 @@ void Screen::Update(float fDeltaTime) {
    * within HandleScreenMessage, someone cleared messages on the queue. This
    * means we have no idea where 'i' is, so start over. Since we applied time
    * already, this won't cause messages to be mistimed. */
-  for (unsigned i = 0; i < m_QueuedMessages.size(); i++) {
-    if (m_QueuedMessages[i].fDelayRemaining > 0.0f) {
+  for (unsigned i = 0; i < queued_messages_.size(); i++) {
+    if (queued_messages_[i].delay_remaining_ > 0.0f) {
       continue; /* not yet */
     }
 
     // Remove the message from the list.
-    const ScreenMessage SM = m_QueuedMessages[i].SM;
-    m_QueuedMessages.erase(m_QueuedMessages.begin() + i);
+    const ScreenMessage SM = queued_messages_[i].sm_;
+    queued_messages_.erase(queued_messages_.begin() + i);
     i--;
 
-    unsigned iSize = m_QueuedMessages.size();
+    unsigned iSize = queued_messages_.size();
 
     // send this sucker!
     CHECKPOINT_M(ssprintf(
@@ -181,7 +181,7 @@ void Screen::Update(float fDeltaTime) {
     this->HandleScreenMessage(SM);
 
     // If the size changed, start over.
-    if (iSize != m_QueuedMessages.size()) {
+    if (iSize != queued_messages_.size()) {
       i = 0;
     }
   }
@@ -192,13 +192,13 @@ void Screen::Update(float fDeltaTime) {
  * screens (i.e. it propagates from an overlay only when this returns false). */
 bool Screen::Input(const InputEventPlus& input) {
   Message msg("");
-  if (m_Codes.InputMessage(input, msg)) {
+  if (codes_.InputMessage(input, msg)) {
     this->HandleMessage(msg);
     return true;
   }
 
   // Don't send release messages with the default handler.
-  switch (input.type) {
+  switch (input.type_) {
     case IET_FIRST_PRESS:
     case IET_REPEAT:
       break;  // OK
@@ -207,24 +207,24 @@ bool Screen::Input(const InputEventPlus& input) {
   }
 
   // Always broadcast mouse input so themers can grab it. -aj
-  if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT)) {
+  if (input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT)) {
     MESSAGEMAN->Broadcast((MessageID)(Message_LeftClick));
   }
-  if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_RIGHT)) {
+  if (input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_RIGHT)) {
     MESSAGEMAN->Broadcast((MessageID)(Message_RightClick));
   }
-  if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_MIDDLE)) {
+  if (input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_MIDDLE)) {
     MESSAGEMAN->Broadcast((MessageID)(Message_MiddleClick));
   }
   // Can't do MouseWheelUp and MouseWheelDown at the same time. -aj
-  if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP)) {
+  if (input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP)) {
     MESSAGEMAN->Broadcast((MessageID)(Message_MouseWheelUp));
-  } else if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN)) {
+  } else if (input.device_i_ == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN)) {
     MESSAGEMAN->Broadcast((MessageID)(Message_MouseWheelDown));
   }
 
   // default input handler used by most menus
-  switch (input.MenuI) {
+  switch (input.menu_i_) {
     case GAME_BUTTON_MENUUP:
       return this->MenuUp(input);
     case GAME_BUTTON_MENUDOWN:
@@ -237,7 +237,7 @@ bool Screen::Input(const InputEventPlus& input) {
       // Only go back on first press.  If somebody is backing out of the
       // options screen, they might still be holding it when select music
       // appears, and accidentally back out of that too. -Kyz
-      if (input.type == IET_FIRST_PRESS) {
+      if (input.type_ == IET_FIRST_PRESS) {
         if (HANDLE_BACK_BUTTON) {
           return this->MenuBack(input);
         }
@@ -259,7 +259,7 @@ bool Screen::Input(const InputEventPlus& input) {
 void Screen::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_GoToNextScreen || SM == SM_GoToPrevScreen) {
     if (SCREENMAN->IsStackedScreen(this)) {
-      SCREENMAN->PopTopScreen(m_smSendOnPop);
+      SCREENMAN->PopTopScreen(send_on_pop_);
     } else {
       std::string ToScreen =
           (SM == SM_GoToNextScreen ? GetNextScreenName() : GetPrevScreen());
@@ -284,23 +284,19 @@ void Screen::HandleScreenMessage(const ScreenMessage SM) {
 }
 
 std::string Screen::GetNextScreenName() const {
-  if (!m_sNextScreen.empty()) {
-    return m_sNextScreen;
+  if (!next_screen_.empty()) {
+    return next_screen_;
   }
   return NEXT_SCREEN;
 }
 
-void Screen::SetNextScreenName(const std::string& name) {
-  m_sNextScreen = name;
-}
+void Screen::SetNextScreenName(const std::string& name) { next_screen_ = name; }
 
-void Screen::SetPrevScreenName(const std::string& name) {
-  m_sPrevScreen = name;
-}
+void Screen::SetPrevScreenName(const std::string& name) { prev_screen_ = name; }
 
 std::string Screen::GetPrevScreen() const {
-  if (!m_sPrevScreen.empty()) {
-    return m_sPrevScreen;
+  if (!prev_screen_.empty()) {
+    return prev_screen_;
   }
   return PREV_SCREEN;
 }
@@ -309,27 +305,27 @@ void Screen::PostScreenMessage(const ScreenMessage SM, float fDelay) {
   ASSERT(fDelay >= 0.0);
 
   QueuedScreenMessage QSM;
-  QSM.SM = SM;
-  QSM.fDelayRemaining = fDelay;
-  m_QueuedMessages.push_back(QSM);
+  QSM.sm_ = SM;
+  QSM.delay_remaining_ = fDelay;
+  queued_messages_.push_back(QSM);
 }
 
-void Screen::ClearMessageQueue() { m_QueuedMessages.clear(); }
+void Screen::ClearMessageQueue() { queued_messages_.clear(); }
 
 void Screen::ClearMessageQueue(const ScreenMessage SM) {
-  for (int i = m_QueuedMessages.size() - 1; i >= 0; i--) {
-    if (m_QueuedMessages[i].SM == SM) {
-      m_QueuedMessages.erase(m_QueuedMessages.begin() + i);
+  for (int i = queued_messages_.size() - 1; i >= 0; i--) {
+    if (queued_messages_[i].sm_ == SM) {
+      queued_messages_.erase(queued_messages_.begin() + i);
     }
   }
 }
 
 bool Screen::PassInputToLua(const InputEventPlus& input) {
-  if (m_InputCallbacks.empty() || m_fLockInputSecs > 0.0f ||
+  if (input_callbacks_.empty() || lock_input_secs_ > 0.0f ||
       !AllowCallbackInput()) {
     return false;
   }
-  m_CallingInputCallbacks = true;
+  calling_input_callbacks_ = true;
   bool handled = false;
   Lua* L = LUA->Get();
 
@@ -338,39 +334,40 @@ bool Screen::PassInputToLua(const InputEventPlus& input) {
   {  // This block is meant to improve clarity.  A subtable is created for
     // storing the DeviceInput member.
     lua_createtable(L, 0, 8);
-    Enum::Push(L, input.DeviceI.device);
+    Enum::Push(L, input.device_i_.device_);
     lua_setfield(L, -2, "device");
-    Enum::Push(L, input.DeviceI.button);
+    Enum::Push(L, input.device_i_.button_);
     lua_setfield(L, -2, "button");
-    lua_pushnumber(L, input.DeviceI.level);
+    lua_pushnumber(L, input.device_i_.level_);
     lua_setfield(L, -2, "level");
-    lua_pushinteger(L, input.DeviceI.z);
+    lua_pushinteger(L, input.device_i_.z_);
     lua_setfield(L, -2, "z");
-    lua_pushboolean(L, input.DeviceI.bDown);
+    lua_pushboolean(L, input.device_i_.down_);
     lua_setfield(L, -2, "down");
-    lua_pushnumber(L, input.DeviceI.ts.Ago());
+    lua_pushnumber(L, input.device_i_.ts_.Ago());
     lua_setfield(L, -2, "ago");
-    lua_pushboolean(L, input.DeviceI.IsJoystick());
+    lua_pushboolean(L, input.device_i_.IsJoystick());
     lua_setfield(L, -2, "is_joystick");
-    lua_pushboolean(L, input.DeviceI.IsMouse());
+    lua_pushboolean(L, input.device_i_.IsMouse());
     lua_setfield(L, -2, "is_mouse");
   }
   lua_setfield(L, -2, "DeviceInput");
-  Enum::Push(L, input.GameI.controller);
+  Enum::Push(L, input.game_i_.controller_);
   lua_setfield(L, -2, "controller");
   LuaHelpers::Push(
-      L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.GameI.button));
+      L,
+      GameButtonToString(INPUTMAPPER->GetInputScheme(), input.game_i_.button_));
   lua_setfield(L, -2, "button");
-  Enum::Push(L, input.type);
+  Enum::Push(L, input.type_);
   lua_setfield(L, -2, "type");
   LuaHelpers::Push(
-      L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.MenuI));
+      L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.menu_i_));
   lua_setfield(L, -2, "GameButton");
-  Enum::Push(L, input.pn);
+  Enum::Push(L, input.pn_);
   lua_setfield(L, -2, "PlayerNumber");
   for (std::map<callback_key_t, LuaReference>::iterator callback =
-           m_InputCallbacks.begin();
-       callback != m_InputCallbacks.end() && !handled; ++callback) {
+           input_callbacks_.begin();
+       callback != input_callbacks_.end() && !handled; ++callback) {
     callback->second.PushSelf(L);
     lua_pushvalue(L, -2);
     std::string error = "Error running input callback: ";
@@ -380,11 +377,11 @@ bool Screen::PassInputToLua(const InputEventPlus& input) {
   }
   lua_pop(L, 1);
   LUA->Release(L);
-  m_CallingInputCallbacks = false;
-  if (!m_DelayedCallbackRemovals.empty()) {
+  calling_input_callbacks_ = false;
+  if (!delayed_callback_removals_.empty()) {
     for (std::vector<callback_key_t>::iterator key =
-             m_DelayedCallbackRemovals.begin();
-         key != m_DelayedCallbackRemovals.end(); ++key) {
+             delayed_callback_removals_.begin();
+         key != delayed_callback_removals_.end(); ++key) {
       InternalRemoveCallback(*key);
     }
   }
@@ -393,13 +390,13 @@ bool Screen::PassInputToLua(const InputEventPlus& input) {
 
 void Screen::AddInputCallbackFromStack(lua_State* L) {
   callback_key_t key = lua_topointer(L, 1);
-  m_InputCallbacks[key] = LuaReference(L);
+  input_callbacks_[key] = LuaReference(L);
 }
 
 void Screen::RemoveInputCallback(lua_State* L) {
   callback_key_t key = lua_topointer(L, 1);
-  if (m_CallingInputCallbacks) {
-    m_DelayedCallbackRemovals.push_back(key);
+  if (calling_input_callbacks_) {
+    delayed_callback_removals_.push_back(key);
   } else {
     InternalRemoveCallback(key);
   }
@@ -407,9 +404,9 @@ void Screen::RemoveInputCallback(lua_State* L) {
 
 void Screen::InternalRemoveCallback(callback_key_t key) {
   std::map<callback_key_t, LuaReference>::iterator iter =
-      m_InputCallbacks.find(key);
-  if (iter != m_InputCallbacks.end()) {
-    m_InputCallbacks.erase(iter);
+      input_callbacks_.find(key);
+  if (iter != input_callbacks_.end()) {
+    input_callbacks_.erase(iter);
   }
 }
 

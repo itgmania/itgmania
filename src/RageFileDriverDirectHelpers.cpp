@@ -152,55 +152,55 @@ bool CreateDirectories(std::string Path) {
 }
 
 DirectFilenameDB::DirectFilenameDB(std::string root_) {
-  ExpireSeconds = 30;
+  expire_seconds_ = 30;
   SetRoot(root_);
 }
 
-void DirectFilenameDB::SetRoot(std::string root_) {
-  root = root_;
+void DirectFilenameDB::SetRoot(std::string root) {
+  root_ = root;
 
   // "\abcd\" -> "/abcd/":
-  Replace(root, "\\", "/");
+  Replace(root_, "\\", "/");
 
   // "/abcd/" -> "/abcd":
-  if (Right(root, 1) == "/") {
-    root.erase(root.size() - 1, 1);
+  if (Right(root_, 1) == "/") {
+    root_.erase(root_.size() - 1, 1);
   }
 }
 
 void DirectFilenameDB::CacheFile(const std::string& sPath) {
-  CHECKPOINT_M(root + sPath);
+  CHECKPOINT_M(root_ + sPath);
   std::string sDir = Dirname(sPath);
   FileSet* pFileSet = GetFileSet(sDir, false);
   if (pFileSet == nullptr) {
     // This directory isn't cached so do nothing.
-    m_Mutex.Unlock();  // Locked by GetFileSet()
+    mutex_.Unlock();  // Locked by GetFileSet()
     return;
   }
-  while (!pFileSet->m_bFilled) {
-    m_Mutex.Wait();
+  while (!pFileSet->filled_) {
+    mutex_.Wait();
   }
 
 #if defined(_WIN32)
   WIN32_FIND_DATA fd;
-  HANDLE hFind = DoFindFirstFile((root + sPath).c_str(), &fd);
+  HANDLE hFind = DoFindFirstFile((root_ + sPath).c_str(), &fd);
   if (hFind == INVALID_HANDLE_VALUE) {
-    m_Mutex.Unlock();  // Locked by GetFileSet()
+    mutex_.Unlock();  // Locked by GetFileSet()
     return;
   }
   File f(fd.cFileName);
-  f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-  f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
-  f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 |
-           fd.ftLastWriteTime.dwLowDateTime;
+  f.dir_ = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+  f.size_ = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
+  f.hash_ = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 |
+            fd.ftLastWriteTime.dwLowDateTime;
 
-  pFileSet->files.insert(f);
+  pFileSet->files_.insert(f);
   FindClose(hFind);
 #else
   File f(Basename(sPath));
 
   struct stat st;
-  if (DoStat((root + sPath).c_str(), &st) == -1) {
+  if (DoStat((root_ + sPath).c_str(), &st) == -1) {
     if (errno != ENOENT) {
       // Warn in this case since this is unexpected (maybe due to some actual
       // filesystem issues like perms/long paths/etc).
@@ -213,18 +213,18 @@ void DirectFilenameDB::CacheFile(const std::string& sPath) {
     }
     // Remove any old cached records and return early so we con't insert
     // any bad metadata for a file that doesn't exist.
-    pFileSet->files.erase(f);
-    m_Mutex.Unlock();  // Locked by GetFileSet()
+    pFileSet->files_.erase(f);
+    mutex_.Unlock();  // Locked by GetFileSet()
     return;
   } else {
-    f.dir = S_ISDIR(st.st_mode);
-    f.size = static_cast<int>(st.st_size);
-    f.hash = st.st_mtime;
+    f.dir_ = S_ISDIR(st.st_mode);
+    f.size_ = static_cast<int>(st.st_size);
+    f.hash_ = st.st_mtime;
   }
 
-  pFileSet->files.insert(f);
+  pFileSet->files_.insert(f);
 #endif
-  m_Mutex.Unlock();  // Locked by GetFileSet()
+  mutex_.Unlock();  // Locked by GetFileSet()
 }
 
 void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
@@ -233,8 +233,8 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
   // Resolve path cases (path/Path -> PATH/path).
   ResolvePath(sPath);
 
-  fs.age.GetDeltaTime();  // reset
-  fs.files.clear();
+  fs.age_.GetDeltaTime();  // reset
+  fs.files_.clear();
 
 #if defined(_WIN32)
   WIN32_FIND_DATA fd;
@@ -243,8 +243,8 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
     sPath.erase(sPath.size() - 1);
   }
 
-  HANDLE hFind = DoFindFirstFile((root + sPath + "/*").c_str(), &fd);
-  CHECKPOINT_M(root + sPath + "/*");
+  HANDLE hFind = DoFindFirstFile((root_ + sPath + "/*").c_str(), &fd);
+  CHECKPOINT_M(root_ + sPath + "/*");
 
   if (hFind == INVALID_HANDLE_VALUE) {
     return;
@@ -257,11 +257,11 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
 
     File f;
     f.SetName(fd.cFileName);
-    f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-    f.size = fd.nFileSizeLow;
-    f.hash = fd.ftLastWriteTime.dwLowDateTime;
+    f.dir_ = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+    f.size_ = fd.nFileSizeLow;
+    f.hash_ = fd.ftLastWriteTime.dwLowDateTime;
 
-    fs.files.insert(f);
+    fs.files_.insert(f);
   } while (FindNextFile(hFind, &fd));
   FindClose(hFind);
 #else
@@ -272,7 +272,7 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
    * for each file.  This isn't a major issue, since most large directory
    * scans are I/O-bound. */
 
-  DIR* pDir = opendir((root + sPath).c_str());
+  DIR* pDir = opendir((root_ + sPath).c_str());
   if (pDir == nullptr) {
     return;
   }
@@ -288,10 +288,10 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
     File f(pEnt->d_name);
 
     struct stat st;
-    if (DoStat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == -1) {
+    if (DoStat((root_ + sPath + "/" + pEnt->d_name).c_str(), &st) == -1) {
       int iError = errno;
       /* If it's a broken symlink, ignore it.  Otherwise, warn. */
-      if (lstat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == 0) {
+      if (lstat((root_ + sPath + "/" + pEnt->d_name).c_str(), &st) == 0) {
         continue;
       }
 
@@ -301,12 +301,12 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
           sPath.c_str(), strerror(iError)));
       continue;
     } else {
-      f.dir = (st.st_mode & S_IFDIR);
-      f.size = (int)st.st_size;
-      f.hash = st.st_mtime;
+      f.dir_ = (st.st_mode & S_IFDIR);
+      f.size_ = (int)st.st_size;
+      f.hash_ = st.st_mtime;
     }
 
-    fs.files.insert(f);
+    fs.files_.insert(f);
   }
 
   closedir(pDir);
@@ -325,14 +325,14 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
 
   std::vector<std::string> vsFilesToRemove;
   for (std::set<File>::iterator iter =
-           fs.files.lower_bound(IGNORE_MARKER_BEGINNING);
-       iter != fs.files.end(); ++iter) {
-    if (!BeginsWith(iter->lname, IGNORE_MARKER_BEGINNING)) {
+           fs.files_.lower_bound(IGNORE_MARKER_BEGINNING);
+       iter != fs.files_.end(); ++iter) {
+    if (!BeginsWith(iter->lname_, IGNORE_MARKER_BEGINNING)) {
       break;
     }
     std::string sFileLNameToIgnore = Right(
-        iter->lname, iter->lname.length() - IGNORE_MARKER_BEGINNING.length());
-    vsFilesToRemove.push_back(iter->name);
+        iter->lname_, iter->lname_.length() - IGNORE_MARKER_BEGINNING.length());
+    vsFilesToRemove.push_back(iter->name_);
     vsFilesToRemove.push_back(sFileLNameToIgnore);
   }
 
@@ -340,9 +340,9 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
     // Erase the file corresponding to the ignore marker
     File fileToDelete;
     fileToDelete.SetName(iter);
-    std::set<File>::iterator iter2 = fs.files.find(fileToDelete);
-    if (iter2 != fs.files.end()) {
-      fs.files.erase(iter2);
+    std::set<File>::iterator iter2 = fs.files_.find(fileToDelete);
+    if (iter2 != fs.files_.end()) {
+      fs.files_.erase(iter2);
     }
   }
 }

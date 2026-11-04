@@ -45,8 +45,8 @@ LuaXType(PaneCategory);
 
 enum { NEED_NOTES = 1, NEED_PROFILE = 2 };
 struct Content_t {
-  int req;
-  std::string sFontType;
+  int req_;
+  std::string font_type_;
 };
 
 static const Content_t g_Contents[NUM_PaneCategory] = {
@@ -66,7 +66,7 @@ static const Content_t g_Contents[NUM_PaneCategory] = {
 REGISTER_ACTOR_CLASS(PaneDisplay);
 
 void PaneDisplay::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
-  m_PlayerNumber = pn;
+  player_number_ = pn;
 
   EMPTY_MACHINE_HIGH_SCORE_NAME.Load(
       sMetricsGroup, "EmptyMachineHighScoreName");
@@ -77,27 +77,27 @@ void PaneDisplay::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
   FOREACH_ENUM(PaneCategory, pc) {
     LuaThreadVariable var("PaneCategory", LuaReference::Create(pc));
 
-    std::string sFontType = g_Contents[pc].sFontType;
+    std::string sFontType = g_Contents[pc].font_type_;
 
-    m_textContents[pc].LoadFromFont(THEME->GetPathF(sMetricsGroup, sFontType));
-    m_textContents[pc].SetName(PaneCategoryToString(pc) + "Text");
-    ActorUtil::LoadAllCommands(m_textContents[pc], sMetricsGroup);
-    ActorUtil::SetXY(m_textContents[pc], sMetricsGroup);
-    m_ContentsFrame.AddChild(&m_textContents[pc]);
+    text_contents_[pc].LoadFromFont(THEME->GetPathF(sMetricsGroup, sFontType));
+    text_contents_[pc].SetName(PaneCategoryToString(pc) + "Text");
+    ActorUtil::LoadAllCommands(text_contents_[pc], sMetricsGroup);
+    ActorUtil::SetXY(text_contents_[pc], sMetricsGroup);
+    contents_frame_.AddChild(&text_contents_[pc]);
 
-    m_Labels[pc].Load(
+    labels_[pc].Load(
         THEME->GetPathG(sMetricsGroup, "label " + PaneCategoryToString(pc)));
-    m_Labels[pc]->SetName(PaneCategoryToString(pc) + "Label");
-    ActorUtil::LoadAllCommands(*m_Labels[pc], sMetricsGroup);
-    ActorUtil::SetXY(m_Labels[pc], sMetricsGroup);
-    m_ContentsFrame.AddChild(m_Labels[pc]);
+    labels_[pc]->SetName(PaneCategoryToString(pc) + "Label");
+    ActorUtil::LoadAllCommands(*labels_[pc], sMetricsGroup);
+    ActorUtil::SetXY(labels_[pc], sMetricsGroup);
+    contents_frame_.AddChild(labels_[pc]);
 
     ActorUtil::LoadAllCommandsFromName(
-        m_textContents[pc], sMetricsGroup, PaneCategoryToString(pc));
+        text_contents_[pc], sMetricsGroup, PaneCategoryToString(pc));
   }
 
-  m_ContentsFrame.SetXY(SHIFT_X(m_PlayerNumber), SHIFT_Y(m_PlayerNumber));
-  this->AddChild(&m_ContentsFrame);
+  contents_frame_.SetXY(SHIFT_X(player_number_), SHIFT_Y(player_number_));
+  this->AddChild(&contents_frame_);
 }
 
 void PaneDisplay::LoadFromNode(const XNode* pNode) {
@@ -131,12 +131,12 @@ void PaneDisplay::LoadFromNode(const XNode* pNode) {
 
 void PaneDisplay::GetPaneTextAndLevel(
     PaneCategory c, std::string& sTextOut, float& fLevelOut) {
-  const Song* pSong = GAMESTATE->m_pCurSong;
-  const Steps* pSteps = GAMESTATE->m_pCurSteps[m_PlayerNumber];
-  const Course* pCourse = GAMESTATE->m_pCurCourse;
-  const Trail* pTrail = GAMESTATE->m_pCurTrail[m_PlayerNumber];
-  const Profile* pProfile = PROFILEMAN->IsPersistentProfile(m_PlayerNumber)
-                                ? PROFILEMAN->GetProfile(m_PlayerNumber)
+  const Song* pSong = GAMESTATE->cur_song_;
+  const Steps* pSteps = GAMESTATE->cur_steps_[player_number_];
+  const Course* pCourse = GAMESTATE->cur_course_;
+  const Trail* pTrail = GAMESTATE->cur_trail_[player_number_];
+  const Profile* pProfile = PROFILEMAN->IsPersistentProfile(player_number_)
+                                ? PROFILEMAN->GetProfile(player_number_)
                                 : nullptr;
   bool bIsPlayerEdit = pSteps && pSteps->IsAPlayerEdit();
 
@@ -145,7 +145,7 @@ void PaneDisplay::GetPaneTextAndLevel(
   fLevelOut = 0;
 
   if (GAMESTATE->IsCourseMode() && !pTrail) {
-    if ((g_Contents[c].req & NEED_PROFILE)) {
+    if ((g_Contents[c].req_ & NEED_PROFILE)) {
       sTextOut = NOT_AVAILABLE;
     }
 
@@ -165,7 +165,7 @@ void PaneDisplay::GetPaneTextAndLevel(
 
     return;
   } else if (!GAMESTATE->IsCourseMode() && !pSong) {
-    if ((g_Contents[c].req & NEED_PROFILE)) {
+    if ((g_Contents[c].req_ & NEED_PROFILE)) {
       sTextOut = NOT_AVAILABLE;
     }
 
@@ -186,10 +186,10 @@ void PaneDisplay::GetPaneTextAndLevel(
     return;
   }
 
-  if ((g_Contents[c].req & NEED_NOTES) && !pSteps && !pTrail) {
+  if ((g_Contents[c].req_ & NEED_NOTES) && !pSteps && !pTrail) {
     return;
   }
-  if ((g_Contents[c].req & NEED_PROFILE) && !pProfile) {
+  if ((g_Contents[c].req_ & NEED_PROFILE) && !pProfile) {
     sTextOut = NOT_AVAILABLE;
     return;
   }
@@ -200,13 +200,13 @@ void PaneDisplay::GetPaneTextAndLevel(
     ProfileSlot slot = ProfileSlot_Machine;
     switch (c) {
       case PaneCategory_ProfileHighScore:
-        slot = (ProfileSlot)m_PlayerNumber;
+        slot = (ProfileSlot)player_number_;
       default:
         break;
     }
 
     if (pSteps) {
-      rv = pSteps->GetRadarValues(m_PlayerNumber);
+      rv = pSteps->GetRadarValues(player_number_);
       pHSL =
           &PROFILEMAN->GetProfile(slot)->GetStepsHighScoreList(pSong, pSteps);
     } else if (pTrail) {
@@ -263,7 +263,7 @@ void PaneDisplay::GetPaneTextAndLevel(
     if (fLevelOut != RADAR_VAL_UNKNOWN) {
       switch (c) {
         case PaneCategory_MachineHighName:
-          if (pHSL->vHighScores.empty()) {
+          if (pHSL->high_scores_.empty()) {
             sTextOut = EMPTY_MACHINE_HIGH_SCORE_NAME;
           } else {
             sTextOut = pHSL->GetTopScore().GetName();
@@ -305,17 +305,17 @@ void PaneDisplay::SetContent(PaneCategory c) {
   float val;
 
   GetPaneTextAndLevel(c, str, val);
-  m_textContents[c].SetText(str);
+  text_contents_[c].SetText(str);
 
   Lua* L = LUA->Get();
 
-  m_textContents[c].PushSelf(L);
+  text_contents_[c].PushSelf(L);
   lua_pushstring(L, "PaneLevel");
   lua_pushnumber(L, val);
   lua_settable(L, -3);
   lua_pop(L, 1);
 
-  m_textContents[c].PlayCommand("Level");
+  text_contents_[c].PlayCommand("Level");
 
   LUA->Release(L);
 }

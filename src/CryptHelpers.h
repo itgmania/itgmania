@@ -13,8 +13,8 @@ class PRNGWrapper {
  public:
   PRNGWrapper(const struct ltc_prng_descriptor* pPRNGDescriptor);
   ~PRNGWrapper();
-  int m_iPRNG;
-  prng_state m_PRNG;
+  int i_prng_;
+  prng_state prng_;
 };
 
 class RSAKeyWrapper {
@@ -24,7 +24,7 @@ class RSAKeyWrapper {
   void Unload();
   bool Load(const std::string& sKey, std::string& sError);
 
-  rsa_key m_Key;
+  rsa_key key_;
 };
 
 #endif

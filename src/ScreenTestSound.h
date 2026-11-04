@@ -21,14 +21,14 @@ class ScreenTestSound : public Screen {
   void UpdateText(int n);
 
   struct Sound {
-    RageSound s;
-    BitmapText txt;
+    RageSound s_;
+    BitmapText txt_;
   };
-  Sound s[nsounds];
-  std::vector<RageSound*> m_sSoundCopies[nsounds];
-  BitmapText HEEEEEEEEELP;
+  Sound s_[nsounds];
+  std::vector<RageSound*> sound_copies_[nsounds];
+  BitmapText heeeeeeeeelp_;
 
-  int selected;
+  int selected_;
 };
 
 #endif

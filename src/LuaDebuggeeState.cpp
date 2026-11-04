@@ -9,23 +9,23 @@ namespace LuaDebug {
 class DebuggeeState::Impl {
  public:
   static void AddToParent(DebuggeeState* state) {
-    state->m_parent->m_children.push_back(state);
-    if (state->m_id != 0) {
-      state->GetRoot().m_objects.insert({state->m_id, *state});
+    state->parent_->children_.push_back(state);
+    if (state->id_ != 0) {
+      state->GetRoot().objects_.insert({state->id_, *state});
     }
   }
 
   static void CreateThread(
       DebuggeeState& root, ThreadId threadId, lua_State* L) {
     auto thread = new DebuggeeState();
-    thread->m_type = Type::Thread;
-    thread->m_parent = &root, thread->m_lua = L, thread->m_threadId = threadId,
+    thread->type_ = Type::Thread;
+    thread->parent_ = &root, thread->lua_ = L, thread->thread_id_ = threadId,
     AddToParent(thread);
   }
 
   static void CreateStackFrame(DebuggeeState& parentThread, int level) {
     auto frame = new DebuggeeState(parentThread, Type::StackFrame);
-    frame->m_stackLevel = level;
+    frame->stack_level_ = level;
     AddToParent(frame);
   }
 
@@ -43,39 +43,39 @@ class DebuggeeState::Impl {
 
   static void CreateReferences(DebuggeeState& parentThread) {
     auto references = new DebuggeeState(parentThread, Type::References);
-    references->m_index = LUA_NOREF;
+    references->index_ = LUA_NOREF;
     AddToParent(references);
   }
 
   static void CreateNamedVariable(
       DebuggeeState& parent, const std::string& name) {
     auto var = new DebuggeeState(parent, Type::NamedVariable);
-    var->m_name = name;
+    var->name_ = name;
     AddToParent(std::move(var));
   }
 
   static void CreateIndexedVariable(
       DebuggeeState& parent, const std::string& name, int index) {
     auto var = new DebuggeeState(parent, Type::IndexedVariable);
-    var->m_name = name;
-    var->m_index = index;
+    var->name_ = name;
+    var->index_ = index;
     AddToParent(std::move(var));
   }
 
   static void CreateMetaTableVariable(DebuggeeState& parent) {
     auto var = new DebuggeeState(parent, Type::MetaTableVariable);
-    var->m_name = "__metatable";
+    var->name_ = "__metatable";
     AddToParent(var);
   }
 
   static bool PushLocalToStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::LocalsScope);
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::LocalsScope);
 
-    lua_State* L = var.m_lua;
+    lua_State* L = var.lua_;
     lua_Debug debug;
-    if (lua_getstack(L, var.m_stackLevel, &debug) &&
-        lua_getlocal(L, &debug, var.m_index) != nullptr) {
+    if (lua_getstack(L, var.stack_level_, &debug) &&
+        lua_getlocal(L, &debug, var.index_) != nullptr) {
       return true;
     }
 
@@ -84,20 +84,20 @@ class DebuggeeState::Impl {
   }
 
   static bool PushUpvalueToStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::UpvaluesScope);
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::UpvaluesScope);
 
-    lua_State* L = var.m_lua;
+    lua_State* L = var.lua_;
     lua_Debug debug;
 
-    lua_getstack(L, var.m_stackLevel, &debug);
+    lua_getstack(L, var.stack_level_, &debug);
     // Pushes the active function onto the stack.
     lua_getinfo(L, "f", &debug);
     if (lua_isnil(L, -1)) {
       return false;
     }
 
-    if (lua_getupvalue(L, -1, var.m_index) == nullptr) {
+    if (lua_getupvalue(L, -1, var.index_) == nullptr) {
       lua_pop(L, 1);
       lua_pushnil(L);
       return false;
@@ -109,13 +109,13 @@ class DebuggeeState::Impl {
   }
 
   static bool PushGlobalToStack(DebuggeeState& var) {
-    ASSERT(var.m_parent->m_type == Type::GlobalsScope);
-    lua_State* L = var.m_lua;
+    ASSERT(var.parent_->type_ == Type::GlobalsScope);
+    lua_State* L = var.lua_;
 
-    if (var.m_type == Type::NamedVariable) {
-      lua_pushstring(L, var.m_name.c_str());
+    if (var.type_ == Type::NamedVariable) {
+      lua_pushstring(L, var.name_.c_str());
       lua_rawget(L, LUA_GLOBALSINDEX);
-    } else if (var.m_type == Type::MetaTableVariable) {
+    } else if (var.type_ == Type::MetaTableVariable) {
       if (!lua_getmetatable(L, LUA_GLOBALSINDEX)) {
         return false;
       }
@@ -127,27 +127,27 @@ class DebuggeeState::Impl {
   }
 
   static bool PushReferenceToStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::References);
-    if (var.m_parent->m_index == LUA_NOREF) {
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::References);
+    if (var.parent_->index_ == LUA_NOREF) {
       return false;
     }
 
-    lua_State* L = var.m_lua;
-    lua_getref(L, var.m_parent->m_index);
-    lua_rawgeti(L, -1, var.m_index);
+    lua_State* L = var.lua_;
+    lua_getref(L, var.parent_->index_);
+    lua_rawgeti(L, -1, var.index_);
     lua_remove(L, -2);
     return !lua_isnil(L, -1);
   }
 
   static bool PopLocalFromStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::LocalsScope);
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::LocalsScope);
 
-    lua_State* L = var.m_lua;
+    lua_State* L = var.lua_;
     lua_Debug debug;
-    if (!lua_getstack(L, var.m_stackLevel, &debug) ||
-        lua_setlocal(L, &debug, var.m_index) == nullptr) {
+    if (!lua_getstack(L, var.stack_level_, &debug) ||
+        lua_setlocal(L, &debug, var.index_) == nullptr) {
       lua_pop(L, 1);
       return false;
     }
@@ -155,15 +155,15 @@ class DebuggeeState::Impl {
   }
 
   static bool PopUpvalueFromStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::UpvaluesScope);
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::UpvaluesScope);
 
-    lua_State* L = var.m_lua;
+    lua_State* L = var.lua_;
     int topOnReturn = lua_gettop(L) - 1;
     bool ok = false;
 
     lua_Debug debug;
-    if (!lua_getstack(L, var.m_stackLevel, &debug)) {
+    if (!lua_getstack(L, var.stack_level_, &debug)) {
       goto done;
     }
     // Pushes the active function onto the stack.
@@ -175,7 +175,7 @@ class DebuggeeState::Impl {
     }
 
     lua_insert(L, -2);
-    if (lua_setupvalue(L, -2, var.m_index) == nullptr) {
+    if (lua_setupvalue(L, -2, var.index_) == nullptr) {
       goto done;
     }
     ok = true;
@@ -186,14 +186,14 @@ class DebuggeeState::Impl {
   }
 
   static bool PopGlobalFromStack(DebuggeeState& var) {
-    ASSERT(var.m_parent->m_type == Type::GlobalsScope);
-    lua_State* L = var.m_lua;
+    ASSERT(var.parent_->type_ == Type::GlobalsScope);
+    lua_State* L = var.lua_;
 
-    if (var.m_type == Type::NamedVariable) {
-      lua_pushstring(L, var.m_name.c_str());
+    if (var.type_ == Type::NamedVariable) {
+      lua_pushstring(L, var.name_.c_str());
       lua_insert(L, -2);
       lua_rawset(L, LUA_GLOBALSINDEX);
-    } else if (var.m_type == Type::MetaTableVariable) {
+    } else if (var.type_ == Type::MetaTableVariable) {
       if (lua_type(L, -1) != LUA_TTABLE) {
         lua_pop(L, 1);
         return false;
@@ -208,29 +208,29 @@ class DebuggeeState::Impl {
   }
 
   static bool PopReferenceFromStack(DebuggeeState& var) {
-    ASSERT(var.m_type == Type::IndexedVariable);
-    ASSERT(var.m_parent->m_type == Type::References);
-    if (var.m_parent->m_index == LUA_NOREF) {
+    ASSERT(var.type_ == Type::IndexedVariable);
+    ASSERT(var.parent_->type_ == Type::References);
+    if (var.parent_->index_ == LUA_NOREF) {
       return false;
     }
 
-    lua_State* L = var.m_lua;
-    lua_getref(L, var.m_parent->m_index);
+    lua_State* L = var.lua_;
+    lua_getref(L, var.parent_->index_);
     lua_insert(L, -2);
-    lua_rawseti(L, -2, var.m_index);
+    lua_rawseti(L, -2, var.index_);
     lua_pop(L, 1);
     return true;
   }
 
   static void InitLocals(DebuggeeState& locals) {
-    ASSERT(locals.m_type == Type::LocalsScope);
-    if (locals.m_lua == nullptr) {
+    ASSERT(locals.type_ == Type::LocalsScope);
+    if (locals.lua_ == nullptr) {
       return;
     }
 
-    lua_State* L = locals.m_lua;
+    lua_State* L = locals.lua_;
     lua_Debug debug;
-    lua_getstack(L, locals.m_stackLevel, &debug);
+    lua_getstack(L, locals.stack_level_, &debug);
 
     const char* name;
     // Local variable indexes start from 1.
@@ -244,14 +244,14 @@ class DebuggeeState::Impl {
   }
 
   static void InitUpvalues(DebuggeeState& upvalues) {
-    ASSERT(upvalues.m_type == Type::UpvaluesScope);
-    if (upvalues.m_lua == nullptr) {
+    ASSERT(upvalues.type_ == Type::UpvaluesScope);
+    if (upvalues.lua_ == nullptr) {
       return;
     }
 
-    lua_State* L = upvalues.m_lua;
+    lua_State* L = upvalues.lua_;
     lua_Debug debug;
-    lua_getstack(L, upvalues.m_stackLevel, &debug);
+    lua_getstack(L, upvalues.stack_level_, &debug);
     // Pushes the active function onto the stack.
     lua_getinfo(L, "f", &debug);
     if (!lua_isnil(L, -1)) {
@@ -266,12 +266,12 @@ class DebuggeeState::Impl {
   }
 
   static void InitGlobals(DebuggeeState& globals) {
-    ASSERT(globals.m_type == Type::GlobalsScope);
-    if (globals.m_lua == nullptr) {
+    ASSERT(globals.type_ == Type::GlobalsScope);
+    if (globals.lua_ == nullptr) {
       return;
     }
 
-    lua_State* L = globals.m_lua;
+    lua_State* L = globals.lua_;
     // Push the initial key onto the stack.
     lua_pushnil(L);
     // Pops the key from the stack.
@@ -293,11 +293,11 @@ class DebuggeeState::Impl {
 
   static void InitVariable(DebuggeeState& var) {
     ASSERT(var.IsVariable());
-    if (var.m_lua == nullptr) {
+    if (var.lua_ == nullptr) {
       return;
     }
 
-    lua_State* L = var.m_lua;
+    lua_State* L = var.lua_;
     var.PushValue();
     if (!lua_istable(L, -1)) {
       lua_pop(L, 1);
@@ -332,7 +332,7 @@ class DebuggeeState::Impl {
 
   static void InitThread(DebuggeeState& thread) {
     ASSERT(thread.GetType() == Type::Thread);
-    if (thread.m_lua == nullptr) {
+    if (thread.lua_ == nullptr) {
       return;
     }
 
@@ -340,22 +340,22 @@ class DebuggeeState::Impl {
     CreateReferences(thread);
 
     lua_Debug debug;
-    for (int level = 0; lua_getstack(thread.m_lua, level, &debug); level++) {
+    for (int level = 0; lua_getstack(thread.lua_, level, &debug); level++) {
       CreateStackFrame(thread, level);
     }
   }
 
   static void InitStackFrame(DebuggeeState& frame) {
-    ASSERT(frame.m_type == Type::StackFrame);
-    if (frame.m_lua == nullptr) {
+    ASSERT(frame.type_ == Type::StackFrame);
+    if (frame.lua_ == nullptr) {
       return;
     }
 
     lua_Debug debug;
-    if (!lua_getstack(frame.m_lua, frame.m_stackLevel, &debug)) {
+    if (!lua_getstack(frame.lua_, frame.stack_level_, &debug)) {
       return;
     }
-    if (!lua_getinfo(frame.m_lua, "u", &debug)) {
+    if (!lua_getinfo(frame.lua_, "u", &debug)) {
       return;
     }
 
@@ -365,19 +365,19 @@ class DebuggeeState::Impl {
     }
   }
 
-  static DebuggeeState g_null;
+  static DebuggeeState null_;
 };
 
-DebuggeeState DebuggeeState::Impl::g_null;
+DebuggeeState DebuggeeState::Impl::null_;
 
-DebuggeeState::DebuggeeState(Root) : m_type(Type::Root) {}
+DebuggeeState::DebuggeeState(Root) : type_(Type::Root) {}
 
-DebuggeeState::operator bool() const { return m_type != Type::None; }
+DebuggeeState::operator bool() const { return type_ != Type::None; }
 
 DebuggeeState& DebuggeeState::GetRoot() {
   DebuggeeState* o = this;
-  while (o->m_parent) {
-    o = o->m_parent;
+  while (o->parent_) {
+    o = o->parent_;
   }
   return *o;
 }
@@ -385,24 +385,24 @@ DebuggeeState& DebuggeeState::GetRoot() {
 DebuggeeState& DebuggeeState::GetThread() {
   DebuggeeState* o = this;
   while (o != nullptr && o->GetType() != Type::Thread) {
-    o = o->m_parent;
+    o = o->parent_;
   }
-  return o == nullptr ? Impl::g_null : *o;
+  return o == nullptr ? Impl::null_ : *o;
 }
 
 DebuggeeState& DebuggeeState::GetStackFrame() {
   DebuggeeState* o = this;
   while (o != nullptr && o->GetType() != Type::StackFrame) {
-    o = o->m_parent;
+    o = o->parent_;
   }
-  return o == nullptr ? Impl::g_null : *o;
+  return o == nullptr ? Impl::null_ : *o;
 }
 
 DebuggeeState& DebuggeeState::GetObject(ObjectRef id) {
   DebuggeeState& root = GetRoot();
-  auto it = root.m_objects.find(id);
-  if (it == root.m_objects.end()) {
-    return Impl::g_null;
+  auto it = root.objects_.find(id);
+  if (it == root.objects_.end()) {
+    return Impl::null_;
   }
   return it->second;
 }
@@ -414,7 +414,7 @@ DebuggeeState& DebuggeeState::GetThread(ThreadId threadId) {
       return *thread;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetThread(lua_State* L) {
@@ -423,7 +423,7 @@ DebuggeeState& DebuggeeState::GetThread(lua_State* L) {
       return *thread;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetStackFrame(int level) {
@@ -433,7 +433,7 @@ DebuggeeState& DebuggeeState::GetStackFrame(int level) {
       return *frame;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetGlobals() {
@@ -442,7 +442,7 @@ DebuggeeState& DebuggeeState::GetGlobals() {
       return *child;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetReferences() {
@@ -451,7 +451,7 @@ DebuggeeState& DebuggeeState::GetReferences() {
       return *child;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetUpvalues() {
@@ -460,7 +460,7 @@ DebuggeeState& DebuggeeState::GetUpvalues() {
       return *child;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetLocals() {
@@ -469,7 +469,7 @@ DebuggeeState& DebuggeeState::GetLocals() {
       return *child;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 DebuggeeState& DebuggeeState::GetVariable(const std::string& name) {
@@ -478,11 +478,11 @@ DebuggeeState& DebuggeeState::GetVariable(const std::string& name) {
       return *child;
     }
   }
-  return Impl::g_null;
+  return Impl::null_;
 }
 
 const std::vector<DebuggeeState*>& DebuggeeState::GetChildren() {
-  if (!m_childrenInitialized) {
+  if (!children_initialized_) {
     switch (GetType()) {
       case Type::None:
         break;
@@ -517,43 +517,43 @@ const std::vector<DebuggeeState*>& DebuggeeState::GetChildren() {
       default:
         FAIL_M("invalid type");
     }
-    m_childrenInitialized = true;
+    children_initialized_ = true;
   }
-  return m_children;
+  return children_;
 }
 
 bool DebuggeeState::IsVariable() const {
-  return m_type == Type::NamedVariable || m_type == Type::IndexedVariable ||
-         m_type == Type::MetaTableVariable;
+  return type_ == Type::NamedVariable || type_ == Type::IndexedVariable ||
+         type_ == Type::MetaTableVariable;
 }
 
 bool DebuggeeState::IsScope() const {
-  return m_type == Type::GlobalsScope || m_type == Type::UpvaluesScope ||
-         m_type == Type::LocalsScope;
+  return type_ == Type::GlobalsScope || type_ == Type::UpvaluesScope ||
+         type_ == Type::LocalsScope;
 }
 
 bool DebuggeeState::IsVariablesContainer() const {
-  return IsVariable() || IsScope() || m_type == Type::References;
+  return IsVariable() || IsScope() || type_ == Type::References;
 }
 
 bool DebuggeeState::IsTemporaryVariable() const {
-  return IsVariable() && (m_name.empty() || m_name[0] == '(');
+  return IsVariable() && (name_.empty() || name_[0] == '(');
 }
 
 bool DebuggeeState::PushValue() {
   ASSERT(IsVariable());
-  lua_State* L = m_lua;
+  lua_State* L = lua_;
   int top = lua_gettop(L);
 
   std::vector<DebuggeeState*> pathToRoot;
   for (DebuggeeState* o = this; o != nullptr && o->IsVariable();
-       o = o->m_parent) {
+       o = o->parent_) {
     pathToRoot.push_back(o);
   }
 
   bool ok = false;
   DebuggeeState& first = *pathToRoot.back();
-  switch (first.m_parent->m_type) {
+  switch (first.parent_->type_) {
     case Type::LocalsScope:
       ok = Impl::PushLocalToStack(first);
       break;
@@ -581,14 +581,14 @@ bool DebuggeeState::PushValue() {
     }
 
     DebuggeeState& next = *pathToRoot.back();
-    switch (next.m_type) {
+    switch (next.type_) {
       case Type::NamedVariable:
-        lua_pushstring(L, next.m_name.c_str());
+        lua_pushstring(L, next.name_.c_str());
         lua_rawget(L, -2);
         lua_remove(L, -2);
         break;
       case Type::IndexedVariable:
-        lua_rawgeti(L, -1, next.m_index);
+        lua_rawgeti(L, -1, next.index_);
         lua_remove(L, -2);
         break;
       case Type::MetaTableVariable:
@@ -609,16 +609,16 @@ bool DebuggeeState::PushValue() {
 
 bool DebuggeeState::PopValue() {
   ASSERT(IsVariable());
-  lua_State* L = m_lua;
+  lua_State* L = lua_;
   int top = lua_gettop(L);
 
   bool ok = false;
-  if (m_parent->IsVariable()) {
-    m_parent->PushValue();
-    switch (m_type) {
+  if (parent_->IsVariable()) {
+    parent_->PushValue();
+    switch (type_) {
       case Type::NamedVariable:
         if (lua_type(L, -1) == LUA_TTABLE) {
-          lua_pushstring(L, m_name.c_str());
+          lua_pushstring(L, name_.c_str());
           lua_pushvalue(L, -3);
           lua_rawset(L, -3);
           lua_pop(L, 2);
@@ -629,7 +629,7 @@ bool DebuggeeState::PopValue() {
       case Type::IndexedVariable:
         if (lua_type(L, -1) == LUA_TTABLE) {
           lua_insert(L, -2);
-          lua_rawseti(L, -2, m_index);
+          lua_rawseti(L, -2, index_);
           lua_pop(L, 1);
           ok = true;
         }
@@ -652,7 +652,7 @@ bool DebuggeeState::PopValue() {
       lua_pop(L, 2);
     }
   } else {
-    switch (m_parent->m_type) {
+    switch (parent_->type_) {
       case Type::LocalsScope:
         ok = Impl::PopLocalFromStack(*this);
         break;
@@ -680,45 +680,45 @@ bool DebuggeeState::PopValue() {
 DebuggeeState& DebuggeeState::CreateReferenceFromStack() {
   DebuggeeState& thread = GetThread();
   ASSERT(thread);
-  lua_State* L = thread.m_lua;
+  lua_State* L = thread.lua_;
   int top = lua_gettop(L);
 
   DebuggeeState& references = thread.GetReferences();
   ASSERT(references);
 
-  if (references.m_index == LUA_NOREF) {
+  if (references.index_ == LUA_NOREF) {
     lua_newtable(L);
-    references.m_index = lua_ref(L, true);
+    references.index_ = lua_ref(L, true);
   }
 
-  int index = references.m_children.size() + 1;
+  int index = references.children_.size() + 1;
   Impl::CreateIndexedVariable(references, std::to_string(index), index);
-  DebuggeeState& var = *references.m_children.back();
+  DebuggeeState& var = *references.children_.back();
   bool ok = var.PopValue();
   ASSERT(lua_gettop(L) == top - 1);
-  return ok ? var : Impl::g_null;
+  return ok ? var : Impl::null_;
 }
 
 void DebuggeeState::Invalidate() {
   // Keep threads but delete other children.
   size_t keptItems = 0;
-  for (size_t i = 0; i < m_children.size(); i++) {
-    if (m_children[i]->GetType() != Type::Thread) {
-      delete m_children[i];
-      m_children[i] = nullptr;
+  for (size_t i = 0; i < children_.size(); i++) {
+    if (children_[i]->GetType() != Type::Thread) {
+      delete children_[i];
+      children_[i] = nullptr;
     } else {
-      m_children[i]->Invalidate();
+      children_[i]->Invalidate();
       if (keptItems != i) {
-        std::swap(m_children[keptItems], m_children[i]);
+        std::swap(children_[keptItems], children_[i]);
       }
       keptItems++;
     }
   }
-  m_children.resize(keptItems);
-  m_childrenInitialized = false;
+  children_.resize(keptItems);
+  children_initialized_ = false;
 
   // Reset numbering.
-  m_nextId = 1;
+  next_id_ = 1;
 }
 
 void DebuggeeState::AddThread(ThreadId threadId, lua_State* lua) {
@@ -727,10 +727,10 @@ void DebuggeeState::AddThread(ThreadId threadId, lua_State* lua) {
 
 void DebuggeeState::RemoveThread(ThreadId threadId) {
   DebuggeeState& root = GetRoot();
-  for (auto it = root.m_children.begin(); it != root.m_children.end(); ++it) {
+  for (auto it = root.children_.begin(); it != root.children_.end(); ++it) {
     DebuggeeState* thread = *it;
-    if (thread->m_type == Type::Thread && thread->m_threadId == threadId) {
-      root.m_children.erase(it);
+    if (thread->type_ == Type::Thread && thread->thread_id_ == threadId) {
+      root.children_.erase(it);
       delete thread;
       return;
     }
@@ -738,26 +738,26 @@ void DebuggeeState::RemoveThread(ThreadId threadId) {
 }
 
 DebuggeeState::DebuggeeState(DebuggeeState& parent, Type type)
-    : m_id(parent.GetRoot().m_nextId++),
-      m_type(type),
-      m_parent(&parent),
-      m_lua(parent.m_lua),
-      m_threadId(parent.m_threadId),
-      m_stackLevel(parent.m_stackLevel) {}
+    : id_(parent.GetRoot().next_id_++),
+      type_(type),
+      parent_(&parent),
+      lua_(parent.lua_),
+      thread_id_(parent.thread_id_),
+      stack_level_(parent.stack_level_) {}
 
 DebuggeeState::~DebuggeeState() {
-  if (m_id != 0) {
-    GetRoot().m_objects.erase(m_id);
+  if (id_ != 0) {
+    GetRoot().objects_.erase(id_);
   }
 
-  if (m_type == Type::References && m_index != LUA_NOREF) {
-    lua_unref(m_lua, m_index);
-    m_index = LUA_NOREF;
+  if (type_ == Type::References && index_ != LUA_NOREF) {
+    lua_unref(lua_, index_);
+    index_ = LUA_NOREF;
   }
 
-  while (!m_children.empty()) {
-    delete m_children.back();
-    m_children.pop_back();
+  while (!children_.empty()) {
+    delete children_.back();
+    children_.pop_back();
   }
 }
 

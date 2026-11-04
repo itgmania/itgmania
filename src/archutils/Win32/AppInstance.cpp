@@ -12,23 +12,23 @@ AppInstance::AppInstance() {
     LOG->Warn(
         "GetModuleFileName failed: %s",
         werr_ssprintf(GetLastError(), "GetModuleFileName").c_str());
-    h = nullptr;
+    h_ = nullptr;
     return;
   }
 
-  h = LoadLibraryW(szFullAppPath);
-  if (h == nullptr) {
+  h_ = LoadLibraryW(szFullAppPath);
+  if (h_ == nullptr) {
     LOG->Warn(
         "LoadLibrary failed: %s",
         werr_ssprintf(GetLastError(), "LoadLibrary").c_str());
   }
-  /* h will be nullptr if this fails. Most operations that take an HINSTANCE
+  /* h_ will be nullptr if this fails. Most operations that take an HINSTANCE
    * will still work without one (but may be missing graphics); that's OK. */
 }
 
 AppInstance::~AppInstance() {
-  if (h) {
-    FreeLibrary(h);
+  if (h_) {
+    FreeLibrary(h_);
   }
 }
 

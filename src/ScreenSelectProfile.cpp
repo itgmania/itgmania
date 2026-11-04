@@ -21,9 +21,9 @@ REGISTER_SCREEN_CLASS(ScreenSelectProfile);
 void ScreenSelectProfile::Init() {
   FOREACH_PlayerNumber(p) {
     // no selection initially
-    m_iSelectedProfiles[p] = -1;
+    selected_profiles_[p] = -1;
   }
-  m_TrackingRepeatingInput = GameButton_Invalid;
+  tracking_repeating_input_ = GameButton_Invalid;
   ScreenWithMenuElements::Init();
 }
 
@@ -36,91 +36,91 @@ bool ScreenSelectProfile::Input(const InputEventPlus& input) {
 }
 
 bool ScreenSelectProfile::MenuLeft(const InputEventPlus& input) {
-  PlayerNumber pn = input.pn;
-  if (m_fLockInputSecs > 0) {
+  PlayerNumber pn = input.pn_;
+  if (lock_input_secs_ > 0) {
     return false;
   }
-  if (input.type == IET_RELEASE) {
+  if (input.type_ == IET_RELEASE) {
     return false;
   }
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     /*
     if( !ALLOW_REPEATING_INPUT )
             return false;
     */
-    if (m_TrackingRepeatingInput != input.MenuI) {
+    if (tracking_repeating_input_ != input.menu_i_) {
       return false;
     }
   }
-  m_TrackingRepeatingInput = input.MenuI;
+  tracking_repeating_input_ = input.menu_i_;
   MESSAGEMAN->Broadcast(
       (MessageID)(Message_MenuLeftP1 + Enum::to_integral(pn)));
   return true;
 }
 
 bool ScreenSelectProfile::MenuRight(const InputEventPlus& input) {
-  PlayerNumber pn = input.pn;
-  if (m_fLockInputSecs > 0) {
+  PlayerNumber pn = input.pn_;
+  if (lock_input_secs_ > 0) {
     return false;
   }
-  if (input.type == IET_RELEASE) {
+  if (input.type_ == IET_RELEASE) {
     return false;
   }
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     /*
     if( !ALLOW_REPEATING_INPUT )
             return false;
     */
-    if (m_TrackingRepeatingInput != input.MenuI) {
+    if (tracking_repeating_input_ != input.menu_i_) {
       return false;
     }
   }
-  m_TrackingRepeatingInput = input.MenuI;
+  tracking_repeating_input_ = input.menu_i_;
   MESSAGEMAN->Broadcast(
       (MessageID)(Message_MenuRightP1 + Enum::to_integral(pn)));
   return true;
 }
 
 bool ScreenSelectProfile::MenuUp(const InputEventPlus& input) {
-  PlayerNumber pn = input.pn;
-  if (m_fLockInputSecs > 0) {
+  PlayerNumber pn = input.pn_;
+  if (lock_input_secs_ > 0) {
     return false;
   }
-  if (input.type == IET_RELEASE) {
+  if (input.type_ == IET_RELEASE) {
     return false;
   }
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     /*
     if( !ALLOW_REPEATING_INPUT )
             return false;
     */
-    if (m_TrackingRepeatingInput != input.MenuI) {
+    if (tracking_repeating_input_ != input.menu_i_) {
       return false;
     }
   }
-  m_TrackingRepeatingInput = input.MenuI;
+  tracking_repeating_input_ = input.menu_i_;
   MESSAGEMAN->Broadcast((MessageID)(Message_MenuUpP1 + Enum::to_integral(pn)));
   return true;
 }
 
 bool ScreenSelectProfile::MenuDown(const InputEventPlus& input) {
-  PlayerNumber pn = input.pn;
-  if (m_fLockInputSecs > 0) {
+  PlayerNumber pn = input.pn_;
+  if (lock_input_secs_ > 0) {
     return false;
   }
-  if (input.type == IET_RELEASE) {
+  if (input.type_ == IET_RELEASE) {
     return false;
   }
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     /*
     if( !ALLOW_REPEATING_INPUT )
             return false;
     */
-    if (m_TrackingRepeatingInput != input.MenuI) {
+    if (tracking_repeating_input_ != input.menu_i_) {
       return false;
     }
   }
-  m_TrackingRepeatingInput = input.MenuI;
+  tracking_repeating_input_ = input.menu_i_;
   MESSAGEMAN->Broadcast(
       (MessageID)(Message_MenuDownP1 + Enum::to_integral(pn)));
   return true;
@@ -151,11 +151,11 @@ bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int iProfileIndex) {
     GAMESTATE->UnjoinPlayer(pn);
     MEMCARDMAN->UnlockCard(pn);
     MEMCARDMAN->UnmountCard(pn);
-    m_iSelectedProfiles[pn] = -1;
+    selected_profiles_[pn] = -1;
     return true;
   }
 
-  m_iSelectedProfiles[pn] = iProfileIndex;
+  selected_profiles_[pn] = iProfileIndex;
 
   return true;
 }
@@ -167,8 +167,8 @@ bool ScreenSelectProfile::Finish() {
 
   // if profile indexes are the same for both players
   if (GAMESTATE->GetNumPlayersEnabled() == 2 &&
-      m_iSelectedProfiles[0] == m_iSelectedProfiles[1] &&
-      m_iSelectedProfiles[0] > 0) {
+      selected_profiles_[0] == selected_profiles_[1] &&
+      selected_profiles_[0] > 0) {
     return false;
   }
 
@@ -177,23 +177,23 @@ bool ScreenSelectProfile::Finish() {
 
   FOREACH_PlayerNumber(p) {
     // not all players have made their choices
-    if (GAMESTATE->IsHumanPlayer(p) && (m_iSelectedProfiles[p] == -1)) {
+    if (GAMESTATE->IsHumanPlayer(p) && (selected_profiles_[p] == -1)) {
       iUnselectedProfiles++;
     }
 
     // card not ready
-    if (m_iSelectedProfiles[p] == 0 &&
+    if (selected_profiles_[p] == 0 &&
         MEMCARDMAN->GetCardState(p) != MemoryCardState_Ready) {
       return false;
     }
 
     // profile index too big
-    if (m_iSelectedProfiles[p] > PROFILEMAN->GetNumLocalProfiles()) {
+    if (selected_profiles_[p] > PROFILEMAN->GetNumLocalProfiles()) {
       return false;
     }
 
     // inc used profile count
-    if (m_iSelectedProfiles[p] > 0) {
+    if (selected_profiles_[p] > 0) {
       iUsedLocalProfiles++;
     }
   }
@@ -215,13 +215,13 @@ bool ScreenSelectProfile::Finish() {
 
   // all ok - load profiles and go to next screen
   FOREACH_PlayerNumber(p) {
-    if (m_iSelectedProfiles[p] > 0) {
-      PROFILEMAN->m_sDefaultLocalProfileID[p].Set(
-          PROFILEMAN->GetLocalProfileIDFromIndex(m_iSelectedProfiles[p] - 1));
+    if (selected_profiles_[p] > 0) {
+      PROFILEMAN->default_local_profile_id_[p].Set(
+          PROFILEMAN->GetLocalProfileIDFromIndex(selected_profiles_[p] - 1));
       PROFILEMAN->LoadLocalProfileFromMachine(p);
       GAMESTATE->LoadCurrentSettingsFromProfile(p);
     }
-    if (m_iSelectedProfiles[p] == 0) {
+    if (selected_profiles_[p] == 0) {
       MEMCARDMAN->WaitForCheckingToComplete();
 
       bool bSuccess = false;
@@ -240,7 +240,7 @@ bool ScreenSelectProfile::Finish() {
 
     // If the player picked a profile (>= 0) or chose to play as a guest (-3),
     // broadcast a message
-    if (m_iSelectedProfiles[p] >= 0 || m_iSelectedProfiles[p] == -3) {
+    if (selected_profiles_[p] >= 0 || selected_profiles_[p] == -3) {
       Message msg(MessageIDToString(Message_PlayerProfileSet));
       msg.SetParam("Player", p);
       MESSAGEMAN->Broadcast(msg);

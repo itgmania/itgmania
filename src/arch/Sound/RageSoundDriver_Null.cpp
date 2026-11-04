@@ -13,29 +13,29 @@ const int channels = 2;
 
 void RageSoundDriver_Null::Update() {
   /* "Play" frames. */
-  while (m_iLastCursorPos < GetPosition() + 1024 * 4) {
+  while (last_cursor_pos_ < GetPosition() + 1024 * 4) {
     int16_t buf[256 * channels];
-    this->Mix(buf, 256, m_iLastCursorPos, GetPosition());
-    m_iLastCursorPos += 256;
+    this->Mix(buf, 256, last_cursor_pos_, GetPosition());
+    last_cursor_pos_ += 256;
   }
 
   RageSoundDriver::Update();
 }
 
 int64_t RageSoundDriver_Null::GetPosition() const {
-  return (RageTimer::GetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
+  return (RageTimer::GetTimeSinceStartMicroseconds() * sample_rate_) / 1000000;
 }
 
 RageSoundDriver_Null::RageSoundDriver_Null() {
-  m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+  sample_rate_ = PREFSMAN->sound_preferred_sample_rate_;
   {
-    m_iSampleRate = FALLBACK_SAMPLE_RATE;
+    sample_rate_ = FALLBACK_SAMPLE_RATE;
   }
-  m_iLastCursorPos = GetPosition();
+  last_cursor_pos_ = GetPosition();
   StartDecodeThread();
 }
 
-int RageSoundDriver_Null::GetSampleRate() const { return m_iSampleRate; }
+int RageSoundDriver_Null::GetSampleRate() const { return sample_rate_; }
 
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar

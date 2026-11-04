@@ -42,7 +42,7 @@ LuaDeclareType(ModsLevel);
 template <class T>
 class ModsGroup {
   T m_[NUM_ModsLevel];
-  RageTimer m_Timer;
+  RageTimer timer_;
 
  public:
   void Init() { Call(ModsLevel_Preferred, &T::Init); }
@@ -50,7 +50,7 @@ class ModsGroup {
   void Update(float fDelta) {
     // Don't let the mod approach speed be affected by Tab.
     // TODO: Find a more elegant way of handling this.
-    fDelta = m_Timer.GetDeltaTime();
+    fDelta = timer_.GetDeltaTime();
     m_[ModsLevel_Current].Approach(m_[ModsLevel_Song], fDelta);
   }
 

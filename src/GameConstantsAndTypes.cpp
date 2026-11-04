@@ -38,7 +38,7 @@ LuaFunction(
 LuaXType(RadarCategory);
 
 std::string StepsTypeToString(StepsType st) {
-  std::string s = GameManager::GetStepsTypeInfo(st).szName;  // "dance-single"
+  std::string s = GameManager::GetStepsTypeInfo(st).name_;  // "dance-single"
   /* foo-bar -> Foo_Bar */
   Replace(s, '-', '_');
 
@@ -192,17 +192,17 @@ static const char* TapNoteScoreNames[] = {
     "W3",   "W2",      "W1",        "CheckpointHit",
 };
 struct tns_conversion_helper {
-  std::map<std::string, TapNoteScore> conversion_map;
+  std::map<std::string, TapNoteScore> conversion_map_;
   tns_conversion_helper() {
     FOREACH_ENUM(TapNoteScore, tns) {
-      conversion_map[TapNoteScoreNames[tns]] = tns;
+      conversion_map_[TapNoteScoreNames[tns]] = tns;
     }
     // for backward compatibility
-    conversion_map["Boo"] = TNS_W5;
-    conversion_map["Good"] = TNS_W4;
-    conversion_map["Great"] = TNS_W3;
-    conversion_map["Perfect"] = TNS_W2;
-    conversion_map["Marvelous"] = TNS_W1;
+    conversion_map_["Boo"] = TNS_W5;
+    conversion_map_["Good"] = TNS_W4;
+    conversion_map_["Great"] = TNS_W3;
+    conversion_map_["Perfect"] = TNS_W2;
+    conversion_map_["Marvelous"] = TNS_W1;
   }
 };
 tns_conversion_helper tns_converter;
@@ -210,8 +210,8 @@ XToString(TapNoteScore);
 LuaXType(TapNoteScore);
 TapNoteScore StringToTapNoteScore(const std::string& s) {
   std::map<std::string, TapNoteScore>::iterator tns =
-      tns_converter.conversion_map.find(s);
-  if (tns != tns_converter.conversion_map.end()) {
+      tns_converter.conversion_map_.find(s);
+  if (tns != tns_converter.conversion_map_.end()) {
     return tns->second;
   }
   return TapNoteScore_Invalid;
@@ -313,11 +313,11 @@ LuaFunction(
     PeakComboAwardToLocalizedString(Enum::Check<PeakComboAward>(L, 1)));
 LuaXType(PeakComboAward);
 
-void DisplayBpms::Add(float f) { vfBpms.push_back(f); }
+void DisplayBpms::Add(float f) { bpms_.push_back(f); }
 
 float DisplayBpms::GetMin() const {
   float fMin = FLT_MAX;
-  for (const float& f : vfBpms) {
+  for (const float& f : bpms_) {
     if (f != -1) {
       fMin = std::min(fMin, f);
     }
@@ -333,7 +333,7 @@ float DisplayBpms::GetMax() const { return this->GetMaxWithin(); }
 
 float DisplayBpms::GetMaxWithin(float highest) const {
   float fMax = 0;
-  for (const float& f : vfBpms) {
+  for (const float& f : bpms_) {
     if (f != -1) {
       fMax = std::clamp(std::max(fMax, f), 0.0f, highest);
     }
@@ -347,7 +347,7 @@ bool DisplayBpms::BpmIsConstant() const {
 
 bool DisplayBpms::IsSecret() const {
   return std::any_of(
-      vfBpms.begin(), vfBpms.end(), [](const float& f) { return f == -1; });
+      bpms_.begin(), bpms_.end(), [](const float& f) { return f == -1; });
 }
 
 static const char* StyleTypeNames[] = {

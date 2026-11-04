@@ -10,19 +10,19 @@
 
 REGISTER_ACTOR_CLASS_WITH_NAME(ActorSound, Sound);
 
-void ActorSound::Load(const std::string& sPath) { m_Sound.Load(sPath, true); }
+void ActorSound::Load(const std::string& sPath) { sound_.Load(sPath, true); }
 
-void ActorSound::Play() { m_Sound.Play(m_is_action); }
+void ActorSound::Play() { sound_.Play(is_action_); }
 
-void ActorSound::Pause(bool bPause) { m_Sound.Pause(bPause); }
+void ActorSound::Pause(bool bPause) { sound_.Pause(bPause); }
 
-void ActorSound::Stop() { m_Sound.Stop(); }
+void ActorSound::Stop() { sound_.Stop(); }
 
 void ActorSound::LoadFromNode(const XNode* pNode) {
   RageSoundLoadParams params;
-  pNode->GetAttrValue("SupportPan", params.m_bSupportPan);
-  pNode->GetAttrValue("SupportRateChanging", params.m_bSupportRateChanging);
-  pNode->GetAttrValue("IsAction", m_is_action);
+  pNode->GetAttrValue("SupportPan", params.support_pan_);
+  pNode->GetAttrValue("SupportRateChanging", params.support_rate_changing_);
+  pNode->GetAttrValue("IsAction", is_action_);
 
   bool bPrecache = true;
   pNode->GetAttrValue("Precache", bPrecache);
@@ -31,7 +31,7 @@ void ActorSound::LoadFromNode(const XNode* pNode) {
 
   std::string sFile;
   if (ActorUtil::GetAttrPath(pNode, "File", sFile)) {
-    m_Sound.Load(sFile, bPrecache, &params);
+    sound_.Load(sFile, bPrecache, &params);
   }
 }
 
@@ -62,10 +62,10 @@ class LunaActorSound : public Luna<ActorSound> {
     return 1;
   }
   static int set_is_action(T* p, lua_State* L) {
-    p->m_is_action = BArg(1);
+    p->is_action_ = BArg(1);
     COMMON_RETURN_SELF;
   }
-  DEFINE_METHOD(get_is_action, m_is_action);
+  DEFINE_METHOD(get_is_action, is_action_);
 
   LunaActorSound() {
     ADD_METHOD(load);

@@ -39,32 +39,32 @@ class StepsDisplayList : public ActorFrame {
   ThemeMetric<int> NUM_SHOWN_ITEMS;
   ThemeMetric<apActorCommands> MOVE_COMMAND;
 
-  AutoActor m_Cursors[NUM_PLAYERS];
-  ActorFrame m_CursorFrames[NUM_PLAYERS];  // contains Cursor so that color can
+  AutoActor cursors_[NUM_PLAYERS];
+  ActorFrame cursor_frames_[NUM_PLAYERS];  // contains Cursor so that color can
                                            // fade independent of other tweens
 
   struct Line {
-    StepsDisplay m_Meter;
+    StepsDisplay meter_;
   };
-  std::vector<Line> m_Lines;
+  std::vector<Line> lines_;
 
-  bool m_bShown;
+  bool shown_;
 
   struct Row {
     Row() {
-      m_Steps = nullptr;
-      m_dc = Difficulty_Invalid;
-      m_fY = 0;
-      m_bHidden = false;
+      steps_ = nullptr;
+      dc_ = Difficulty_Invalid;
+      y_ = 0;
+      hidden_ = false;
     }
 
-    const Steps* m_Steps;
-    Difficulty m_dc;
-    float m_fY;
-    bool m_bHidden;  // currently off screen
+    const Steps* steps_;
+    Difficulty dc_;
+    float y_;
+    bool hidden_;  // currently off screen
   };
 
-  std::vector<Row> m_Rows;
+  std::vector<Row> rows_;
 };
 
 #endif

@@ -25,22 +25,22 @@ class RageFileObjInflate : public RageFileObj {
     return -1;
   }
   int SeekInternal(int iOffset);
-  int GetFileSize() const { return m_iUncompressedSize; }
-  int GetFD() { return m_pFile->GetFD(); }
+  int GetFileSize() const { return uncompressed_size_; }
+  int GetFD() { return file_->GetFD(); }
   RageFileObjInflate* Copy() const;
 
-  void DeleteFileWhenFinished() { m_bFileOwned = true; }
+  void DeleteFileWhenFinished() { file_owned_ = true; }
 
  private:
-  int m_iUncompressedSize;
-  RageFileBasic* m_pFile;
-  int m_iFilePos;
-  bool m_bFileOwned;
+  int uncompressed_size_;
+  RageFileBasic* file_;
+  int file_pos_;
+  bool file_owned_;
 
-  z_stream* m_pInflate;
+  z_stream* inflate_;
   enum { INBUFSIZE = 1024 * 4 };
-  char decomp_buf[INBUFSIZE], *decomp_buf_ptr;
-  int decomp_buf_avail;
+  char decomp_buf_[INBUFSIZE], *decomp_buf_ptr_;
+  int decomp_buf_avail_;
 };
 
 class RageFileObjDeflate : public RageFileObj {
@@ -49,8 +49,8 @@ class RageFileObjDeflate : public RageFileObj {
   RageFileObjDeflate(RageFileBasic* pOutput);
   ~RageFileObjDeflate();
 
-  int GetFileSize() const { return m_pFile->GetFileSize(); }
-  void DeleteFileWhenFinished() { m_bFileOwned = true; }
+  int GetFileSize() const { return file_->GetFileSize(); }
+  void DeleteFileWhenFinished() { file_owned_ = true; }
 
  protected:
   int ReadInternal(void* /* pBuffer */, size_t /* iBytes */) {
@@ -60,9 +60,9 @@ class RageFileObjDeflate : public RageFileObj {
   int WriteInternal(const void* pBuffer, size_t iBytes);
   int FlushInternal();
 
-  RageFileBasic* m_pFile;
-  z_stream* m_pDeflate;
-  bool m_bFileOwned;
+  RageFileBasic* file_;
+  z_stream* deflate_;
+  bool file_owned_;
 };
 
 class RageFileObjGzip : public RageFileObjDeflate {
@@ -72,7 +72,7 @@ class RageFileObjGzip : public RageFileObjDeflate {
   int Finish();
 
  private:
-  int m_iDataStartOffset;
+  int data_start_offset_;
 };
 
 RageFileObjInflate* GunzipFile(

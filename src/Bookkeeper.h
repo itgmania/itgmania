@@ -38,16 +38,16 @@ class Bookkeeper {
      * @brief The hour of the date.
      *
      * The value 0 is defined to be midnight. */
-    int m_iHour;
+    int hour_;
     /**
      * @brief The day of the year of the date.
      *
      * The value 0 is defined to be January 1st. */
-    int m_iDayOfYear;
+    int day_of_year_;
     /** @brief The year of the date (e.g., 2005). */
-    int m_iYear;
+    int year_;
     /** @brief Set up a date with initial values. */
-    Date() { m_iHour = m_iDayOfYear = m_iYear = 0; }
+    Date() { hour_ = day_of_year_ = year_ = 0; }
     /**
      * @brief Set up a date based on the given time.
      * @param time the time to turn into a Date. */
@@ -60,7 +60,7 @@ class Bookkeeper {
   int GetNumCoinsInRange(
       std::map<Date, int>::const_iterator begin,
       std::map<Date, int>::const_iterator end) const;
-  std::map<Date, int> m_mapCoinsForHour;
+  std::map<Date, int> map_coins_for_hour_;
 };
 
 extern Bookkeeper*

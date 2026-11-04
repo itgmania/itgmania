@@ -17,35 +17,35 @@ struct lua_State;
  * <a class="el" href="class_steps.html">Step</a> in the entire Trail. */
 struct TrailEntry {
   TrailEntry()
-      : pSong(nullptr),
-        pSteps(nullptr),
-        Modifiers(""),
-        Attacks(),
-        bSecret(false),
-        iLowMeter(-1),
-        iHighMeter(-1),
-        dc(Difficulty_Invalid) {}
+      : song_(nullptr),
+        steps_(nullptr),
+        modifiers_(""),
+        attacks_(),
+        secret_(false),
+        low_meter_(-1),
+        high_meter_(-1),
+        dc_(Difficulty_Invalid) {}
   void GetAttackArray(AttackArray& out) const;
 
   /** @brief The Song involved in the entry. */
-  Song* pSong;
+  Song* song_;
   /** @brief The <a class="el" href="class_steps.html">Step</a> involved in the
    * entry. */
-  Steps* pSteps;
+  Steps* steps_;
   /** @brief The Modifiers applied for the whole Song. */
-  std::string Modifiers;
+  std::string modifiers_;
   /** @brief The Attacks that will take place durring the Song. */
-  AttackArray Attacks;
+  AttackArray attacks_;
   /**
    * @brief Is this Song and its Step meant to be a secret?
    * If so, it will show text such as "???" to indicate that it's a mystery. */
-  bool bSecret;
+  bool secret_;
 
   /* These represent the meter and difficulty used by the course to pick the
    * steps; if you want the real difficulty and meter, look at pSteps. */
-  int iLowMeter;
-  int iHighMeter;
-  Difficulty dc;
+  int low_meter_;
+  int high_meter_;
+  Difficulty dc_;
   bool ContainsTransformOrTurn() const;
 
   // Lua
@@ -55,32 +55,32 @@ struct TrailEntry {
 /** @brief A queue of Songs and Steps that are generated from a Course. */
 class Trail {
  public:
-  StepsType m_StepsType;
-  CourseType m_CourseType;
-  CourseDifficulty m_CourseDifficulty;
-  std::vector<TrailEntry> m_vEntries;
-  int m_iSpecifiedMeter;  // == -1 if no meter specified
-  mutable bool m_bRadarValuesCached;
-  mutable RadarValues m_CachedRadarValues;
+  StepsType steps_type_;
+  CourseType course_type_;
+  CourseDifficulty course_difficulty_;
+  std::vector<TrailEntry> entries_;
+  int specified_meter_;  // == -1 if no meter specified
+  mutable bool radar_values_cached_;
+  mutable RadarValues cached_radar_values_;
 
   /**
    * @brief Set up the Trail with default values.
    *
    * This used to call Init(), which is still available. */
   Trail()
-      : m_StepsType(StepsType_Invalid),
-        m_CourseType(CourseType_Invalid),
-        m_CourseDifficulty(Difficulty_Invalid),
-        m_vEntries(),
-        m_iSpecifiedMeter(-1),
-        m_bRadarValuesCached(false),
-        m_CachedRadarValues() {}
+      : steps_type_(StepsType_Invalid),
+        course_type_(CourseType_Invalid),
+        course_difficulty_(Difficulty_Invalid),
+        entries_(),
+        specified_meter_(-1),
+        radar_values_cached_(false),
+        cached_radar_values_() {}
   void Init() {
-    m_StepsType = StepsType_Invalid;
-    m_CourseDifficulty = Difficulty_Invalid;
-    m_iSpecifiedMeter = -1;
-    m_vEntries.clear();
-    m_bRadarValuesCached = false;
+    steps_type_ = StepsType_Invalid;
+    course_difficulty_ = Difficulty_Invalid;
+    specified_meter_ = -1;
+    entries_.clear();
+    radar_values_cached_ = false;
   }
 
   const RadarValues& GetRadarValues() const;

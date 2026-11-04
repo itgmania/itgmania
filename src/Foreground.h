@@ -20,15 +20,15 @@ class Foreground : public ActorFrame {
 
  protected:
   struct LoadedBGA {
-    Actor* m_bga;
-    float m_fStartBeat;
-    float m_fStopBeat;
-    bool m_bFinished;
+    Actor* bga_;
+    float start_beat_;
+    float stop_beat_;
+    bool finished_;
   };
 
-  std::vector<LoadedBGA> m_BGAnimations;
-  float m_fLastMusicSeconds;
-  const Song* m_pSong;
+  std::vector<LoadedBGA> bg_animations_;
+  float last_music_seconds_;
+  const Song* song_;
 };
 
 #endif

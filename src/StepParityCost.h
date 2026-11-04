@@ -37,10 +37,10 @@ constexpr float SLOW_FOOTSWITCH_IGNORE = 0.4f;
 
 class StepParityCost {
  private:
-  const StageLayout* layout;
+  const StageLayout* layout_;
 
  public:
-  StepParityCost(const StageLayout* _layout) : layout(_layout) {}
+  StepParityCost(const StageLayout* _layout) : layout_(_layout) {}
 
   /// @brief Computes and returns a cost value for the player moving from
   /// initialState to resultState.

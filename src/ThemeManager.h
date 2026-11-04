@@ -48,11 +48,11 @@ class ThemeManager {
       const std::string& sThemeName, const std::string& sLanguage,
       bool bPseudoLocalize, bool bForceThemeReload = false);
   void UpdateLuaGlobals();
-  std::string GetCurThemeName() const { return m_sCurThemeName; };
-  bool IsThemeLoaded() const { return !m_sCurThemeName.empty(); };
-  std::string GetCurLanguage() const { return m_sCurLanguage; };
+  std::string GetCurThemeName() const { return cur_theme_name_; };
+  bool IsThemeLoaded() const { return !cur_theme_name_.empty(); };
+  std::string GetCurLanguage() const { return cur_language_; };
   std::string GetCurThemeDir() const {
-    return GetThemeDirFromName(m_sCurThemeName);
+    return GetThemeDirFromName(cur_theme_name_);
   };
   std::string GetNextSelectableTheme();
   void ReloadMetrics();
@@ -61,9 +61,9 @@ class ThemeManager {
   static void EvaluateString(std::string& sText);
 
   struct PathInfo {
-    std::string sResolvedPath;
-    std::string sMatchingMetricsGroup;
-    std::string sMatchingElement;
+    std::string resolved_path_;
+    std::string matching_metrics_group_;
+    std::string matching_element_;
   };
 
   bool GetPathInfo(
@@ -179,9 +179,9 @@ class ThemeManager {
       const std::string& sLanguage);
   std::string GetDefaultLanguage();
 
-  std::string m_sCurThemeName;
-  std::string m_sCurLanguage;
-  bool m_bPseudoLocalize;
+  std::string cur_theme_name_;
+  std::string cur_language_;
+  bool pseudo_localize_;
 };
 
 extern ThemeManager*

@@ -8,9 +8,9 @@
 #include "TechCountsCategory.h"
 
 struct NoteAnnotation {
-  float beat;
-  std::vector<int8_t> whereTheFeetAre;
-  std::vector<TechCountsCategory> tech;
+  float beat_;
+  std::vector<int8_t> where_the_feet_are_;
+  std::vector<TechCountsCategory> tech_;
 
   static void FromString(
       const std::string& input, std::vector<NoteAnnotation>& out);
@@ -18,8 +18,8 @@ struct NoteAnnotation {
 };
 
 struct NoteAnnotationCache {
-  std::string compressed;
-  mutable std::vector<NoteAnnotation> decompressed;
+  std::string compressed_;
+  mutable std::vector<NoteAnnotation> decompressed_;
   const std::string& GetCompressed() const;
   const std::vector<NoteAnnotation>& GetNoteAnnotations() const;
   void Compress();

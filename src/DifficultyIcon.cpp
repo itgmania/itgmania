@@ -18,8 +18,8 @@
 REGISTER_ACTOR_CLASS(DifficultyIcon);
 
 DifficultyIcon::DifficultyIcon() {
-  m_bBlank = false;
-  m_PlayerNumber = PLAYER_1;
+  blank_ = false;
+  player_number_ = PLAYER_1;
 }
 
 bool DifficultyIcon::Load(std::string sPath) {
@@ -54,7 +54,7 @@ void DifficultyIcon::LoadFromNode(const XNode* pNode) {
   Actor::LoadFromNode(pNode);
 }
 
-void DifficultyIcon::SetPlayer(PlayerNumber pn) { m_PlayerNumber = pn; }
+void DifficultyIcon::SetPlayer(PlayerNumber pn) { player_number_ = pn; }
 
 void DifficultyIcon::SetFromSteps(PlayerNumber pn, const Steps* pSteps) {
   SetPlayer(pn);
@@ -70,23 +70,23 @@ void DifficultyIcon::SetFromTrail(PlayerNumber pn, const Trail* pTrail) {
   if (pTrail == nullptr) {
     Unset();
   } else {
-    SetFromDifficulty(pTrail->m_CourseDifficulty);
+    SetFromDifficulty(pTrail->course_difficulty_);
   }
 }
 
-void DifficultyIcon::Unset() { m_bBlank = true; }
+void DifficultyIcon::Unset() { blank_ = true; }
 
 void DifficultyIcon::SetFromDifficulty(Difficulty dc) {
-  m_bBlank = false;
+  blank_ = false;
   switch (GetNumStates()) {
     case NUM_Difficulty:
       SetState(dc);
       break;
     case NUM_Difficulty * 2:
-      SetState(dc * 2 + m_PlayerNumber);
+      SetState(dc * 2 + player_number_);
       break;
     default:
-      m_bBlank = true;
+      blank_ = true;
       break;
   }
 }

@@ -81,26 +81,26 @@ extern bool s_bNewCourseNeedsName;  // if true, we are working with a Course
 
 class CourseID {
  public:
-  CourseID() : sPath(""), sFullTitle("") { Unset(); }
+  CourseID() : path_(""), full_title_("") { Unset(); }
   void Unset() { FromCourse(nullptr); }
   void FromCourse(const Course* p);
   Course* ToCourse() const;
-  const std::string& GetPath() const { return sPath; }
+  const std::string& GetPath() const { return path_; }
   bool operator<(const CourseID& other) const {
-    if (sPath != other.sPath) {
-      return sPath < other.sPath;
+    if (path_ != other.path_) {
+      return path_ < other.path_;
     }
-    return sFullTitle < other.sFullTitle;
+    return full_title_ < other.full_title_;
   }
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
-  void FromPath(std::string _sPath) { sPath = _sPath; }
+  void FromPath(std::string _sPath) { path_ = _sPath; }
   bool IsValid() const;
 
  private:
-  std::string sPath;
-  std::string sFullTitle;
+  std::string path_;
+  std::string full_title_;
 };
 
 #endif

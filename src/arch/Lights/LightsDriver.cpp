@@ -12,7 +12,7 @@
 #include "arch/Lights/LightsDriver_Export.h"
 #include "arch/Lights/LightsDriver_SystemMessage.h"
 
-DriverList LightsDriver::m_pDriverList;
+DriverList LightsDriver::driver_list_;
 
 void LightsDriver::Create(
     const std::string& sDrivers, std::vector<LightsDriver*>& Add) {
@@ -22,7 +22,7 @@ void LightsDriver::Create(
   split(sDrivers, ",", asDriversToTry, true);
 
   for (const std::string& Driver : asDriversToTry) {
-    RageDriver* pRet = m_pDriverList.Create(Driver);
+    RageDriver* pRet = driver_list_.Create(Driver);
     if (pRet == nullptr) {
       LOG->Trace("Unknown lights driver: %s", Driver.c_str());
       continue;
@@ -43,9 +43,9 @@ void LightsDriver::Create(
 
 void LightsDriver::Reset() {
   LightsState state;
-  ZERO(state.m_bCabinetLights);
-  ZERO(state.m_bGameButtonLights);
-  ZERO(state.m_bCoinCounter);
+  ZERO(state.cabinet_lights_);
+  ZERO(state.game_button_lights_);
+  ZERO(state.coin_counter_);
   Set(&state);
 }
 

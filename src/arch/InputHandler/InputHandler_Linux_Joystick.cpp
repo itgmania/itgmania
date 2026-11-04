@@ -21,7 +21,7 @@
 REGISTER_INPUT_HANDLER_CLASS2(LinuxJoystick, Linux_Joystick);
 
 InputHandler_Linux_Joystick::InputHandler_Linux_Joystick() {
-  m_bDevicesChanged = false;
+  devices_changed_ = false;
 
   LOG->Trace("InputHandler_Linux_Joystick::InputHandler_Linux_Joystick");
 
@@ -30,35 +30,35 @@ InputHandler_Linux_Joystick::InputHandler_Linux_Joystick() {
   }
   LINUXINPUT->InitDriver(this);
 
-  if (!m_files.empty()) {  // LinuxInputManager found at least one valid
-                           // joystick for us
+  if (!files_.empty()) {  // LinuxInputManager found at least one valid
+                          // joystick for us
     StartThread();
   }
 }
 
 InputHandler_Linux_Joystick::~InputHandler_Linux_Joystick() {
-  if (m_InputThread.IsCreated()) {
+  if (input_thread_.IsCreated()) {
     StopThread();
   }
 
-  for (auto& f : m_files) {
-    if (f.fd != -1) {
-      close(f.fd);
+  for (auto& f : files_) {
+    if (f.fd_ != -1) {
+      close(f.fd_);
     }
   }
-  m_files.clear();
+  files_.clear();
 }
 
 void InputHandler_Linux_Joystick::StartThread() {
-  m_bShutdown = false;
-  m_InputThread.SetName("Joystick thread");
-  m_InputThread.Create(InputThread_Start, this);
+  shutdown_ = false;
+  input_thread_.SetName("Joystick thread");
+  input_thread_.Create(InputThread_Start, this);
 }
 
 void InputHandler_Linux_Joystick::StopThread() {
-  m_bShutdown = true;
+  shutdown_ = true;
   LOG->Trace("Shutting down joystick thread ...");
-  m_InputThread.Wait();
+  input_thread_.Wait();
   LOG->Trace("Joystick thread shut down.");
 }
 
@@ -78,28 +78,28 @@ bool InputHandler_Linux_Joystick::TryDevice(std::string dev) {
 
   bool ret = false;
   bool hotplug = false;
-  if (m_InputThread.IsCreated()) {
+  if (input_thread_.IsCreated()) {
     StopThread();
     hotplug = true;
   }
   /* Thread is stopped! DO NOT RETURN */
   {
     FileDescriptor f;
-    f.fd = open(dev.c_str(), O_RDONLY);
-    if (f.fd != -1) {
+    f.fd_ = open(dev.c_str(), O_RDONLY);
+    if (f.fd_ != -1) {
       char szName[1024];
       ZERO(szName);
-      if (ioctl(f.fd, JSIOCGNAME(sizeof(szName)), szName) < 0) {
-        f.description = ssprintf("Unknown joystick at %s", dev.c_str());
+      if (ioctl(f.fd_, JSIOCGNAME(sizeof(szName)), szName) < 0) {
+        f.description_ = ssprintf("Unknown joystick at %s", dev.c_str());
       } else {
-        f.description = szName;
+        f.description_ = szName;
       }
 
       LOG->Info("LinuxJoystick: Opened %s", dev.c_str());
-      m_bDevicesChanged = true;
+      devices_changed_ = true;
       ret = true;
 
-      m_files.push_back(f);
+      files_.push_back(f);
     } else {
       LOG->Warn(
           "LinuxJoystick: Failed to open %s: %s", dev.c_str(), strerror(errno));
@@ -118,18 +118,18 @@ int InputHandler_Linux_Joystick::InputThread_Start(void* p) {
 }
 
 void InputHandler_Linux_Joystick::InputThread() {
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     fd_set fdset;
     FD_ZERO(&fdset);
     int max_fd = -1;
 
-    for (size_t i = 0; i < m_files.size(); ++i) {
-      if (m_files[i].fd < 0) {
+    for (size_t i = 0; i < files_.size(); ++i) {
+      if (files_[i].fd_ < 0) {
         continue;
       }
 
-      FD_SET(m_files[i].fd, &fdset);
-      max_fd = std::max(max_fd, m_files[i].fd);
+      FD_SET(files_[i].fd_, &fdset);
+      max_fd = std::max(max_fd, files_[i].fd_);
     }
 
     if (max_fd == -1) {
@@ -145,24 +145,24 @@ void InputHandler_Linux_Joystick::InputThread() {
     // CLOCK_MONOTONIC and can't be anchored from userspace. Use poll time.
     RageTimer now;
 
-    for (size_t i = 0; i < m_files.size(); ++i) {
-      if (m_files[i].fd == -1) {
+    for (size_t i = 0; i < files_.size(); ++i) {
+      if (files_[i].fd_ == -1) {
         continue;
       }
 
-      if (!FD_ISSET(m_files[i].fd, &fdset)) {
+      if (!FD_ISSET(files_[i].fd_, &fdset)) {
         continue;
       }
 
       js_event event;
-      int ret = read(m_files[i].fd, &event, sizeof(event));
+      int ret = read(files_[i].fd_, &event, sizeof(event));
 
       if (ret == -1) {
         LOG->Warn(
             "Error reading from joystick %zu: %s; disabled", i,
             strerror(errno));
-        close(m_files[i].fd);
-        m_files[i].fd = -1;
+        close(files_[i].fd_);
+        files_[i].fd_ = -1;
         continue;
       }
 
@@ -170,8 +170,8 @@ void InputHandler_Linux_Joystick::InputThread() {
         LOG->Warn(
             "Unexpected packet (size %i != %i) from joystick %zu; disabled",
             ret, (int)sizeof(event), i);
-        close(m_files[i].fd);
-        m_files[i].fd = -1;
+        close(files_[i].fd_);
+        files_[i].fd_ = -1;
         continue;
       }
 
@@ -204,8 +204,8 @@ void InputHandler_Linux_Joystick::InputThread() {
           LOG->Warn(
               "Unexpected packet (type %i) from joystick %zu; disabled",
               event.type, i);
-          close(m_files[i].fd);
-          m_files[i].fd = -1;
+          close(files_[i].fd_);
+          files_[i].fd_ = -1;
           continue;
       }
     }
@@ -220,19 +220,19 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions(
   // won't be started as part of the constructor. This isn't called until all
   // InputHandlers have been constructed, and is (hopefully) in the same thread
   // as TryDevice... so doublecheck our thread now.
-  if (m_files.empty() && !m_InputThread.IsCreated()) {
+  if (files_.empty() && !input_thread_.IsCreated()) {
     StartThread();
   }
 
-  for (size_t i = 0; i < m_files.size(); ++i) {
-    if (m_files[i].fd < 0) {
+  for (size_t i = 0; i < files_.size(); ++i) {
+    if (files_[i].fd_ < 0) {
       continue;
     }
 
     vDevicesOut.push_back(
-        InputDeviceInfo(InputDevice(DEVICE_JOY1 + i), m_files[i].description));
+        InputDeviceInfo(InputDevice(DEVICE_JOY1 + i), files_[i].description_));
   }
-  m_bDevicesChanged = false;
+  devices_changed_ = false;
 }
 
 /*

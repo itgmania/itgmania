@@ -26,31 +26,31 @@ class StreamDisplay : public ActorFrame {
   void Load(const std::string& sMetricsGroup);
 
   void SetPercent(float fPercent);
-  void SetPassingAlpha(float fPassingAlpha) { m_fPassingAlpha = fPassingAlpha; }
-  void SetHotAlpha(float fHotAlpha) { m_fHotAlpha = fHotAlpha; }
+  void SetPassingAlpha(float fPassingAlpha) { passing_alpha_ = fPassingAlpha; }
+  void SetHotAlpha(float fHotAlpha) { hot_alpha_ = fHotAlpha; }
 
-  float GetPercent() { return m_fPercent; }
+  float GetPercent() { return percent_; }
 
  private:
-  std::vector<Sprite*> m_vpSprPill[NUM_StreamType];
+  std::vector<Sprite*> spr_pill_[NUM_StreamType];
 
   LuaExpressionTransform
-      m_transformPill;  // params: self,offsetFromCenter,itemIndex,numItems
+      transform_pill_;  // params: self,offsetFromCenter,itemIndex,numItems
   ThemeMetric<float> VELOCITY_MULTIPLIER;
   ThemeMetric<float> VELOCITY_MIN;
   ThemeMetric<float> VELOCITY_MAX;
   ThemeMetric<float> SPRING_MULTIPLIER;
   ThemeMetric<float> VISCOSITY_MULTIPLIER;
 
-  float m_fPercent;  // percent filled
+  float percent_;  // percent filled
   float
-      m_fTrailingPercent;  // this approaches m_fPercent, use this value to draw
-  float m_fVelocity;       // velocity of m_fTrailingPercent
+      trailing_percent_;  // this approaches m_fPercent, use this value to draw
+  float velocity_;        // velocity of m_fTrailingPercent
 
-  float m_fPassingAlpha;
-  float m_fHotAlpha;
+  float passing_alpha_;
+  float hot_alpha_;
 
-  bool m_bAlwaysBounce;
+  bool always_bounce_;
 };
 
 #endif

@@ -29,7 +29,7 @@ class CombinedLifeMeterShared : public CombinedLifeMeter {
   LifeMeter* GetInnerLifeMeter() const override;
 
  private:
-  LifeMeter* m_pLifeMeter;
+  LifeMeter* life_meter_;
 };
 
 #endif

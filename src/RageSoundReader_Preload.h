@@ -18,10 +18,10 @@ class RageSoundReader_Preload : public RageSoundReader {
   int GetLength_Fast() const;
   int SetPosition(int iFrame);
   int Read(float* pBuffer, int iLength);
-  int GetSampleRate() const { return m_iSampleRate; }
-  unsigned GetNumChannels() const { return m_iChannels; }
+  int GetSampleRate() const { return sample_rate_; }
+  unsigned GetNumChannels() const { return channels_; }
   int GetNextSourceFrame() const;
-  float GetStreamToSourceRatio() const { return m_fRate; }
+  float GetStreamToSourceRatio() const { return rate_; }
   std::string GetError() const { return ""; }
 
   /* Return the total number of copies of this sound.  (If 1 is returned,
@@ -35,17 +35,17 @@ class RageSoundReader_Preload : public RageSoundReader {
   static bool PreloadSound(RageSoundReader*& pSound);
 
  private:
-  AutoPtrCopyOnWrite<std::string> m_Buffer;
-  bool m_bBufferIs16Bit;
+  AutoPtrCopyOnWrite<std::string> buffer_;
+  bool buffer_is16_bit_;
 
   /* Bytes: */
-  int m_iPosition;
+  int position_;
 
   int GetTotalFrames() const;
 
-  int m_iSampleRate;
-  unsigned m_iChannels;
-  float m_fRate;
+  int sample_rate_;
+  unsigned channels_;
+  float rate_;
 };
 
 #endif

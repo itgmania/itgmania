@@ -18,11 +18,11 @@ class RageWorkerThread {
    * per-request timeout; you have 10 seconds to do your work, at which point
    * all requests time out until SetTimeout is called again. */
   void SetTimeout(float fSeconds);
-  bool TimeoutEnabled() const { return !m_Timeout.IsZero(); }
+  bool TimeoutEnabled() const { return !timeout_.IsZero(); }
 
   /* Return true if the last operation has timed out and has not yet recovered.
    */
-  bool IsTimedOut() const { return m_bTimedOut; }
+  bool IsTimedOut() const { return timed_out_; }
 
   /* Pause until the next heartbeat completes.  Returns false if timed out. This
    * triggers no actions, so no cleanup is run and IsTimedOut() is not affected.
@@ -50,8 +50,8 @@ class RageWorkerThread {
    * DoHeartbeat may safely time out; if DoRequest tries to start a request in
    * the main thread, it'll simply time out. */
   void SetHeartbeat(float fSeconds) {
-    m_fHeartbeat = fSeconds;
-    m_NextHeartbeat.Touch();
+    heartbeat_ = fSeconds;
+    next_heartbeat_.Touch();
   }
   virtual void DoHeartbeat() {}
 
@@ -63,17 +63,17 @@ class RageWorkerThread {
   void WorkerMain();
 
   enum { REQ_SHUTDOWN = -1, REQ_NONE = -2 };
-  RageThread m_WorkerThread;
-  RageEvent m_WorkerEvent;
-  std::string m_sName;
-  int m_iRequest;
-  bool m_bRequestFinished;
-  bool m_bTimedOut;
-  RageTimer m_Timeout;
+  RageThread worker_thread_;
+  RageEvent worker_event_;
+  std::string name_;
+  int request_;
+  bool request_finished_;
+  bool timed_out_;
+  RageTimer timeout_;
 
-  float m_fHeartbeat;
-  RageTimer m_NextHeartbeat;
-  RageEvent m_HeartbeatEvent;
+  float heartbeat_;
+  RageTimer next_heartbeat_;
+  RageEvent heartbeat_event_;
 };
 
 #endif

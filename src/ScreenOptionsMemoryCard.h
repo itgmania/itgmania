@@ -34,9 +34,9 @@ class ScreenOptionsMemoryCard : public ScreenOptions {
   void SelectRowWithMemoryCard(const std::string& sOsMountPoint);
 
   bool UpdateCurrentUsbStorageDevices();
-  std::vector<UsbStorageDevice> m_CurrentUsbStorageDevices;
+  std::vector<UsbStorageDevice> current_usb_storage_devices_;
 
-  BitmapText m_textOsMountDir;
+  BitmapText text_os_mount_dir_;
 };
 
 #endif

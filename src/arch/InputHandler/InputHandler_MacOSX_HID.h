@@ -15,16 +15,16 @@ class HIDDevice;
 
 class InputHandler_MacOSX_HID : public InputHandler {
  private:
-  std::vector<HIDDevice*> m_vDevices;
-  RageThread m_InputThread;
-  RageSemaphore m_Sem;
-  CFRunLoopRef m_LoopRef;
-  CFRunLoopSourceRef m_SourceRef;
-  std::vector<io_iterator_t> m_vIters;  // We don't really care about these but
-                                        // they need to stick around
-  IONotificationPortRef m_NotifyPort;
-  RageMutex m_ChangeLock;
-  bool m_bChanged;
+  std::vector<HIDDevice*> devices_;
+  RageThread input_thread_;
+  RageSemaphore sem_;
+  CFRunLoopRef loop_ref_;
+  CFRunLoopSourceRef source_ref_;
+  std::vector<io_iterator_t> iters_;  // We don't really care about these but
+                                      // they need to stick around
+  IONotificationPortRef notify_port_;
+  RageMutex change_lock_;
+  bool changed_;
 
   static int Run(void* data);
   static void DeviceAdded(void* refCon, io_iterator_t iter);
@@ -38,8 +38,8 @@ class InputHandler_MacOSX_HID : public InputHandler {
   ~InputHandler_MacOSX_HID();
 
   bool DevicesChanged() {
-    LockMut(m_ChangeLock);
-    return m_bChanged;
+    LockMut(change_lock_);
+    return changed_;
   }
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
   std::string GetDeviceSpecificInputString(const DeviceInput& di);

@@ -20,18 +20,18 @@
 
 REGISTER_ACTOR_CLASS(WorkoutGraph);
 
-WorkoutGraph::WorkoutGraph() { m_iSongsChoppedOffAtBeginning = 0; }
+WorkoutGraph::WorkoutGraph() { songs_chopped_off_at_beginning_ = 0; }
 
 WorkoutGraph::~WorkoutGraph() {
-  for (Sprite* s : m_vpBars) {
+  for (Sprite* s : bars_) {
     delete s;
   }
-  m_vpBars.clear();
+  bars_.clear();
 }
 
 void WorkoutGraph::Load() {
-  m_sprEmpty.Load(THEME->GetPathG("WorkoutGraph", "empty"));
-  this->AddChild(&m_sprEmpty);
+  spr_empty_.Load(THEME->GetPathG("WorkoutGraph", "empty"));
+  this->AddChild(&spr_empty_);
 }
 
 void WorkoutGraph::LoadFromNode(const XNode* pNode) {
@@ -43,21 +43,21 @@ void WorkoutGraph::LoadFromNode(const XNode* pNode) {
 void WorkoutGraph::SetFromCurrentWorkout() { SetInternal(0); }
 
 void WorkoutGraph::SetInternal(int iMinSongsPlayed) {
-  for (Sprite* s : m_vpBars) {
+  for (Sprite* s : bars_) {
     this->RemoveChild(s);
     delete s;
   }
-  m_vpBars.clear();
+  bars_.clear();
 
-  Trail* pTrail = GAMESTATE->m_pCurTrail[PLAYER_1];
+  Trail* pTrail = GAMESTATE->cur_trail_[PLAYER_1];
   if (pTrail == nullptr) {
     return;
   }
 
   std::vector<int> viMeters;
-  for (const TrailEntry& e : pTrail->m_vEntries) {
-    ASSERT(e.pSteps != nullptr);
-    viMeters.push_back(e.pSteps->GetMeter());
+  for (const TrailEntry& e : pTrail->entries_) {
+    ASSERT(e.steps_ != nullptr);
+    viMeters.push_back(e.steps_->GetMeter());
   }
 
   int iBlocksWide = viMeters.size();
@@ -74,11 +74,11 @@ void WorkoutGraph::SetInternal(int iMinSongsPlayed) {
   float fBlockSize =
       std::min(fTotalWidth / iBlocksWide, fTotalHeight / iBlocksHigh);
 
-  m_sprEmpty.SetVertAlign(align_bottom);
-  m_sprEmpty.SetCustomImageRect(
+  spr_empty_.SetVertAlign(align_bottom);
+  spr_empty_.SetCustomImageRect(
       RectF(0, 0, (float)iBlocksWide, (float)iBlocksHigh));
-  m_sprEmpty.ZoomToWidth(iBlocksWide * fBlockSize);
-  m_sprEmpty.ZoomToHeight(iBlocksHigh * fBlockSize);
+  spr_empty_.ZoomToWidth(iBlocksWide * fBlockSize);
+  spr_empty_.ZoomToHeight(iBlocksHigh * fBlockSize);
 
   int index = 0;
   for (const int& meter : viMeters) {
@@ -92,7 +92,7 @@ void WorkoutGraph::SetInternal(int iMinSongsPlayed) {
         RectF(0, (float)iMetersToCover / (float)iBlocksHigh, 1, 1));
     p->ZoomToHeight(meter * fBlockSize);
     p->SetX(fOffsetFromCenter * fBlockSize);
-    m_vpBars.push_back(p);
+    bars_.push_back(p);
     this->AddChild(p);
   }
 }
@@ -100,14 +100,14 @@ void WorkoutGraph::SetInternal(int iMinSongsPlayed) {
 void WorkoutGraph::SetFromGameStateAndHighlightSong(int iSongIndex) {
   SetInternal(iSongIndex + 1);
 
-  for (Sprite* s : m_vpBars) {
+  for (Sprite* s : bars_) {
     s->StopEffect();
   }
 
-  int iBarIndex = iSongIndex - m_iSongsChoppedOffAtBeginning;
+  int iBarIndex = iSongIndex - songs_chopped_off_at_beginning_;
 
-  if (iBarIndex < (int)m_vpBars.size()) {
-    m_vpBars[iBarIndex]->SetEffectGlowBlink(
+  if (iBarIndex < (int)bars_.size()) {
+    bars_[iBarIndex]->SetEffectGlowBlink(
         0.3f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
   }
 }

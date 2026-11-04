@@ -30,13 +30,13 @@ class OptionRowType {
   void Load(const std::string& sMetricsGroup, Actor* pParent);
 
  private:
-  std::string m_sMetricsGroup;
+  std::string metrics_group_;
 
-  BitmapText m_textItem;
-  OptionsCursor m_Underline[NUM_PLAYERS];
-  AutoActor m_sprFrame;
-  BitmapText m_textTitle;
-  ModIcon m_ModIcon;
+  BitmapText text_item_;
+  OptionsCursor underline_[NUM_PLAYERS];
+  AutoActor spr_frame_;
+  BitmapText text_title_;
+  ModIcon mod_icon_;
 
   ThemeMetric<float> ITEMS_START_X;
   ThemeMetric<float> ITEMS_END_X;
@@ -83,7 +83,7 @@ class OptionRow : public ActorFrame {
   void PositionUnderlines(PlayerNumber pn);
   void PositionIcons(PlayerNumber pn);
   void UpdateText(PlayerNumber pn);
-  bool GetRowHasFocus(PlayerNumber pn) const { return m_bRowHasFocus[pn]; }
+  bool GetRowHasFocus(PlayerNumber pn) const { return row_has_focus_[pn]; }
   void SetRowHasFocus(PlayerNumber pn, bool bRowHasFocus);
   void UpdateEnabledDisabled();
 
@@ -105,8 +105,8 @@ class OptionRow : public ActorFrame {
 
   const OptionRowDefinition& GetRowDef() const;
   OptionRowDefinition& GetRowDef();
-  RowType GetRowType() const { return m_RowType; }
-  const OptionRowHandler* GetHandler() const { return m_pHand; }
+  RowType GetRowType() const { return row_type_; }
+  const OptionRowHandler* GetHandler() const { return hand_; }
 
   const BitmapText& GetTextItemForRow(PlayerNumber pn, int iChoiceOnRow) const;
   void GetWidthXY(
@@ -115,8 +115,8 @@ class OptionRow : public ActorFrame {
 
   // ScreenOptions calls positions m_FrameDestination, then m_Frame tween to
   // that same TweenState.
-  unsigned GetTextItemsSize() const { return m_textItems.size(); }
-  bool GetFirstItemGoesDown() const { return m_bFirstItemGoesDown; }
+  unsigned GetTextItemsSize() const { return text_items_.size(); }
+  bool GetFirstItemGoesDown() const { return first_item_goes_down_; }
   bool IsShowOneValueWithGoDown() const;
   bool GoToFirstOnStart();
 
@@ -131,29 +131,29 @@ class OptionRow : public ActorFrame {
   void PushSelf(lua_State* L);
 
  protected:
-  const OptionRowType* m_pParentType;
-  RowType m_RowType;
-  OptionRowHandler* m_pHand;
+  const OptionRowType* parent_type_;
+  RowType row_type_;
+  OptionRowHandler* hand_;
 
-  ActorFrame m_Frame;
+  ActorFrame frame_;
 
   std::vector<BitmapText*>
-      m_textItems;  // size depends on m_bRowIsLong and which players are joined
+      text_items_;  // size depends on m_bRowIsLong and which players are joined
   std::vector<OptionsCursor*>
-      m_Underline[NUM_PLAYERS];  // size depends on m_bRowIsLong and which
-                                 // players are joined
+      underline_[NUM_PLAYERS];  // size depends on m_bRowIsLong and which
+                                // players are joined
 
-  Actor* m_sprFrame;
-  BitmapText* m_textTitle;
-  ModIcon* m_ModIcons[NUM_PLAYERS];
+  Actor* spr_frame_;
+  BitmapText* text_title_;
+  ModIcon* mod_icons_[NUM_PLAYERS];
 
-  bool m_bFirstItemGoesDown;
-  std::array<bool, NUM_PLAYERS> m_bRowHasFocus;
+  bool first_item_goes_down_;
+  std::array<bool, NUM_PLAYERS> row_has_focus_;
 
-  int m_iChoiceInRowWithFocus[NUM_PLAYERS];  // this choice has input focus
+  int choice_in_row_with_focus_[NUM_PLAYERS];  // this choice has input focus
   // Only one will true at a time if m_pHand->m_Def.bMultiSelect
   std::vector<bool>
-      m_vbSelected[NUM_PLAYERS];  // size = m_pHand->m_Def.choices.size()
+      selected_[NUM_PLAYERS];  // size = m_pHand->m_Def.choices.size()
 
  public:
   void SetDestination(Actor::TweenState& ts, bool bTween);

@@ -8,19 +8,19 @@
 
 void StyleID::FromStyle(const Style* p) {
   if (p) {
-    sGame = GAMEMAN->GetGameForStyle(p)->m_szName;
-    sStyle = p->m_szName;
+    game_ = GAMEMAN->GetGameForStyle(p)->name_;
+    style_ = p->name_;
   } else {
-    sGame = "";
-    sStyle = "";
+    game_ = "";
+    style_ = "";
   }
 }
 
 XNode* StyleID::CreateNode() const {
   XNode* pNode = new XNode("Style");
 
-  pNode->AppendAttr("Game", sGame);
-  pNode->AppendAttr("Style", sStyle);
+  pNode->AppendAttr("Game", game_);
+  pNode->AppendAttr("Style", style_);
 
   return pNode;
 }
@@ -29,21 +29,21 @@ void StyleID::LoadFromNode(const XNode* pNode) {
   Unset();
   ASSERT(pNode->GetName() == "Style");
 
-  sGame = "";
-  pNode->GetAttrValue("Game", sGame);
+  game_ = "";
+  pNode->GetAttrValue("Game", game_);
 
-  sStyle = "";
-  pNode->GetAttrValue("Style", sStyle);
+  style_ = "";
+  pNode->GetAttrValue("Style", style_);
 }
 
-bool StyleID::IsValid() const { return !sGame.empty() && !sStyle.empty(); }
+bool StyleID::IsValid() const { return !game_.empty() && !style_.empty(); }
 
 bool StyleID::operator<(const StyleID& rhs) const {
 #define COMP(a)               \
   if (a < rhs.a) return true; \
   if (a > rhs.a) return false;
-  COMP(sGame);
-  COMP(sStyle);
+  COMP(game_);
+  COMP(style_);
 #undef COMP
   return false;
 }

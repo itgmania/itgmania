@@ -41,11 +41,11 @@ enum CourseOverviewRow {
 };
 
 static bool CurrentCourseIsSaved() {
-  Course* pCourse = GAMESTATE->m_pCurCourse;
+  Course* pCourse = GAMESTATE->cur_course_;
   if (pCourse == nullptr) {
     return false;
   }
-  return !pCourse->m_sPath.empty();
+  return !pCourse->path_.empty();
 }
 
 static const MenuRowDef g_MenuRows[] = {
@@ -84,15 +84,15 @@ AutoScreenMessage(SM_BackFromRename);
 AutoScreenMessage(SM_BackFromDelete);
 
 void ScreenOptionsCourseOverview::Init() {
-  if (PREFSMAN->m_iArcadeOptionsNavigation) {
+  if (PREFSMAN->arcade_options_navigation_) {
     SetNavigation(NAV_THREE_KEY_MENU);
   }
 
   ScreenOptions::Init();
 
-  m_soundSave.Load(THEME->GetPathS(m_sName, "Save"));
-  PLAY_SCREEN.Load(m_sName, "PlayScreen");
-  EDIT_SCREEN.Load(m_sName, "EditScreen");
+  sound_save_.Load(THEME->GetPathS(name_, "Save"));
+  PLAY_SCREEN.Load(name_, "PlayScreen");
+  EDIT_SCREEN.Load(name_, "EditScreen");
 }
 
 void ScreenOptionsCourseOverview::BeginScreen() {
@@ -108,7 +108,7 @@ void ScreenOptionsCourseOverview::BeginScreen() {
   ScreenOptions::BeginScreen();
 
   // clear the current song in case it's set when we back out from gameplay
-  GAMESTATE->m_pCurSong.Set(nullptr);
+  GAMESTATE->cur_song_.Set(nullptr);
 }
 
 ScreenOptionsCourseOverview::~ScreenOptionsCourseOverview() {}
@@ -120,11 +120,11 @@ void ScreenOptionsCourseOverview::ImportOptions(
 
 void ScreenOptionsCourseOverview::ExportOptions(
     int iRow, const std::vector<PlayerNumber>& vpns) {
-  OptionRow& row = *m_pRows[iRow];
+  OptionRow& row = *rows_[iRow];
   int iIndex = row.GetOneSharedSelection(true);
   std::string sValue;
   if (iIndex >= 0) {
-    sValue = row.GetRowDef().m_vsChoices[iIndex];
+    sValue = row.GetRowDef().choices_[iIndex];
   }
 }
 
@@ -132,9 +132,9 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_GoToPrevScreen) {
     // If we're pointing to an unsaved course, it will be inaccessible once
     // we're back on ScreenOptionsManageCourses.
-    GAMESTATE->m_pCurCourse.Set(nullptr);
+    GAMESTATE->cur_course_.Set(nullptr);
   } else if (SM == SM_GoToNextScreen) {
-    int iRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
+    int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
     switch (iRow) {
       case CourseOverviewRow_Play:
         EditCourseUtil::PrepareForPlay();
@@ -145,43 +145,43 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
         return;  // handled
     }
   } else if (SM == SM_BackFromEnterName) {
-    if (!ScreenTextEntry::s_bCancelledLast) {
+    if (!ScreenTextEntry::cancelled_last_) {
       ASSERT(
-          ScreenTextEntry::s_sLastAnswer !=
+          ScreenTextEntry::last_answer_ !=
           "");  // validate should have assured this
 
       if (EditCourseUtil::RenameAndSave(
-              GAMESTATE->m_pCurCourse, ScreenTextEntry::s_sLastAnswer)) {
-        m_soundSave.Play(true);
+              GAMESTATE->cur_course_, ScreenTextEntry::last_answer_)) {
+        sound_save_.Play(true);
         SCREENMAN->SystemMessage(COURSE_SAVED);
       }
     }
   } else if (SM == SM_BackFromRename) {
-    if (!ScreenTextEntry::s_bCancelledLast) {
+    if (!ScreenTextEntry::cancelled_last_) {
       ASSERT(
-          ScreenTextEntry::s_sLastAnswer !=
+          ScreenTextEntry::last_answer_ !=
           "");  // validate should have assured this
 
       if (!EditCourseUtil::RenameAndSave(
-              GAMESTATE->m_pCurCourse, ScreenTextEntry::s_sLastAnswer)) {
+              GAMESTATE->cur_course_, ScreenTextEntry::last_answer_)) {
         ScreenPrompt::Prompt(SM_None, ERROR_RENAMING);
         return;
       }
 
-      SCREENMAN->SetNewScreen(this->m_sName);  // reload
+      SCREENMAN->SetNewScreen(this->name_);  // reload
     }
   } else if (SM == SM_BackFromDelete) {
-    if (ScreenPrompt::s_LastAnswer == ANSWER_YES) {
-      if (!EditCourseUtil::RemoveAndDeleteFile(GAMESTATE->m_pCurCourse)) {
+    if (ScreenPrompt::last_answer_ == ANSWER_YES) {
+      if (!EditCourseUtil::RemoveAndDeleteFile(GAMESTATE->cur_course_)) {
         ScreenPrompt::Prompt(
             SM_None, ssprintf(
                          ERROR_DELETING_FILE.GetValue().c_str(),
-                         GAMESTATE->m_pCurCourse->m_sPath.c_str()));
+                         GAMESTATE->cur_course_->path_.c_str()));
         return;
       }
 
-      GAMESTATE->m_pCurCourse.Set(nullptr);
-      GAMESTATE->m_pCurTrail[PLAYER_1].Set(nullptr);
+      GAMESTATE->cur_course_.Set(nullptr);
+      GAMESTATE->cur_trail_[PLAYER_1].Set(nullptr);
 
       /* Our course is gone, so back out. */
       StartTransitioningScreen(SM_GoToPrevScreen);
@@ -202,7 +202,7 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
     return;
   }
 
-  int iRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
+  int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
   switch (iRow) {
     case CourseOverviewRow_Play:
     case CourseOverviewRow_Edit:
@@ -210,13 +210,13 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
       this->BeginFadingOut();
       return;  // handled
     case CourseOverviewRow_Shuffle: {
-      Course* pCourse = GAMESTATE->m_pCurCourse;
+      Course* pCourse = GAMESTATE->cur_course_;
       std::shuffle(
-          pCourse->m_vEntries.begin(), pCourse->m_vEntries.end(),
+          pCourse->entries_.begin(), pCourse->entries_.end(),
           g_RandomNumberGenerator);
       Trail* pTrail = pCourse->GetTrailForceRegenCache(
-          GAMESTATE->GetCurrentStyle(input.pn)->m_StepsType);
-      GAMESTATE->m_pCurTrail[PLAYER_1].Set(pTrail);
+          GAMESTATE->GetCurrentStyle(input.pn_)->steps_type_);
+      GAMESTATE->cur_trail_[PLAYER_1].Set(pTrail);
       SCREENMAN->PlayStartSound();
       MESSAGEMAN->Broadcast("CurrentCourseChanged");
     }
@@ -224,7 +224,7 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
     case CourseOverviewRow_Rename:
       ScreenTextEntry::TextEntry(
           SM_BackFromRename, ENTER_COURSE_NAME,
-          GAMESTATE->m_pCurCourse->GetDisplayFullTitle(),
+          GAMESTATE->cur_course_->GetDisplayFullTitle(),
           EditCourseUtil::MAX_NAME_LENGTH,
           EditCourseUtil::ValidateEditCourseName);
       break;
@@ -240,12 +240,12 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
       if (bPromptForName) {
         ScreenTextEntry::TextEntry(
             SM_BackFromEnterName, ENTER_COURSE_NAME,
-            GAMESTATE->m_pCurCourse->GetDisplayFullTitle(),
+            GAMESTATE->cur_course_->GetDisplayFullTitle(),
             EditCourseUtil::MAX_NAME_LENGTH,
             EditCourseUtil::ValidateEditCourseName);
       } else {
-        if (EditCourseUtil::Save(GAMESTATE->m_pCurCourse)) {
-          m_soundSave.Play(true);
+        if (EditCourseUtil::Save(GAMESTATE->cur_course_)) {
+          sound_save_.Play(true);
           SCREENMAN->SystemMessage(COURSE_SAVED);
         } else {
           SCREENMAN->PlayInvalidSound();

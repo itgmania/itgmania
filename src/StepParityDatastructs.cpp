@@ -32,33 +32,33 @@ float facing_penalty(float v) {
 }
 
 void StageLayout::preCalculateStuff() {
-  for (int left = 0; left < columnCount; left++) {
-    for (int right = 0; right < columnCount; right++) {
-      int idx = left * columnCount + right;
+  for (int left = 0; left < column_count_; left++) {
+    for (int right = 0; right < column_count_; right++) {
+      int idx = left * column_count_ + right;
 
       StagePoint avgPoint = {
-          (columns[left].x + columns[right].x) / 2.0f,
-          (columns[left].y + columns[right].y) / 2.0f,
+          (columns_[left].x_ + columns_[right].x_) / 2.0f,
+          (columns_[left].y_ + columns_[right].y_) / 2.0f,
       };
-      avgPoints[idx] = avgPoint;
+      avg_points_[idx] = avgPoint;
 
-      float dx = columns[left].x - columns[right].x;
-      float dy = columns[left].y - columns[right].y;
+      float dx = columns_[left].x_ - columns_[right].x_;
+      float dy = columns_[left].y_ - columns_[right].y_;
       float distSq = (dx * dx) + (dy * dy);
       float dist = sqrt(distSq);
-      distances[idx] = dist;
+      distances_[idx] = dist;
 
       if (dist == 0) {
-        facingXPenalties[idx] = 0;
-        facingYPenalties[idx] = 0;
+        facing_x_penalties_[idx] = 0;
+        facing_y_penalties_[idx] = 0;
       } else {
         float normalized_dx = dx / dist;
         float normalized_dy = dy / dist;
         float xm = getXDifference(left, right);
         float ym = getYDifference(left, right);
 
-        facingXPenalties[idx] = std::max(0.0f, facing_penalty(xm));
-        facingYPenalties[idx] = std::max(0.0f, facing_penalty(ym));
+        facing_x_penalties_[idx] = std::max(0.0f, facing_penalty(xm));
+        facing_y_penalties_[idx] = std::max(0.0f, facing_penalty(ym));
       }
     }
   }
@@ -89,19 +89,19 @@ void StageLayout::preGeneratePermutations() {
   // Set an empty array for a bitmask of 0x0, this is used
   // by StepParityGenerator::getFootPlacementPermutations
   // to return an empty array
-  permuteCache[0] = {};
+  permute_cache_[0] = {};
 
-  for (unsigned int i = 0; i < pow(2, columnCount); i++) {
+  for (unsigned int i = 0; i < pow(2, column_count_); i++) {
     int bits = popcount(i);
     if (bits > 4) {
       continue;
     }
-    FootPlacement blankColumns(columnCount, Foot_None);
+    FootPlacement blankColumns(column_count_, Foot_None);
 
     std::vector<FootPlacement> placements =
         PermuteFootPlacements(i, blankColumns, 0);
     if (placements.size() > 0) {
-      permuteCache[i] = std::move(placements);
+      permute_cache_[i] = std::move(placements);
     }
   }
 }
@@ -196,11 +196,11 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
 
 // Row
 void Row::setFootPlacement(const StepParity::State* state) {
-  for (int c = 0; c < columnCount; c++) {
-    if (notes[c].type != TapNoteType_Empty) {
-      columns[c] = state->combinedColumns[c];
-      whereTheFeetAre[state->combinedColumns[c]] = c;
-      noteCount += 1;
+  for (int c = 0; c < column_count_; c++) {
+    if (notes_[c].type_ != TapNoteType_Empty) {
+      columns_[c] = state->combined_columns_[c];
+      where_the_feet_are_[state->combined_columns_[c]] = c;
+      note_count_ += 1;
     }
   }
 }

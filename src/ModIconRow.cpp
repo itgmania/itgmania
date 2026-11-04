@@ -23,23 +23,23 @@ int OptionToPreferredColumn(std::string sOptionText);
 REGISTER_ACTOR_CLASS(ModIconRow);
 
 ModIconRow::ModIconRow() {
-  m_pn = PlayerNumber_Invalid;
+  pn_ = PlayerNumber_Invalid;
 
   this->SubscribeToMessage("PlayerOptionsChanged");
 }
 
 ModIconRow::~ModIconRow() {
-  for (ModIcon* p : m_vpModIcon) {
+  for (ModIcon* p : mod_icon_) {
     RageUtil::SafeDelete(p);
   }
   this->RemoveAllChildren();
 }
 
 void ModIconRow::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
-  ASSERT_M(m_pn == PlayerNumber_Invalid, "Multiple calls to Load");
+  ASSERT_M(pn_ == PlayerNumber_Invalid, "Multiple calls to Load");
 
-  m_sMetricsGroup = sMetricsGroup;
-  m_pn = pn;
+  metrics_group_ = sMetricsGroup;
+  pn_ = pn;
 
   SPACING_X.Load(sMetricsGroup, "SpacingX");
   SPACING_Y.Load(sMetricsGroup, "SpacingY");
@@ -55,7 +55,7 @@ void ModIconRow::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
     p->SetXY(fOffset * SPACING_X, fOffset * SPACING_Y);
     p->Load(OPTION_ICON_METRICS_GROUP);
     ActorUtil::LoadAllCommands(p, sMetricsGroup);
-    m_vpModIcon.push_back(p);
+    mod_icon_.push_back(p);
     this->AddChild(p);
   }
 
@@ -71,8 +71,8 @@ void ModIconRow::HandleMessage(const Message& msg) {
 }
 
 struct OptionColumnEntry {
-  const char* szString;
-  int iSlotIndex;
+  const char* string_;
+  int slot_index_;
 
   // void FromStack( lua_State *L, int iPos );
 };
@@ -130,8 +130,8 @@ int OptionToPreferredColumn(std::string sOptionText) {
   }
 
   for (unsigned i = 0; i < ARRAYLEN(g_OptionColumnEntries); i++) {
-    if (g_OptionColumnEntries[i].szString == sOptionText) {
-      return g_OptionColumnEntries[i].iSlotIndex;
+    if (g_OptionColumnEntries[i].string_ == sOptionText) {
+      return g_OptionColumnEntries[i].slot_index_;
     }
   }
 
@@ -141,22 +141,22 @@ int OptionToPreferredColumn(std::string sOptionText) {
 }
 
 void ModIconRow::SetFromGameState() {
-  PlayerNumber pn = m_pn;
+  PlayerNumber pn = pn_;
 
   std::string sOptions =
-      GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage().GetString();
+      GAMESTATE->player_state_[pn]->player_options_.GetStage().GetString();
   std::vector<std::string> vsOptions;
   split(sOptions, ", ", vsOptions, true);
 
   std::vector<std::string>
       vsText;  // fill these with what will be displayed on the tabs
-  vsText.resize(m_vpModIcon.size());
+  vsText.resize(mod_icon_.size());
 
   // for each option, look for the best column to place it in
   for (unsigned i = 0; i < vsOptions.size(); i++) {
     std::string sOption = vsOptions[i];
     int iPreferredCol = OptionToPreferredColumn(sOption);
-    iPreferredCol = std::clamp(iPreferredCol, 0, (int)m_vpModIcon.size() - 1);
+    iPreferredCol = std::clamp(iPreferredCol, 0, (int)mod_icon_.size() - 1);
 
     // search for a vacant spot
     for (int j = iPreferredCol; j < NUM_OPTION_ICONS; j++) {
@@ -169,8 +169,8 @@ void ModIconRow::SetFromGameState() {
     }
   }
 
-  for (unsigned i = 0; i < m_vpModIcon.size(); i++) {
-    m_vpModIcon[i]->Set(vsText[i]);
+  for (unsigned i = 0; i < mod_icon_.size(); i++) {
+    mod_icon_[i]->Set(vsText[i]);
   }
 }
 

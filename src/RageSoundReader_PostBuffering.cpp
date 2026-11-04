@@ -20,7 +20,7 @@ static float g_fMasterVolume = 1.0f;
 RageSoundReader_PostBuffering::RageSoundReader_PostBuffering(
     RageSoundReader* pSource)
     : RageSoundReader_Filter(pSource) {
-  m_fVolume = 1.0f;
+  volume_ = 1.0f;
 }
 
 void RageSoundReader_PostBuffering::SetMasterVolume(float fVolume) {
@@ -29,7 +29,7 @@ void RageSoundReader_PostBuffering::SetMasterVolume(float fVolume) {
 }
 
 int RageSoundReader_PostBuffering::Read(float* pBuf, int iFrames) {
-  iFrames = m_pSource->Read(pBuf, iFrames);
+  iFrames = source_->Read(pBuf, iFrames);
   if (iFrames < 0) {
     return iFrames;
   }
@@ -39,7 +39,7 @@ int RageSoundReader_PostBuffering::Read(float* pBuf, int iFrames) {
 
   // Square the master so lower volumes are more sensitive.
   // This lines up better with perceived volume.
-  float fVolume = m_fVolume * g_fMasterVolume * g_fMasterVolume;
+  float fVolume = volume_ * g_fMasterVolume * g_fMasterVolume;
   fVolume = std::clamp(fVolume, 0.0f, 1.0f);
   g_Mutex.Unlock();
 
@@ -53,7 +53,7 @@ int RageSoundReader_PostBuffering::Read(float* pBuf, int iFrames) {
 bool RageSoundReader_PostBuffering::SetProperty(
     const std::string& sProperty, float fValue) {
   if (sProperty == "Volume") {
-    m_fVolume = fValue;
+    volume_ = fValue;
     return true;
   }
 

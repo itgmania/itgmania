@@ -23,11 +23,11 @@ class HelpDisplay : public BitmapText {
   void GetTips(
       std::vector<std::string>& arrayTipsOut,
       std::vector<std::string>& arrayTipsAltOut) const {
-    arrayTipsOut = m_arrayTips;
-    arrayTipsAltOut = m_arrayTipsAlt;
+    arrayTipsOut = array_tips_;
+    arrayTipsAltOut = array_tips_alt_;
   }
   void SetSecsBetweenSwitches(float fSeconds) {
-    m_fSecsBetweenSwitches = m_fSecsUntilSwitch = fSeconds;
+    secs_between_switches_ = secs_until_switch_ = fSeconds;
   }
 
   virtual void Update(float fDeltaTime);
@@ -36,11 +36,11 @@ class HelpDisplay : public BitmapText {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  std::vector<std::string> m_arrayTips, m_arrayTipsAlt;
-  int m_iCurTipIndex;
+  std::vector<std::string> array_tips_, array_tips_alt_;
+  int cur_tip_index_;
 
-  float m_fSecsBetweenSwitches;
-  float m_fSecsUntilSwitch;
+  float secs_between_switches_;
+  float secs_until_switch_;
 };
 
 #endif

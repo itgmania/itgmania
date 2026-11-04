@@ -21,18 +21,18 @@ class ScreenHowToPlay : public ScreenAttract {
 
   // Lua
   virtual void PushSelf(lua_State* L);
-  LifeMeterBar* m_pLifeMeterBar;
+  LifeMeterBar* life_meter_bar_;
 
  protected:
   virtual void Step();
-  PlayerPlus m_Player;
-  Model* m_pmCharacter;
-  Model* m_pmDancePad;
-  int m_iW2s;
-  int m_iNumW2s;
-  Song m_Song;
-  NoteData m_NoteData;
-  float m_fFakeSecondsIntoSong;
+  PlayerPlus player_;
+  Model* character_;
+  Model* dance_pad_;
+  int w2s_;
+  int num_w2s_;
+  Song song_;
+  NoteData note_data_;
+  float fake_seconds_into_song_;
 };
 
 #endif

@@ -42,10 +42,10 @@ class RenderTarget {
 
   virtual bool InvertY() const { return false; }
 
-  const RenderTargetParam& GetParam() const { return m_Param; }
+  const RenderTargetParam& GetParam() const { return param_; }
 
  protected:
-  RenderTargetParam m_Param;
+  RenderTargetParam param_;
 };
 
 #endif

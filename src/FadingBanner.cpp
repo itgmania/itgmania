@@ -30,19 +30,19 @@ REGISTER_ACTOR_CLASS(FadingBanner);
  * m_iIndexLatest is the latest banner loaded, and the one that we'll end up
  * displaying when the fades stop. */
 FadingBanner::FadingBanner() {
-  m_bMovingFast = false;
-  m_bSkipNextBannerUpdate = false;
-  m_iIndexLatest = 0;
-  for (int i = 0; i < NUM_BANNERS; i++) {
-    m_Banner[i].SetName("Banner");
-    ActorUtil::LoadAllCommandsAndOnCommand(m_Banner[i], "FadingBanner");
-    this->AddChild(&m_Banner[i]);
+  moving_fast_ = false;
+  skip_next_banner_update_ = false;
+  index_latest_ = 0;
+  for (int i = 0; i < kNumBanners; i++) {
+    banner_[i].SetName("Banner");
+    ActorUtil::LoadAllCommandsAndOnCommand(banner_[i], "FadingBanner");
+    this->AddChild(&banner_[i]);
   }
 }
 
 void FadingBanner::ScaleToClipped(float fWidth, float fHeight) {
-  for (int i = 0; i < NUM_BANNERS; i++) {
-    m_Banner[i].ScaleToClipped(fWidth, fHeight);
+  for (int i = 0; i < kNumBanners; i++) {
+    banner_[i].ScaleToClipped(fWidth, fHeight);
   }
 }
 
@@ -51,13 +51,13 @@ void FadingBanner::UpdateInternal(float fDeltaTime) {
   // ActorFrame::UpdateInternal( fDeltaTime );
   Actor::UpdateInternal(fDeltaTime);
 
-  if (!m_bSkipNextBannerUpdate) {
-    for (int i = 0; i < NUM_BANNERS; ++i) {
-      m_Banner[i].Update(fDeltaTime);
+  if (!skip_next_banner_update_) {
+    for (int i = 0; i < kNumBanners; ++i) {
+      banner_[i].Update(fDeltaTime);
     }
   }
 
-  m_bSkipNextBannerUpdate = false;
+  skip_next_banner_update_ = false;
 }
 
 void FadingBanner::DrawPrimitives() {
@@ -65,32 +65,32 @@ void FadingBanner::DrawPrimitives() {
   //	ActorFrame::DrawPrimitives();
 
   // Render the latest banner first.
-  for (int i = 0; i < NUM_BANNERS; ++i) {
-    int index = m_iIndexLatest - i;
-    wrap(index, NUM_BANNERS);
-    m_Banner[index].Draw();
+  for (int i = 0; i < kNumBanners; ++i) {
+    int index = index_latest_ - i;
+    wrap(index, kNumBanners);
+    banner_[index].Draw();
   }
 }
 
 void FadingBanner::Load(RageTextureID ID, bool bLowResToHighRes) {
   BeforeChange(bLowResToHighRes);
-  m_Banner[m_iIndexLatest].Load(ID);
+  banner_[index_latest_].Load(ID);
 
   /* XXX: Hack to keep movies from updating multiple times.
    * We need to either completely disallow movies in banners or support
    * them. There are a number of files that use them currently in the
    * wild. If we wanted to support them, then perhaps we should use an
    * all-black texture for the low quality texture. */
-  RageTexture* pTexture = m_Banner[m_iIndexLatest].GetTexture();
+  RageTexture* pTexture = banner_[index_latest_].GetTexture();
   if (!pTexture || !pTexture->IsAMovie()) {
     return;
   }
-  m_Banner[m_iIndexLatest].SetSecondsIntoAnimation(0.f);
-  for (int i = 1; i < NUM_BANNERS; ++i) {
-    int index = m_iIndexLatest - i;
-    wrap(index, NUM_BANNERS);
-    if (m_Banner[index].GetTexturePath() == ID.filename) {
-      m_Banner[index].UnloadTexture();
+  banner_[index_latest_].SetSecondsIntoAnimation(0.f);
+  for (int i = 1; i < kNumBanners; ++i) {
+    int index = index_latest_ - i;
+    wrap(index, kNumBanners);
+    if (banner_[index].GetTexturePath() == ID.filename_) {
+      banner_[index].UnloadTexture();
     }
   }
 }
@@ -105,22 +105,22 @@ void FadingBanner::BeforeChange(bool bLowResToHighRes) {
     sCommand = "FadeOff";
   }
 
-  m_Banner[m_iIndexLatest].PlayCommand(sCommand);
-  ++m_iIndexLatest;
-  wrap(m_iIndexLatest, NUM_BANNERS);
+  banner_[index_latest_].PlayCommand(sCommand);
+  ++index_latest_;
+  wrap(index_latest_, kNumBanners);
 
-  m_Banner[m_iIndexLatest].PlayCommand("ResetFade");
+  banner_[index_latest_].PlayCommand("ResetFade");
 
   /* We're about to load a banner. It'll probably cause a frame skip or two.
    * Skip an update, so the fade-in doesn't skip. */
-  m_bSkipNextBannerUpdate = true;
+  skip_next_banner_update_ = true;
 }
 
 /* If this returns true, a low-resolution banner was loaded, and the full-res
  * banner should be loaded later. */
 bool FadingBanner::LoadFromCachedBanner(const std::string& path) {
   // If we're already on the given banner, don't fade again.
-  if (path != "" && m_Banner[m_iIndexLatest].GetTexturePath() == path) {
+  if (path != "" && banner_[index_latest_].GetTexturePath() == path) {
     return false;
   }
 
@@ -133,7 +133,7 @@ bool FadingBanner::LoadFromCachedBanner(const std::string& path) {
    * which will cause the fade-in to be further delayed. */
 
   RageTextureID ID;
-  bool bLowRes = (PREFSMAN->m_ImageCache != IMGCACHE_FULL);
+  bool bLowRes = (PREFSMAN->image_cache_ != IMGCACHE_FULL);
   if (!bLowRes) {
     ID = Sprite::SongBannerTexture(path);
   } else {
@@ -148,7 +148,7 @@ bool FadingBanner::LoadFromCachedBanner(const std::string& path) {
      * that's there (or load a "moving fast" banner). Once we settle down,
      * we'll get called again and load the real banner. */
 
-    if (m_bMovingFast) {
+    if (moving_fast_) {
       return false;
     }
 
@@ -184,7 +184,7 @@ void FadingBanner::LoadFromSong(const Song* pSong) {
 
 void FadingBanner::LoadMode() {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadMode();
+  banner_[index_latest_].LoadMode();
 }
 
 void FadingBanner::LoadFromSongGroup(std::string sSongGroup) {
@@ -211,45 +211,45 @@ void FadingBanner::LoadFromCourse(const Course* pCourse) {
 
 void FadingBanner::LoadIconFromCharacter(Character* pCharacter) {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadIconFromCharacter(pCharacter);
+  banner_[index_latest_].LoadIconFromCharacter(pCharacter);
 }
 
 void FadingBanner::LoadBannerFromUnlockEntry(const UnlockEntry* pUE) {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadBannerFromUnlockEntry(pUE);
+  banner_[index_latest_].LoadBannerFromUnlockEntry(pUE);
 }
 
 void FadingBanner::LoadRoulette() {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadRoulette();
-  m_Banner[m_iIndexLatest].PlayCommand("Roulette");
+  banner_[index_latest_].LoadRoulette();
+  banner_[index_latest_].PlayCommand("Roulette");
 }
 
 void FadingBanner::LoadRandom() {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadRandom();
-  m_Banner[m_iIndexLatest].PlayCommand("Random");
+  banner_[index_latest_].LoadRandom();
+  banner_[index_latest_].PlayCommand("Random");
 }
 
 void FadingBanner::LoadFromSortOrder(SortOrder so) {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadFromSortOrder(so);
+  banner_[index_latest_].LoadFromSortOrder(so);
 }
 
 void FadingBanner::LoadFallback() {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadFallback();
+  banner_[index_latest_].LoadFallback();
 }
 
 void FadingBanner::LoadCourseFallback() {
   BeforeChange();
-  m_Banner[m_iIndexLatest].LoadCourseFallback();
+  banner_[index_latest_].LoadCourseFallback();
 }
 
 void FadingBanner::LoadCustom(std::string sBanner) {
   BeforeChange();
-  m_Banner[m_iIndexLatest].Load(THEME->GetPathG("Banner", sBanner));
-  m_Banner[m_iIndexLatest].PlayCommand(sBanner);
+  banner_[index_latest_].Load(THEME->GetPathG("Banner", sBanner));
+  banner_[index_latest_].PlayCommand(sBanner);
 }
 
 // lua start

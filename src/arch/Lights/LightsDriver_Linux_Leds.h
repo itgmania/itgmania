@@ -11,17 +11,17 @@
 
 class LightsDriver_Linux_Leds : public LightsDriver {
  private:
-  static const uint8_t LINUX_LED_STATE_ON = 255;
-  static const uint8_t LINUX_LED_STATE_OFF = 0;
-  static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
+  static const uint8_t kLinuxLedStateOn = 255;
+  static const uint8_t kLinuxLedStateOff = 0;
+  static const int kLinuxLedMaxDirectoryLength = PATH_MAX;
 
-  const InputScheme* pInput;
-  std::string sInputName;
+  const InputScheme* input_;
+  std::string input_name_;
 
   bool WriteLight(const char* filename, bool state);
 
  protected:
-  LightsState previousLS;
+  LightsState previous_ls_;
 
   bool IsDance();
   bool IsPump();

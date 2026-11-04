@@ -17,8 +17,8 @@ class ScoreDisplayOni : public ScoreDisplay {
   virtual void Update(float fDelta);
 
  protected:
-  Sprite m_sprFrame;
-  BitmapText m_text;
+  Sprite spr_frame_;
+  BitmapText text_;
 };
 
 #endif

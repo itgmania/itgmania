@@ -4,16 +4,16 @@
 #define BACKTRACE_MAX_SIZE 100
 
 struct CrashInfo {
-  char m_CrashReason[1024 * 8];
+  char crash_reason_[1024 * 8];
 
-  const void* m_BacktracePointers[BACKTRACE_MAX_SIZE] = {nullptr};
+  const void* backtrace_pointers_[BACKTRACE_MAX_SIZE] = {nullptr};
 
-  static constexpr int MAX_BACKTRACE_THREADS = 32;
-  const void* m_AlternateThreadBacktrace[MAX_BACKTRACE_THREADS]
-                                        [BACKTRACE_MAX_SIZE] = {{nullptr}};
-  char m_AlternateThreadName[MAX_BACKTRACE_THREADS][512] = {{'\0'}};
+  static constexpr int kMaxBacktraceThreads = 32;
+  const void* alternate_thread_backtrace_[kMaxBacktraceThreads]
+                                         [BACKTRACE_MAX_SIZE] = {{nullptr}};
+  char alternate_thread_name_[kMaxBacktraceThreads][512] = {{'\0'}};
 
-  CrashInfo() { m_CrashReason[0] = '\0'; }
+  CrashInfo() { crash_reason_[0] = '\0'; }
 };
 
 #define CHILD_MAGIC_PARAMETER "--private-do-crash-handler"

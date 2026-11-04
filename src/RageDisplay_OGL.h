@@ -128,7 +128,7 @@ class RageDisplay_Legacy : public RageDisplay {
   void SendCurrentMatrices();
 
  private:
-  RageTextureRenderTarget* offscreenRenderTarget;
+  RageTextureRenderTarget* offscreen_render_target_;
 };
 
 #endif

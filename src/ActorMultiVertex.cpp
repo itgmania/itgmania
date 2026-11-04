@@ -63,41 +63,41 @@ REGISTER_ACTOR_CLASS(ActorMultiVertex);
 ActorMultiVertex::ActorMultiVertex() {
   // Use blank texture by default.
   RageTextureID ID = TEXTUREMAN->GetDefaultTextureID();
-  _Texture = TEXTUREMAN->LoadTexture(ID);
+  texture_ = TEXTUREMAN->LoadTexture(ID);
 
-  _EffectMode = EffectMode_Normal;
-  _TextureMode = TextureMode_Modulate;
-  _splines.resize(num_vert_splines);
-  for (size_t i = 0; i < num_vert_splines; ++i) {
-    _splines[i].redimension(3);
-    _splines[i].m_owned_by_actor = true;
+  effect_mode_ = EffectMode_Normal;
+  texture_mode_ = TextureMode_Modulate;
+  splines_.resize(kNumVertSplines);
+  for (size_t i = 0; i < kNumVertSplines; ++i) {
+    splines_[i].redimension(3);
+    splines_[i].owned_by_actor_ = true;
   }
-  _skip_next_update = true;
-  _decode_movie = true;
-  _use_animation_state = false;
-  _secs_into_state = 0.0f;
-  _cur_state = 0;
+  skip_next_update_ = true;
+  decode_movie_ = true;
+  use_animation_state_ = false;
+  secs_into_state_ = 0.0f;
+  cur_state_ = 0;
 }
 
 ActorMultiVertex::~ActorMultiVertex() { UnloadTexture(); }
 
 ActorMultiVertex::ActorMultiVertex(const ActorMultiVertex& cpy) : Actor(cpy) {
-  AMV_Tweens = cpy.AMV_Tweens;
-  AMV_current = cpy.AMV_current;
-  AMV_start = cpy.AMV_start;
-  _EffectMode = cpy._EffectMode;
-  _TextureMode = cpy._TextureMode;
-  _splines = cpy._splines;
-  _skip_next_update = cpy._skip_next_update;
-  _use_animation_state = cpy._use_animation_state;
-  _secs_into_state = cpy._secs_into_state;
-  _cur_state = cpy._cur_state;
-  _states = cpy._states;
+  amv_tweens_ = cpy.amv_tweens_;
+  amv_current_ = cpy.amv_current_;
+  amv_start_ = cpy.amv_start_;
+  effect_mode_ = cpy.effect_mode_;
+  texture_mode_ = cpy.texture_mode_;
+  splines_ = cpy.splines_;
+  skip_next_update_ = cpy.skip_next_update_;
+  use_animation_state_ = cpy.use_animation_state_;
+  secs_into_state_ = cpy.secs_into_state_;
+  cur_state_ = cpy.cur_state_;
+  states_ = cpy.states_;
 
-  if (cpy._Texture != nullptr) {
-    _Texture = TEXTUREMAN->CopyTexture(cpy._Texture);
+  if (cpy.texture_ != nullptr) {
+    texture_ = TEXTUREMAN->CopyTexture(cpy.texture_);
   } else {
-    _Texture = nullptr;
+    texture_ = nullptr;
   }
 }
 
@@ -115,15 +115,15 @@ void ActorMultiVertex::LoadFromNode(const XNode* Node) {
 }
 
 void ActorMultiVertex::SetTexture(RageTexture* Texture) {
-  if (_Texture != Texture) {
+  if (texture_ != Texture) {
     UnloadTexture();
-    _Texture = Texture;
+    texture_ = Texture;
   }
 }
 
 void ActorMultiVertex::LoadFromTexture(RageTextureID ID) {
   RageTexture* Texture = nullptr;
-  if (_Texture && _Texture->GetID() == ID) {
+  if (texture_ && texture_->GetID() == ID) {
     return;
   }
   Texture = TEXTUREMAN->LoadTexture(ID);
@@ -131,70 +131,70 @@ void ActorMultiVertex::LoadFromTexture(RageTextureID ID) {
 }
 
 void ActorMultiVertex::UnloadTexture() {
-  if (_Texture != nullptr) {
-    TEXTUREMAN->UnloadTexture(_Texture);
-    _Texture = nullptr;
+  if (texture_ != nullptr) {
+    TEXTUREMAN->UnloadTexture(texture_);
+    texture_ = nullptr;
   }
 }
 
 void ActorMultiVertex::SetNumVertices(size_t n) {
   if (n == 0) {
-    for (size_t i = 0; i < AMV_Tweens.size(); ++i) {
-      AMV_Tweens[i].vertices.clear();
+    for (size_t i = 0; i < amv_tweens_.size(); ++i) {
+      amv_tweens_[i].vertices_.clear();
     }
-    AMV_current.vertices.clear();
-    AMV_start.vertices.clear();
+    amv_current_.vertices_.clear();
+    amv_start_.vertices_.clear();
   } else {
-    for (size_t i = 0; i < AMV_Tweens.size(); ++i) {
-      AMV_Tweens[i].vertices.resize(n);
+    for (size_t i = 0; i < amv_tweens_.size(); ++i) {
+      amv_tweens_[i].vertices_.resize(n);
     }
-    AMV_current.vertices.resize(n);
-    AMV_start.vertices.resize(n);
+    amv_current_.vertices_.resize(n);
+    amv_start_.vertices_.resize(n);
   }
 }
 
 void ActorMultiVertex::AddVertices(int Add) {
-  int size = AMV_DestTweenState().vertices.size();
+  int size = AMV_DestTweenState().vertices_.size();
   size += Add;
-  for (size_t i = 0; i < AMV_Tweens.size(); ++i) {
-    AMV_Tweens[i].vertices.resize(size);
+  for (size_t i = 0; i < amv_tweens_.size(); ++i) {
+    amv_tweens_[i].vertices_.resize(size);
   }
-  AMV_current.vertices.resize(size);
-  AMV_start.vertices.resize(size);
+  amv_current_.vertices_.resize(size);
+  amv_start_.vertices_.resize(size);
 }
 
 void ActorMultiVertex::SetVertexPos(int index, float x, float y, float z) {
-  AMV_DestTweenState().vertices[index].p = RageVector3(x, y, z);
+  AMV_DestTweenState().vertices_[index].p_ = RageVector3(x, y, z);
 }
 
 void ActorMultiVertex::SetVertexColor(int index, RageColor c) {
-  AMV_DestTweenState().vertices[index].c = c;
+  AMV_DestTweenState().vertices_[index].c_ = c;
 }
 
 void ActorMultiVertex::SetVertexCoords(
     int index, float TexCoordX, float TexCoordY) {
-  AMV_DestTweenState().vertices[index].t = RageVector2(TexCoordX, TexCoordY);
+  AMV_DestTweenState().vertices_[index].t_ = RageVector2(TexCoordX, TexCoordY);
 }
 
 void ActorMultiVertex::DrawPrimitives() {
   Actor::SetGlobalRenderStates();  // set Actor-specified render states
 
   DISPLAY->ClearAllTextures();
-  DISPLAY->SetTexture(TextureUnit_1, _Texture->GetTexHandle());
+  DISPLAY->SetTexture(TextureUnit_1, texture_->GetTexHandle());
 
   Actor::SetTextureRenderStates();
-  DISPLAY->SetEffectMode(_EffectMode);
+  DISPLAY->SetEffectMode(effect_mode_);
 
   // set temporary diffuse and glow
   static AMV_TweenState TS;
 
-  AMV_TempState = &TS;
-  TS = AMV_current;
+  amv_temp_state_ = &TS;
+  TS = amv_current_;
 
   // skip if no change or fully transparent
-  if (m_pTempState->diffuse[0] != RageColor(1, 1, 1, 1) &&
-      m_pTempState->diffuse[0].a > 0) {
-    for (size_t i = 0; i < TS.vertices.size(); i++) {
+  if (temp_state_->diffuse_[0] != RageColor(1, 1, 1, 1) &&
+      temp_state_->diffuse_[0].a_ > 0) {
+    for (size_t i = 0; i < TS.vertices_.size(); i++) {
       // RageVColor uses a uint8_t for each channel.  0-255.
       // RageColor uses a float. 0-1.
       // So each channel of the RageVColor needs to be converted to a float,
@@ -206,67 +206,67 @@ void ActorMultiVertex::DrawPrimitives() {
 #define MULT_COLOR_ELEMENTS(color_a, color_b) \
   color_a = static_cast<uint8_t>(static_cast<float>(color_a) * color_b);
       // RageVColor * RageColor
-      MULT_COLOR_ELEMENTS(TS.vertices[i].c.b, m_pTempState->diffuse[0].b);
-      MULT_COLOR_ELEMENTS(TS.vertices[i].c.r, m_pTempState->diffuse[0].r);
-      MULT_COLOR_ELEMENTS(TS.vertices[i].c.g, m_pTempState->diffuse[0].g);
-      MULT_COLOR_ELEMENTS(TS.vertices[i].c.a, m_pTempState->diffuse[0].a);
+      MULT_COLOR_ELEMENTS(TS.vertices_[i].c_.b_, temp_state_->diffuse_[0].b_);
+      MULT_COLOR_ELEMENTS(TS.vertices_[i].c_.r_, temp_state_->diffuse_[0].r_);
+      MULT_COLOR_ELEMENTS(TS.vertices_[i].c_.g_, temp_state_->diffuse_[0].g_);
+      MULT_COLOR_ELEMENTS(TS.vertices_[i].c_.a_, temp_state_->diffuse_[0].a_);
 #undef MULT_COLOR_ELEMENTS
     }
   }
 
   // Draw diffuse pass.
-  if (m_pTempState->diffuse[0].a > 0) {
-    DISPLAY->SetTextureMode(TextureUnit_1, _TextureMode);
-    DrawInternal(AMV_TempState);
+  if (temp_state_->diffuse_[0].a_ > 0) {
+    DISPLAY->SetTextureMode(TextureUnit_1, texture_mode_);
+    DrawInternal(amv_temp_state_);
   }
 
   // Draw the glow pass
-  if (m_pTempState->glow.a > 0) {
-    for (size_t i = 0; i < TS.vertices.size(); i++) {
-      TS.vertices[i].c = m_pTempState->glow;
+  if (temp_state_->glow_.a_ > 0) {
+    for (size_t i = 0; i < TS.vertices_.size(); i++) {
+      TS.vertices_[i].c_ = temp_state_->glow_;
     }
     DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Glow);
-    DrawInternal(AMV_TempState);
+    DrawInternal(amv_temp_state_);
   }
 }
 
 void ActorMultiVertex::DrawInternal(const AMV_TweenState* TS) {
-  int FirstToDraw = TS->FirstToDraw;
-  int NumToDraw = TS->GetSafeNumToDraw(TS->_DrawMode, TS->NumToDraw);
+  int FirstToDraw = TS->first_to_draw_;
+  int NumToDraw = TS->GetSafeNumToDraw(TS->draw_mode_, TS->num_to_draw_);
 
   if (NumToDraw == 0) {
     // Nothing to draw.
     return;
   }
 
-  switch (TS->_DrawMode) {
+  switch (TS->draw_mode_) {
     case DrawMode_Quads: {
-      DISPLAY->DrawQuads(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawQuads(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     case DrawMode_QuadStrip: {
-      DISPLAY->DrawQuadStrip(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawQuadStrip(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     case DrawMode_Fan: {
-      DISPLAY->DrawFan(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawFan(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     case DrawMode_Strip: {
-      DISPLAY->DrawStrip(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawStrip(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     case DrawMode_Triangles: {
-      DISPLAY->DrawTriangles(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawTriangles(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     case DrawMode_LineStrip: {
       DISPLAY->DrawLineStrip(
-          &TS->vertices[FirstToDraw], NumToDraw, TS->line_width);
+          &TS->vertices_[FirstToDraw], NumToDraw, TS->line_width_);
       break;
     }
     case DrawMode_SymmetricQuadStrip: {
-      DISPLAY->DrawSymmetricQuadStrip(&TS->vertices[FirstToDraw], NumToDraw);
+      DISPLAY->DrawSymmetricQuadStrip(&TS->vertices_[FirstToDraw], NumToDraw);
       break;
     }
     default:
@@ -277,8 +277,8 @@ void ActorMultiVertex::DrawInternal(const AMV_TweenState* TS) {
 }
 
 bool ActorMultiVertex::EarlyAbortDraw() const {
-  if (AMV_current.FirstToDraw >= (int)AMV_current.vertices.size() ||
-      AMV_current._DrawMode >= NUM_DrawMode) {
+  if (amv_current_.first_to_draw_ >= (int)amv_current_.vertices_.size() ||
+      amv_current_.draw_mode_ >= NUM_DrawMode) {
     return true;
   }
   return false;
@@ -286,34 +286,34 @@ bool ActorMultiVertex::EarlyAbortDraw() const {
 
 void ActorMultiVertex::SetVertsFromSplinesInternal(
     size_t num_splines, size_t offset) {
-  std::vector<RageSpriteVertex>& verts = AMV_DestTweenState().vertices;
-  size_t first = AMV_DestTweenState().FirstToDraw + offset;
+  std::vector<RageSpriteVertex>& verts = AMV_DestTweenState().vertices_;
+  size_t first = AMV_DestTweenState().first_to_draw_ + offset;
   size_t num_verts =
       AMV_DestTweenState().GetSafeNumToDraw(
-          AMV_DestTweenState()._DrawMode, AMV_DestTweenState().NumToDraw) -
+          AMV_DestTweenState().draw_mode_, AMV_DestTweenState().num_to_draw_) -
       offset;
   std::vector<float> tper(num_splines, 0.0f);
   float num_parts =
       (static_cast<float>(num_verts) / static_cast<float>(num_splines)) - 1.0f;
   for (size_t i = 0; i < num_splines; ++i) {
-    tper[i] = _splines[i].get_max_t() / num_parts;
+    tper[i] = splines_[i].get_max_t() / num_parts;
   }
   for (size_t v = 0; v < num_verts; ++v) {
     std::vector<float> pos;
     const int spi = v % num_splines;
     float part = static_cast<float>(v / num_splines);
-    _splines[spi].evaluate(part * tper[spi], pos);
-    verts[v + first].p.x = pos[0];
-    verts[v + first].p.y = pos[1];
-    verts[v + first].p.z = pos[2];
+    splines_[spi].evaluate(part * tper[spi], pos);
+    verts[v + first].p_.x_ = pos[0];
+    verts[v + first].p_.y_ = pos[1];
+    verts[v + first].p_.z_ = pos[2];
   }
 }
 
 void ActorMultiVertex::SetVertsFromSplines() {
-  if (AMV_DestTweenState().vertices.empty()) {
+  if (AMV_DestTweenState().vertices_.empty()) {
     return;
   }
-  switch (AMV_DestTweenState()._DrawMode) {
+  switch (AMV_DestTweenState().draw_mode_) {
     case DrawMode_Quads:
       SetVertsFromSplinesInternal(4, 0);
       break;
@@ -338,84 +338,85 @@ void ActorMultiVertex::SetVertsFromSplines() {
 }
 
 CubicSplineN* ActorMultiVertex::GetSpline(size_t i) {
-  ASSERT(i < num_vert_splines);
-  return &(_splines[i]);
+  ASSERT(i < kNumVertSplines);
+  return &(splines_[i]);
 }
 
 void ActorMultiVertex::SetState(int i) {
-  ASSERT(i >= 0 && static_cast<size_t>(i) < _states.size());
-  _cur_state = i;
-  _secs_into_state = 0.0f;
+  ASSERT(i >= 0 && static_cast<size_t>(i) < states_.size());
+  cur_state_ = i;
+  secs_into_state_ = 0.0f;
 }
 
 void ActorMultiVertex::SetAllStateDelays(float delay) {
-  for (State& s : _states) {
-    s.delay = delay;
+  for (State& s : states_) {
+    s.delay_ = delay;
   }
 }
 
 float ActorMultiVertex::GetAnimationLengthSeconds() const {
-  auto calcDelay = [](float total, const State& s) { return total + s.delay; };
-  return std::accumulate(_states.begin(), _states.end(), 0.f, calcDelay);
+  auto calcDelay = [](float total, const State& s) { return total + s.delay_; };
+  return std::accumulate(states_.begin(), states_.end(), 0.f, calcDelay);
 }
 
 void ActorMultiVertex::SetSecondsIntoAnimation(float seconds) {
   SetState(0);
-  if (_Texture) {
-    _Texture->SetPosition(seconds);
+  if (texture_) {
+    texture_->SetPosition(seconds);
   }
-  _secs_into_state = seconds;
+  secs_into_state_ = seconds;
   UpdateAnimationState(true);
 }
 
 void ActorMultiVertex::UpdateAnimationState(bool force_update) {
   AMV_TweenState& dest = AMV_DestTweenState();
-  std::vector<RageSpriteVertex>& verts = dest.vertices;
-  std::vector<size_t>& qs = dest.quad_states;
-  if (!_use_animation_state || _states.empty() ||
-      dest._DrawMode == DrawMode_LineStrip || qs.empty()) {
+  std::vector<RageSpriteVertex>& verts = dest.vertices_;
+  std::vector<size_t>& qs = dest.quad_states_;
+  if (!use_animation_state_ || states_.empty() ||
+      dest.draw_mode_ == DrawMode_LineStrip || qs.empty()) {
     return;
   }
   bool state_changed = force_update;
-  if (_states.size() > 1) {
-    while (_states[_cur_state].delay > min_state_delay &&
-           _secs_into_state + min_state_delay > _states[_cur_state].delay) {
-      _secs_into_state -= _states[_cur_state].delay;
-      _cur_state = (_cur_state + 1) % _states.size();
+  if (states_.size() > 1) {
+    while (states_[cur_state_].delay_ > min_state_delay &&
+           secs_into_state_ + min_state_delay > states_[cur_state_].delay_) {
+      secs_into_state_ -= states_[cur_state_].delay_;
+      cur_state_ = (cur_state_ + 1) % states_.size();
       state_changed = true;
     }
   }
   if (state_changed) {
-    size_t first = dest.FirstToDraw;
-    size_t last = first + dest.GetSafeNumToDraw(dest._DrawMode, dest.NumToDraw);
+    size_t first = dest.first_to_draw_;
+    size_t last =
+        first + dest.GetSafeNumToDraw(dest.draw_mode_, dest.num_to_draw_);
 
-    switch (AMV_DestTweenState()._DrawMode) {
+    switch (AMV_DestTweenState().draw_mode_) {
       case DrawMode_Quads:
         for (size_t i = first; i < last; ++i) {
           const size_t quad_id = (i - first) / 4;
           const size_t state_id =
-              (_cur_state + qs[quad_id % qs.size()]) % _states.size();
-          const auto& rect = _states[state_id].rect;
+              (cur_state_ + qs[quad_id % qs.size()]) % states_.size();
+          const auto& rect = states_[state_id].rect_;
 
           switch ((i - first) % 4) {
             case 0:
-              verts[i].t.x = rect.left;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.left_;
+              verts[i].t_.y_ = rect.top_;
               break;
 
             case 1:
-              verts[i].t.x = rect.right;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.right_;
+              verts[i].t_.y_ = rect.top_;
               break;
 
             case 2:
-              verts[i].t.x = rect.right;
-              verts[i].t.y = rect.bottom;
+              verts[i].t_.x_ = rect.right_;
+              verts[i].t_.y_ = rect.bottom_;
               break;
 
             case 3:
-              verts[i].t.x = rect.left;
-              verts[i].t.y = rect.bottom;
+              verts[i].t_.x_ = rect.left_;
+              verts[i].t_.y_ = rect.bottom_;
               break;
           }
         }
@@ -424,15 +425,15 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update) {
         for (size_t i = first; i < last; ++i) {
           const size_t quad_id = (i - first) / 2;
           const size_t state_id =
-              (_cur_state + qs[quad_id % qs.size()]) % _states.size();
-          const auto& rect = _states[state_id].rect;
+              (cur_state_ + qs[quad_id % qs.size()]) % states_.size();
+          const auto& rect = states_[state_id].rect_;
 
           if ((i - first) % 2 == 0) {
-            verts[i].t.x = rect.left;
-            verts[i].t.y = rect.top;
+            verts[i].t_.x_ = rect.left_;
+            verts[i].t_.y_ = rect.top_;
           } else {
-            verts[i].t.x = rect.left;
-            verts[i].t.y = rect.bottom;
+            verts[i].t_.x_ = rect.left_;
+            verts[i].t_.y_ = rect.bottom_;
           }
         }
         break;
@@ -441,32 +442,32 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update) {
         for (size_t i = first; i < last; ++i) {
           const size_t quad_id = (i - first);
           const size_t state_id =
-              (_cur_state + qs[quad_id % qs.size()]) % _states.size();
-          const auto& rect = _states[state_id].rect;
+              (cur_state_ + qs[quad_id % qs.size()]) % states_.size();
+          const auto& rect = states_[state_id].rect_;
 
-          verts[i].t.x = rect.left;
-          verts[i].t.y = rect.top;
+          verts[i].t_.x_ = rect.left_;
+          verts[i].t_.y_ = rect.top_;
         }
         break;
       case DrawMode_Triangles:
         for (size_t i = first; i < last; ++i) {
           const size_t quad_id = (i - first) / 3;
           const size_t state_id =
-              (_cur_state + qs[quad_id % qs.size()]) % _states.size();
-          const auto& rect = _states[state_id].rect;
+              (cur_state_ + qs[quad_id % qs.size()]) % states_.size();
+          const auto& rect = states_[state_id].rect_;
 
           switch ((i - first) % 3) {
             case 0:
-              verts[i].t.x = rect.left;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.left_;
+              verts[i].t_.y_ = rect.top_;
               break;
             case 1:
-              verts[i].t.x = rect.right;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.right_;
+              verts[i].t_.y_ = rect.top_;
               break;
             case 2:
-              verts[i].t.x = rect.right;
-              verts[i].t.y = rect.bottom;
+              verts[i].t_.x_ = rect.right_;
+              verts[i].t_.y_ = rect.bottom_;
               break;
           }
         }
@@ -475,18 +476,18 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update) {
         for (size_t i = first; i < last; ++i) {
           const size_t quad_id = (i - first) / 3;
           const size_t state_id =
-              (_cur_state + qs[quad_id % qs.size()]) % _states.size();
-          const auto& rect = _states[state_id].rect;
+              (cur_state_ + qs[quad_id % qs.size()]) % states_.size();
+          const auto& rect = states_[state_id].rect_;
 
           switch ((i - first) % 3) {
             case 0:
             case 2:
-              verts[i].t.x = rect.left;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.left_;
+              verts[i].t_.y_ = rect.top_;
               break;
             case 1:
-              verts[i].t.x = rect.right;
-              verts[i].t.y = rect.top;
+              verts[i].t_.x_ = rect.right_;
+              verts[i].t_.y_ = rect.top_;
               break;
           }
         }
@@ -498,76 +499,76 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update) {
 }
 
 void ActorMultiVertex::EnableAnimation(bool bEnable) {
-  bool bWasEnabled = m_bIsAnimating;
+  bool bWasEnabled = is_animating_;
   Actor::EnableAnimation(bEnable);
 
   if (bEnable && !bWasEnabled) {
-    _skip_next_update = true;
+    skip_next_update_ = true;
   }
 }
 
 void ActorMultiVertex::Update(float fDelta) {
   Actor::Update(fDelta);  // do tweening
-  const bool skip_this_movie_update = _skip_next_update;
-  _skip_next_update = false;
-  if (!m_bIsAnimating) {
+  const bool skip_this_movie_update = skip_next_update_;
+  skip_next_update_ = false;
+  if (!is_animating_) {
     return;
   }
-  if (!_Texture) {
+  if (!texture_) {
     return;
   }
   float time_passed = GetEffectDeltaTime();
-  _secs_into_state += time_passed;
-  if (_secs_into_state < 0) {
-    wrap(_secs_into_state, GetAnimationLengthSeconds());
+  secs_into_state_ += time_passed;
+  if (secs_into_state_ < 0) {
+    wrap(secs_into_state_, GetAnimationLengthSeconds());
   }
   UpdateAnimationState();
-  if (!skip_this_movie_update && _decode_movie) {
-    _Texture->UpdateMovie(std::max(0.0f, time_passed));
+  if (!skip_this_movie_update && decode_movie_) {
+    texture_->UpdateMovie(std::max(0.0f, time_passed));
   }
 }
 
-void ActorMultiVertex::SetCurrentTweenStart() { AMV_start = AMV_current; }
+void ActorMultiVertex::SetCurrentTweenStart() { amv_start_ = amv_current_; }
 
 void ActorMultiVertex::EraseHeadTween() {
-  AMV_current = AMV_Tweens[0];
-  AMV_Tweens.erase(AMV_Tweens.begin());
+  amv_current_ = amv_tweens_[0];
+  amv_tweens_.erase(amv_tweens_.begin());
 }
 
 void ActorMultiVertex::UpdatePercentThroughTween(float PercentThroughTween) {
   AMV_TweenState::MakeWeightedAverage(
-      AMV_current, AMV_start, AMV_Tweens[0], PercentThroughTween);
+      amv_current_, amv_start_, amv_tweens_[0], PercentThroughTween);
 }
 
 void ActorMultiVertex::BeginTweening(float time, ITween* pTween) {
   Actor::BeginTweening(time, pTween);
 
-  if (!AMV_Tweens.empty())  // if there was already a TS on the stack
+  if (!amv_tweens_.empty())  // if there was already a TS on the stack
   {
-    AMV_Tweens.push_back(AMV_Tweens.back());
+    amv_tweens_.push_back(amv_tweens_.back());
   } else {
-    AMV_Tweens.push_back(AMV_current);
+    amv_tweens_.push_back(amv_current_);
   }
 }
 
 void ActorMultiVertex::StopTweening() {
-  AMV_Tweens.clear();
+  amv_tweens_.clear();
   Actor::StopTweening();
 }
 
 void ActorMultiVertex::FinishTweening() {
-  if (!AMV_Tweens.empty()) {
-    AMV_current = AMV_DestTweenState();
+  if (!amv_tweens_.empty()) {
+    amv_current_ = AMV_DestTweenState();
   }
   Actor::FinishTweening();
 }
 
 void ActorMultiVertex::AMV_TweenState::SetDrawState(
     DrawMode dm, int first, int num) {
-  if (first >= (int)vertices.size() && vertices.size() > 0) {
+  if (first >= (int)vertices_.size() && vertices_.size() > 0) {
     LuaHelpers::ReportScriptErrorFmt(
         "ActorMultiVertex:SetDrawState: FirstToDraw > vertices.size(), %d > %u",
-        FirstToDraw + 1, (unsigned int)vertices.size());
+        first_to_draw_ + 1, (unsigned int)vertices_.size());
     return;
   }
   int safe_num = GetSafeNumToDraw(dm, num);
@@ -575,29 +576,29 @@ void ActorMultiVertex::AMV_TweenState::SetDrawState(
     LuaHelpers::ReportScriptErrorFmt(
         "ActorMultiVertex:SetDrawState: NumToDraw %d is not valid for %u "
         "vertices with DrawMode %s",
-        num, (unsigned int)vertices.size(), DrawModeNames[dm]);
+        num, (unsigned int)vertices_.size(), DrawModeNames[dm]);
     return;
   }
-  _DrawMode = dm;
-  FirstToDraw = first;
-  NumToDraw = num;
+  draw_mode_ = dm;
+  first_to_draw_ = first;
+  num_to_draw_ = num;
 }
 
 void ActorMultiVertex::AMV_TweenState::MakeWeightedAverage(
     AMV_TweenState& average_out, const AMV_TweenState& ts1,
     const AMV_TweenState& ts2, float percent_between) {
-  average_out.line_width =
-      lerp(percent_between, ts1.line_width, ts2.line_width);
-  for (size_t v = 0; v < average_out.vertices.size(); ++v) {
+  average_out.line_width_ =
+      lerp(percent_between, ts1.line_width_, ts2.line_width_);
+  for (size_t v = 0; v < average_out.vertices_.size(); ++v) {
     WeightedAvergeOfRSVs(
-        average_out.vertices[v], ts1.vertices[v], ts2.vertices[v],
+        average_out.vertices_[v], ts1.vertices_[v], ts2.vertices_[v],
         percent_between);
   }
 }
 
 int ActorMultiVertex::AMV_TweenState::GetSafeNumToDraw(
     DrawMode dm, int num) const {
-  int max = vertices.size() - FirstToDraw;
+  int max = vertices_.size() - first_to_draw_;
   // NumToDraw == -1 draws all vertices
   if (num == -1 || num > max) {
     num = max;
@@ -837,11 +838,11 @@ class LunaActorMultiVertex : public Luna<ActorMultiVertex> {
 
   static int GetSpline(T* p, lua_State* L) {
     size_t i = static_cast<size_t>(IArg(1) - 1);
-    if (i >= ActorMultiVertex::num_vert_splines) {
+    if (i >= ActorMultiVertex::kNumVertSplines) {
       luaL_error(
           L,
           "Spline index must be greater than 0 and less than or equal to %zu.",
-          ActorMultiVertex::num_vert_splines);
+          ActorMultiVertex::kNumVertSplines);
     }
     p->GetSpline(i)->PushSelf(L);
     return 1;
@@ -852,9 +853,9 @@ class LunaActorMultiVertex : public Luna<ActorMultiVertex> {
     COMMON_RETURN_SELF;
   }
 
-  DEFINE_METHOD(GetUseAnimationState, _use_animation_state);
+  DEFINE_METHOD(GetUseAnimationState, use_animation_state_);
   static int SetUseAnimationState(T* p, lua_State* L) {
-    p->_use_animation_state = BArg(1);
+    p->use_animation_state_ = BArg(1);
     COMMON_RETURN_SELF;
   }
   static int GetNumStates(T* p, lua_State* L) {
@@ -884,19 +885,19 @@ class LunaActorMultiVertex : public Luna<ActorMultiVertex> {
     DATA_ERROR(index);
     lua_rawgeti(L, index, 1);
     DATA_ERROR(-1);
-    SET_SIDE(1, rect.left);
-    SET_SIDE(2, rect.top);
-    SET_SIDE(3, rect.right);
-    SET_SIDE(4, rect.bottom);
+    SET_SIDE(1, rect_.left_);
+    SET_SIDE(2, rect_.top_);
+    SET_SIDE(3, rect_.right_);
+    SET_SIDE(4, rect_.bottom_);
     lua_pop(L, 1);
-    SET_SIDE(2, delay);
+    SET_SIDE(2, delay_);
     const float width_ratio = tex->GetImageToTexCoordsRatioX();
     const float height_ratio = tex->GetImageToTexCoordsRatioY();
-    state.rect.left = state.rect.left * width_ratio;
-    state.rect.top = state.rect.top * height_ratio;
+    state.rect_.left_ = state.rect_.left_ * width_ratio;
+    state.rect_.top_ = state.rect_.top_ * height_ratio;
     // Pixel centers are at .5, so add an extra pixel to the size to adjust.
-    state.rect.right = (state.rect.right * width_ratio) + width_ratio;
-    state.rect.bottom = (state.rect.bottom * height_ratio) + height_ratio;
+    state.rect_.right_ = (state.rect_.right_ * width_ratio) + width_ratio;
+    state.rect_.bottom_ = (state.rect_.bottom_ * height_ratio) + height_ratio;
 #undef SET_SIDE
 #undef DATA_ERROR
   }
@@ -938,20 +939,20 @@ class LunaActorMultiVertex : public Luna<ActorMultiVertex> {
         p->GetStateData(ValidStateIndex(p, L, 1));
     lua_createtable(L, 2, 0);
     lua_createtable(L, 4, 0);
-    lua_pushnumber(L, static_cast<lua_Number>(state.rect.left) * width_ratio);
+    lua_pushnumber(L, static_cast<lua_Number>(state.rect_.left_) * width_ratio);
     lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, static_cast<lua_Number>(state.rect.top) * height_ratio);
+    lua_pushnumber(L, static_cast<lua_Number>(state.rect_.top_) * height_ratio);
     lua_rawseti(L, -2, 2);
     lua_pushnumber(
-        L,
-        (static_cast<lua_Number>(state.rect.right) - width_pix) * width_ratio);
+        L, (static_cast<lua_Number>(state.rect_.right_) - width_pix) *
+               width_ratio);
     lua_rawseti(L, -2, 3);
     lua_pushnumber(
-        L, (static_cast<lua_Number>(state.rect.bottom) + height_pix) *
+        L, (static_cast<lua_Number>(state.rect_.bottom_) + height_pix) *
                height_ratio);
     lua_rawseti(L, -2, 4);
     lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, state.delay);
+    lua_pushnumber(L, state.delay_);
     lua_rawseti(L, -2, 2);
     return 1;
   }
@@ -1019,9 +1020,9 @@ class LunaActorMultiVertex : public Luna<ActorMultiVertex> {
     p->UpdateAnimationState(true);
     COMMON_RETURN_SELF;
   }
-  DEFINE_METHOD(GetDecodeMovie, _decode_movie);
+  DEFINE_METHOD(GetDecodeMovie, decode_movie_);
   static int SetDecodeMovie(T* p, lua_State* L) {
-    p->_decode_movie = BArg(1);
+    p->decode_movie_ = BArg(1);
     COMMON_RETURN_SELF;
   }
 

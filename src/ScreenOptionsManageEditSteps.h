@@ -28,7 +28,7 @@ class ScreenOptionsManageEditSteps : public ScreenOptions {
 
   Steps* GetStepsWithFocus() const;
 
-  std::vector<Steps*> m_vpSteps;
+  std::vector<Steps*> steps_;
 
   ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };

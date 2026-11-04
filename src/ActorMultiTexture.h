@@ -28,20 +28,20 @@ class ActorMultiTexture : public Actor {
 
   void SetSizeFromTexture(RageTexture* pTexture);
   void SetTextureCoords(const RectF& r);
-  void SetEffectMode(EffectMode em) { m_EffectMode = em; }
+  void SetEffectMode(EffectMode em) { effect_mode_ = em; }
 
   virtual void PushSelf(lua_State* L);
 
  private:
-  EffectMode m_EffectMode;
+  EffectMode effect_mode_;
   struct TextureUnitState {
     TextureUnitState()
-        : m_pTexture(nullptr), m_TextureMode(TextureMode_Modulate) {}
-    RageTexture* m_pTexture;
-    TextureMode m_TextureMode;
+        : texture_(nullptr), texture_mode_(TextureMode_Modulate) {}
+    RageTexture* texture_;
+    TextureMode texture_mode_;
   };
-  std::vector<TextureUnitState> m_aTextureUnits;
-  RectF m_Rect;
+  std::vector<TextureUnitState> texture_units_;
+  RectF rect_;
 };
 
 #endif

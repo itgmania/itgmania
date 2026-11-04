@@ -28,46 +28,46 @@ int GetCreditsRequiredToPlayStyle(const Style* style);
 class GameCommand {
  public:
   GameCommand()
-      : m_Commands(),
-        m_sName(""),
-        m_sText(""),
-        m_bInvalid(true),
-        m_sInvalidReason(""),
-        m_iIndex(-1),
-        m_pStyle(nullptr),
-        m_pm(PlayMode_Invalid),
-        m_dc(Difficulty_Invalid),
-        m_CourseDifficulty(Difficulty_Invalid),
-        m_sAnnouncer(""),
-        m_sPreferredModifiers(""),
-        m_sStageModifiers(""),
-        m_sScreen(""),
-        m_LuaFunction(),
-        m_pSong(nullptr),
-        m_pSteps(nullptr),
-        m_pCourse(nullptr),
-        m_pTrail(nullptr),
-        m_pCharacter(nullptr),
-        m_SetEnv(),
-        m_SetPref(),
-        m_sSongGroup(""),
-        m_SortOrder(SortOrder_Invalid),
-        m_sSoundPath(""),
-        m_vsScreensToPrepare(),
-        m_iWeightPounds(-1),
-        m_iGoalCalories(-1),
-        m_GoalType(GoalType_Invalid),
-        m_sProfileID(""),
-        m_bInsertCredit(false),
-        m_bClearCredits(false),
-        m_bStopMusic(false),
-        m_bApplyDefaultOptions(false),
-        m_bActivatePremiumFree(false),
-        m_bFadeMusic(false),
-        m_fMusicFadeOutVolume(-1),
-        m_fMusicFadeOutSeconds(-1),
-        m_bApplyCommitsScreens(true) {
-    m_LuaFunction.Unset();
+      : commands_(),
+        name_(""),
+        text_(""),
+        invalid_(true),
+        invalid_reason_(""),
+        index_(-1),
+        style_(nullptr),
+        pm_(PlayMode_Invalid),
+        dc_(Difficulty_Invalid),
+        course_difficulty_(Difficulty_Invalid),
+        announcer_(""),
+        preferred_modifiers_(""),
+        stage_modifiers_(""),
+        screen_(""),
+        lua_function_(),
+        song_(nullptr),
+        steps_(nullptr),
+        course_(nullptr),
+        trail_(nullptr),
+        character_(nullptr),
+        set_env_(),
+        set_pref_(),
+        song_group_(""),
+        sort_order_(SortOrder_Invalid),
+        sound_path_(""),
+        screens_to_prepare_(),
+        weight_pounds_(-1),
+        goal_calories_(-1),
+        goal_type_(GoalType_Invalid),
+        profile_id_(""),
+        insert_credit_(false),
+        clear_credits_(false),
+        stop_music_(false),
+        apply_default_options_(false),
+        activate_premium_free_(false),
+        fade_music_(false),
+        music_fade_out_volume_(-1),
+        music_fade_out_seconds_(-1),
+        apply_commits_screens_(true) {
+    lua_function_.Unset();
   }
   void Init();
 
@@ -89,63 +89,63 @@ class GameCommand {
 
   /* If true, Apply() will apply m_sScreen. If false, it won't, and you need
    * to do it yourself. */
-  void ApplyCommitsScreens(bool bOn) { m_bApplyCommitsScreens = bOn; }
+  void ApplyCommitsScreens(bool bOn) { apply_commits_screens_ = bOn; }
 
   // Same as what was passed to Load. We need to keep the original commands
   // so that we know the order of commands when it comes time to Apply.
-  Commands m_Commands;
+  Commands commands_;
 
-  std::string m_sName;  // choice name
-  std::string m_sText;  // display text
-  bool m_bInvalid;
-  std::string m_sInvalidReason;
-  int m_iIndex;
-  const Style* m_pStyle;
-  PlayMode m_pm;
-  Difficulty m_dc;
-  CourseDifficulty m_CourseDifficulty;
-  std::string m_sAnnouncer;
-  std::string m_sPreferredModifiers;
-  std::string m_sStageModifiers;
-  std::string m_sScreen;
-  LuaReference m_LuaFunction;
-  Song* m_pSong;
-  Steps* m_pSteps;
-  Course* m_pCourse;
-  Trail* m_pTrail;
-  Character* m_pCharacter;
-  std::map<std::string, std::string> m_SetEnv;
-  std::map<std::string, std::string> m_SetPref;
-  std::string m_sSongGroup;
-  SortOrder m_SortOrder;
-  std::string m_sSoundPath;  // "" for no sound
-  std::vector<std::string> m_vsScreensToPrepare;
+  std::string name_;  // choice name
+  std::string text_;  // display text
+  bool invalid_;
+  std::string invalid_reason_;
+  int index_;
+  const Style* style_;
+  PlayMode pm_;
+  Difficulty dc_;
+  CourseDifficulty course_difficulty_;
+  std::string announcer_;
+  std::string preferred_modifiers_;
+  std::string stage_modifiers_;
+  std::string screen_;
+  LuaReference lua_function_;
+  Song* song_;
+  Steps* steps_;
+  Course* course_;
+  Trail* trail_;
+  Character* character_;
+  std::map<std::string, std::string> set_env_;
+  std::map<std::string, std::string> set_pref_;
+  std::string song_group_;
+  SortOrder sort_order_;
+  std::string sound_path_;  // "" for no sound
+  std::vector<std::string> screens_to_prepare_;
   /**
    * @brief What is the player's weight in pounds?
    *
    * If this value is -1, then no weight was specified. */
-  int m_iWeightPounds;
-  int m_iGoalCalories;  // -1 == none specified
-  GoalType m_GoalType;
-  std::string m_sProfileID;
+  int weight_pounds_;
+  int goal_calories_;  // -1 == none specified
+  GoalType goal_type_;
+  std::string profile_id_;
 
-  bool m_bInsertCredit;
-  bool m_bClearCredits;
-  bool m_bStopMusic;
-  bool m_bApplyDefaultOptions;
-  bool m_bActivatePremiumFree;
+  bool insert_credit_;
+  bool clear_credits_;
+  bool stop_music_;
+  bool apply_default_options_;
+  bool activate_premium_free_;
   // sm-ssc also adds:
-  bool m_bFadeMusic;
-  float m_fMusicFadeOutVolume;
+  bool fade_music_;
+  float music_fade_out_volume_;
   // currently, GameSoundManager uses consts for fade out/in times, so this
   // is kind of pointless, but I want to have it working eventually. -aj
-  float m_fMusicFadeOutSeconds;
+  float music_fade_out_seconds_;
 
   // Lua
   void PushSelf(lua_State* L);
 
  private:
-  bool m_bApplyCommitsScreens;
+  bool apply_commits_screens_;
 };
 
 #endif

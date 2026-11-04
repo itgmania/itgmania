@@ -8,44 +8,44 @@
 #include "RageThreads.h"
 #include "arch/arch_default.h"
 
-bool ArchHooks::g_bQuitting = false;
-bool ArchHooks::g_bToggleWindowed = false;
+bool ArchHooks::quitting_ = false;
+bool ArchHooks::toggle_windowed_ = false;
 // Keep from pulling RageThreads.h into ArchHooks.h
 static RageMutex g_Mutex("ArchHooks");
 ArchHooks* HOOKS =
     nullptr;  // global and accessible from anywhere in our program
 
-ArchHooks::ArchHooks() : m_bHasFocus(true), m_bFocusChanged(false) {}
+ArchHooks::ArchHooks() : has_focus_(true), focus_changed_(false) {}
 
 bool ArchHooks::GetAndClearToggleWindowed() {
   LockMut(g_Mutex);
-  bool bToggle = g_bToggleWindowed;
+  bool bToggle = toggle_windowed_;
 
-  g_bToggleWindowed = false;
+  toggle_windowed_ = false;
   return bToggle;
 }
 
 void ArchHooks::SetToggleWindowed() {
   LockMut(g_Mutex);
-  g_bToggleWindowed = true;
+  toggle_windowed_ = true;
 }
 
 void ArchHooks::SetHasFocus(bool bHasFocus) {
-  if (bHasFocus == m_bHasFocus) {
+  if (bHasFocus == has_focus_) {
     return;
   }
-  m_bHasFocus = bHasFocus;
+  has_focus_ = bHasFocus;
 
   LOG->Trace("App %s focus", bHasFocus ? "has" : "doesn't have");
   LockMut(g_Mutex);
-  m_bFocusChanged = true;
+  focus_changed_ = true;
 }
 
 bool ArchHooks::AppFocusChanged() {
   LockMut(g_Mutex);
-  bool bFocusChanged = m_bFocusChanged;
+  bool bFocusChanged = focus_changed_;
 
-  m_bFocusChanged = false;
+  focus_changed_ = false;
   return bFocusChanged;
 }
 

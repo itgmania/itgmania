@@ -14,17 +14,17 @@ class RageBitmapTexture : public RageTexture {
   RageBitmapTexture(RageTextureID name);
   virtual ~RageBitmapTexture();
   /* only called by RageTextureManager::InvalidateTextures */
-  virtual void Invalidate() { m_uTexHandle = 0; /* don't Destroy() */ }
+  virtual void Invalidate() { tex_handle_ = 0; /* don't Destroy() */ }
   virtual void Reload();
   virtual uintptr_t GetTexHandle() const {
-    return m_uTexHandle;
+    return tex_handle_;
   };  // accessed by RageDisplay
 
  private:
   void Create();  // called by constructor and Reload
   void Destroy();
   uintptr_t
-      m_uTexHandle;  // treat as unsigned in OpenGL, IDirect3DTexture9* for D3D
+      tex_handle_;  // treat as unsigned in OpenGL, IDirect3DTexture9* for D3D
 };
 
 #endif

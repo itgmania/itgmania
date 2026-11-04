@@ -27,8 +27,8 @@ Preference<float> g_fSoundVolumeAttract("SoundVolumeAttract", 1.0f);
 
 REGISTER_SCREEN_CLASS(ScreenAttract);
 void ScreenAttract::Init() {
-  RESET_GAME_STATE.Load(m_sName, "ResetGameState");
-  ATTRACT_VOLUME.Load(m_sName, "AttractVolume");
+  RESET_GAME_STATE.Load(name_, "ResetGameState");
+  ATTRACT_VOLUME.Load(name_, "AttractVolume");
   ScreenWithMenuElements::Init();
 }
 
@@ -37,7 +37,7 @@ void ScreenAttract::BeginScreen() {
     GAMESTATE->Reset();
   }
 
-  GAMESTATE->VisitAttractScreen(m_sName);
+  GAMESTATE->VisitAttractScreen(name_);
   ScreenAttract::SetAttractVolume(ATTRACT_VOLUME);
 
   ScreenWithMenuElements::BeginScreen();
@@ -75,11 +75,11 @@ void ScreenAttract::Cancel(ScreenMessage smSendWhenDone) {
 
 bool ScreenAttract::AttractInput(
     const InputEventPlus& input, ScreenWithMenuElements* pScreen) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;  // don't care
   }
 
-  switch (input.MenuI) {
+  switch (input.menu_i_) {
     case GAME_BUTTON_BACK:
       if (!BACK_GOES_TO_START_SCREEN) {
         break;
@@ -90,7 +90,7 @@ bool ScreenAttract::AttractInput(
       // If we're not in a game and there aren't enough credits to start,
       // eat the input and do nothing.
       if (GAMESTATE->GetCoinMode() == CoinMode_Pay &&
-          GAMESTATE->m_iCoins < PREFSMAN->m_iCoinsPerCredit &&
+          GAMESTATE->coins_ < PREFSMAN->coins_per_credit_ &&
           GAMESTATE->GetNumSidesJoined() == 0) {
         return true;
       }
@@ -100,7 +100,7 @@ bool ScreenAttract::AttractInput(
 
       // HandleGlobalInputs() already played the coin sound. Don't play it
       // again.
-      if (input.MenuI != GAME_BUTTON_COIN) {
+      if (input.menu_i_ != GAME_BUTTON_COIN) {
         SCREENMAN->PlayStartSound();
       }
 
@@ -114,7 +114,7 @@ bool ScreenAttract::AttractInput(
     return false;
   }
 
-  switch (input.MenuI) {
+  switch (input.menu_i_) {
     case GAME_BUTTON_LEFT:
     case GAME_BUTTON_RIGHT:
       SCREENMAN->PostMessageToTopScreen(SM_BeginFadingOut, 0);
@@ -134,7 +134,7 @@ void ScreenAttract::HandleScreenMessage(const ScreenMessage SM) {
       StartTransitioningScreen(SM_GoToNextScreen);
     }
   } else if (SM == SM_GoToStartScreen) {
-    GoToStartScreen(m_sName);
+    GoToStartScreen(name_);
   } else if (SM == SM_GoToNextScreen) {
     /* Look at the def of the screen we're going to; if it has a music theme
      * element and it's the same as the one we're playing now, don't stop.
@@ -142,7 +142,7 @@ void ScreenAttract::HandleScreenMessage(const ScreenMessage SM) {
      * music before we fade out. */
     bool bMusicChanging = false;
     if (PLAY_MUSIC) {
-      bMusicChanging = THEME->GetPathS(m_sName, "music") !=
+      bMusicChanging = THEME->GetPathS(name_, "music") !=
                        THEME->GetPathS(
                            GetNextScreenName(), "music",
                            true);  // GetPath optional on the next screen

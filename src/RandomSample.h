@@ -24,8 +24,8 @@ class RandomSample {
   bool LoadSound(std::string sSoundFilePath);
   int GetNextToPlay();
 
-  std::vector<RageSound*> m_pSamples;
-  int m_iIndexLastPlayed;
+  std::vector<RageSound*> samples_;
+  int index_last_played_;
 };
 
 #endif

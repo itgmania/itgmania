@@ -52,23 +52,23 @@ class GrooveRadar : public ActorFrame {
     void SetFromValues(std::vector<float> vals);
 
     void SetRadius(float f) {
-      m_size.x = f;
-      m_size.y = f;
+      size_.x_ = f;
+      size_.y_ = f;
     }
 
-    bool m_bValuesVisible;
-    float m_PercentTowardNew;
-    float m_fValuesNew[NUM_RadarCategory];
-    float m_fValuesOld[NUM_RadarCategory];
+    bool values_visible_;
+    float percent_toward_new_;
+    float values_new_[NUM_RadarCategory];
+    float values_old_[NUM_RadarCategory];
 
-    PlayerNumber m_PlayerNumber;
+    PlayerNumber player_number_;
   };
 
-  AutoActor m_sprRadarBase;
-  GrooveRadarValueMap m_GrooveRadarValueMap[NUM_PLAYERS];
+  AutoActor spr_radar_base_;
+  GrooveRadarValueMap groove_radar_value_map_[NUM_PLAYERS];
   // xxx: convert Sprite to AutoActor -aj
-  Sprite m_sprRadarLabels[NUM_RadarCategory];
-  ActorFrame m_Frame;
+  Sprite spr_radar_labels_[NUM_RadarCategory];
+  ActorFrame frame_;
 };
 
 #endif

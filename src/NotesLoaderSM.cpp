@@ -36,13 +36,13 @@
 // -Kyz
 /****************************************************************/
 struct SMSongTagInfo {
-  SMLoader* loader;
-  Song* song;
-  const MsdFile::value_t* params;
-  const std::string& path;
-  std::vector<std::pair<float, float>> BPMChanges, Stops;
+  SMLoader* loader_;
+  Song* song_;
+  const MsdFile::value_t* params_;
+  const std::string& path_;
+  std::vector<std::pair<float, float>> bpm_changes_, stops_;
   SMSongTagInfo(SMLoader* l, Song* s, const std::string& p)
-      : loader(l), song(s), path(p) {}
+      : loader_(l), song_(s), path_(p) {}
 };
 
 typedef void (*song_tag_func_t)(SMSongTagInfo& info);
@@ -50,179 +50,181 @@ typedef void (*song_tag_func_t)(SMSongTagInfo& info);
 // Functions for song tags go below this line. -Kyz
 /****************************************************************/
 void SMSetTitle(SMSongTagInfo& info) {
-  info.song->m_sMainTitle = (*info.params)[1];
-  info.loader->SetSongTitle((*info.params)[1]);
+  info.song_->main_title_ = (*info.params_)[1];
+  info.loader_->SetSongTitle((*info.params_)[1]);
 }
 void SMSetSubtitle(SMSongTagInfo& info) {
-  info.song->m_sSubTitle = (*info.params)[1];
+  info.song_->sub_title_ = (*info.params_)[1];
 }
 void SMSetArtist(SMSongTagInfo& info) {
-  info.song->m_sArtist = (*info.params)[1];
+  info.song_->artist_ = (*info.params_)[1];
 }
 void SMSetTitleTranslit(SMSongTagInfo& info) {
-  info.song->m_sMainTitleTranslit = (*info.params)[1];
+  info.song_->main_title_translit_ = (*info.params_)[1];
 }
 void SMSetSubtitleTranslit(SMSongTagInfo& info) {
-  info.song->m_sSubTitleTranslit = (*info.params)[1];
+  info.song_->sub_title_translit_ = (*info.params_)[1];
 }
 void SMSetArtistTranslit(SMSongTagInfo& info) {
-  info.song->m_sArtistTranslit = (*info.params)[1];
+  info.song_->artist_translit_ = (*info.params_)[1];
 }
 void SMSetGenre(SMSongTagInfo& info) {
-  info.song->m_sGenre = (*info.params)[1];
+  info.song_->genre_ = (*info.params_)[1];
 }
 void SMSetCredit(SMSongTagInfo& info) {
-  info.song->m_sCredit = (*info.params)[1];
+  info.song_->credit_ = (*info.params_)[1];
 }
 void SMSetBanner(SMSongTagInfo& info) {
-  info.song->m_sBannerFile = (*info.params)[1];
+  info.song_->banner_file_ = (*info.params_)[1];
 }
 void SMSetBackground(SMSongTagInfo& info) {
-  info.song->m_sBackgroundFile = (*info.params)[1];
+  info.song_->background_file_ = (*info.params_)[1];
 }
 void SMSetLyricsPath(SMSongTagInfo& info) {
-  info.song->m_sLyricsFile = (*info.params)[1];
+  info.song_->lyrics_file_ = (*info.params_)[1];
 }
 void SMSetCDTitle(SMSongTagInfo& info) {
-  info.song->m_sCDTitleFile = (*info.params)[1];
+  info.song_->cd_title_file_ = (*info.params_)[1];
 }
 void SMSetMusic(SMSongTagInfo& info) {
-  info.song->m_sMusicFile = (*info.params)[1];
+  info.song_->music_file_ = (*info.params_)[1];
 }
 void SMSetOffset(SMSongTagInfo& info) {
-  info.song->m_SongTiming.m_fBeat0OffsetInSeconds =
-      StringToFloat((*info.params)[1]);
+  info.song_->song_timing_.beat0_offset_in_seconds_ =
+      StringToFloat((*info.params_)[1]);
 }
 void SMSetBPMs(SMSongTagInfo& info) {
-  info.BPMChanges.clear();
-  info.loader->ParseBPMs(info.BPMChanges, (*info.params)[1]);
+  info.bpm_changes_.clear();
+  info.loader_->ParseBPMs(info.bpm_changes_, (*info.params_)[1]);
 }
 void SMSetStops(SMSongTagInfo& info) {
-  info.Stops.clear();
-  info.loader->ParseStops(info.Stops, (*info.params)[1]);
+  info.stops_.clear();
+  info.loader_->ParseStops(info.stops_, (*info.params_)[1]);
 }
 void SMSetDelays(SMSongTagInfo& info) {
-  info.loader->ProcessDelays(info.song->m_SongTiming, (*info.params)[1]);
+  info.loader_->ProcessDelays(info.song_->song_timing_, (*info.params_)[1]);
 }
 void SMSetTimeSignatures(SMSongTagInfo& info) {
-  info.loader->ProcessTimeSignatures(
-      info.song->m_SongTiming, (*info.params)[1]);
+  info.loader_->ProcessTimeSignatures(
+      info.song_->song_timing_, (*info.params_)[1]);
 }
 void SMSetTickCounts(SMSongTagInfo& info) {
-  info.loader->ProcessTickcounts(info.song->m_SongTiming, (*info.params)[1]);
+  info.loader_->ProcessTickcounts(info.song_->song_timing_, (*info.params_)[1]);
 }
 void SMSetSampleStart(SMSongTagInfo& info) {
-  info.song->m_fMusicSampleStartSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song_->music_sample_start_seconds_ = HHMMSSToSeconds((*info.params_)[1]);
 }
 void SMSetSampleLength(SMSongTagInfo& info) {
-  info.song->m_fMusicSampleLengthSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song_->music_sample_length_seconds_ =
+      HHMMSSToSeconds((*info.params_)[1]);
 }
 void SMSetDisplayBPM(SMSongTagInfo& info) {
   // #DISPLAYBPM:[xxx][xxx:xxx]|[*];
-  if ((*info.params)[1] == "*") {
-    info.song->m_DisplayBPMType = DISPLAY_BPM_RANDOM;
+  if ((*info.params_)[1] == "*") {
+    info.song_->display_bpm_type_ = DISPLAY_BPM_RANDOM;
   } else {
-    info.song->m_DisplayBPMType = DISPLAY_BPM_SPECIFIED;
-    info.song->m_fSpecifiedBPMMin = StringToFloat((*info.params)[1]);
-    if ((*info.params)[2].empty()) {
-      info.song->m_fSpecifiedBPMMax = info.song->m_fSpecifiedBPMMin;
+    info.song_->display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
+    info.song_->specified_bpm_min_ = StringToFloat((*info.params_)[1]);
+    if ((*info.params_)[2].empty()) {
+      info.song_->specified_bpm_max_ = info.song_->specified_bpm_min_;
     } else {
-      info.song->m_fSpecifiedBPMMax = StringToFloat((*info.params)[2]);
+      info.song_->specified_bpm_max_ = StringToFloat((*info.params_)[2]);
     }
   }
 }
 void SMSetSelectable(SMSongTagInfo& info) {
-  if (EqualsNoCase((*info.params)[1], "YES")) {
-    info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS;
-  } else if (EqualsNoCase((*info.params)[1], "NO")) {
-    info.song->m_SelectionDisplay = info.song->SHOW_NEVER;
+  if (EqualsNoCase((*info.params_)[1], "YES")) {
+    info.song_->selection_display_ = info.song_->SHOW_ALWAYS;
+  } else if (EqualsNoCase((*info.params_)[1], "NO")) {
+    info.song_->selection_display_ = info.song_->SHOW_NEVER;
   }
   // ROULETTE from 3.9. It was removed since UnlockManager can serve
   // the same purpose somehow. This, of course, assumes you're using
   // unlocks. -aj
-  else if (EqualsNoCase((*info.params)[1], "ROULETTE")) {
-    info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS;
+  else if (EqualsNoCase((*info.params_)[1], "ROULETTE")) {
+    info.song_->selection_display_ = info.song_->SHOW_ALWAYS;
   }
   /* The following two cases are just fixes to make sure simfiles that
    * used 3.9+ features are not excluded here */
   else if (
-      EqualsNoCase((*info.params)[1], "ES") ||
-      EqualsNoCase((*info.params)[1], "OMES")) {
-    info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS;
-  } else if (StringToInt((*info.params)[1]) > 0) {
-    info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS;
+      EqualsNoCase((*info.params_)[1], "ES") ||
+      EqualsNoCase((*info.params_)[1], "OMES")) {
+    info.song_->selection_display_ = info.song_->SHOW_ALWAYS;
+  } else if (StringToInt((*info.params_)[1]) > 0) {
+    info.song_->selection_display_ = info.song_->SHOW_ALWAYS;
   } else {
     LOG->UserLog(
-        "Song file", info.path,
+        "Song file", info.path_,
         "has an unknown #SELECTABLE value, \"%s\"; ignored.",
-        (*info.params)[1].c_str());
+        (*info.params_)[1].c_str());
   }
 }
 void SMSetBGChanges(SMSongTagInfo& info) {
-  info.loader->ProcessBGChanges(
-      *info.song, (*info.params)[0], info.path, (*info.params)[1]);
+  info.loader_->ProcessBGChanges(
+      *info.song_, (*info.params_)[0], info.path_, (*info.params_)[1]);
 }
 void SMSetFGChanges(SMSongTagInfo& info) {
   std::vector<std::vector<std::string>> aFGChanges;
-  info.loader->ParseBGChangesString(
-      (*info.params)[1], aFGChanges, info.song->GetSongDir());
+  info.loader_->ParseBGChangesString(
+      (*info.params_)[1], aFGChanges, info.song_->GetSongDir());
 
   for (const auto& b : aFGChanges) {
     BackgroundChange change;
-    if (info.loader->LoadFromBGChangesVector(change, b)) {
-      info.song->AddForegroundChange(change);
+    if (info.loader_->LoadFromBGChangesVector(change, b)) {
+      info.song_->AddForegroundChange(change);
     }
   }
 }
 void SMSetKeysounds(SMSongTagInfo& info) {
-  split((*info.params)[1], ",", info.song->m_vsKeysoundFile);
+  split((*info.params_)[1], ",", info.song_->keysound_file_);
 }
 void SMSetAttacks(SMSongTagInfo& info) {
-  info.loader->ProcessAttackString(info.song->m_sAttackString, (*info.params));
-  info.loader->ProcessAttacks(info.song->m_Attacks, (*info.params));
+  info.loader_->ProcessAttackString(
+      info.song_->attack_string_, (*info.params_));
+  info.loader_->ProcessAttacks(info.song_->attacks_, (*info.params_));
 }
 
 typedef std::map<std::string, song_tag_func_t> song_handler_map_t;
 
 struct sm_parser_helper_t {
-  song_handler_map_t song_tag_handlers;
+  song_handler_map_t song_tag_handlers_;
   // Unless signed, the comments in this tag list are not by me.  They were
   // moved here when converting from the else if chain. -Kyz
   sm_parser_helper_t() {
-    song_tag_handlers["TITLE"] = &SMSetTitle;
-    song_tag_handlers["SUBTITLE"] = &SMSetSubtitle;
-    song_tag_handlers["ARTIST"] = &SMSetArtist;
-    song_tag_handlers["TITLETRANSLIT"] = &SMSetTitleTranslit;
-    song_tag_handlers["SUBTITLETRANSLIT"] = &SMSetSubtitleTranslit;
-    song_tag_handlers["ARTISTTRANSLIT"] = &SMSetArtistTranslit;
-    song_tag_handlers["GENRE"] = &SMSetGenre;
-    song_tag_handlers["CREDIT"] = &SMSetCredit;
-    song_tag_handlers["BANNER"] = &SMSetBanner;
-    song_tag_handlers["BACKGROUND"] = &SMSetBackground;
+    song_tag_handlers_["TITLE"] = &SMSetTitle;
+    song_tag_handlers_["SUBTITLE"] = &SMSetSubtitle;
+    song_tag_handlers_["ARTIST"] = &SMSetArtist;
+    song_tag_handlers_["TITLETRANSLIT"] = &SMSetTitleTranslit;
+    song_tag_handlers_["SUBTITLETRANSLIT"] = &SMSetSubtitleTranslit;
+    song_tag_handlers_["ARTISTTRANSLIT"] = &SMSetArtistTranslit;
+    song_tag_handlers_["GENRE"] = &SMSetGenre;
+    song_tag_handlers_["CREDIT"] = &SMSetCredit;
+    song_tag_handlers_["BANNER"] = &SMSetBanner;
+    song_tag_handlers_["BACKGROUND"] = &SMSetBackground;
     // Save "#LYRICS" for later, so we can add an internal lyrics tag.
-    song_tag_handlers["LYRICSPATH"] = &SMSetLyricsPath;
-    song_tag_handlers["CDTITLE"] = &SMSetCDTitle;
-    song_tag_handlers["MUSIC"] = &SMSetMusic;
-    song_tag_handlers["OFFSET"] = &SMSetOffset;
-    song_tag_handlers["BPMS"] = &SMSetBPMs;
-    song_tag_handlers["STOPS"] = &SMSetStops;
-    song_tag_handlers["FREEZES"] = &SMSetStops;
-    song_tag_handlers["DELAYS"] = &SMSetDelays;
-    song_tag_handlers["TIMESIGNATURES"] = &SMSetTimeSignatures;
-    song_tag_handlers["TICKCOUNTS"] = &SMSetTickCounts;
-    song_tag_handlers["SAMPLESTART"] = &SMSetSampleStart;
-    song_tag_handlers["SAMPLELENGTH"] = &SMSetSampleLength;
-    song_tag_handlers["DISPLAYBPM"] = &SMSetDisplayBPM;
-    song_tag_handlers["SELECTABLE"] = &SMSetSelectable;
+    song_tag_handlers_["LYRICSPATH"] = &SMSetLyricsPath;
+    song_tag_handlers_["CDTITLE"] = &SMSetCDTitle;
+    song_tag_handlers_["MUSIC"] = &SMSetMusic;
+    song_tag_handlers_["OFFSET"] = &SMSetOffset;
+    song_tag_handlers_["BPMS"] = &SMSetBPMs;
+    song_tag_handlers_["STOPS"] = &SMSetStops;
+    song_tag_handlers_["FREEZES"] = &SMSetStops;
+    song_tag_handlers_["DELAYS"] = &SMSetDelays;
+    song_tag_handlers_["TIMESIGNATURES"] = &SMSetTimeSignatures;
+    song_tag_handlers_["TICKCOUNTS"] = &SMSetTickCounts;
+    song_tag_handlers_["SAMPLESTART"] = &SMSetSampleStart;
+    song_tag_handlers_["SAMPLELENGTH"] = &SMSetSampleLength;
+    song_tag_handlers_["DISPLAYBPM"] = &SMSetDisplayBPM;
+    song_tag_handlers_["SELECTABLE"] = &SMSetSelectable;
     // It's a bit odd to have the tag that exists for backwards compatibility
     // in this list and not the replacement, but the BGCHANGES tag has a
     // number on the end, allowing up to NUM_BackgroundLayer tags, so it
     // can't fit in the map. -Kyz
-    song_tag_handlers["ANIMATIONS"] = &SMSetBGChanges;
-    song_tag_handlers["FGCHANGES"] = &SMSetFGChanges;
-    song_tag_handlers["KEYSOUNDS"] = &SMSetKeysounds;
+    song_tag_handlers_["ANIMATIONS"] = &SMSetBGChanges;
+    song_tag_handlers_["FGCHANGES"] = &SMSetFGChanges;
+    song_tag_handlers_["KEYSOUNDS"] = &SMSetKeysounds;
     // Attacks loaded from file
-    song_tag_handlers["ATTACKS"] = &SMSetAttacks;
+    song_tag_handlers_["ATTACKS"] = &SMSetAttacks;
     /* Tags that no longer exist, listed for posterity.  May their names
      * never be forgotten for their service to Stepmania. -Kyz
      * LASTBEATHINT: // unable to identify at this point: ignore
@@ -243,10 +245,10 @@ sm_parser_helper_t sm_parser_helper;
 /****************************************************************/
 
 void SMLoader::SetSongTitle(const std::string& title) {
-  this->songTitle = title;
+  this->song_title_ = title;
 }
 
-std::string SMLoader::GetSongTitle() const { return this->songTitle; }
+std::string SMLoader::GetSongTitle() const { return this->song_title_; }
 
 bool SMLoader::LoadFromDir(
     const std::string& sPath, Song& out, bool load_autosave) {
@@ -291,8 +293,8 @@ void SMLoader::LoadFromTokens(
     sStepsType = "para-single";
   }
 
-  out.m_StepsType = GAMEMAN->StringToStepsType(sStepsType);
-  out.m_StepsTypeStr = sStepsType;
+  out.steps_type_ = GAMEMAN->StringToStepsType(sStepsType);
+  out.steps_type_str_ = sStepsType;
   out.SetDescription(sDescription);
   out.SetCredit(sDescription);     // this is often used for both.
   out.SetChartName(sDescription);  // yeah, one more for good measure.
@@ -353,7 +355,7 @@ void SMLoader::ProcessBGChanges(
 
 void SMLoader::ProcessAttackString(
     std::vector<std::string>& attacks, MsdFile::value_t params) {
-  for (unsigned s = 1; s < params.params.size(); ++s) {
+  for (unsigned s = 1; s < params.params_.size(); ++s) {
     std::string tmp = params[s];
     Trim(tmp);
     if (tmp.size() > 0) {
@@ -366,7 +368,7 @@ void SMLoader::ProcessAttacks(AttackArray& attacks, MsdFile::value_t params) {
   Attack attack;
   float end = -9999;
 
-  for (unsigned j = 1; j < params.params.size(); ++j) {
+  for (unsigned j = 1; j < params.params_.size(); ++j) {
     std::vector<std::string> sBits;
     split(params[j], "=", sBits, false);
 
@@ -378,22 +380,22 @@ void SMLoader::ProcessAttacks(AttackArray& attacks, MsdFile::value_t params) {
     Trim(sBits[0]);
 
     if (!CompareNoCase(sBits[0], "TIME")) {
-      attack.fStartSecond = strtof(sBits[1].c_str(), nullptr);
+      attack.start_second_ = strtof(sBits[1].c_str(), nullptr);
     } else if (!CompareNoCase(sBits[0], "LEN")) {
-      attack.fSecsRemaining = strtof(sBits[1].c_str(), nullptr);
+      attack.secs_remaining_ = strtof(sBits[1].c_str(), nullptr);
     } else if (!CompareNoCase(sBits[0], "END")) {
       end = strtof(sBits[1].c_str(), nullptr);
     } else if (!CompareNoCase(sBits[0], "MODS")) {
       Trim(sBits[1]);
-      attack.sModifiers = sBits[1];
+      attack.modifiers_ = sBits[1];
 
       if (end != -9999) {
-        attack.fSecsRemaining = end - attack.fStartSecond;
+        attack.secs_remaining_ = end - attack.start_second_;
         end = -9999;
       }
 
-      if (attack.fSecsRemaining < 0.0f) {
-        attack.fSecsRemaining = 0.0f;
+      if (attack.secs_remaining_ < 0.0f) {
+        attack.secs_remaining_ = 0.0f;
       }
 
       attacks.push_back(attack);
@@ -512,7 +514,7 @@ void SMLoader::ProcessBPMsAndStops(
   istop = vStops.begin();
   istopend = vStops.end();
   for (/* istop */; istop != istopend && istop->first < 0; istop++) {
-    out.m_fBeat0OffsetInSeconds -= istop->second;
+    out.beat0_offset_in_seconds_ -= istop->second;
   }
 
   // Get rid of BPM changes that come before beat 0.  Positive BPMs before
@@ -897,78 +899,78 @@ bool SMLoader::LoadFromBGChangesVector(
 
   switch (aBGChangeValues.size()) {
     case 11:
-      change.m_def.m_sColor2 = aBGChangeValues[10];
-      Replace(change.m_def.m_sColor2, '^', ',');
-      change.m_def.m_sColor2 =
-          RageColor::NormalizeColorString(change.m_def.m_sColor2);
+      change.def_.color2_ = aBGChangeValues[10];
+      Replace(change.def_.color2_, '^', ',');
+      change.def_.color2_ =
+          RageColor::NormalizeColorString(change.def_.color2_);
       [[fallthrough]];
     case 10:
-      change.m_def.m_sColor1 = aBGChangeValues[9];
-      Replace(change.m_def.m_sColor1, '^', ',');
-      change.m_def.m_sColor1 =
-          RageColor::NormalizeColorString(change.m_def.m_sColor1);
+      change.def_.color1_ = aBGChangeValues[9];
+      Replace(change.def_.color1_, '^', ',');
+      change.def_.color1_ =
+          RageColor::NormalizeColorString(change.def_.color1_);
       [[fallthrough]];
     case 9:
-      change.m_sTransition = aBGChangeValues[8];
+      change.transition_ = aBGChangeValues[8];
       [[fallthrough]];
     case 8: {
       std::string tmp = aBGChangeValues[7];
       MakeLower(tmp);
       if ((tmp.find(".ini") != std::string::npos ||
            tmp.find(".xml") != std::string::npos) &&
-          !PREFSMAN->m_bQuirksMode) {
+          !PREFSMAN->quirks_mode_) {
         return false;
       }
-      change.m_def.m_sFile2 = aBGChangeValues[7];
+      change.def_.file2_ = aBGChangeValues[7];
       [[fallthrough]];
     }
     case 7:
-      change.m_def.m_sEffect = aBGChangeValues[6];
+      change.def_.effect_ = aBGChangeValues[6];
       [[fallthrough]];
     case 6:
       // param 7 overrides this.
       // Backward compatibility:
-      if (change.m_def.m_sEffect.empty()) {
+      if (change.def_.effect_.empty()) {
         bool bLoop = StringToInt(aBGChangeValues[5]) != 0;
         if (!bLoop) {
-          change.m_def.m_sEffect = SBE_StretchNoLoop;
+          change.def_.effect_ = SBE_StretchNoLoop;
         }
       }
       [[fallthrough]];
     case 5:
       // param 7 overrides this.
       // Backward compatibility:
-      if (change.m_def.m_sEffect.empty()) {
+      if (change.def_.effect_.empty()) {
         bool bRewindMovie = StringToInt(aBGChangeValues[4]) != 0;
         if (bRewindMovie) {
-          change.m_def.m_sEffect = SBE_StretchRewind;
+          change.def_.effect_ = SBE_StretchRewind;
         }
       }
       [[fallthrough]];
     case 4:
       // param 9 overrides this.
       // Backward compatibility:
-      if (change.m_sTransition.empty()) {
-        change.m_sTransition =
+      if (change.transition_.empty()) {
+        change.transition_ =
             (StringToInt(aBGChangeValues[3]) != 0) ? "CrossFade" : "";
       }
       [[fallthrough]];
     case 3:
-      change.m_fRate = StringToFloat(aBGChangeValues[2]);
+      change.rate_ = StringToFloat(aBGChangeValues[2]);
       [[fallthrough]];
     case 2: {
       std::string tmp = aBGChangeValues[1];
       MakeLower(tmp);
       if ((tmp.find(".ini") != std::string::npos ||
            tmp.find(".xml") != std::string::npos) &&
-          !PREFSMAN->m_bQuirksMode) {
+          !PREFSMAN->quirks_mode_) {
         return false;
       }
-      change.m_def.m_sFile1 = aBGChangeValues[1];
+      change.def_.file1_ = aBGChangeValues[1];
       [[fallthrough]];
     }
     case 1:
-      change.m_fStartBeat = StringToFloat(aBGChangeValues[0]);
+      change.start_beat_ = StringToFloat(aBGChangeValues[0]);
   }
 
   return aBGChangeValues.size() >= 2;
@@ -1028,7 +1030,7 @@ bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
         }
       }
 
-      if (!(out.m_StepsType == GAMEMAN->StringToStepsType(stepsType) &&
+      if (!(out.steps_type_ == GAMEMAN->StringToStepsType(stepsType) &&
             out.GetDescription() == description &&
             (out.GetDifficulty() == StringToDifficulty(difficulty) ||
              out.GetDifficulty() == OldStyleStringToDifficulty(difficulty)))) {
@@ -1056,8 +1058,8 @@ bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     return false;
   }
 
-  out.m_SongTiming.m_sFile = sPath;
-  out.m_sSongFileName = sPath;
+  out.song_timing_.file_ = sPath;
+  out.song_file_name_ = sPath;
 
   SMSongTagInfo reused_song_info(&*this, &out, sPath);
 
@@ -1067,10 +1069,10 @@ bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
     std::string sValueName = sParams[0];
     MakeUpper(sValueName);
 
-    reused_song_info.params = &sParams;
+    reused_song_info.params_ = &sParams;
     song_handler_map_t::iterator handler =
-        sm_parser_helper.song_tag_handlers.find(sValueName);
-    if (handler != sm_parser_helper.song_tag_handlers.end()) {
+        sm_parser_helper.song_tag_handlers_.find(sValueName);
+    if (handler != sm_parser_helper.song_tag_handlers_.end()) {
       /* Don't use GetMainAndSubTitlesFromFullTitle; that's only for
        * heuristically splitting other formats that *don't* natively support
        * #SUBTITLE. */
@@ -1102,7 +1104,7 @@ bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
 
   // Turn negative time changes into warps
   ProcessBPMsAndStops(
-      out.m_SongTiming, reused_song_info.BPMChanges, reused_song_info.Stops);
+      out.song_timing_, reused_song_info.bpm_changes_, reused_song_info.stops_);
 
   out.FixupBackgroundChanges();
   return true;
@@ -1241,8 +1243,8 @@ void SMLoader::GetApplicableFiles(
 
 std::vector<std::string> SMLoader::GetSongDirFiles(
     const std::string& sSongDir) {
-  if (!m_SongDirFiles.empty()) {
-    return m_SongDirFiles;
+  if (!song_dir_files_.empty()) {
+    return song_dir_files_;
   }
 
   ASSERT(!sSongDir.empty());
@@ -1262,11 +1264,11 @@ std::vector<std::string> SMLoader::GetSongDirFiles(
         vsDirs.push_back(f + "/");
       }
 
-      m_SongDirFiles.push_back(f.substr(sSongDir.size()));
+      song_dir_files_.push_back(f.substr(sSongDir.size()));
     }
   }
 
-  return m_SongDirFiles;
+  return song_dir_files_;
 }
 
 void SMLoader::ParseBGChangesString(

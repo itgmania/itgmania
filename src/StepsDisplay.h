@@ -38,40 +38,40 @@ class StepsDisplay : public ActorFrame {
 
  private:
   struct SetParams {
-    const Steps* pSteps;
-    const Trail* pTrail;
-    int iMeter;
-    StepsType st;  // pass because there may be a StepType icon
-    Difficulty dc;
-    CourseType ct;
+    const Steps* steps_;
+    const Trail* trail_;
+    int meter_;
+    StepsType st_;  // pass because there may be a StepType icon
+    Difficulty dc_;
+    CourseType ct_;
   };
   void SetInternal(const SetParams& params);
 
-  std::string m_sMetricsGroup;
+  std::string metrics_group_;
 
-  AutoActor m_sprFrame;
-  BitmapText m_textTicks;  // 111100000
-  BitmapText m_textMeter;  // 3, 9
+  AutoActor spr_frame_;
+  BitmapText text_ticks_;  // 111100000
+  BitmapText text_meter_;  // 3, 9
   /**
    * @brief The description of the chart.
    *
    * This is meant to be separate from the author of the chart. */
-  BitmapText m_textDescription;
+  BitmapText text_description_;
   /** @brief The author of the chart. */
-  BitmapText m_textAuthor;
-  AutoActor m_sprAutogen;  // visible if Steps and is autogen'd
-  AutoActor m_sprStepsType;
+  BitmapText text_author_;
+  AutoActor spr_autogen_;  // visible if Steps and is autogen'd
+  AutoActor spr_steps_type_;
 
-  ThemeMetric<int> m_iNumTicks;
-  ThemeMetric<int> m_iMaxTicks;
-  ThemeMetric<bool> m_bShowTicks;
-  ThemeMetric<bool> m_bShowMeter;
-  ThemeMetric<bool> m_bShowDescription;
-  ThemeMetric<bool> m_bShowCredit;
-  ThemeMetric<bool> m_bShowAutogen;
-  ThemeMetric<bool> m_bShowStepsType;
-  ThemeMetric<std::string> m_sZeroMeterString;
-  ThemeMetric<std::string> m_sMeterFormatString;
+  ThemeMetric<int> num_ticks_;
+  ThemeMetric<int> max_ticks_;
+  ThemeMetric<bool> show_ticks_;
+  ThemeMetric<bool> show_meter_;
+  ThemeMetric<bool> show_description_;
+  ThemeMetric<bool> show_credit_;
+  ThemeMetric<bool> show_autogen_;
+  ThemeMetric<bool> show_steps_type_;
+  ThemeMetric<std::string> zero_meter_string_;
+  ThemeMetric<std::string> meter_format_string_;
 };
 
 #endif

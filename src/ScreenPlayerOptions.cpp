@@ -30,34 +30,34 @@ void ScreenPlayerOptions::Init() {
   ScreenOptionsMaster::Init();
 
   FOREACH_PlayerNumber(p) {
-    m_sprDisqualify[p].Load(THEME->GetPathG(m_sName, "disqualify"));
-    m_sprDisqualify[p]->SetName(ssprintf("DisqualifyP%i", p + 1));
-    LOAD_ALL_COMMANDS_AND_SET_XY(m_sprDisqualify[p]);
-    m_sprDisqualify[p]->SetVisible(
+    spr_disqualify_[p].Load(THEME->GetPathG(name_, "disqualify"));
+    spr_disqualify_[p]->SetName(ssprintf("DisqualifyP%i", p + 1));
+    LOAD_ALL_COMMANDS_AND_SET_XY(spr_disqualify_[p]);
+    spr_disqualify_[p]->SetVisible(
         false);  // unhide later if handicapping options are discovered
-    m_sprDisqualify[p]->SetDrawOrder(2);
-    m_frameContainer.AddChild(m_sprDisqualify[p]);
+    spr_disqualify_[p]->SetDrawOrder(2);
+    frame_container_.AddChild(spr_disqualify_[p]);
   }
 
-  m_bAskOptionsMessage =
-      !GAMESTATE->IsEditing() && PREFSMAN->m_ShowSongOptions == Maybe_ASK;
+  ask_options_message_ =
+      !GAMESTATE->IsEditing() && PREFSMAN->show_song_options_ == Maybe_ASK;
 
-  m_bAcceptedChoices = false;
-  m_bGoToOptions = (PREFSMAN->m_ShowSongOptions == Maybe_YES);
+  accepted_choices_ = false;
+  go_to_options_ = (PREFSMAN->show_song_options_ == Maybe_YES);
 
   SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("player options intro"));
 
-  FOREACH_PlayerNumber(p) m_bRowCausesDisqualified[p].resize(
-      m_pRows.size(), false);
+  FOREACH_PlayerNumber(p) row_causes_disqualified_[p].resize(
+      rows_.size(), false);
 }
 
 void ScreenPlayerOptions::BeginScreen() {
-  FOREACH_PlayerNumber(p) ON_COMMAND(m_sprDisqualify[p]);
+  FOREACH_PlayerNumber(p) ON_COMMAND(spr_disqualify_[p]);
 
   ScreenOptionsMaster::BeginScreen();
 
   FOREACH_HumanPlayer(p) {
-    for (unsigned r = 0; r < m_pRows.size(); r++) {
+    for (unsigned r = 0; r < rows_.size(); r++) {
       UpdateDisqualified(r, p);
     }
   }
@@ -66,34 +66,34 @@ void ScreenPlayerOptions::BeginScreen() {
 bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
   bool bHandled = false;
 
-  if (m_bAskOptionsMessage && input.type == IET_FIRST_PRESS &&
-      !m_In.IsTransitioning() && input.MenuI == GAME_BUTTON_START) {
-    if (m_bAcceptedChoices && !m_bGoToOptions) {
-      m_bGoToOptions = true;
+  if (ask_options_message_ && input.type_ == IET_FIRST_PRESS &&
+      !in_.IsTransitioning() && input.menu_i_ == GAME_BUTTON_START) {
+    if (accepted_choices_ && !go_to_options_) {
+      go_to_options_ = true;
       this->PlayCommand("GoToOptions");
       SCREENMAN->PlayStartSound();
       bHandled = true;
     }
   }
 
-  PlayerNumber pn = input.pn;
+  PlayerNumber pn = input.pn_;
   if (GAMESTATE->IsHumanPlayer(pn) &&
       CodeDetector::EnteredCode(
-          input.GameI.controller, CODE_CANCEL_ALL_PLAYER_OPTIONS)) {
+          input.game_i_.controller_, CODE_CANCEL_ALL_PLAYER_OPTIONS)) {
     // apply the game default mods, but not the Profile saved mods
-    GAMESTATE->m_pPlayerState[pn]->ResetToDefaultPlayerOptions(
+    GAMESTATE->player_state_[pn]->ResetToDefaultPlayerOptions(
         ModsLevel_Preferred);
 
     MESSAGEMAN->Broadcast(ssprintf("CancelAllP%i", pn + 1));
 
-    for (unsigned r = 0; r < m_pRows.size(); r++) {
+    for (unsigned r = 0; r < rows_.size(); r++) {
       std::vector<PlayerNumber> v;
       v.push_back(pn);
-      int iOldFocus = m_pRows[r]->GetChoiceInRowWithFocus(pn);
+      int iOldFocus = rows_[r]->GetChoiceInRowWithFocus(pn);
       this->ImportOptions(r, v);
-      m_pRows[r]->AfterImportOptions(pn);
+      rows_[r]->AfterImportOptions(pn);
       this->UpdateDisqualified(r, pn);
-      m_pRows[r]->SetChoiceInRowWithFocus(pn, iOldFocus);
+      rows_[r]->SetChoiceInRowWithFocus(pn, iOldFocus);
     }
     bHandled = true;
   }
@@ -101,8 +101,8 @@ bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
   bHandled = ScreenOptionsMaster::Input(input) || bHandled;
 
   // UGLY: Update m_Disqualified whenever Start is pressed
-  if (GAMESTATE->IsHumanPlayer(pn) && input.MenuI == GAME_BUTTON_START) {
-    int row = m_iCurrentRow[pn];
+  if (GAMESTATE->IsHumanPlayer(pn) && input.menu_i_ == GAME_BUTTON_START) {
+    int row = current_row_[pn];
     UpdateDisqualified(row, pn);
   }
   return bHandled;
@@ -110,9 +110,9 @@ bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
 
 void ScreenPlayerOptions::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_BeginFadingOut &&
-      m_bAskOptionsMessage)  // user accepts the page of options
+      ask_options_message_)  // user accepts the page of options
   {
-    m_bAcceptedChoices = true;
+    accepted_choices_ = true;
 
     // show "hold START for options"
     this->PlayCommand("AskForGoToOptions");
@@ -126,28 +126,27 @@ void ScreenPlayerOptions::UpdateDisqualified(int row, PlayerNumber pn) {
 
   // save original player options
   PlayerOptions poOrig =
-      GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred();
+      GAMESTATE->player_state_[pn]->player_options_.GetPreferred();
 
   // Find out if the current row when exported causes disqualification.
   // Exporting the row will fill GAMESTATE->m_PlayerOptions.
   PO_GROUP_CALL(
-      GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions, ModsLevel_Preferred,
-      Init);
+      GAMESTATE->player_state_[pn]->player_options_, ModsLevel_Preferred, Init);
   std::vector<PlayerNumber> v;
   v.push_back(pn);
   ExportOptions(row, v);
   bool bRowCausesDisqualified = GAMESTATE->CurrentOptionsDisqualifyPlayer(pn);
-  m_bRowCausesDisqualified[pn][row] = bRowCausesDisqualified;
+  row_causes_disqualified_[pn][row] = bRowCausesDisqualified;
 
   // Update disqualified graphic
   bool disqualified = std::any_of(
-      m_bRowCausesDisqualified[pn].begin(), m_bRowCausesDisqualified[pn].end(),
+      row_causes_disqualified_[pn].begin(), row_causes_disqualified_[pn].end(),
       [](const bool& b) { return b; });
 
-  m_sprDisqualify[pn]->SetVisible(disqualified);
+  spr_disqualify_[pn]->SetVisible(disqualified);
 
   // restore previous player options in case the user escapes back after this
-  GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.Assign(
+  GAMESTATE->player_state_[pn]->player_options_.Assign(
       ModsLevel_Preferred, poOrig);
 }
 

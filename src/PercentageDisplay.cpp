@@ -21,25 +21,25 @@
 REGISTER_ACTOR_CLASS(PercentageDisplay);
 
 PercentageDisplay::PercentageDisplay() {
-  m_pPlayerState = nullptr;
-  m_pPlayerStageStats = nullptr;
+  player_state_ = nullptr;
+  player_stage_stats_ = nullptr;
 
-  m_Last = -1;
-  m_LastMax = -1;
-  m_iDancePointsDigits = 0;
-  m_bUseRemainder = false;
-  m_bAutoRefresh = false;
-  m_FormatPercentScore.SetFromExpression("FormatPercentScore");
+  last_ = -1;
+  last_max_ = -1;
+  dance_points_digits_ = 0;
+  use_remainder_ = false;
+  auto_refresh_ = false;
+  format_percent_score_.SetFromExpression("FormatPercentScore");
 }
 
 void PercentageDisplay::LoadFromNode(const XNode* pNode) {
-  pNode->GetAttrValue("DancePointsDigits", m_iDancePointsDigits);
-  pNode->GetAttrValue("AutoRefresh", m_bAutoRefresh);
+  pNode->GetAttrValue("DancePointsDigits", dance_points_digits_);
+  pNode->GetAttrValue("AutoRefresh", auto_refresh_);
   {
     Lua* L = LUA->Get();
     if (pNode->PushAttrValue(L, "FormatPercentScore")) {
-      m_FormatPercentScore.SetFromStack(L);
-      if (m_FormatPercentScore.GetLuaType() != LUA_TFUNCTION) {
+      format_percent_score_.SetFromStack(L);
+      if (format_percent_score_.GetLuaType() != LUA_TFUNCTION) {
         // Not reported as an error because _fallback and default provided bad
         // examples in their [LifeMeterBattery Percent]:Format metric and nobody
         // realized it was supposed to be set to a function. -Kyz
@@ -47,7 +47,7 @@ void PercentageDisplay::LoadFromNode(const XNode* pNode) {
             "Format attribute for PercentageDisplay named '%s' is not a "
             "function. Defaulting to 'FormatPercentScore'.",
             GetName().c_str());
-        m_FormatPercentScore.SetFromExpression("FormatPercentScore");
+        format_percent_score_.SetFromExpression("FormatPercentScore");
       }
     } else {
       lua_pop(L, 1);
@@ -61,17 +61,17 @@ void PercentageDisplay::LoadFromNode(const XNode* pNode) {
         ActorUtil::GetWhere(pNode) +
         ": PercentageDisplay: missing the node \"Percent\"");
     // Make a BitmapText just so we don't crash.
-    m_textPercent.LoadFromFont(THEME->GetPathF("", "Common Normal"));
+    text_percent_.LoadFromFont(THEME->GetPathF("", "Common Normal"));
   } else {
-    m_textPercent.LoadFromNode(pChild);
+    text_percent_.LoadFromNode(pChild);
   }
-  this->AddChild(&m_textPercent);
+  this->AddChild(&text_percent_);
 
   pChild = pNode->GetChild("PercentRemainder");
   if (!ShowDancePointsNotPercentage() && pChild != nullptr) {
-    m_bUseRemainder = true;
-    m_textPercentRemainder.LoadFromNode(pChild);
-    this->AddChild(&m_textPercentRemainder);
+    use_remainder_ = true;
+    text_percent_remainder_.LoadFromNode(pChild);
+    this->AddChild(&text_percent_remainder_);
   }
 
   // only run the Init command after we load Fonts.
@@ -81,8 +81,8 @@ void PercentageDisplay::LoadFromNode(const XNode* pNode) {
 void PercentageDisplay::Load(
     const PlayerState* pPlayerState,
     const PlayerStageStats* pPlayerStageStats) {
-  m_pPlayerState = pPlayerState;
-  m_pPlayerStageStats = pPlayerStageStats;
+  player_state_ = pPlayerState;
+  player_stage_stats_ = pPlayerStageStats;
 
   Refresh();
 }
@@ -90,18 +90,18 @@ void PercentageDisplay::Load(
 void PercentageDisplay::Load(
     const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats,
     const std::string& sMetricsGroup, bool bAutoRefresh) {
-  m_pPlayerState = pPlayerState;
-  m_pPlayerStageStats = pPlayerStageStats;
-  m_bAutoRefresh = bAutoRefresh;
+  player_state_ = pPlayerState;
+  player_stage_stats_ = pPlayerStageStats;
+  auto_refresh_ = bAutoRefresh;
 
-  m_iDancePointsDigits = THEME->GetMetricI(sMetricsGroup, "DancePointsDigits");
-  m_bUseRemainder = THEME->GetMetricB(sMetricsGroup, "PercentUseRemainder");
-  m_FormatPercentScore = THEME->GetMetricR(sMetricsGroup, "Format");
+  dance_points_digits_ = THEME->GetMetricI(sMetricsGroup, "DancePointsDigits");
+  use_remainder_ = THEME->GetMetricB(sMetricsGroup, "PercentUseRemainder");
+  format_percent_score_ = THEME->GetMetricR(sMetricsGroup, "Format");
 
-  m_sPercentFormat = THEME->GetMetric(sMetricsGroup, "PercentFormat");
-  m_sRemainderFormat = THEME->GetMetric(sMetricsGroup, "RemainderFormat");
+  percent_format_ = THEME->GetMetric(sMetricsGroup, "PercentFormat");
+  remainder_format_ = THEME->GetMetric(sMetricsGroup, "RemainderFormat");
 
-  if (m_FormatPercentScore.GetLuaType() != LUA_TFUNCTION) {
+  if (format_percent_score_.GetLuaType() != LUA_TFUNCTION) {
     // Not reported as an error because _fallback and default provided bad
     // examples in their [LifeMeterBattery Percent]:Format metric and nobody
     // realized it was supposed to be set to a function. -Kyz
@@ -109,33 +109,33 @@ void PercentageDisplay::Load(
         "Format metric is not a function in [%s]. Defaulting to "
         "'FormatPercentScore'.",
         sMetricsGroup.c_str());
-    m_FormatPercentScore.SetFromExpression("FormatPercentScore");
+    format_percent_score_.SetFromExpression("FormatPercentScore");
   }
 
   if (ShowDancePointsNotPercentage()) {
-    m_textPercent.SetName(
-        "DancePoints" + PlayerNumberToString(m_pPlayerState->m_PlayerNumber));
+    text_percent_.SetName(
+        "DancePoints" + PlayerNumberToString(player_state_->player_number_));
   } else {
-    m_textPercent.SetName(
-        "Percent" + PlayerNumberToString(m_pPlayerState->m_PlayerNumber));
+    text_percent_.SetName(
+        "Percent" + PlayerNumberToString(player_state_->player_number_));
   }
 
-  m_textPercent.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
-  ActorUtil::SetXY(m_textPercent, sMetricsGroup);
-  ActorUtil::LoadAllCommands(m_textPercent, sMetricsGroup);
-  this->AddChild(&m_textPercent);
+  text_percent_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  ActorUtil::SetXY(text_percent_, sMetricsGroup);
+  ActorUtil::LoadAllCommands(text_percent_, sMetricsGroup);
+  this->AddChild(&text_percent_);
 
-  if (!ShowDancePointsNotPercentage() && m_bUseRemainder) {
-    m_textPercentRemainder.SetName(
+  if (!ShowDancePointsNotPercentage() && use_remainder_) {
+    text_percent_remainder_.SetName(
         "PercentRemainder" +
-        PlayerNumberToString(m_pPlayerState->m_PlayerNumber));
-    m_textPercentRemainder.LoadFromFont(
+        PlayerNumberToString(player_state_->player_number_));
+    text_percent_remainder_.LoadFromFont(
         THEME->GetPathF(sMetricsGroup, "remainder"));
-    ActorUtil::SetXY(m_textPercentRemainder, sMetricsGroup);
-    ActorUtil::LoadAllCommands(m_textPercentRemainder, sMetricsGroup);
-    ASSERT(m_textPercentRemainder.HasCommand("Off"));
-    m_textPercentRemainder.SetText("456");
-    this->AddChild(&m_textPercentRemainder);
+    ActorUtil::SetXY(text_percent_remainder_, sMetricsGroup);
+    ActorUtil::LoadAllCommands(text_percent_remainder_, sMetricsGroup);
+    ASSERT(text_percent_remainder_.HasCommand("Off"));
+    text_percent_remainder_.SetText("456");
+    this->AddChild(&text_percent_remainder_);
   }
 
   Refresh();
@@ -144,45 +144,45 @@ void PercentageDisplay::Load(
 void PercentageDisplay::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
-  if (m_bAutoRefresh) {
+  if (auto_refresh_) {
     Refresh();
   }
 }
 
 void PercentageDisplay::Refresh() {
-  const int iActualDancePoints = m_pPlayerStageStats->m_iActualDancePoints;
+  const int iActualDancePoints = player_stage_stats_->actual_dance_points_;
   const int iCurPossibleDancePoints =
-      m_pPlayerStageStats->m_iCurPossibleDancePoints;
+      player_stage_stats_->cur_possible_dance_points_;
 
-  if (iActualDancePoints == m_Last && iCurPossibleDancePoints == m_LastMax) {
+  if (iActualDancePoints == last_ && iCurPossibleDancePoints == last_max_) {
     return;
   }
 
-  m_Last = iActualDancePoints;
-  m_LastMax = iCurPossibleDancePoints;
+  last_ = iActualDancePoints;
+  last_max_ = iCurPossibleDancePoints;
 
   std::string sNumToDisplay;
 
   if (ShowDancePointsNotPercentage()) {
     sNumToDisplay =
-        ssprintf("%*d", m_iDancePointsDigits, std::max(0, iActualDancePoints));
+        ssprintf("%*d", dance_points_digits_, std::max(0, iActualDancePoints));
   } else {
-    float fPercentDancePoints = m_pPlayerStageStats->GetPercentDancePoints();
+    float fPercentDancePoints = player_stage_stats_->GetPercentDancePoints();
 
     // clamp percentage - feedback is that negative numbers look weird here.
     rage_clamp(fPercentDancePoints, 0.f, 1.f);
 
-    if (m_bUseRemainder) {
+    if (use_remainder_) {
       int iPercentWhole = int(fPercentDancePoints * 100);
       int iPercentRemainder = int(
           (fPercentDancePoints * 100 - int(fPercentDancePoints * 100)) * 10);
-      sNumToDisplay = ssprintf(m_sPercentFormat.c_str(), iPercentWhole);
-      m_textPercentRemainder.SetText(
-          ssprintf(m_sRemainderFormat.c_str(), iPercentRemainder));
+      sNumToDisplay = ssprintf(percent_format_.c_str(), iPercentWhole);
+      text_percent_remainder_.SetText(
+          ssprintf(remainder_format_.c_str(), iPercentRemainder));
     } else {
-      if (m_FormatPercentScore.GetLuaType() == LUA_TFUNCTION) {
+      if (format_percent_score_.GetLuaType() == LUA_TFUNCTION) {
         Lua* L = LUA->Get();
-        m_FormatPercentScore.PushSelf(L);
+        format_percent_score_.PushSelf(L);
         LuaHelpers::Push(L, fPercentDancePoints);
         std::string Error = "Error running FormatPercentScore: ";
         LuaHelpers::RunScriptOnStack(L, Error, 1, 1, true);  // 1 arg, 1 result
@@ -195,15 +195,15 @@ void PercentageDisplay::Refresh() {
     }
   }
 
-  m_textPercent.SetText(sNumToDisplay);
+  text_percent_.SetText(sNumToDisplay);
 }
 
 bool PercentageDisplay::ShowDancePointsNotPercentage() const {
   // Use straight dance points in workout because the percentage denominator
   // isn't accurate - we don't know when the players are going to stop.
 
-  if (GAMESTATE->m_pCurCourse) {
-    if (GAMESTATE->m_pCurCourse->m_fGoalSeconds > 0) {
+  if (GAMESTATE->cur_course_) {
+    if (GAMESTATE->cur_course_->goal_seconds_ > 0) {
       return true;
     }
   }

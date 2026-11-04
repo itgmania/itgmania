@@ -46,10 +46,10 @@ enum {
 };
 
 std::string StepsTypeInfo::GetLocalizedString() const {
-  if (THEME->HasString("StepsType", szName)) {
-    return THEME->GetString("StepsType", szName);
+  if (THEME->HasString("StepsType", name_)) {
+    return THEME->GetString("StepsType", name_);
   }
-  return szName;
+  return name_;
 }
 
 static const StepsTypeInfo g_StepsTypeInfos[] = {
@@ -1498,12 +1498,12 @@ GameManager::~GameManager() {
 
 void GameManager::GetStylesForGame(
     const Game* pGame, std::vector<const Style*>& aStylesAddTo, bool editor) {
-  for (int s = 0; pGame->m_apStyles[s]; ++s) {
-    const Style* style = pGame->m_apStyles[s];
-    if (!editor && !style->m_bUsedForGameplay) {
+  for (int s = 0; pGame->styles_[s]; ++s) {
+    const Style* style = pGame->styles_[s];
+    if (!editor && !style->used_for_gameplay_) {
       continue;
     }
-    if (editor && !style->m_bUsedForEdit) {
+    if (editor && !style->used_for_edit_) {
       continue;
     }
 
@@ -1514,21 +1514,21 @@ void GameManager::GetStylesForGame(
 const Game* GameManager::GetGameForStyle(const Style* pStyle) {
   for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
     const Game* pGame = g_Games[g];
-    for (int s = 0; pGame->m_apStyles[s]; ++s) {
-      if (pGame->m_apStyles[s] == pStyle) {
+    for (int s = 0; pGame->styles_[s]; ++s) {
+      if (pGame->styles_[s] == pStyle) {
         return pGame;
       }
     }
   }
-  FAIL_M(pStyle->m_szName);
+  FAIL_M(pStyle->name_);
 }
 
 const Style* GameManager::GetEditorStyleForStepsType(StepsType st) {
   for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
     const Game* pGame = g_Games[g];
-    for (int s = 0; pGame->m_apStyles[s]; ++s) {
-      const Style* style = pGame->m_apStyles[s];
-      if (style->m_StepsType == st && style->m_bUsedForEdit) {
+    for (int s = 0; pGame->styles_[s]; ++s) {
+      const Style* style = pGame->styles_[s];
+      if (style->steps_type_ == st && style->used_for_edit_) {
         return style;
       }
     }
@@ -1541,8 +1541,8 @@ const Style* GameManager::GetEditorStyleForStepsType(StepsType st) {
 
 void GameManager::GetStepsTypesForGame(
     const Game* pGame, std::vector<StepsType>& aStepsTypeAddTo) {
-  for (int i = 0; pGame->m_apStyles[i]; ++i) {
-    StepsType st = pGame->m_apStyles[i]->m_StepsType;
+  for (int i = 0; pGame->styles_[i]; ++i) {
+    StepsType st = pGame->styles_[i]->steps_type_;
     ASSERT(st < NUM_StepsType);
 
     // Some Styles use the same StepsType (e.g. single and versus) so check
@@ -1566,9 +1566,9 @@ void GameManager::GetDemonstrationStylesForGame(
     const Game* pGame, std::vector<const Style*>& vpStylesOut) {
   vpStylesOut.clear();
 
-  for (int s = 0; pGame->m_apStyles[s]; ++s) {
-    const Style* style = pGame->m_apStyles[s];
-    if (style->m_bUsedForDemonstration) {
+  for (int s = 0; pGame->styles_[s]; ++s) {
+    const Style* style = pGame->styles_[s];
+    if (style->used_for_demonstration_) {
       vpStylesOut.push_back(style);
     }
   }
@@ -1578,16 +1578,15 @@ void GameManager::GetDemonstrationStylesForGame(
 }
 
 const Style* GameManager::GetHowToPlayStyleForGame(const Game* pGame) {
-  for (int s = 0; pGame->m_apStyles[s]; ++s) {
-    const Style* style = pGame->m_apStyles[s];
-    if (style->m_bUsedForHowToPlay) {
+  for (int s = 0; pGame->styles_[s]; ++s) {
+    const Style* style = pGame->styles_[s];
+    if (style->used_for_how_to_play_) {
       return style;
     }
   }
 
   FAIL_M(ssprintf(
-      "Game has no Style that can be used with HowToPlay: %s",
-      pGame->m_szName));
+      "Game has no Style that can be used with HowToPlay: %s", pGame->name_));
 }
 
 void GameManager::GetCompatibleStyles(
@@ -1611,12 +1610,12 @@ void GameManager::GetCompatibleStyles(
       continue;
     }
 
-    for (int s = 0; pGame->m_apStyles[s]; ++s) {
-      const Style* style = pGame->m_apStyles[s];
-      if (style->m_StyleType != styleType) {
+    for (int s = 0; pGame->styles_[s]; ++s) {
+      const Style* style = pGame->styles_[s];
+      if (style->style_type_ != styleType) {
         continue;
       }
-      if (!style->m_bUsedForGameplay) {
+      if (!style->used_for_gameplay_) {
         continue;
       }
 
@@ -1630,7 +1629,7 @@ const Style* GameManager::GetFirstCompatibleStyle(
   std::vector<const Style*> vpStyles;
   GetCompatibleStyles(pGame, iNumPlayers, vpStyles);
   for (const Style* s : vpStyles) {
-    if (s->m_StepsType == st) {
+    if (s->steps_type_ == st) {
       return s;
     }
   }
@@ -1678,7 +1677,7 @@ StepsType GameManager::StringToStepsType(std::string sStepsType) {
   MakeLower(sStepsType);
 
   for (int i = 0; i < NUM_StepsType; i++) {
-    if (g_StepsTypeInfos[i].szName == sStepsType) {
+    if (g_StepsTypeInfos[i].name_ == sStepsType) {
       return StepsType(i);
     }
   }
@@ -1687,7 +1686,7 @@ StepsType GameManager::StringToStepsType(std::string sStepsType) {
 }
 
 std::string GameManager::StyleToLocalizedString(const Style* style) {
-  std::string s = style->m_szName;
+  std::string s = style->name_;
   s = Capitalize(s);
   if (THEME->HasString("Style", s)) {
     return THEME->GetString("Style", s);
@@ -1698,7 +1697,7 @@ std::string GameManager::StyleToLocalizedString(const Style* style) {
 
 const Game* GameManager::StringToGame(std::string sGame) {
   for (size_t i = 0; i < ARRAYLEN(g_Games); ++i) {
-    if (!CompareNoCase(sGame, g_Games[i]->m_szName)) {
+    if (!CompareNoCase(sGame, g_Games[i]->name_)) {
       return g_Games[i];
     }
   }
@@ -1708,9 +1707,9 @@ const Game* GameManager::StringToGame(std::string sGame) {
 
 const Style* GameManager::GameAndStringToStyle(
     const Game* game, std::string sStyle) {
-  for (int s = 0; game->m_apStyles[s]; ++s) {
-    const Style* style = game->m_apStyles[s];
-    if (CompareNoCase(sStyle, style->m_szName) == 0) {
+  for (int s = 0; game->styles_[s]; ++s) {
+    const Style* style = game->styles_[s];
+    if (CompareNoCase(sStyle, style->name_) == 0) {
       return style;
     }
   }
@@ -1759,8 +1758,8 @@ class LunaGameManager : public Luna<GameManager> {
     }
     std::vector<Style*> aStyles;
     lua_createtable(L, 0, 0);
-    for (int s = 0; pGame->m_apStyles[s]; ++s) {
-      Style* pStyle = const_cast<Style*>(pGame->m_apStyles[s]);
+    for (int s = 0; pGame->styles_[s]; ++s) {
+      Style* pStyle = const_cast<Style*>(pGame->styles_[s]);
       pStyle->PushSelf(L);
       lua_rawseti(L, -2, s + 1);
     }
@@ -1771,7 +1770,7 @@ class LunaGameManager : public Luna<GameManager> {
     p->GetEnabledGames(aGames);
     lua_createtable(L, aGames.size(), 0);
     for (size_t i = 0; i < aGames.size(); ++i) {
-      lua_pushstring(L, aGames[i]->m_szName);
+      lua_pushstring(L, aGames[i]->name_);
       lua_rawseti(L, -2, i + 1);
     }
     return 1;

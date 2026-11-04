@@ -56,7 +56,7 @@ class RageFileManager {
       const std::string& sMountPoint);
 
   struct DriverLocation {
-    std::string Type, Root, MountPoint;
+    std::string type_, root_, mount_point_;
   };
   void GetLoadedDrivers(std::vector<DriverLocation>& asMounts);
 
@@ -86,7 +86,7 @@ class RageFileManager {
   RageFileBasic* OpenForWriting(
       const std::string& sPath, int iMode, int& iError);
 
-  std::unordered_set<std::string> m_protectedPaths;
+  std::unordered_set<std::string> protected_paths_;
 };
 
 extern RageFileManager* FILEMAN;

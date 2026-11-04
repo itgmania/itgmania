@@ -11,8 +11,8 @@
 #include "global.h"
 
 int32_t RageSurfacePalette::FindColor(const RageSurfaceColor& color) const {
-  for (int i = 0; i < ncolors; ++i) {
-    if (colors[i] == color) {
+  for (int i = 0; i < ncolors_; ++i) {
+    if (colors_[i] == color) {
       return i;
     }
   }
@@ -20,66 +20,66 @@ int32_t RageSurfacePalette::FindColor(const RageSurfaceColor& color) const {
 }
 
 RageSurfaceFormat::RageSurfaceFormat()
-    : Mask(),
-      Shift(),
-      Loss(),
-      Rmask(Mask[0]),
-      Gmask(Mask[1]),
-      Bmask(Mask[2]),
-      Amask(Mask[3]),
-      Rshift(Shift[0]),
-      Gshift(Shift[1]),
-      Bshift(Shift[2]),
-      Ashift(Shift[3]) {}
+    : mask_(),
+      shift_(),
+      loss_(),
+      rmask_(mask_[0]),
+      gmask_(mask_[1]),
+      bmask_(mask_[2]),
+      amask_(mask_[3]),
+      rshift_(shift_[0]),
+      gshift_(shift_[1]),
+      bshift_(shift_[2]),
+      ashift_(shift_[3]) {}
 
 RageSurfaceFormat::RageSurfaceFormat(const RageSurfaceFormat& cpy)
-    : Mask(),
-      Shift(),
-      Loss(),
-      Rmask(Mask[0]),
-      Gmask(Mask[1]),
-      Bmask(Mask[2]),
-      Amask(Mask[3]),
-      Rshift(Shift[0]),
-      Gshift(Shift[1]),
-      Bshift(Shift[2]),
-      Ashift(Shift[3]) {
-  BytesPerPixel = cpy.BytesPerPixel;
-  BitsPerPixel = cpy.BitsPerPixel;
-  Mask = cpy.Mask;
-  Shift = cpy.Shift;
-  Loss = cpy.Loss;
-  if (palette) {
-    palette = std::make_unique<RageSurfacePalette>(*palette);
+    : mask_(),
+      shift_(),
+      loss_(),
+      rmask_(mask_[0]),
+      gmask_(mask_[1]),
+      bmask_(mask_[2]),
+      amask_(mask_[3]),
+      rshift_(shift_[0]),
+      gshift_(shift_[1]),
+      bshift_(shift_[2]),
+      ashift_(shift_[3]) {
+  bytes_per_pixel_ = cpy.bytes_per_pixel_;
+  bits_per_pixel_ = cpy.bits_per_pixel_;
+  mask_ = cpy.mask_;
+  shift_ = cpy.shift_;
+  loss_ = cpy.loss_;
+  if (palette_) {
+    palette_ = std::make_unique<RageSurfacePalette>(*palette_);
   }
 }
 
 void RageSurfaceFormat::GetRGB(
     uint32_t val, uint8_t* r, uint8_t* g, uint8_t* b) const {
-  if (BytesPerPixel == 1) {
-    ASSERT(palette != nullptr);
-    *r = palette->colors[val].r;
-    *g = palette->colors[val].g;
-    *b = palette->colors[val].b;
+  if (bytes_per_pixel_ == 1) {
+    ASSERT(palette_ != nullptr);
+    *r = palette_->colors_[val].r_;
+    *g = palette_->colors_[val].g_;
+    *b = palette_->colors_[val].b_;
   } else {
-    *r = int8_t((val & Mask[0]) >> Shift[0] << Loss[0]);
-    *g = int8_t((val & Mask[1]) >> Shift[1] << Loss[1]);
-    *b = int8_t((val & Mask[2]) >> Shift[2] << Loss[2]);
+    *r = int8_t((val & mask_[0]) >> shift_[0] << loss_[0]);
+    *g = int8_t((val & mask_[1]) >> shift_[1] << loss_[1]);
+    *b = int8_t((val & mask_[2]) >> shift_[2] << loss_[2]);
   }
 }
 
 bool RageSurfaceFormat::MapRGBA(
     uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint32_t& val) const {
-  if (BytesPerPixel == 1) {
+  if (bytes_per_pixel_ == 1) {
     RageSurfaceColor c(r, g, b, a);
-    int32_t n = palette->FindColor(c);
+    int32_t n = palette_->FindColor(c);
     if (n == -1) {
       return false;
     }
     val = (uint32_t)n;
   } else {
-    val = (r >> Loss[0] << Shift[0]) | (g >> Loss[1] << Shift[1]) |
-          (b >> Loss[2] << Shift[2]) | (a >> Loss[3] << Shift[3]);
+    val = (r >> loss_[0] << shift_[0]) | (g >> loss_[1] << shift_[1]) |
+          (b >> loss_[2] << shift_[2]) | (a >> loss_[3] << shift_[3]);
   }
   return true;
 }
@@ -87,24 +87,24 @@ bool RageSurfaceFormat::MapRGBA(
 bool RageSurfaceFormat::Equivalent(const RageSurfaceFormat& rhs) const {
 #define COMP(a) \
   if (a != rhs.a) return false;
-  COMP(BytesPerPixel);
-  COMP(Rmask);
-  COMP(Gmask);
-  COMP(Bmask);
-  COMP(Amask);
+  COMP(bytes_per_pixel_);
+  COMP(rmask_);
+  COMP(gmask_);
+  COMP(bmask_);
+  COMP(amask_);
 
   return true;
 }
 
 RageSurface::RageSurface() {
-  format = &fmt;
-  pixels = nullptr;
-  pixels_owned = true;
+  format_ = &fmt_;
+  pixels_ = nullptr;
+  pixels_owned_ = true;
 }
 
 RageSurface::~RageSurface() {
-  if (pixels_owned) {
-    delete[] pixels;
+  if (pixels_owned_) {
+    delete[] pixels_;
   }
 }
 
@@ -139,32 +139,32 @@ static int GetBitsFromMask(uint32_t mask) {
 void SetupFormat(
     RageSurfaceFormat& fmt, int width, int height, int BitsPerPixel,
     uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask) {
-  fmt.BitsPerPixel = BitsPerPixel;
-  fmt.BytesPerPixel = BitsPerPixel / 8;
-  if (fmt.BytesPerPixel == 1) {
-    ZERO(fmt.Mask);
-    ZERO(fmt.Shift);
+  fmt.bits_per_pixel_ = BitsPerPixel;
+  fmt.bytes_per_pixel_ = BitsPerPixel / 8;
+  if (fmt.bytes_per_pixel_ == 1) {
+    ZERO(fmt.mask_);
+    ZERO(fmt.shift_);
 
     // Loss for paletted textures is zero; the actual palette entries are 8-bit.
-    ZERO(fmt.Loss);
+    ZERO(fmt.loss_);
 
-    fmt.palette = std::make_unique<RageSurfacePalette>();
-    fmt.palette->ncolors = 256;
+    fmt.palette_ = std::make_unique<RageSurfacePalette>();
+    fmt.palette_->ncolors_ = 256;
   } else {
-    fmt.Mask[0] = Rmask;
-    fmt.Mask[1] = Gmask;
-    fmt.Mask[2] = Bmask;
-    fmt.Mask[3] = Amask;
+    fmt.mask_[0] = Rmask;
+    fmt.mask_[1] = Gmask;
+    fmt.mask_[2] = Bmask;
+    fmt.mask_[3] = Amask;
 
-    fmt.Shift[0] = GetShiftFromMask(Rmask);
-    fmt.Shift[1] = GetShiftFromMask(Gmask);
-    fmt.Shift[2] = GetShiftFromMask(Bmask);
-    fmt.Shift[3] = GetShiftFromMask(Amask);
+    fmt.shift_[0] = GetShiftFromMask(Rmask);
+    fmt.shift_[1] = GetShiftFromMask(Gmask);
+    fmt.shift_[2] = GetShiftFromMask(Bmask);
+    fmt.shift_[3] = GetShiftFromMask(Amask);
 
-    fmt.Loss[0] = (uint8_t)(8 - GetBitsFromMask(Rmask));
-    fmt.Loss[1] = (uint8_t)(8 - GetBitsFromMask(Gmask));
-    fmt.Loss[2] = (uint8_t)(8 - GetBitsFromMask(Bmask));
-    fmt.Loss[3] = (uint8_t)(8 - GetBitsFromMask(Amask));
+    fmt.loss_[0] = (uint8_t)(8 - GetBitsFromMask(Rmask));
+    fmt.loss_[1] = (uint8_t)(8 - GetBitsFromMask(Gmask));
+    fmt.loss_[2] = (uint8_t)(8 - GetBitsFromMask(Bmask));
+    fmt.loss_[3] = (uint8_t)(8 - GetBitsFromMask(Amask));
   }
 }
 
@@ -174,13 +174,13 @@ RageSurface* CreateSurface(
   RageSurface* pImg = new RageSurface;
 
   SetupFormat(
-      pImg->fmt, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
+      pImg->fmt_, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
 
-  pImg->w = width;
-  pImg->h = height;
-  pImg->flags = 0;
-  pImg->pitch = width * BitsPerPixel / 8;
-  pImg->pixels = new uint8_t[pImg->pitch * height];
+  pImg->w_ = width;
+  pImg->h_ = height;
+  pImg->flags_ = 0;
+  pImg->pitch_ = width * BitsPerPixel / 8;
+  pImg->pixels_ = new uint8_t[pImg->pitch_ * height];
 
   /*
   if( BitsPerPixel == 8 )
@@ -198,14 +198,14 @@ RageSurface* CreateSurfaceFrom(
   RageSurface* pImg = new RageSurface;
 
   SetupFormat(
-      pImg->fmt, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
+      pImg->fmt_, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
 
-  pImg->w = width;
-  pImg->h = height;
-  pImg->flags = 0;
-  pImg->pitch = pitch;
-  pImg->pixels = pPixels;
-  pImg->pixels_owned = false;
+  pImg->w_ = width;
+  pImg->h_ = height;
+  pImg->flags_ = 0;
+  pImg->pitch_ = pitch;
+  pImg->pixels_ = pPixels;
+  pImg->pixels_owned_ = false;
 
   return pImg;
 }

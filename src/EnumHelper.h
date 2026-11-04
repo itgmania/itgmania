@@ -29,15 +29,15 @@ int CheckEnum(
 
 template <typename T>
 struct EnumTraits {
-  static LuaReference StringToEnum;
-  static LuaReference EnumToString;
-  static T Invalid;
-  static const char* szName;
+  static LuaReference string_to_enum_;
+  static LuaReference enum_to_string_;
+  static T invalid_;
+  static const char* name_;
 };
 template <typename T>
-LuaReference EnumTraits<T>::StringToEnum;
+LuaReference EnumTraits<T>::string_to_enum_;
 template <typename T>
-LuaReference EnumTraits<T>::EnumToString;
+LuaReference EnumTraits<T>::enum_to_string_;
 /** @brief Lua helpers for Enumerators. */
 namespace Enum {
 template <typename T>
@@ -45,19 +45,19 @@ static T Check(
     lua_State* L, int iPos, bool bAllowInvalid = false,
     bool bAllowAnything = false) {
   return (T)CheckEnum(
-      L, EnumTraits<T>::StringToEnum, iPos, EnumTraits<T>::Invalid,
-      EnumTraits<T>::szName, bAllowInvalid, bAllowAnything);
+      L, EnumTraits<T>::string_to_enum_, iPos, EnumTraits<T>::invalid_,
+      EnumTraits<T>::name_, bAllowInvalid, bAllowAnything);
 }
 template <typename T>
 static void Push(lua_State* L, T iVal) {
   /* Enum_Invalid values are nil in Lua. */
-  if (iVal == EnumTraits<T>::Invalid) {
+  if (iVal == EnumTraits<T>::invalid_) {
     lua_pushnil(L);
     return;
   }
 
   /* Look up the string value. */
-  EnumTraits<T>::EnumToString.PushSelf(L);
+  EnumTraits<T>::enum_to_string_.PushSelf(L);
   lua_rawgeti(L, -1, iVal + 1);
   lua_remove(L, -2);
 }
@@ -122,59 +122,60 @@ const std::string& EnumToString(
 // currently unused
 #define LuaDeclareType(X)
 
-#define LuaXType(X)                                                       \
-  template struct EnumTraits<X>;                                          \
-  static void Lua##X(lua_State* L) {                                      \
-    /* Create the EnumToString table: { "UnlockEntry_ArcadePoints",       \
-     * "UnlockEntry_DancePoints" } */                                     \
-    lua_newtable(L);                                                      \
-    FOREACH_ENUM(X, i) {                                                  \
-      std::string s = X##ToString(i);                                     \
-      lua_pushstring(L, ((#X "_") + s).c_str());                          \
-      lua_rawseti(L, -2, i + 1); /* 1-based */                            \
-    }                                                                     \
-    EnumTraits<X>::EnumToString.SetFromStack(L);                          \
-    EnumTraits<X>::EnumToString.PushSelf(L);                              \
-    lua_setglobal(L, #X);                                                 \
-    /* Create the StringToEnum table: { "UnlockEntry_ArcadePoints" = 0,   \
-     * "UnlockEntry_DancePoints" = 1 } */                                 \
-    lua_newtable(L);                                                      \
-    FOREACH_ENUM(X, i) {                                                  \
-      std::string s = X##ToString(i);                                     \
-      lua_pushstring(L, ((#X "_") + s).c_str());                          \
-      lua_pushnumber(L, i); /* 0-based */                                 \
-      lua_rawset(L, -3);                                                  \
-      /* Compatibility with old, case-insensitive values */               \
-      MakeLower(s);                                                       \
-      lua_pushstring(L, s.c_str());                                       \
-      lua_pushnumber(L, i); /* 0-based */                                 \
-      lua_rawset(L, -3);                                                  \
-      /* Compatibility with old, raw values */                            \
-      lua_pushnumber(L, i);                                               \
-      lua_rawseti(L, -2, i);                                              \
-    }                                                                     \
-    EnumTraits<X>::StringToEnum.SetFromStack(L);                          \
-    EnumTraits<X>::StringToEnum.PushSelf(L);                              \
-    Enum::SetMetatable(                                                   \
-        L, EnumTraits<X>::EnumToString, EnumTraits<X>::StringToEnum, #X); \
-  }                                                                       \
-  REGISTER_WITH_LUA_FUNCTION(Lua##X);                                     \
-  template <>                                                             \
-  X EnumTraits<X>::Invalid = X##_Invalid;                                 \
-  template <>                                                             \
-  const char* EnumTraits<X>::szName = #X;                                 \
-  namespace LuaHelpers {                                                  \
-  template <>                                                             \
-  bool FromStack<X>(lua_State * L, X& Object, int iOffset) {              \
-    Object = Enum::Check<X>(L, iOffset, true);                            \
-    return Object != EnumTraits<X>::Invalid;                              \
-  }                                                                       \
-  }                                                                       \
-  namespace LuaHelpers {                                                  \
-  template <>                                                             \
-  void Push<X>(lua_State * L, const X& Object) {                          \
-    Enum::Push<X>(L, Object);                                             \
-  }                                                                       \
+#define LuaXType(X)                                                        \
+  template struct EnumTraits<X>;                                           \
+  static void Lua##X(lua_State* L) {                                       \
+    /* Create the EnumToString table: { "UnlockEntry_ArcadePoints",        \
+     * "UnlockEntry_DancePoints" } */                                      \
+    lua_newtable(L);                                                       \
+    FOREACH_ENUM(X, i) {                                                   \
+      std::string s = X##ToString(i);                                      \
+      lua_pushstring(L, ((#X "_") + s).c_str());                           \
+      lua_rawseti(L, -2, i + 1); /* 1-based */                             \
+    }                                                                      \
+    EnumTraits<X>::enum_to_string_.SetFromStack(L);                        \
+    EnumTraits<X>::enum_to_string_.PushSelf(L);                            \
+    lua_setglobal(L, #X);                                                  \
+    /* Create the StringToEnum table: { "UnlockEntry_ArcadePoints" = 0,    \
+     * "UnlockEntry_DancePoints" = 1 } */                                  \
+    lua_newtable(L);                                                       \
+    FOREACH_ENUM(X, i) {                                                   \
+      std::string s = X##ToString(i);                                      \
+      lua_pushstring(L, ((#X "_") + s).c_str());                           \
+      lua_pushnumber(L, i); /* 0-based */                                  \
+      lua_rawset(L, -3);                                                   \
+      /* Compatibility with old, case-insensitive values */                \
+      MakeLower(s);                                                        \
+      lua_pushstring(L, s.c_str());                                        \
+      lua_pushnumber(L, i); /* 0-based */                                  \
+      lua_rawset(L, -3);                                                   \
+      /* Compatibility with old, raw values */                             \
+      lua_pushnumber(L, i);                                                \
+      lua_rawseti(L, -2, i);                                               \
+    }                                                                      \
+    EnumTraits<X>::string_to_enum_.SetFromStack(L);                        \
+    EnumTraits<X>::string_to_enum_.PushSelf(L);                            \
+    Enum::SetMetatable(                                                    \
+        L, EnumTraits<X>::enum_to_string_, EnumTraits<X>::string_to_enum_, \
+        #X);                                                               \
+  }                                                                        \
+  REGISTER_WITH_LUA_FUNCTION(Lua##X);                                      \
+  template <>                                                              \
+  X EnumTraits<X>::invalid_ = X##_Invalid;                                 \
+  template <>                                                              \
+  const char* EnumTraits<X>::name_ = #X;                                   \
+  namespace LuaHelpers {                                                   \
+  template <>                                                              \
+  bool FromStack<X>(lua_State * L, X& Object, int iOffset) {               \
+    Object = Enum::Check<X>(L, iOffset, true);                             \
+    return Object != EnumTraits<X>::invalid_;                              \
+  }                                                                        \
+  }                                                                        \
+  namespace LuaHelpers {                                                   \
+  template <>                                                              \
+  void Push<X>(lua_State * L, const X& Object) {                           \
+    Enum::Push<X>(L, Object);                                              \
+  }                                                                        \
   }
 
 #endif

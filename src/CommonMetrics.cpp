@@ -54,7 +54,7 @@ void ThemeMetricDifficultiesToShow::Read() {
 
   ThemeMetric<std::string>::Read();
 
-  m_v.clear();
+  v_.clear();
 
   std::vector<std::string> v;
   split(ThemeMetric<std::string>::GetValue(), ",", v);
@@ -70,12 +70,12 @@ void ThemeMetricDifficultiesToShow::Read() {
       LuaHelpers::ReportScriptErrorFmt(
           "Unknown difficulty \"%s\" in CourseDifficultiesToShow.", i.c_str());
     } else {
-      m_v.push_back(d);
+      v_.push_back(d);
     }
   }
 }
 const std::vector<Difficulty>& ThemeMetricDifficultiesToShow::GetValue() const {
-  return m_v;
+  return v_;
 }
 
 ThemeMetricCourseDifficultiesToShow::ThemeMetricCourseDifficultiesToShow(
@@ -92,7 +92,7 @@ void ThemeMetricCourseDifficultiesToShow::Read() {
 
   ThemeMetric<std::string>::Read();
 
-  m_v.clear();
+  v_.clear();
 
   std::vector<std::string> v;
   split(ThemeMetric<std::string>::GetValue(), ",", v);
@@ -109,13 +109,13 @@ void ThemeMetricCourseDifficultiesToShow::Read() {
           "Unknown CourseDifficulty \"%s\" in CourseDifficultiesToShow.",
           i.c_str());
     } else {
-      m_v.push_back(d);
+      v_.push_back(d);
     }
   }
 }
 const std::vector<CourseDifficulty>&
 ThemeMetricCourseDifficultiesToShow::GetValue() const {
-  return m_v;
+  return v_;
 }
 
 static void RemoveStepsTypes(
@@ -157,13 +157,13 @@ void ThemeMetricStepsTypesToShow::Read() {
 
   ThemeMetric<std::string>::Read();
 
-  m_v.clear();
-  GAMEMAN->GetStepsTypesForGame(GAMESTATE->m_pCurGame, m_v);
+  v_.clear();
+  GAMEMAN->GetStepsTypesForGame(GAMESTATE->cur_game_, v_);
 
-  RemoveStepsTypes(m_v, ThemeMetric<std::string>::GetValue());
+  RemoveStepsTypes(v_, ThemeMetric<std::string>::GetValue());
 }
 const std::vector<StepsType>& ThemeMetricStepsTypesToShow::GetValue() const {
-  return m_v;
+  return v_;
 }
 
 std::string CommonMetrics::LocalizeOptionItem(

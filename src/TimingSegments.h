@@ -56,17 +56,17 @@ struct TimingSegment {
   virtual bool IsNotable() const = 0;
 
   // don't allow base TimingSegments to be instantiated directly
-  TimingSegment(int iRow = ROW_INVALID) : m_iStartRow(iRow) {}
+  TimingSegment(int iRow = ROW_INVALID) : start_row_(iRow) {}
 
-  TimingSegment(const TimingSegment& other) : m_iStartRow(other.GetRow()) {}
+  TimingSegment(const TimingSegment& other) : start_row_(other.GetRow()) {}
 
   // for our purposes, two floats within this level of error are equal
-  static constexpr double EPSILON = 1e-6;
+  static constexpr double kEpsilon = 1e-6;
 
   // A helper for testing equality of two floats within a level of error
   // epsilon.
   bool AreEqual(float f1, float f2) const {
-    return std::abs(f1 - f2) < EPSILON;
+    return std::abs(f1 - f2) < kEpsilon;
   }
 
   virtual ~TimingSegment() {}
@@ -79,10 +79,10 @@ struct TimingSegment {
    */
   virtual void Scale(int start, int length, int newLength);
 
-  int GetRow() const { return m_iStartRow; }
-  void SetRow(int iRow) { m_iStartRow = iRow; }
+  int GetRow() const { return start_row_; }
+  void SetRow(int iRow) { start_row_ = iRow; }
 
-  float GetBeat() const { return NoteRowToBeat(m_iStartRow); }
+  float GetBeat() const { return NoteRowToBeat(start_row_); }
 
   virtual std::string ToString(int /* dec */) const {
     return std::to_string(GetBeat());
@@ -102,7 +102,7 @@ struct TimingSegment {
 
  private:
   /** @brief The row in which this segment activates. */
-  int m_iStartRow;
+  int start_row_;
 };
 
 /**
@@ -122,21 +122,21 @@ struct FakeSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new FakeSegment(*this); }
 
-  bool IsNotable() const { return m_iLengthRows > 0; }
+  bool IsNotable() const { return length_rows_ > 0; }
 
-  FakeSegment() : TimingSegment(), m_iLengthRows(-1) {}
+  FakeSegment() : TimingSegment(), length_rows_(-1) {}
 
   FakeSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), m_iLengthRows(BeatToNoteRow(fBeats)) {}
+      : TimingSegment(iStartRow), length_rows_(BeatToNoteRow(fBeats)) {}
 
   FakeSegment(const FakeSegment& other)
-      : TimingSegment(other.GetRow()), m_iLengthRows(other.GetLengthRows()) {}
+      : TimingSegment(other.GetRow()), length_rows_(other.GetLengthRows()) {}
 
-  int GetLengthRows() const { return m_iLengthRows; }
-  float GetLengthBeats() const { return NoteRowToBeat(m_iLengthRows); }
+  int GetLengthRows() const { return length_rows_; }
+  float GetLengthBeats() const { return NoteRowToBeat(length_rows_); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(float fBeats) { m_iLengthRows = BeatToNoteRow(fBeats); }
+  void SetLength(float fBeats) { length_rows_ = BeatToNoteRow(fBeats); }
 
   void Scale(int start, int length, int newLength);
 
@@ -146,7 +146,7 @@ struct FakeSegment : public TimingSegment {
   }
 
   bool operator==(const FakeSegment& other) const {
-    if (m_iLengthRows != other.m_iLengthRows) {
+    if (length_rows_ != other.length_rows_) {
       return false;
     }
     return true;
@@ -162,7 +162,7 @@ struct FakeSegment : public TimingSegment {
 
  private:
   /** @brief The number of rows the FakeSegment is alive for. */
-  int m_iLengthRows;
+  int length_rows_;
 };
 
 /**
@@ -177,21 +177,21 @@ struct WarpSegment : public TimingSegment {
   SegmentEffectType GetEffectType() const { return SegmentEffectType_Range; }
   TimingSegment* Copy() const { return new WarpSegment(*this); }
 
-  bool IsNotable() const { return m_iLengthRows > 0; }
+  bool IsNotable() const { return length_rows_ > 0; }
 
-  WarpSegment() : TimingSegment(), m_iLengthRows(0) {}
+  WarpSegment() : TimingSegment(), length_rows_(0) {}
 
   WarpSegment(const WarpSegment& other)
-      : TimingSegment(other.GetRow()), m_iLengthRows(other.GetLengthRows()) {}
+      : TimingSegment(other.GetRow()), length_rows_(other.GetLengthRows()) {}
 
   WarpSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), m_iLengthRows(BeatToNoteRow(fBeats)) {}
+      : TimingSegment(iStartRow), length_rows_(BeatToNoteRow(fBeats)) {}
 
-  int GetLengthRows() const { return m_iLengthRows; }
-  float GetLengthBeats() const { return NoteRowToBeat(m_iLengthRows); }
+  int GetLengthRows() const { return length_rows_; }
+  float GetLengthBeats() const { return NoteRowToBeat(length_rows_); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(float fBeats) { m_iLengthRows = BeatToNoteRow(fBeats); }
+  void SetLength(float fBeats) { length_rows_ = BeatToNoteRow(fBeats); }
 
   void Scale(int start, int length, int newLength);
   std::string ToString(int dec) const;
@@ -200,7 +200,7 @@ struct WarpSegment : public TimingSegment {
   }
 
   bool operator==(const WarpSegment& other) const {
-    if (m_iLengthRows != other.m_iLengthRows) {
+    if (length_rows_ != other.length_rows_) {
       return false;
     }
     return true;
@@ -216,7 +216,7 @@ struct WarpSegment : public TimingSegment {
 
  private:
   /** @brief The number of rows the WarpSegment will warp past. */
-  int m_iLengthRows;
+  int length_rows_;
 };
 
 /**
@@ -230,7 +230,7 @@ struct WarpSegment : public TimingSegment {
 
 struct TickcountSegment : public TimingSegment {
   /** @brief The default amount of ticks per beat. */
-  static const unsigned DEFAULT_TICK_COUNT = 4;
+  static const unsigned kDefaultTickCount = 4;
 
   TimingSegmentType GetType() const { return SEGMENT_TICKCOUNT; }
   SegmentEffectType GetEffectType() const {
@@ -243,13 +243,13 @@ struct TickcountSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new TickcountSegment(*this); }
 
-  TickcountSegment(int iStartRow = ROW_INVALID, int iTicks = DEFAULT_TICK_COUNT)
-      : TimingSegment(iStartRow), m_iTicksPerBeat(iTicks) {}
+  TickcountSegment(int iStartRow = ROW_INVALID, int iTicks = kDefaultTickCount)
+      : TimingSegment(iStartRow), ticks_per_beat_(iTicks) {}
 
   TickcountSegment(const TickcountSegment& other)
-      : TimingSegment(other.GetRow()), m_iTicksPerBeat(other.GetTicks()) {}
+      : TimingSegment(other.GetRow()), ticks_per_beat_(other.GetTicks()) {}
 
-  int GetTicks() const { return m_iTicksPerBeat; }
+  int GetTicks() const { return ticks_per_beat_; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -257,7 +257,7 @@ struct TickcountSegment : public TimingSegment {
   }
 
   bool operator==(const TickcountSegment& other) const {
-    if (m_iTicksPerBeat != other.m_iTicksPerBeat) {
+    if (ticks_per_beat_ != other.ticks_per_beat_) {
       return false;
     }
     return true;
@@ -273,7 +273,7 @@ struct TickcountSegment : public TimingSegment {
 
  private:
   /** @brief The amount of hold checkpoints counted per beat */
-  int m_iTicksPerBeat;
+  int ticks_per_beat_;
 };
 
 /**
@@ -295,24 +295,24 @@ struct ComboSegment : public TimingSegment {
   TimingSegment* Copy() const { return new ComboSegment(*this); }
 
   ComboSegment(int iStartRow = ROW_INVALID, int iCombo = 1, int iMissCombo = 1)
-      : TimingSegment(iStartRow), m_iCombo(iCombo), m_iMissCombo(iMissCombo) {}
+      : TimingSegment(iStartRow), combo_(iCombo), miss_combo_(iMissCombo) {}
 
   ComboSegment(const ComboSegment& other)
       : TimingSegment(other.GetRow()),
-        m_iCombo(other.GetCombo()),
-        m_iMissCombo(other.GetMissCombo()) {}
+        combo_(other.GetCombo()),
+        miss_combo_(other.GetMissCombo()) {}
 
-  int GetCombo() const { return m_iCombo; }
-  int GetMissCombo() const { return m_iMissCombo; }
+  int GetCombo() const { return combo_; }
+  int GetMissCombo() const { return miss_combo_; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
 
   bool operator==(const ComboSegment& other) const {
-    if (m_iCombo != other.m_iCombo) {
+    if (combo_ != other.combo_) {
       return false;
     }
-    if (m_iMissCombo != other.m_iMissCombo) {
+    if (miss_combo_ != other.miss_combo_) {
       return false;
     }
     return true;
@@ -328,10 +328,10 @@ struct ComboSegment : public TimingSegment {
 
  private:
   /** @brief The amount the combo increases at this point. */
-  int m_iCombo;
+  int combo_;
 
   /** @brief The amount of miss combos given at this point. */
-  int m_iMissCombo;
+  int miss_combo_;
 };
 
 /**
@@ -354,12 +354,12 @@ struct LabelSegment : public TimingSegment {
 
   LabelSegment(
       int iStartRow = ROW_INVALID, const std::string& sLabel = std::string())
-      : TimingSegment(iStartRow), m_sLabel(sLabel) {}
+      : TimingSegment(iStartRow), label_(sLabel) {}
 
   LabelSegment(const LabelSegment& other)
-      : TimingSegment(other.GetRow()), m_sLabel(other.GetLabel()) {}
+      : TimingSegment(other.GetRow()), label_(other.GetLabel()) {}
 
-  const std::string& GetLabel() const { return m_sLabel; }
+  const std::string& GetLabel() const { return label_; }
 
   std::string ToString(int dec) const;
   // Use the default definition for GetValues because the value for a
@@ -367,7 +367,7 @@ struct LabelSegment : public TimingSegment {
   // TimingData.cpp has a special case for labels to handle this.
 
   bool operator==(const LabelSegment& other) const {
-    if (m_sLabel != other.m_sLabel) {
+    if (label_ != other.label_) {
       return false;
     }
     return true;
@@ -383,7 +383,7 @@ struct LabelSegment : public TimingSegment {
 
  private:
   /** @brief The label/section name for this point. */
-  std::string m_sLabel;
+  std::string label_;
 };
 
 /**
@@ -408,13 +408,13 @@ struct BPMSegment : public TimingSegment {
   }
 
   BPMSegment(const BPMSegment& other)
-      : TimingSegment(other.GetRow()), m_fBPS(other.GetBPS()) {}
+      : TimingSegment(other.GetRow()), bps_(other.GetBPS()) {}
 
-  float GetBPS() const { return m_fBPS; }
-  float GetBPM() const { return m_fBPS * 60.0f; }
+  float GetBPS() const { return bps_; }
+  float GetBPM() const { return bps_ * 60.0f; }
 
-  void SetBPS(float fBPS) { m_fBPS = fBPS; }
-  void SetBPM(float fBPM) { m_fBPS = fBPM / 60.0f; }
+  void SetBPS(float fBPS) { bps_ = fBPS; }
+  void SetBPM(float fBPM) { bps_ = fBPM / 60.0f; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -422,7 +422,7 @@ struct BPMSegment : public TimingSegment {
   }
 
   bool operator==(const BPMSegment& other) const {
-    return AreEqual(m_fBPS, other.m_fBPS);
+    return AreEqual(bps_, other.bps_);
   }
 
   bool operator==(const TimingSegment& other) const {
@@ -435,7 +435,7 @@ struct BPMSegment : public TimingSegment {
 
  private:
   /** @brief The number of beats per second within this BPMSegment. */
-  float m_fBPS;
+  float bps_;
 };
 
 /**
@@ -459,16 +459,16 @@ struct TimeSignatureSegment : public TimingSegment {
 
   TimeSignatureSegment(
       int iStartRow = ROW_INVALID, int iNum = 4, int iDenom = 4)
-      : TimingSegment(iStartRow), m_iNumerator(iNum), m_iDenominator(iDenom) {}
+      : TimingSegment(iStartRow), numerator_(iNum), denominator_(iDenom) {}
 
   TimeSignatureSegment(const TimeSignatureSegment& other)
       : TimingSegment(other.GetRow()),
-        m_iNumerator(other.GetNum()),
-        m_iDenominator(other.GetDen()) {}
+        numerator_(other.GetNum()),
+        denominator_(other.GetDen()) {}
 
-  int GetNum() const { return m_iNumerator; }
+  int GetNum() const { return numerator_; }
 
-  int GetDen() const { return m_iDenominator; }
+  int GetDen() const { return denominator_; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
@@ -486,14 +486,14 @@ struct TimeSignatureSegment : public TimingSegment {
    * @returns the number of note rows per measure.
    */
   int GetNoteRowsPerMeasure() const {
-    return BeatToNoteRow(1) * 4 * m_iNumerator / m_iDenominator;
+    return BeatToNoteRow(1) * 4 * numerator_ / denominator_;
   }
 
   bool operator==(const TimeSignatureSegment& other) const {
-    if (m_iNumerator != other.m_iNumerator) {
+    if (numerator_ != other.numerator_) {
       return false;
     }
-    if (m_iDenominator != other.m_iDenominator) {
+    if (denominator_ != other.denominator_) {
       return false;
     }
     return true;
@@ -508,7 +508,7 @@ struct TimeSignatureSegment : public TimingSegment {
   }
 
  private:
-  int m_iNumerator, m_iDenominator;
+  int numerator_, denominator_;
 };
 
 /**
@@ -539,23 +539,20 @@ struct SpeedSegment : public TimingSegment {
   SpeedSegment(
       int iStartRow = ROW_INVALID, float fRatio = 1.0f, float fDelay = 0.0f,
       BaseUnit unit = UNIT_BEATS)
-      : TimingSegment(iStartRow),
-        m_fRatio(fRatio),
-        m_fDelay(fDelay),
-        m_Unit(unit) {}
+      : TimingSegment(iStartRow), ratio_(fRatio), delay_(fDelay), unit_(unit) {}
 
   SpeedSegment(const SpeedSegment& other)
       : TimingSegment(other.GetRow()),
-        m_fRatio(other.GetRatio()),
-        m_fDelay(other.GetDelay()),
-        m_Unit(other.GetUnit()) {}
+        ratio_(other.GetRatio()),
+        delay_(other.GetDelay()),
+        unit_(other.GetUnit()) {}
 
-  float GetRatio() const { return m_fRatio; }
+  float GetRatio() const { return ratio_; }
 
-  float GetDelay() const { return m_fDelay; }
-  void SetDelay(float fDelay) { m_fDelay = fDelay; }
+  float GetDelay() const { return delay_; }
+  void SetDelay(float fDelay) { delay_ = fDelay; }
 
-  BaseUnit GetUnit() const { return m_Unit; }
+  BaseUnit GetUnit() const { return unit_; }
 
   void Scale(int start, int length, int newLength);
 
@@ -563,13 +560,13 @@ struct SpeedSegment : public TimingSegment {
   std::vector<float> GetValues() const;
 
   bool operator==(const SpeedSegment& other) const {
-    if (!AreEqual(m_fRatio, other.m_fRatio)) {
+    if (!AreEqual(ratio_, other.ratio_)) {
       return false;
     }
-    if (!AreEqual(m_fDelay, other.m_fDelay)) {
+    if (!AreEqual(delay_, other.delay_)) {
       return false;
     }
-    if (m_Unit != other.m_Unit) {
+    if (unit_ != other.unit_) {
       return false;
     }
     return true;
@@ -585,15 +582,15 @@ struct SpeedSegment : public TimingSegment {
 
  private:
   /** @brief The percentage by which the Player's BPM is multiplied. */
-  float m_fRatio;
+  float ratio_;
 
   /**
    * @brief The number of beats or seconds to wait before applying.
    * A value of 0 means this is immediate. */
-  float m_fDelay;
+  float delay_;
 
   /** @brief The mode that this segment uses for the math.  */
-  BaseUnit m_Unit;
+  BaseUnit unit_;
 };
 
 /**
@@ -617,12 +614,12 @@ struct ScrollSegment : public TimingSegment {
   TimingSegment* Copy() const { return new ScrollSegment(*this); }
 
   ScrollSegment(int iStartRow = ROW_INVALID, float fRatio = 1.0f)
-      : TimingSegment(iStartRow), m_fRatio(fRatio) {}
+      : TimingSegment(iStartRow), ratio_(fRatio) {}
 
   ScrollSegment(const ScrollSegment& other)
-      : TimingSegment(other.GetRow()), m_fRatio(other.GetRatio()) {}
+      : TimingSegment(other.GetRow()), ratio_(other.GetRatio()) {}
 
-  float GetRatio() const { return m_fRatio; }
+  float GetRatio() const { return ratio_; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -630,7 +627,7 @@ struct ScrollSegment : public TimingSegment {
   }
 
   bool operator==(const ScrollSegment& other) const {
-    return AreEqual(m_fRatio, other.m_fRatio);
+    return AreEqual(ratio_, other.ratio_);
   }
 
   bool operator==(const TimingSegment& other) const {
@@ -643,7 +640,7 @@ struct ScrollSegment : public TimingSegment {
 
  private:
   /** @brief The percentage by which the chart's scroll rate is multiplied. */
-  float m_fRatio;
+  float ratio_;
 };
 
 /**
@@ -653,18 +650,18 @@ struct StopSegment : public TimingSegment {
   TimingSegmentType GetType() const { return SEGMENT_STOP; }
   SegmentEffectType GetEffectType() const { return SegmentEffectType_Row; }
 
-  bool IsNotable() const { return m_fSeconds > 0; }
+  bool IsNotable() const { return seconds_ > 0; }
 
   TimingSegment* Copy() const { return new StopSegment(*this); }
 
   StopSegment(int iStartRow = ROW_INVALID, float fSeconds = 0.0f)
-      : TimingSegment(iStartRow), m_fSeconds(fSeconds) {}
+      : TimingSegment(iStartRow), seconds_(fSeconds) {}
 
   StopSegment(const StopSegment& other)
-      : TimingSegment(other.GetRow()), m_fSeconds(other.GetPause()) {}
+      : TimingSegment(other.GetRow()), seconds_(other.GetPause()) {}
 
-  float GetPause() const { return m_fSeconds; }
-  void SetPause(float fSeconds) { m_fSeconds = fSeconds; }
+  float GetPause() const { return seconds_; }
+  void SetPause(float fSeconds) { seconds_ = fSeconds; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -672,7 +669,7 @@ struct StopSegment : public TimingSegment {
   }
 
   bool operator==(const StopSegment& other) const {
-    return AreEqual(m_fSeconds, other.m_fSeconds);
+    return AreEqual(seconds_, other.seconds_);
   }
 
   bool operator==(const TimingSegment& other) const {
@@ -685,7 +682,7 @@ struct StopSegment : public TimingSegment {
 
  private:
   /** @brief The number of seconds to pause at the segment's row. */
-  float m_fSeconds;
+  float seconds_;
 };
 
 /**
@@ -695,18 +692,18 @@ struct DelaySegment : public TimingSegment {
   TimingSegmentType GetType() const { return SEGMENT_DELAY; }
   SegmentEffectType GetEffectType() const { return SegmentEffectType_Row; }
 
-  bool IsNotable() const { return m_fSeconds > 0; }
+  bool IsNotable() const { return seconds_ > 0; }
 
   TimingSegment* Copy() const { return new DelaySegment(*this); }
 
   DelaySegment(int iStartRow = ROW_INVALID, float fSeconds = 0)
-      : TimingSegment(iStartRow), m_fSeconds(fSeconds) {}
+      : TimingSegment(iStartRow), seconds_(fSeconds) {}
 
   DelaySegment(const DelaySegment& other)
-      : TimingSegment(other.GetRow()), m_fSeconds(other.GetPause()) {}
+      : TimingSegment(other.GetRow()), seconds_(other.GetPause()) {}
 
-  float GetPause() const { return m_fSeconds; }
-  void SetPause(float fSeconds) { m_fSeconds = fSeconds; }
+  float GetPause() const { return seconds_; }
+  void SetPause(float fSeconds) { seconds_ = fSeconds; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -714,7 +711,7 @@ struct DelaySegment : public TimingSegment {
   }
 
   bool operator==(const DelaySegment& other) const {
-    return AreEqual(m_fSeconds, other.m_fSeconds);
+    return AreEqual(seconds_, other.seconds_);
   }
 
   bool operator==(const TimingSegment& other) const {
@@ -727,7 +724,7 @@ struct DelaySegment : public TimingSegment {
 
  private:
   /** @brief The number of seconds to pause at the segment's row. */
-  float m_fSeconds;
+  float seconds_;
 };
 
 #endif

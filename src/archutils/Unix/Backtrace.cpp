@@ -186,8 +186,8 @@ int g_StackBlock1, g_StackBlock2;
 /* This matches the layout of the stack.  The frame pointer makes the
  * stack a linked list. */
 struct StackFrame {
-  const StackFrame* link;
-  const void* return_address;
+  const StackFrame* link_;
+  const void* return_address_;
 };
 
 /* Return true if the given pointer is in readable memory, and on the stack. */
@@ -204,10 +204,10 @@ bool IsExecutableAddress(const void* p) {
 
 /* Return true if the given stack frame is in readable memory. */
 bool IsReadableFrame(const StackFrame* frame) {
-  if (!IsOnStack(&frame->link)) {
+  if (!IsOnStack(&frame->link_)) {
     return false;
   }
-  if (!IsOnStack(&frame->return_address)) {
+  if (!IsOnStack(&frame->return_address_)) {
     return false;
   }
   return true;
@@ -280,22 +280,22 @@ bool IsValidFrame(const StackFrame* frame) {
   }
 
   /* The frame link should only go upwards. */
-  if (frame->link <= frame) {
+  if (frame->link_ <= frame) {
     return false;
   }
 
   /* The link should be on the stack. */
-  if (!IsOnStack(frame->link)) {
+  if (!IsOnStack(frame->link_)) {
     return false;
   }
 
   /* The return address should be in a readable, executable page. */
-  if (!IsExecutableAddress(frame->return_address)) {
+  if (!IsExecutableAddress(frame->return_address_)) {
     return false;
   }
 
   /* The return address should follow a CALL opcode. */
-  if (!PointsToValidCall(frame->return_address)) {
+  if (!PointsToValidCall(frame->return_address_)) {
     return false;
   }
 
@@ -314,7 +314,7 @@ static void do_backtrace(
       READABLE_ONLY | EXECUTABLE_ONLY);
 
   /* Find the stack memory blocks. */
-  g_StackBlock1 = find_address(ctx->sp, g_ReadableBegin, g_ReadableEnd);
+  g_StackBlock1 = find_address(ctx->sp_, g_ReadableBegin, g_ReadableEnd);
   g_StackBlock2 =
       find_address(SavedStackPointer, g_ReadableBegin, g_ReadableEnd);
 
@@ -322,16 +322,16 @@ static void do_backtrace(
   /* XXX: We want EIP even if it's not valid, but we can't put NULL on the
    * list, since it's NULL-terminated.  Hmm. */
   unsigned i = 0;
-  if (i < size - 1 && ctx->ip) {  // -1 for NULL
-    buf[i++] = ctx->ip;
+  if (i < size - 1 && ctx->ip_) {  // -1 for NULL
+    buf[i++] = ctx->ip_;
   }
 
   /* If we did a CALL to an invalid address (eg. call a NULL callback), then
    * we won't have a stack frame for the function that called it (since the
    * stack frame is set up by the called function), but if esp hasn't been
    * changed after the CALL, the return address will be esp[0].  Grab it. */
-  if (IsOnStack(ctx->sp)) {
-    const void* p = ((const void**)ctx->sp)[0];
+  if (IsOnStack(ctx->sp_)) {
+    const void* p = ((const void**)ctx->sp_)[0];
     if (IsExecutableAddress(p) && PointsToValidCall(p) &&
         i < size - 1) {  // -1 for NULL
       buf[i++] = p;
@@ -340,20 +340,20 @@ static void do_backtrace(
 
 #if 0
 	/* ebp is usually the frame pointer. */
-	const StackFrame *frame = (StackFrame *) ctx->bp;
+	const StackFrame *frame = (StackFrame *) ctx->bp_;
 
 	/* If ebp doesn't point to a valid stack frame, we're probably in
 	 * -fomit-frame-pointer code.  Ignore it; use esp instead.  It probably
 	 * won't point to a stack frame, but it should at least give us a starting
 	 * point in the stack. */
 	if( !IsValidFrame( frame ) )
-		frame = (StackFrame *) ctx->sp;
+		frame = (StackFrame *) ctx->sp_;
 #endif
 
   /* Actually, let's just use esp.  Even if ebp points to a valid stack frame,
    * there might be -fomit-frame-pointer calls in front of it, and we want to
    * get those. */
-  const StackFrame* frame = (StackFrame*)ctx->sp;
+  const StackFrame* frame = (StackFrame*)ctx->sp_;
 
   while (i < size - 1)  // -1 for NULL
   {
@@ -380,8 +380,8 @@ static void do_backtrace(
     }
 
     /* Valid frame.  Store the return address, and hop forward. */
-    buf[i++] = frame->return_address;
-    frame = frame->link;
+    buf[i++] = frame->return_address_;
+    frame = frame->link_;
   }
 
   buf[i] = nullptr;
@@ -389,30 +389,30 @@ static void do_backtrace(
 
 #if defined(CPU_X86)
 void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc) {
-  ctx->ip = (void*)uc->uc_mcontext.gregs[REG_EIP];
-  ctx->bp = (void*)uc->uc_mcontext.gregs[REG_EBP];
-  ctx->sp = (void*)uc->uc_mcontext.gregs[REG_ESP];
-  ctx->pid = GetCurrentThreadId();
+  ctx->ip_ = (void*)uc->uc_mcontext.gregs[REG_EIP];
+  ctx->bp_ = (void*)uc->uc_mcontext.gregs[REG_EBP];
+  ctx->sp_ = (void*)uc->uc_mcontext.gregs[REG_ESP];
+  ctx->pid_ = GetCurrentThreadId();
 }
 #elif defined(CPU_X86_64)
 void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc) {
-  ctx->ip = (void*)uc->uc_mcontext.gregs[REG_RIP];
-  ctx->bp = (void*)uc->uc_mcontext.gregs[REG_RBP];
-  ctx->sp = (void*)uc->uc_mcontext.gregs[REG_RSP];
-  ctx->pid = GetCurrentThreadId();
+  ctx->ip_ = (void*)uc->uc_mcontext.gregs[REG_RIP];
+  ctx->bp_ = (void*)uc->uc_mcontext.gregs[REG_RBP];
+  ctx->sp_ = (void*)uc->uc_mcontext.gregs[REG_RSP];
+  ctx->pid_ = GetCurrentThreadId();
 }
 #elif defined(CPU_AARCH64)
 void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc) {
 #if defined(MACOSX)
-  ctx->ip = (void*)uc->uc_mcontext->__ss.__pc;
-  ctx->bp = (void*)uc->uc_mcontext->__ss.__fp;
-  ctx->sp = (void*)uc->uc_mcontext->__ss.__sp;
+  ctx->ip_ = (void*)uc->uc_mcontext->__ss.__pc;
+  ctx->bp_ = (void*)uc->uc_mcontext->__ss.__fp;
+  ctx->sp_ = (void*)uc->uc_mcontext->__ss.__sp;
 #elif defined(LINUX)
-  ctx->ip = (void*)uc->uc_mcontext.pc;
-  ctx->bp = (void*)uc->uc_mcontext.regs[29];  // x29 is frame pointer
-  ctx->sp = (void*)uc->uc_mcontext.sp;
+  ctx->ip_ = (void*)uc->uc_mcontext.pc;
+  ctx->bp_ = (void*)uc->uc_mcontext.regs[29];  // x29 is frame pointer
+  ctx->sp_ = (void*)uc->uc_mcontext.sp;
 #endif
-  ctx->pid = GetCurrentThreadId();
+  ctx->pid_ = GetCurrentThreadId();
 }
 
 #else
@@ -426,10 +426,10 @@ void GetBacktrace(const void** buf, size_t size, const BacktraceContext* ctx) {
   if (ctx == nullptr) {
     ctx = &CurrentCtx;
 
-    CurrentCtx.ip = nullptr;
-    CurrentCtx.bp = __builtin_frame_address(0);
-    CurrentCtx.sp = __builtin_frame_address(0);
-    CurrentCtx.pid = GetCurrentThreadId();
+    CurrentCtx.ip_ = nullptr;
+    CurrentCtx.bp_ = __builtin_frame_address(0);
+    CurrentCtx.sp_ = __builtin_frame_address(0);
+    CurrentCtx.pid_ = GetCurrentThreadId();
   }
 
   do_backtrace(buf, size, ctx);

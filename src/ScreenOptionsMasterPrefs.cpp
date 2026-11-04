@@ -30,8 +30,8 @@
 using namespace StringConversion;
 
 static void GetPrefsDefaultModifiers(PlayerOptions& po, SongOptions& so) {
-  po.FromString(PREFSMAN->m_sDefaultModifiers);
-  so.FromString(PREFSMAN->m_sDefaultModifiers);
+  po.FromString(PREFSMAN->default_modifiers_);
+  so.FromString(PREFSMAN->default_modifiers_);
 }
 
 static void SetPrefsDefaultModifiers(
@@ -47,7 +47,7 @@ static void SetPrefsDefaultModifiers(
   remove_empty_back();
 #undef remove_empty_back
 
-  PREFSMAN->m_sDefaultModifiers.Set(join(", ", as));
+  PREFSMAN->default_modifiers_.Set(join(", ", as));
 }
 
 /* Ugly: the input values may be a different type than the mapping.  For
@@ -118,8 +118,8 @@ static void MoveMap(
     unsigned cnt) {
   ASSERT(pConfOption != nullptr);
   IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->m_sPrefName);
-  ASSERT_M(pPref != nullptr, pConfOption->m_sPrefName);
+      IPreference::GetPreferenceByName(pConfOption->pref_name_);
+  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
 
   MoveMap(sel, *pPref, ToSel, mapping, cnt);
 }
@@ -127,8 +127,8 @@ static void MoveMap(
 template <class T>
 static void MovePref(int& iSel, bool bToSel, const ConfOption* pConfOption) {
   IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->m_sPrefName);
-  ASSERT_M(pPref != nullptr, pConfOption->m_sPrefName);
+      IPreference::GetPreferenceByName(pConfOption->pref_name_);
+  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
 
   if (bToSel) {
     // TODO: why not get the int directly from pPref?
@@ -144,8 +144,8 @@ static void MovePref(int& iSel, bool bToSel, const ConfOption* pConfOption) {
 template <>
 void MovePref<bool>(int& iSel, bool bToSel, const ConfOption* pConfOption) {
   IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->m_sPrefName);
-  ASSERT_M(pPref != nullptr, pConfOption->m_sPrefName);
+      IPreference::GetPreferenceByName(pConfOption->pref_name_);
+  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
 
   if (bToSel) {
     // TODO: why not get the int directly from pPref?
@@ -195,7 +195,7 @@ static void GameChoices(std::vector<std::string>& out) {
   std::vector<const Game*> aGames;
   GAMEMAN->GetEnabledGames(aGames);
   for (const Game* g : aGames) {
-    std::string sGameName = g->m_szName;
+    std::string sGameName = g->name_;
     out.push_back(sGameName);
   }
 }
@@ -216,7 +216,7 @@ static void GameSel(int& sel, bool ToSel, const ConfOption* pConfOption) {
   } else {
     std::vector<const Game*> aGames;
     GAMEMAN->GetEnabledGames(aGames);
-    PREFSMAN->SetCurrentGame(aGames[sel]->m_szName);
+    PREFSMAN->SetCurrentGame(aGames[sel]->name_);
   }
 }
 
@@ -229,7 +229,7 @@ static void LanguageChoices(std::vector<std::string>& out) {
     const LanguageInfo* pLI = GetLanguageInfo(s);
     if (pLI) {
       out.push_back(
-          THEME->GetString("NativeLanguageNames", pLI->szEnglishName));
+          THEME->GetString("NativeLanguageNames", pLI->english_name_));
     } else {
       out.push_back(s);
     }
@@ -267,11 +267,11 @@ static void Language(int& sel, bool ToSel, const ConfOption* pConfOption) {
   } else {
     const std::string& sNewLanguage = vs[sel];
 
-    PREFSMAN->m_sLanguage.Set(sNewLanguage);
+    PREFSMAN->language_.Set(sNewLanguage);
     if (THEME->GetCurLanguage() != sNewLanguage) {
       THEME->SwitchThemeAndLanguage(
-          THEME->GetCurThemeName(), PREFSMAN->m_sLanguage,
-          PREFSMAN->m_bPseudoLocalize);
+          THEME->GetCurThemeName(), PREFSMAN->language_,
+          PREFSMAN->pseudo_localize_);
     }
   }
 }
@@ -295,7 +295,7 @@ static void DisplayResolutionChoices(std::vector<std::string>& out) {
   for (const DisplaySpec& iter : display_specs) {
     if (iter.currentMode() != nullptr) {
       std::string s = ssprintf(
-          "%dx%d", iter.currentMode()->width, iter.currentMode()->height);
+          "%dx%d", iter.currentMode()->width_, iter.currentMode()->height_);
       out.push_back(s);
     }
   }
@@ -313,13 +313,13 @@ static void RequestedTheme(
     sel = 0;
     for (unsigned i = 1; i < vsThemeNames.size(); i++) {
       if (!strcasecmp(
-              vsThemeNames[i].c_str(), PREFSMAN->m_sTheme.Get().c_str())) {
+              vsThemeNames[i].c_str(), PREFSMAN->theme_.Get().c_str())) {
         sel = i;
       }
     }
   } else {
     const std::string sNewTheme = vsThemeNames[sel];
-    PREFSMAN->m_sTheme.Set(sNewTheme);  // OPT_APPLY_THEME will load the theme
+    PREFSMAN->theme_.Set(sNewTheme);  // OPT_APPLY_THEME will load the theme
   }
 }
 
@@ -344,7 +344,7 @@ static void Announcer(int& sel, bool ToSel, const ConfOption* pConfOption) {
   } else {
     const std::string sNewAnnouncer = sel ? choices[sel] : std::string("");
     ANNOUNCER->SwitchAnnouncer(sNewAnnouncer);
-    PREFSMAN->m_sAnnouncer.Set(sNewAnnouncer);
+    PREFSMAN->announcer_.Set(sNewAnnouncer);
   }
 }
 
@@ -359,10 +359,10 @@ static void DefaultNoteSkin(
 
   if (ToSel) {
     PlayerOptions po;
-    po.FromString(PREFSMAN->m_sDefaultModifiers);
+    po.FromString(PREFSMAN->default_modifiers_);
     sel = 0;
     for (unsigned i = 0; i < choices.size(); i++) {
-      if (!strcasecmp(choices[i].c_str(), po.m_sNoteSkin.c_str())) {
+      if (!strcasecmp(choices[i].c_str(), po.note_skin_.c_str())) {
         sel = i;
       }
     }
@@ -370,7 +370,7 @@ static void DefaultNoteSkin(
     PlayerOptions po;
     SongOptions so;
     GetPrefsDefaultModifiers(po, so);
-    po.m_sNoteSkin = choices[sel];
+    po.note_skin_ = choices[sel];
     SetPrefsDefaultModifiers(po, so);
   }
 }
@@ -386,13 +386,13 @@ static void DefaultFailType(
     int& sel, bool to_sel, const ConfOption* conf_option) {
   if (to_sel) {
     PlayerOptions po;
-    po.FromString(PREFSMAN->m_sDefaultModifiers);
-    sel = po.m_FailType;
+    po.FromString(PREFSMAN->default_modifiers_);
+    sel = po.fail_type_;
   } else {
     PlayerOptions po;
     SongOptions so;
     GetPrefsDefaultModifiers(po, so);
-    po.m_FailType = static_cast<FailType>(sel);
+    po.fail_type_ = static_cast<FailType>(sel);
     SetPrefsDefaultModifiers(po, so);
   }
 }
@@ -501,11 +501,11 @@ static void SongsPerPlayOrEventMode(
   const int mapping[] = {1, 2, 3, 4, 5, 6};
   MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
 
-  if (ToSel && PREFSMAN->m_bEventMode) {
+  if (ToSel && PREFSMAN->event_mode_) {
     sel = 5;
   }
   if (!ToSel) {
-    PREFSMAN->m_bEventMode.Set(sel == 5);
+    PREFSMAN->event_mode_.Set(sel == 5);
   }
 }
 
@@ -569,25 +569,25 @@ LuaFunction(GetLifeDifficulty, GetLifeDifficulty());
 
 // Graphic options
 struct res_t {
-  int w, h;
-  res_t() : w(0), h(0) {}
-  res_t(int w_, int h_) : w(w_), h(h_) {}
+  int w_, h_;
+  res_t() : w_(0), h_(0) {}
+  res_t(int w_, int h_) : w_(w_), h_(h_) {}
 
   res_t& operator-=(const res_t& rhs) {
-    w -= rhs.w;
-    h -= rhs.h;
+    w_ -= rhs.w_;
+    h_ -= rhs.h_;
     return *this;
   }
 
   // Ugly: allow convert to a float for FindClosestEntry.
-  operator float() const { return w * 5000.0f + h; }
+  operator float() const { return w_ * 5000.0f + h_; }
 };
 
 inline bool operator<(const res_t& lhs, const res_t& rhs) {
-  if (lhs.w != rhs.w) {
-    return lhs.w < rhs.w;
+  if (lhs.w_ != rhs.w_) {
+    return lhs.w_ < rhs.w_;
   }
-  return lhs.h < rhs.h;
+  return lhs.h_ < rhs.h_;
 }
 inline bool operator>(const res_t& lhs, const res_t& rhs) {
   return operator<(rhs, lhs);
@@ -612,16 +612,16 @@ static void DisplayResolutionM(
     for (const DisplaySpec& iter : display_specs) {
       if (iter.currentMode() != nullptr) {
         res_choices.push_back(
-            res_t(iter.currentMode()->width, iter.currentMode()->height));
+            res_t(iter.currentMode()->width_, iter.currentMode()->height_));
       }
     }
   }
 
-  res_t sel_res(PREFSMAN->m_iDisplayWidth, PREFSMAN->m_iDisplayHeight);
+  res_t sel_res(PREFSMAN->display_width_, PREFSMAN->display_height_);
   MoveMap(sel, sel_res, ToSel, &res_choices[0], res_choices.size());
   if (!ToSel) {
-    PREFSMAN->m_iDisplayWidth.Set(sel_res.w);
-    PREFSMAN->m_iDisplayHeight.Set(sel_res.h);
+    PREFSMAN->display_width_.Set(sel_res.w_);
+    PREFSMAN->display_height_.Set(sel_res.h_);
   }
 }
 
@@ -786,12 +786,12 @@ static void InitializeConfOptions() {
 #define ADD(x) g_ConfOptions.push_back(x)
   // Select game
   ADD(ConfOption("Game", GameSel, GameChoices));
-  g_ConfOptions.back().m_iEffects = OPT_CHANGE_GAME;
+  g_ConfOptions.back().effects_ = OPT_CHANGE_GAME;
 
   // Appearance options
   ADD(ConfOption("Language", Language, LanguageChoices));
   ADD(ConfOption("Theme", RequestedTheme, ThemeChoices));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_THEME;
+  g_ConfOptions.back().effects_ = OPT_APPLY_THEME;
 
   ADD(ConfOption("Announcer", Announcer, AnnouncerChoices));
   ADD(ConfOption("DefaultNoteSkin", DefaultNoteSkin, DefaultNoteSkinChoices));
@@ -811,7 +811,7 @@ static void InitializeConfOptions() {
   // Misc options
   ADD(ConfOption("AutogenSteps", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("OnlyPreferredDifficulties", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_SONG;
+  g_ConfOptions.back().effects_ = OPT_APPLY_SONG;
 
   ADD(ConfOption("AutogenGroupCourses", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("FastLoad", MovePref<bool>, "Off", "On"));
@@ -836,11 +836,11 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "BGBrightnessNoZero", BGBrightnessNoZero, "|10%", "|20%", "|30%", "|40%",
       "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
-  g_ConfOptions.back().m_sPrefName = "BGBrightness";
+  g_ConfOptions.back().pref_name_ = "BGBrightness";
   ADD(ConfOption(
       "BGBrightnessOrStatic", BGBrightnessOrStatic, "Disabled", "25% Bright",
       "50% Bright", "75% Bright"));
-  g_ConfOptions.back().m_sPrefName = "BGBrightness";
+  g_ConfOptions.back().pref_name_ = "BGBrightness";
   ADD(ConfOption(
       "StretchBackgrounds", MovePref<bool>, "Off",
       "On"));  // Deprecated, unused by default/_fallback. -Kyz
@@ -918,7 +918,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption("MenuTimer", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("CoinMode", MovePref<CoinMode>, "Home", "Pay", "Free Play"));
   ADD(ConfOption("CoinModeNoHome", CoinModeNoHome, "Pay", "Free Play"));
-  g_ConfOptions.back().m_sPrefName = "CoinMode";
+  g_ConfOptions.back().pref_name_ = "CoinMode";
   ADD(ConfOption(
       "CoinsPerCredit", CoinsPerCredit, "|1", "|2", "|3", "|4", "|5", "|6",
       "|7", "|8", "|9", "|10", "|11", "|12", "|13", "|14", "|15", "|16"));
@@ -929,7 +929,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "SongsPerPlayOrEvent", SongsPerPlayOrEventMode, "|1", "|2", "|3", "|4",
       "|5", "Event"));
-  g_ConfOptions.back().m_sPrefName = "SongsPerPlay";
+  g_ConfOptions.back().pref_name_ = "SongsPerPlay";
 
   ADD(ConfOption("EventMode", MovePref<bool>, "Off", "On (recommended)"));
   ADD(ConfOption(
@@ -938,7 +938,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "LifeDifficulty", LifeDifficulty, "|1", "|2", "|3", "|4", "|5", "|6",
       "|7"));
-  g_ConfOptions.back().m_sPrefName = "LifeDifficultyScale";
+  g_ConfOptions.back().pref_name_ = "LifeDifficultyScale";
   ADD(ConfOption(
       "ProgressiveLifebar", MovePref<int>, "Off", "|1", "|2", "|3", "|4", "|5",
       "|6", "|7", "|8"));
@@ -960,10 +960,10 @@ static void InitializeConfOptions() {
       "2 Players for 1 Credit"));
   ADD(ConfOption(
       "PremiumFreeMinutes", PremiumFreeMinutes, PremiumFreeMinuteChoices));
-  g_ConfOptions.back().m_sPrefName = "PremiumFreeMinutes";
+  g_ConfOptions.back().pref_name_ = "PremiumFreeMinutes";
   ADD(ConfOption(
       "JointPremium", JointPremium, "Off", "2 Players for 1 Credit"));
-  g_ConfOptions.back().m_sPrefName = "Premium";
+  g_ConfOptions.back().pref_name_ = "Premium";
   ADD(ConfOption("ShowSongOptions", MovePref<Maybe>, "Ask", "Hide", "Show"));
   ADD(ConfOption("PercentageScoring", MovePref<bool>, "Off", "On"));
   ADD(ConfOption(
@@ -982,56 +982,56 @@ static void InitializeConfOptions() {
       "TNS_AvoidMine", "TNS_CheckpointMiss", "TNS_Miss", "TNS_W5", "TNS_W4",
       "TNS_W3", "TNS_W2", "TNS_W1", "TNS_CheckpointHit"));
   ADD(ConfOption("ProfileSortOrderAscending", MovePref<bool>, "No", "Yes"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_PROFILES;
+  g_ConfOptions.back().effects_ = OPT_APPLY_PROFILES;
   ADD(ConfOption(
       "ProfileSortOrder", MovePref<ProfileSortOrder>, "Priority", "Recent",
       "Alphabetical", "CreationTime"));
-  g_ConfOptions.back().m_sPrefName = "ProfileSortOrder";
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_PROFILES;
+  g_ConfOptions.back().pref_name_ = "ProfileSortOrder";
+  g_ConfOptions.back().effects_ = OPT_APPLY_PROFILES;
 
   // Graphic options
   ADD(ConfOption("Windowed", MovePref<bool>, "Full Screen", "Windowed"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "DisplayResolution", DisplayResolutionM, DisplayResolutionChoices));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS | OPT_APPLY_ASPECT_RATIO;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS | OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption(
       "DisplayAspectRatio", DisplayAspectRatio, "|3:4", "|1:1", "|4:3", "|5:4",
       "|16:10", "|16:9", "|8:3"));
-  g_ConfOptions.back().m_iEffects =
+  g_ConfOptions.back().effects_ =
       OPT_APPLY_GRAPHICS |
       OPT_APPLY_ASPECT_RATIO;  // need OPT_APPLY_GRAPHICS because if windowed
                                // the width may change to make square pixels
   ADD(ConfOption("WideScreen16_10", WideScreen16_10, "Off", "On"));
-  g_ConfOptions.back().m_sPrefName = "DisplayAspectRatio";
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_ASPECT_RATIO;
+  g_ConfOptions.back().pref_name_ = "DisplayAspectRatio";
+  g_ConfOptions.back().effects_ = OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption("WideScreen16_9", WideScreen16_9, "Off", "On"));
-  g_ConfOptions.back().m_sPrefName = "DisplayAspectRatio";
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_ASPECT_RATIO;
+  g_ConfOptions.back().pref_name_ = "DisplayAspectRatio";
+  g_ConfOptions.back().effects_ = OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption("DisplayColorDepth", DisplayColorDepth, "16bit", "32bit"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "HighResolutionTextures", MovePref<HighResolutionTextures>, "Auto",
       "Force Off", "Force On"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "MaxTextureResolution", MaxTextureResolution, "|256", "|512", "|1024",
       "|2048"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("TextureColorDepth", TextureColorDepth, "16bit", "32bit"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("MovieColorDepth", MovieColorDepth, "16bit", "32bit"));
   ADD(ConfOption("DelayedTextureDelete", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("CelShadeModels", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("SmoothLines", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "RefreshRate", RefreshRate, "Default", "|60", "|75", "|85", "|100",
       "|120", "|144", "|165", "|180", "|240", "|360"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("Vsync", MovePref<bool>, "No", "Yes"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
+  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("FastNoteRendering", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowStats", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowBanners", MovePref<bool>, "Off", "On"));
@@ -1043,14 +1043,14 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "SoundVolume", SoundVolume, "Silent", "|10%", "|20%", "|30%", "|40%",
       "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_SOUND;
+  g_ConfOptions.back().effects_ = OPT_APPLY_SOUND;
   ADD(ConfOption(
       "SoundVolumeAttract", SoundVolumeAttract, "Silent", "|10%", "|20%",
       "|30%", "|40%", "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
   ADD(ConfOption(
       "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz",
       "48000 Hz"));
-  g_ConfOptions.back().m_sPrefName = "SoundPreferredSampleRate";
+  g_ConfOptions.back().pref_name_ = "SoundPreferredSampleRate";
   ADD(ConfOption(
       "VisualDelaySeconds", VisualDelaySeconds, "|-5", "|-4", "|-3", "|-2",
       "|-1", "|0", "|+1", "|+2", "|+3", "|+4", "|+5"));
@@ -1062,7 +1062,7 @@ static void InitializeConfOptions() {
     ADD(c);
   }
   ADD(ConfOption("DefaultSyncOffset", MovePref<SyncOffset>, "NULL", "|ITG"));
-  g_ConfOptions.back().m_iEffects = OPT_RELOAD_SONGS;
+  g_ConfOptions.back().effects_ = OPT_RELOAD_SONGS;
 
   ADD(ConfOption("EnableAttackSounds", MovePref<bool>, "No", "Yes"));
   ADD(ConfOption("EnableMineHitSound", MovePref<bool>, "No", "Yes"));
@@ -1075,13 +1075,13 @@ static void InitializeConfOptions() {
 }
 
 // Get a mask of effects to apply if the given option changes.
-int ConfOption::GetEffects() const { return m_iEffects | OPT_SAVE_PREFERENCES; }
+int ConfOption::GetEffects() const { return effects_ | OPT_SAVE_PREFERENCES; }
 
 ConfOption* ConfOption::Find(std::string name) {
   InitializeConfOptions();
   for (unsigned i = 0; i < g_ConfOptions.size(); ++i) {
     ConfOption* opt = &g_ConfOptions[i];
-    std::string match(opt->name);
+    std::string match(opt->name_);
     if (CompareNoCase(match, name)) {
       continue;
     }
@@ -1092,14 +1092,14 @@ ConfOption* ConfOption::Find(std::string name) {
 }
 
 void ConfOption::UpdateAvailableOptions() {
-  if (MakeOptionsListCB != nullptr) {
-    names.clear();
-    MakeOptionsListCB(names);
+  if (make_options_list_cb_ != nullptr) {
+    names_.clear();
+    make_options_list_cb_(names_);
   }
 }
 
 void ConfOption::MakeOptionsList(std::vector<std::string>& out) const {
-  out = names;
+  out = names_;
 }
 
 static const char* OptEffectNames[] = {

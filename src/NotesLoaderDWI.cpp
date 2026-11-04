@@ -298,7 +298,7 @@ static NoteData ParseNoteData(
   }
 
   std::map<int, int> mapDanceNoteToNoteDataColumn;
-  switch (out.m_StepsType) {
+  switch (out.steps_type_) {
     case StepsType_dance_single:
       mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
       mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
@@ -324,7 +324,7 @@ static NoteData ParseNoteData(
       mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPRIGHT] = 4;
       mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 5;
       break;
-      DEFAULT_FAIL(out.m_StepsType);
+      DEFAULT_FAIL(out.steps_type_);
   }
 
   NoteData newNoteData;
@@ -459,7 +459,7 @@ static NoteData ParseNoteData(
   for (int t = 0; t < newNoteData.GetNumTracks(); ++t) {
     FOREACH_NONEMPTY_ROW_IN_TRACK(newNoteData, t, iHeadRow) {
       TapNote tn = newNoteData.GetTapNote(t, iHeadRow);
-      if (tn.type != TapNoteType_HoldHead) {
+      if (tn.type_ != TapNoteType_HoldHead) {
         continue;
       }
 
@@ -467,12 +467,12 @@ static NoteData ParseNoteData(
       bool bFound = false;
       while (!bFound && newNoteData.GetNextTapNoteRowForTrack(t, iTailRow)) {
         const TapNote& TailTap = newNoteData.GetTapNote(t, iTailRow);
-        if (TailTap.type == TapNoteType_Empty) {
+        if (TailTap.type_ == TapNoteType_Empty) {
           continue;
         }
 
         newNoteData.SetTapNote(t, iTailRow, TAP_EMPTY);
-        tn.iDuration = iTailRow - iHeadRow;
+        tn.duration_ = iTailRow - iHeadRow;
         newNoteData.SetTapNote(t, iHeadRow, tn);
         bFound = true;
       }
@@ -521,7 +521,7 @@ static bool LoadFromDWITokens(
         sPath.c_str(), sMode.c_str(), sDescription.c_str(), sNumFeet.c_str());
     return false;
   }
-  out.m_StepsType = GetTypeFromMode(sMode);
+  out.steps_type_ = GetTypeFromMode(sMode);
 
   // if the meter is empty, force it to 1.
   if (sNumFeet.empty()) {
@@ -598,7 +598,7 @@ bool DWILoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
     if (EqualsNoCase(valueName, "SINGLE") ||
         EqualsNoCase(valueName, "DOUBLE") ||
         EqualsNoCase(valueName, "COUPLE") || EqualsNoCase(valueName, "SOLO")) {
-      if (out.m_StepsType != GetTypeFromMode(valueName)) {
+      if (out.steps_type_ != GetTypeFromMode(valueName)) {
         continue;
       }
       if (out.GetDifficulty() != DwiCompatibleStringToDifficulty(params[1])) {
@@ -644,7 +644,7 @@ bool DWILoader::LoadFromDir(
     return false;
   }
 
-  out.m_sSongFileName = sPath;
+  out.song_file_name_ = sPath;
 
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
     int iNumParams = msd.GetNumParams(i);
@@ -660,43 +660,43 @@ bool DWILoader::LoadFromDir(
 
     // handle the data
     if (EqualsNoCase(sValueName, "FILE")) {
-      out.m_sMusicFile = sParams[1];
+      out.music_file_ = sParams[1];
     }
 
     else if (EqualsNoCase(sValueName, "TITLE")) {
       NotesLoader::GetMainAndSubTitlesFromFullTitle(
-          sParams[1], out.m_sMainTitle, out.m_sSubTitle);
+          sParams[1], out.main_title_, out.sub_title_);
 
       /* As far as I know, there's no spec on the encoding of this text. (I
        * didn't look very hard, though.)  I've seen at least one file in
        * ISO-8859-1. */
-      ConvertString(out.m_sMainTitle, "utf-8,english");
-      ConvertString(out.m_sSubTitle, "utf-8,english");
+      ConvertString(out.main_title_, "utf-8,english");
+      ConvertString(out.sub_title_, "utf-8,english");
     }
 
     else if (EqualsNoCase(sValueName, "ARTIST")) {
-      out.m_sArtist = sParams[1];
-      ConvertString(out.m_sArtist, "utf-8,english");
+      out.artist_ = sParams[1];
+      ConvertString(out.artist_, "utf-8,english");
     }
 
     else if (EqualsNoCase(sValueName, "GENRE")) {
-      out.m_sGenre = sParams[1];
-      ConvertString(out.m_sGenre, "utf-8,english");
+      out.genre_ = sParams[1];
+      ConvertString(out.genre_, "utf-8,english");
     }
 
     else if (EqualsNoCase(sValueName, "CDTITLE")) {
-      out.m_sCDTitleFile = sParams[1];
+      out.cd_title_file_ = sParams[1];
     }
 
     else if (EqualsNoCase(sValueName, "BPM")) {
       const float fBPM = StringToFloat(sParams[1]);
 
-      if (unlikely(fBPM <= 0.0f && !PREFSMAN->m_bQuirksMode)) {
+      if (unlikely(fBPM <= 0.0f && !PREFSMAN->quirks_mode_)) {
         LOG->UserLog(
             "Song file", sPath, "has an invalid BPM change at beat %f, BPM %f.",
             0.0f, fBPM);
       } else {
-        out.m_SongTiming.AddSegment(BPMSegment(0, fBPM));
+        out.song_timing_.AddSegment(BPMSegment(0, fBPM));
       }
     } else if (EqualsNoCase(sValueName, "DISPLAYBPM")) {
       // #DISPLAYBPM:[xxx..xxx]|[xxx]|[*];
@@ -705,25 +705,25 @@ bool DWILoader::LoadFromDir(
        * character in a float.  (We could do it with a regex, but it's not
        * worth bothering with since we don't display fractional BPM anyway.) */
       if (sscanf(sParams[1].c_str(), "%i..%i", &iMin, &iMax) == 2) {
-        out.m_DisplayBPMType = DISPLAY_BPM_SPECIFIED;
-        out.m_fSpecifiedBPMMin = (float)iMin;
-        out.m_fSpecifiedBPMMax = (float)iMax;
+        out.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
+        out.specified_bpm_min_ = (float)iMin;
+        out.specified_bpm_max_ = (float)iMax;
       } else if (sscanf(sParams[1].c_str(), "%i", &iMin) == 1) {
-        out.m_DisplayBPMType = DISPLAY_BPM_SPECIFIED;
-        out.m_fSpecifiedBPMMin = out.m_fSpecifiedBPMMax = (float)iMin;
+        out.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
+        out.specified_bpm_min_ = out.specified_bpm_max_ = (float)iMin;
       } else {
-        out.m_DisplayBPMType = DISPLAY_BPM_RANDOM;
+        out.display_bpm_type_ = DISPLAY_BPM_RANDOM;
       }
     }
 
     else if (EqualsNoCase(sValueName, "GAP")) {
       // the units of GAP is 1/1000 second
-      out.m_SongTiming.m_fBeat0OffsetInSeconds =
+      out.song_timing_.beat0_offset_in_seconds_ =
           -StringToInt(sParams[1]) / 1000.0f;
     }
 
     else if (EqualsNoCase(sValueName, "SAMPLESTART")) {
-      out.m_fMusicSampleStartSeconds =
+      out.music_sample_start_seconds_ =
           ParseBrokenDWITimestamp(sParams[1], sParams[2], sParams[3]);
     }
 
@@ -735,7 +735,7 @@ bool DWILoader::LoadFromDir(
         // length if requested.
         sampleLength *= 1000;
       }
-      out.m_fMusicSampleLengthSeconds = sampleLength;
+      out.music_sample_length_seconds_ = sampleLength;
 
     }
 
@@ -756,7 +756,7 @@ bool DWILoader::LoadFromDir(
             BeatToNoteRow(StringToFloat(arrayFreezeValues[0]) / 4.0f);
         float fFreezeSeconds = StringToFloat(arrayFreezeValues[1]) / 1000.0f;
 
-        out.m_SongTiming.AddSegment(StopSegment(iFreezeRow, fFreezeSeconds));
+        out.song_timing_.AddSegment(StopSegment(iFreezeRow, fFreezeSeconds));
         //				LOG->Trace( "Adding a freeze segment:
         // beat: %f, seconds = %f", fFreezeBeat, fFreezeSeconds );
       }
@@ -782,7 +782,7 @@ bool DWILoader::LoadFromDir(
             BeatToNoteRow(StringToFloat(arrayBPMChangeValues[0]) / 4.0f);
         float fBPM = StringToFloat(arrayBPMChangeValues[1]);
         if (fBPM > 0.0f) {
-          out.m_SongTiming.AddSegment(BPMSegment(iStartIndex, fBPM));
+          out.song_timing_.AddSegment(BPMSegment(iStartIndex, fBPM));
         } else {
           LOG->UserLog(
               "Song file", sPath,
@@ -801,7 +801,7 @@ bool DWILoader::LoadFromDir(
       LoadFromDWITokens(
           sParams[0], sParams[1], sParams[2], sParams[3],
           (iNumParams == 5) ? sParams[4] : std::string(""), *pNewNotes, sPath);
-      if (pNewNotes->m_StepsType != StepsType_Invalid) {
+      if (pNewNotes->steps_type_ != StepsType_Invalid) {
         pNewNotes->SetFilename(sPath);
         out.AddSteps(pNewNotes);
       } else {

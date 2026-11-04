@@ -30,19 +30,18 @@ template <class T>
 class AutoPtrCopyOnWrite {
  public:
   /* This constructor only exists to make us work with STL containers. */
-  inline AutoPtrCopyOnWrite() : m_pPtr(nullptr), m_iRefCount(new int(1)) {}
+  inline AutoPtrCopyOnWrite() : ptr_(nullptr), ref_count_(new int(1)) {}
 
-  explicit inline AutoPtrCopyOnWrite(T* p)
-      : m_pPtr(p), m_iRefCount(new int(1)) {}
+  explicit inline AutoPtrCopyOnWrite(T* p) : ptr_(p), ref_count_(new int(1)) {}
 
   inline AutoPtrCopyOnWrite(const AutoPtrCopyOnWrite& rhs)
-      : m_pPtr(rhs.m_pPtr), m_iRefCount(rhs.m_iRefCount) {
-    ++(*m_iRefCount);
+      : ptr_(rhs.ptr_), ref_count_(rhs.ref_count_) {
+    ++(*ref_count_);
   }
 
   void Swap(AutoPtrCopyOnWrite<T>& rhs) {
-    std::swap(m_pPtr, rhs.m_pPtr);
-    std::swap(m_iRefCount, rhs.m_iRefCount);
+    std::swap(ptr_, rhs.ptr_);
+    std::swap(ref_count_, rhs.ref_count_);
   }
 
   inline AutoPtrCopyOnWrite<T>& operator=(const AutoPtrCopyOnWrite& rhs) {
@@ -52,32 +51,32 @@ class AutoPtrCopyOnWrite {
   }
 
   ~AutoPtrCopyOnWrite() {
-    --(*m_iRefCount);
-    if (*m_iRefCount == 0) {
-      delete m_pPtr;
-      delete m_iRefCount;
+    --(*ref_count_);
+    if (*ref_count_ == 0) {
+      delete ptr_;
+      delete ref_count_;
     }
   }
 
   /* Get a non-const pointer.  This will deep-copy the object if necessary. */
   T* Get() {
-    if (*m_iRefCount > 1) {
-      --*m_iRefCount;
-      m_pPtr = new T(*m_pPtr);
-      m_iRefCount = new int(1);
+    if (*ref_count_ > 1) {
+      --*ref_count_;
+      ptr_ = new T(*ptr_);
+      ref_count_ = new int(1);
     }
 
-    return m_pPtr;
+    return ptr_;
   }
 
-  int GetReferenceCount() const { return *m_iRefCount; }
+  int GetReferenceCount() const { return *ref_count_; }
 
-  const T& operator*() const { return *m_pPtr; }
-  const T* operator->() const { return m_pPtr; }
+  const T& operator*() const { return *ptr_; }
+  const T* operator->() const { return ptr_; }
 
  private:
-  T* m_pPtr;
-  int* m_iRefCount;
+  T* ptr_;
+  int* ref_count_;
 };
 
 template <class T>
@@ -118,16 +117,16 @@ struct HiddenPtrTraits {
 template <class T>
 class HiddenPtr {
  public:
-  const T& operator*() const { return *m_pPtr; }
-  const T* operator->() const { return m_pPtr; }
-  T& operator*() { return *m_pPtr; }
-  T* operator->() { return m_pPtr; }
+  const T& operator*() const { return *ptr_; }
+  const T* operator->() const { return ptr_; }
+  T& operator*() { return *ptr_; }
+  T* operator->() { return ptr_; }
 
-  explicit HiddenPtr(T* p = nullptr) : m_pPtr(p) {}
+  explicit HiddenPtr(T* p = nullptr) : ptr_(p) {}
 
-  HiddenPtr(const HiddenPtr<T>& cpy) : m_pPtr(nullptr) {
-    if (cpy.m_pPtr != nullptr) {
-      m_pPtr = HiddenPtrTraits<T>::Copy(cpy.m_pPtr);
+  HiddenPtr(const HiddenPtr<T>& cpy) : ptr_(nullptr) {
+    if (cpy.ptr_ != nullptr) {
+      ptr_ = HiddenPtrTraits<T>::Copy(cpy.ptr_);
     }
   }
 
@@ -135,15 +134,15 @@ class HiddenPtr {
 	template<class U>
 	HiddenPtr( const HiddenPtr<U> &cpy )
 	{
-		if( cpy.m_pPtr == nullptr )
-			m_pPtr = nullptr;
+		if( cpy.ptr_ == nullptr )
+			ptr_ = nullptr;
 		else
-			m_pPtr = HiddenPtrTraits<U>::Copy( cpy.m_pPtr );
+			ptr_ = HiddenPtrTraits<U>::Copy( cpy.ptr_ );
 	}
 #endif
 
-  ~HiddenPtr() { HiddenPtrTraits<T>::Delete(m_pPtr); }
-  void Swap(HiddenPtr<T>& rhs) { std::swap(m_pPtr, rhs.m_pPtr); }
+  ~HiddenPtr() { HiddenPtrTraits<T>::Delete(ptr_); }
+  void Swap(HiddenPtr<T>& rhs) { std::swap(ptr_, rhs.ptr_); }
 
   HiddenPtr<T>& operator=(T* p) {
     HiddenPtr<T> t(p);
@@ -167,10 +166,10 @@ class HiddenPtr {
 	}
 #endif
 
-  bool isNull() const { return m_pPtr == nullptr; }
+  bool isNull() const { return ptr_ == nullptr; }
 
  private:
-  T* m_pPtr;
+  T* ptr_;
 
 #if 0  // broken VC6
 	template<class U>

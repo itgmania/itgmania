@@ -17,8 +17,8 @@ class LightsDriver_Export : public LightsDriver {
   static LightsState GetState();
 
  private:
-  static RageMutex m_Lock;
-  static LightsState m_State;
+  static RageMutex lock_;
+  static LightsState state_;
 };
 
 #endif

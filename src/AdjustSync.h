@@ -20,9 +20,9 @@ class AdjustSync {
    * @brief The original TimingData before adjustments were made.
    *
    * This is designed to work with Split Timing. */
-  static std::vector<TimingData> s_vpTimingDataOriginal;
+  static std::vector<TimingData> timing_data_original_;
 
-  static float s_fGlobalOffsetSecondsOriginal;
+  static float global_offset_seconds_original_;
   /* We only want to call the Reset methods before a song, not immediately after
    * a song. If we reset it at the end of a song, we have to carefully check
    * the logic to make sure we never reset it before the user gets a chance to
@@ -42,19 +42,19 @@ class AdjustSync {
   static void GetSyncChangeTextSong(std::vector<std::string>& vsAddTo);
 
   /** @brief The minimum number of steps to hit for syncing purposes. */
-  static const int OFFSET_SAMPLE_COUNT = 24;
+  static const int kOffsetSampleCount = 24;
 
-  static float s_fAutosyncOffset[OFFSET_SAMPLE_COUNT];
-  static int s_iAutosyncOffsetSample;
-  static float s_fStandardDeviation;
+  static float autosync_offset_[kOffsetSampleCount];
+  static int autosync_offset_sample_;
+  static float standard_deviation_;
 
   // Measured in seconds.  If the average error is too high, we
   // reject the recorded data for the Least Squares Regression.
-  static const float ERROR_TOO_HIGH;
+  static const float kErrorTooHigh;
 
-  static std::vector<std::pair<float, float>> s_vAutosyncTempoData;
-  static float s_fAverageError;
-  static int s_iStepsFiltered;
+  static std::vector<std::pair<float, float>> autosync_tempo_data_;
+  static float average_error_;
+  static int steps_filtered_;
 };
 
 #endif

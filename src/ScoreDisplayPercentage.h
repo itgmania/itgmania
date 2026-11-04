@@ -14,8 +14,8 @@ class ScoreDisplayPercentage : public ScoreDisplay {
       const PlayerStageStats* pPlayerStageStats);
 
  private:
-  AutoActor m_sprFrame;
-  PercentageDisplay m_Percent;
+  AutoActor spr_frame_;
+  PercentageDisplay percent_;
 };
 
 #endif

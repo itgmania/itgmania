@@ -14,7 +14,7 @@ class ScreenOptionsMaster : public ScreenOptions {
   virtual void Init();
 
  private:
-  int m_iChangeMask;
+  int change_mask_;
 
  protected:
   virtual void HandleScreenMessage(const ScreenMessage SM);

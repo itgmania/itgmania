@@ -8,23 +8,23 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(Export);
 
-RageMutex LightsDriver_Export::m_Lock("LightsDriver_Export");
-LightsState LightsDriver_Export::m_State;
+RageMutex LightsDriver_Export::lock_("LightsDriver_Export");
+LightsState LightsDriver_Export::state_;
 
-LightsDriver_Export::LightsDriver_Export() { m_State = {}; }
+LightsDriver_Export::LightsDriver_Export() { state_ = {}; }
 
 LightsDriver_Export::~LightsDriver_Export() {}
 
 void LightsDriver_Export::Set(const LightsState* ls) {
-  m_Lock.Lock();
-  m_State = *ls;
-  m_Lock.Unlock();
+  lock_.Lock();
+  state_ = *ls;
+  lock_.Unlock();
 }
 
 LightsState LightsDriver_Export::GetState() {
-  m_Lock.Lock();
-  LightsState ret(m_State);
-  m_Lock.Unlock();
+  lock_.Lock();
+  LightsState ret(state_);
+  lock_.Unlock();
   return ret;
 }
 

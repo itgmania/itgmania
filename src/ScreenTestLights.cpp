@@ -22,11 +22,11 @@ REGISTER_SCREEN_CLASS(ScreenTestLights);
 void ScreenTestLights::Init() {
   ScreenWithMenuElements::Init();
 
-  m_textInputs.SetName("Text");
-  m_textInputs.LoadFromFont(THEME->GetPathF("Common", "normal"));
-  m_textInputs.SetText("");
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_textInputs);
-  this->AddChild(&m_textInputs);
+  text_inputs_.SetName("Text");
+  text_inputs_.LoadFromFont(THEME->GetPathF("Common", "normal"));
+  text_inputs_.SetText("");
+  LOAD_ALL_COMMANDS_AND_SET_XY(text_inputs_);
+  this->AddChild(&text_inputs_);
 }
 
 void ScreenTestLights::BeginScreen() {
@@ -46,8 +46,8 @@ static LocalizedString CONTROLLER_LIGHT("ScreenTestLights", "controller light");
 void ScreenTestLights::Update(float fDeltaTime) {
   Screen::Update(fDeltaTime);
 
-  if (m_timerBackToAutoCycle.Ago() > 20) {
-    m_timerBackToAutoCycle.Touch();
+  if (timer_back_to_auto_cycle_.Ago() > 20) {
+    timer_back_to_auto_cycle_.Touch();
     LIGHTSMAN->SetLightsMode(LIGHTSMODE_TEST_AUTO_CYCLE);
   }
 
@@ -88,11 +88,11 @@ void ScreenTestLights::Update(float fDeltaTime) {
     gameButtonLightId += "None";
   } else {
     std::string sGameButton =
-        GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), gi.button);
-    PlayerNumber pn = (PlayerNumber)(gi.controller);
+        GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), gi.button_);
+    PlayerNumber pn = (PlayerNumber)(gi.controller_);
     s += ssprintf(
         "%s: %s %d %s\n", CONTROLLER_LIGHT.GetValue().c_str(),
-        PlayerNumberToString(pn).c_str(), gi.button, sGameButton.c_str());
+        PlayerNumberToString(pn).c_str(), gi.button_, sGameButton.c_str());
     gameButtonLightId += sGameButton.c_str();
     side += PlayerNumberToString(pn).c_str();
   }
@@ -104,11 +104,11 @@ void ScreenTestLights::Update(float fDeltaTime) {
   msg.SetParam("GameButtonLightId", gameButtonLightId);
 
   MESSAGEMAN->Broadcast(msg);
-  m_textInputs.SetText(s);
+  text_inputs_.SetText(s);
 }
 
 bool ScreenTestLights::Input(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS && input.type != IET_REPEAT) {
+  if (input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT) {
     return false;  // ignore
   }
 
@@ -119,12 +119,12 @@ bool ScreenTestLights::MenuLeft(const InputEventPlus& input) {
   if (LIGHTSMAN->GetLightsMode() != LIGHTSMODE_TEST_MANUAL_CYCLE) {
     LIGHTSMAN->SetLightsMode(LIGHTSMODE_TEST_MANUAL_CYCLE);
   }
-  if (input.pn == PLAYER_1) {
+  if (input.pn_ == PLAYER_1) {
     LIGHTSMAN->PrevTestCabinetLight();
   } else {
     LIGHTSMAN->PrevTestGameButtonLight();
   }
-  m_timerBackToAutoCycle.Touch();
+  timer_back_to_auto_cycle_.Touch();
   return true;
 }
 
@@ -132,12 +132,12 @@ bool ScreenTestLights::MenuRight(const InputEventPlus& input) {
   if (LIGHTSMAN->GetLightsMode() != LIGHTSMODE_TEST_MANUAL_CYCLE) {
     LIGHTSMAN->SetLightsMode(LIGHTSMODE_TEST_MANUAL_CYCLE);
   }
-  if (input.pn == PLAYER_1) {
+  if (input.pn_ == PLAYER_1) {
     LIGHTSMAN->NextTestCabinetLight();
   } else {
     LIGHTSMAN->NextTestGameButtonLight();
   }
-  m_timerBackToAutoCycle.Touch();
+  timer_back_to_auto_cycle_.Touch();
   return true;
 }
 

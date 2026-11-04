@@ -12,40 +12,40 @@ ModIcon::ModIcon() {}
 
 ModIcon::ModIcon(const ModIcon& cpy)
     : ActorFrame(cpy),
-      m_text(cpy.m_text),
-      m_sprFilled(cpy.m_sprFilled),
-      m_sprEmpty(cpy.m_sprEmpty),
+      text_(cpy.text_),
+      spr_filled_(cpy.spr_filled_),
+      spr_empty_(cpy.spr_empty_),
       CROP_TEXT_TO_WIDTH(cpy.CROP_TEXT_TO_WIDTH),
       STOP_WORDS(cpy.STOP_WORDS),
-      m_vStopWords(cpy.m_vStopWords) {
+      stop_words_(cpy.stop_words_) {
   this->RemoveAllChildren();
-  this->AddChild(m_sprFilled);
-  this->AddChild(m_sprEmpty);
-  this->AddChild(&m_text);
+  this->AddChild(spr_filled_);
+  this->AddChild(spr_empty_);
+  this->AddChild(&text_);
 }
 
 void ModIcon::Load(std::string sMetricsGroup) {
-  m_sprFilled.Load(THEME->GetPathG(sMetricsGroup, "Filled"));
-  m_sprFilled->SetName("Filled");
-  ActorUtil::LoadAllCommands(m_sprFilled, sMetricsGroup);
-  this->AddChild(m_sprFilled);
+  spr_filled_.Load(THEME->GetPathG(sMetricsGroup, "Filled"));
+  spr_filled_->SetName("Filled");
+  ActorUtil::LoadAllCommands(spr_filled_, sMetricsGroup);
+  this->AddChild(spr_filled_);
 
-  m_sprEmpty.Load(THEME->GetPathG(sMetricsGroup, "Empty"));
-  m_sprEmpty->SetName("Empty");
-  ActorUtil::LoadAllCommands(m_sprEmpty, sMetricsGroup);
-  this->AddChild(m_sprEmpty);
+  spr_empty_.Load(THEME->GetPathG(sMetricsGroup, "Empty"));
+  spr_empty_->SetName("Empty");
+  ActorUtil::LoadAllCommands(spr_empty_, sMetricsGroup);
+  this->AddChild(spr_empty_);
 
-  m_text.LoadFromFont(THEME->GetPathF(sMetricsGroup, "Text"));
-  m_text.SetName("Text");
-  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(m_text, sMetricsGroup);
-  this->AddChild(&m_text);
+  text_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "Text"));
+  text_.SetName("Text");
+  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(text_, sMetricsGroup);
+  this->AddChild(&text_);
 
   CROP_TEXT_TO_WIDTH.Load(sMetricsGroup, "CropTextToWidth");
 
   // stop words
   STOP_WORDS.Load(sMetricsGroup, "StopWords");
-  m_vStopWords.clear();
-  split(STOP_WORDS, ",", m_vStopWords);
+  stop_words_.clear();
+  split(STOP_WORDS, ",", stop_words_);
 
   Set("");
 }
@@ -53,8 +53,8 @@ void ModIcon::Load(std::string sMetricsGroup) {
 void ModIcon::Set(const std::string& _sText) {
   std::string sText = _sText;
 
-  for (unsigned i = 0; i < m_vStopWords.size(); i++) {
-    if (EqualsNoCase(sText, m_vStopWords[i])) {
+  for (unsigned i = 0; i < stop_words_.size(); i++) {
+    if (EqualsNoCase(sText, stop_words_[i])) {
       sText = "";
     }
   }
@@ -62,11 +62,11 @@ void ModIcon::Set(const std::string& _sText) {
   Replace(sText, " ", "\n");
 
   bool bVacant = (sText == "");
-  m_sprFilled->SetVisible(!bVacant);
-  m_sprEmpty->SetVisible(bVacant);
+  spr_filled_->SetVisible(!bVacant);
+  spr_empty_->SetVisible(bVacant);
 
-  m_text.SetText(sText);
-  m_text.CropToWidth(CROP_TEXT_TO_WIDTH);
+  text_.SetText(sText);
+  text_.CropToWidth(CROP_TEXT_TO_WIDTH);
 }
 
 /*

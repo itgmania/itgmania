@@ -16,7 +16,7 @@ class InputHandler_Win32_MIDI : public InputHandler {
   void SetDev(DeviceInput key) { ButtonPressed(key); }
 
  private:
-  bool m_bFoundDevice;
+  bool found_device_;
 };
 
 #endif

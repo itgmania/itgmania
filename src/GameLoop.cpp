@@ -56,7 +56,7 @@ static void CheckGameLoopTimerSkips(float fDeltaTime) {
   /* If vsync is on, and we have a solid framerate (vsync == refresh and we've
    * sustained this for at least one second), we expect the amount of time for
    * the last frame to be 1/FPS. */
-  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate ||
+  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate_ ||
       iThisFPS != iLastFPS) {
     iLastFPS = iThisFPS;
     return;
@@ -148,8 +148,8 @@ void DoChangeTheme() {
   // We always need to force the theme to reload because we cleared the lua
   // state by calling RegisterTypes so the scripts in Scripts/ need to run.
   THEME->SwitchThemeAndLanguage(
-      g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->m_bPseudoLocalize, true);
-  PREFSMAN->m_sTheme.Set(g_NewTheme);
+      g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_, true);
+  PREFSMAN->theme_.Set(g_NewTheme);
 
   // Apply the new window title, icon and aspect ratio.
   StepMania::ApplyGraphicOptions();
@@ -182,7 +182,7 @@ void DoChangeGame() {
   // The prefs allow specifying a different default theme to use for each
   // game type.  So if a theme name isn't passed in, fetch from the prefs.
   if (g_NewTheme.empty()) {
-    g_NewTheme = PREFSMAN->m_sTheme;
+    g_NewTheme = PREFSMAN->theme_;
   }
   if (g_NewTheme != THEME->GetCurThemeName() &&
       THEME->IsThemeSelectable(g_NewTheme)) {
@@ -194,8 +194,8 @@ void DoChangeGame() {
     TEXTUREMAN->DoDelayedDelete();
     LUA->RegisterTypes();
     THEME->SwitchThemeAndLanguage(
-        g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->m_bPseudoLocalize);
-    PREFSMAN->m_sTheme.Set(g_NewTheme);
+        g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
+    PREFSMAN->theme_.Set(g_NewTheme);
     StepMania::ApplyGraphicOptions();
     SCREENMAN = new ScreenManager();
   }
@@ -220,7 +220,7 @@ void DoChangeGame() {
 
   // Set the input scheme for the new game, and load keymaps.
   if (INPUTMAPPER) {
-    INPUTMAPPER->SetInputScheme(&g->m_InputScheme);
+    INPUTMAPPER->SetInputScheme(&g->input_scheme_);
     INPUTMAPPER->ReadMappingsFromDisk();
   }
   // aj's comment transplanted from ScreenOptionsMasterPrefs.cpp:GameSel. -Kyz
@@ -245,7 +245,7 @@ void GameLoop::UpdateAllButDraw() {
 
   // Use a static boolean to check the preference once per game launch.
   // This is a rarely used debug feature, so we try to skip it if possible.
-  static bool bLogSkips = PREFSMAN->m_bLogSkips;
+  static bool bLogSkips = PREFSMAN->log_skips_;
   if (bLogSkips) {
     CheckGameLoopTimerSkips(fDeltaTime);
   }

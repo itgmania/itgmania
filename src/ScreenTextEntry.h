@@ -66,31 +66,31 @@ class ScreenTextEntry : public ScreenWithMenuElements {
 
   struct TextEntrySettings {
     TextEntrySettings()
-        : smSendOnPop(),
-          sQuestion(""),
-          sInitialAnswer(""),
-          iMaxInputLength(0),
-          bPassword(false),
-          Validate(),
-          OnOK(),
-          OnCancel(),
-          ValidateAppend(),
-          FormatAnswerForDisplay() {}
-    ScreenMessage smSendOnPop;
-    std::string sQuestion;
-    std::string sInitialAnswer;
-    int iMaxInputLength;
+        : send_on_pop_(),
+          question_(""),
+          initial_answer_(""),
+          max_input_length_(0),
+          password_(false),
+          validate_(),
+          on_ok_(),
+          on_cancel_(),
+          validate_append_(),
+          format_answer_for_display_() {}
+    ScreenMessage send_on_pop_;
+    std::string question_;
+    std::string initial_answer_;
+    int max_input_length_;
     /** @brief Is there a password involved with this setting?
      *
      * This parameter doesn't have to be used. */
-    bool bPassword;
+    bool password_;
     LuaReference
-        Validate;  // (std::string sAnswer, std::string sErrorOut; optional)
-    LuaReference OnOK;            // (std::string sAnswer; optional)
-    LuaReference OnCancel;        // (optional)
-    LuaReference ValidateAppend;  // (std::string sAnswerBeforeChar, std::string
-                                  // sAppend; optional)
-    LuaReference FormatAnswerForDisplay;  // (std::string sAnswer; optional)
+        validate_;  // (std::string sAnswer, std::string sErrorOut; optional)
+    LuaReference on_ok_;                      // (std::string sAnswer; optional)
+    LuaReference on_cancel_;                  // (optional)
+    LuaReference validate_append_;            // (std::string sAnswerBeforeChar,
+                                              // std::string sAppend; optional)
+    LuaReference format_answer_for_display_;  // (std::string sAnswer; optional)
 
     // see BitmapText.cpp Attribute::FromStack()  and
     // OptionRowHandler.cpp LoadInternal() for ideas on how to implement the
@@ -108,8 +108,8 @@ class ScreenTextEntry : public ScreenWithMenuElements {
   virtual void Update(float fDelta);
   virtual bool Input(const InputEventPlus& input);
 
-  static std::string s_sLastAnswer;
-  static bool s_bCancelledLast;
+  static std::string last_answer_;
+  static bool cancelled_last_;
 
   // Lua
   virtual void PushSelf(lua_State* L);
@@ -127,18 +127,18 @@ class ScreenTextEntry : public ScreenWithMenuElements {
 
   void UpdateAnswerText();
 
-  std::wstring m_sAnswer;
-  bool m_bShowAnswerCaret;
+  std::wstring answer_;
+  bool show_answer_caret_;
   // todo: allow Left/Right to change caret location -aj
   // int			m_iCaretLocation;
 
-  BitmapText m_textQuestion;
-  BitmapText m_textAnswer;
+  BitmapText text_question_;
+  BitmapText text_answer_;
 
-  RageSound m_sndType;
-  RageSound m_sndBackspace;
+  RageSound snd_type_;
+  RageSound snd_backspace_;
 
-  RageTimer m_timerToggleCursor;
+  RageTimer timer_toggle_cursor_;
 };
 
 /** @brief Displays a text entry box and keyboard over the top of another
@@ -163,13 +163,13 @@ class ScreenTextEntryVisual : public ScreenTextEntry {
 
   virtual bool MenuStart(const InputEventPlus& input);
 
-  int m_iFocusX;
-  KeyboardRow m_iFocusY;
+  int focus_x_;
+  KeyboardRow focus_y_;
 
-  AutoActor m_sprCursor;
-  BitmapText* m_ptextKeys[NUM_KeyboardRow][KEYS_PER_ROW];
+  AutoActor spr_cursor_;
+  BitmapText* text_keys_[NUM_KeyboardRow][KEYS_PER_ROW];
 
-  RageSound m_sndChange;
+  RageSound snd_change_;
 
   ThemeMetric<float> ROW_START_X;
   ThemeMetric<float> ROW_START_Y;

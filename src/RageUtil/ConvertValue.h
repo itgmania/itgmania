@@ -4,18 +4,18 @@
 /* Helper for ConvertValue(). */
 template <typename TO, typename FROM>
 struct ConvertValueHelper {
-  explicit ConvertValueHelper(FROM* pVal) : m_pFromValue(pVal) {
-    m_ToValue = static_cast<TO>(*m_pFromValue);
+  explicit ConvertValueHelper(FROM* pVal) : from_value_(pVal) {
+    to_value_ = static_cast<TO>(*from_value_);
   }
 
-  ~ConvertValueHelper() { *m_pFromValue = static_cast<FROM>(m_ToValue); }
+  ~ConvertValueHelper() { *from_value_ = static_cast<FROM>(to_value_); }
 
-  TO& operator*() { return m_ToValue; }
-  operator TO*() { return &m_ToValue; }
+  TO& operator*() { return to_value_; }
+  operator TO*() { return &to_value_; }
 
  private:
-  FROM* m_pFromValue;
-  TO m_ToValue;
+  FROM* from_value_;
+  TO to_value_;
 };
 
 /* Safely temporarily convert between types.  For example,

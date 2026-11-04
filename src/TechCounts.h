@@ -16,13 +16,13 @@ struct lua_State;
 /** @brief Technical statistics */
 struct TechCounts {
  private:
-  float m_Values[NUM_TechCountsCategory];
+  float values_[NUM_TechCountsCategory];
 
  public:
-  float operator[](TechCountsCategory cat) const { return m_Values[cat]; }
-  float& operator[](TechCountsCategory cat) { return m_Values[cat]; }
-  float operator[](int cat) const { return m_Values[cat]; }
-  float& operator[](int cat) { return m_Values[cat]; }
+  float operator[](TechCountsCategory cat) const { return values_[cat]; }
+  float& operator[](TechCountsCategory cat) { return values_[cat]; }
+  float operator[](int cat) const { return values_[cat]; }
+  float& operator[](int cat) { return values_[cat]; }
   TechCounts();
   void MakeUnknown();
   void Zero();

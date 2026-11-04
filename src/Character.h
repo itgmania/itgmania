@@ -17,8 +17,8 @@ class Character {
 
   bool Load(std::string sCharDir);  // return true if successful
 
-  std::string GetCardPath() const { return m_sCardPath; }
-  std::string GetIconPath() const { return m_sIconPath; }
+  std::string GetCardPath() const { return card_path_; }
+  std::string GetIconPath() const { return icon_path_; }
 
   std::string GetModelPath() const;
   std::string GetRestAnimationPath() const;
@@ -27,7 +27,7 @@ class Character {
   std::string GetSongSelectIconPath() const;
   std::string GetStageIconPath() const;
   bool IsDefaultCharacter() const {
-    return CompareNoCase(m_sCharacterID, "default") == 0;
+    return CompareNoCase(character_id_, "default") == 0;
   }
 
   // Lua
@@ -35,21 +35,21 @@ class Character {
 
   // smart accessor
   const std::string& GetDisplayName() const {
-    return !m_sDisplayName.empty() ? m_sDisplayName : m_sCharacterID;
+    return !display_name_.empty() ? display_name_ : character_id_;
   }
 
-  std::string m_sCharDir;
-  std::string m_sCharacterID;
+  std::string char_dir_;
+  std::string character_id_;
 
  private:
-  std::string m_sDisplayName;
-  std::string m_sCardPath;
-  std::string m_sIconPath;
+  std::string display_name_;
+  std::string card_path_;
+  std::string icon_path_;
 
  public:
-  apActorCommands m_cmdInit;
+  apActorCommands init_;
 
-  std::string m_sAttacks[NUM_ATTACK_LEVELS][NUM_ATTACKS_PER_LEVEL];
+  std::string attacks_[NUM_ATTACK_LEVELS][NUM_ATTACKS_PER_LEVEL];
 };
 
 #endif

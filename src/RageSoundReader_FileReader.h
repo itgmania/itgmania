@@ -30,7 +30,7 @@ class RageSoundReader_FileReader : public RageSoundReader {
   /* Takes ownership of pFile (even on failure). */
   virtual OpenResult Open(RageFileBasic* pFile) = 0;
   virtual float GetStreamToSourceRatio() const { return 1.0f; }
-  virtual std::string GetError() const { return m_sError; }
+  virtual std::string GetError() const { return error_; }
 
   /* Open a file.  If pPrebuffer is non-nullptr, and the file is sufficiently
    * small, the (possibly compressed) data will be loaded entirely into memory,
@@ -39,14 +39,14 @@ class RageSoundReader_FileReader : public RageSoundReader {
       std::string filename, std::string& error, bool* pPrebuffer = nullptr);
 
  protected:
-  void SetError(std::string sError) const { m_sError = sError; }
-  HiddenPtr<RageFileBasic> m_pFile;
+  void SetError(std::string sError) const { error_ = sError; }
+  HiddenPtr<RageFileBasic> file_;
 
  private:
   static RageSoundReader_FileReader* TryOpenFile(
       RageFileBasic* pFile, std::string& error, std::string format,
       bool& bKeepTrying);
-  mutable std::string m_sError;
+  mutable std::string error_;
 };
 
 #endif

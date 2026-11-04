@@ -12,16 +12,16 @@
 #include "ThemeManager.h"
 
 void GameplayAssist::Init() {
-  m_soundAssistClap.Load(THEME->GetPathS("GameplayAssist", "clap"), true);
-  m_soundAssistMetronomeMeasure.Load(
+  sound_assist_clap_.Load(THEME->GetPathS("GameplayAssist", "clap"), true);
+  sound_assist_metronome_measure_.Load(
       THEME->GetPathS("GameplayAssist", "metronome measure"), true);
-  m_soundAssistMetronomeBeat.Load(
+  sound_assist_metronome_beat_.Load(
       THEME->GetPathS("GameplayAssist", "metronome beat"), true);
 }
 
 void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
-  bool bClap = GAMESTATE->m_SongOptions.GetCurrent().m_bAssistClap;
-  bool bMetronome = GAMESTATE->m_SongOptions.GetCurrent().m_bAssistMetronome;
+  bool bClap = GAMESTATE->song_options_.GetCurrent().assist_clap_;
+  bool bMetronome = GAMESTATE->song_options_.GetCurrent().assist_metronome_;
   if (!bClap && !bMetronome) {
     return;
   }
@@ -32,14 +32,14 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
    * sound early enough for it to come out on time; the actual precise timing is
    * handled by SetStartTime. */
   SongPosition& position =
-      GAMESTATE->m_pPlayerState[ps->m_PlayerNumber]->m_Position;
-  float fPositionSeconds = position.m_fMusicSeconds;
+      GAMESTATE->player_state_[ps->player_number_]->position_;
+  float fPositionSeconds = position.music_seconds_;
 
   // float fPositionSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
   fPositionSeconds += SOUNDMAN->GetPlayLatency() +
                       (float)CommonMetrics::TICK_EARLY_SECONDS + 0.250f;
   const TimingData& timing =
-      *GAMESTATE->m_pCurSteps[ps->m_PlayerNumber]->GetTimingData();
+      *GAMESTATE->cur_steps_[ps->player_number_]->GetTimingData();
   const float fSongBeat =
       timing.GetBeatFromElapsedTimeNoOffset(fPositionSeconds);
 
@@ -64,16 +64,16 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
       const float fTickBeat = NoteRowToBeat(iClapRow);
       const float fTickSecond =
           timing.GetElapsedTimeFromBeatNoOffset(fTickBeat);
-      float fSecondsUntil = fTickSecond - position.m_fMusicSeconds;
-      fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent()
-                           .m_fMusicRate; /* 2x music rate means the time until
+      float fSecondsUntil = fTickSecond - position.music_seconds_;
+      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent()
+                           .music_rate_; /* 2x music rate means the time until
                                              the tick is halved */
 
       RageSoundParams p;
-      p.m_StartTime =
-          position.m_LastBeatUpdate +
+      p.start_time_ =
+          position.last_beat_update_ +
           (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
-      m_soundAssistClap.Play(false, &p);
+      sound_assist_clap_.Play(false, &p);
     }
   }
 
@@ -107,19 +107,19 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
       const float fTickBeat = NoteRowToBeat(iMetronomeRow);
       const float fTickSecond =
           timing.GetElapsedTimeFromBeatNoOffset(fTickBeat);
-      float fSecondsUntil = fTickSecond - position.m_fMusicSeconds;
-      fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent()
-                           .m_fMusicRate; /* 2x music rate means the time until
+      float fSecondsUntil = fTickSecond - position.music_seconds_;
+      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent()
+                           .music_rate_; /* 2x music rate means the time until
                                              the tick is halved */
 
       RageSoundParams p;
-      p.m_StartTime =
-          position.m_LastBeatUpdate +
+      p.start_time_ =
+          position.last_beat_update_ +
           (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
       if (bIsMeasure) {
-        m_soundAssistMetronomeMeasure.Play(false, &p);
+        sound_assist_metronome_measure_.Play(false, &p);
       } else {
-        m_soundAssistMetronomeBeat.Play(false, &p);
+        sound_assist_metronome_beat_.Play(false, &p);
       }
     }
   }
@@ -128,9 +128,9 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
 }
 
 void GameplayAssist::StopPlaying() {
-  m_soundAssistClap.StopPlaying();
-  m_soundAssistMetronomeMeasure.StopPlaying();
-  m_soundAssistMetronomeBeat.StopPlaying();
+  sound_assist_clap_.StopPlaying();
+  sound_assist_metronome_measure_.StopPlaying();
+  sound_assist_metronome_beat_.StopPlaying();
 }
 
 /*

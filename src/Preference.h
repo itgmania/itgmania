@@ -47,7 +47,7 @@ class IPreference {
   virtual void SetFromStack(lua_State* L);
   virtual void PushValue(lua_State* L) const;
 
-  const std::string& GetName() const { return m_sName; }
+  const std::string& GetName() const { return name_; }
 
   static IPreference* GetPreferenceByName(const std::string& sName);
   static void LoadAllDefaults();
@@ -55,13 +55,13 @@ class IPreference {
   static void SavePrefsToNode(XNode* pNode);
   static void ReadAllDefaultsFromNode(const XNode* pNode);
 
-  std::string GetName() { return m_sName; }
-  bool IsImmutable() { return m_bImmutable; }
+  std::string GetName() { return name_; }
+  bool IsImmutable() { return immutable_; }
 
  private:
-  std::string m_sName;
-  bool m_bDoNotWrite;
-  bool m_bImmutable;
+  std::string name_;
+  bool do_not_write_;
+  bool immutable_;
 };
 
 void BroadcastPreferenceChanged(const std::string& sPreferenceName);
@@ -74,47 +74,47 @@ class Preference : public IPreference {
       void(pfnValidate)(T& val) = nullptr,
       PreferenceType type = PreferenceType::Mutable)
       : IPreference(sName, type),
-        m_currentValue(defaultValue),
-        m_defaultValue(defaultValue),
-        m_pfnValidate(pfnValidate) {
+        current_value_(defaultValue),
+        default_value_(defaultValue),
+        validate_(pfnValidate) {
     LoadDefault();
   }
 
   std::string ToString() const {
-    return StringConversion::ToString<T>(m_currentValue);
+    return StringConversion::ToString<T>(current_value_);
   }
   void FromString(const std::string& s) {
-    if (!StringConversion::FromString<T>(s, m_currentValue)) {
-      m_currentValue = m_defaultValue;
+    if (!StringConversion::FromString<T>(s, current_value_)) {
+      current_value_ = default_value_;
     }
-    if (m_pfnValidate) {
-      m_pfnValidate(m_currentValue);
+    if (validate_) {
+      validate_(current_value_);
     }
   }
   void SetFromStack(lua_State* L) {
-    LuaHelpers::Pop<T>(L, m_currentValue);
-    if (m_pfnValidate) {
-      m_pfnValidate(m_currentValue);
+    LuaHelpers::Pop<T>(L, current_value_);
+    if (validate_) {
+      validate_(current_value_);
     }
   }
-  void PushValue(lua_State* L) const { LuaHelpers::Push<T>(L, m_currentValue); }
+  void PushValue(lua_State* L) const { LuaHelpers::Push<T>(L, current_value_); }
 
-  void LoadDefault() { m_currentValue = m_defaultValue; }
+  void LoadDefault() { current_value_ = default_value_; }
   void SetDefaultFromString(const std::string& s) {
-    T def = m_defaultValue;
-    if (!StringConversion::FromString<T>(s, m_defaultValue)) {
-      m_defaultValue = def;
+    T def = default_value_;
+    if (!StringConversion::FromString<T>(s, default_value_)) {
+      default_value_ = def;
     }
   }
 
-  const T& Get() const { return m_currentValue; }
+  const T& Get() const { return current_value_; }
 
-  const T& GetDefault() const { return m_defaultValue; }
+  const T& GetDefault() const { return default_value_; }
 
   operator const T&() const { return Get(); }
 
   void Set(const T& other) {
-    m_currentValue = other;
+    current_value_ = other;
     BroadcastPreferenceChanged(GetName());
   }
 
@@ -125,9 +125,9 @@ class Preference : public IPreference {
   }
 
  private:
-  T m_currentValue;
-  T m_defaultValue;
-  void (*m_pfnValidate)(T& val);
+  T current_value_;
+  T default_value_;
+  void (*validate_)(T& val);
 };
 
 /** @brief Utilities for working with Lua. */
@@ -142,7 +142,7 @@ template <class T>
 class Preference1D {
  public:
   typedef Preference<T> PreferenceT;
-  std::vector<PreferenceT*> m_v;
+  std::vector<PreferenceT*> v_;
 
   Preference1D(
       void pfn(size_t i, std::string& sNameOut, T& defaultValueOut), size_t N,
@@ -151,17 +151,17 @@ class Preference1D {
       std::string sName;
       T defaultValue;
       pfn(i, sName, defaultValue);
-      m_v.push_back(new Preference<T>(sName, defaultValue, nullptr, type));
+      v_.push_back(new Preference<T>(sName, defaultValue, nullptr, type));
     }
   }
 
   ~Preference1D() {
-    for (size_t i = 0; i < m_v.size(); ++i) {
-      RageUtil::SafeDelete(m_v[i]);
+    for (size_t i = 0; i < v_.size(); ++i) {
+      RageUtil::SafeDelete(v_[i]);
     }
   }
-  const Preference<T>& operator[](size_t i) const { return *m_v[i]; }
-  Preference<T>& operator[](size_t i) { return *m_v[i]; }
+  const Preference<T>& operator[](size_t i) const { return *v_[i]; }
+  Preference<T>& operator[](size_t i) { return *v_[i]; }
 };
 
 #endif

@@ -20,7 +20,7 @@ void ExpectValues(
   for (unsigned i = 0; i < file.GetNumValues(); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(file.GetNumParams(i), expected[i].size());
-    EXPECT_EQ(file.GetValue(i).params, expected[i]);
+    EXPECT_EQ(file.GetValue(i).params_, expected[i]);
   }
 }
 

@@ -87,28 +87,29 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         LOG->MapLog("LOST_FOCUS", "Lost focus to: %s", sStr.c_str());
       }
 
-      if (!g_bD3D && !g_CurrentParams.windowed && !g_bRecreatingVideoMode) {
+      if (!g_bD3D && !g_CurrentParams.windowed_ && !g_bRecreatingVideoMode) {
         /* In OpenGL (not D3D), it's our job to unset and reset the
          * full-screen video mode when we focus changes, and to hide
          * and show the window. Hiding is done in WM_KILLFOCUS,
          * because that's where most other apps seem to do it. */
         if (g_bHasFocus && !bHadFocus) {
           ChangeDisplaySettingsEx(
-              g_CurrentParams.sDisplayId.c_str(), &g_FullScreenDevMode, nullptr,
-              CDS_FULLSCREEN, nullptr);
+              g_CurrentParams.display_id_.c_str(), &g_FullScreenDevMode,
+              nullptr, CDS_FULLSCREEN, nullptr);
           ShowWindow(g_hWndMain, SW_SHOWNORMAL);
           SetWindowPos(
               g_hWndMain, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         } else if (!g_bHasFocus && bHadFocus) {
           ChangeDisplaySettingsEx(
-              g_CurrentParams.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
+              g_CurrentParams.display_id_.c_str(), nullptr, nullptr, 0,
+              nullptr);
         }
       }
 
       return 0;
     }
     case WM_KILLFOCUS:
-      if (!g_bD3D && !g_CurrentParams.windowed && !g_bRecreatingVideoMode) {
+      if (!g_bD3D && !g_CurrentParams.windowed_ && !g_bRecreatingVideoMode) {
         ShowWindow(g_hWndMain, SW_SHOWMINNOACTIVE);
       }
       break;
@@ -119,10 +120,10 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
       //	case WM_GETMINMAXINFO:
 
     case WM_SETCURSOR:
-      if (!g_CurrentParams.windowed) {
+      if (!g_CurrentParams.windowed_) {
         // We check if the preference is false because we don't want
         // to show the cursor if the user has set it to false.
-        if (!PREFSMAN->m_bShowMouseCursor.Get()) {
+        if (!PREFSMAN->show_mouse_cursor_.Get()) {
           SetCursor(nullptr);
         }
         return 1;
@@ -161,7 +162,7 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_WINDOWPOSCHANGED: {
       /* If we're fullscreen and don't have focus, our window is hidden,
        * so GetClientRect isn't meaningful. */
-      if (!g_CurrentParams.windowed && !g_bHasFocus) {
+      if (!g_CurrentParams.windowed_ && !g_bHasFocus) {
         break;
       }
 
@@ -170,10 +171,10 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
       int iWidth = rect.right - rect.left;
       int iHeight = rect.bottom - rect.top;
-      if (g_CurrentParams.width != iWidth ||
-          g_CurrentParams.height != iHeight) {
-        g_CurrentParams.width = iWidth;
-        g_CurrentParams.height = iHeight;
+      if (g_CurrentParams.width_ != iWidth ||
+          g_CurrentParams.height_ != iHeight) {
+        g_CurrentParams.width_ = iWidth;
+        g_CurrentParams.height_ = iHeight;
         g_bResolutionChanged = true;
       }
       break;
@@ -182,7 +183,7 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
       PCOPYDATASTRUCT pMyCDS = (PCOPYDATASTRUCT)lParam;
       std::string sCommandLine((char*)pMyCDS->lpData, pMyCDS->cbData);
       CommandLineActions::CommandLineArgs args;
-      split(sCommandLine, "|", args.argv, false);
+      split(sCommandLine, "|", args.argv_, false);
       CommandLineActions::ToProcess.push_back(args);
       break;
     }
@@ -201,8 +202,8 @@ static void AdjustVideoModeParams(VideoModeParams& p) {
   DEVMODE dm;
   ZERO(dm);
   dm.dmSize = sizeof(dm);
-  if (!EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &dm)) {
-    p.rate = 60;
+  if (!EnumDisplaySettings(p.display_id_.c_str(), ENUM_CURRENT_SETTINGS, &dm)) {
+    p.rate_ = 60;
     LOG->Warn(
         "%s",
         werr_ssprintf(GetLastError(), "EnumDisplaySettings failed").c_str());
@@ -220,21 +221,22 @@ static void AdjustVideoModeParams(VideoModeParams& p) {
    * use Win32 display functions such as ChangeDisplaySettings. */
   if (!(dm.dmFields & DM_DISPLAYFREQUENCY) || dm.dmDisplayFrequency == 0 ||
       dm.dmDisplayFrequency == 1) {
-    p.rate = 60;
+    p.rate_ = 60;
     LOG->Warn(
         "EnumDisplaySettings doesn't know what the refresh rate is. %d %d %d",
         dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel);
   } else {
-    p.rate = dm.dmDisplayFrequency;
+    p.rate_ = dm.dmDisplayFrequency;
   }
 }
 
 /* Set the display mode to the given size, bit depth and refresh.
  * The refresh setting may be ignored. */
 std::string GraphicsWindow::SetScreenMode(const VideoModeParams& p) {
-  if (p.windowed) {
+  if (p.windowed_) {
     // We're going windowed. If we were previously fullscreen, reset.
-    ChangeDisplaySettingsEx(p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
+    ChangeDisplaySettingsEx(
+        p.display_id_.c_str(), nullptr, nullptr, 0, nullptr);
 
     return std::string();
   }
@@ -242,24 +244,24 @@ std::string GraphicsWindow::SetScreenMode(const VideoModeParams& p) {
   DEVMODE DevMode;
   ZERO(DevMode);
   DevMode.dmSize = sizeof(DEVMODE);
-  DevMode.dmPelsWidth = p.width;
-  DevMode.dmPelsHeight = p.height;
-  DevMode.dmBitsPerPel = p.bpp;
+  DevMode.dmPelsWidth = p.width_;
+  DevMode.dmPelsHeight = p.height_;
+  DevMode.dmBitsPerPel = p.bpp_;
   DevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
 
-  if (p.rate != REFRESH_DEFAULT) {
-    DevMode.dmDisplayFrequency = p.rate;
+  if (p.rate_ != REFRESH_DEFAULT) {
+    DevMode.dmDisplayFrequency = p.rate_;
     DevMode.dmFields |= DM_DISPLAYFREQUENCY;
   }
-  ChangeDisplaySettingsEx(p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
+  ChangeDisplaySettingsEx(p.display_id_.c_str(), nullptr, nullptr, 0, nullptr);
 
   int ret = ChangeDisplaySettingsEx(
-      p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
+      p.display_id_.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
   if (ret != DISP_CHANGE_SUCCESSFUL &&
       (DevMode.dmFields & DM_DISPLAYFREQUENCY)) {
     DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
     ret = ChangeDisplaySettingsEx(
-        p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
+        p.display_id_.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
   }
 
   // XXX: append error
@@ -312,7 +314,7 @@ void GraphicsWindow::CreateGraphicsWindow(
 
   // Look for the preferred display's position.
   if (EnumDisplaySettingsEx(
-          p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &devmode, 0) &&
+          p.display_id_.c_str(), ENUM_CURRENT_SETTINGS, &devmode, 0) &&
       deviceModeIsValid(devmode) && (devmode.dmFields & DM_POSITION)) {
     pos = devmode.dmPosition;
     resetDeviceMode(devmode);
@@ -320,7 +322,7 @@ void GraphicsWindow::CreateGraphicsWindow(
 
   if (g_hWndMain == nullptr || bForceRecreateWindow) {
     int iWindowStyle =
-        GetWindowStyle(p.windowed, p.bWindowIsFullscreenBorderless);
+        GetWindowStyle(p.windowed_, p.window_is_fullscreen_borderless_);
 
     AppInstance inst;
     HWND hWnd = CreateWindow(
@@ -352,12 +354,13 @@ void GraphicsWindow::CreateGraphicsWindow(
   // Update the window title.
   do {
     if (m_bWideWindowClass) {
-      if (SetWindowText(g_hWndMain, ConvertUTF8ToACP(p.sWindowTitle).c_str())) {
+      if (SetWindowText(
+              g_hWndMain, ConvertUTF8ToACP(p.window_title_).c_str())) {
         break;
       }
     }
 
-    SetWindowTextA(g_hWndMain, ConvertUTF8ToACP(p.sWindowTitle).c_str());
+    SetWindowTextA(g_hWndMain, ConvertUTF8ToACP(p.window_title_).c_str());
   } while (0);
 
   // Update the window icon.
@@ -368,7 +371,7 @@ void GraphicsWindow::CreateGraphicsWindow(
     DestroyIcon(g_hIcon);
     g_hIcon = nullptr;
   }
-  g_hIcon = IconFromFile(p.sIconFile);
+  g_hIcon = IconFromFile(p.icon_file_);
   if (g_hIcon != nullptr) {
     SetClassLongPtrA(
         g_hWndMain, GCLP_HICON, reinterpret_cast<LONG_PTR>(g_hIcon));
@@ -377,7 +380,7 @@ void GraphicsWindow::CreateGraphicsWindow(
   /* The window style may change as a result of switching to or from fullscreen;
    * apply it. Don't change the WS_VISIBLE bit. */
   int iWindowStyle =
-      GetWindowStyle(p.windowed, p.bWindowIsFullscreenBorderless);
+      GetWindowStyle(p.windowed_, p.window_is_fullscreen_borderless_);
   if (GetWindowLong(g_hWndMain, GWL_STYLE) & WS_VISIBLE) {
     iWindowStyle |= WS_VISIBLE;
   }
@@ -385,10 +388,10 @@ void GraphicsWindow::CreateGraphicsWindow(
 
   // Set rectangle for window based on the preferred display and resolution
   RECT WindowRect;
-  SetRect(&WindowRect, pos.x, pos.y, pos.x + p.width, pos.y + p.height);
+  SetRect(&WindowRect, pos.x, pos.y, pos.x + p.width_, pos.y + p.height_);
   AdjustWindowRect(&WindowRect, iWindowStyle, FALSE);
 
-  // LOG->Warn( "w = %d, h = %d", p.width, p.height );
+  // LOG->Warn( "w = %d, h = %d", p.width_, p.height_ );
 
   const int iWidth = WindowRect.right - WindowRect.left;
   const int iHeight = WindowRect.bottom - WindowRect.top;
@@ -397,7 +400,7 @@ void GraphicsWindow::CreateGraphicsWindow(
   /* If windowed and not fullscreen borderless, center the window on the primary
    * display. Otherwise the window will be centered on the last display option
    * that was hovered before selecting Windowed in Options*/
-  if (p.windowed && !p.bWindowIsFullscreenBorderless) {
+  if (p.windowed_ && !p.window_is_fullscreen_borderless_) {
     if (EnumDisplaySettingsEx(NULL, ENUM_CURRENT_SETTINGS, &devmode, 0) &&
         deviceModeIsValid(devmode) && (devmode.dmFields & DM_POSITION)) {
       WindowRect.left = devmode.dmPosition.x;
@@ -523,7 +526,7 @@ void GraphicsWindow::Shutdown() {
    * we're shutting down OpenGL to try D3D, this will cause extra mode
    * switches. However, we need to do this before displaying dialogs. */
   ChangeDisplaySettingsEx(
-      g_CurrentParams.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
+      g_CurrentParams.display_id_.c_str(), nullptr, nullptr, 0, nullptr);
 
   AppInstance inst;
   UnregisterClass(g_sClassName.c_str(), inst);
@@ -618,8 +621,8 @@ void GraphicsWindow::GetDisplaySpecs(DisplaySpecs& out) {
           devmode.dmPelsWidth, devmode.dmPelsHeight,
           static_cast<double>(devmode.dmDisplayFrequency)};
       RectI bounds = {
-          devmode.dmPosition.x, devmode.dmPosition.y, static_cast<int>(m.width),
-          static_cast<int>(m.height)};
+          devmode.dmPosition.x, devmode.dmPosition.y,
+          static_cast<int>(m.width_), static_cast<int>(m.height_)};
       out.insert(DisplaySpec(sDeviceName, modeName, dispModes, m, bounds));
     } else if (!dispModes.empty()) {
       LOG->Warn("Could not retrieve valid current display mode");

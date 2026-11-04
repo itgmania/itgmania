@@ -15,14 +15,14 @@ class ActorProxy : public Actor {
   void LoadFromNode(const XNode* pNode);
   virtual ActorProxy* Copy() const;
 
-  Actor* GetTarget() { return m_pActorTarget; }
-  void SetTarget(Actor* pTarget) { m_pActorTarget = pTarget; }
+  Actor* GetTarget() { return actor_target_; }
+  void SetTarget(Actor* pTarget) { actor_target_ = pTarget; }
 
   // Lua
   virtual void PushSelf(lua_State* L);
 
  private:
-  Actor* m_pActorTarget;
+  Actor* actor_target_;
 };
 
 #endif

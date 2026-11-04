@@ -15,13 +15,13 @@ struct lua_State;
 /** @brief Cached song statistics. */
 struct RadarValues {
  private:
-  float m_Values[NUM_RadarCategory];
+  float values_[NUM_RadarCategory];
 
  public:
-  float operator[](RadarCategory cat) const { return m_Values[cat]; }
-  float& operator[](RadarCategory cat) { return m_Values[cat]; }
-  float operator[](int cat) const { return m_Values[cat]; }
-  float& operator[](int cat) { return m_Values[cat]; }
+  float operator[](RadarCategory cat) const { return values_[cat]; }
+  float& operator[](RadarCategory cat) { return values_[cat]; }
+  float operator[](int cat) const { return values_[cat]; }
+  float& operator[](int cat) { return values_[cat]; }
 
   RadarValues();
   void MakeUnknown();

@@ -29,7 +29,7 @@ class ScoreDisplayAliveTime : public BitmapText {
   virtual void PushSelf(lua_State* L);
 
  private:
-  PlayerNumber m_PlayerNumber;
+  PlayerNumber player_number_;
 };
 
 #endif

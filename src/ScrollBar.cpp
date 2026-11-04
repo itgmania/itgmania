@@ -13,37 +13,37 @@
 ScrollBar::ScrollBar() {
   std::string sMetricsGroup = "ScrollBar";
 
-  m_sprMiddle.Load(THEME->GetPathG(sMetricsGroup, "middle"));
-  this->AddChild(m_sprMiddle);
+  spr_middle_.Load(THEME->GetPathG(sMetricsGroup, "middle"));
+  this->AddChild(spr_middle_);
 
-  m_sprTop.Load(THEME->GetPathG(sMetricsGroup, "top"));
-  m_sprTop->SetVertAlign(VertAlign_Bottom);
-  this->AddChild(m_sprTop);
+  spr_top_.Load(THEME->GetPathG(sMetricsGroup, "top"));
+  spr_top_->SetVertAlign(VertAlign_Bottom);
+  this->AddChild(spr_top_);
 
-  m_sprBottom.Load(THEME->GetPathG(sMetricsGroup, "bottom"));
-  m_sprBottom->SetVertAlign(VertAlign_Top);
-  this->AddChild(m_sprBottom);
+  spr_bottom_.Load(THEME->GetPathG(sMetricsGroup, "bottom"));
+  spr_bottom_->SetVertAlign(VertAlign_Top);
+  this->AddChild(spr_bottom_);
 
-  m_sprScrollTickThumb.Load(THEME->GetPathG(sMetricsGroup, "TickThumb"));
-  this->AddChild(m_sprScrollTickThumb);
+  spr_scroll_tick_thumb_.Load(THEME->GetPathG(sMetricsGroup, "TickThumb"));
+  this->AddChild(spr_scroll_tick_thumb_);
 
-  for (unsigned i = 0; i < ARRAYLEN(m_sprScrollStretchThumb); i++) {
-    m_sprScrollStretchThumb[i].Load(
+  for (unsigned i = 0; i < ARRAYLEN(spr_scroll_stretch_thumb_); i++) {
+    spr_scroll_stretch_thumb_[i].Load(
         THEME->GetPathG(sMetricsGroup, "StretchThumb"));
-    this->AddChild(m_sprScrollStretchThumb[i]);
+    this->AddChild(spr_scroll_stretch_thumb_[i]);
   }
 
   SetBarHeight(100);
 }
 
 void ScrollBar::SetBarHeight(int iHeight) {
-  m_iBarHeight = iHeight;
-  m_sprMiddle->SetZoomY(m_iBarHeight / m_sprMiddle->GetUnzoomedHeight());
-  m_sprTop->SetY(-m_iBarHeight / 2.0f);
-  m_sprBottom->SetY(+m_iBarHeight / 2.0f);
-  m_sprScrollTickThumb->SetY(0);
-  for (unsigned i = 0; i < ARRAYLEN(m_sprScrollStretchThumb); i++) {
-    m_sprScrollStretchThumb[i]->SetY(0);
+  bar_height_ = iHeight;
+  spr_middle_->SetZoomY(bar_height_ / spr_middle_->GetUnzoomedHeight());
+  spr_top_->SetY(-bar_height_ / 2.0f);
+  spr_bottom_->SetY(+bar_height_ / 2.0f);
+  spr_scroll_tick_thumb_->SetY(0);
+  for (unsigned i = 0; i < ARRAYLEN(spr_scroll_stretch_thumb_); i++) {
+    spr_scroll_stretch_thumb_[i]->SetY(0);
   }
 }
 
@@ -51,7 +51,7 @@ void ScrollBar::SetPercentage(float fCenterPercent, float fSizePercent) {
   wrap(fCenterPercent, 1.0f);
 
   const int iBarContentHeight =
-      static_cast<int>(m_sprMiddle->GetZoomedHeight());
+      static_cast<int>(spr_middle_->GetZoomedHeight());
   ASSERT(iBarContentHeight != 0);
 
   /* Set tick thumb */
@@ -60,7 +60,7 @@ void ScrollBar::SetPercentage(float fCenterPercent, float fSizePercent) {
         fCenterPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
         iBarContentHeight / 2.0f);
     fY = std::round(fY);
-    m_sprScrollTickThumb->SetY(fY);
+    spr_scroll_tick_thumb_->SetY(fY);
   }
 
   /* Set stretch thumb */
@@ -98,11 +98,11 @@ void ScrollBar::SetPercentage(float fCenterPercent, float fSizePercent) {
         1.0f, 0.0f, 1.0f, -iBarContentHeight / 2.0f, +iBarContentHeight / 2.0f);
   }
 
-  for (unsigned i = 0; i < ARRAYLEN(m_sprScrollStretchThumb); i++) {
+  for (unsigned i = 0; i < ARRAYLEN(spr_scroll_stretch_thumb_); i++) {
     RectF rect(
-        -m_sprScrollStretchThumb[i]->GetUnzoomedWidth() / 2, fPartTopY[i],
-        +m_sprScrollStretchThumb[i]->GetUnzoomedWidth() / 2, fPartBottomY[i]);
-    m_sprScrollStretchThumb[i]->StretchTo(rect);
+        -spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2, fPartTopY[i],
+        +spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2, fPartBottomY[i]);
+    spr_scroll_stretch_thumb_[i]->StretchTo(rect);
   }
 }
 

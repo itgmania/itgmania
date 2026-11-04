@@ -57,23 +57,23 @@ struct EventDevice {
   EventDevice();
   ~EventDevice();
   bool Open(std::string sFile, InputDevice dev);
-  bool IsOpen() const { return m_iFD != -1; }
+  bool IsOpen() const { return fd_ != -1; }
   void Close() {
-    if (m_iFD != -1) {
-      close(m_iFD);
+    if (fd_ != -1) {
+      close(fd_);
     }
-    m_iFD = -1;
+    fd_ = -1;
   }
 
-  int m_iFD;
-  std::string m_sPath;
-  std::string m_sName;
-  InputDevice m_Dev;
+  int fd_;
+  std::string path_;
+  std::string name_;
+  InputDevice dev_;
 
-  int aiAbsMin[ABS_MAX];
-  int aiAbsMax[ABS_MAX];
-  DeviceButton aiAbsMappingHigh[ABS_MAX];
-  DeviceButton aiAbsMappingLow[ABS_MAX];
+  int abs_min_[ABS_MAX];
+  int abs_max_[ABS_MAX];
+  DeviceButton abs_mapping_high_[ABS_MAX];
+  DeviceButton abs_mapping_low_[ABS_MAX];
 };
 
 static std::vector<EventDevice*> g_apEventDevices;
@@ -82,19 +82,19 @@ static bool BitIsSet(const uint8_t* pArray, uint32_t iBit) {
   return !!(pArray[iBit / 8] & (1 << (iBit % 8)));
 }
 
-EventDevice::EventDevice() { m_iFD = -1; }
+EventDevice::EventDevice() { fd_ = -1; }
 
 bool EventDevice::Open(std::string sFile, InputDevice dev) {
-  m_sPath = sFile;
-  m_Dev = dev;
-  m_iFD = open(sFile.c_str(), O_RDWR);
-  if (m_iFD == -1) {
+  path_ = sFile;
+  dev_ = dev;
+  fd_ = open(sFile.c_str(), O_RDWR);
+  if (fd_ == -1) {
     // HACK: Let the caller handle errno.
     return false;
   }
 
   unsigned int clk = CLOCK_MONOTONIC;
-  if (ioctl(m_iFD, EVIOCSCLOCKID, &clk) == -1) {
+  if (ioctl(fd_, EVIOCSCLOCKID, &clk) == -1) {
     LOG->Warn(
         "ioctl(EVIOCSCLOCKID, CLOCK_MONOTONIC) failed: %s", strerror(errno));
   }
@@ -103,7 +103,7 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
   if (!bLogged) {
     bLogged = true;
     int iVersion;
-    if (ioctl(m_iFD, EVIOCGVERSION, &iVersion) == -1) {
+    if (ioctl(fd_, EVIOCGVERSION, &iVersion) == -1) {
       LOG->Warn("ioctl(EVIOCGVERSION): %s", strerror(errno));
     } else {
       LOG->Info(
@@ -113,27 +113,27 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
   }
 
   char szName[1024];
-  if (ioctl(m_iFD, EVIOCGNAME(sizeof(szName)), szName) == -1) {
+  if (ioctl(fd_, EVIOCGNAME(sizeof(szName)), szName) == -1) {
     LOG->Warn("ioctl(EVIOCGNAME): %s", strerror(errno));
 
-    m_sName = "(unknown)";
+    name_ = "(unknown)";
   } else {
-    m_sName = szName;
+    name_ = szName;
   }
 
   input_id DevInfo;
-  if (ioctl(m_iFD, EVIOCGID, &DevInfo) == -1) {
+  if (ioctl(fd_, EVIOCGID, &DevInfo) == -1) {
     LOG->Warn("ioctl(EVIOCGID): %s", strerror(errno));
   } else {
     LOG->Info(
         "Input device: %s: %s device, ID %04x:%04x, version %x: %s",
         sFile.c_str(), BustypeToString(DevInfo.bustype).c_str(), DevInfo.vendor,
-        DevInfo.product, DevInfo.version, m_sName.c_str());
+        DevInfo.product, DevInfo.version, name_.c_str());
   }
 
   uint8_t iABSMask[ABS_MAX / 8 + 1];
   memset(iABSMask, 0, sizeof(iABSMask));
-  if (ioctl(m_iFD, EVIOCGBIT(EV_ABS, sizeof(iABSMask)), iABSMask) < 0) {
+  if (ioctl(fd_, EVIOCGBIT(EV_ABS, sizeof(iABSMask)), iABSMask) < 0) {
     LOG->Warn("ioctl(EVIOCGBIT(EV_ABS)): %s", strerror(errno));
   }
 
@@ -145,16 +145,16 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
 
   if (!BitIsSet(iABSMask, ABS_X) && !BitIsSet(iABSMask, ABS_THROTTLE) &&
       !BitIsSet(iABSMask, ABS_WHEEL)) {
-    LOG->Info("    Not a joystick; ignoring [%s]", m_sName.c_str());
+    LOG->Info("    Not a joystick; ignoring [%s]", name_.c_str());
     bool bIsException = false;
     for (const char* sException : kJoystickExceptions) {
-      if (m_sName == sException) {
+      if (name_ == sException) {
         bIsException = true;
         break;
       }
     }
     if (bIsException) {
-      LOG->Info("%s detected, making an exception.", m_sName.c_str());
+      LOG->Info("%s detected, making an exception.", name_.c_str());
     } else {
       Close();
       return false;
@@ -163,13 +163,13 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
 
   uint8_t iKeyMask[KEY_MAX / 8 + 1];
   memset(iKeyMask, 0, sizeof(iKeyMask));
-  if (ioctl(m_iFD, EVIOCGBIT(EV_KEY, sizeof(iKeyMask)), iKeyMask) < 0) {
+  if (ioctl(fd_, EVIOCGBIT(EV_KEY, sizeof(iKeyMask)), iKeyMask) < 0) {
     LOG->Warn("ioctl(EVIOCGBIT(EV_KEY)): %s", strerror(errno));
   }
 
   uint8_t iEventTypes[EV_MAX / 8];
   memset(iEventTypes, 0, sizeof(iEventTypes));
-  if (ioctl(m_iFD, EVIOCGBIT(0, EV_MAX), iEventTypes) == -1) {
+  if (ioctl(fd_, EVIOCGBIT(0, EV_MAX), iEventTypes) == -1) {
     LOG->Warn("ioctl(EV_MAX): %s", strerror(errno));
   }
 
@@ -233,7 +233,7 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
       continue;
     }
     struct input_absinfo absinfo;
-    if (ioctl(m_iFD, EVIOCGABS(i), &absinfo) < 0) {
+    if (ioctl(fd_, EVIOCGABS(i), &absinfo) < 0) {
       LOG->Warn("ioctl(EVIOCGABS): %s", strerror(errno));
       continue;
     }
@@ -241,39 +241,39 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
     // LOG->Info( "    Axis %i: min: %i; max: %i; fuzz: %i; flat: %i",
     //		i, absinfo.minimum, absinfo.maximum, absinfo.fuzz, absinfo.flat
     //);
-    aiAbsMin[i] = absinfo.minimum;
-    aiAbsMax[i] = absinfo.maximum;
-    aiAbsMappingHigh[i] = enum_add2(JOY_RIGHT, 2 * i);
-    aiAbsMappingLow[i] = enum_add2(JOY_LEFT, 2 * i);
+    abs_min_[i] = absinfo.minimum;
+    abs_max_[i] = absinfo.maximum;
+    abs_mapping_high_[i] = enum_add2(JOY_RIGHT, 2 * i);
+    abs_mapping_low_[i] = enum_add2(JOY_LEFT, 2 * i);
 
     if (i == ABS_X) {
-      aiAbsMappingHigh[i] = JOY_RIGHT;
-      aiAbsMappingLow[i] = JOY_LEFT;
+      abs_mapping_high_[i] = JOY_RIGHT;
+      abs_mapping_low_[i] = JOY_LEFT;
     } else if (i == ABS_Y) {
-      aiAbsMappingHigh[i] = JOY_DOWN;
-      aiAbsMappingLow[i] = JOY_UP;
+      abs_mapping_high_[i] = JOY_DOWN;
+      abs_mapping_low_[i] = JOY_UP;
     } else if (i == ABS_Z) {
-      aiAbsMappingHigh[i] = JOY_Z_DOWN;
-      aiAbsMappingLow[i] = JOY_Z_UP;
+      abs_mapping_high_[i] = JOY_Z_DOWN;
+      abs_mapping_low_[i] = JOY_Z_UP;
     } else if (i == ABS_RX) {
-      aiAbsMappingHigh[i] = JOY_ROT_RIGHT;
-      aiAbsMappingLow[i] = JOY_ROT_LEFT;
+      abs_mapping_high_[i] = JOY_ROT_RIGHT;
+      abs_mapping_low_[i] = JOY_ROT_LEFT;
     } else if (i == ABS_RY) {
-      aiAbsMappingHigh[i] = JOY_ROT_DOWN;
-      aiAbsMappingLow[i] = JOY_ROT_UP;
+      abs_mapping_high_[i] = JOY_ROT_DOWN;
+      abs_mapping_low_[i] = JOY_ROT_UP;
     } else if (i == ABS_RZ) {
-      aiAbsMappingHigh[i] = JOY_ROT_Z_DOWN;
-      aiAbsMappingLow[i] = JOY_ROT_Z_UP;
+      abs_mapping_high_[i] = JOY_ROT_Z_DOWN;
+      abs_mapping_low_[i] = JOY_ROT_Z_UP;
     } else if (i == ABS_HAT0X) {
-      aiAbsMappingHigh[i] = JOY_HAT_RIGHT;
-      aiAbsMappingLow[i] = JOY_HAT_LEFT;
+      abs_mapping_high_[i] = JOY_HAT_RIGHT;
+      abs_mapping_low_[i] = JOY_HAT_LEFT;
     } else if (i == ABS_HAT0Y) {
-      aiAbsMappingHigh[i] = JOY_HAT_UP;
-      aiAbsMappingLow[i] = JOY_HAT_DOWN;
+      abs_mapping_high_[i] = JOY_HAT_UP;
+      abs_mapping_low_[i] = JOY_HAT_DOWN;
     } else {
       if (iNextExtraAxis < (int)ARRAYLEN(iExtraAxes)) {
-        aiAbsMappingLow[i] = iExtraAxes[iNextExtraAxis];
-        aiAbsMappingHigh[i] = enum_add2(aiAbsMappingLow[i], 1);
+        abs_mapping_low_[i] = iExtraAxes[iNextExtraAxis];
+        abs_mapping_high_[i] = enum_add2(abs_mapping_low_[i], 1);
         ++iNextExtraAxis;
       }
     }
@@ -288,39 +288,38 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
 EventDevice::~EventDevice() { Close(); }
 
 InputHandler_Linux_Event::InputHandler_Linux_Event()
-    : m_InputMutex("InputHandler_Linux"),
-      m_NextDevice(DEVICE_JOY10),
-      m_bShutdown(true),
-      m_bDevicesChanged(false),
-      m_udev_fd(-1) {
+    : input_mutex_("InputHandler_Linux"),
+      next_device_(DEVICE_JOY10),
+      shutdown_(true),
+      devices_changed_(false),
+      udev_fd_(-1) {
   if (LINUXINPUT == nullptr) {
     LINUXINPUT = new LinuxInputManager;
   }
   LINUXINPUT->InitDriver(this);
 
-  m_udev = udev_new();
-  if (!m_udev) {
+  udev_ = udev_new();
+  if (!udev_) {
     LOG->Warn("Failed to create udev object");
   }
 
-  m_udev_monitor = udev_monitor_new_from_netlink(m_udev, "udev");
-  if (!m_udev_monitor) {
+  udev_monitor_ = udev_monitor_new_from_netlink(udev_, "udev");
+  if (!udev_monitor_) {
     LOG->Warn("Failed to create udev object");
-    udev_unref(m_udev);
+    udev_unref(udev_);
   }
 
-  udev_monitor_filter_add_match_subsystem_devtype(
-      m_udev_monitor, "input", NULL);
-  udev_monitor_enable_receiving(m_udev_monitor);
+  udev_monitor_filter_add_match_subsystem_devtype(udev_monitor_, "input", NULL);
+  udev_monitor_enable_receiving(udev_monitor_);
 
-  m_udev_fd = udev_monitor_get_fd(m_udev_monitor);
+  udev_fd_ = udev_monitor_get_fd(udev_monitor_);
 
   // Always start thread, if only to monitor udev events
   StartThread();
 }
 
 InputHandler_Linux_Event::~InputHandler_Linux_Event() {
-  if (m_InputThread.IsCreated()) {
+  if (input_thread_.IsCreated()) {
     StopThread();
   }
 
@@ -329,28 +328,28 @@ InputHandler_Linux_Event::~InputHandler_Linux_Event() {
   }
   g_apEventDevices.clear();
 
-  udev_monitor_unref(m_udev_monitor);
-  udev_unref(m_udev);
+  udev_monitor_unref(udev_monitor_);
+  udev_unref(udev_);
 }
 
 void InputHandler_Linux_Event::StartThread() {
-  m_bShutdown = false;
-  m_InputThread.SetName("Event input thread");
-  m_InputThread.Create(InputThread_Start, this);
+  shutdown_ = false;
+  input_thread_.SetName("Event input thread");
+  input_thread_.Create(InputThread_Start, this);
 }
 
 void InputHandler_Linux_Event::StopThread() {
-  m_bShutdown = true;
+  shutdown_ = true;
   LOG->Trace("Shutting down joystick thread ...");
-  m_InputThread.Wait();
+  input_thread_.Wait();
   LOG->Trace("Joystick thread shut down.");
 }
 
 bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
   EventDevice* pDev = new EventDevice;
-  if (pDev->Open(devfile, m_NextDevice)) {
+  if (pDev->Open(devfile, next_device_)) {
     bool hotplug = false;
-    if (m_InputThread.IsCreated()) {
+    if (input_thread_.IsCreated()) {
       StopThread();
       hotplug = true;
     }
@@ -362,11 +361,11 @@ bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
       StartThread();
     }
 
-    m_NextDevice = enum_add2(m_NextDevice, 1);
+    next_device_ = enum_add2(next_device_, 1);
 
-    m_InputMutex.Lock();
-    m_bDevicesChanged = true;
-    m_InputMutex.Unlock();
+    input_mutex_.Lock();
+    devices_changed_ = true;
+    input_mutex_.Unlock();
 
     return true;
   } else {
@@ -386,18 +385,18 @@ int InputHandler_Linux_Event::InputThread_Start(void* p) {
 }
 
 void InputHandler_Linux_Event::InputThread() {
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     fd_set fdset;
     FD_ZERO(&fdset);
     int iMaxFD = -1;
 
-    if (m_udev_fd >= 0) {
-      FD_SET(m_udev_fd, &fdset);
-      iMaxFD = std::max(iMaxFD, m_udev_fd);
+    if (udev_fd_ >= 0) {
+      FD_SET(udev_fd_, &fdset);
+      iMaxFD = std::max(iMaxFD, udev_fd_);
     }
 
     for (int i = 0; i < (int)g_apEventDevices.size(); ++i) {
-      int iFD = g_apEventDevices[i]->m_iFD;
+      int iFD = g_apEventDevices[i]->fd_;
       if (!g_apEventDevices[i]->IsOpen()) {
         continue;
       }
@@ -415,8 +414,8 @@ void InputHandler_Linux_Event::InputThread() {
       continue;
     }
 
-    if (FD_ISSET(m_udev_fd, &fdset)) {
-      struct udev_device* device = udev_monitor_receive_device(m_udev_monitor);
+    if (FD_ISSET(udev_fd_, &fdset)) {
+      struct udev_device* device = udev_monitor_receive_device(udev_monitor_);
       if (device) {
         const char* action = udev_device_get_action(device);
         const char* devnode = udev_device_get_devnode(device);
@@ -426,9 +425,9 @@ void InputHandler_Linux_Event::InputThread() {
           const char* devtype =
               udev_device_get_property_value(device, "ID_INPUT_JOYSTICK");
           if (devtype && strcmp(devtype, "1") == 0) {
-            m_InputMutex.Lock();
-            m_bDevicesChanged = true;
-            m_InputMutex.Unlock();
+            input_mutex_.Lock();
+            devices_changed_ = true;
+            input_mutex_.Unlock();
             LOG->Info("LinuxEvent: New joystick detected: %s\n", devnode);
           }
         }
@@ -442,20 +441,20 @@ void InputHandler_Linux_Event::InputThread() {
         continue;
       }
 
-      if (!FD_ISSET(g_apEventDevices[i]->m_iFD, &fdset)) {
+      if (!FD_ISSET(g_apEventDevices[i]->fd_, &fdset)) {
         continue;
       }
 
       input_event event;
-      int ret = read(g_apEventDevices[i]->m_iFD, &event, sizeof(event));
+      int ret = read(g_apEventDevices[i]->fd_, &event, sizeof(event));
       if (ret == -1) {
         LOG->Warn(
             "Error reading from %s: %s; disabled",
-            g_apEventDevices[i]->m_sPath.c_str(), strerror(errno));
+            g_apEventDevices[i]->path_.c_str(), strerror(errno));
         g_apEventDevices[i]->Close();
-        m_InputMutex.Lock();
-        m_bDevicesChanged = true;
-        m_InputMutex.Unlock();
+        input_mutex_.Lock();
+        devices_changed_ = true;
+        input_mutex_.Unlock();
         continue;
       }
 
@@ -464,9 +463,9 @@ void InputHandler_Linux_Event::InputThread() {
             "Unexpected packet (size %i != %i) from joystick %i; disabled", ret,
             (int)sizeof(event), i);
         g_apEventDevices[i]->Close();
-        m_InputMutex.Lock();
-        m_bDevicesChanged = true;
-        m_InputMutex.Unlock();
+        input_mutex_.Lock();
+        devices_changed_ = true;
+        input_mutex_.Unlock();
         continue;
       }
 
@@ -500,36 +499,34 @@ void InputHandler_Linux_Event::InputThread() {
               iNum,
               32);  // max number of joystick buttons.  Make this a constant?
           ButtonPressed(DeviceInput(
-              g_apEventDevices[i]->m_Dev, enum_add2(JOY_BUTTON_1, iNum),
+              g_apEventDevices[i]->dev_, enum_add2(JOY_BUTTON_1, iNum),
               event.value != 0, eventTime));
           break;
         }
 
         case EV_ABS: {
           ASSERT_M(event.code < ABS_MAX, ssprintf("%i", event.code));
-          DeviceButton neg = g_apEventDevices[i]->aiAbsMappingLow[event.code];
-          DeviceButton pos = g_apEventDevices[i]->aiAbsMappingHigh[event.code];
+          DeviceButton neg = g_apEventDevices[i]->abs_mapping_low_[event.code];
+          DeviceButton pos = g_apEventDevices[i]->abs_mapping_high_[event.code];
 
           float l = SCALE(
               int(event.value),
-              (float)g_apEventDevices[i]->aiAbsMin[event.code],
-              (float)g_apEventDevices[i]->aiAbsMax[event.code], -1.0f, 1.0f);
+              (float)g_apEventDevices[i]->abs_min_[event.code],
+              (float)g_apEventDevices[i]->abs_max_[event.code], -1.0f, 1.0f);
           if (GamePreferences::m_AxisFix) {
             // Up if between 0.0001 and 0.5 or if less than -0.5
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, neg,
+                g_apEventDevices[i]->dev_, neg,
                 (l < -0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
             // Down if between 0.0001 and 0.5 or if more than 0.5
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, pos,
+                g_apEventDevices[i]->dev_, pos,
                 (l > 0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
           } else {
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f),
-                eventTime));
+                g_apEventDevices[i]->dev_, neg, std::max(-l, 0.0f), eventTime));
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f),
-                eventTime));
+                g_apEventDevices[i]->dev_, pos, std::max(+l, 0.0f), eventTime));
           }
           break;
         }
@@ -544,12 +541,12 @@ void InputHandler_Linux_Event::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
   for (unsigned i = 0; i < g_apEventDevices.size(); ++i) {
     EventDevice* pDev = g_apEventDevices[i];
-    vDevicesOut.push_back(InputDeviceInfo(pDev->m_Dev, pDev->m_sName));
+    vDevicesOut.push_back(InputDeviceInfo(pDev->dev_, pDev->name_));
   }
 
-  m_InputMutex.Lock();
-  m_bDevicesChanged = false;
-  m_InputMutex.Unlock();
+  input_mutex_.Lock();
+  devices_changed_ = false;
+  input_mutex_.Unlock();
 }
 
 /*

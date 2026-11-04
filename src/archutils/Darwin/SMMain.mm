@@ -32,7 +32,7 @@
 
 - (void)sendEvent:(NSEvent*)event {
   if (INPUTMAN) {
-    auto& dispatcher = CocoaEventDispatcher::sharedDispatcher;
+    auto& dispatcher = CocoaEventDispatcher::shared_dispatcher_;
     dispatcher.DispatchEvent(event);
   }
 
@@ -46,9 +46,9 @@
 
 // The main class of the application, the application's delegate.
 @interface SMMain : NSObject {
-  int m_iArgc;
-  char** m_pArgv;
-  BOOL m_bApplicationLaunched;
+  int argc_;
+  char** argv_;
+  BOOL application_launched_;
 }
 - (id)initWithArgc:(int)argc argv:(char**)argv;
 - (void)startGame:(id)sender;
@@ -65,18 +65,18 @@
   if (argc == 2 && !strncmp(argv[1], "-psn_", 5)) {
     argc = 1;
   }
-  m_iArgc = argc;
-  m_pArgv = new char*[argc];
+  argc_ = argc;
+  argv_ = new char*[argc];
   for (int i = 0; i < argc; ++i) {
-    m_pArgv[i] = argv[i];
+    argv_[i] = argv[i];
   }
-  m_bApplicationLaunched = NO;
+  application_launched_ = NO;
   return self;
 }
 
 - (void)startGame:(id)sender {
   // Hand off to main application code.
-  exit(sm_main(m_iArgc, m_pArgv));
+  exit(sm_main(argc_, argv_));
 }
 
 /* From here:
@@ -88,14 +88,14 @@
 
   // I'm not sure this handles everything it needs to. - Colby
   CommandLineActions::CommandLineArgs args;
-  args.argv.push_back(url);
+  args.argv_.push_back(url);
 
   CommandLineActions::ToProcess.push_back(args);
 }
 
 // Called when the internal event loop has just started running.
 - (void)applicationDidFinishLaunching:(NSNotification*)note {
-  m_bApplicationLaunched = YES;
+  application_launched_ = YES;
   [NSThread detachNewThreadSelector:@selector(startGame:) toTarget:self withObject:nil];
 
   // Register ourselves as a URL handler.
@@ -107,8 +107,8 @@
 
 - (BOOL)application:(NSApplication*)app openFile:(NSString*)file {
   NSArray* files = [NSArray arrayWithObject:file];
-  if (m_bApplicationLaunched) {
-    [NSTask launchedTaskWithLaunchPath:[NSString stringWithUTF8String:m_pArgv[0]] arguments:files];
+  if (application_launched_) {
+    [NSTask launchedTaskWithLaunchPath:[NSString stringWithUTF8String:argv_[0]] arguments:files];
   } else {
     [self setForInstall:files];
   }
@@ -116,8 +116,8 @@
 }
 
 - (void)application:(NSApplication*)app openFiles:(NSArray*)files {
-  if (m_bApplicationLaunched) {
-    [NSTask launchedTaskWithLaunchPath:[NSString stringWithUTF8String:m_pArgv[0]] arguments:files];
+  if (application_launched_) {
+    [NSTask launchedTaskWithLaunchPath:[NSString stringWithUTF8String:argv_[0]] arguments:files];
   } else {
     [self setForInstall:files];
   }
@@ -125,17 +125,17 @@
 }
 
 - (void)setForInstall:(NSArray*)files {
-  char** temp = new char*[[files count] + m_iArgc];
-  for (int i = 0; i < m_iArgc; ++i) {
-    temp[i] = m_pArgv[i];
+  char** temp = new char*[[files count] + argc_];
+  for (int i = 0; i < argc_; ++i) {
+    temp[i] = argv_[i];
   }
-  for (unsigned i = 0; i < [files count]; ++i, ++m_iArgc) {
+  for (unsigned i = 0; i < [files count]; ++i, ++argc_) {
     const char* p = [[files objectAtIndex:i] fileSystemRepresentation];
-    temp[m_iArgc] = new char[strlen(p) + 1];
-    strcpy(temp[m_iArgc], p);
+    temp[argc_] = new char[strlen(p) + 1];
+    strcpy(temp[argc_], p);
   }
-  delete[] m_pArgv;
-  m_pArgv = temp;
+  delete[] argv_;
+  argv_ = temp;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender {

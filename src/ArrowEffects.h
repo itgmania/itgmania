@@ -37,11 +37,11 @@ class ArrowEffects {
   static void GetXYZPos(
       const PlayerState* player_state, int col, float y_offset,
       float y_reverse_offset, RageVector3& ret, bool with_reverse = true) {
-    ret.x = GetMoveX(col) + GetXPos(player_state, col, y_offset);
-    ret.y =
+    ret.x_ = GetMoveX(col) + GetXPos(player_state, col, y_offset);
+    ret.y_ =
         GetMoveY(col) +
         GetYPos(player_state, col, y_offset, y_reverse_offset, with_reverse);
-    ret.z = GetMoveZ(col) + GetZPos(player_state, col, y_offset);
+    ret.z_ = GetMoveZ(col) + GetZPos(player_state, col, y_offset);
   }
 
   /**

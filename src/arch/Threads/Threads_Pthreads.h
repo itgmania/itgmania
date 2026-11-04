@@ -7,20 +7,20 @@
 
 class ThreadImpl_Pthreads : public ThreadImpl {
  public:
-  pthread_t thread;
-  mutable char name[16];
+  pthread_t thread_;
+  mutable char name_[16];
 
   /* Linux:
    * Keep a list of child PIDs, so we can send them SIGKILL. This has
    * an added bonus: if this is corrupted, we'll just send signals and
    * they'll fail; we won't blow up (unless we're root). */
-  uint64_t threadHandle;
+  uint64_t thread_handle_;
 
   // These are only used during initialization.
-  int (*m_pFunc)(void* pData);
-  void* m_pData;
-  uint64_t* m_piThreadID;
-  SemaImpl* m_StartFinishedSem;
+  int (*func_)(void* pData);
+  void* data_;
+  uint64_t* thread_id_;
+  SemaImpl* start_finished_sem_;
 
   void Halt(bool Kill);
   void Resume();
@@ -40,7 +40,7 @@ class MutexImpl_Pthreads : public MutexImpl {
   void Unlock();
 
  protected:
-  pthread_mutex_t mutex;
+  pthread_mutex_t mutex_;
 };
 
 class EventImpl_Pthreads : public EventImpl {
@@ -54,8 +54,8 @@ class EventImpl_Pthreads : public EventImpl {
   bool WaitTimeoutSupported() const;
 
  private:
-  MutexImpl_Pthreads* m_pParent;
-  pthread_cond_t m_Cond;
+  MutexImpl_Pthreads* parent_;
+  pthread_cond_t cond_;
 };
 
 class SemaImpl_Pthreads : public SemaImpl {
@@ -66,9 +66,9 @@ class SemaImpl_Pthreads : public SemaImpl {
   bool Wait();
 
  private:
-  pthread_cond_t m_Cond;
-  pthread_mutex_t m_Mutex;
-  unsigned m_iValue;
+  pthread_cond_t cond_;
+  pthread_mutex_t mutex_;
+  unsigned value_;
 };
 
 #endif

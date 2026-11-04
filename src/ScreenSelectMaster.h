@@ -93,7 +93,7 @@ class ScreenSelectMaster : public ScreenSelect {
   ThemeMetric<int> SCROLLER_SUBDIVISIONS;
   ThemeMetric<std::string> DEFAULT_CHOICE;
 
-  std::map<int, int> m_mapCurrentChoiceToNextChoice[NUM_MenuDir];
+  std::map<int, int> map_current_choice_to_next_choice_[NUM_MenuDir];
 
   virtual int GetSelectionIndex(PlayerNumber pn);
   virtual void UpdateSelectableChoices();
@@ -108,29 +108,29 @@ class ScreenSelectMaster : public ScreenSelect {
   float GetCursorX(PlayerNumber pn);
   float GetCursorY(PlayerNumber pn);
 
-  AutoActor m_sprExplanation[NUM_Page];
-  AutoActor m_sprMore[NUM_Page];
+  AutoActor spr_explanation_[NUM_Page];
+  AutoActor spr_more_[NUM_Page];
   // icon is the shared, per-choice piece
-  std::vector<AutoActor> m_vsprIcon;
+  std::vector<AutoActor> spr_icon_;
 
   // preview is per-player, per-choice piece
-  std::vector<AutoActor> m_vsprScroll[NUM_PLAYERS];
+  std::vector<AutoActor> spr_scroll_[NUM_PLAYERS];
 
-  ActorScroller m_Scroller[NUM_PLAYERS];
+  ActorScroller scroller_[NUM_PLAYERS];
 
   // cursor is the per-player, shared by all choices
-  AutoActor m_sprCursor[NUM_PLAYERS];
+  AutoActor spr_cursor_[NUM_PLAYERS];
 
-  RageSound m_soundChange;
-  RandomSample m_soundDifficult;
-  RageSound m_soundStart;
+  RageSound sound_change_;
+  RandomSample sound_difficult_;
+  RageSound sound_start_;
 
-  int m_iChoice[NUM_PLAYERS];
-  bool m_bChosen[NUM_PLAYERS];
-  bool m_bDoubleChoice[NUM_PLAYERS];
-  bool m_bDoubleChoiceNoSound;
+  int choice_[NUM_PLAYERS];
+  bool chosen_[NUM_PLAYERS];
+  bool double_choice_[NUM_PLAYERS];
+  bool double_choice_no_sound_;
 
-  GameButton m_TrackingRepeatingInput;
+  GameButton tracking_repeating_input_;
 };
 
 #endif

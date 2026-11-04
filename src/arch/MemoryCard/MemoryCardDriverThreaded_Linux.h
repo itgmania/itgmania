@@ -16,7 +16,7 @@ class MemoryCardDriverThreaded_Linux : public MemoryCardDriver {
   bool USBStorageDevicesChanged();
   bool TestWrite(UsbStorageDevice* pDevice);
 
-  std::string m_sLastDevices;
+  std::string last_devices_;
 };
 
 #ifdef ARCH_MEMORY_CARD_DRIVER

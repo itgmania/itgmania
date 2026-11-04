@@ -16,30 +16,30 @@ enum HidResults {
 std::vector<int> make_pids(int base_pid, int size);
 
 struct HidDeviceInfo {
-  char* path{nullptr};
-  int pid;
-  int vid;
-  int interfaceNum;
+  char* path_{nullptr};
+  int pid_;
+  int vid_;
+  int interface_num_;
 };
 
 class HidDevice {
  private:
-  HidDeviceInfo foundDeviceInfo{};
-  hid_device* handle{nullptr};
+  HidDeviceInfo found_device_info_{};
+  hid_device* handle_{nullptr};
 
   static const std::string GetPidsString(const std::vector<int> pids);
 
   // Info necessary to search the connected device once a connection attempt is
   // made
-  int vid;
-  const std::vector<int> pids;
-  int interfaceNum = -1;
+  int vid_;
+  const std::vector<int> pids_;
+  int interface_num_ = -1;
 
   // Behaviour configuration
-  bool autoReconnection = true;
-  bool nonBlockingRead = false;
+  bool auto_reconnection_ = true;
+  bool non_blocking_read_ = false;
 
-  bool foundOnce = false;
+  bool found_once_ = false;
   void Close();
   bool Open(const char* path);
   bool TryConnect();

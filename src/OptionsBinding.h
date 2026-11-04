@@ -23,17 +23,17 @@
 #define FLOAT_INTERFACE(func_name, member, valid)  \
   static int func_name(T* p, lua_State* L) {       \
     int original_top = lua_gettop(L);              \
-    lua_pushnumber(L, p->m_f##member);             \
-    lua_pushnumber(L, p->m_Speedf##member);        \
+    lua_pushnumber(L, p->member);                  \
+    lua_pushnumber(L, p->speed_##member);          \
     if (lua_isnumber(L, 1) && original_top >= 1) { \
       float v = FArg(1);                           \
       if (!valid) {                                \
         luaL_error(L, "Invalid value %f", v);      \
       }                                            \
-      p->m_f##member = v;                          \
+      p->member = v;                               \
     }                                              \
     if (original_top >= 2 && lua_isnumber(L, 2)) { \
-      p->m_Speedf##member = FArgGTEZero(L, 2);     \
+      p->speed_##member = FArgGTEZero(L, 2);       \
     }                                              \
     OPTIONAL_RETURN_SELF(original_top);            \
     return 2;                                      \
@@ -41,13 +41,13 @@
 #define FLOAT_NO_SPEED_INTERFACE(func_name, member, valid) \
   static int func_name(T* p, lua_State* L) {               \
     int original_top = lua_gettop(L);                      \
-    lua_pushnumber(L, p->m_f##member);                     \
+    lua_pushnumber(L, p->member);                          \
     if (lua_isnumber(L, 1) && original_top >= 1) {         \
       float v = FArg(1);                                   \
       if (!valid) {                                        \
         luaL_error(L, "Invalid value %f", v);              \
       }                                                    \
-      p->m_f##member = v;                                  \
+      p->member = v;                                       \
     }                                                      \
     OPTIONAL_RETURN_SELF(original_top);                    \
     return 1;                                              \
@@ -55,9 +55,9 @@
 #define INT_INTERFACE(func_name, member)           \
   static int func_name(T* p, lua_State* L) {       \
     int original_top = lua_gettop(L);              \
-    lua_pushnumber(L, p->m_##member);              \
+    lua_pushnumber(L, p->member);                  \
     if (lua_isnumber(L, 1) && original_top >= 1) { \
-      p->m_##member = IArg(1);                     \
+      p->member = IArg(1);                         \
     }                                              \
     OPTIONAL_RETURN_SELF(original_top);            \
     return 1;                                      \
@@ -67,9 +67,9 @@
 #define BOOL_INTERFACE(func_name, member)           \
   static int func_name(T* p, lua_State* L) {        \
     int original_top = lua_gettop(L);               \
-    lua_pushboolean(L, p->m_b##member);             \
+    lua_pushboolean(L, p->member);                  \
     if (lua_isboolean(L, 1) && original_top >= 1) { \
-      p->m_b##member = BArg(1);                     \
+      p->member = BArg(1);                          \
     }                                               \
     if (original_top >= 2 && lua_isboolean(L, 2)) { \
       p->PushSelf(L);                               \
@@ -80,9 +80,9 @@
 #define ENUM_INTERFACE(func_name, member, enum_name) \
   static int func_name(T* p, lua_State* L) {         \
     int original_top = lua_gettop(L);                \
-    Enum::Push(L, p->m_##member);                    \
+    Enum::Push(L, p->member);                        \
     if (!lua_isnil(L, 1) && original_top >= 1) {     \
-      p->m_##member = Enum::Check<enum_name>(L, 1);  \
+      p->member = Enum::Check<enum_name>(L, 1);      \
     }                                                \
     OPTIONAL_RETURN_SELF(original_top);              \
     return 1;                                        \
@@ -91,21 +91,21 @@
 #define FLOAT_TABLE_INTERFACE(func_name, member, valid) \
   static int func_name(T* p, lua_State* L) {            \
     int original_top = lua_gettop(L);                   \
-    lua_createtable(L, p->m_##member.size(), 0);        \
-    for (size_t n = 0; n < p->m_##member.size(); ++n) { \
-      lua_pushnumber(L, p->m_##member[n]);              \
+    lua_createtable(L, p->member.size(), 0);            \
+    for (size_t n = 0; n < p->member.size(); ++n) {     \
+      lua_pushnumber(L, p->member[n]);                  \
       lua_rawseti(L, -2, n + 1);                        \
     }                                                   \
     if (lua_istable(L, 1) && original_top >= 1) {       \
       size_t size = lua_objlen(L, 1);                   \
       if (valid(L, 1)) {                                \
-        p->m_##member.clear();                          \
-        p->m_##member.reserve(size);                    \
+        p->member.clear();                              \
+        p->member.reserve(size);                        \
         for (size_t n = 1; n <= size; ++n) {            \
           lua_pushnumber(L, n);                         \
           lua_gettable(L, 1);                           \
           float v = FArg(-1);                           \
-          p->m_##member.push_back(v);                   \
+          p->member.push_back(v);                       \
           lua_pop(L, 1);                                \
         }                                               \
       }                                                 \

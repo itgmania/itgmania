@@ -19,10 +19,10 @@
 REGISTER_ACTOR_CLASS(CourseContentsList);
 
 CourseContentsList::~CourseContentsList() {
-  for (Actor* d : m_vpDisplay) {
+  for (Actor* d : display_) {
     delete d;
   }
-  m_vpDisplay.clear();
+  display_.clear();
 }
 
 void CourseContentsList::LoadFromNode(const XNode* pNode) {
@@ -40,7 +40,7 @@ void CourseContentsList::LoadFromNode(const XNode* pNode) {
   for (int i = 0; i < iMaxSongs; i++) {
     Actor* pDisplay = ActorUtil::LoadFromNode(pDisplayNode, this);
     pDisplay->SetUseZBuffer(true);
-    m_vpDisplay.push_back(pDisplay);
+    display_.push_back(pDisplay);
   }
 
   ActorScroller::LoadFromNode(pNode);
@@ -53,60 +53,60 @@ void CourseContentsList::SetFromGameState() {
     return;
   }
   const Trail* pMasterTrail =
-      GAMESTATE->m_pCurTrail[GAMESTATE->GetMasterPlayerNumber()];
+      GAMESTATE->cur_trail_[GAMESTATE->GetMasterPlayerNumber()];
   if (pMasterTrail == nullptr) {
     return;
   }
-  unsigned uNumEntriesToShow = pMasterTrail->m_vEntries.size();
-  rage_clamp(uNumEntriesToShow, 0, m_vpDisplay.size());
+  unsigned uNumEntriesToShow = pMasterTrail->entries_.size();
+  rage_clamp(uNumEntriesToShow, 0, display_.size());
 
   for (int i = 0; i < (int)uNumEntriesToShow; i++) {
-    Actor* pDisplay = m_vpDisplay[i];
+    Actor* pDisplay = display_[i];
     SetItemFromGameState(pDisplay, i);
     this->AddChild(pDisplay);
   }
 
-  bool bLoop = pMasterTrail->m_vEntries.size() > uNumEntriesToShow;
+  bool bLoop = pMasterTrail->entries_.size() > uNumEntriesToShow;
 
   this->SetLoop(bLoop);
   this->Load2();
-  this->SetTransformFromHeight(m_vpDisplay[0]->GetUnzoomedHeight());
+  this->SetTransformFromHeight(display_[0]->GetUnzoomedHeight());
   this->EnableMask(
-      m_vpDisplay[0]->GetUnzoomedWidth(), m_vpDisplay[0]->GetUnzoomedHeight());
+      display_[0]->GetUnzoomedWidth(), display_[0]->GetUnzoomedHeight());
 
   if (bLoop) {
     SetPauseCountdownSeconds(1.5f);
-    this->SetDestinationItem((float)m_vpDisplay.size() + 1);  // loop forever
+    this->SetDestinationItem((float)display_.size() + 1);  // loop forever
   }
 }
 
 void CourseContentsList::SetItemFromGameState(
     Actor* pActor, int iCourseEntryIndex) {
-  const Course* pCourse = GAMESTATE->m_pCurCourse;
+  const Course* pCourse = GAMESTATE->cur_course_;
 
   FOREACH_HumanPlayer(pn) {
-    const Trail* pTrail = GAMESTATE->m_pCurTrail[pn];
+    const Trail* pTrail = GAMESTATE->cur_trail_[pn];
     if (pTrail == nullptr ||
-        iCourseEntryIndex >= (int)pTrail->m_vEntries.size() ||
-        iCourseEntryIndex >= (int)pCourse->m_vEntries.size()) {
+        iCourseEntryIndex >= (int)pTrail->entries_.size() ||
+        iCourseEntryIndex >= (int)pCourse->entries_.size()) {
       continue;
     }
 
-    const TrailEntry* te = &pTrail->m_vEntries[iCourseEntryIndex];
-    const CourseEntry* ce = &pCourse->m_vEntries[iCourseEntryIndex];
+    const TrailEntry* te = &pTrail->entries_[iCourseEntryIndex];
+    const CourseEntry* ce = &pCourse->entries_[iCourseEntryIndex];
     if (te == nullptr) {
       continue;
     }
 
     std::string s;
     Difficulty dc;
-    if (te->bSecret) {
+    if (te->secret_) {
       if (ce == nullptr) {
         continue;
       }
 
-      int iLow = ce->stepsCriteria.m_iLowMeter;
-      int iHigh = ce->stepsCriteria.m_iHighMeter;
+      int iLow = ce->steps_criteria_.low_meter_;
+      int iHigh = ce->steps_criteria_.high_meter_;
 
       bool bLowIsSet = iLow != -1;
       bool bHighIsSet = iHigh != -1;
@@ -126,24 +126,24 @@ void CourseContentsList::SetItemFromGameState(
         }
       }
 
-      dc = te->dc;
+      dc = te->dc_;
       if (dc == Difficulty_Invalid) {
         dc = Difficulty_Edit;
       }
     } else {
-      s = ssprintf("%d", te->pSteps->GetMeter());
-      dc = te->pSteps->GetDifficulty();
+      s = ssprintf("%d", te->steps_->GetMeter());
+      dc = te->steps_->GetDifficulty();
     }
 
     Message msg("SetSong");
     msg.SetParam("PlayerNumber", pn);
-    msg.SetParam("Song", te->pSong);
-    msg.SetParam("Steps", te->pSteps);
+    msg.SetParam("Song", te->song_);
+    msg.SetParam("Steps", te->steps_);
     msg.SetParam("Difficulty", dc);
     msg.SetParam("Meter", s);
     msg.SetParam("Number", iCourseEntryIndex + 1);
-    msg.SetParam("Modifiers", te->Modifiers);
-    msg.SetParam("Secret", te->bSecret);
+    msg.SetParam("Modifiers", te->modifiers_);
+    msg.SetParam("Secret", te->secret_);
     pActor->HandleMessage(msg);
   }
 }

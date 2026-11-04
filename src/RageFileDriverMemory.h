@@ -29,8 +29,8 @@ class RageFileObjMem : public RageFileObj {
   void PutString(const std::string& sBuf);
 
  private:
-  RageFileObjMemFile* m_pFile;
-  int m_iFilePos;
+  RageFileObjMemFile* file_;
+  int file_pos_;
 };
 
 class RageFileDriverMem : public RageFileDriver {
@@ -44,8 +44,8 @@ class RageFileDriverMem : public RageFileDriver {
   bool Remove(const std::string& sPath);
 
  private:
-  RageMutex m_Mutex;
-  std::vector<RageFileObjMemFile*> m_Files;
+  RageMutex mutex_;
+  std::vector<RageFileObjMemFile*> files_;
 };
 
 #endif

@@ -28,9 +28,9 @@ class InputHandler : public RageDriver {
  public:
   static void Create(
       const std::string& sDrivers, std::vector<InputHandler*>& apAdd);
-  static DriverList m_pDriverList;
+  static DriverList driver_list_;
 
-  InputHandler() : m_LastUpdate(), m_iInputsSinceUpdate(0) {}
+  InputHandler() : last_update_(), inputs_since_update_(0) {}
   virtual ~InputHandler() {}
   virtual void Update() {}
   virtual bool DevicesChanged() { return false; }
@@ -72,13 +72,13 @@ class InputHandler : public RageDriver {
   void UpdateTimer();
 
  private:
-  RageTimer m_LastUpdate;
-  int m_iInputsSinceUpdate;
+  RageTimer last_update_;
+  int inputs_since_update_;
 };
 
 #define REGISTER_INPUT_HANDLER_CLASS2(name, x) \
   static RegisterRageDriver register_##name(   \
-      &InputHandler::m_pDriverList, #name,     \
+      &InputHandler::driver_list_, #name,      \
       CreateClass<InputHandler_##x, RageDriver>)
 #define REGISTER_INPUT_HANDLER_CLASS(name) \
   REGISTER_INPUT_HANDLER_CLASS2(name, name)

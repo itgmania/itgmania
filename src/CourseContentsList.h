@@ -21,7 +21,7 @@ class CourseContentsList : public ActorScroller {
  protected:
   void SetItemFromGameState(Actor* pActor, int iCourseEntryIndex);
 
-  std::vector<Actor*> m_vpDisplay;
+  std::vector<Actor*> display_;
 };
 
 #endif

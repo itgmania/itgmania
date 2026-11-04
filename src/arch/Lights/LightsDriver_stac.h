@@ -60,10 +60,10 @@ enum StacLightIndex {
 
 class LightsDriver_stac : public LightsDriver {
  private:
-  HidDevice devs[STAC_MAX_NUMBER];
+  HidDevice devs_[STAC_MAX_NUMBER];
 
-  bool stateChanged[STAC_MAX_NUMBER];
-  uint8_t outputBuffer[STAC_MAX_NUMBER][STAC_HIDREPORT_SIZE];
+  bool state_changed_[STAC_MAX_NUMBER];
+  uint8_t output_buffer_[STAC_MAX_NUMBER][STAC_HIDREPORT_SIZE];
 
   void HandleState(const LightsState* ls, GameController ctrlNum);
   void SetBuffer(int index, bool lightState, GameController ctrlNum);

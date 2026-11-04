@@ -141,29 +141,29 @@ void ReadSteps(Reader& r, Song& song);
 // out of sync.
 
 #define SONG_STRINGS(F)   \
-  F(m_sMainTitle)         \
-  F(m_sSubTitle)          \
-  F(m_sArtist)            \
-  F(m_sMainTitleTranslit) \
-  F(m_sSubTitleTranslit)  \
-  F(m_sArtistTranslit)    \
-  F(m_sGenre)             \
-  F(m_sOrigin)            \
-  F(m_sCredit)            \
-  F(m_sBannerFile)        \
-  F(m_sBackgroundFile)    \
-  F(m_sPreviewVidFile)    \
-  F(m_sJacketFile)        \
-  F(m_sCDFile)            \
-  F(m_sDiscFile)          \
-  F(m_sLyricsFile)        \
-  F(m_sCDTitleFile)       \
-  F(m_sMusicFile)         \
-  F(m_PreviewFile)        \
-  F(m_sSongFileName)
+  F(main_title_)          \
+  F(sub_title_)           \
+  F(artist_)              \
+  F(main_title_translit_) \
+  F(sub_title_translit_)  \
+  F(artist_translit_)     \
+  F(genre_)               \
+  F(origin_)              \
+  F(credit_)              \
+  F(banner_file_)         \
+  F(background_file_)     \
+  F(preview_vid_file_)    \
+  F(jacket_file_)         \
+  F(cd_file_)             \
+  F(disc_file_)           \
+  F(lyrics_file_)         \
+  F(cd_title_file_)       \
+  F(music_file_)          \
+  F(preview_file_)        \
+  F(song_file_name_)
 
 void WriteTiming(Writer& w, const TimingData& timing) {
-  w.F32(timing.m_fBeat0OffsetInSeconds);
+  w.F32(timing.beat0_offset_in_seconds_);
   FOREACH_TimingSegmentType(tst) {
     const std::vector<TimingSegment*>& segs = timing.GetTimingSegments(tst);
     w.U32(static_cast<uint32_t>(segs.size()));
@@ -221,7 +221,7 @@ void WriteTiming(Writer& w, const TimingData& timing) {
 }
 
 void ReadTiming(Reader& r, TimingData& timing) {
-  timing.m_fBeat0OffsetInSeconds = r.F32();
+  timing.beat0_offset_in_seconds_ = r.F32();
   FOREACH_TimingSegmentType(tst) {
     std::vector<TimingSegment*>& segs = timing.GetTimingSegments(tst);
     // A label segment is at least its row plus a string length.
@@ -291,14 +291,14 @@ void WriteBackgroundChanges(
     Writer& w, const std::vector<BackgroundChange>& changes) {
   w.U32(static_cast<uint32_t>(changes.size()));
   for (const BackgroundChange& c : changes) {
-    w.Str(c.m_def.m_sEffect);
-    w.Str(c.m_def.m_sFile1);
-    w.Str(c.m_def.m_sFile2);
-    w.Str(c.m_def.m_sColor1);
-    w.Str(c.m_def.m_sColor2);
-    w.F32(c.m_fStartBeat);
-    w.F32(c.m_fRate);
-    w.Str(c.m_sTransition);
+    w.Str(c.def_.effect_);
+    w.Str(c.def_.file1_);
+    w.Str(c.def_.file2_);
+    w.Str(c.def_.color1_);
+    w.Str(c.def_.color2_);
+    w.F32(c.start_beat_);
+    w.F32(c.rate_);
+    w.Str(c.transition_);
   }
 }
 
@@ -307,14 +307,14 @@ void ReadBackgroundChanges(Reader& r, std::vector<BackgroundChange>& changes) {
   changes.reserve(changes.size() + count);
   for (uint32_t i = 0; i < count && r.Ok(); ++i) {
     BackgroundChange c;
-    c.m_def.m_sEffect = r.Str();
-    c.m_def.m_sFile1 = r.Str();
-    c.m_def.m_sFile2 = r.Str();
-    c.m_def.m_sColor1 = r.Str();
-    c.m_def.m_sColor2 = r.Str();
-    c.m_fStartBeat = r.F32();
-    c.m_fRate = r.F32();
-    c.m_sTransition = r.Str();
+    c.def_.effect_ = r.Str();
+    c.def_.file1_ = r.Str();
+    c.def_.file2_ = r.Str();
+    c.def_.color1_ = r.Str();
+    c.def_.color2_ = r.Str();
+    c.start_beat_ = r.F32();
+    c.rate_ = r.F32();
+    c.transition_ = r.Str();
     changes.push_back(c);
   }
 }
@@ -328,13 +328,13 @@ void WriteAttacks(
   }
   w.U32(static_cast<uint32_t>(attacks.size()));
   for (const Attack& a : attacks) {
-    w.U8(static_cast<uint8_t>(a.level));
-    w.F32(a.fStartSecond);
-    w.F32(a.fSecsRemaining);
-    w.Str(a.sModifiers);
-    w.Bool(a.bOn);
-    w.Bool(a.bGlobal);
-    w.Bool(a.bShowInAttackList);
+    w.U8(static_cast<uint8_t>(a.level_));
+    w.F32(a.start_second_);
+    w.F32(a.secs_remaining_);
+    w.Str(a.modifiers_);
+    w.Bool(a.on_);
+    w.Bool(a.global_);
+    w.Bool(a.show_in_attack_list_);
   }
 }
 
@@ -351,13 +351,13 @@ void ReadAttacks(
   attacks.reserve(attackCount);
   for (uint32_t i = 0; i < attackCount && r.Ok(); ++i) {
     Attack a;
-    a.level = CheckRange<AttackLevel>(r, r.U8(), NUM_ATTACK_LEVELS);
-    a.fStartSecond = r.F32();
-    a.fSecsRemaining = r.F32();
-    a.sModifiers = r.Str();
-    a.bOn = r.Bool();
-    a.bGlobal = r.Bool();
-    a.bShowInAttackList = r.Bool();
+    a.level_ = CheckRange<AttackLevel>(r, r.U8(), NUM_ATTACK_LEVELS);
+    a.start_second_ = r.F32();
+    a.secs_remaining_ = r.F32();
+    a.modifiers_ = r.Str();
+    a.on_ = r.Bool();
+    a.global_ = r.Bool();
+    a.show_in_attack_list_ = r.Bool();
     attacks.push_back(a);
   }
 }
@@ -379,26 +379,26 @@ void WriteSong(Writer& w, const Song& song) {
   SONG_STRINGS(WRITE_STRING)
 #undef WRITE_STRING
 
-  w.F32(song.m_fMusicLengthSeconds);
-  w.F32(song.m_fMusicSampleStartSeconds);
-  w.F32(song.m_fMusicSampleLengthSeconds);
-  w.F32(song.m_fSpecifiedBPMMin);
-  w.F32(song.m_fSpecifiedBPMMax);
-  w.U8(static_cast<uint8_t>(song.m_DisplayBPMType));
-  w.U8(static_cast<uint8_t>(song.m_SelectionDisplay));
-  w.Bool(song.m_bHasMusic);
-  w.Bool(song.m_bHasBanner);
+  w.F32(song.music_length_seconds_);
+  w.F32(song.music_sample_start_seconds_);
+  w.F32(song.music_sample_length_seconds_);
+  w.F32(song.specified_bpm_min_);
+  w.F32(song.specified_bpm_max_);
+  w.U8(static_cast<uint8_t>(song.display_bpm_type_));
+  w.U8(static_cast<uint8_t>(song.selection_display_));
+  w.Bool(song.has_music_);
+  w.Bool(song.has_banner_);
   w.F32(song.GetFirstSecondNoOffset());
   w.F32(song.GetLastSecondNoOffset());
   w.F32(song.GetSpecifiedLastSecond());
 
-  w.U32(static_cast<uint32_t>(song.m_vsKeysoundFile.size()));
-  for (const std::string& s : song.m_vsKeysoundFile) {
+  w.U32(static_cast<uint32_t>(song.keysound_file_.size()));
+  for (const std::string& s : song.keysound_file_) {
     w.Str(s);
   }
 
-  WriteAttacks(w, song.m_sAttackString, song.m_Attacks);
-  WriteTiming(w, song.m_SongTiming);
+  WriteAttacks(w, song.attack_string_, song.attacks_);
+  WriteTiming(w, song.song_timing_);
   FOREACH_BackgroundLayer(bl) {
     WriteBackgroundChanges(w, song.GetBackgroundChanges(bl));
   }
@@ -424,27 +424,27 @@ void ReadSong(Reader& r, Song& song) {
   SONG_STRINGS(READ_STRING)
 #undef READ_STRING
 
-  song.m_fMusicLengthSeconds = r.F32();
-  song.m_fMusicSampleStartSeconds = r.F32();
-  song.m_fMusicSampleLengthSeconds = r.F32();
-  song.m_fSpecifiedBPMMin = r.F32();
-  song.m_fSpecifiedBPMMax = r.F32();
-  song.m_DisplayBPMType = CheckRange<DisplayBPM>(r, r.U8(), NUM_DisplayBPM);
-  song.m_SelectionDisplay = CheckRange<Song::SelectionDisplay>(r, r.U8(), 2);
-  song.m_bHasMusic = r.Bool();
-  song.m_bHasBanner = r.Bool();
+  song.music_length_seconds_ = r.F32();
+  song.music_sample_start_seconds_ = r.F32();
+  song.music_sample_length_seconds_ = r.F32();
+  song.specified_bpm_min_ = r.F32();
+  song.specified_bpm_max_ = r.F32();
+  song.display_bpm_type_ = CheckRange<DisplayBPM>(r, r.U8(), NUM_DisplayBPM);
+  song.selection_display_ = CheckRange<Song::SelectionDisplay>(r, r.U8(), 2);
+  song.has_music_ = r.Bool();
+  song.has_banner_ = r.Bool();
   song.SetFirstSecondNoOffset(r.F32());
   song.SetLastSecondNoOffset(r.F32());
   song.SetSpecifiedLastSecond(r.F32());
 
   const uint32_t keysoundCount = r.Count();
-  song.m_vsKeysoundFile.reserve(keysoundCount);
+  song.keysound_file_.reserve(keysoundCount);
   for (uint32_t i = 0; i < keysoundCount && r.Ok(); ++i) {
-    song.m_vsKeysoundFile.push_back(r.Str());
+    song.keysound_file_.push_back(r.Str());
   }
 
-  ReadAttacks(r, song.m_sAttackString, song.m_Attacks);
-  ReadTiming(r, song.m_SongTiming);
+  ReadAttacks(r, song.attack_string_, song.attacks_);
+  ReadTiming(r, song.song_timing_);
   FOREACH_BackgroundLayer(bl) {
     ReadBackgroundChanges(r, song.GetBackgroundChanges(bl));
   }
@@ -457,8 +457,8 @@ void ReadSong(Reader& r, Song& song) {
 }
 
 void WriteSteps(Writer& w, const Steps& steps) {
-  w.Str(steps.m_StepsTypeStr);
-  w.U32(static_cast<uint32_t>(steps.m_StepsType));
+  w.Str(steps.steps_type_str_);
+  w.U32(static_cast<uint32_t>(steps.steps_type_));
   w.Str(steps.GetChartName());
   w.Str(steps.GetDescription());
   w.Str(steps.GetChartStyle());
@@ -502,11 +502,11 @@ void WriteSteps(Writer& w, const Steps& steps) {
   const std::vector<StreamBreakdown>& breakdowns =
       steps.GetAllStreamBreakdowns();
   for (const StreamBreakdown& breakdown : breakdowns) {
-    for (const std::string& text : breakdown.texts) {
+    for (const std::string& text : breakdown.texts_) {
       w.Str(text);
     }
-    w.I32(breakdown.totalStreamMeasures);
-    w.I32(breakdown.totalBreakMeasures);
+    w.I32(breakdown.total_stream_measures_);
+    w.I32(breakdown.total_break_measures_);
   }
 
   const std::vector<NoteAnnotationCache>& annotations =
@@ -524,17 +524,17 @@ void WriteSteps(Writer& w, const Steps& steps) {
 
   WriteAttacks(w, steps.GetStepsAttackStrings(), steps.GetStepsAttacks());
 
-  w.Bool(!steps.m_Timing.empty());
-  if (!steps.m_Timing.empty()) {
-    WriteTiming(w, steps.m_Timing);
+  w.Bool(!steps.timing_.empty());
+  if (!steps.timing_.empty()) {
+    WriteTiming(w, steps.timing_);
   }
 }
 
 void ReadSteps(Reader& r, Song& song) {
   Steps* steps = song.CreateSteps();
-  steps->m_StepsTypeStr = r.Str();
+  steps->steps_type_str_ = r.Str();
   // StepsType_Invalid is written for unknown-style steps.
-  steps->m_StepsType = CheckRange<StepsType>(
+  steps->steps_type_ = CheckRange<StepsType>(
       r, r.U32(), static_cast<uint32_t>(StepsType_Invalid) + 1);
   steps->SetChartName(r.Str());
   steps->SetDescription(r.Str());
@@ -594,11 +594,11 @@ void ReadSteps(Reader& r, Song& song) {
   std::vector<StreamBreakdown> breakdowns(notes.size());
   for (size_t i = 0; i < notes.size() && r.Ok(); ++i) {
     StreamBreakdown& breakdown = breakdowns[i];
-    for (std::string& text : breakdown.texts) {
+    for (std::string& text : breakdown.texts_) {
       text = r.Str();
     }
-    breakdown.totalStreamMeasures = r.I32();
-    breakdown.totalBreakMeasures = r.I32();
+    breakdown.total_stream_measures_ = r.I32();
+    breakdown.total_break_measures_ = r.I32();
   }
   steps->SetStreamBreakdown(breakdowns);
 
@@ -607,7 +607,7 @@ void ReadSteps(Reader& r, Song& song) {
   annotations.reserve(annotationCount);
   for (uint32_t i = 0; i < annotationCount && r.Ok(); ++i) {
     NoteAnnotationCache cache;
-    cache.compressed = r.Str();
+    cache.compressed_ = r.Str();
     annotations.push_back(cache);
   }
   steps->SetNoteAnnotations(annotations);
@@ -621,7 +621,7 @@ void ReadSteps(Reader& r, Song& song) {
   ReadAttacks(r, steps->GetStepsAttackStrings(), steps->GetStepsAttacks());
 
   if (r.Bool()) {
-    ReadTiming(r, steps->m_Timing);
+    ReadTiming(r, steps->timing_);
   }
 
   song.AddSteps(steps);
@@ -667,9 +667,9 @@ bool Read(Song& song, const std::string& path, bool tidy_up_data) {
     return false;
   }
 
-  song.m_SongTiming.m_sFile = path;
-  song.m_sSongFileName = path;
-  song.m_fVersion = STEPFILE_VERSION_NUMBER;
+  song.song_timing_.file_ = path;
+  song.song_file_name_ = path;
+  song.version_ = STEPFILE_VERSION_NUMBER;
 
   ReadSong(r, song);
   if (!r.Ok()) {
