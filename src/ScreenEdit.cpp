@@ -3251,6 +3251,9 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       // Apply scroll acceleration multiplier for LINE scrolls (mouse wheel)
       if ((EditB == EDIT_BUTTON_SCROLL_UP_LINE ||
            EditB == EDIT_BUTTON_SCROLL_DOWN_LINE) &&
+          input.DeviceI.device == DEVICE_MOUSE &&
+          (input.DeviceI.button == MOUSE_WHEELUP ||
+           input.DeviceI.button == MOUSE_WHEELDOWN) &&
           m_fScrollAccelerationMultiplier > 1.0f) {
         fBeatsToMove *= m_fScrollAccelerationMultiplier;
       }
