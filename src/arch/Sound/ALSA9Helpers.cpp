@@ -164,6 +164,11 @@ void Alsa9Buf::GetSoundCardDebugInfo() {
 
   InitializeErrorHandler();
 
+  snd_ctl_card_info_t* info;
+  dsnd_ctl_card_info_alloca(&info);
+  snd_pcm_info_t* pcminfo;
+  dsnd_pcm_info_alloca(&pcminfo);
+
   int card = -1;
   while (dsnd_card_next(&card) >= 0 && card >= 0) {
     const std::string id = ssprintf("hw:%d", card);
@@ -177,8 +182,6 @@ void Alsa9Buf::GetSoundCardDebugInfo() {
       continue;
     }
 
-    snd_ctl_card_info_t* info;
-    dsnd_ctl_card_info_alloca(&info);
     err = dsnd_ctl_card_info(handle, info);
     if (err < 0) {
       LOG->Info(
@@ -190,8 +193,6 @@ void Alsa9Buf::GetSoundCardDebugInfo() {
 
     int dev = -1;
     while (dsnd_ctl_pcm_next_device(handle, &dev) >= 0 && dev >= 0) {
-      snd_pcm_info_t* pcminfo;
-      dsnd_pcm_info_alloca(&pcminfo);
       dsnd_pcm_info_set_device(pcminfo, dev);
       dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 
