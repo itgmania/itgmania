@@ -167,9 +167,9 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
     LOG->Warn("ioctl(EVIOCGBIT(EV_KEY)): %s", strerror(errno));
   }
 
-  uint8_t iEventTypes[EV_MAX / 8];
+  uint8_t iEventTypes[EV_MAX / 8 + 1];
   memset(iEventTypes, 0, sizeof(iEventTypes));
-  if (ioctl(m_iFD, EVIOCGBIT(0, EV_MAX), iEventTypes) == -1) {
+  if (ioctl(m_iFD, EVIOCGBIT(0, sizeof(iEventTypes)), iEventTypes) == -1) {
     LOG->Warn("ioctl(EV_MAX): %s", strerror(errno));
   }
 
