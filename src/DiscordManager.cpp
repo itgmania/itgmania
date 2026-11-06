@@ -16,6 +16,7 @@
 #include "MessageManager.h"
 #include "Preference.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "Song.h"
@@ -39,6 +40,20 @@ static Preference<std::string> applicationId(
     "DiscordApplicationId", "1568037250422407288");
 
 namespace {
+std::string PresenceString(const std::string& key) {
+  return THEME->GetString("DiscordPresence", key);
+}
+
+enum class PresenceContext {
+  Menus,
+  Editing,
+  Playing,
+  Results,
+  Selecting,
+  Title,
+  Configuring
+};
+
 std::string StylePresence(const Style* style) {
   if (!style) {
     return "";
@@ -57,9 +72,9 @@ std::string StylePresence(const Style* style) {
   }
   std::replace(label.begin(), label.end(), '\n', ' ');
   if (name == "single" || name == "versus") {
-    label = "Singles";
+    label = PresenceString("Singles");
   } else if (name == "double") {
-    label = "Doubles";
+    label = PresenceString("Doubles");
   }
 
   return label;
@@ -71,7 +86,9 @@ std::string ChartPresence(PlayerNumber pn) {
   if (!steps || !style) {
     return "";
   }
-  return StylePresence(style) + " " + std::to_string(steps->GetMeter());
+  return ssprintf(
+      PresenceString("ChartFormat").c_str(), StylePresence(style).c_str(),
+      steps->GetMeter());
 }
 
 std::string CurrentChartPresence(bool editing) {
@@ -91,7 +108,9 @@ std::string CurrentChartPresence(bool editing) {
   if (charts.size() == 1 || charts[0].second == charts[1].second) {
     return charts[0].second;
   }
-  return "P1 " + charts[0].second + " / P2 " + charts[1].second;
+  return ssprintf(
+      PresenceString("TwoPlayersFormat").c_str(), charts[0].second.c_str(),
+      charts[1].second.c_str());
 }
 }  // namespace
 
@@ -253,40 +272,61 @@ void DiscordManager::Update() {
     impl->delivery = std::make_shared<Impl::Delivery>();
     impl->nextSend = now;
   }
-  std::string details = "In the menus";
-  std::string state;
+  // Keep activity classification independent of translated display text.
+  PresenceContext context = PresenceContext::Menus;
   if (editing) {
-    details = "Editing a chart";
+    context = PresenceContext::Editing;
   } else if (screen->GetScreenType() == gameplay) {
-    details = "Playing";
+    context = PresenceContext::Playing;
   } else if (name.find("Evaluation") != std::string::npos) {
-    details = "Viewing results";
+    context = PresenceContext::Results;
   } else if (
       name.find("SelectMusic") != std::string::npos ||
       name.find("SelectCourse") != std::string::npos) {
-    details = "Selecting music";
+    context = PresenceContext::Selecting;
   } else if (name.find("Edit") != std::string::npos) {
-    details = "Editing a chart";
+    context = PresenceContext::Editing;
   } else if (screen->GetScreenType() == attract) {
-    details = "At the title screen";
+    context = PresenceContext::Title;
   } else if (screen->GetScreenType() == system_menu) {
-    details = "Configuring the game";
+    context = PresenceContext::Configuring;
   }
+  std::string details;
   std::string icon;
-  if (editing) {
-    icon = "editing";
-  } else if (details == "Playing") {
-    icon = "playing";
-  } else if (details == "Viewing results") {
-    icon = "results";
-  } else if (details == "Selecting music") {
-    icon = "selecting";
+  switch (context) {
+    case PresenceContext::Menus:
+      details = PresenceString("Menus");
+      break;
+    case PresenceContext::Editing:
+      details = PresenceString("Editing");
+      icon = "editing";
+      break;
+    case PresenceContext::Playing:
+      details = PresenceString("Playing");
+      icon = "playing";
+      break;
+    case PresenceContext::Results:
+      details = PresenceString("Results");
+      icon = "results";
+      break;
+    case PresenceContext::Selecting:
+      details = PresenceString("SelectingMusic");
+      icon = "selecting";
+      break;
+    case PresenceContext::Title:
+      details = PresenceString("Title");
+      break;
+    case PresenceContext::Configuring:
+      details = PresenceString("Configuring");
+      break;
   }
-  if (details == "Selecting music" && !CommonMetrics::AUTO_SET_STYLE) {
+  if (context == PresenceContext::Selecting && !CommonMetrics::AUTO_SET_STYLE) {
     const auto style =
         StylePresence(GAMESTATE->GetCurrentStyle(PLAYER_INVALID));
     if (!style.empty()) {
-      details += ": " + style;
+      details = ssprintf(
+          PresenceString("WithStyleFormat").c_str(), details.c_str(),
+          style.c_str());
     }
   }
   // Theme branding supplies the small badge when no activity icon is selected.
@@ -300,17 +340,20 @@ void DiscordManager::Update() {
   }
   const DiscordActivity generic{
       {"details", details},
-      {"state", state},
+      {"state", ""},
       {"startTimestamp", impl->started},
       {"largeImage", "default"},
-      {"largeText", "ITGmania"},
+      {"largeText", PresenceString("GameName")},
       {"smallImage", icon},
       {"smallText", details}};
   auto base = generic;
   if (GAMESTATE->m_pCurSong &&
-      (editing || details == "Playing" || details == "Viewing results")) {
+      (editing || context == PresenceContext::Playing ||
+       context == PresenceContext::Results)) {
     const auto* song = GAMESTATE->m_pCurSong.Get();
-    base["details"] = details + ": " + song->GetDisplayFullTitle();
+    base["details"] = ssprintf(
+        PresenceString("WithSongFormat").c_str(), details.c_str(),
+        song->GetDisplayFullTitle().c_str());
     const auto chart = CurrentChartPresence(editing);
     base["state"] = chart;
     std::string groupName = song->m_sGroupName;
@@ -319,9 +362,12 @@ void DiscordManager::Update() {
         groupName = group->GetDisplayTitle();
       }
     }
-    base["largeText"] = "Pack: " + groupName;
+    base["largeText"] =
+        ssprintf(PresenceString("PackFormat").c_str(), groupName.c_str());
     if (!chart.empty()) {
-      base["largeText"] += " | " + chart;
+      base["largeText"] = ssprintf(
+          PresenceString("PackAndChartFormat").c_str(),
+          base["largeText"].c_str(), chart.c_str());
     }
   }
   auto activity = ApplyDiscordPrivacy(
