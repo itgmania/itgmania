@@ -1499,7 +1499,7 @@ static void GetTrackMapping(
       int iOrig[MAX_NOTE_TRACKS];
       memcpy(iOrig, iTakeFromTrack, sizeof(iOrig));
 
-      int iShuffleSeed = GAMESTATE->m_iStageSeed;
+      unsigned iShuffleSeed = GAMESTATE->m_iStageSeed;
       do {
         RandomGen rnd(iShuffleSeed);
         std::shuffle(&iTakeFromTrack[0], &iTakeFromTrack[NumTracks], rnd);
