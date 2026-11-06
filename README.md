@@ -68,7 +68,7 @@ You can choose between using the installer or using the portable build. Using th
 
 ### Build From Source
 
-ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake to build ITGmania can be found in both the `Build` directory and CMake's documentation.
+ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake to build ITGmania can be found in both `BUILD.md` and CMake's documentation.
 
 ## Resources
 
