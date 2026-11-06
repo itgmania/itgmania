@@ -16,6 +16,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <set>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -86,6 +87,8 @@ struct HttpRequestArgs {
   std::function<bool(int current, int total)> onProgress;
   std::function<void(const ix::HttpResponsePtr& response)> onResponse;
   std::function<void(const std::string& errorMessage)> onFileError;
+  /* Called when host permission is denied, including disabled networking. */
+  std::function<void()> onBlocked;
 };
 
 class HttpRequestFuture {
@@ -110,6 +113,7 @@ struct WebSocketArgs {
   bool enableDeflate = true;
   std::function<void(const ix::WebSocketMessage& response)> onMessage;
   std::function<void()> onClose;
+  std::function<void()> onBlocked;
 };
 
 class WebSocketHandle {
@@ -123,6 +127,7 @@ class WebSocketHandle {
 
   ix::WebSocket webSocket;
   std::function<void()> onClose;
+  std::atomic<bool> closed{false};
 };
 
 typedef std::shared_ptr<WebSocketHandle> WebSocketHandlePtr;
@@ -205,6 +210,26 @@ class NetworkManager {
   void PushSelf(lua_State* L);
 
  private:
+  friend class ScreenNetworkPermission;
+
+  /* Requests wait here for a decision without opening a connection. */
+  struct PendingPermission {
+    std::string host;
+    std::function<void(bool)> onDecision;
+    std::function<bool()> isCancelled;
+  };
+
+  void RequestPermission(
+      const std::string& url, std::function<void(bool)> onDecision,
+      std::function<bool()> isCancelled);
+  void ShowPermissionPrompt();
+  void ResolvePermission(const std::string& host, bool allow, bool remember);
+
+  std::vector<PendingPermission> pendingPermissions;
+  std::set<std::string> sessionAllowedHosts;
+  std::set<std::string> sessionDeniedHosts;
+  std::string permissionHost;
+
   void RunWebSocketWorker();
   void StopWorkers();
 
