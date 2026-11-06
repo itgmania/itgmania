@@ -1218,16 +1218,16 @@ void Profile::LoadSongsFromDir(
   for (const std::string& folder_first_level : first_level_folders) {
     std::vector<std::string> second_level_folders;
 
+    // push first level to avoid false positive
+    // (e.g. 9orNull leftovers or lua assets)
+    all_songs_dirs.push_back(folder_first_level);
+
     FILEMAN->GetDirListing(
         folder_first_level + "/*", second_level_folders, true, true);
 
-    // no second level -> is a song folder
-    if (second_level_folders.empty()) {
-      all_songs_dirs.push_back(folder_first_level);
-    }
-    // is a pack
-    else {
-      // create group -> need to check at the end if has songs
+    // subfolders -> is a pack
+    if (!second_level_folders.empty()) {
+      // create group -> check at the end if has songs
       m_groups.emplace_back(new Group(
           folder_first_level, Basename(folder_first_level), prof_slot));
 
