@@ -66,7 +66,9 @@ std::string SongCacheIndex::GetCacheFilePath(
       "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str());
 }
 
-SongCacheIndex::SongCacheIndex() : Mutex("SongCacheIndex") { ReadCacheIndex(); }
+SongCacheIndex::SongCacheIndex() : mutex_("SongCacheIndex") {
+  ReadCacheIndex();
+}
 
 SongCacheIndex::~SongCacheIndex() {}
 
@@ -83,12 +85,12 @@ static void EmptyDir(std::string dir) {
 }
 
 void SongCacheIndex::ReadCacheIndex() {
-  LockMutex L(Mutex);
+  LockMutex L(mutex_);
 
-  CacheIndex.ReadFile(CACHE_INDEX);  // don't care if this fails
+  cache_index_.ReadFile(CACHE_INDEX);  // don't care if this fails
 
   int iCacheVersion = -1;
-  CacheIndex.GetValue("Cache", "CacheVersion", iCacheVersion);
+  cache_index_.GetValue("Cache", "CacheVersion", iCacheVersion);
   if (iCacheVersion == FILE_CACHE_VERSION) {
     return;  // OK
   }
@@ -104,7 +106,7 @@ void SongCacheIndex::ReadCacheIndex() {
     EmptyDir(SpecialFiles::CACHE_DIR + ImageDir[c] + "/");
   }
 
-  CacheIndex.Clear();
+  cache_index_.Clear();
   /* This is right now in place because our song file paths are apparently being
    * cached in two distinct areas, and songs were loading from paths in FILEMAN.
    * This is admittedly a hack for now, but this does bring up a good question
@@ -115,26 +117,26 @@ void SongCacheIndex::ReadCacheIndex() {
 }
 
 void SongCacheIndex::SaveCacheIndex() {
-  LockMutex L(Mutex);
-  CacheIndex.WriteFile(CACHE_INDEX);
+  LockMutex L(mutex_);
+  cache_index_.WriteFile(CACHE_INDEX);
 }
 
 void SongCacheIndex::AddCacheIndex(const std::string& path, unsigned hash) {
-  LockMutex L(Mutex);
+  LockMutex L(mutex_);
   if (hash == 0) {
     ++hash; /* no 0 hash values */
   }
-  CacheIndex.SetValue("Cache", "CacheVersion", FILE_CACHE_VERSION);
-  CacheIndex.SetValue("Cache", MangleName(path), hash);
-  if (!delay_save_cache) {
-    CacheIndex.WriteFile(CACHE_INDEX);
+  cache_index_.SetValue("Cache", "CacheVersion", FILE_CACHE_VERSION);
+  cache_index_.SetValue("Cache", MangleName(path), hash);
+  if (!delay_save_cache_) {
+    cache_index_.WriteFile(CACHE_INDEX);
   }
 }
 
 unsigned SongCacheIndex::GetCacheHash(const std::string& path) const {
-  LockMutex L(Mutex);
+  LockMutex L(mutex_);
   unsigned iDirHash = 0;
-  if (!CacheIndex.GetValue("Cache", MangleName(path), iDirHash)) {
+  if (!cache_index_.GetValue("Cache", MangleName(path), iDirHash)) {
     return 0;
   }
   if (iDirHash == 0) {

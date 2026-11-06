@@ -25,9 +25,9 @@ const int MAX_EDIT_STEPS_SIZE_BYTES = 60 * 1024;  // 60KB
 
 /** @brief Reads a Song from an .SM file. */
 struct SMLoader {
-  SMLoader() : fileExt(".sm"), songTitle() {}
+  SMLoader() : file_ext_(".sm"), song_title_() {}
 
-  SMLoader(std::string ext) : fileExt(ext), songTitle() {}
+  SMLoader(std::string ext) : file_ext_(ext), song_title_() {}
 
   virtual ~SMLoader() {}
 
@@ -198,7 +198,7 @@ struct SMLoader {
   /**
    * @brief Retrieve the file extension associated with this loader.
    * @return the file extension. */
-  std::string GetFileExtension() const { return fileExt; }
+  std::string GetFileExtension() const { return file_ext_; }
 
   std::vector<std::string> GetSongDirFiles(const std::string& sSongDir);
 
@@ -217,11 +217,11 @@ struct SMLoader {
 
  private:
   /** @brief The file extension in use. */
-  const std::string fileExt;
+  const std::string file_ext_;
   /** @brief The song title that is being processed. */
-  std::string songTitle;
+  std::string song_title_;
 
-  std::vector<std::string> m_SongDirFiles;
+  std::vector<std::string> song_dir_files_;
 };
 
 #endif

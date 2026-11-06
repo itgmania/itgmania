@@ -9,19 +9,19 @@
 #include "RageTimer.h"
 
 struct Mouse {
-  InputDevice id;
-  IOHIDElementCookie x_axis, y_axis, z_axis;
-  int x_min, x_max;
-  int y_min, y_max;
-  int z_min, z_max;
+  InputDevice id_;
+  IOHIDElementCookie x_axis_, y_axis_, z_axis_;
+  int x_min_, x_max_;
+  int y_min_, y_max_;
+  int z_min_, z_max_;
 
   Mouse();
 };
 
 class MouseDevice : public HIDDevice {
  private:
-  std::unordered_map<IOHIDElementCookie, DeviceButton> m_Mapping;
-  Mouse m_Mouse;
+  std::unordered_map<IOHIDElementCookie, DeviceButton> mapping_;
+  Mouse mouse_;
 
  protected:
   bool AddLogicalDevice(int usagePage, int usage);
@@ -31,7 +31,7 @@ class MouseDevice : public HIDDevice {
   void Open();
 
   // just in case -aj
-  Mouse GetMouse() { return m_Mouse; }
+  Mouse GetMouse() { return mouse_; }
 
  public:
   void GetButtonPresses(

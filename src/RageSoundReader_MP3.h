@@ -22,8 +22,8 @@ class RageSoundReader_MP3 : public RageSoundReader_FileReader {
   int GetLength_Fast() const { return GetLengthConst(true); }
   int SetPosition(int iSample);
   int Read(float* pBuf, int iFrames);
-  unsigned GetNumChannels() const { return Channels; }
-  int GetSampleRate() const { return SampleRate; }
+  unsigned GetNumChannels() const { return channels_; }
+  int GetSampleRate() const { return sample_rate_; }
   int GetNextSourceFrame() const;
   bool SetProperty(const std::string& sProperty, float fValue);
 
@@ -33,11 +33,11 @@ class RageSoundReader_MP3 : public RageSoundReader_FileReader {
   RageSoundReader_MP3* Copy() const;
 
  private:
-  int SampleRate;
-  int Channels;
-  bool m_bAccurateSync;
+  int sample_rate_;
+  int channels_;
+  bool accurate_sync_;
 
-  madlib_t* mad;
+  madlib_t* mad_;
 
   bool MADLIB_rewind();
   int SetPosition_hard(int iSample);

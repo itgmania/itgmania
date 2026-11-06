@@ -25,19 +25,19 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange(
     : RageSoundReader_Filter(nullptr) {
   bool bPreservePitch = g_bRateModPreservesPitch.Get();
 
-  m_pSpeedChange = new RageSoundReader_SpeedChange(pSource);
+  speed_change_ = new RageSoundReader_SpeedChange(pSource);
   if (bPreservePitch) {
-    m_pResample = new RageSoundReader_Resample_Good(
-        m_pSpeedChange, m_pSpeedChange->GetSampleRate());
+    resample_ = new RageSoundReader_Resample_Good(
+        speed_change_, speed_change_->GetSampleRate());
   } else {
-    m_pResample =
+    resample_ =
         new RageSoundReader_Resample_Good(pSource, pSource->GetSampleRate());
   }
-  m_pSource = m_pResample;
-  m_fSpeedRatio = 1.0f;
-  m_fPitchRatio = 1.0f;
-  m_fLastSetSpeedRatio = m_fSpeedRatio;
-  m_fLastSetPitchRatio = m_fPitchRatio;
+  source_ = resample_;
+  speed_ratio_ = 1.0f;
+  pitch_ratio_ = 1.0f;
+  last_set_speed_ratio_ = speed_ratio_;
+  last_set_pitch_ratio_ = pitch_ratio_;
 }
 
 RageSoundReader_PitchChange::RageSoundReader_PitchChange(
@@ -46,13 +46,13 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange(
   /* The source tree has already been copied.  Our source is m_pResample; its
    * source is m_pSpeedChange (and its source is a copy of the pSource we were
    * initialized with). */
-  m_pResample = dynamic_cast<RageSoundReader_Resample_Good*>(&*m_pSource);
-  m_pSpeedChange =
-      dynamic_cast<RageSoundReader_SpeedChange*>(m_pResample->GetSource());
-  m_fSpeedRatio = cpy.m_fSpeedRatio;
-  m_fPitchRatio = cpy.m_fPitchRatio;
-  m_fLastSetSpeedRatio = cpy.m_fLastSetSpeedRatio;
-  m_fLastSetPitchRatio = cpy.m_fLastSetPitchRatio;
+  resample_ = dynamic_cast<RageSoundReader_Resample_Good*>(&*source_);
+  speed_change_ =
+      dynamic_cast<RageSoundReader_SpeedChange*>(resample_->GetSource());
+  speed_ratio_ = cpy.speed_ratio_;
+  pitch_ratio_ = cpy.pitch_ratio_;
+  last_set_speed_ratio_ = cpy.last_set_speed_ratio_;
+  last_set_pitch_ratio_ = cpy.last_set_pitch_ratio_;
 }
 
 int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
@@ -61,9 +61,9 @@ int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
    * resampler and the speed changer simultaneously, so they take effect as
    * closely together as possible. */
   bool bPreservePitch = g_bRateModPreservesPitch.Get();
-  if ((!bPreservePitch) || ((m_fLastSetSpeedRatio != m_fSpeedRatio ||
-                             m_fLastSetPitchRatio != m_fPitchRatio) &&
-                            m_pSpeedChange->NextReadWillStep())) {
+  if ((!bPreservePitch) || ((last_set_speed_ratio_ != speed_ratio_ ||
+                             last_set_pitch_ratio_ != pitch_ratio_) &&
+                            speed_change_->NextReadWillStep())) {
     float fRate = GetStreamToSourceRatio();
 
     /* This is the simple way: */
@@ -75,15 +75,15 @@ int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
      * we tell it to use.  The actual ratio used is fActualPitchRatio. */
 
     if (bPreservePitch) {
-      m_pResample->SetRate(m_fPitchRatio);
-      float fActualPitchRatio = m_pResample->GetRate();
-      float fRequestedSpeedRatio = m_fSpeedRatio / fActualPitchRatio;
-      m_pSpeedChange->SetSpeedRatio(fRequestedSpeedRatio);
-      m_fLastSetPitchRatio = m_fPitchRatio;
-      m_fLastSetSpeedRatio = m_fSpeedRatio;
+      resample_->SetRate(pitch_ratio_);
+      float fActualPitchRatio = resample_->GetRate();
+      float fRequestedSpeedRatio = speed_ratio_ / fActualPitchRatio;
+      speed_change_->SetSpeedRatio(fRequestedSpeedRatio);
+      last_set_pitch_ratio_ = pitch_ratio_;
+      last_set_speed_ratio_ = speed_ratio_;
     } else {
-      m_pResample->SetRate(m_fSpeedRatio);
-      m_fLastSetSpeedRatio = m_fSpeedRatio;
+      resample_->SetRate(speed_ratio_);
+      last_set_speed_ratio_ = speed_ratio_;
     }
 
     /* If we just applied a new speed and it caused the ratio to change, return

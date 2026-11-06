@@ -97,11 +97,11 @@ struct Message {
   Message(const std::string& s, const LuaReference& params);
   ~Message();
 
-  void SetName(const std::string& sName) { m_sName = sName; }
-  std::string GetName() const { return m_sName; }
+  void SetName(const std::string& sName) { name_ = sName; }
+  std::string GetName() const { return name_; }
 
-  bool IsBroadcast() const { return m_bBroadcast; }
-  void SetBroadcast(bool b) { m_bBroadcast = b; }
+  bool IsBroadcast() const { return broadcast_; }
+  void SetBroadcast(bool b) { broadcast_ = b; }
 
   const LuaReference& GetParamTable() const;
   void GetParamFromStack(lua_State* L, const std::string& sName) const;
@@ -132,15 +132,13 @@ struct Message {
     LUA->Release(L);
   }
 
-  bool operator==(const std::string& s) const { return m_sName == s; }
-  bool operator==(MessageID id) const {
-    return MessageIDToString(id) == m_sName;
-  }
+  bool operator==(const std::string& s) const { return name_ == s; }
+  bool operator==(MessageID id) const { return MessageIDToString(id) == name_; }
 
  private:
-  std::string m_sName;
-  LuaTable* m_pParams;
-  bool m_bBroadcast;
+  std::string name_;
+  LuaTable* params_;
+  bool broadcast_;
 
   Message& operator=(const Message& rhs);  // don't use
   /* Work around a gcc bug where HandleMessage( Message("Init") ) fails because
@@ -164,7 +162,7 @@ class IMessageSubscriber {
 
 class MessageSubscriber : public IMessageSubscriber {
  public:
-  MessageSubscriber() : m_vsSubscribedTo() {}
+  MessageSubscriber() : subscribed_to_() {}
   MessageSubscriber(const MessageSubscriber& cpy);
 
   //
@@ -177,7 +175,7 @@ class MessageSubscriber : public IMessageSubscriber {
   void UnsubscribeAll();
 
  private:
-  std::vector<std::string> m_vsSubscribedTo;
+  std::vector<std::string> subscribed_to_;
 };
 
 /** @brief Deliver messages to any part of the program as needed. */
@@ -200,8 +198,8 @@ class MessageManager {
     return IsSubscribedToMessage(pSubscriber, MessageIDToString(message));
   }
 
-  void SetLogging(bool set) { m_Logging = set; }
-  bool m_Logging;
+  void SetLogging(bool set) { logging_ = set; }
+  bool logging_;
 
   // Lua
   void PushSelf(lua_State* L);
@@ -213,19 +211,19 @@ extern MessageManager*
 template <class T>
 class BroadcastOnChange {
  private:
-  MessageID mSendWhenChanged;
-  T val;
+  MessageID send_when_changed_;
+  T val_;
 
  public:
-  explicit BroadcastOnChange(MessageID m) { mSendWhenChanged = m; }
-  const T Get() const { return val; }
+  explicit BroadcastOnChange(MessageID m) { send_when_changed_ = m; }
+  const T Get() const { return val_; }
   void Set(T t) {
-    val = t;
-    MESSAGEMAN->Broadcast(MessageIDToString(mSendWhenChanged));
+    val_ = t;
+    MESSAGEMAN->Broadcast(MessageIDToString(send_when_changed_));
   }
-  operator T() const { return val; }
-  bool operator==(const T& other) const { return val == other; }
-  bool operator!=(const T& other) const { return val != other; }
+  operator T() const { return val_; }
+  bool operator==(const T& other) const { return val_ == other; }
+  bool operator!=(const T& other) const { return val_ != other; }
 };
 
 /** @brief Utilities for working with Lua. */
@@ -240,58 +238,60 @@ template <class T, int N>
 class BroadcastOnChange1D {
  private:
   typedef BroadcastOnChange<T> MyType;
-  std::vector<MyType> val;
+  std::vector<MyType> val_;
 
  public:
   explicit BroadcastOnChange1D(MessageID m) {
     for (unsigned i = 0; i < N; i++) {
-      val.push_back(BroadcastOnChange<T>((MessageID)(m + i)));
+      val_.push_back(BroadcastOnChange<T>((MessageID)(m + i)));
     }
   }
-  const BroadcastOnChange<T>& operator[](unsigned i) const { return val[i]; }
-  BroadcastOnChange<T>& operator[](unsigned i) { return val[i]; }
+  const BroadcastOnChange<T>& operator[](unsigned i) const { return val_[i]; }
+  BroadcastOnChange<T>& operator[](unsigned i) { return val_[i]; }
 };
 
 template <class T>
 class BroadcastOnChangePtr {
  private:
-  MessageID mSendWhenChanged;
-  T* val;
+  MessageID send_when_changed_;
+  T* val_;
 
  public:
   explicit BroadcastOnChangePtr(MessageID m) {
-    mSendWhenChanged = m;
-    val = nullptr;
+    send_when_changed_ = m;
+    val_ = nullptr;
   }
-  T* Get() const { return val; }
+  T* Get() const { return val_; }
   void Set(T* t) {
-    val = t;
+    val_ = t;
     if (MESSAGEMAN) {
-      MESSAGEMAN->Broadcast(MessageIDToString(mSendWhenChanged));
+      MESSAGEMAN->Broadcast(MessageIDToString(send_when_changed_));
     }
   }
   /* This is only intended to be used for setting temporary values; always
    * restore the original value when finished, so listeners don't get confused
    * due to missing a message. */
-  void SetWithoutBroadcast(T* t) { val = t; }
-  operator T*() const { return val; }
-  T* operator->() const { return val; }
+  void SetWithoutBroadcast(T* t) { val_ = t; }
+  operator T*() const { return val_; }
+  T* operator->() const { return val_; }
 };
 
 template <class T, int N>
 class BroadcastOnChangePtr1D {
  private:
   typedef BroadcastOnChangePtr<T> MyType;
-  std::vector<MyType> val;
+  std::vector<MyType> val_;
 
  public:
   explicit BroadcastOnChangePtr1D(MessageID m) {
     for (unsigned i = 0; i < N; i++) {
-      val.push_back(BroadcastOnChangePtr<T>((MessageID)(m + i)));
+      val_.push_back(BroadcastOnChangePtr<T>((MessageID)(m + i)));
     }
   }
-  const BroadcastOnChangePtr<T>& operator[](unsigned i) const { return val[i]; }
-  BroadcastOnChangePtr<T>& operator[](unsigned i) { return val[i]; }
+  const BroadcastOnChangePtr<T>& operator[](unsigned i) const {
+    return val_[i];
+  }
+  BroadcastOnChangePtr<T>& operator[](unsigned i) { return val_[i]; }
 };
 
 #endif

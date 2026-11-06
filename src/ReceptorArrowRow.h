@@ -25,16 +25,16 @@ class ReceptorArrowRow : public ActorFrame {
   void SetNoteUpcoming(int iCol, bool b);
 
   void SetFadeToFailPercent(float fFadeToFailPercent) {
-    m_fFadeToFailPercent = fFadeToFailPercent;
+    fade_to_fail_percent_ = fFadeToFailPercent;
   }
 
  protected:
-  const PlayerState* m_pPlayerState;
-  float m_fYReverseOffsetPixels;
-  float m_fFadeToFailPercent;
+  const PlayerState* player_state_;
+  float y_reverse_offset_pixels_;
+  float fade_to_fail_percent_;
 
-  const std::vector<NoteColumnRenderer>* m_renderers;
-  std::vector<ReceptorArrow*> m_ReceptorArrow;
+  const std::vector<NoteColumnRenderer>* renderers_;
+  std::vector<ReceptorArrow*> receptor_arrow_;
 };
 
 #endif

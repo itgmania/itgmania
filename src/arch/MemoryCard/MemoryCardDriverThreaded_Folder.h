@@ -21,7 +21,7 @@ class MemoryCardDriverThreaded_Folder : public MemoryCardDriver {
   bool FolderExists(std::string path);
 
   int GetActivePlayerMask();
-  int m_LastDevices;
+  int last_devices_;
 };
 
 #endif

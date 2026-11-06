@@ -87,11 +87,11 @@ enum {
 };
 
 RageLog::RageLog()
-    : m_bLogToDisk(false),
-      m_bInfoToDisk(false),
-      m_bUserLogToDisk(false),
-      m_bFlush(false),
-      m_bShowLogOutput(false) {
+    : log_to_disk_(false),
+      info_to_disk_(false),
+      user_log_to_disk_(false),
+      flush_(false),
+      show_log_output_(false) {
   g_fileLog = new RageFile;
   g_fileInfo = new RageFile;
   g_fileUserLog = new RageFile;
@@ -122,13 +122,13 @@ RageLog::~RageLog() {
 }
 
 void RageLog::SetLogToDisk(bool b) {
-  if (m_bLogToDisk == b) {
+  if (log_to_disk_ == b) {
     return;
   }
 
-  m_bLogToDisk = b;
+  log_to_disk_ = b;
 
-  if (!m_bLogToDisk) {
+  if (!log_to_disk_) {
     if (g_fileLog->IsOpen()) {
       g_fileLog->Close();
     }
@@ -143,13 +143,13 @@ void RageLog::SetLogToDisk(bool b) {
 }
 
 void RageLog::SetInfoToDisk(bool b) {
-  if (m_bInfoToDisk == b) {
+  if (info_to_disk_ == b) {
     return;
   }
 
-  m_bInfoToDisk = b;
+  info_to_disk_ = b;
 
-  if (!m_bInfoToDisk) {
+  if (!info_to_disk_) {
     if (g_fileInfo->IsOpen()) {
       g_fileInfo->Close();
     }
@@ -164,13 +164,13 @@ void RageLog::SetInfoToDisk(bool b) {
 }
 
 void RageLog::SetUserLogToDisk(bool b) {
-  if (m_bUserLogToDisk == b) {
+  if (user_log_to_disk_ == b) {
     return;
   }
 
-  m_bUserLogToDisk = b;
+  user_log_to_disk_ = b;
 
-  if (!m_bUserLogToDisk) {
+  if (!user_log_to_disk_) {
     if (g_fileUserLog->IsOpen()) {
       g_fileUserLog->Close();
     }
@@ -183,15 +183,15 @@ void RageLog::SetUserLogToDisk(bool b) {
   }
 }
 
-void RageLog::SetFlushing(bool b) { m_bFlush = b; }
+void RageLog::SetFlushing(bool b) { flush_ = b; }
 
 /* Enable or disable display of output to stdout, or a console window in
  * Windows. */
 void RageLog::SetShowLogOutput(bool show) {
-  m_bShowLogOutput = show;
+  show_log_output_ = show;
 
 #if defined(_WIN32)
-  if (m_bShowLogOutput) {
+  if (show_log_output_) {
     // create a new console window and attach standard handles
     AllocConsole();
     SetConsoleOutputCP(CP_UTF8);
@@ -256,7 +256,7 @@ void RageLog::Write(int where, const std::string& sLine) {
   std::vector<std::string> asLines;
   split(sLine, "\n", asLines, false);
   if (where & WRITE_LOUD) {
-    if (m_bLogToDisk && g_fileLog->IsOpen()) {
+    if (log_to_disk_ && g_fileLog->IsOpen()) {
       g_fileLog->PutLine(sWarningSeparator);
     }
     puts(sWarningSeparator);
@@ -286,7 +286,7 @@ void RageLog::Write(int where, const std::string& sLine) {
     // since typically in macOS or Linux, if one wants to see
     // the stdout output, they'll run the game from a terminal.
 #ifdef _WIN32
-    if (m_bShowLogOutput || (where & WRITE_TO_INFO)) {
+    if (show_log_output_ || (where & WRITE_TO_INFO)) {
       puts(sStr.c_str());  // fputws( (const wchar_t *)sStr.c_str(), stdout );
     }
     if (where & WRITE_TO_INFO) {
@@ -299,10 +299,10 @@ void RageLog::Write(int where, const std::string& sLine) {
     }
 #endif
 
-    if (m_bLogToDisk && (where & WRITE_TO_INFO) && g_fileInfo->IsOpen()) {
+    if (log_to_disk_ && (where & WRITE_TO_INFO) && g_fileInfo->IsOpen()) {
       g_fileInfo->PutLine(sStr);
     }
-    if (m_bUserLogToDisk && (where & WRITE_TO_USER_LOG) &&
+    if (user_log_to_disk_ && (where & WRITE_TO_USER_LOG) &&
         g_fileUserLog->IsOpen()) {
       g_fileUserLog->PutLine(sStr);
     }
@@ -313,18 +313,18 @@ void RageLog::Write(int where, const std::string& sLine) {
 
     AddToRecentLogs(sStr);
 
-    if (m_bLogToDisk && g_fileLog->IsOpen()) {
+    if (log_to_disk_ && g_fileLog->IsOpen()) {
       g_fileLog->PutLine(sStr);
     }
   }
 
   if (where & WRITE_LOUD) {
-    if (m_bLogToDisk && g_fileLog->IsOpen() && (where & WRITE_LOUD)) {
+    if (log_to_disk_ && g_fileLog->IsOpen() && (where & WRITE_LOUD)) {
       g_fileLog->PutLine(sWarningSeparator);
     }
     puts(sWarningSeparator);
   }
-  if (m_bFlush || (where & WRITE_TO_INFO)) {
+  if (flush_ || (where & WRITE_TO_INFO)) {
     Flush();
   }
 }

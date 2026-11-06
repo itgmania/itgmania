@@ -21,11 +21,11 @@ class AttackDisplay : public ActorFrame {
   virtual void Update(float fDelta);
 
  protected:
-  const PlayerState* m_pPlayerState;
+  const PlayerState* player_state_;
 
-  Sprite m_sprAttack;
+  Sprite spr_attack_;
 
-  RageTexturePreloader m_TexturePreload;
+  RageTexturePreloader texture_preload_;
 };
 
 #endif

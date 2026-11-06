@@ -8,15 +8,15 @@
 TapNoteScore Game::MapTapNoteScore(TapNoteScore tns) const {
   switch (tns) {
     case TNS_W1:
-      return m_mapW1To;
+      return map_w1_to_;
     case TNS_W2:
-      return m_mapW2To;
+      return map_w2_to_;
     case TNS_W3:
-      return m_mapW3To;
+      return map_w3_to_;
     case TNS_W4:
-      return m_mapW4To;
+      return map_w4_to_;
     case TNS_W5:
-      return m_mapW5To;
+      return map_w5_to_;
     default:
       return tns;
   }
@@ -42,22 +42,22 @@ const Game::PerButtonInfo* Game::GetPerButtonInfo(GameButton gb) const {
   if (gb < GAME_BUTTON_NEXT) {
     return &g_CommonButtonInfo[gb];
   } else {
-    return &m_PerButtonInfo[gb - GAME_BUTTON_NEXT];
+    return &per_button_info_[gb - GAME_BUTTON_NEXT];
   }
 }
 
 TapNoteScore Game::GetMapJudgmentTo(TapNoteScore tns) const {
   switch (tns) {
     case TNS_W1:
-      return m_mapW1To;
+      return map_w1_to_;
     case TNS_W2:
-      return m_mapW2To;
+      return map_w2_to_;
     case TNS_W3:
-      return m_mapW3To;
+      return map_w3_to_;
     case TNS_W4:
-      return m_mapW4To;
+      return map_w4_to_;
     case TNS_W5:
-      return m_mapW5To;
+      return map_w5_to_;
     default:
       return TapNoteScore_Invalid;
   }
@@ -70,16 +70,16 @@ TapNoteScore Game::GetMapJudgmentTo(TapNoteScore tns) const {
 class LunaGame : public Luna<Game> {
  public:
   static int GetName(T* p, lua_State* L) {
-    lua_pushstring(L, p->m_szName);
+    lua_pushstring(L, p->name_);
     return 1;
   }
   static int CountNotesSeparately(T* p, lua_State* L) {
-    lua_pushboolean(L, p->m_bCountNotesSeparately);
+    lua_pushboolean(L, p->count_notes_separately_);
     return 1;
   }
   DEFINE_METHOD(
       GetMapJudgmentTo, GetMapJudgmentTo(Enum::Check<TapNoteScore>(L, 1)))
-  DEFINE_METHOD(GetSeparateStyles, m_PlayersHaveSeparateStyles);
+  DEFINE_METHOD(GetSeparateStyles, players_have_separate_styles_);
 
   LunaGame() {
     ADD_METHOD(GetName);

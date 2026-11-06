@@ -17,11 +17,11 @@ class XNode;
 struct TapNoteResult {
   /** @brief Set up the TapNoteResult with default values. */
   TapNoteResult()
-      : tns(TNS_None), fTapNoteOffset(0.f), bHidden(false), bHeld(false) {}
+      : tns_(TNS_None), tap_note_offset_(0.f), hidden_(false), held_(false) {}
   /** @brief The TapNoteScore that was achieved by the player. */
-  TapNoteScore tns;
+  TapNoteScore tns_;
   /** @brief The TapNoteScore of any early hits of this tap note. */
-  TapNoteScore earlyTns;
+  TapNoteScore early_tns_;
 
   /**
    * @brief Offset, in seconds, for a tap grade.
@@ -29,7 +29,7 @@ struct TapNoteResult {
    * Negative numbers mean the note was hit early; positive numbers mean
    * it was hit late. These values are only meaningful for graded taps
    * (tns >= TNS_W5). */
-  float fTapNoteOffset;
+  float tap_note_offset_;
 
   /**
    * @brief Offset, in seconds, for the early tap grade.
@@ -37,14 +37,14 @@ struct TapNoteResult {
    * Negative numbers mean the note was hit early; positive numbers mean
    * it was hit late. These values are only meaningful for graded taps
    * (tns >= TNS_W5). */
-  float fEarlyTapNoteOffset;
+  float early_tap_note_offset_;
 
   /** @brief If the whole row has been judged, all taps on the row will be set
    * to hidden. */
-  bool bHidden;
+  bool hidden_;
 
   /** @brief Track if the note was held. Used to track held misses. */
-  bool bHeld;
+  bool held_;
 
   // XML
   XNode* CreateNode() const;
@@ -55,17 +55,17 @@ struct TapNoteResult {
 /** @brief The result of holding (or letting go of) a hold note. */
 struct HoldNoteResult {
   HoldNoteResult()
-      : hns(HNS_None),
-        fLife(1.f),
-        fOverlappedTime(0),
-        iLastHeldRow(0),
-        iCheckpointsHit(0),
-        iCheckpointsMissed(0),
-        bHeld(false),
-        bActive(false) {}
+      : hns_(HNS_None),
+        life_(1.f),
+        overlapped_time_(0),
+        last_held_row_(0),
+        checkpoints_hit_(0),
+        checkpoints_missed_(0),
+        held_(false),
+        active_(false) {}
   float GetLastHeldBeat() const;
 
-  HoldNoteScore hns;
+  HoldNoteScore hns_;
 
   /**
    * @brief the current life of the hold.
@@ -77,28 +77,28 @@ struct HoldNoteResult {
    * When this value hits 0.0 for the first time, m_HoldScore becomes HNS_LetGo.
    * If the life is > 0.0 when the HoldNote ends, then m_HoldScore becomes
    * HNS_Held. */
-  float fLife;
+  float life_;
 
   /** @brief The number of seconds the hold note has overlapped the current
    * beat.
    *
    * This value is 0 if it doesn't overlap. */
-  float fOverlappedTime;
+  float overlapped_time_;
 
   /** @brief Last index where fLife was greater than 0. If the tap was missed,
    * this will be the first index of the hold. */
-  int iLastHeldRow;
+  int last_held_row_;
 
   /** @brief If checkpoint holds are enabled, the number of checkpoints hit. */
-  int iCheckpointsHit;
+  int checkpoints_hit_;
   /** @brief If checkpoint holds are enabled, the number of checkpoints missed.
    */
-  int iCheckpointsMissed;
+  int checkpoints_missed_;
 
   /** @brief Was the button held during the last update? */
-  bool bHeld;
+  bool held_;
   /** @brief Is there life in the hold and does it overlap the current beat? */
-  bool bActive;
+  bool active_;
 
   // XML
   XNode* CreateNode() const;
@@ -158,28 +158,28 @@ LuaDeclareType(TapNoteSource);
 /** @brief The various properties of a tap note. */
 struct TapNote {
   /** @brief The core note type that is about to cross the target area. */
-  TapNoteType type;
+  TapNoteType type_;
   /** @brief The sub type of the note. This is only used if the type is
    * hold_head. */
-  TapNoteSubType subType;
+  TapNoteSubType sub_type_;
   /** @brief The originating source of the TapNote. */
-  TapNoteSource source;
+  TapNoteSource source_;
   /** @brief The result of hitting or missing the TapNote. */
-  TapNoteResult result;
+  TapNoteResult result_;
   /** @brief The Player that is supposed to hit this note. This is mainly for
    * Routine Mode. */
-  PlayerNumber pn;
+  PlayerNumber pn_;
 
   // used only if Type == attack:
-  std::string sAttackModifiers;
-  float fAttackDurationSeconds;
+  std::string attack_modifiers_;
+  float attack_duration_seconds_;
 
   // Index into Song's vector of keysound files if nonnegative:
-  int iKeysoundIndex;
+  int keysound_index_;
 
   // also used for hold_head only:
-  int iDuration;
-  HoldNoteResult HoldResult;
+  int duration_;
+  HoldNoteResult hold_result_;
 
   // XML
   XNode* CreateNode() const;
@@ -188,36 +188,36 @@ struct TapNote {
   void PushSelf(lua_State* L);
 
   TapNote()
-      : type(TapNoteType_Empty),
-        subType(TapNoteSubType_Invalid),
-        source(TapNoteSource_Original),
-        result(),
-        pn(PLAYER_INVALID),
-        sAttackModifiers(""),
-        fAttackDurationSeconds(0),
-        iKeysoundIndex(-1),
-        iDuration(0),
-        HoldResult() {}
+      : type_(TapNoteType_Empty),
+        sub_type_(TapNoteSubType_Invalid),
+        source_(TapNoteSource_Original),
+        result_(),
+        pn_(PLAYER_INVALID),
+        attack_modifiers_(""),
+        attack_duration_seconds_(0),
+        keysound_index_(-1),
+        duration_(0),
+        hold_result_() {}
   TapNote(
       TapNoteType type_, TapNoteSubType subType_, TapNoteSource source_,
       std::string sAttackModifiers_, float fAttackDurationSeconds_,
       int iKeysoundIndex_)
-      : type(type_),
-        subType(subType_),
-        source(source_),
-        result(),
-        pn(PLAYER_INVALID),
-        sAttackModifiers(sAttackModifiers_),
-        fAttackDurationSeconds(fAttackDurationSeconds_),
-        iKeysoundIndex(iKeysoundIndex_),
-        iDuration(0),
-        HoldResult() {
+      : type_(type_),
+        sub_type_(subType_),
+        source_(source_),
+        result_(),
+        pn_(PLAYER_INVALID),
+        attack_modifiers_(sAttackModifiers_),
+        attack_duration_seconds_(fAttackDurationSeconds_),
+        keysound_index_(iKeysoundIndex_),
+        duration_(0),
+        hold_result_() {
     if (type_ > TapNoteType_Fake) {
       LOG->Trace(
           "Invalid tap note type %s (most likely) due to random vanish issues. "
           "Assume it doesn't need judging.",
           TapNoteTypeToString(type_).c_str());
-      type = TapNoteType_Empty;
+      type_ = TapNoteType_Empty;
     }
   }
 
@@ -226,28 +226,28 @@ struct TapNote {
    * @param other the other TapNote we're checking.
    * @return true if the two TapNotes are equal, or false otherwise. */
   bool operator==(const TapNote& other) const {
-    if (type != other.type) {
+    if (type_ != other.type_) {
       return false;
     }
-    if (subType != other.subType) {
+    if (sub_type_ != other.sub_type_) {
       return false;
     }
-    if (source != other.source) {
+    if (source_ != other.source_) {
       return false;
     }
-    if (sAttackModifiers != other.sAttackModifiers) {
+    if (attack_modifiers_ != other.attack_modifiers_) {
       return false;
     }
-    if (fAttackDurationSeconds != other.fAttackDurationSeconds) {
+    if (attack_duration_seconds_ != other.attack_duration_seconds_) {
       return false;
     }
-    if (iKeysoundIndex != other.iKeysoundIndex) {
+    if (keysound_index_ != other.keysound_index_) {
       return false;
     }
-    if (iDuration != other.iDuration) {
+    if (duration_ != other.duration_) {
       return false;
     }
-    if (pn != other.pn) {
+    if (pn_ != other.pn_) {
       return false;
     }
     return true;

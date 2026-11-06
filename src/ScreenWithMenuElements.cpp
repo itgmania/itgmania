@@ -25,123 +25,123 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-#define TIMER_STEALTH THEME->GetMetricB(m_sName, "TimerStealth")
-#define SHOW_STAGE_DISPLAY THEME->GetMetricB(m_sName, "ShowStageDisplay")
-#define MEMORY_CARD_ICONS THEME->GetMetricB(m_sName, "MemoryCardIcons")
-#define FORCE_TIMER THEME->GetMetricB(m_sName, "ForceTimer")
-#define STOP_MUSIC_ON_BACK THEME->GetMetricB(m_sName, "StopMusicOnBack")
+#define TIMER_STEALTH THEME->GetMetricB(name_, "TimerStealth")
+#define SHOW_STAGE_DISPLAY THEME->GetMetricB(name_, "ShowStageDisplay")
+#define MEMORY_CARD_ICONS THEME->GetMetricB(name_, "MemoryCardIcons")
+#define FORCE_TIMER THEME->GetMetricB(name_, "ForceTimer")
+#define STOP_MUSIC_ON_BACK THEME->GetMetricB(name_, "StopMusicOnBack")
 #define WAIT_FOR_CHILDREN_BEFORE_TWEENING_OUT \
-  THEME->GetMetricB(m_sName, "WaitForChildrenBeforeTweeningOut")
+  THEME->GetMetricB(name_, "WaitForChildrenBeforeTweeningOut")
 
 REGISTER_SCREEN_CLASS(ScreenWithMenuElements);
 ScreenWithMenuElements::ScreenWithMenuElements() {
-  m_MenuTimer = nullptr;
-  FOREACH_PlayerNumber(p) m_MemoryCardDisplay[p] = nullptr;
-  m_MenuTimer = nullptr;
-  m_bShouldAllowLateJoin = false;
+  menu_timer_ = nullptr;
+  FOREACH_PlayerNumber(p) memory_card_display_[p] = nullptr;
+  menu_timer_ = nullptr;
+  should_allow_late_join_ = false;
 }
 
 void ScreenWithMenuElements::Init() {
-  PLAY_MUSIC.Load(m_sName, "PlayMusic");
-  MUSIC_ALIGN_BEAT.Load(m_sName, "MusicAlignBeat");
-  DELAY_MUSIC_SECONDS.Load(m_sName, "DelayMusicSeconds");
-  CANCEL_TRANSITIONS_OUT.Load(m_sName, "CancelTransitionsOut");
-  TIMER_SECONDS.Load(m_sName, "TimerSeconds");
-  TIMER_METRICS_GROUP.Load(m_sName, "TimerMetricsGroup");
+  PLAY_MUSIC.Load(name_, "PlayMusic");
+  MUSIC_ALIGN_BEAT.Load(name_, "MusicAlignBeat");
+  DELAY_MUSIC_SECONDS.Load(name_, "DelayMusicSeconds");
+  CANCEL_TRANSITIONS_OUT.Load(name_, "CancelTransitionsOut");
+  TIMER_SECONDS.Load(name_, "TimerSeconds");
+  TIMER_METRICS_GROUP.Load(name_, "TimerMetricsGroup");
   Screen::Init();
 
-  ASSERT(this->m_SubActors.empty());  // don't call Init twice!
+  ASSERT(this->sub_actors_.empty());  // don't call Init twice!
 
   if (MEMORY_CARD_ICONS) {
     FOREACH_PlayerNumber(p) {
-      ASSERT(m_MemoryCardDisplay[p] == nullptr);
-      m_MemoryCardDisplay[p] = new MemoryCardDisplay;
-      m_MemoryCardDisplay[p]->Load(p);
-      m_MemoryCardDisplay[p]->SetName(ssprintf("MemoryCardDisplayP%d", p + 1));
-      LOAD_ALL_COMMANDS_AND_SET_XY(m_MemoryCardDisplay[p]);
-      this->AddChild(m_MemoryCardDisplay[p]);
+      ASSERT(memory_card_display_[p] == nullptr);
+      memory_card_display_[p] = new MemoryCardDisplay;
+      memory_card_display_[p]->Load(p);
+      memory_card_display_[p]->SetName(ssprintf("MemoryCardDisplayP%d", p + 1));
+      LOAD_ALL_COMMANDS_AND_SET_XY(memory_card_display_[p]);
+      this->AddChild(memory_card_display_[p]);
     }
   }
 
   if (TIMER_SECONDS != -1.0f) {
-    ASSERT(m_MenuTimer == nullptr);  // don't load twice
-    m_MenuTimer = new MenuTimer;
-    m_MenuTimer->Load(TIMER_METRICS_GROUP.GetValue());
-    m_MenuTimer->SetName("Timer");
+    ASSERT(menu_timer_ == nullptr);  // don't load twice
+    menu_timer_ = new MenuTimer;
+    menu_timer_->Load(TIMER_METRICS_GROUP.GetValue());
+    menu_timer_->SetName("Timer");
     if (TIMER_STEALTH) {
-      m_MenuTimer->EnableStealth(true);
+      menu_timer_->EnableStealth(true);
     }
-    LOAD_ALL_COMMANDS_AND_SET_XY(m_MenuTimer);
+    LOAD_ALL_COMMANDS_AND_SET_XY(menu_timer_);
     ResetTimer();
-    this->AddChild(m_MenuTimer);
+    this->AddChild(menu_timer_);
   }
 
-  m_sprUnderlay.Load(THEME->GetPathB(m_sName, "underlay"));
-  m_sprUnderlay->SetName("Underlay");
-  m_sprUnderlay->SetDrawOrder(DRAW_ORDER_UNDERLAY);
-  this->AddChild(m_sprUnderlay);
-  LOAD_ALL_COMMANDS(m_sprUnderlay);
+  spr_underlay_.Load(THEME->GetPathB(name_, "underlay"));
+  spr_underlay_->SetName("Underlay");
+  spr_underlay_->SetDrawOrder(DRAW_ORDER_UNDERLAY);
+  this->AddChild(spr_underlay_);
+  LOAD_ALL_COMMANDS(spr_underlay_);
 
-  m_sprOverlay.Load(THEME->GetPathB(m_sName, "overlay"));
-  m_sprOverlay->SetName("Overlay");
-  m_sprOverlay->SetDrawOrder(DRAW_ORDER_OVERLAY);
-  this->AddChild(m_sprOverlay);
-  LOAD_ALL_COMMANDS(m_sprOverlay);
+  spr_overlay_.Load(THEME->GetPathB(name_, "overlay"));
+  spr_overlay_->SetName("Overlay");
+  spr_overlay_->SetDrawOrder(DRAW_ORDER_OVERLAY);
+  this->AddChild(spr_overlay_);
+  LOAD_ALL_COMMANDS(spr_overlay_);
 
   // decorations
   {
     AutoActor decorations;
-    decorations.LoadB(m_sName, "decorations");
+    decorations.LoadB(name_, "decorations");
     decorations->SetName("Decorations");
     decorations->SetDrawOrder(DRAW_ORDER_DECORATIONS);
     ActorFrame* pFrame =
         dynamic_cast<ActorFrame*>(static_cast<Actor*>(decorations));
     if (pFrame) {
-      m_vDecorations = pFrame->GetChildren();
-      for (Actor* child : m_vDecorations) {
+      decorations_ = pFrame->GetChildren();
+      for (Actor* child : decorations_) {
         this->AddChild(child);
       }
       pFrame->RemoveAllChildren();
     }
   }
 
-  m_In.SetName("In");
-  m_In.Load(THEME->GetPathB(m_sName, "in"));
-  m_In.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
-  this->AddChild(&m_In);
-  LOAD_ALL_COMMANDS(m_In);
+  in_.SetName("In");
+  in_.Load(THEME->GetPathB(name_, "in"));
+  in_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  this->AddChild(&in_);
+  LOAD_ALL_COMMANDS(in_);
 
-  m_Out.SetName("Out");
-  m_Out.Load(THEME->GetPathB(m_sName, "out"));
-  m_Out.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
-  this->AddChild(&m_Out);
-  LOAD_ALL_COMMANDS(m_Out);
+  out_.SetName("Out");
+  out_.Load(THEME->GetPathB(name_, "out"));
+  out_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  this->AddChild(&out_);
+  LOAD_ALL_COMMANDS(out_);
 
-  m_Cancel.SetName("Cancel");
-  m_Cancel.Load(THEME->GetPathB(m_sName, "cancel"));
-  m_Cancel.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
-  this->AddChild(&m_Cancel);
-  LOAD_ALL_COMMANDS(m_Cancel);
+  cancel_.SetName("Cancel");
+  cancel_.Load(THEME->GetPathB(name_, "cancel"));
+  cancel_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  this->AddChild(&cancel_);
+  LOAD_ALL_COMMANDS(cancel_);
 
   // Grab the music path here; don't GetPath during BeginScreen.
   if (PLAY_MUSIC) {
-    m_sPathToMusic = THEME->GetPathS(m_sName, "music");
+    path_to_music_ = THEME->GetPathS(name_, "music");
   }
 }
 
 void ScreenWithMenuElements::BeginScreen() {
   Screen::BeginScreen();
 
-  m_In.Reset();
-  m_Out.Reset();
-  m_Cancel.Reset();
+  in_.Reset();
+  out_.Reset();
+  cancel_.Reset();
 
   TweenOnScreen();
 
   this->SortByDrawOrder();
-  m_In.StartTransitioning(SM_DoneFadingIn);
+  in_.StartTransitioning(SM_DoneFadingIn);
 
-  SOUND->PlayOnceFromAnnouncer(m_sName + " intro");
+  SOUND->PlayOnceFromAnnouncer(name_ + " intro");
   StartPlayingMusic();
 
   /* Evaluate FirstUpdateCommand. */
@@ -149,8 +149,7 @@ void ScreenWithMenuElements::BeginScreen() {
 
   /* If AutoJoin and a player is already joined, then try to join a player.  (If
    * no players are joined, they'll join on the first JoinInput.) */
-  if (GAMESTATE->GetCoinMode() == CoinMode_Pay &&
-      GAMESTATE->m_bAutoJoin.Get()) {
+  if (GAMESTATE->GetCoinMode() == CoinMode_Pay && GAMESTATE->auto_join_.Get()) {
     if (GAMESTATE->GetNumSidesJoined() > 0 && GAMESTATE->JoinPlayers()) {
       SCREENMAN->PlayStartSound();
     }
@@ -161,7 +160,7 @@ void ScreenWithMenuElements::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_MenuTimer) {
     FOREACH_HumanPlayer(p) {
       InputEventPlus iep;
-      iep.pn = p;
+      iep.pn_ = p;
       MenuStart(iep);
     }
   }
@@ -170,13 +169,13 @@ void ScreenWithMenuElements::HandleScreenMessage(const ScreenMessage SM) {
 }
 
 ScreenWithMenuElements::~ScreenWithMenuElements() {
-  RageUtil::SafeDelete(m_MenuTimer);
+  RageUtil::SafeDelete(menu_timer_);
   FOREACH_PlayerNumber(p) {
-    if (m_MemoryCardDisplay[p] != nullptr) {
-      RageUtil::SafeDelete(m_MemoryCardDisplay[p]);
+    if (memory_card_display_[p] != nullptr) {
+      RageUtil::SafeDelete(memory_card_display_[p]);
     }
   }
-  for (Actor* actor : m_vDecorations) {
+  for (Actor* actor : decorations_) {
     delete actor;
   }
 }
@@ -225,11 +224,11 @@ void ScreenWithMenuElements::StartPlayingMusic() {
    * sample left over from ScreenSelectMusic). */
   if (PLAY_MUSIC) {
     GameSoundManager::PlayMusicParams pmp;
-    pmp.sFile = HandleLuaMusicFile(m_sPathToMusic);
-    if (!pmp.sFile.empty()) {
-      pmp.bAlignBeat = MUSIC_ALIGN_BEAT;
+    pmp.file_ = HandleLuaMusicFile(path_to_music_);
+    if (!pmp.file_.empty()) {
+      pmp.align_beat_ = MUSIC_ALIGN_BEAT;
       if (DELAY_MUSIC_SECONDS > 0.0f) {
-        pmp.fStartSecond = -DELAY_MUSIC_SECONDS;
+        pmp.start_second_ = -DELAY_MUSIC_SECONDS;
       }
       SOUND->PlayMusic(pmp);
     }
@@ -241,15 +240,15 @@ void ScreenWithMenuElements::Update(float fDeltaTime) {
 }
 
 void ScreenWithMenuElements::ResetTimer() {
-  if (m_MenuTimer == nullptr) {
+  if (menu_timer_ == nullptr) {
     return;
   }
 
-  if (TIMER_SECONDS > 0.0f && (PREFSMAN->m_bMenuTimer || FORCE_TIMER)) {
-    m_MenuTimer->SetSeconds(TIMER_SECONDS);
-    m_MenuTimer->Start();
+  if (TIMER_SECONDS > 0.0f && (PREFSMAN->menu_timer_ || FORCE_TIMER)) {
+    menu_timer_->SetSeconds(TIMER_SECONDS);
+    menu_timer_->Start();
   } else {
-    m_MenuTimer->Disable();
+    menu_timer_->Disable();
   }
 }
 
@@ -257,23 +256,23 @@ void ScreenWithMenuElements::StartTransitioningScreen(
     ScreenMessage smSendWhenDone) {
   TweenOffScreen();
 
-  m_Out.StartTransitioning(smSendWhenDone);
+  out_.StartTransitioning(smSendWhenDone);
   if (WAIT_FOR_CHILDREN_BEFORE_TWEENING_OUT) {
     // Time the transition so that it finishes exactly when all actors have
     // finished tweening.
     float fSecondsUntilFinished = GetTweenTimeLeft();
     float fSecondsUntilBeginOff =
-        std::max(fSecondsUntilFinished - m_Out.GetTweenTimeLeft(), 0.0f);
-    m_Out.SetHibernate(fSecondsUntilBeginOff);
+        std::max(fSecondsUntilFinished - out_.GetTweenTimeLeft(), 0.0f);
+    out_.SetHibernate(fSecondsUntilBeginOff);
   }
 }
 
 void ScreenWithMenuElements::TweenOnScreen() { this->PlayCommand("On"); }
 
 void ScreenWithMenuElements::TweenOffScreen() {
-  if (m_MenuTimer) {
-    m_MenuTimer->SetSeconds(0);
-    m_MenuTimer->Stop();
+  if (menu_timer_) {
+    menu_timer_->SetSeconds(0);
+    menu_timer_->Stop();
   }
 
   this->PlayCommand("Off");
@@ -286,17 +285,17 @@ void ScreenWithMenuElements::TweenOffScreen() {
 }
 
 void ScreenWithMenuElements::Cancel(ScreenMessage smSendWhenDone) {
-  m_sNextScreen = GetPrevScreen();
+  next_screen_ = GetPrevScreen();
 
   if (CANCEL_TRANSITIONS_OUT) {
     StartTransitioningScreen(smSendWhenDone);
-    COMMAND(m_Out, "Cancel");
+    COMMAND(out_, "Cancel");
     return;
   }
 
   this->PlayCommand("Cancel");
 
-  if (m_Cancel.IsTransitioning()) {
+  if (cancel_.IsTransitioning()) {
     return;  // ignore
   }
 
@@ -304,21 +303,21 @@ void ScreenWithMenuElements::Cancel(ScreenMessage smSendWhenDone) {
     SOUND->StopMusic();
   }
 
-  if (m_MenuTimer) {
-    m_MenuTimer->Stop();
+  if (menu_timer_) {
+    menu_timer_->Stop();
   }
-  m_Cancel.StartTransitioning(smSendWhenDone);
-  COMMAND(m_Cancel, "Cancel");
+  cancel_.StartTransitioning(smSendWhenDone);
+  COMMAND(cancel_, "Cancel");
 }
 
 bool ScreenWithMenuElements::IsTransitioning() {
-  return m_In.IsTransitioning() || m_Out.IsTransitioning() ||
-         m_Cancel.IsTransitioning();
+  return in_.IsTransitioning() || out_.IsTransitioning() ||
+         cancel_.IsTransitioning();
 }
 
 void ScreenWithMenuElements::StopTimer() {
-  if (m_MenuTimer) {
-    m_MenuTimer->Stop();
+  if (menu_timer_) {
+    menu_timer_->Stop();
   }
 }
 
@@ -328,7 +327,7 @@ bool ScreenWithMenuElementsSimple::MenuStart(const InputEventPlus& input) {
   if (IsTransitioning()) {
     return false;
   }
-  if (m_fLockInputSecs > 0) {
+  if (lock_input_secs_ > 0) {
     return false;
   }
 
@@ -340,7 +339,7 @@ bool ScreenWithMenuElementsSimple::MenuBack(const InputEventPlus& input) {
   if (IsTransitioning()) {
     return false;
   }
-  if (m_fLockInputSecs > 0) {
+  if (lock_input_secs_ > 0) {
     return false;
   }
 
@@ -362,7 +361,7 @@ class LunaScreenWithMenuElements : public Luna<ScreenWithMenuElements> {
     return 1;
   }
   static int SetAllowLateJoin(T* p, lua_State* L) {
-    p->m_bShouldAllowLateJoin = BArg(1);
+    p->should_allow_late_join_ = BArg(1);
     COMMON_RETURN_SELF;
   }
 

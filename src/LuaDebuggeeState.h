@@ -39,13 +39,13 @@ class DebuggeeState {
 
   explicit operator bool() const;
 
-  ObjectRef GetId() const { return m_id; }
-  Type GetType() const { return m_type; }
-  lua_State* GetLua() { return m_lua; }
-  ThreadId GetThreadId() const { return m_threadId; }
-  int GetStackLevel() const { return m_stackLevel; }
-  const std::string& GetName() const { return m_name; }
-  int GetIndex() const { return m_index; }
+  ObjectRef GetId() const { return id_; }
+  Type GetType() const { return type_; }
+  lua_State* GetLua() { return lua_; }
+  ThreadId GetThreadId() const { return thread_id_; }
+  int GetStackLevel() const { return stack_level_; }
+  const std::string& GetName() const { return name_; }
+  int GetIndex() const { return index_; }
 
   DebuggeeState& GetRoot();
   DebuggeeState& GetThread();
@@ -92,20 +92,20 @@ class DebuggeeState {
   DebuggeeState() = default;
   DebuggeeState(DebuggeeState& parent, Type type);
 
-  ObjectRef m_id = 0;
-  Type m_type = Type::None;
-  DebuggeeState* m_parent = nullptr;
+  ObjectRef id_ = 0;
+  Type type_ = Type::None;
+  DebuggeeState* parent_ = nullptr;
 
-  lua_State* m_lua = nullptr;
-  ThreadId m_threadId = 0;
-  int m_stackLevel = 0;
-  std::string m_name;
-  int m_index = 0;
+  lua_State* lua_ = nullptr;
+  ThreadId thread_id_ = 0;
+  int stack_level_ = 0;
+  std::string name_;
+  int index_ = 0;
 
-  std::vector<DebuggeeState*> m_children;
-  bool m_childrenInitialized = false;
-  std::unordered_map<ObjectRef, DebuggeeState&> m_objects;
-  int m_nextId = 1;
+  std::vector<DebuggeeState*> children_;
+  bool children_initialized_ = false;
+  std::unordered_map<ObjectRef, DebuggeeState&> objects_;
+  int next_id_ = 1;
 };
 }  // namespace LuaDebug
 

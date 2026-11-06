@@ -227,12 +227,12 @@ StringToX(InputDevice);
 /* Return a reversible representation of a DeviceInput. This is not affected by
  * InputDrivers, localization or the keyboard language. */
 std::string DeviceInput::ToString() const {
-  if (device == InputDevice_Invalid) {
+  if (device_ == InputDevice_Invalid) {
     return std::string();
   }
 
   std::string s =
-      InputDeviceToString(device) + "_" + DeviceButtonToString(button);
+      InputDeviceToString(device_) + "_" + DeviceButtonToString(button_);
   return s;
 }
 
@@ -241,12 +241,12 @@ bool DeviceInput::FromString(const std::string& s) {
   char szButton[32] = "";
 
   if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", szDevice, szButton)) {
-    device = InputDevice_Invalid;
+    device_ = InputDevice_Invalid;
     return false;
   }
 
-  device = StringToInputDevice(szDevice);
-  button = StringToDeviceButton(szButton);
+  device_ = StringToInputDevice(szDevice);
+  button_ = StringToDeviceButton(szButton);
   return true;
 }
 

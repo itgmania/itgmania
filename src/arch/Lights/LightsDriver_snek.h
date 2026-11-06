@@ -104,10 +104,10 @@ enum SnekLightIndex {
 
 class LightsDriver_snek : public LightsDriver {
  private:
-  HidDevice dev;
+  HidDevice dev_;
 
-  bool stateChanged = false;
-  uint8_t outputBuffer[SNEK_HIDREPORT_SIZE];
+  bool state_changed_ = false;
+  uint8_t output_buffer_[SNEK_HIDREPORT_SIZE];
 
   void SetBuffer(int index, bool lightState);
 

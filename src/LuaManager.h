@@ -49,7 +49,7 @@ class LuaManager {
   void UnsetGlobal(const std::string& sName);
 
  private:
-  lua_State* m_pLuaMain;
+  lua_State* lua_main_;
   // Swallow up warnings. If they must be used, define them.
   LuaManager& operator=(const LuaManager& rhs);
   LuaManager(const LuaManager& rhs);
@@ -190,8 +190,8 @@ class LuaThreadVariable {
   static bool PushThreadTable(lua_State* L, bool bCreate);
   static std::string GetCurrentThreadIDString();
 
-  LuaReference* m_Name;
-  LuaReference* m_pOldValue;
+  LuaReference* name_;
+  LuaReference* old_value_;
 
   // Swallow up warnings. If they must be used, define them.
   LuaThreadVariable& operator=(const LuaThreadVariable& rhs);

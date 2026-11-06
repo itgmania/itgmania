@@ -18,10 +18,10 @@ const RageColor kDefaultBottomColor(0.0f, 1.0f, 0.0f, 1.0f);
 const RageColor kDefaultTopColor(1.0f, 0.0f, 0.0f, 1.0f);
 
 RageColor Desaturate(RageColor color, float desaturation) {
-  const float luma = 0.3f * color.r + 0.59f * color.g + 0.11f * color.b;
-  color.r += desaturation * (luma - color.r);
-  color.g += desaturation * (luma - color.g);
-  color.b += desaturation * (luma - color.b);
+  const float luma = 0.3f * color.r_ + 0.59f * color.g_ + 0.11f * color.b_;
+  color.r_ += desaturation * (luma - color.r_);
+  color.g_ += desaturation * (luma - color.g_);
+  color.b_ += desaturation * (luma - color.b_);
   return color;
 }
 }  // namespace
@@ -29,39 +29,39 @@ RageColor Desaturate(RageColor color, float desaturation) {
 REGISTER_ACTOR_CLASS(DensityGraph);
 
 DensityGraph::DensityGraph()
-    : m_pSteps(nullptr),
-      m_Player(PLAYER_1),
-      m_ViewWidth(0.0f),
-      m_ViewHeight(0.0f),
-      m_GraphWidth(std::nullopt),
-      m_ScrollOffset(0.0f),
-      m_BottomColor(kDefaultBottomColor),
-      m_TopColor(kDefaultTopColor),
-      m_Desaturation(0.0f) {
+    : steps_(nullptr),
+      player_(PLAYER_1),
+      view_width_(0.0f),
+      view_height_(0.0f),
+      graph_width_(std::nullopt),
+      scroll_offset_(0.0f),
+      bottom_color_(kDefaultBottomColor),
+      top_color_(kDefaultTopColor),
+      desaturation_(0.0f) {
   SetDrawState(DrawMode_QuadStrip, 0, -1);
 }
 
 DensityGraph::~DensityGraph() {}
 
 void DensityGraph::SetSteps(Steps* pSteps, PlayerNumber pn) {
-  m_pSteps = pSteps;
-  m_Player = pn;
+  steps_ = pSteps;
+  player_ = pn;
 }
 
 void DensityGraph::SetSize(float width, float height) {
-  m_ViewWidth = width;
-  m_ViewHeight = height;
+  view_width_ = width;
+  view_height_ = height;
 }
 
-void DensityGraph::SetGraphWidth(float width) { m_GraphWidth = width; }
+void DensityGraph::SetGraphWidth(float width) { graph_width_ = width; }
 
 void DensityGraph::SetColors(const RageColor& bottom, const RageColor& top) {
-  m_BottomColor = bottom;
-  m_TopColor = top;
+  bottom_color_ = bottom;
+  top_color_ = top;
 }
 
 void DensityGraph::SetDesaturation(float desaturation) {
-  m_Desaturation = desaturation;
+  desaturation_ = desaturation;
 }
 
 void DensityGraph::Build() {
@@ -70,31 +70,31 @@ void DensityGraph::Build() {
 }
 
 void DensityGraph::SetScrollOffset(float offset) {
-  if (m_ScrollOffset == offset) {
+  if (scroll_offset_ == offset) {
     return;
   }
-  m_ScrollOffset = offset;
+  scroll_offset_ = offset;
   BuildVisibleVertices();
 }
 
 void DensityGraph::BuildAllVertices() {
-  m_Points.clear();
+  points_.clear();
 
-  if (m_pSteps == nullptr || m_ViewWidth <= 0.0f || m_ViewHeight <= 0.0f) {
+  if (steps_ == nullptr || view_width_ <= 0.0f || view_height_ <= 0.0f) {
     return;
   }
-  const float width = m_GraphWidth.value_or(m_ViewWidth);
+  const float width = graph_width_.value_or(view_width_);
   if (width <= 0.0f) {
     return;
   }
 
-  const std::vector<float>& nps = m_pSteps->GetNpsPerMeasure(m_Player);
-  const float peak = m_pSteps->GetPeakNps(m_Player);
-  Song* pSong = m_pSteps->m_pSong;
+  const std::vector<float>& nps = steps_->GetNpsPerMeasure(player_);
+  const float peak = steps_->GetPeakNps(player_);
+  Song* pSong = steps_->song_;
   if (nps.empty() || peak <= 0.0f || pSong == nullptr) {
     return;
   }
-  TimingData* pTiming = m_pSteps->GetTimingData();
+  TimingData* pTiming = steps_->GetTimingData();
 
   const float first = std::min(pTiming->GetElapsedTimeFromBeat(0.0f), 0.0f);
   const float last = pSong->GetLastSecond();
@@ -102,10 +102,10 @@ void DensityGraph::BuildAllVertices() {
     return;
   }
 
-  const RageColor bottom = Desaturate(m_BottomColor, m_Desaturation);
-  const RageColor top = Desaturate(m_TopColor, m_Desaturation);
+  const RageColor bottom = Desaturate(bottom_color_, desaturation_);
+  const RageColor top = Desaturate(top_color_, desaturation_);
 
-  const float height = m_ViewHeight;
+  const float height = view_height_;
 
   bool started = false;
   float prev_x = 0.0f;
@@ -129,14 +129,14 @@ void DensityGraph::BuildAllVertices() {
     // If the height of this measure matches the previous two, extend the
     // previous point instead of adding a new one. This noticeably shrinks the
     // point count for songs with long streams.
-    const size_t count = m_Points.size();
-    if (count >= 2 && m_Points[count - 1].y == y &&
-        m_Points[count - 2].y == y) {
-      m_Points[count - 1].x = x;
+    const size_t count = points_.size();
+    if (count >= 2 && points_[count - 1].y_ == y &&
+        points_[count - 2].y_ == y) {
+      points_[count - 1].x_ = x;
     } else {
       RageColor color;
       lerp_rage_color(color, bottom, top, std::abs(y / height));
-      m_Points.push_back({x, y, color});
+      points_.push_back({x, y, color});
     }
   }
 
@@ -147,40 +147,40 @@ void DensityGraph::BuildAllVertices() {
         static_cast<float>(nps.size()) * static_cast<float>(BEATS_PER_MEASURE));
     const float endX = std::max(
         prev_x, std::min(width, SCALE(endSeconds, first, last, 0.0f, width)));
-    m_Points.push_back({endX, 0.0f, bottom});
+    points_.push_back({endX, 0.0f, bottom});
   }
 }
 
 void DensityGraph::BuildVisibleVertices() {
   std::vector<Point> visible;
 
-  const float left = m_ScrollOffset;
-  const float right = m_ScrollOffset + m_ViewWidth;
+  const float left = scroll_offset_;
+  const float right = scroll_offset_ + view_width_;
 
-  const auto begin = m_Points.begin();
-  const auto end = m_Points.end();
+  const auto begin = points_.begin();
+  const auto end = points_.end();
 
   // First point at or past the left edge of the window.
   const auto first_visible_it = std::lower_bound(
       begin, end, left,
-      [](const Point& p, float value) { return p.x < value; });
+      [](const Point& p, float value) { return p.x_ < value; });
   // First point past the right edge of the window.
   const auto past_last_visible_it = std::upper_bound(
       begin, end, right,
-      [](float value, const Point& p) { return value < p.x; });
+      [](float value, const Point& p) { return value < p.x_; });
 
   const size_t first_visible = static_cast<size_t>(first_visible_it - begin);
   const size_t past_last_visible =
       static_cast<size_t>(past_last_visible_it - begin);
 
-  if (first_visible < m_Points.size() && past_last_visible > 0) {
+  if (first_visible < points_.size() && past_last_visible > 0) {
     auto interpolate = [](const Point& p1, const Point& p2, float x) {
-      const float dx = p2.x - p1.x;
-      const float ratio = (dx != 0.0f) ? (x - p1.x) / dx : 0.0f;
+      const float dx = p2.x_ - p1.x_;
+      const float ratio = (dx != 0.0f) ? (x - p1.x_) / dx : 0.0f;
       Point out;
-      out.x = x;
-      out.y = p1.y * (1.0f - ratio) + p2.y * ratio;
-      lerp_rage_color(out.color, p1.color, p2.color, ratio);
+      out.x_ = x;
+      out.y_ = p1.y_ * (1.0f - ratio) + p2.y_ * ratio;
+      lerp_rage_color(out.color_, p1.color_, p2.color_, ratio);
       return out;
     };
 
@@ -190,16 +190,16 @@ void DensityGraph::BuildVisibleVertices() {
     // extend past the visible area.
     if (first_visible > 0) {
       visible.push_back(interpolate(
-          m_Points[first_visible - 1], m_Points[first_visible], left));
+          points_[first_visible - 1], points_[first_visible], left));
     }
 
     for (size_t i = first_visible; i < past_last_visible; ++i) {
-      visible.push_back(m_Points[i]);
+      visible.push_back(points_[i]);
     }
 
-    if (past_last_visible < m_Points.size()) {
+    if (past_last_visible < points_.size()) {
       visible.push_back(interpolate(
-          m_Points[past_last_visible - 1], m_Points[past_last_visible], right));
+          points_[past_last_visible - 1], points_[past_last_visible], right));
     }
   }
 
@@ -208,14 +208,14 @@ void DensityGraph::BuildVisibleVertices() {
 
 void DensityGraph::Emit(const std::vector<Point>& points) {
   SetNumVertices(points.size() * 2);
-  const RageColor bottom = Desaturate(m_BottomColor, m_Desaturation);
+  const RageColor bottom = Desaturate(bottom_color_, desaturation_);
   for (size_t i = 0; i < points.size(); ++i) {
     const int bottom_index = static_cast<int>(i * 2);
     const int top_index = bottom_index + 1;
-    SetVertexPos(bottom_index, points[i].x, 0.0f, 0.0f);
+    SetVertexPos(bottom_index, points[i].x_, 0.0f, 0.0f);
     SetVertexColor(bottom_index, bottom);
-    SetVertexPos(top_index, points[i].x, points[i].y, 0.0f);
-    SetVertexColor(top_index, points[i].color);
+    SetVertexPos(top_index, points[i].x_, points[i].y_, 0.0f);
+    SetVertexColor(top_index, points[i].color_);
   }
 }
 

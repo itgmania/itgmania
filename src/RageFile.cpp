@@ -21,16 +21,16 @@
 #include "RageUtil/Endian.h"
 #include "global.h"
 
-RageFile::RageFile() : m_File(nullptr), m_Mode(0) {}
+RageFile::RageFile() : file_(nullptr), mode_(0) {}
 
 RageFile::RageFile(const RageFile& cpy) : RageFileBasic(cpy) {
   /* This will copy the file driver, including its internal file pointer. */
-  m_File = nullptr;
-  if (cpy.m_File != nullptr) {
-    m_File = cpy.m_File->Copy();
+  file_ = nullptr;
+  if (cpy.file_ != nullptr) {
+    file_ = cpy.file_->Copy();
   }
-  m_Path = cpy.m_Path;
-  m_Mode = cpy.m_Mode;
+  path_ = cpy.path_;
+  mode_ = cpy.mode_;
 }
 
 RageFile* RageFile::Copy() const { return new RageFile(*this); }
@@ -40,7 +40,7 @@ std::string RageFile::GetPath() const {
     return std::string();
   }
 
-  std::string sRet = m_File->GetDisplayPath();
+  std::string sRet = file_->GetDisplayPath();
   if (sRet != "") {
     return sRet;
   }
@@ -52,25 +52,25 @@ bool RageFile::Open(const std::string& path, int mode) {
   ASSERT(FILEMAN != nullptr);
   Close();
 
-  m_Path = path;
-  FixSlashesInPlace(m_Path);
+  path_ = path;
+  FixSlashesInPlace(path_);
 
-  m_Mode = mode;
+  mode_ = mode;
 
-  if ((m_Mode & READ) && (m_Mode & WRITE)) {
+  if ((mode_ & READ) && (mode_ & WRITE)) {
     SetError("Reading and writing are mutually exclusive");
     return false;
   }
 
-  if (!(m_Mode & READ) && !(m_Mode & WRITE)) {
+  if (!(mode_ & READ) && !(mode_ & WRITE)) {
     SetError("Neither reading nor writing specified");
     return false;
   }
 
   int error;
-  m_File = FILEMAN->Open(path, mode, error);
+  file_ = FILEMAN->Open(path, mode, error);
 
-  if (m_File == nullptr) {
+  if (file_ == nullptr) {
     SetError(strerror(error));
     return false;
   }
@@ -79,140 +79,140 @@ bool RageFile::Open(const std::string& path, int mode) {
 }
 
 void RageFile::Close() {
-  if (m_File == nullptr) {
+  if (file_ == nullptr) {
     return;
   }
-  RageFileBasic* pFile = m_File;
-  m_File = nullptr;
-  if (m_Mode & WRITE) {
-    FILEMAN->CacheFile(pFile, m_Path);
+  RageFileBasic* pFile = file_;
+  file_ = nullptr;
+  if (mode_ & WRITE) {
+    FILEMAN->CacheFile(pFile, path_);
   }
   delete pFile;
 }
 
 void RageFile::AssertOpen() const {
   if (!IsOpen()) {
-    sm_crash(ssprintf("File \"%s\" is not open.", m_Path.c_str()));
+    sm_crash(ssprintf("File \"%s\" is not open.", path_.c_str()));
   }
 }
 
 void RageFile::AssertRead() const {
   AssertOpen();
-  if (!(m_Mode & READ)) {
-    sm_crash(ssprintf("File \"%s\" is not open for reading", m_Path.c_str()));
+  if (!(mode_ & READ)) {
+    sm_crash(ssprintf("File \"%s\" is not open for reading", path_.c_str()));
   }
 }
 
 void RageFile::AssertWrite() const {
   AssertOpen();
-  if (!(m_Mode & WRITE)) {
-    sm_crash(ssprintf("File \"%s\" is not open for writing", m_Path.c_str()));
+  if (!(mode_ & WRITE)) {
+    sm_crash(ssprintf("File \"%s\" is not open for writing", path_.c_str()));
   }
 }
 
 int RageFile::GetLine(std::string& out) {
   AssertRead();
-  return m_File->GetLine(out);
+  return file_->GetLine(out);
 }
 
 int RageFile::PutLine(const std::string& str) {
   AssertWrite();
-  return m_File->PutLine(str);
+  return file_->PutLine(str);
 }
 
 void RageFile::EnableCRC32(bool on) {
   AssertOpen();
-  m_File->EnableCRC32(on);
+  file_->EnableCRC32(on);
 }
 
 bool RageFile::GetCRC32(uint32_t* iRet) {
   AssertOpen();
-  return m_File->GetCRC32(iRet);
+  return file_->GetCRC32(iRet);
 }
 
 bool RageFile::AtEOF() const {
   AssertRead();
-  return m_File->AtEOF();
+  return file_->AtEOF();
 }
 
 void RageFile::ClearError() {
-  if (m_File != nullptr) {
-    m_File->ClearError();
+  if (file_ != nullptr) {
+    file_->ClearError();
   }
-  m_sError = "";
+  error_ = "";
 }
 
 std::string RageFile::GetError() const {
-  if (m_File != nullptr && m_File->GetError() != "") {
-    return m_File->GetError();
+  if (file_ != nullptr && file_->GetError() != "") {
+    return file_->GetError();
   }
-  return m_sError;
+  return error_;
 }
 
 void RageFile::SetError(const std::string& err) {
-  if (m_File != nullptr) {
-    m_File->ClearError();
+  if (file_ != nullptr) {
+    file_->ClearError();
   }
-  m_sError = err;
+  error_ = err;
 }
 
 int RageFile::Read(void* pBuffer, size_t iBytes) {
   AssertRead();
-  return m_File->Read(pBuffer, iBytes);
+  return file_->Read(pBuffer, iBytes);
 }
 
 int RageFile::Seek(int offset) {
   AssertRead();
-  return m_File->Seek(offset);
+  return file_->Seek(offset);
 }
 
 int RageFile::Tell() const {
   AssertRead();
-  return m_File->Tell();
+  return file_->Tell();
 }
 
 int RageFile::GetFileSize() const {
   AssertRead();
-  return m_File->GetFileSize();
+  return file_->GetFileSize();
 }
 
 int RageFile::GetFD() {
   AssertRead();
-  return m_File->GetFD();
+  return file_->GetFD();
 }
 
 int RageFile::Read(std::string& buffer, int bytes) {
   AssertRead();
-  return m_File->Read(buffer, bytes);
+  return file_->Read(buffer, bytes);
 }
 
 int RageFile::Write(const void* buffer, size_t bytes) {
   AssertWrite();
-  return m_File->Write(buffer, bytes);
+  return file_->Write(buffer, bytes);
 }
 
 int RageFile::Write(const void* buffer, size_t bytes, int nmemb) {
   AssertWrite();
-  return m_File->Write(buffer, bytes, nmemb);
+  return file_->Write(buffer, bytes, nmemb);
 }
 
 int RageFile::Flush() {
-  if (!m_File) {
+  if (!file_) {
     SetError("Not open");
     return -1;
   }
 
-  return m_File->Flush();
+  return file_->Flush();
 }
 
 int RageFile::Read(void* buffer, size_t bytes, int nmemb) {
   AssertRead();
-  return m_File->Read(buffer, bytes, nmemb);
+  return file_->Read(buffer, bytes, nmemb);
 }
 
 int RageFile::Seek(int offset, int whence) {
   AssertRead();
-  return m_File->Seek(offset, whence);
+  return file_->Seek(offset, whence);
 }
 
 void FileReading::ReadBytes(

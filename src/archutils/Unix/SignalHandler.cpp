@@ -59,14 +59,14 @@ SaveSignals::SaveSignals() {
   for (int i = 0; signals[i] != -1; ++i) {
     struct sigaction sa;
     sigaction(signals[i], nullptr, &sa);
-    old_handlers.push_back(sa);
+    old_handlers_.push_back(sa);
   }
 }
 
 SaveSignals::~SaveSignals() {
   /* Restore the old signal handlers. */
-  for (unsigned i = 0; i < old_handlers.size(); ++i) {
-    sigaction(signals[i], &old_handlers[i], nullptr);
+  for (unsigned i = 0; i < old_handlers_.size(); ++i) {
+    sigaction(signals[i], &old_handlers_[i], nullptr);
   }
 }
 

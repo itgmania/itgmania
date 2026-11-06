@@ -70,7 +70,7 @@ class Screen : public ActorFrame {
   virtual void Update(float fDeltaTime);
   virtual bool Input(const InputEventPlus& input);
   virtual void HandleScreenMessage(const ScreenMessage SM);
-  void SetLockInputSecs(float f) { m_fLockInputSecs = f; }
+  void SetLockInputSecs(float f) { lock_input_secs_ = f; }
 
   /**
    * @brief Put the specified message onto the screen for a specified time.
@@ -101,16 +101,16 @@ class Screen : public ActorFrame {
   /** @brief Holds the messages sent to a Screen. */
   struct QueuedScreenMessage {
     /** @brief The message being held. */
-    ScreenMessage SM;
+    ScreenMessage sm_;
     /** @brief How long the message is up. */
-    float fDelayRemaining;
+    float delay_remaining_;
   };
   /** @brief The list of messages that are sent to a Screen. */
-  std::vector<QueuedScreenMessage> m_QueuedMessages;
+  std::vector<QueuedScreenMessage> queued_messages_;
   static bool SortMessagesByDelayRemaining(
       const QueuedScreenMessage& m1, const QueuedScreenMessage& m2);
 
-  InputQueueCodeSet m_Codes;
+  InputQueueCodeSet codes_;
 
   /** @brief Do we allow the operator menu button to be pressed here? */
   ThemeMetric<bool> ALLOW_OPERATOR_MENU_BUTTON;
@@ -124,14 +124,14 @@ class Screen : public ActorFrame {
    * @brief The next screen to go to once this screen is done.
    *
    * If this is blank, the NextScreen metric will be used. */
-  std::string m_sNextScreen;
-  std::string m_sPrevScreen;
-  ScreenMessage m_smSendOnPop;
+  std::string next_screen_;
+  std::string prev_screen_;
+  ScreenMessage send_on_pop_;
 
-  float m_fLockInputSecs;
+  float lock_input_secs_;
 
   // If currently between BeginScreen/EndScreen calls:
-  bool m_bRunning;
+  bool running_;
 
  public:
   std::string GetNextScreenName() const;
@@ -165,9 +165,9 @@ class Screen : public ActorFrame {
   // void* is the key so that we can use lua_topointer to find the callback
   // to remove when removing a callback.
   typedef const void* callback_key_t;
-  std::map<callback_key_t, LuaReference> m_InputCallbacks;
-  std::vector<callback_key_t> m_DelayedCallbackRemovals;
-  bool m_CallingInputCallbacks;
+  std::map<callback_key_t, LuaReference> input_callbacks_;
+  std::vector<callback_key_t> delayed_callback_removals_;
+  bool calling_input_callbacks_;
   void InternalRemoveCallback(callback_key_t key);
 };
 

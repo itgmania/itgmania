@@ -13,28 +13,28 @@
  theme via lua functions in Steps.cpp
  */
 struct ColumnCueColumn {
-  int colNum;
-  TapNoteType noteType;
+  int col_num_;
+  TapNoteType note_type_;
   ColumnCueColumn(int c, TapNoteType n) {
-    colNum = c;
-    noteType = n;
+    col_num_ = c;
+    note_type_ = n;
   }
 };
 
 struct ColumnCue {
-  float startTime;
-  float duration;
-  std::vector<ColumnCueColumn> columns;
+  float start_time_;
+  float duration_;
+  std::vector<ColumnCueColumn> columns_;
 
   ColumnCue() {
-    startTime = -1;
-    duration = -1;
+    start_time_ = -1;
+    duration_ = -1;
   }
 
   ColumnCue(float s, float d, std::vector<ColumnCueColumn> c) {
-    startTime = s;
-    duration = d;
-    columns.assign(c.begin(), c.end());
+    start_time_ = s;
+    duration_ = d;
+    columns_.assign(c.begin(), c.end());
   }
   /** @brief Calculates the set of ColumnCues for the given NoteData. Each "cue"
    * is for any note that has a minimum of minDuration seconds between it and

@@ -32,7 +32,7 @@ std::vector<NotefieldMargins> GetNotefieldMargins() {
     ++next_player_slot;
   }
 
-  Enum::Push(lua_ptr, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType);
+  Enum::Push(lua_ptr, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->style_type_);
   std::string err = "Error running MarginFunction: ";
 
   // Run the lua code.
@@ -45,12 +45,12 @@ std::vector<NotefieldMargins> GetNotefieldMargins() {
     // returning the margins of P1 + P2 combined. Therefore, we need to use
     // the center to tell where P1's margin ends and P2's begins, if
     // applicable.
-    margins[PLAYER_1].left = SafeFArg(lua_ptr, -3, margin_error_msg, 40);
+    margins[PLAYER_1].left_ = SafeFArg(lua_ptr, -3, margin_error_msg, 40);
     float center = SafeFArg(lua_ptr, -2, margin_error_msg, 80);
-    margins[PLAYER_1].right = center / 2.0f;
+    margins[PLAYER_1].right_ = center / 2.0f;
 
-    margins[PLAYER_2].left = center / 2.0f;
-    margins[PLAYER_2].right = SafeFArg(lua_ptr, -1, margin_error_msg, 40);
+    margins[PLAYER_2].left_ = center / 2.0f;
+    margins[PLAYER_2].right_ = SafeFArg(lua_ptr, -1, margin_error_msg, 40);
   }
   lua_settop(lua_ptr, 0);
   LUA->Release(lua_ptr);

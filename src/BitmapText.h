@@ -27,22 +27,22 @@ class BitmapText : public Actor {
   struct BMT_TweenState {
     // We'd be better off not adding strokes to things we can't control
     // themewise (ScreenDebugOverlay for example). -Midiman
-    BMT_TweenState() : m_stroke_color(RageColor(0, 0, 0, 0)) {}
+    BMT_TweenState() : stroke_color_(RageColor(0, 0, 0, 0)) {}
     static void MakeWeightedAverage(
         BMT_TweenState& out, const BMT_TweenState& from,
         const BMT_TweenState& to, float between);
-    void SetStrokeColor(const RageColor& c) { m_stroke_color = c; }
-    const RageColor& GetStrokeColor() { return m_stroke_color; }
+    void SetStrokeColor(const RageColor& c) { stroke_color_ = c; }
+    const RageColor& GetStrokeColor() { return stroke_color_; }
 
    private:
-    RageColor m_stroke_color;
+    RageColor stroke_color_;
   };
 
   BMT_TweenState& BMT_DestTweenState() {
-    if (BMT_Tweens.empty()) {
-      return BMT_current;
+    if (bmt_tweens_.empty()) {
+      return bmt_current_;
     } else {
-      return BMT_Tweens.back();
+      return bmt_tweens_.back();
     }
   }
 
@@ -76,8 +76,8 @@ class BitmapText : public Actor {
   virtual void DrawPrimitives() noexcept override;
 
   void SetUppercase(bool b);
-  void SetRainbowScroll(bool b) { m_bRainbowScroll = b; }
-  void SetJitter(bool b) { m_bJitter = b; }
+  void SetRainbowScroll(bool b) { rainbow_scroll_ = b; }
+  void SetJitter(bool b) { jitter_ = b; }
   void SetDistortion(float f);
   void UnSetDistortion();
   void set_mult_attrs_with_diffuse(bool m);
@@ -89,21 +89,23 @@ class BitmapText : public Actor {
   const RageColor& GetStrokeColor() {
     return BMT_DestTweenState().GetStrokeColor();
   }
-  void SetCurrStrokeColor(RageColor c) { BMT_current.SetStrokeColor(c); }
-  const RageColor& GetCurrStrokeColor() { return BMT_current.GetStrokeColor(); }
+  void SetCurrStrokeColor(RageColor c) { bmt_current_.SetStrokeColor(c); }
+  const RageColor& GetCurrStrokeColor() {
+    return bmt_current_.GetStrokeColor();
+  }
 
-  void SetTextGlowMode(TextGlowMode tgm) { m_TextGlowMode = tgm; }
+  void SetTextGlowMode(TextGlowMode tgm) { text_glow_mode_ = tgm; }
 
-  std::string GetText() const { return m_sText; }
+  std::string GetText() const { return text_; }
   // Return true if the string 's' will use an alternate string, if available.
   bool StringWillUseAlternate(
       const std::string& sText, const std::string& sAlternateText) const;
 
   struct Attribute {
-    Attribute() : length(-1), glow() {}
-    int length;
-    RageColor diffuse[NUM_DIFFUSE_COLORS];
-    RageColor glow;
+    Attribute() : length_(-1), glow_() {}
+    int length_;
+    RageColor diffuse_[NUM_DIFFUSE_COLORS];
+    RageColor glow_;
 
     void FromStack(lua_State* L, int iPos);
   };
@@ -116,29 +118,29 @@ class BitmapText : public Actor {
   virtual void PushSelf(lua_State* L) override;
 
  protected:
-  Font* m_pFont;
-  bool m_bUppercase;
-  std::string m_sText;
-  std::vector<std::wstring> m_wTextLines;
-  std::vector<int> m_iLineWidths;  // in source pixels
-  int m_iWrapWidthPixels;          // -1 = no wrap
-  float m_fMaxWidth;               // 0 = no max
-  float m_fMaxHeight;              // 0 = no max
-  bool m_MaxDimensionUsesZoom;
-  bool m_bRainbowScroll;
-  bool m_bJitter;
-  bool m_bUsingDistortion;
-  bool m_mult_attrs_with_diffuse;
-  float m_fDistortion;
-  int m_iVertSpacing;
+  Font* font_;
+  bool uppercase_;
+  std::string text_;
+  std::vector<std::wstring> text_lines_;
+  std::vector<int> line_widths_;  // in source pixels
+  int wrap_width_pixels_;         // -1 = no wrap
+  float max_width_;               // 0 = no max
+  float max_height_;              // 0 = no max
+  bool max_dimension_uses_zoom_;
+  bool rainbow_scroll_;
+  bool jitter_;
+  bool using_distortion_;
+  bool mult_attrs_with_diffuse_;
+  float distortion_;
+  int vert_spacing_;
 
-  std::vector<RageSpriteVertex> m_aVertices;
+  std::vector<RageSpriteVertex> vertices_;
 
-  std::vector<FontPageTextures*> m_vpFontPageTextures;
-  std::map<size_t, Attribute> m_mAttributes;
-  bool m_bHasGlowAttribute;
+  std::vector<FontPageTextures*> font_page_textures_;
+  std::map<size_t, Attribute> attributes_;
+  bool has_glow_attribute_;
 
-  TextGlowMode m_TextGlowMode;
+  TextGlowMode text_glow_mode_;
 
   // recalculate the items in SetText()
   void BuildChars();
@@ -147,9 +149,9 @@ class BitmapText : public Actor {
 
  private:
   void SetTextInternal();
-  std::vector<BMT_TweenState> BMT_Tweens;
-  BMT_TweenState BMT_current;
-  BMT_TweenState BMT_start;
+  std::vector<BMT_TweenState> bmt_tweens_;
+  BMT_TweenState bmt_current_;
+  BMT_TweenState bmt_start_;
 };
 
 #endif

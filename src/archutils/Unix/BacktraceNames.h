@@ -5,13 +5,13 @@
 #include <string>
 
 struct BacktraceNames {
-  std::string Symbol, File;
-  intptr_t Address;
-  int Offset;
+  std::string symbol_, file_;
+  intptr_t address_;
+  int offset_;
   void FromAddr(void* const p);
   void Demangle();
   std::string Format() const;
-  BacktraceNames() : Address(0), Offset(0) {}
+  BacktraceNames() : address_(0), offset_(0) {}
 };
 
 #endif

@@ -139,9 +139,9 @@ static RageDisplay::RagePixelFormatDesc PIXEL_FORMAT_DESC[NUM_RagePixelFormat] =
  * back, but it works fine.
  */
 struct GLPixFmtInfo_t {
-  GLenum internalfmt; /* target format */
-  GLenum format;      /* target format */
-  GLenum type;        /* data format */
+  GLenum internalfmt_; /* target format */
+  GLenum format_;      /* target format */
+  GLenum type_;        /* data format */
 } const g_GLPixFmtInfo[NUM_RagePixelFormat] = {
     {
         /* R8G8B8A8 */
@@ -220,13 +220,13 @@ static void FixLittleEndian() {
 
     /* OpenGL and RageSurface handle byte formats differently; we need
      * to flip non-paletted masks to make them line up. */
-    if (g_GLPixFmtInfo[i].type != GL_UNSIGNED_BYTE || pf.bpp == 8) {
+    if (g_GLPixFmtInfo[i].type_ != GL_UNSIGNED_BYTE || pf.bpp_ == 8) {
       continue;
     }
 
     for (int mask = 0; mask < 4; ++mask) {
-      int m = pf.masks[mask];
-      switch (pf.bpp) {
+      int m = pf.masks_[mask];
+      switch (pf.bpp_) {
         case 24:
           m = Swap24(m);
           break;
@@ -234,9 +234,9 @@ static void FixLittleEndian() {
           m = Swap32(m);
           break;
         default:
-          FAIL_M(ssprintf("Unsupported BPP value: %i", pf.bpp));
+          FAIL_M(ssprintf("Unsupported BPP value: %i", pf.bpp_));
       }
-      pf.masks[mask] = m;
+      pf.masks_[mask] = m;
     }
   }
 }
@@ -257,7 +257,7 @@ RageDisplay_Legacy::RageDisplay_Legacy() {
 
   g_pWind = nullptr;
   g_bTextureMatrixShader = 0;
-  offscreenRenderTarget = nullptr;
+  offscreen_render_target_ = nullptr;
 }
 
 std::string GetInfoLog(GLhandleARB h) {
@@ -606,9 +606,9 @@ static void CheckPalettedTextures() {
     }
 
     /* Check to see if paletted textures really work. */
-    GLenum glTexFormat = g_GLPixFmtInfo[RagePixelFormat_PAL].internalfmt;
-    GLenum glImageFormat = g_GLPixFmtInfo[RagePixelFormat_PAL].format;
-    GLenum glImageType = g_GLPixFmtInfo[RagePixelFormat_PAL].type;
+    GLenum glTexFormat = g_GLPixFmtInfo[RagePixelFormat_PAL].internalfmt_;
+    GLenum glImageFormat = g_GLPixFmtInfo[RagePixelFormat_PAL].format_;
+    GLenum glImageType = g_GLPixFmtInfo[RagePixelFormat_PAL].type_;
 
     int iBits = 8;
 
@@ -740,28 +740,28 @@ void SetupExtensions() {
 }
 
 bool RageDisplay_Legacy::UseOffscreenRenderTarget() {
-  if (!GetActualVideoModeParams().renderOffscreen || !TEXTUREMAN) {
+  if (!GetActualVideoModeParams().render_offscreen_ || !TEXTUREMAN) {
     return false;
   }
 
-  if (!offscreenRenderTarget) {
+  if (!offscreen_render_target_) {
     RenderTargetParam param;
-    param.bWithDepthBuffer = true;
-    param.bWithAlpha = true;
-    param.bFloat = false;
-    param.iWidth = GetActualVideoModeParams().width;
-    param.iHeight = GetActualVideoModeParams().height;
+    param.with_depth_buffer_ = true;
+    param.with_alpha_ = true;
+    param.float_ = false;
+    param.width_ = GetActualVideoModeParams().width_;
+    param.height_ = GetActualVideoModeParams().height_;
     RageTextureID id(
-        ssprintf("FullscreenTexture%dx%d", param.iWidth, param.iHeight));
+        ssprintf("FullscreenTexture%dx%d", param.width_, param.height_));
     // See if we have this texture loaded already
     // (not GC'd yet). If it exists and we try to recreate
     // it, we'll get an error
     if (TEXTUREMAN->IsTextureRegistered(id)) {
-      offscreenRenderTarget =
+      offscreen_render_target_ =
           static_cast<RageTextureRenderTarget*>(TEXTUREMAN->LoadTexture(id));
     } else {
-      offscreenRenderTarget = new RageTextureRenderTarget(id, param);
-      TEXTUREMAN->RegisterTexture(id, offscreenRenderTarget);
+      offscreen_render_target_ = new RageTextureRenderTarget(id, param);
+      TEXTUREMAN->RegisterTexture(id, offscreen_render_target_);
     }
   }
   return true;
@@ -777,9 +777,9 @@ void RageDisplay_Legacy::ResolutionChanged() {
 
   RageDisplay::ResolutionChanged();
 
-  if (offscreenRenderTarget && TEXTUREMAN) {
-    TEXTUREMAN->UnloadTexture(offscreenRenderTarget);
-    offscreenRenderTarget = nullptr;
+  if (offscreen_render_target_ && TEXTUREMAN) {
+    TEXTUREMAN->UnloadTexture(offscreen_render_target_);
+    offscreen_render_target_ = nullptr;
   }
 }
 
@@ -826,7 +826,7 @@ std::string RageDisplay_Legacy::TryVideoMode(
   /* Set vsync the Windows way, if we can.  (What other extensions are there
    * to do this, for other archs?) */
   if (wglewIsSupported("WGL_EXT_swap_control")) {
-    wglSwapIntervalEXT(p.vsync);
+    wglSwapIntervalEXT(p.vsync_);
   } else {
     return std::string(
         "The WGL_EXT_swap_control extension is not supported on your "
@@ -861,8 +861,8 @@ int RageDisplay_Legacy::GetMaxTextureSize() const {
 bool RageDisplay_Legacy::BeginFrame() {
   /* We do this in here, rather than ResolutionChanged, or we won't update the
    * viewport for the concurrent rendering context. */
-  int fWidth = g_pWind->GetActualVideoModeParams().windowWidth;
-  int fHeight = g_pWind->GetActualVideoModeParams().windowHeight;
+  int fWidth = g_pWind->GetActualVideoModeParams().window_width_;
+  int fHeight = g_pWind->GetActualVideoModeParams().window_height_;
 
   glViewport(0, 0, fWidth, fHeight);
 
@@ -872,7 +872,7 @@ bool RageDisplay_Legacy::BeginFrame() {
 
   bool beginFrame = RageDisplay::BeginFrame();
   if (beginFrame && UseOffscreenRenderTarget()) {
-    offscreenRenderTarget->BeginRenderingTo(false);
+    offscreen_render_target_->BeginRenderingTo(false);
   }
 
   return beginFrame;
@@ -880,19 +880,20 @@ bool RageDisplay_Legacy::BeginFrame() {
 
 void RageDisplay_Legacy::EndFrame() {
   if (UseOffscreenRenderTarget()) {
-    offscreenRenderTarget->FinishRenderingTo();
+    offscreen_render_target_->FinishRenderingTo();
     Sprite fullscreenSprite;
     // We've got a hold of this, don't want sprite deleting it when
     // it's deleted
-    offscreenRenderTarget->m_iRefCount++;
-    fullscreenSprite.SetTexture(offscreenRenderTarget);
+    offscreen_render_target_->ref_count_++;
+    fullscreenSprite.SetTexture(offscreen_render_target_);
     fullscreenSprite.SetHorizAlign(align_left);
     fullscreenSprite.SetVertAlign(align_top);
     CameraPushMatrix();
     LoadMenuPerspective(
-        0, GetActualVideoModeParams().width, GetActualVideoModeParams().height,
-        static_cast<float>(GetActualVideoModeParams().width) / 2.f,
-        static_cast<float>(GetActualVideoModeParams().height) / 2.f);
+        0, GetActualVideoModeParams().width_,
+        GetActualVideoModeParams().height_,
+        static_cast<float>(GetActualVideoModeParams().width_) / 2.f,
+        static_cast<float>(GetActualVideoModeParams().height_) / 2.f);
     fullscreenSprite.Draw();
     CameraPopMatrix();
   }
@@ -918,23 +919,23 @@ void RageDisplay_Legacy::EndFrame() {
 }
 
 RageSurface* RageDisplay_Legacy::CreateScreenshot() {
-  int width = g_pWind->GetActualVideoModeParams().width;
-  int height = g_pWind->GetActualVideoModeParams().height;
+  int width = g_pWind->GetActualVideoModeParams().width_;
+  int height = g_pWind->GetActualVideoModeParams().height_;
 
   RageSurface* image = nullptr;
-  if (offscreenRenderTarget) {
-    RageSurface* raw = GetTexture(offscreenRenderTarget->GetTexHandle());
+  if (offscreen_render_target_) {
+    RageSurface* raw = GetTexture(offscreen_render_target_->GetTexHandle());
     image = CreateSurface(
-        offscreenRenderTarget->GetImageWidth(),
-        offscreenRenderTarget->GetImageHeight(), raw->fmt.BitsPerPixel,
-        raw->fmt.Rmask, raw->fmt.Gmask, raw->fmt.Bmask, raw->fmt.Amask);
+        offscreen_render_target_->GetImageWidth(),
+        offscreen_render_target_->GetImageHeight(), raw->fmt_.bits_per_pixel_,
+        raw->fmt_.rmask_, raw->fmt_.gmask_, raw->fmt_.bmask_, raw->fmt_.amask_);
     RageSurfaceUtils::Blit(raw, image);
     delete raw;
   } else {
     const RagePixelFormatDesc& desc = PIXEL_FORMAT_DESC[RagePixelFormat_RGBA8];
     image = CreateSurface(
-        width, height, desc.bpp, desc.masks[0], desc.masks[1], desc.masks[2],
-        0);
+        width, height, desc.bpp_, desc.masks_[0], desc.masks_[1],
+        desc.masks_[2], 0);
 
     DebugFlushGLErrors();
 
@@ -944,9 +945,9 @@ RageSurface* RageDisplay_Legacy::CreateScreenshot() {
     DebugAssertNoGLError();
 
     glReadPixels(
-        0, 0, g_pWind->GetActualVideoModeParams().width,
-        g_pWind->GetActualVideoModeParams().height, GL_RGBA, GL_UNSIGNED_BYTE,
-        image->pixels);
+        0, 0, g_pWind->GetActualVideoModeParams().width_,
+        g_pWind->GetActualVideoModeParams().height_, GL_RGBA, GL_UNSIGNED_BYTE,
+        image->pixels_);
     DebugAssertNoGLError();
 
     RageSurfaceUtils::FlipVertically(image);
@@ -972,12 +973,12 @@ RageSurface* RageDisplay_Legacy::GetTexture(uintptr_t iTexture) {
 
   const RagePixelFormatDesc& desc = PIXEL_FORMAT_DESC[iFormat];
   RageSurface* pImage = CreateSurface(
-      iWidth, iHeight, desc.bpp, desc.masks[0], desc.masks[1], desc.masks[2],
-      desc.masks[3]);
+      iWidth, iHeight, desc.bpp_, desc.masks_[0], desc.masks_[1],
+      desc.masks_[2], desc.masks_[3]);
 
   glGetTexImage(
-      GL_TEXTURE_2D, 0, g_GLPixFmtInfo[iFormat].format, GL_UNSIGNED_BYTE,
-      pImage->pixels);
+      GL_TEXTURE_2D, 0, g_GLPixFmtInfo[iFormat].format_, GL_UNSIGNED_BYTE,
+      pImage->pixels_);
   AssertNoGLError();
 
   return pImage;
@@ -994,23 +995,23 @@ static void SetupVertices(const RageSpriteVertex v[], int iNumVerts) {
     const GLsizei stride = sizeof(RageSpriteVertex);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, stride, &v[0].p);
+    glVertexPointer(3, GL_FLOAT, stride, &v[0].p_);
 
     glEnableClientState(GL_COLOR_ARRAY);
-    glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, &v[0].c);
+    glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, &v[0].c_);
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t);
+    glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t_);
 
     if (GLEW_ARB_multitexture) {
       glClientActiveTextureARB(GL_TEXTURE1_ARB);
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t);
+      glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t_);
       glClientActiveTextureARB(GL_TEXTURE0_ARB);
     }
 
     glEnableClientState(GL_NORMAL_ARRAY);
-    glNormalPointer(GL_FLOAT, stride, &v[0].n);
+    glNormalPointer(GL_FLOAT, stride, &v[0].n_);
     return;
   }
 
@@ -1031,18 +1032,18 @@ static void SetupVertices(const RageSpriteVertex v[], int iNumVerts) {
   }
 
   for (unsigned i = 0; i < unsigned(iNumVerts); ++i) {
-    Vertex[i * 3 + 0] = v[i].p[0];
-    Vertex[i * 3 + 1] = v[i].p[1];
-    Vertex[i * 3 + 2] = v[i].p[2];
-    Color[i * 4 + 0] = v[i].c.r;
-    Color[i * 4 + 1] = v[i].c.g;
-    Color[i * 4 + 2] = v[i].c.b;
-    Color[i * 4 + 3] = v[i].c.a;
-    Texture[i * 2 + 0] = v[i].t[0];
-    Texture[i * 2 + 1] = v[i].t[1];
-    Normal[i * 3 + 0] = v[i].n[0];
-    Normal[i * 3 + 1] = v[i].n[1];
-    Normal[i * 3 + 2] = v[i].n[2];
+    Vertex[i * 3 + 0] = v[i].p_[0];
+    Vertex[i * 3 + 1] = v[i].p_[1];
+    Vertex[i * 3 + 2] = v[i].p_[2];
+    Color[i * 4 + 0] = v[i].c_.r_;
+    Color[i * 4 + 1] = v[i].c_.g_;
+    Color[i * 4 + 2] = v[i].c_.b_;
+    Color[i * 4 + 3] = v[i].c_.a_;
+    Texture[i * 2 + 0] = v[i].t_[0];
+    Texture[i * 2 + 1] = v[i].t_[1];
+    Normal[i * 3 + 0] = v[i].n_[0];
+    Normal[i * 3 + 1] = v[i].n_[1];
+    Normal[i * 3 + 2] = v[i].n_[2];
   }
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3, GL_FLOAT, 0, Vertex);
@@ -1095,32 +1096,32 @@ class RageCompiledGeometrySWOGL : public RageCompiledGeometry {
     const unsigned int trianglesCount =
         std::max<unsigned int>(1u, GetTotalTriangles());
 
-    m_vPosition.resize(verticesCount);
-    m_vTexture.resize(verticesCount);
-    m_vNormal.resize(verticesCount);
-    m_vTexMatrixScale.resize(verticesCount);
-    m_vTriangles.resize(trianglesCount);
+    position_.resize(verticesCount);
+    texture_.resize(verticesCount);
+    normal_.resize(verticesCount);
+    tex_matrix_scale_.resize(verticesCount);
+    triangles_.resize(trianglesCount);
   }
   void Change(const std::vector<msMesh>& vMeshes) {
     for (unsigned i = 0; i < vMeshes.size(); i++) {
-      const MeshInfo& meshInfo = m_vMeshInfo[i];
+      const MeshInfo& meshInfo = mesh_info_[i];
       const msMesh& mesh = vMeshes[i];
-      const std::vector<RageModelVertex>& Vertices = mesh.Vertices;
-      const std::vector<msTriangle>& Triangles = mesh.Triangles;
+      const std::vector<RageModelVertex>& Vertices = mesh.vertices_;
+      const std::vector<msTriangle>& Triangles = mesh.triangles_;
 
       for (unsigned j = 0; j < Vertices.size(); j++) {
-        m_vPosition[meshInfo.iVertexStart + j] = Vertices[j].p;
-        m_vTexture[meshInfo.iVertexStart + j] = Vertices[j].t;
-        m_vNormal[meshInfo.iVertexStart + j] = Vertices[j].n;
-        m_vTexMatrixScale[meshInfo.iVertexStart + j] =
-            Vertices[j].TextureMatrixScale;
+        position_[meshInfo.vertex_start_ + j] = Vertices[j].p_;
+        texture_[meshInfo.vertex_start_ + j] = Vertices[j].t_;
+        normal_[meshInfo.vertex_start_ + j] = Vertices[j].n_;
+        tex_matrix_scale_[meshInfo.vertex_start_ + j] =
+            Vertices[j].texture_matrix_scale_;
       }
 
       for (unsigned j = 0; j < Triangles.size(); j++) {
         for (unsigned k = 0; k < 3; k++) {
           int iVertexIndexInVBO =
-              meshInfo.iVertexStart + Triangles[j].nVertexIndices[k];
-          m_vTriangles[meshInfo.iTriangleStart + j].nVertexIndices[k] =
+              meshInfo.vertex_start_ + Triangles[j].vertex_indices_[k];
+          triangles_[meshInfo.triangle_start_ + j].vertex_indices_[k] =
               (uint16_t)iVertexIndexInVBO;
         }
       }
@@ -1129,20 +1130,20 @@ class RageCompiledGeometrySWOGL : public RageCompiledGeometry {
   void Draw(int iMeshIndex) const {
     TurnOffHardwareVBO();
 
-    const MeshInfo& meshInfo = m_vMeshInfo[iMeshIndex];
+    const MeshInfo& meshInfo = mesh_info_[iMeshIndex];
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, &m_vPosition[0]);
+    glVertexPointer(3, GL_FLOAT, 0, &position_[0]);
 
     glDisableClientState(GL_COLOR_ARRAY);
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glTexCoordPointer(2, GL_FLOAT, 0, &m_vTexture[0]);
+    glTexCoordPointer(2, GL_FLOAT, 0, &texture_[0]);
 
     glEnableClientState(GL_NORMAL_ARRAY);
-    glNormalPointer(GL_FLOAT, 0, &m_vNormal[0]);
+    glNormalPointer(GL_FLOAT, 0, &normal_[0]);
 
-    if (meshInfo.m_bNeedsTextureMatrixScale) {
+    if (meshInfo.needs_texture_matrix_scale_) {
       // Kill the texture translation.
       // XXX: Change me to scale the translation by the TextureTranslationScale
       // of the first vertex.
@@ -1159,25 +1160,25 @@ class RageCompiledGeometrySWOGL : public RageCompiledGeometry {
       }
       */
 
-      mat.m[3][0] = 0;
-      mat.m[3][1] = 0;
-      mat.m[3][2] = 0;
+      mat.m_[3][0] = 0;
+      mat.m_[3][1] = 0;
+      mat.m_[3][2] = 0;
 
       glMatrixMode(GL_TEXTURE);
       glLoadMatrixf((const float*)mat);
     }
 
     glDrawElements(
-        GL_TRIANGLES, meshInfo.iTriangleCount * 3, GL_UNSIGNED_SHORT,
-        &m_vTriangles[0] + meshInfo.iTriangleStart);
+        GL_TRIANGLES, meshInfo.triangle_count_ * 3, GL_UNSIGNED_SHORT,
+        &triangles_[0] + meshInfo.triangle_start_);
   }
 
  protected:
-  std::vector<RageVector3> m_vPosition;
-  std::vector<RageVector2> m_vTexture;
-  std::vector<RageVector3> m_vNormal;
-  std::vector<msTriangle> m_vTriangles;
-  std::vector<RageVector2> m_vTexMatrixScale;
+  std::vector<RageVector3> position_;
+  std::vector<RageVector2> texture_;
+  std::vector<RageVector3> normal_;
+  std::vector<msTriangle> triangles_;
+  std::vector<RageVector2> tex_matrix_scale_;
 };
 
 class InvalidateObject;
@@ -1199,11 +1200,11 @@ class RageCompiledGeometryHWOGL : public RageCompiledGeometrySWOGL,
                                   public InvalidateObject {
  protected:
   // vertex buffer object names
-  GLuint m_nPositions;
-  GLuint m_nTextureCoords;
-  GLuint m_nNormals;
-  GLuint m_nTriangles;
-  GLuint m_nTextureMatrixScale;
+  GLuint positions_;
+  GLuint texture_coords_;
+  GLuint normals_;
+  GLuint n_triangles_;
+  GLuint texture_matrix_scale_;
 
   void AllocateBuffers();
   void UploadData();
@@ -1221,11 +1222,11 @@ class RageCompiledGeometryHWOGL : public RageCompiledGeometrySWOGL,
 };
 
 RageCompiledGeometryHWOGL::RageCompiledGeometryHWOGL() {
-  m_nPositions = 0;
-  m_nTextureCoords = 0;
-  m_nNormals = 0;
-  m_nTriangles = 0;
-  m_nTextureMatrixScale = 0;
+  positions_ = 0;
+  texture_coords_ = 0;
+  normals_ = 0;
+  n_triangles_ = 0;
+  texture_matrix_scale_ = 0;
 
   AllocateBuffers();
 }
@@ -1233,43 +1234,43 @@ RageCompiledGeometryHWOGL::RageCompiledGeometryHWOGL() {
 RageCompiledGeometryHWOGL::~RageCompiledGeometryHWOGL() {
   DebugFlushGLErrors();
 
-  glDeleteBuffersARB(1, &m_nPositions);
+  glDeleteBuffersARB(1, &positions_);
   DebugAssertNoGLError();
-  glDeleteBuffersARB(1, &m_nTextureCoords);
+  glDeleteBuffersARB(1, &texture_coords_);
   DebugAssertNoGLError();
-  glDeleteBuffersARB(1, &m_nNormals);
+  glDeleteBuffersARB(1, &normals_);
   DebugAssertNoGLError();
-  glDeleteBuffersARB(1, &m_nTriangles);
+  glDeleteBuffersARB(1, &n_triangles_);
   DebugAssertNoGLError();
-  glDeleteBuffersARB(1, &m_nTextureMatrixScale);
+  glDeleteBuffersARB(1, &texture_matrix_scale_);
   DebugAssertNoGLError();
 }
 
 void RageCompiledGeometryHWOGL::AllocateBuffers() {
   DebugFlushGLErrors();
 
-  if (!m_nPositions) {
-    glGenBuffersARB(1, &m_nPositions);
+  if (!positions_) {
+    glGenBuffersARB(1, &positions_);
     DebugAssertNoGLError();
   }
 
-  if (!m_nTextureCoords) {
-    glGenBuffersARB(1, &m_nTextureCoords);
+  if (!texture_coords_) {
+    glGenBuffersARB(1, &texture_coords_);
     DebugAssertNoGLError();
   }
 
-  if (!m_nNormals) {
-    glGenBuffersARB(1, &m_nNormals);
+  if (!normals_) {
+    glGenBuffersARB(1, &normals_);
     DebugAssertNoGLError();
   }
 
-  if (!m_nTriangles) {
-    glGenBuffersARB(1, &m_nTriangles);
+  if (!n_triangles_) {
+    glGenBuffersARB(1, &n_triangles_);
     DebugAssertNoGLError();
   }
 
-  if (!m_nTextureMatrixScale) {
-    glGenBuffersARB(1, &m_nTextureMatrixScale);
+  if (!texture_matrix_scale_) {
+    glGenBuffersARB(1, &texture_matrix_scale_);
     DebugAssertNoGLError();
   }
 }
@@ -1277,51 +1278,51 @@ void RageCompiledGeometryHWOGL::AllocateBuffers() {
 void RageCompiledGeometryHWOGL::UploadData() {
   DebugFlushGLErrors();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nPositions);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, positions_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector3),
-      &m_vPosition[0], GL_STATIC_DRAW_ARB);
+      &position_[0], GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureCoords);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_coords_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector2),
-      &m_vTexture[0], GL_STATIC_DRAW_ARB);
+      &texture_[0], GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nNormals);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, normals_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector3),
-      &m_vNormal[0], GL_STATIC_DRAW_ARB);
+      &normal_[0], GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, m_nTriangles);
+  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, n_triangles_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ELEMENT_ARRAY_BUFFER_ARB, GetTotalTriangles() * sizeof(msTriangle),
-      &m_vTriangles[0], GL_STATIC_DRAW_ARB);
+      &triangles_[0], GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  if (m_bAnyNeedsTextureMatrixScale) {
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureMatrixScale);
+  if (any_needs_texture_matrix_scale_) {
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_matrix_scale_);
     DebugAssertNoGLError();
     glBufferDataARB(
         GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector2),
-        &m_vTexMatrixScale[0], GL_STATIC_DRAW_ARB);
+        &tex_matrix_scale_[0], GL_STATIC_DRAW_ARB);
     DebugAssertNoGLError();
   }
 }
 
 void RageCompiledGeometryHWOGL::Invalidate() {
   /* Our vertex buffers no longer exist.  Reallocate and reupload. */
-  m_nPositions = 0;
-  m_nTextureCoords = 0;
-  m_nNormals = 0;
-  m_nTriangles = 0;
-  m_nTextureMatrixScale = 0;
+  positions_ = 0;
+  texture_coords_ = 0;
+  normals_ = 0;
+  n_triangles_ = 0;
+  texture_matrix_scale_ = 0;
   AllocateBuffers();
   UploadData();
 }
@@ -1330,35 +1331,35 @@ void RageCompiledGeometryHWOGL::Allocate(const std::vector<msMesh>& vMeshes) {
   DebugFlushGLErrors();
 
   RageCompiledGeometrySWOGL::Allocate(vMeshes);
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nPositions);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, positions_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector3), nullptr,
       GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureCoords);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_coords_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector2), nullptr,
       GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nNormals);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, normals_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector3), nullptr,
       GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, m_nTriangles);
+  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, n_triangles_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ELEMENT_ARRAY_BUFFER_ARB, GetTotalTriangles() * sizeof(msTriangle),
       nullptr, GL_STATIC_DRAW_ARB);
   DebugAssertNoGLError();
 
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureMatrixScale);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_matrix_scale_);
   DebugAssertNoGLError();
   glBufferDataARB(
       GL_ARRAY_BUFFER_ARB, GetTotalVertices() * sizeof(RageVector2), nullptr,
@@ -1374,14 +1375,14 @@ void RageCompiledGeometryHWOGL::Change(const std::vector<msMesh>& vMeshes) {
 void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
   DebugFlushGLErrors();
 
-  const MeshInfo& meshInfo = m_vMeshInfo[iMeshIndex];
-  if (!meshInfo.iVertexCount || !meshInfo.iTriangleCount) {
+  const MeshInfo& meshInfo = mesh_info_[iMeshIndex];
+  if (!meshInfo.vertex_count_ || !meshInfo.triangle_count_) {
     return;
   }
 
   glEnableClientState(GL_VERTEX_ARRAY);
   DebugAssertNoGLError();
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nPositions);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, positions_);
   DebugAssertNoGLError();
   glVertexPointer(3, GL_FLOAT, 0, nullptr);
   DebugAssertNoGLError();
@@ -1391,7 +1392,7 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
 
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   DebugAssertNoGLError();
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureCoords);
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_coords_);
   DebugAssertNoGLError();
   glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
   DebugAssertNoGLError();
@@ -1409,7 +1410,7 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
   if (bLighting || bTextureGenS || bTextureGenT) {
     glEnableClientState(GL_NORMAL_ARRAY);
     DebugAssertNoGLError();
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nNormals);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, normals_);
     DebugAssertNoGLError();
     glNormalPointer(GL_FLOAT, 0, nullptr);
     DebugAssertNoGLError();
@@ -1418,14 +1419,14 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
     DebugAssertNoGLError();
   }
 
-  if (meshInfo.m_bNeedsTextureMatrixScale) {
+  if (meshInfo.needs_texture_matrix_scale_) {
     if (g_bTextureMatrixShader != 0) {
       /* If we're using texture matrix scales, set up that buffer, too, and
        * enable the vertex shader.  This shader doesn't support all OpenGL
        * state, so only enable it if we're using it. */
       glEnableVertexAttribArrayARB(g_iAttribTextureMatrixScale);
       DebugAssertNoGLError();
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_nTextureMatrixScale);
+      glBindBufferARB(GL_ARRAY_BUFFER_ARB, texture_matrix_scale_);
       DebugAssertNoGLError();
       glVertexAttribPointerARB(
           g_iAttribTextureMatrixScale, 2, GL_FLOAT, false, 0, nullptr);
@@ -1450,9 +1451,9 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
       }
       */
 
-      mat.m[3][0] = 0;
-      mat.m[3][1] = 0;
-      mat.m[3][2] = 0;
+      mat.m_[3][0] = 0;
+      mat.m_[3][1] = 0;
+      mat.m_[3][2] = 0;
 
       glMatrixMode(GL_TEXTURE);
       glLoadMatrixf((const float*)mat);
@@ -1460,7 +1461,7 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
     }
   }
 
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, m_nTriangles);
+  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, n_triangles_);
   DebugAssertNoGLError();
 
 #define BUFFER_OFFSET(o) ((char*)(o))
@@ -1468,15 +1469,15 @@ void RageCompiledGeometryHWOGL::Draw(int iMeshIndex) const {
   ASSERT(glDrawRangeElements != nullptr);
   glDrawRangeElements(
       GL_TRIANGLES,
-      meshInfo.iVertexStart,  // minimum array index contained in indices
-      meshInfo.iVertexStart + meshInfo.iVertexCount - 1,
+      meshInfo.vertex_start_,  // minimum array index contained in indices
+      meshInfo.vertex_start_ + meshInfo.vertex_count_ - 1,
       // maximum array index contained in indices
-      meshInfo.iTriangleCount * 3,  // number of elements to be rendered
+      meshInfo.triangle_count_ * 3,  // number of elements to be rendered
       GL_UNSIGNED_SHORT,
-      BUFFER_OFFSET(meshInfo.iTriangleStart * sizeof(msTriangle)));
+      BUFFER_OFFSET(meshInfo.triangle_start_ * sizeof(msTriangle)));
   DebugAssertNoGLError();
 
-  if (meshInfo.m_bNeedsTextureMatrixScale && g_bTextureMatrixShader != 0) {
+  if (meshInfo.needs_texture_matrix_scale_ && g_bTextureMatrixShader != 0) {
     glDisableVertexAttribArrayARB(g_iAttribTextureMatrixScale);
     glUseProgramObjectARB(0);
   }
@@ -1585,7 +1586,7 @@ void RageDisplay_Legacy::DrawLineStripInternal(
     const RageSpriteVertex v[], int iNumVerts, float fLineWidth) {
   TurnOffHardwareVBO();
 
-  if (!GetActualVideoModeParams().bSmoothLines) {
+  if (!GetActualVideoModeParams().smooth_lines_) {
     /* Fall back on the generic polygon-based line strip. */
     RageDisplay::DrawLineStripInternal(v, iNumVerts, fLineWidth);
     return;
@@ -1604,10 +1605,10 @@ void RageDisplay_Legacy::DrawLineStripInternal(
    * we'll double the width. */
   {
     const RageMatrix* pMat = GetProjectionTop();
-    float fW = 2 / pMat->m[0][0];
-    float fH = -2 / pMat->m[1][1];
-    float fWidthVal = float(g_pWind->GetActualVideoModeParams().width) / fW;
-    float fHeightVal = float(g_pWind->GetActualVideoModeParams().height) / fH;
+    float fW = 2 / pMat->m_[0][0];
+    float fH = -2 / pMat->m_[1][1];
+    float fWidthVal = float(g_pWind->GetActualVideoModeParams().width_) / fW;
+    float fHeightVal = float(g_pWind->GetActualVideoModeParams().height_) / fH;
     fLineWidth *= (fWidthVal + fHeightVal) / 2;
   }
 
@@ -1644,7 +1645,7 @@ void RageDisplay_Legacy::DrawLineStripInternal(
   RageMatrix mat;
   glGetFloatv(GL_MODELVIEW_MATRIX, (float*)mat);
 
-  if (mat.m[0][0] < 1e-5 && mat.m[1][1] < 1e-5) {
+  if (mat.m_[0][0] < 1e-5 && mat.m_[1][1] < 1e-5) {
     return;
   }
 
@@ -1755,7 +1756,7 @@ void RageDisplay_Legacy::SetTextureFiltering(TextureUnit tu, bool b) {
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 1, GL_TEXTURE_WIDTH, &iWidth2);
     if (iWidth1 > 1 && iWidth2 != 0) {
       /* Mipmaps are enabled. */
-      if (g_pWind->GetActualVideoModeParams().bTrilinearFiltering) {
+      if (g_pWind->GetActualVideoModeParams().trilinear_filtering_) {
         iMinFilter = GL_LINEAR_MIPMAP_LINEAR;
       } else {
         iMinFilter = GL_LINEAR_MIPMAP_NEAREST;
@@ -2010,9 +2011,9 @@ void RageDisplay_Legacy::SetMaterial(
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
   } else {
     RageColor c = diffuse;
-    c.r += emissive.r + ambient.r;
-    c.g += emissive.g + ambient.g;
-    c.b += emissive.b + ambient.b;
+    c.r_ += emissive.r_ + ambient.r_;
+    c.g_ += emissive.g_ + ambient.g_;
+    c.b_ += emissive.b_ + ambient.b_;
     glColor4fv(c);
   }
 }
@@ -2041,7 +2042,7 @@ void RageDisplay_Legacy::SetLightDirectional(
   glLightfv(GL_LIGHT0 + index, GL_AMBIENT, ambient);
   glLightfv(GL_LIGHT0 + index, GL_DIFFUSE, diffuse);
   glLightfv(GL_LIGHT0 + index, GL_SPECULAR, specular);
-  float position[4] = {dir.x, dir.y, dir.z, 0};
+  float position[4] = {dir.x_, dir.y_, dir.z_, 0};
   glLightfv(GL_LIGHT0 + index, GL_POSITION, position);
 
   glPopMatrix();
@@ -2092,13 +2093,13 @@ RagePixelFormat RageDisplay_Legacy::GetImgPixelFormat(
     RageSurface*& img, bool& bFreeImg, int width, int height,
     bool bPalettedTexture) {
   RagePixelFormat pixfmt = FindPixelFormat(
-      img->format->BitsPerPixel, img->format->Rmask, img->format->Gmask,
-      img->format->Bmask, img->format->Amask);
+      img->format_->bits_per_pixel_, img->format_->rmask_, img->format_->gmask_,
+      img->format_->bmask_, img->format_->amask_);
 
   /* If img is paletted, we're setting up a non-paletted texture, and color
    * indexes are too small, depalettize. */
   bool bSupported = true;
-  if (!bPalettedTexture && img->fmt.BytesPerPixel == 1 &&
+  if (!bPalettedTexture && img->fmt_.bytes_per_pixel_ == 1 &&
       !g_bColorIndexTableWorks) {
     bSupported = false;
   }
@@ -2118,8 +2119,8 @@ RagePixelFormat RageDisplay_Legacy::GetImgPixelFormat(
     const RagePixelFormatDesc* pfd = DISPLAY->GetPixelFormatDesc(pixfmt);
 
     RageSurface* imgconv = CreateSurface(
-        img->w, img->h, pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2],
-        pfd->masks[3]);
+        img->w_, img->h_, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
+        pfd->masks_[2], pfd->masks_[3]);
     RageSurfaceUtils::Blit(img, imgconv, width, height);
     img = imgconv;
     bFreeImg = true;
@@ -2142,11 +2143,11 @@ void SetPixelMapForSurface(
   GLushort buf[4][256];
   memset(buf, 0, sizeof(buf));
 
-  for (int i = 0; i < palette->ncolors; ++i) {
-    buf[0][i] = SCALE(palette->colors[i].r, 0, 255, 0, 65535);
-    buf[1][i] = SCALE(palette->colors[i].g, 0, 255, 0, 65535);
-    buf[2][i] = SCALE(palette->colors[i].b, 0, 255, 0, 65535);
-    buf[3][i] = SCALE(palette->colors[i].a, 0, 255, 0, 65535);
+  for (int i = 0; i < palette->ncolors_; ++i) {
+    buf[0][i] = SCALE(palette->colors_[i].r_, 0, 255, 0, 65535);
+    buf[1][i] = SCALE(palette->colors_[i].g_, 0, 255, 0, 65535);
+    buf[2][i] = SCALE(palette->colors_[i].b_, 0, 255, 0, 65535);
+    buf[3][i] = SCALE(palette->colors_[i].a_, 0, 255, 0, 65535);
   }
 
   DebugFlushGLErrors();
@@ -2165,17 +2166,17 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
   /* Find the pixel format of the surface we've been given. */
   bool bFreeImg;
   RagePixelFormat SurfacePixFmt = GetImgPixelFormat(
-      pImg, bFreeImg, pImg->w, pImg->h, pixfmt == RagePixelFormat_PAL);
+      pImg, bFreeImg, pImg->w_, pImg->h_, pixfmt == RagePixelFormat_PAL);
   ASSERT(SurfacePixFmt != RagePixelFormat_Invalid);
 
-  GLenum glTexFormat = g_GLPixFmtInfo[pixfmt].internalfmt;
-  GLenum glImageFormat = g_GLPixFmtInfo[SurfacePixFmt].format;
-  GLenum glImageType = g_GLPixFmtInfo[SurfacePixFmt].type;
+  GLenum glTexFormat = g_GLPixFmtInfo[pixfmt].internalfmt_;
+  GLenum glImageFormat = g_GLPixFmtInfo[SurfacePixFmt].format_;
+  GLenum glImageType = g_GLPixFmtInfo[SurfacePixFmt].type_;
 
   /* If the image is paletted, but we're not sending it to a paletted image,
    * set up glPixelMap. */
   SetPixelMapForSurface(
-      glImageFormat, glTexFormat, pImg->format->palette.get());
+      glImageFormat, glTexFormat, pImg->format_->palette_.get());
 
   // HACK:  OpenGL 1.2 types aren't available in GLU 1.3.  Don't call GLU for
   // mip mapping if we're using an OGL 1.2 type and don't have >= GLU 1.3.
@@ -2208,7 +2209,7 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(iTexHandle));
 
-  if (g_pWind->GetActualVideoModeParams().bAnisotropicFiltering &&
+  if (g_pWind->GetActualVideoModeParams().anisotropic_filtering_ &&
       GLEW_EXT_texture_filter_anisotropic) {
     GLfloat fLargestSupportedAnisotropy;
     glGetFloatv(
@@ -2222,7 +2223,7 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
   SetTextureWrapping(TextureUnit_1, false);
 
   glPixelStorei(
-      GL_UNPACK_ROW_LENGTH, pImg->pitch / pImg->format->BytesPerPixel);
+      GL_UNPACK_ROW_LENGTH, pImg->pitch_ / pImg->format_->bytes_per_pixel_);
 
   if (pixfmt == RagePixelFormat_PAL) {
     /* The texture is paletted; set the texture palette. */
@@ -2230,11 +2231,11 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
     memset(palette, 0, sizeof(palette));
     int p = 0;
     /* Copy the palette to the format OpenGL expects. */
-    for (int i = 0; i < pImg->format->palette->ncolors; ++i) {
-      palette[p++] = pImg->format->palette->colors[i].r;
-      palette[p++] = pImg->format->palette->colors[i].g;
-      palette[p++] = pImg->format->palette->colors[i].b;
-      palette[p++] = pImg->format->palette->colors[i].a;
+    for (int i = 0; i < pImg->format_->palette_->ncolors_; ++i) {
+      palette[p++] = pImg->format_->palette_->colors_[i].r_;
+      palette[p++] = pImg->format_->palette_->colors_[i].g_;
+      palette[p++] = pImg->format_->palette_->colors_[i].b_;
+      palette[p++] = pImg->format_->palette_->colors_[i].a_;
     }
 
     /* Set the palette. */
@@ -2249,19 +2250,19 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
   LOG->Trace(
       "%s (format %s, %ix%i, format %s, type %s, pixfmt %i, imgpixfmt %i)",
-      "glTexImage2D", GLToString(glTexFormat).c_str(), pImg->w, pImg->h,
+      "glTexImage2D", GLToString(glTexFormat).c_str(), pImg->w_, pImg->h_,
       GLToString(glImageFormat).c_str(), GLToString(glImageType).c_str(),
       pixfmt, SurfacePixFmt);
 
   DebugFlushGLErrors();
 
   glTexImage2D(
-      GL_TEXTURE_2D, 0, glTexFormat, power_of_two(pImg->w),
-      power_of_two(pImg->h), 0, glImageFormat, glImageType, nullptr);
-  if (pImg->pixels) {
+      GL_TEXTURE_2D, 0, glTexFormat, power_of_two(pImg->w_),
+      power_of_two(pImg->h_), 0, glImageFormat, glImageType, nullptr);
+  if (pImg->pixels_) {
     glTexSubImage2D(
-        GL_TEXTURE_2D, 0, 0, 0, pImg->w, pImg->h, glImageFormat, glImageType,
-        pImg->pixels);
+        GL_TEXTURE_2D, 0, 0, 0, pImg->w_, pImg->h_, glImageFormat, glImageType,
+        pImg->pixels_);
   }
 
   if (bGenerateMipMaps) {
@@ -2292,68 +2293,68 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 struct RageTextureLock_OGL : public RageTextureLock, public InvalidateObject {
  public:
   RageTextureLock_OGL() {
-    m_iTexHandle = 0;
-    m_iBuffer = 0;
+    tex_handle_ = 0;
+    buffer_ = 0;
 
     CreateObject();
   }
 
   ~RageTextureLock_OGL() {
-    ASSERT(m_iTexHandle == 0);  // locked!
-    glDeleteBuffersARB(1, &m_iBuffer);
+    ASSERT(tex_handle_ == 0);  // locked!
+    glDeleteBuffersARB(1, &buffer_);
   }
 
   /* This is called when our OpenGL context is invalidated. */
-  void Invalidate() { m_iTexHandle = 0; }
+  void Invalidate() { tex_handle_ = 0; }
 
   void Lock(uintptr_t iTexHandle, RageSurface* pSurface) {
-    ASSERT(m_iTexHandle == 0);
-    ASSERT(pSurface->pixels == nullptr);
+    ASSERT(tex_handle_ == 0);
+    ASSERT(pSurface->pixels_ == nullptr);
 
     CreateObject();
 
-    m_iTexHandle = iTexHandle;
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, m_iBuffer);
+    tex_handle_ = iTexHandle;
+    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, buffer_);
 
-    int iSize = pSurface->h * pSurface->pitch;
+    int iSize = pSurface->h_ * pSurface->pitch_;
     glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, iSize, nullptr, GL_STREAM_DRAW);
 
     void* pSurfaceMemory =
         glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
-    pSurface->pixels = (uint8_t*)pSurfaceMemory;
-    pSurface->pixels_owned = false;
+    pSurface->pixels_ = (uint8_t*)pSurfaceMemory;
+    pSurface->pixels_owned_ = false;
   }
 
   void Unlock(RageSurface* pSurface, bool bChanged) {
     glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
 
-    pSurface->pixels = (uint8_t*)BUFFER_OFFSET(0);
+    pSurface->pixels_ = (uint8_t*)BUFFER_OFFSET(0);
 
     if (bChanged) {
       DISPLAY->UpdateTexture(
-          m_iTexHandle, pSurface, 0, 0, pSurface->w, pSurface->h);
+          tex_handle_, pSurface, 0, 0, pSurface->w_, pSurface->h_);
     }
 
-    pSurface->pixels = nullptr;
+    pSurface->pixels_ = nullptr;
 
-    m_iTexHandle = 0;
+    tex_handle_ = 0;
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
   }
 
  private:
   void CreateObject() {
-    if (m_iBuffer != 0) {
+    if (buffer_ != 0) {
       return;
     }
 
     DebugFlushGLErrors();
-    glGenBuffersARB(1, &m_iBuffer);
+    glGenBuffersARB(1, &buffer_);
     DebugAssertNoGLError();
   }
 
-  GLuint m_iBuffer;
+  GLuint buffer_;
 
-  uintptr_t m_iTexHandle;
+  uintptr_t tex_handle_;
 };
 
 RageTextureLock* RageDisplay_Legacy::CreateTextureLock() {
@@ -2374,25 +2375,25 @@ void RageDisplay_Legacy::UpdateTexture(
       GetImgPixelFormat(pImg, bFreeImg, iWidth, iHeight, false);
 
   glPixelStorei(
-      GL_UNPACK_ROW_LENGTH, pImg->pitch / pImg->format->BytesPerPixel);
+      GL_UNPACK_ROW_LENGTH, pImg->pitch_ / pImg->format_->bytes_per_pixel_);
 
-  GLenum glImageFormat = g_GLPixFmtInfo[SurfacePixFmt].format;
-  GLenum glImageType = g_GLPixFmtInfo[SurfacePixFmt].type;
+  GLenum glImageFormat = g_GLPixFmtInfo[SurfacePixFmt].format_;
+  GLenum glImageType = g_GLPixFmtInfo[SurfacePixFmt].type_;
 
   /* If the image is paletted, but we're not sending it to a paletted image,
    * set up glPixelMap. */
-  if (pImg->format->palette) {
+  if (pImg->format_->palette_) {
     GLenum glTexFormat = 0;
     glGetTexLevelParameteriv(
         GL_PROXY_TEXTURE_2D, 0, GLenum(GL_TEXTURE_INTERNAL_FORMAT),
         (GLint*)&glTexFormat);
     SetPixelMapForSurface(
-        glImageFormat, glTexFormat, pImg->format->palette.get());
+        glImageFormat, glTexFormat, pImg->format_->palette_.get());
   }
 
   glTexSubImage2D(
       GL_TEXTURE_2D, 0, iXOffset, iYOffset, iWidth, iHeight, glImageFormat,
-      glImageType, pImg->pixels);
+      glImageType, pImg->pixels_);
 
   /* Must unset PixelStore when we're done! */
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -2410,62 +2411,62 @@ class RenderTarget_FramebufferObject : public RenderTarget {
   void Create(
       const RenderTargetParam& param, int& iTextureWidthOut,
       int& iTextureHeightOut);
-  uintptr_t GetTexture() const { return m_iTexHandle; }
+  uintptr_t GetTexture() const { return tex_handle_; }
   void StartRenderingTo();
   void FinishRenderingTo();
 
   virtual bool InvertY() const { return true; }
 
  private:
-  uintptr_t m_iFrameBufferHandle;
-  uintptr_t m_iTexHandle;
-  uintptr_t m_iDepthBufferHandle;
+  uintptr_t frame_buffer_handle_;
+  uintptr_t tex_handle_;
+  uintptr_t depth_buffer_handle_;
 };
 
 RenderTarget_FramebufferObject::RenderTarget_FramebufferObject() {
-  m_iFrameBufferHandle = 0;
-  m_iTexHandle = 0;
-  m_iDepthBufferHandle = 0;
+  frame_buffer_handle_ = 0;
+  tex_handle_ = 0;
+  depth_buffer_handle_ = 0;
 }
 
 RenderTarget_FramebufferObject::~RenderTarget_FramebufferObject() {
-  if (m_iDepthBufferHandle) {
+  if (depth_buffer_handle_) {
     glDeleteRenderbuffersEXT(
-        1, reinterpret_cast<GLuint*>(&m_iDepthBufferHandle));
+        1, reinterpret_cast<GLuint*>(&depth_buffer_handle_));
   }
-  if (m_iFrameBufferHandle) {
+  if (frame_buffer_handle_) {
     glDeleteFramebuffersEXT(
-        1, reinterpret_cast<GLuint*>(&m_iFrameBufferHandle));
+        1, reinterpret_cast<GLuint*>(&frame_buffer_handle_));
   }
-  if (m_iTexHandle) {
-    glDeleteTextures(1, reinterpret_cast<GLuint*>(&m_iTexHandle));
+  if (tex_handle_) {
+    glDeleteTextures(1, reinterpret_cast<GLuint*>(&tex_handle_));
   }
 }
 
 void RenderTarget_FramebufferObject::Create(
     const RenderTargetParam& param, int& iTextureWidthOut,
     int& iTextureHeightOut) {
-  m_Param = param;
+  param_ = param;
 
   DebugFlushGLErrors();
 
   // Allocate OpenGL texture resource
-  glGenTextures(1, reinterpret_cast<GLuint*>(&m_iTexHandle));
-  ASSERT(m_iTexHandle != 0);
+  glGenTextures(1, reinterpret_cast<GLuint*>(&tex_handle_));
+  ASSERT(tex_handle_ != 0);
 
-  int iTextureWidth = power_of_two(param.iWidth);
-  int iTextureHeight = power_of_two(param.iHeight);
+  int iTextureWidth = power_of_two(param.width_);
+  int iTextureHeight = power_of_two(param.height_);
 
   iTextureWidthOut = iTextureWidth;
   iTextureHeightOut = iTextureHeight;
 
-  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(m_iTexHandle));
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(tex_handle_));
   GLenum internalformat;
-  GLenum type = param.bWithAlpha ? GL_RGBA : GL_RGB;
-  if (param.bFloat && GLEW_ARB_texture_float) {
-    internalformat = param.bWithAlpha ? GL_RGBA16F_ARB : GL_RGB16F_ARB;
+  GLenum type = param.with_alpha_ ? GL_RGBA : GL_RGB;
+  if (param.float_ && GLEW_ARB_texture_float) {
+    internalformat = param.with_alpha_ ? GL_RGBA16F_ARB : GL_RGB16F_ARB;
   } else {
-    internalformat = param.bWithAlpha ? GL_RGBA8 : GL_RGB8;
+    internalformat = param.with_alpha_ ? GL_RGBA8 : GL_RGB8;
   }
 
   glTexImage2D(
@@ -2479,30 +2480,30 @@ void RenderTarget_FramebufferObject::Create(
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   /* Create the framebuffer object. */
-  glGenFramebuffersEXT(1, reinterpret_cast<GLuint*>(&m_iFrameBufferHandle));
-  ASSERT(m_iFrameBufferHandle != 0);
+  glGenFramebuffersEXT(1, reinterpret_cast<GLuint*>(&frame_buffer_handle_));
+  ASSERT(frame_buffer_handle_ != 0);
 
   /* Attach the texture to it. */
   glBindFramebufferEXT(
-      GL_FRAMEBUFFER_EXT, static_cast<GLuint>(m_iFrameBufferHandle));
+      GL_FRAMEBUFFER_EXT, static_cast<GLuint>(frame_buffer_handle_));
   glFramebufferTexture2DEXT(
       GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D,
-      static_cast<GLuint>(m_iTexHandle), 0);
+      static_cast<GLuint>(tex_handle_), 0);
   DebugAssertNoGLError();
 
   /* Attach a depth buffer, if requested. */
-  if (param.bWithDepthBuffer) {
-    glGenRenderbuffersEXT(1, reinterpret_cast<GLuint*>(&m_iDepthBufferHandle));
-    ASSERT(m_iDepthBufferHandle != 0);
+  if (param.with_depth_buffer_) {
+    glGenRenderbuffersEXT(1, reinterpret_cast<GLuint*>(&depth_buffer_handle_));
+    ASSERT(depth_buffer_handle_ != 0);
 
     glBindRenderbufferEXT(
-        GL_RENDERBUFFER, static_cast<GLuint>(m_iDepthBufferHandle));
+        GL_RENDERBUFFER, static_cast<GLuint>(depth_buffer_handle_));
     glRenderbufferStorageEXT(
         GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, iTextureWidth,
         iTextureHeight);
     glFramebufferRenderbufferEXT(
         GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT,
-        static_cast<GLuint>(m_iDepthBufferHandle));
+        static_cast<GLuint>(depth_buffer_handle_));
   }
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -2539,7 +2540,7 @@ void RenderTarget_FramebufferObject::Create(
 
 void RenderTarget_FramebufferObject::StartRenderingTo() {
   glBindFramebufferEXT(
-      GL_FRAMEBUFFER_EXT, static_cast<GLuint>(m_iFrameBufferHandle));
+      GL_FRAMEBUFFER_EXT, static_cast<GLuint>(frame_buffer_handle_));
 }
 
 void RenderTarget_FramebufferObject::FinishRenderingTo() {
@@ -2606,8 +2607,8 @@ void RageDisplay_Legacy::SetRenderTarget(
     DISPLAY->CameraPopMatrix();
 
     /* Reset the viewport. */
-    int fWidth = g_pWind->GetActualVideoModeParams().windowWidth;
-    int fHeight = g_pWind->GetActualVideoModeParams().windowHeight;
+    int fWidth = g_pWind->GetActualVideoModeParams().window_width_;
+    int fHeight = g_pWind->GetActualVideoModeParams().window_height_;
     glViewport(0, 0, fWidth, fHeight);
 
     if (g_pCurrentRenderTarget) {
@@ -2629,7 +2630,7 @@ void RageDisplay_Legacy::SetRenderTarget(
   g_pCurrentRenderTarget = pTarget;
 
   /* Set the viewport to the size of the render target. */
-  glViewport(0, 0, pTarget->GetParam().iWidth, pTarget->GetParam().iHeight);
+  glViewport(0, 0, pTarget->GetParam().width_, pTarget->GetParam().height_);
 
   /* If this render target implementation flips Y, compensate.   Inverting will
    * switch the winding order. */
@@ -2653,7 +2654,7 @@ void RageDisplay_Legacy::SetRenderTarget(
    * buffer. */
   if (!bPreserveTexture) {
     int iBit = GL_COLOR_BUFFER_BIT;
-    if (pTarget->GetParam().bWithDepthBuffer) {
+    if (pTarget->GetParam().with_depth_buffer_) {
       iBit |= GL_DEPTH_BUFFER_BIT;
     }
     glClear(iBit);
@@ -2691,7 +2692,7 @@ void RageDisplay_Legacy::SetAlphaTest(bool b) {
  * implementations neglect GL_UNSIGNED_SHORT_*_REV.
  */
 bool RageDisplay_Legacy::SupportsSurfaceFormat(RagePixelFormat pixfmt) {
-  switch (g_GLPixFmtInfo[pixfmt].type) {
+  switch (g_GLPixFmtInfo[pixfmt].type_) {
     case GL_UNSIGNED_SHORT_1_5_5_5_REV:
       return GLEW_EXT_bgra && g_bReversePackedPixelsWorks;
     default:
@@ -2708,7 +2709,7 @@ bool RageDisplay_Legacy::SupportsTextureFormat(
     return false;
   }
 
-  switch (g_GLPixFmtInfo[pixfmt].format) {
+  switch (g_GLPixFmtInfo[pixfmt].format_) {
     case GL_COLOR_INDEX:
       return glColorTableEXT && glGetColorTableParameterivEXT;
     case GL_BGR:

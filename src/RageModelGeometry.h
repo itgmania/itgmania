@@ -22,13 +22,13 @@ class RageModelGeometry {
   void MergeMeshes(int iFromIndex, int iToIndex);
   bool HasAnyPerVertexBones() const;
 
-  int m_iRefCount;
+  int ref_count_;
 
-  std::vector<msMesh> m_Meshes;
-  RageCompiledGeometry* m_pCompiledGeometry;  // video memory copy of geometry
-                                              // shared by all meshes
+  std::vector<msMesh> meshes_;
+  RageCompiledGeometry* compiled_geometry_;  // video memory copy of geometry
+                                             // shared by all meshes
 
-  RageVector3 m_vMins, m_vMaxs;
+  RageVector3 mins_, maxs_;
 };
 
 #endif

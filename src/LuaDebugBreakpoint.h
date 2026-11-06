@@ -32,55 +32,55 @@ class Breakpoint {
   std::string EvaluateLogMessage(
       DebuggeeState& stackFrame, std::string& evaluationError);
 
-  BreakpointId GetId() const { return m_id; }
-  int GetEventMask() const { return m_eventMask; }
-  const std::string& GetFileName() const { return m_fileName; }
-  const std::string& GetFunctionName() const { return m_functionName; }
-  const lua_State* GetThread() const { return m_thread; }
-  const std::string& GetReason() const { return m_reason; }
-  bool IsTemporary() const { return m_temporary; }
-  bool IsBreak() const { return m_logMessage.empty(); }
+  BreakpointId GetId() const { return id_; }
+  int GetEventMask() const { return event_mask_; }
+  const std::string& GetFileName() const { return file_name_; }
+  const std::string& GetFunctionName() const { return function_name_; }
+  const lua_State* GetThread() const { return thread_; }
+  const std::string& GetReason() const { return reason_; }
+  bool IsTemporary() const { return temporary_; }
+  bool IsBreak() const { return log_message_.empty(); }
 
-  void SetCondition(const std::string& condition) { m_condition = condition; }
-  void SetHitCondition(uint64_t hitCondition) { m_hitCondition = hitCondition; }
+  void SetCondition(const std::string& condition) { condition_ = condition; }
+  void SetHitCondition(uint64_t hitCondition) { hit_condition_ = hitCondition; }
   void SetLogMessage(const std::string& logMessage) {
-    m_logMessage = logMessage;
+    log_message_ = logMessage;
   }
 
  private:
   Breakpoint() = default;
 
   /* Breakpoint identifier. */
-  BreakpointId m_id = 0;
+  BreakpointId id_ = 0;
 
   /* Combination of the LUA_MASK* flags that can trigger this breakpoint. */
-  int m_eventMask = 0;
+  int event_mask_ = 0;
   /* If non-empty, the breakpoint only triggers in the specific function. */
-  std::string m_functionName;
+  std::string function_name_;
   /* If non-empty, the breakpoint only triggers in the specific source file. */
-  std::string m_fileName;
+  std::string file_name_;
   /* If nonnegative, the breakpoint only triggers on a specific line number. */
-  int m_lineNumber = -1;
+  int line_number_ = -1;
   /* If nonnegative, the breakpoint only triggers when the call stack depth is
    * at or below the limit. */
-  int m_maxStackDepth = -1;
+  int max_stack_depth_ = -1;
   /* If non-null, the breakpoint only triggers on a specific thread. */
-  const lua_State* m_thread = nullptr;
+  const lua_State* thread_ = nullptr;
   /* If non-empty, the breakpoint only triggers if the condition is true. */
-  std::string m_condition;
+  std::string condition_;
   /* If positive, the breakpoint only triggers after hit count reaches hit
    * condition. */
-  uint64_t m_hitCondition = 0;
+  uint64_t hit_condition_ = 0;
   /* Number of times the breakpoint has been hit. */
-  uint64_t m_hitCount = 0;
+  uint64_t hit_count_ = 0;
   /* If non-empty, the breakpoint logs a message instead of stopping
    * execution when hit. */
-  std::string m_logMessage;
+  std::string log_message_;
 
   /* Reason reported when stopping at this breakpoint. */
-  std::string m_reason;
+  std::string reason_;
   /* If true, the breakpoint is deleted after one hit. */
-  bool m_temporary = false;
+  bool temporary_ = false;
 };
 }  // namespace LuaDebug
 

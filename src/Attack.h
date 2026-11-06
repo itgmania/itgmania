@@ -12,48 +12,49 @@ class Song;
 class PlayerState;
 /** @brief An action made against a Player to make things more difficult. */
 struct Attack {
-  AttackLevel level;
+  AttackLevel level_;
   /**
    * @brief the starting point of this attack.
    *
    * If this is -1, then the attack starts now. */
-  float fStartSecond;
+  float start_second_;
   /** @brief How long does this attack last? */
-  float fSecsRemaining;
+  float secs_remaining_;
   /** @brief The modifiers used for this attack. */
-  std::string sModifiers;
-  bool bOn;      // set and used by GAMESTATE
-  bool bGlobal;  // true for song-wide course mods
-  bool bShowInAttackList;
+  std::string modifiers_;
+  bool on_;      // set and used by GAMESTATE
+  bool global_;  // true for song-wide course mods
+  bool show_in_attack_list_;
 
   void MakeBlank() {
-    level = ATTACK_LEVEL_1;
-    fStartSecond = ATTACK_STARTS_NOW;
-    fSecsRemaining = 0;
-    sModifiers = std::string();
-    bOn = false;
-    bGlobal = false;
-    bShowInAttackList = true;
+    level_ = ATTACK_LEVEL_1;
+    start_second_ = ATTACK_STARTS_NOW;
+    secs_remaining_ = 0;
+    modifiers_ = std::string();
+    on_ = false;
+    global_ = false;
+    show_in_attack_list_ = true;
   }
   Attack()
-      : level(ATTACK_LEVEL_1),
-        fStartSecond(ATTACK_STARTS_NOW),
-        fSecsRemaining(0),
-        sModifiers(std::string()),
-        bOn(false),
-        bGlobal(false),
-        bShowInAttackList(true) {}  // MakeBlank() is effectively called here.
+      : level_(ATTACK_LEVEL_1),
+        start_second_(ATTACK_STARTS_NOW),
+        secs_remaining_(0),
+        modifiers_(std::string()),
+        on_(false),
+        global_(false),
+        show_in_attack_list_(true) {
+  }  // MakeBlank() is effectively called here.
   Attack(
       AttackLevel level_, float fStartSecond_, float fSecsRemaining_,
       std::string sModifiers_, bool bOn_, bool bGlobal_,
       bool bShowInAttackList_ = true)
-      : level(level_),
-        fStartSecond(fStartSecond_),
-        fSecsRemaining(fSecsRemaining_),
-        sModifiers(sModifiers_),
-        bOn(bOn_),
-        bGlobal(bGlobal_),
-        bShowInAttackList(bShowInAttackList_) {}
+      : level_(level_),
+        start_second_(fStartSecond_),
+        secs_remaining_(fSecsRemaining_),
+        modifiers_(sModifiers_),
+        on_(bOn_),
+        global_(bGlobal_),
+        show_in_attack_list_(bShowInAttackList_) {}
 
   void GetAttackBeats(
       const Song* pSong, float& fStartBeat, float& fEndBeat) const;
@@ -64,7 +65,7 @@ struct Attack {
    * @brief Determine if this attack has no modifiers, and is thus blank or
    * empty.
    * @return true if it is blank/empty, or false otherwise. */
-  bool IsBlank() const { return sModifiers.empty(); }
+  bool IsBlank() const { return modifiers_.empty(); }
   bool ContainsTransformOrTurn() const;
   static Attack FromGlobalCourseModifier(const std::string& sModifiers);
   std::string GetTextDescription() const;

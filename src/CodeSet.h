@@ -14,8 +14,8 @@ class InputQueueCodeSet {
   bool InputMessage(const InputEventPlus& input, Message& msg) const;
 
  private:
-  std::vector<InputQueueCode> m_aCodes;
-  std::vector<std::string> m_asCodeNames;
+  std::vector<InputQueueCode> codes_;
+  std::vector<std::string> code_names_;
 };
 
 #endif

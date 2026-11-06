@@ -11,10 +11,10 @@
 #include "arch/arch_default.h"
 #include "global.h"
 
-LoadingWindow::LoadingWindow() : m_progress(0), m_totalWork(1) {}
+LoadingWindow::LoadingWindow() : progress_(0), total_work_(1) {}
 
 LoadingWindow* LoadingWindow::Create() {
-  if (!PREFSMAN->m_bShowLoadingWindow) {
+  if (!PREFSMAN->show_loading_window_) {
     return new LoadingWindow_Null;
   }
 #if defined(UNIX) && !defined(HAVE_GTK)

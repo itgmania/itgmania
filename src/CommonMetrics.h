@@ -12,36 +12,36 @@
 // Types
 class ThemeMetricDifficultiesToShow : public ThemeMetric<std::string> {
  public:
-  ThemeMetricDifficultiesToShow() : m_v() {}
+  ThemeMetricDifficultiesToShow() : v_() {}
   ThemeMetricDifficultiesToShow(
       const std::string& sGroup, const std::string& sName);
   void Read();
   const std::vector<Difficulty>& GetValue() const;
 
  private:
-  std::vector<Difficulty> m_v;
+  std::vector<Difficulty> v_;
 };
 class ThemeMetricCourseDifficultiesToShow : public ThemeMetric<std::string> {
  public:
-  ThemeMetricCourseDifficultiesToShow() : m_v() {}
+  ThemeMetricCourseDifficultiesToShow() : v_() {}
   ThemeMetricCourseDifficultiesToShow(
       const std::string& sGroup, const std::string& sName);
   void Read();
   const std::vector<CourseDifficulty>& GetValue() const;
 
  private:
-  std::vector<CourseDifficulty> m_v;
+  std::vector<CourseDifficulty> v_;
 };
 class ThemeMetricStepsTypesToShow : public ThemeMetric<std::string> {
  public:
-  ThemeMetricStepsTypesToShow() : m_v() {}
+  ThemeMetricStepsTypesToShow() : v_() {}
   ThemeMetricStepsTypesToShow(
       const std::string& sGroup, const std::string& sName);
   void Read();
   const std::vector<StepsType>& GetValue() const;
 
  private:
-  std::vector<StepsType> m_v;
+  std::vector<StepsType> v_;
 };
 
 /**

@@ -65,44 +65,44 @@ class UnlockEntry {
    * m_sEntryID starts as an empty string. It will be filled automatically
    * if not specified. */
   UnlockEntry()
-      : m_Type(UnlockRewardType_Invalid),
-        m_cmd(),
-        m_Song(),
-        m_dc(Difficulty_Invalid),
-        m_Course(),
-        m_StepsType(StepsType_Invalid),
-        m_bRequirePassHardSteps(false),
-        m_bRequirePassChallengeSteps(false),
-        m_bRoulette(false),
-        m_sEntryID(std::string("")) {
-    ZERO(m_fRequirement);
+      : type_(UnlockRewardType_Invalid),
+        cmd_(),
+        song_(),
+        dc_(Difficulty_Invalid),
+        course_(),
+        steps_type_(StepsType_Invalid),
+        require_pass_hard_steps_(false),
+        require_pass_challenge_steps_(false),
+        roulette_(false),
+        entry_id_(std::string("")) {
+    ZERO(requirement_);
   }
 
-  UnlockRewardType m_Type;
-  Command m_cmd;
+  UnlockRewardType type_;
+  Command cmd_;
 
   /* A cached pointer to the song or course this entry refers to.  Only one of
    * these will be non-nullptr. */
-  SongID m_Song;
-  Difficulty m_dc;
-  CourseID m_Course;
-  StepsType m_StepsType;
+  SongID song_;
+  Difficulty dc_;
+  CourseID course_;
+  StepsType steps_type_;
 
-  float m_fRequirement[NUM_UnlockRequirement];  // unlocked if any of of these
-                                                // are met
+  float requirement_[NUM_UnlockRequirement];  // unlocked if any of of these
+                                              // are met
   /** @brief Must the hard steps be passed to unlock a higher level? */
-  bool m_bRequirePassHardSteps;
+  bool require_pass_hard_steps_;
   /** @brief Must the challenge steps be passed to unlock a higher level? */
-  bool m_bRequirePassChallengeSteps;
-  bool m_bRoulette;
-  std::string m_sEntryID;
+  bool require_pass_challenge_steps_;
+  bool roulette_;
+  std::string entry_id_;
 
   bool IsValid() const;
   bool IsLocked() const {
     return GetUnlockEntryStatus() != UnlockEntryStatus_Unlocked;
   }
   UnlockEntryStatus GetUnlockEntryStatus() const;
-  std::string GetModifier() const { return m_cmd.GetArg(1).s; }
+  std::string GetModifier() const { return cmd_.GetArg(1).s_; }
   std::string GetDescription() const;
   std::string GetBannerFile() const;
   std::string GetBackgroundFile() const;
@@ -165,7 +165,7 @@ class UnlockManager {
   std::string FindEntryID(const std::string& sName) const;
 
   // All locked songs are stored here
-  std::vector<UnlockEntry> m_UnlockEntries;
+  std::vector<UnlockEntry> unlock_entries_;
 
   void GetUnlocksByType(
       UnlockRewardType t, std::vector<UnlockEntry*>& apEntries);
@@ -188,7 +188,7 @@ class UnlockManager {
   void Load();
 
   std::set<std::string>
-      m_RouletteCodes;  // "codes" which are available in roulette and which
+      roulette_codes_;  // "codes" which are available in roulette and which
                         // unlock if rouletted
 };
 

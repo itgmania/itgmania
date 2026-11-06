@@ -15,7 +15,7 @@ class InputHandler_Linux_Event : public InputHandler {
   InputHandler_Linux_Event();
   ~InputHandler_Linux_Event();
   bool TryDevice(std::string devfile);
-  bool DevicesChanged() { return m_bDevicesChanged; }
+  bool DevicesChanged() { return devices_changed_; }
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
  private:
@@ -24,15 +24,15 @@ class InputHandler_Linux_Event : public InputHandler {
   static int InputThread_Start(void* p);
   void InputThread();
 
-  RageThread m_InputThread;
-  // Currently only m_bDevicesChanged is guarded by this mutex
-  RageMutex m_InputMutex;
-  InputDevice m_NextDevice;
-  bool m_bShutdown, m_bDevicesChanged;
+  RageThread input_thread_;
+  // Currently only devices_changed_ is guarded by this mutex
+  RageMutex input_mutex_;
+  InputDevice next_device_;
+  bool shutdown_, devices_changed_;
   // Used to monitor for new devices
-  int m_udev_fd;
-  struct udev* m_udev;
-  struct udev_monitor* m_udev_monitor;
+  int udev_fd_;
+  struct udev* udev_;
+  struct udev_monitor* udev_monitor_;
 };
 #define USE_INPUT_HANDLER_LINUX_JOYSTICK
 

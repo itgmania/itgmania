@@ -26,11 +26,11 @@ class ScreenGameplaySyncMachine : public ScreenGameplayNormal {
   void RefreshText();
 
   /** @brief the Song used for this screen. */
-  Song m_Song;
+  Song song_;
   /** @brief the Steps used for this screen. */
-  const Steps* m_pSteps;
+  const Steps* steps_;
 
-  BitmapText m_textSyncInfo;
+  BitmapText text_sync_info_;
 };
 
 #endif

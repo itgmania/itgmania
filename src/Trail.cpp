@@ -20,20 +20,20 @@
 #include "global.h"
 
 void TrailEntry::GetAttackArray(AttackArray& out) const {
-  if (!Modifiers.empty()) {
-    out.push_back(Attack::FromGlobalCourseModifier(Modifiers));
+  if (!modifiers_.empty()) {
+    out.push_back(Attack::FromGlobalCourseModifier(modifiers_));
   }
 
-  out.insert(out.end(), Attacks.begin(), Attacks.end());
+  out.insert(out.end(), attacks_.begin(), attacks_.end());
 }
 
 bool TrailEntry::ContainsTransformOrTurn() const {
   PlayerOptions po;
-  po.FromString(Modifiers);
+  po.FromString(modifiers_);
   if (po.ContainsTransformOrTurn()) {
     return true;
   }
-  if (Attacks.ContainsTransformOrTurn()) {
+  if (attacks_.ContainsTransformOrTurn()) {
     return true;
   }
   return false;
@@ -46,23 +46,23 @@ bool TrailEntry::ContainsTransformOrTurn() const {
 class LunaTrailEntry : public Luna<TrailEntry> {
  public:
   static int GetSong(T* p, lua_State* L) {
-    if (p->pSong) {
-      p->pSong->PushSelf(L);
+    if (p->song_) {
+      p->song_->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
     return 1;
   }
   static int GetSteps(T* p, lua_State* L) {
-    if (p->pSteps) {
-      p->pSteps->PushSelf(L);
+    if (p->steps_) {
+      p->steps_->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
     return 1;
   }
-  DEFINE_METHOD(IsSecret, bSecret);
-  DEFINE_METHOD(GetNormalModifiers, Modifiers);
+  DEFINE_METHOD(IsSecret, secret_);
+  DEFINE_METHOD(GetNormalModifiers, modifiers_);
 
   LunaTrailEntry() {
     ADD_METHOD(GetSong);
@@ -76,26 +76,26 @@ LUA_REGISTER_CLASS(TrailEntry)
 // TrailEntry lua end
 
 void Trail::SetRadarValues(const RadarValues& rv) {
-  m_CachedRadarValues = rv;
-  m_bRadarValuesCached = true;
+  cached_radar_values_ = rv;
+  radar_values_cached_ = true;
 }
 
 const RadarValues& Trail::GetRadarValues() const {
-  if (m_bRadarValuesCached) {
-    return m_CachedRadarValues;
+  if (radar_values_cached_) {
+    return cached_radar_values_;
   }
   if (IsSecret()) {
     // Don't calculate RadarValues for a non-fixed Course.  They values are
     // worthless because they'll change every time this Trail is
     // regenerated.
-    m_CachedRadarValues = RadarValues();
-    return m_CachedRadarValues;
+    cached_radar_values_ = RadarValues();
+    return cached_radar_values_;
   } else {
     RadarValues rv;
     rv.Zero();
 
-    for (const TrailEntry& e : m_vEntries) {
-      const Steps* pSteps = e.pSteps;
+    for (const TrailEntry& e : entries_) {
+      const Steps* pSteps = e.steps_;
       ASSERT(pSteps != nullptr);
       // Hack: don't calculate for autogen entries
       if (!pSteps->IsAutogen() && e.ContainsTransformOrTurn()) {
@@ -104,19 +104,19 @@ const RadarValues& Trail::GetRadarValues() const {
         RadarValues rv_orig;
         TimingData* timing = const_cast<TimingData*>(pSteps->GetTimingData());
         NoteDataUtil::CalculateRadarValues(
-            nd, e.pSong->m_fMusicLengthSeconds, timing, rv_orig);
+            nd, e.song_->music_length_seconds_, timing, rv_orig);
         PlayerOptions po;
-        po.FromString(e.Modifiers);
+        po.FromString(e.modifiers_);
         if (po.ContainsTransformOrTurn()) {
           NoteDataUtil::TransformNoteData(
-              nd, *(pSteps->GetTimingData()), po, pSteps->m_StepsType);
+              nd, *(pSteps->GetTimingData()), po, pSteps->steps_type_);
         }
         NoteDataUtil::TransformNoteData(
-            nd, *(pSteps->GetTimingData()), e.Attacks, pSteps->m_StepsType,
-            e.pSong);
+            nd, *(pSteps->GetTimingData()), e.attacks_, pSteps->steps_type_,
+            e.song_);
         RadarValues transformed_rv;
         NoteDataUtil::CalculateRadarValues(
-            nd, e.pSong->m_fMusicLengthSeconds, timing, transformed_rv);
+            nd, e.song_->music_length_seconds_, timing, transformed_rv);
         rv += transformed_rv;
       } else {
         rv += pSteps->GetRadarValues(PLAYER_1);
@@ -128,50 +128,49 @@ const RadarValues& Trail::GetRadarValues() const {
      * cast away const. */
     const_cast<Trail*>(this)->SetRadarValues(rv);
 
-    return m_CachedRadarValues;
+    return cached_radar_values_;
   }
 }
 
 int Trail::GetMeter() const {
-  if (m_iSpecifiedMeter != -1) {
-    return m_iSpecifiedMeter;
+  if (specified_meter_ != -1) {
+    return specified_meter_;
   }
 
-  if (m_vEntries.empty()) {
+  if (entries_.empty()) {
     return 0;
   }
 
-  float fMeter = GetTotalMeter() / (float)m_vEntries.size();
+  float fMeter = GetTotalMeter() / (float)entries_.size();
 
   return std::lrint(fMeter);
 }
 
 int Trail::GetTotalMeter() const {
   return std::accumulate(
-      m_vEntries.begin(), m_vEntries.end(), 0,
-      [](int total, const TrailEntry& e) {
-        return total + e.pSteps->GetMeter();
+      entries_.begin(), entries_.end(), 0, [](int total, const TrailEntry& e) {
+        return total + e.steps_->GetMeter();
       });
 }
 
 float Trail::GetLengthSeconds() const {
   return std::accumulate(
-      m_vEntries.begin(), m_vEntries.end(), 0.f,
+      entries_.begin(), entries_.end(), 0.f,
       [](float total, const TrailEntry& e) {
-        return total + e.pSong->m_fMusicLengthSeconds;
+        return total + e.song_->music_length_seconds_;
       });
 }
 
 void Trail::GetDisplayBpms(DisplayBpms& AddTo) const {
-  for (const TrailEntry& e : m_vEntries) {
-    if (e.bSecret) {
+  for (const TrailEntry& e : entries_) {
+    if (e.secret_) {
       AddTo.Add(-1);
       continue;
     }
 
-    Song* pSong = e.pSong;
+    Song* pSong = e.song_;
     ASSERT(pSong != nullptr);
-    switch (pSong->m_DisplayBPMType) {
+    switch (pSong->display_bpm_type_) {
       case DISPLAY_BPM_ACTUAL:
       case DISPLAY_BPM_SPECIFIED:
         pSong->GetDisplayBpms(AddTo);
@@ -179,21 +178,21 @@ void Trail::GetDisplayBpms(DisplayBpms& AddTo) const {
       case DISPLAY_BPM_RANDOM:
         AddTo.Add(-1);
         break;
-        DEFAULT_FAIL(pSong->m_DisplayBPMType);
+        DEFAULT_FAIL(pSong->display_bpm_type_);
     }
   }
 }
 
 bool Trail::IsSecret() const {
-  return std::any_of(
-      m_vEntries.begin(), m_vEntries.end(),
-      [](const TrailEntry& e) { return e.bSecret; });
+  return std::any_of(entries_.begin(), entries_.end(), [](const TrailEntry& e) {
+    return e.secret_;
+  });
 }
 
 bool Trail::ContainsSong(const Song* pSong) const {
   return std::any_of(
-      m_vEntries.begin(), m_vEntries.end(),
-      [&](const TrailEntry& e) { return e.pSong == pSong; });
+      entries_.begin(), entries_.end(),
+      [&](const TrailEntry& e) { return e.song_ == pSong; });
 }
 
 // lua start
@@ -203,7 +202,7 @@ bool Trail::ContainsSong(const Song* pSong) const {
 class LunaTrail : public Luna<Trail> {
  public:
   static int GetDifficulty(T* p, lua_State* L) {
-    LuaHelpers::Push(L, p->m_CourseDifficulty);
+    LuaHelpers::Push(L, p->course_difficulty_);
     return 1;
   }
   static int GetMeter(T* p, lua_State* L) {
@@ -215,7 +214,7 @@ class LunaTrail : public Luna<Trail> {
     return 1;
   }
   static int GetStepsType(T* p, lua_State* L) {
-    LuaHelpers::Push(L, p->m_StepsType);
+    LuaHelpers::Push(L, p->steps_type_);
     return 1;
   }
   static int GetRadarValues(T* p, lua_State* L) {
@@ -225,13 +224,13 @@ class LunaTrail : public Luna<Trail> {
   }
   static int GetArtists(T* p, lua_State* L) {
     std::vector<std::string> asArtists, asAltArtists;
-    for (const TrailEntry& e : p->m_vEntries) {
-      if (e.bSecret) {
+    for (const TrailEntry& e : p->entries_) {
+      if (e.secret_) {
         asArtists.push_back("???");
         asAltArtists.push_back("???");
       } else {
-        asArtists.push_back(e.pSong->GetDisplayArtist());
-        asAltArtists.push_back(e.pSong->GetTranslitArtist());
+        asArtists.push_back(e.song_->GetDisplayArtist());
+        asAltArtists.push_back(e.song_->GetTranslitArtist());
       }
     }
 
@@ -248,14 +247,14 @@ class LunaTrail : public Luna<Trail> {
     return 2;
   }
   static int GetTrailEntry(T* p, lua_State* L) {
-    TrailEntry& te = p->m_vEntries[IArg(1)];
+    TrailEntry& te = p->entries_[IArg(1)];
     te.PushSelf(L);
     return 1;
   }
   static int GetTrailEntries(T* p, lua_State* L) {
     std::vector<TrailEntry*> v;
-    for (unsigned i = 0; i < p->m_vEntries.size(); ++i) {
-      v.push_back(&p->m_vEntries[i]);
+    for (unsigned i = 0; i < p->entries_.size(); ++i) {
+      v.push_back(&p->entries_[i]);
     }
     LuaHelpers::CreateTableFromArray<TrailEntry*>(v, L);
     return 1;

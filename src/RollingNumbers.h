@@ -38,12 +38,12 @@ class RollingNumbers : public BitmapText {
   ThemeMetric<RageColor> LEADING_ZERO_MULTIPLY_COLOR;
 
   /** @brief The currently showing number. */
-  float m_fCurrentNumber;
+  float current_number_;
   /** @brief The number we are trying to approach. */
-  float m_fTargetNumber;
+  float target_number_;
   /** @brief The speed we are trying to reach the target number. */
-  float m_fScoreVelocity;
-  bool m_metrics_loaded;
+  float score_velocity_;
+  bool metrics_loaded_;
 };
 
 #endif

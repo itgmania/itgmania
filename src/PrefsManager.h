@@ -127,17 +127,17 @@ class PrefsManager {
   void Init();
 
   void SetCurrentGame(const std::string& sGame);
-  std::string GetCurrentGame() { return m_sCurrentGame; }
+  std::string GetCurrentGame() { return current_game_; }
 
  protected:
-  Preference<std::string> m_sCurrentGame;
+  Preference<std::string> current_game_;
 
  public:
   // Game-specific prefs.  Copy these off and save them every time the game
   // changes
-  Preference<std::string> m_sAnnouncer;
-  Preference<std::string> m_sTheme;
-  Preference<std::string> m_sDefaultModifiers;
+  Preference<std::string> announcer_;
+  Preference<std::string> theme_;
+  Preference<std::string> default_modifiers_;
 
  protected:
   void StoreGamePrefs();
@@ -146,228 +146,228 @@ class PrefsManager {
     // See GamePrefs::GamePrefs in PrefsManager.cpp for some default settings
     GamePrefs();
 
-    std::string m_sAnnouncer;
-    std::string m_sTheme;
-    std::string m_sDefaultModifiers;
+    std::string announcer_;
+    std::string theme_;
+    std::string default_modifiers_;
   };
-  std::map<std::string, GamePrefs> m_mapGameNameToGamePrefs;
+  std::map<std::string, GamePrefs> map_game_name_to_game_prefs_;
 
  public:
-  Preference<bool> m_bWindowed;
-  Preference<std::string> m_sDisplayId;
-  Preference<int> m_iDisplayWidth;
-  Preference<int> m_iDisplayHeight;
-  Preference<float> m_fDisplayAspectRatio;
-  Preference<int> m_iDisplayColorDepth;
-  Preference<int> m_iTextureColorDepth;
-  Preference<int> m_iMovieColorDepth;
-  Preference<bool> m_bStretchBackgrounds;
-  Preference<BackgroundFitMode> m_BGFitMode;
-  Preference<HighResolutionTextures> m_HighResolutionTextures;
-  Preference<int> m_iMaxTextureResolution;
-  Preference<int> m_iRefreshRate;
-  Preference<bool> m_bAllowMultitexture;
-  Preference<bool> m_bFullscreenIsBorderlessWindow;
-  Preference<bool> m_bShowStats;
-  Preference<bool> m_bShowBanners;
-  Preference<bool> m_bShowMouseCursor;
+  Preference<bool> windowed_;
+  Preference<std::string> display_id_;
+  Preference<int> display_width_;
+  Preference<int> display_height_;
+  Preference<float> display_aspect_ratio_;
+  Preference<int> display_color_depth_;
+  Preference<int> texture_color_depth_;
+  Preference<int> movie_color_depth_;
+  Preference<bool> stretch_backgrounds_;
+  Preference<BackgroundFitMode> bg_fit_mode_;
+  Preference<HighResolutionTextures> high_resolution_textures_;
+  Preference<int> max_texture_resolution_;
+  Preference<int> refresh_rate_;
+  Preference<bool> allow_multitexture_;
+  Preference<bool> fullscreen_is_borderless_window_;
+  Preference<bool> show_stats_;
+  Preference<bool> show_banners_;
+  Preference<bool> show_mouse_cursor_;
 
-  Preference<bool> m_bHiddenSongs;
-  Preference<bool> m_bVsync;
-  Preference<bool> m_FastNoteRendering;
-  Preference<bool> m_bInterlaced;
-  Preference<bool> m_bPAL;
-  Preference<bool> m_bDelayedTextureDelete;
-  Preference<bool> m_bDelayedModelDelete;
-  Preference<ImageCacheMode> m_ImageCache;
-  Preference<bool> m_bFastLoad;
-  Preference<std::string> m_NeverCacheList;
+  Preference<bool> hidden_songs_;
+  Preference<bool> vsync_;
+  Preference<bool> fast_note_rendering_;
+  Preference<bool> interlaced_;
+  Preference<bool> pal_;
+  Preference<bool> delayed_texture_delete_;
+  Preference<bool> delayed_model_delete_;
+  Preference<ImageCacheMode> image_cache_;
+  Preference<bool> fast_load_;
+  Preference<std::string> never_cache_list_;
 
-  Preference<bool> m_bOnlyDedicatedMenuButtons;
-  Preference<bool> m_bMenuTimer;
+  Preference<bool> only_dedicated_menu_buttons_;
+  Preference<bool> menu_timer_;
 
-  Preference<float> m_fLifeDifficultyScale;
+  Preference<float> life_difficulty_scale_;
 
   /**
    * Whether ratemod should affect playback speeds of FGChanges or not.
    * Originally introduced in NotITG.
    */
-  Preference<bool> m_bRateModsAffectTweens;
+  Preference<bool> rate_mods_affect_tweens_;
 
   // Whoever added these: Please add a comment saying what they do. -Chris
-  Preference<int> m_iRegenComboAfterMiss;  // combo that must be met after a
-                                           // Miss to regen life
+  Preference<int> regen_combo_after_miss_;  // combo that must be met after a
+                                            // Miss to regen life
   Preference<int>
-      m_iMaxRegenComboAfterMiss;  // caps RegenComboAfterMiss if multiple Misses
-                                  // occur in rapid succession
-  Preference<bool> m_bMercifulDrain;  // negative life deltas are scaled by the
-                                      // players life percentage
-  Preference<bool> m_HarshHotLifePenalty;         // See LifeMeterBar.cpp -Kyz
-  Preference<bool> m_bMinimum1FullSongInCourses;  // FEoS for 1st song,
-                                                  // FailImmediate thereafter
-  Preference<bool> m_bFailOffInBeginner;
-  Preference<bool> m_bFailOffForFirstStageEasy;
-  Preference<bool> m_bMercifulBeginner;  // don't subtract from percent score or
-                                         // grade DP, larger W5 window
-  Preference<bool> m_bMercifulSuperMeter;  // negative super deltas are scaled
+      max_regen_combo_after_miss_;   // caps RegenComboAfterMiss if multiple
+                                     // Misses occur in rapid succession
+  Preference<bool> merciful_drain_;  // negative life deltas are scaled by the
+                                     // players life percentage
+  Preference<bool> harsh_hot_life_penalty_;         // See LifeMeterBar.cpp -Kyz
+  Preference<bool> minimum1_full_song_in_courses_;  // FEoS for 1st song,
+                                                    // FailImmediate thereafter
+  Preference<bool> fail_off_in_beginner_;
+  Preference<bool> fail_off_for_first_stage_easy_;
+  Preference<bool> merciful_beginner_;  // don't subtract from percent score or
+                                        // grade DP, larger W5 window
+  Preference<bool> merciful_super_meter_;  // negative super deltas are scaled
                                            // by the players life percentage
-  Preference<bool> m_bDelayedBack;
-  Preference<bool> m_AllowHoldForOptions;
-  Preference<bool> m_bShowInstructions;  // how to play a mode
-  Preference<bool> m_bShowCaution;
-  Preference<bool> m_bShowNativeLanguage;
-  Preference<int> m_iArcadeOptionsNavigation;
-  Preference<bool> m_ThreeKeyNavigation;
-  Preference<MusicWheelUsesSections> m_MusicWheelUsesSections;
-  Preference<int> m_iMusicWheelSwitchSpeed;
+  Preference<bool> delayed_back_;
+  Preference<bool> allow_hold_for_options_;
+  Preference<bool> show_instructions_;  // how to play a mode
+  Preference<bool> show_caution_;
+  Preference<bool> show_native_language_;
+  Preference<int> arcade_options_navigation_;
+  Preference<bool> three_key_navigation_;
+  Preference<MusicWheelUsesSections> music_wheel_uses_sections_;
+  Preference<int> music_wheel_switch_speed_;
   // Should Random sorts prioritize finding a song of your preferred difficulty?
   // This means that if your preferred difficulty is Challenge, it will find a
   // random song with a Challenge difficulty (If it can't find one after so many
   // attempts, it will stop prioritizing difficulty and find any random playable
   // song)
-  Preference<bool> m_bRandomPrioritizeDifficulty;
+  Preference<bool> random_prioritize_difficulty_;
   Preference<AllowW1>
-      m_AllowW1;  // this should almost always be on, given use cases. -aj
-  Preference<bool> m_bEventMode;
-  Preference<int> m_iCoinsPerCredit;
-  Preference<int> m_iMaxNumCredits;
-  Preference<int> m_iSongsPerPlay;
-  Preference<bool> m_bDelayedCreditsReconcile;  // zuh?
-  Preference<bool> m_bComboContinuesBetweenSongs;
-  Preference<bool> m_AllowMultipleToasties;
-  Preference<TapNoteScore> m_MinTNSToHideNotes;
-  Preference<Maybe> m_ShowSongOptions;
-  Preference<bool> m_bPercentageScoring;
-  Preference<float> m_fMinPercentageForMachineSongHighScore;
-  Preference<float> m_fMinPercentageForMachineCourseHighScore;
-  Preference<bool> m_bDisqualification;
-  Preference<bool> m_bAutogenSteps;
-  Preference<bool> m_bAutogenGroupCourses;
-  Preference<bool> m_bOnlyPreferredDifficulties;
-  Preference<bool> m_bBreakComboToGetItem;
-  Preference<bool> m_bLockCourseDifficulties;
-  Preference<ShowDancingCharacters> m_ShowDancingCharacters;
-  Preference<bool> m_bUseUnlockSystem;
-  Preference<float> m_fGlobalOffsetSeconds;
-  Preference<SyncOffset> m_DefaultSyncOffset;
-  Preference<int> m_iProgressiveLifebar;
-  Preference<int> m_iProgressiveStageLifebar;
-  Preference<int> m_iProgressiveNonstopLifebar;
-  Preference<bool> m_bShowBeginnerHelper;
-  Preference<bool> m_bDisableScreenSaver;
-  Preference<std::string> m_sLanguage;
+      allow_w1_;  // this should almost always be on, given use cases. -aj
+  Preference<bool> event_mode_;
+  Preference<int> coins_per_credit_;
+  Preference<int> max_num_credits_;
+  Preference<int> songs_per_play_;
+  Preference<bool> delayed_credits_reconcile_;  // zuh?
+  Preference<bool> combo_continues_between_songs_;
+  Preference<bool> allow_multiple_toasties_;
+  Preference<TapNoteScore> min_tns_to_hide_notes_;
+  Preference<Maybe> show_song_options_;
+  Preference<bool> percentage_scoring_;
+  Preference<float> min_percentage_for_machine_song_high_score_;
+  Preference<float> min_percentage_for_machine_course_high_score_;
+  Preference<bool> disqualification_;
+  Preference<bool> autogen_steps_;
+  Preference<bool> autogen_group_courses_;
+  Preference<bool> only_preferred_difficulties_;
+  Preference<bool> break_combo_to_get_item_;
+  Preference<bool> lock_course_difficulties_;
+  Preference<ShowDancingCharacters> show_dancing_characters_;
+  Preference<bool> use_unlock_system_;
+  Preference<float> global_offset_seconds_;
+  Preference<SyncOffset> default_sync_offset_;
+  Preference<int> progressive_lifebar_;
+  Preference<int> progressive_stage_lifebar_;
+  Preference<int> progressive_nonstop_lifebar_;
+  Preference<bool> show_beginner_helper_;
+  Preference<bool> disable_screen_saver_;
+  Preference<std::string> language_;
   Preference<std::string>
-      m_sMemoryCardProfileSubdir;  // the directory on a memory card to look in
-                                   // for a profile
-  Preference<int> m_iProductID;    // Saved in HighScore to track what software
-                                   // version a score came from.
-  Preference<int> m_iCenterImageTranslateX;
-  Preference<int> m_iCenterImageTranslateY;
-  Preference<int> m_fCenterImageAddWidth;
-  Preference<int> m_fCenterImageAddHeight;
-  Preference<AttractSoundFrequency> m_AttractSoundFrequency;
-  Preference<bool> m_bAllowExtraStage;
-  Preference<int> m_iMaxHighScoresPerListForMachine;
-  Preference<int> m_iMaxHighScoresPerListForPlayer;
-  Preference<bool> m_bAllowMultipleHighScoreWithSameName;
-  Preference<bool> m_DisableUploadDir;
-  Preference<bool> m_bCelShadeModels;
-  Preference<bool> m_bPreferredSortUsesGroups;
+      memory_card_profile_subdir_;  // the directory on a memory card to look in
+                                    // for a profile
+  Preference<int> product_id_;      // Saved in HighScore to track what software
+                                    // version a score came from.
+  Preference<int> center_image_translate_x_;
+  Preference<int> center_image_translate_y_;
+  Preference<int> center_image_add_width_;
+  Preference<int> center_image_add_height_;
+  Preference<AttractSoundFrequency> attract_sound_frequency_;
+  Preference<bool> allow_extra_stage_;
+  Preference<int> max_high_scores_per_list_for_machine_;
+  Preference<int> max_high_scores_per_list_for_player_;
+  Preference<bool> allow_multiple_high_score_with_same_name_;
+  Preference<bool> disable_upload_dir_;
+  Preference<bool> cel_shade_models_;
+  Preference<bool> preferred_sort_uses_groups_;
   Preference<float>
-      m_fDebounceCoinInputTime;  // allow users to apply a distinct debounce to
-                                 // coin input
-  Preference<bool> m_bResetCoinsAtStartup;
+      debounce_coin_input_time_;  // allow users to apply a distinct debounce to
+                                  // coin input
+  Preference<bool> reset_coins_at_startup_;
 
   // Number of seconds it takes for a button on the controller to release
   // after pressed.
-  Preference<float> m_fPadStickSeconds;
+  Preference<float> pad_stick_seconds_;
 
   // Lead in time before recording starts in edit mode.
-  Preference<float> m_EditRecordModeLeadIn;
+  Preference<float> edit_record_mode_lead_in_;
   // User is prompted on clearing an area with more than this note count.
-  Preference<int> m_EditClearPromptThreshold;
+  Preference<int> edit_clear_prompt_threshold_;
 
   // Useful for non 4:3 displays and resolutions < 640x480 where texels don't
   // map directly to pixels.
-  Preference<bool> m_bForceMipMaps;
-  Preference<bool> m_bTrilinearFiltering;  // has no effect without mipmaps on
+  Preference<bool> force_mip_maps_;
+  Preference<bool> trilinear_filtering_;  // has no effect without mipmaps on
   Preference<bool>
-      m_bAnisotropicFiltering;  // has no effect without mipmaps on.  Not
-                                // mutually exclusive with trilinear.
+      anisotropic_filtering_;  // has no effect without mipmaps on.  Not
+                               // mutually exclusive with trilinear.
 
   // If true, then signatures created when writing profile data and verified
   // when reading profile data. Leave this false if you want to use a profile
   // on different machines that don't have the same key, or else the
   // profile's data will be discarded.
-  Preference<bool> m_bSignProfileData;
+  Preference<bool> sign_profile_data_;
 
   // Used to control the ordering of the player profiles.
   // See the the definition of ProfileSortOrder above about the available sort
   // options.
-  Preference<ProfileSortOrder> m_ProfileSortOrder;
+  Preference<ProfileSortOrder> profile_sort_order_;
 
   // Determines whether the ProfileSortOrder is in ascending order (true) or
   // descending order (false).
-  Preference<bool> m_bProfileSortOrderAscending;
+  Preference<bool> profile_sort_order_ascending_;
 
   // course ranking
-  Preference<CourseSortOrders> m_CourseSortOrder;
-  Preference<bool> m_bSubSortByNumSteps;
-  Preference<GetRankingName> m_GetRankingName;
+  Preference<CourseSortOrders> course_sort_order_;
+  Preference<bool> sub_sort_by_num_steps_;
+  Preference<GetRankingName> get_ranking_name_;
 
-  Preference<std::string> m_sAdditionalSongFoldersReadOnly;
-  Preference<std::string> m_sAdditionalSongFoldersWritable;
-  Preference<std::string> m_sAdditionalCourseFoldersReadOnly;
-  Preference<std::string> m_sAdditionalCourseFoldersWritable;
-  Preference<std::string> m_sAdditionalFoldersReadOnly;
-  Preference<std::string> m_sAdditionalFoldersWritable;
+  Preference<std::string> additional_song_folders_read_only_;
+  Preference<std::string> additional_song_folders_writable_;
+  Preference<std::string> additional_course_folders_read_only_;
+  Preference<std::string> additional_course_folders_writable_;
+  Preference<std::string> additional_folders_read_only_;
+  Preference<std::string> additional_folders_writable_;
 
   // failsafe
-  Preference<std::string> m_sDefaultTheme;
+  Preference<std::string> default_theme_;
 
-  Preference<std::string> m_sLastSeenVideoDriver;
-  Preference<std::string> m_sVideoRenderers;  // StepMania.cpp sets these on
-                                              // first run based on the card
-  Preference<bool> m_bSmoothLines;
-  Preference<int> m_iSoundWriteAhead;
-  Preference<std::string> m_iSoundDevice;
-  Preference<int> m_iSoundPreferredSampleRate;
-  Preference<std::string> m_sLightsStepsDifficulty;
-  Preference<bool> m_bLightsSimplifyBass;
-  Preference<bool> m_bLightsBassParallel;
-  Preference<bool> m_bAllowUnacceleratedRenderer;
-  Preference<bool> m_bThreadedInput;
-  Preference<bool> m_bThreadedMovieDecode;
-  Preference<std::string> m_sTestInitialScreen;
-  Preference<bool> m_bDebugLights;
-  Preference<bool> m_bMonkeyInput;
-  Preference<std::string> m_sMachineName;
-  Preference<std::string> m_sCoursesToShowRanking;
-  Preference<bool> m_MuteActions;
+  Preference<std::string> last_seen_video_driver_;
+  Preference<std::string> video_renderers_;  // StepMania.cpp sets these on
+                                             // first run based on the card
+  Preference<bool> smooth_lines_;
+  Preference<int> sound_write_ahead_;
+  Preference<std::string> sound_device_;
+  Preference<int> sound_preferred_sample_rate_;
+  Preference<std::string> lights_steps_difficulty_;
+  Preference<bool> lights_simplify_bass_;
+  Preference<bool> lights_bass_parallel_;
+  Preference<bool> allow_unaccelerated_renderer_;
+  Preference<bool> threaded_input_;
+  Preference<bool> threaded_movie_decode_;
+  Preference<std::string> test_initial_screen_;
+  Preference<bool> debug_lights_;
+  Preference<bool> monkey_input_;
+  Preference<std::string> machine_name_;
+  Preference<std::string> courses_to_show_ranking_;
+  Preference<bool> mute_actions_;
   Preference<bool>
-      m_bAllowSongDeletion;  // Allow the user to remove songs from their
+      allow_song_deletion_;  // Allow the user to remove songs from their
                              // collection through UI / keyboard shortcut
 
   /** @brief Enable some quirky behavior used by some older versions of
    * StepMania. */
-  Preference<bool> m_bQuirksMode;
+  Preference<bool> quirks_mode_;
 
-  Preference<bool> m_custom_songs_enable;
-  Preference<unsigned int> m_custom_songs_max_count;
-  Preference<float> m_custom_songs_load_timeout;
-  Preference<float> m_custom_songs_max_seconds;
-  Preference<float> m_custom_songs_max_megabytes;
+  Preference<bool> custom_songs_enable_;
+  Preference<unsigned int> custom_songs_max_count_;
+  Preference<float> custom_songs_load_timeout_;
+  Preference<float> custom_songs_max_seconds_;
+  Preference<float> custom_songs_max_megabytes_;
 
   // Debug:
-  Preference<bool> m_bDebugMenuEnabled;
-  Preference<bool> m_bLogToDisk;
-  Preference<bool> m_bForceLogFlush;
-  Preference<bool> m_bShowLogOutput;
-  Preference<bool> m_bLogSkips;
-  Preference<bool> m_bLogCheckpoints;
-  Preference<bool> m_bShowLoadingWindow;
-  Preference<bool> m_bPseudoLocalize;
-  Preference<bool> m_show_theme_errors;
+  Preference<bool> debug_menu_enabled_;
+  Preference<bool> log_to_disk_;
+  Preference<bool> force_log_flush_;
+  Preference<bool> show_log_output_;
+  Preference<bool> log_skips_;
+  Preference<bool> log_checkpoints_;
+  Preference<bool> show_loading_window_;
+  Preference<bool> pseudo_localize_;
+  Preference<bool> show_theme_errors_;
 
   void ReadPrefsFromIni(
       const IniFile& ini, const std::string& sSection, bool bIsStatic);
@@ -392,9 +392,9 @@ class PrefsManager {
       const std::string& sIni, const std::string& sSection);
   void TranslateDeprecatedFlags();
 
-  Preference<std::string> m_sAdditionalSongFolders;    // deprecated
-  Preference<std::string> m_sAdditionalCourseFolders;  // deprecated
-  Preference<std::string> m_sAdditionalFolders;        // deprecated
+  Preference<std::string> additional_song_folders_;    // deprecated
+  Preference<std::string> additional_course_folders_;  // deprecated
+  Preference<std::string> additional_folders_;         // deprecated
 };
 
 /* This is global, because it can be accessed by crash handlers and error

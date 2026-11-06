@@ -22,15 +22,15 @@ class RageSoundDriver_DSound_Software : public RageSoundDriver {
   void SetupDecodingThread();
 
  private:
-  DSound ds;
-  DSoundBuf* m_pPCM;
-  int m_iSampleRate;
+  DSound ds_;
+  DSoundBuf* pcm_;
+  int sample_rate_;
 
-  bool m_bShutdownMixerThread;
+  bool shutdown_mixer_thread_;
 
   static int MixerThread_start(void* p);
   void MixerThread();
-  RageThread m_MixingThread;
+  RageThread mixing_thread_;
 };
 
 #endif

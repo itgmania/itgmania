@@ -13,11 +13,11 @@ typedef const struct __CFDictionary* CFDictionaryRef;
 typedef uint32_t CGDirectDisplayID;
 
 class LowLevelWindow_MacOSX : public LowLevelWindow {
-  VideoModeParams m_CurrentParams;
-  id m_WindowDelegate;
-  id m_Context;
-  CFDictionaryRef m_CurrentDisplayMode;
-  CGDirectDisplayID m_DisplayID;
+  VideoModeParams current_params_;
+  id window_delegate_;
+  id context_;
+  CFDictionaryRef current_display_mode_;
+  CGDirectDisplayID display_id_;
 
  public:
   LowLevelWindow_MacOSX();
@@ -30,7 +30,7 @@ class LowLevelWindow_MacOSX : public LowLevelWindow {
   void Update();
 
   const ActualVideoModeParams GetActualVideoModeParams() const {
-    return m_CurrentParams;
+    return current_params_;
   }
 
   bool SupportsRenderToTexture() const { return true; }

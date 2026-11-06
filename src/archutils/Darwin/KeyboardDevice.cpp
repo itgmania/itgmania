@@ -162,14 +162,14 @@ void KeyboardDevice::AddElement(
 
   DeviceButton button;
   if (UsbKeyToDeviceButton(usage, button)) {
-    m_Mapping[cookie] = button;
+    mapping_[cookie] = button;
   }
 }
 
 void KeyboardDevice::Open() {
   for (std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator i =
-           m_Mapping.begin();
-       i != m_Mapping.end(); ++i) {
+           mapping_.begin();
+       i != mapping_.end(); ++i) {
     // LOG->Trace( "Adding %s to queue, cookie %p",
     // DeviceButtonToString(i->second).c_str(), i->first );
     AddElementToQueue(i->first);
@@ -180,9 +180,9 @@ void KeyboardDevice::GetButtonPresses(
     std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter =
-      m_Mapping.find(cookie);
+      mapping_.find(cookie);
 
-  if (iter != m_Mapping.end()) {
+  if (iter != mapping_.end()) {
     // LOG->Trace( "Pushed %s", DeviceButtonToString(iter->second).c_str() );
     vPresses.push_back(DeviceInput(DEVICE_KEYBOARD, iter->second, value, now));
   }
@@ -190,7 +190,7 @@ void KeyboardDevice::GetButtonPresses(
 
 void KeyboardDevice::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevices) const {
-  if (vDevices.size() && vDevices[0].id == DEVICE_KEYBOARD) {
+  if (vDevices.size() && vDevices[0].id_ == DEVICE_KEYBOARD) {
     return;
   }
   vDevices.insert(

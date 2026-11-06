@@ -15,13 +15,13 @@ ModelManager::ModelManager() {}
 
 ModelManager::~ModelManager() {
   for (std::map<std::string, RageModelGeometry*>::iterator i =
-           m_mapFileToGeometry.begin();
-       i != m_mapFileToGeometry.end(); ++i) {
+           map_file_to_geometry_.begin();
+       i != map_file_to_geometry_.end(); ++i) {
     RageModelGeometry* pGeom = i->second;
-    if (pGeom->m_iRefCount) {
+    if (pGeom->ref_count_) {
       LOG->Trace(
           "MODELMAN LEAK: '%s', RefCount = %d.", i->first.c_str(),
-          pGeom->m_iRefCount);
+          pGeom->ref_count_);
     }
     RageUtil::SafeDelete(pGeom);
   }
@@ -30,39 +30,39 @@ ModelManager::~ModelManager() {
 RageModelGeometry* ModelManager::LoadMilkshapeAscii(
     const std::string& sFile, bool bNeedNormals) {
   std::map<std::string, RageModelGeometry*>::iterator p =
-      m_mapFileToGeometry.find(sFile);
-  if (p != m_mapFileToGeometry.end()) {
+      map_file_to_geometry_.find(sFile);
+  if (p != map_file_to_geometry_.end()) {
     /* Found the geometry.  Just increase the refcount and return it. */
     RageModelGeometry* pGeom = p->second;
-    ++pGeom->m_iRefCount;
+    ++pGeom->ref_count_;
     return pGeom;
   }
 
   RageModelGeometry* pGeom = new RageModelGeometry;
   pGeom->LoadMilkshapeAscii(sFile, bNeedNormals);
 
-  m_mapFileToGeometry[sFile] = pGeom;
+  map_file_to_geometry_[sFile] = pGeom;
   return pGeom;
 }
 
 void ModelManager::UnloadModel(RageModelGeometry* m) {
-  m->m_iRefCount--;
-  ASSERT(m->m_iRefCount >= 0);
+  m->ref_count_--;
+  ASSERT(m->ref_count_ >= 0);
 
-  if (m->m_iRefCount) {
+  if (m->ref_count_) {
     return; /* Can't unload models that are still referenced. */
   }
 
   for (std::map<std::string, RageModelGeometry*>::iterator i =
-           m_mapFileToGeometry.begin();
-       i != m_mapFileToGeometry.end(); ++i) {
+           map_file_to_geometry_.begin();
+       i != map_file_to_geometry_.end(); ++i) {
     if (i->second == m) {
-      if (m_Prefs.m_bDelayedUnload) {
+      if (prefs_.delayed_unload_) {
         // leave this geometry loaded
         return;
       } else {
-        m_mapFileToGeometry.erase(i);  // remove map entry
-        RageUtil::SafeDelete(m);       // free the texture
+        map_file_to_geometry_.erase(i);  // remove map entry
+        RageUtil::SafeDelete(m);         // free the texture
         return;
       }
     }
@@ -72,7 +72,7 @@ void ModelManager::UnloadModel(RageModelGeometry* m) {
 }
 
 bool ModelManager::SetPrefs(const ModelManagerPrefs& prefs) {
-  m_Prefs = prefs;
+  prefs_ = prefs;
   return false;
 }
 

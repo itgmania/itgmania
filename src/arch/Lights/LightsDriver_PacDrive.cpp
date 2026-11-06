@@ -17,10 +17,11 @@ static Preference<std::string> g_sPacDriveLightOrdering(
 int iPacDriveLightOrder = 0;
 
 LightsDriver_PacDrive::LightsDriver_PacDrive()
-    : dev{PACDRIVE_VID, make_pids(PACDRIVE_PID, PACDRIVE_PID_MAX),
+    : dev_{
+          PACDRIVE_VID, make_pids(PACDRIVE_PID, PACDRIVE_PID_MAX),
           PACDRIVE_INTERFACE} {
-  prev_led_state.raw = 0;
-  memset(state.raw_state, 0x00, sizeof(state.raw_state));
+  prev_led_state_.raw_ = 0;
+  memset(state_.raw_state_, 0x00, sizeof(state_.raw_state_));
 
   std::string lightOrder = g_sPacDriveLightOrdering.Get();
   if (CompareNoCase(lightOrder, "lumenar") == 0 ||
@@ -32,7 +33,7 @@ LightsDriver_PacDrive::LightsDriver_PacDrive()
 LightsDriver_PacDrive::~LightsDriver_PacDrive() {}
 
 void LightsDriver_PacDrive::Set(const LightsState* ls) {
-  if (!dev.FoundOnce()) {
+  if (!dev_.FoundOnce()) {
     return;
   }
 
@@ -64,38 +65,38 @@ void LightsDriver_PacDrive::Set(const LightsState* ls) {
        * 16: Bass Right
        */
 
-      state.leds.led01 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT];
-      state.leds.led02 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT];
-      state.leds.led03 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP];
-      state.leds.led04 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN];
+      state_.leds_.led01_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT];
+      state_.leds_.led02_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT];
+      state_.leds_.led03_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP];
+      state_.leds_.led04_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN];
 
-      state.leds.led05 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT];
-      state.leds.led06 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT];
-      state.leds.led07 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP];
-      state.leds.led08 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN];
+      state_.leds_.led05_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT];
+      state_.leds_.led06_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT];
+      state_.leds_.led07_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP];
+      state_.leds_.led08_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN];
 
-      state.leds.led09 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT];
-      state.leds.led10 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT];
-      state.leds.led11 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT];
-      state.leds.led12 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT];
+      state_.leds_.led09_ = ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT];
+      state_.leds_.led10_ = ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT];
+      state_.leds_.led11_ = ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT];
+      state_.leds_.led12_ = ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT];
 
-      state.leds.led13 =
-          ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START];
-      state.leds.led14 =
-          ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START];
+      state_.leds_.led13_ =
+          ls->game_button_lights_[GameController_1][GAME_BUTTON_START];
+      state_.leds_.led14_ =
+          ls->game_button_lights_[GameController_2][GAME_BUTTON_START];
 
-      state.leds.led15 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-                         ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
-      state.leds.led16 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-                         ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
+      state_.leds_.led15_ = ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+                            ls->cabinet_lights_[LIGHT_BASS_RIGHT];
+      state_.leds_.led16_ = ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+                            ls->cabinet_lights_[LIGHT_BASS_RIGHT];
 
       break;
 
@@ -123,48 +124,48 @@ void LightsDriver_PacDrive::Set(const LightsState* ls) {
        * 16: (unused)
        */
 
-      state.leds.led01 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT];
-      state.leds.led02 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT];
-      state.leds.led03 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT];
-      state.leds.led04 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT];
+      state_.leds_.led01_ = ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT];
+      state_.leds_.led02_ = ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT];
+      state_.leds_.led03_ = ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT];
+      state_.leds_.led04_ = ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT];
 
-      state.leds.led05 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-                         ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
+      state_.leds_.led05_ = ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+                            ls->cabinet_lights_[LIGHT_BASS_RIGHT];
 
-      state.leds.led06 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT];
-      state.leds.led07 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT];
-      state.leds.led08 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP];
-      state.leds.led09 =
-          ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN];
-      state.leds.led10 =
-          ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START];
+      state_.leds_.led06_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT];
+      state_.leds_.led07_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT];
+      state_.leds_.led08_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP];
+      state_.leds_.led09_ =
+          ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN];
+      state_.leds_.led10_ =
+          ls->game_button_lights_[GameController_1][GAME_BUTTON_START];
 
-      state.leds.led11 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT];
-      state.leds.led12 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT];
-      state.leds.led13 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP];
-      state.leds.led14 =
-          ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN];
-      state.leds.led15 =
-          ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START];
+      state_.leds_.led11_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT];
+      state_.leds_.led12_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT];
+      state_.leds_.led13_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP];
+      state_.leds_.led14_ =
+          ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN];
+      state_.leds_.led15_ =
+          ls->game_button_lights_[GameController_2][GAME_BUTTON_START];
 
       // led16 is not used.
-      state.leds.led16 = false;
+      state_.leds_.led16_ = false;
       break;
   }
 
   // only push on changes.
-  if (state.leds.raw != prev_led_state.raw) {
-    state.report_id = PACDRIVE_HIDREPORT_ID;
-    state.pad0 = 0;
-    state.pad1 = 0;
+  if (state_.leds_.raw_ != prev_led_state_.raw_) {
+    state_.report_id_ = PACDRIVE_HIDREPORT_ID;
+    state_.pad0_ = 0;
+    state_.pad1_ = 0;
 
-    dev.Write((unsigned char*)&state.raw_state, sizeof(state.raw_state));
-    prev_led_state = state.leds;
+    dev_.Write((unsigned char*)&state_.raw_state_, sizeof(state_.raw_state_));
+    prev_led_state_ = state_.leds_;
   }
 }

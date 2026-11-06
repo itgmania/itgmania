@@ -24,10 +24,10 @@ class LoadingWindow_Win32 : public LoadingWindow {
   void SetIndeterminate(bool indeterminate);
 
  private:
-  AppInstance handle;
-  HWND hwnd;
-  std::string text[3];
-  HICON m_hIcon;
+  AppInstance handle_;
+  HWND hwnd_;
+  std::string text_[3];
+  HICON icon_;
 
   static INT_PTR CALLBACK
   WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

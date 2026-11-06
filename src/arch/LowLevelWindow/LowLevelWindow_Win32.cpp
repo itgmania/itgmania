@@ -76,7 +76,7 @@ int ChooseWindowPixelFormat(
   pixfmt->nVersion = 1;
   pixfmt->dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL;
   pixfmt->iPixelType = PFD_TYPE_RGBA;
-  pixfmt->cColorBits = p.bpp == 16 ? 16 : 24;
+  pixfmt->cColorBits = p.bpp_ == 16 ? 16 : 24;
   pixfmt->cDepthBits = 16;
 
   return ChoosePixelFormat(GraphicsWindow::GetHDC(), pixfmt);
@@ -145,7 +145,7 @@ std::string LowLevelWindow_Win32::TryVideoMode(
     const VideoModeParams& p, bool& bNewDeviceOut) {
   // LOG->Warn( "LowLevelWindow_Win32::TryVideoMode" );
 
-  ASSERT_M(p.bpp == 16 || p.bpp == 32, ssprintf("%i", p.bpp));
+  ASSERT_M(p.bpp_ == 16 || p.bpp_ == 32, ssprintf("%i", p.bpp_));
 
   bNewDeviceOut = false;
 
@@ -284,7 +284,7 @@ void LowLevelWindow_Win32::SwapBuffers() {
 }
 
 void LowLevelWindow_Win32::Update() {
-  ::ShowCursor(PREFSMAN->m_bShowMouseCursor);
+  ::ShowCursor(PREFSMAN->show_mouse_cursor_);
   GraphicsWindow::Update();
 }
 
@@ -301,57 +301,57 @@ class RenderTarget_Win32 : public RenderTarget {
   void Create(
       const RenderTargetParam& param, int& iTextureWidthOut,
       int& iTextureHeightOut);
-  uintptr_t GetTexture() const { return static_cast<uintptr_t>(m_texHandle); }
+  uintptr_t GetTexture() const { return static_cast<uintptr_t>(tex_handle_); }
   void StartRenderingTo();
   void FinishRenderingTo();
 
   virtual bool InvertY() const { return true; }
 
  private:
-  LowLevelWindow_Win32* m_pWind;
-  int m_width;
-  int m_height;
-  GLuint m_texHandle;
-  HDC m_hOldDeviceContext;
-  HGLRC m_hOldRenderContext;
+  LowLevelWindow_Win32* wind_;
+  int width_;
+  int height_;
+  GLuint tex_handle_;
+  HDC old_device_context_;
+  HGLRC old_render_context_;
 };
 
 RenderTarget_Win32::RenderTarget_Win32(LowLevelWindow_Win32* pWind) {
-  m_pWind = pWind;
-  m_texHandle = 0;
-  m_hOldDeviceContext = nullptr;
-  m_hOldRenderContext = nullptr;
+  wind_ = pWind;
+  tex_handle_ = 0;
+  old_device_context_ = nullptr;
+  old_render_context_ = nullptr;
 }
 
 RenderTarget_Win32::~RenderTarget_Win32() {
   glDeleteTextures(
-      1, &m_texHandle);  // deleting a 0 texture is safe and ignored
+      1, &tex_handle_);  // deleting a 0 texture is safe and ignored
 }
 
 void RenderTarget_Win32::Create(
     const RenderTargetParam& param, int& iTextureWidthOut,
     int& iTextureHeightOut) {
-  m_Param = param;
-  m_width = param.iWidth;
-  m_height = param.iHeight;
+  param_ = param;
+  width_ = param.width_;
+  height_ = param.height_;
 
   FlushGLErrors();
 
-  glGenTextures(1, &m_texHandle);
-  ASSERT(m_texHandle > 0);
-  glBindTexture(GL_TEXTURE_2D, m_texHandle);
+  glGenTextures(1, &tex_handle_);
+  ASSERT(tex_handle_ > 0);
+  glBindTexture(GL_TEXTURE_2D, tex_handle_);
 
-  int iTextureWidth = power_of_two(param.iWidth);
-  int iTextureHeight = power_of_two(param.iHeight);
+  int iTextureWidth = power_of_two(param.width_);
+  int iTextureHeight = power_of_two(param.height_);
   iTextureWidthOut = iTextureWidth;
   iTextureHeightOut = iTextureHeight;
 
   GLenum internalformat;
-  GLenum type = param.bWithAlpha ? GL_RGBA : GL_RGB;
-  if (param.bFloat && GLEW_ARB_texture_float) {
-    internalformat = param.bWithAlpha ? GL_RGBA16F_ARB : GL_RGB16F_ARB;
+  GLenum type = param.with_alpha_ ? GL_RGBA : GL_RGB;
+  if (param.float_ && GLEW_ARB_texture_float) {
+    internalformat = param.with_alpha_ ? GL_RGBA16F_ARB : GL_RGB16F_ARB;
   } else {
-    internalformat = param.bWithAlpha ? GL_RGBA8 : GL_RGB8;
+    internalformat = param.with_alpha_ ? GL_RGBA8 : GL_RGB8;
   }
 
   glTexImage2D(
@@ -368,8 +368,8 @@ void RenderTarget_Win32::Create(
 }
 
 void RenderTarget_Win32::StartRenderingTo() {
-  m_hOldDeviceContext = wglGetCurrentDC();
-  m_hOldRenderContext = wglGetCurrentContext();
+  old_device_context_ = wglGetCurrentDC();
+  old_render_context_ = wglGetCurrentContext();
 
   BOOL successful = wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC);
   ASSERT_M(
@@ -377,29 +377,29 @@ void RenderTarget_Win32::StartRenderingTo() {
       "wglMakeCurrent failed in RenderTarget_Win32::StartRenderingTo()");
 
   FlushGLErrors();
-  glBindTexture(GL_TEXTURE_2D, m_texHandle);
+  glBindTexture(GL_TEXTURE_2D, tex_handle_);
   AssertNoGLError();
 }
 
 void RenderTarget_Win32::FinishRenderingTo() {
   FlushGLErrors();
 
-  glBindTexture(GL_TEXTURE_2D, m_texHandle);
+  glBindTexture(GL_TEXTURE_2D, tex_handle_);
   AssertNoGLError();
 
-  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, m_width, m_height);
+  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
   AssertNoGLError();
 
-  BOOL successful = wglMakeCurrent(m_hOldDeviceContext, m_hOldRenderContext);
+  BOOL successful = wglMakeCurrent(old_device_context_, old_render_context_);
   ASSERT_M(
       successful == TRUE,
       "wglMakeCurrent failed in RenderTarget_Win32::FinishRenderingTo()");
 
-  m_hOldDeviceContext = 0;
-  m_hOldRenderContext = 0;
+  old_device_context_ = 0;
+  old_render_context_ = 0;
 }
 
 RenderTarget* LowLevelWindow_Win32::CreateRenderTarget() {

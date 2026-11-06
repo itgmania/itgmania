@@ -32,21 +32,21 @@ class PercentageDisplay : public ActorFrame {
   virtual void PushSelf(lua_State* L);
 
  private:
-  int m_iDancePointsDigits;
-  bool m_bUseRemainder;
+  int dance_points_digits_;
+  bool use_remainder_;
 
   void Refresh();
-  const PlayerState* m_pPlayerState;
-  const PlayerStageStats* m_pPlayerStageStats;
-  bool m_bAutoRefresh;
-  int m_Last;
-  int m_LastMax;
-  BitmapText m_textPercent;
-  BitmapText m_textPercentRemainder;
-  std::string m_sPercentFormat;
-  std::string m_sRemainderFormat;
+  const PlayerState* player_state_;
+  const PlayerStageStats* player_stage_stats_;
+  bool auto_refresh_;
+  int last_;
+  int last_max_;
+  BitmapText text_percent_;
+  BitmapText text_percent_remainder_;
+  std::string percent_format_;
+  std::string remainder_format_;
 
-  LuaReference m_FormatPercentScore;
+  LuaReference format_percent_score_;
 };
 
 #endif

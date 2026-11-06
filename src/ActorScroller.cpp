@@ -24,49 +24,49 @@ REGISTER_ACTOR_CLASS_WITH_NAME(ActorScrollerAutoDeleteChildren, ActorScroller);
 ActorScroller* ActorScroller::Copy() const { return new ActorScroller(*this); }
 
 ActorScroller::ActorScroller() {
-  m_iNumItems = 0;
-  m_fCurrentItem = 0;
-  m_fDestinationItem = 0;
-  m_fSecondsPerItem = 1;
-  m_fSecondsPauseBetweenItems = 0;
-  m_fNumItemsToDraw = 7;
-  m_iFirstSubActorIndex = 0;
-  m_bLoop = false;
-  m_bWrap = false;
-  m_bFastCatchup = false;
-  m_bFunctionDependsOnPositionOffset = true;
-  m_bFunctionDependsOnItemIndex = true;
-  m_fPauseCountdownSeconds = 0;
-  m_fQuantizePixels = 0;
+  num_items_ = 0;
+  current_item_ = 0;
+  destination_item_ = 0;
+  seconds_per_item_ = 1;
+  seconds_pause_between_items_ = 0;
+  num_items_to_draw_ = 7;
+  first_sub_actor_index_ = 0;
+  loop_ = false;
+  wrap_ = false;
+  fast_catchup_ = false;
+  function_depends_on_position_offset_ = true;
+  function_depends_on_item_index_ = true;
+  pause_countdown_seconds_ = 0;
+  quantize_pixels_ = 0;
 
-  m_quadMask.SetBlendMode(BLEND_NO_EFFECT);  // don't change color values
-  m_quadMask.SetUseZBuffer(true);            // we want to write to the Zbuffer
-  m_fMaskWidth = 0;
-  m_fMaskHeight = 0;
+  quad_mask_.SetBlendMode(BLEND_NO_EFFECT);  // don't change color values
+  quad_mask_.SetUseZBuffer(true);            // we want to write to the Zbuffer
+  mask_width_ = 0;
+  mask_height_ = 0;
   DisableMask();
 }
 
 void ActorScroller::Load2() {
-  m_iNumItems = m_SubActors.size();
+  num_items_ = sub_actors_.size();
 
   Lua* L = LUA->Get();
-  for (unsigned i = 0; i < m_SubActors.size(); ++i) {
+  for (unsigned i = 0; i < sub_actors_.size(); ++i) {
     lua_pushnumber(L, i);
-    this->m_SubActors[i]->m_pLuaInstance->Set(L, "ItemIndex");
+    this->sub_actors_[i]->lua_instance_->Set(L, "ItemIndex");
   }
   LUA->Release(L);
 }
 
 void ActorScroller::SetTransformFromReference(const LuaReference& ref) {
-  m_exprTransformFunction.SetFromReference(ref);
+  expr_transform_function_.SetFromReference(ref);
 
   // Probe to find which of the parameters are used.
-#define GP(a, b) m_exprTransformFunction.GetTransformCached(a, b, 2)
-  m_bFunctionDependsOnPositionOffset =
+#define GP(a, b) expr_transform_function_.GetTransformCached(a, b, 2)
+  function_depends_on_position_offset_ =
       (GP(0, 0) != GP(1, 0)) && (GP(0, 1) != GP(1, 1));
-  m_bFunctionDependsOnItemIndex =
+  function_depends_on_item_index_ =
       (GP(0, 0) != GP(0, 1)) && (GP(1, 0) != GP(1, 1));
-  m_exprTransformFunction.ClearCache();
+  expr_transform_function_.ClearCache();
 }
 
 void ActorScroller::SetTransformFromExpression(
@@ -89,35 +89,35 @@ void ActorScroller::SetTransformFromHeight(float fItemHeight) {
 }
 
 void ActorScroller::EnableMask(float fWidth, float fHeight) {
-  m_quadMask.SetVisible(fWidth != 0 && fHeight != 0);
-  m_quadMask.SetWidth(fWidth);
-  m_fMaskWidth = fWidth;
-  m_quadMask.SetHeight(fHeight);
-  m_fMaskHeight = fHeight;
+  quad_mask_.SetVisible(fWidth != 0 && fHeight != 0);
+  quad_mask_.SetWidth(fWidth);
+  mask_width_ = fWidth;
+  quad_mask_.SetHeight(fHeight);
+  mask_height_ = fHeight;
 }
 
-void ActorScroller::DisableMask() { m_quadMask.SetVisible(false); }
+void ActorScroller::DisableMask() { quad_mask_.SetVisible(false); }
 
 void ActorScroller::ScrollThroughAllItems() {
-  m_fCurrentItem = (m_bLoop || m_bWrap) ? +m_fNumItemsToDraw / 2.0f
-                                        : -(m_fNumItemsToDraw / 2.0f) - 1;
-  m_fDestinationItem = (float)(m_iNumItems + m_fNumItemsToDraw / 2.0f + 1);
+  current_item_ = (loop_ || wrap_) ? +num_items_to_draw_ / 2.0f
+                                   : -(num_items_to_draw_ / 2.0f) - 1;
+  destination_item_ = (float)(num_items_ + num_items_to_draw_ / 2.0f + 1);
 }
 
 void ActorScroller::ScrollWithPadding(
     float fItemPaddingStart, float fItemPaddingEnd) {
-  m_fCurrentItem = -fItemPaddingStart;
-  m_fDestinationItem = m_iNumItems - 1 + fItemPaddingEnd;
+  current_item_ = -fItemPaddingStart;
+  destination_item_ = num_items_ - 1 + fItemPaddingEnd;
 }
 
 float ActorScroller::GetSecondsForCompleteScrollThrough() const {
-  float fTotalItems = m_fNumItemsToDraw + m_iNumItems;
-  return fTotalItems * (m_fSecondsPerItem + m_fSecondsPauseBetweenItems);
+  float fTotalItems = num_items_to_draw_ + num_items_;
+  return fTotalItems * (seconds_per_item_ + seconds_pause_between_items_);
 }
 
 float ActorScroller::GetSecondsToDestination() const {
-  float fTotalItemsToMove = std::abs(m_fCurrentItem - m_fDestinationItem);
-  return fTotalItemsToMove * m_fSecondsPerItem;
+  float fTotalItemsToMove = std::abs(current_item_ - destination_item_);
+  return fTotalItemsToMove * seconds_per_item_;
 }
 
 void ActorScroller::LoadFromNode(const XNode* pNode) {
@@ -155,64 +155,64 @@ void ActorScroller::LoadFromNode(const XNode* pNode) {
   pNode->GetAttrValue("UseMask", bUseMask);
 
   if (bUseMask) {
-    pNode->GetAttrValue("MaskWidth", m_fMaskWidth);
-    pNode->GetAttrValue("MaskHeight", m_fMaskHeight);
-    EnableMask(m_fMaskWidth, m_fMaskHeight);
+    pNode->GetAttrValue("MaskWidth", mask_width_);
+    pNode->GetAttrValue("MaskHeight", mask_height_);
+    EnableMask(mask_width_, mask_height_);
   }
 
-  pNode->GetAttrValue("QuantizePixels", m_fQuantizePixels);
-  pNode->GetAttrValue("LoopScroller", m_bLoop);
-  pNode->GetAttrValue("WrapScroller", m_bWrap);
+  pNode->GetAttrValue("QuantizePixels", quantize_pixels_);
+  pNode->GetAttrValue("LoopScroller", loop_);
+  pNode->GetAttrValue("WrapScroller", wrap_);
 }
 
 void ActorScroller::UpdateInternal(float fDeltaTime) {
   ActorFrame::UpdateInternal(fDeltaTime);
 
   // If we have no children, the code below will busy loop.
-  if (!m_SubActors.size()) {
+  if (!sub_actors_.size()) {
     return;
   }
 
   // handle pause
-  if (fDeltaTime > m_fPauseCountdownSeconds) {
-    fDeltaTime -= m_fPauseCountdownSeconds;
-    m_fPauseCountdownSeconds = 0;
+  if (fDeltaTime > pause_countdown_seconds_) {
+    fDeltaTime -= pause_countdown_seconds_;
+    pause_countdown_seconds_ = 0;
   } else {
-    m_fPauseCountdownSeconds -= fDeltaTime;
+    pause_countdown_seconds_ -= fDeltaTime;
     fDeltaTime = 0;
     return;
   }
 
-  if (m_fCurrentItem == m_fDestinationItem) {
+  if (current_item_ == destination_item_) {
     return;  // done scrolling
   }
 
-  float fOldItemAtTop = m_fCurrentItem;
-  if (m_fSecondsPerItem > 0) {
-    float fApproachSpeed = fDeltaTime / m_fSecondsPerItem;
-    if (m_bFastCatchup) {
-      float fDistanceToMove = std::abs(m_fCurrentItem - m_fDestinationItem);
+  float fOldItemAtTop = current_item_;
+  if (seconds_per_item_ > 0) {
+    float fApproachSpeed = fDeltaTime / seconds_per_item_;
+    if (fast_catchup_) {
+      float fDistanceToMove = std::abs(current_item_ - destination_item_);
       if (fDistanceToMove > 1) {
         fApproachSpeed *= fDistanceToMove * fDistanceToMove;
       }
     }
 
-    fapproach(m_fCurrentItem, m_fDestinationItem, fApproachSpeed);
+    fapproach(current_item_, destination_item_, fApproachSpeed);
   }
 
   // if items changed, then pause
-  if ((int)fOldItemAtTop != (int)m_fCurrentItem) {
-    m_fPauseCountdownSeconds = m_fSecondsPauseBetweenItems;
+  if ((int)fOldItemAtTop != (int)current_item_) {
+    pause_countdown_seconds_ = seconds_pause_between_items_;
   }
 
-  if (m_bWrap) {
-    float Delta = m_fDestinationItem - m_fCurrentItem;
-    m_fCurrentItem = std::fmod(m_fCurrentItem, (float)m_iNumItems);
-    m_fDestinationItem = m_fCurrentItem + Delta;
+  if (wrap_) {
+    float Delta = destination_item_ - current_item_;
+    current_item_ = std::fmod(current_item_, (float)num_items_);
+    destination_item_ = current_item_ + Delta;
   }
 
-  if (m_bLoop) {
-    m_fCurrentItem = std::fmod(m_fCurrentItem, (float)m_iNumItems);
+  if (loop_) {
+    current_item_ = std::fmod(current_item_, (float)num_items_);
   }
 }
 
@@ -224,43 +224,43 @@ void ActorScroller::PositionItems() { PositionItemsAndDrawPrimitives(false); }
  * m_iFirstSubActorIndex in m_SubActors[0]. */
 void ActorScroller::ShiftSubActors(int iDist) {
   if (iDist != INT_MAX) {
-    CircularShift(m_SubActors, iDist);
+    CircularShift(sub_actors_, iDist);
   }
 }
 
 void ActorScroller::PositionItemsAndDrawPrimitives(bool bDrawPrimitives) {
-  if (m_SubActors.empty()) {
+  if (sub_actors_.empty()) {
     return;
   }
 
-  float fNumItemsToDraw = m_fNumItemsToDraw;
-  if (m_quadMask.GetVisible()) {
+  float fNumItemsToDraw = num_items_to_draw_;
+  if (quad_mask_.GetVisible()) {
     // write to z buffer so that top and bottom are clipped
     // Draw an extra item; this is the one that will be masked.
     fNumItemsToDraw++;
     float fPositionFullyOffScreenTop = -(fNumItemsToDraw) / 2.f;
     float fPositionFullyOffScreenBottom = (fNumItemsToDraw) / 2.f;
 
-    m_exprTransformFunction.TransformItemCached(
-        m_quadMask, fPositionFullyOffScreenTop, -1, m_iNumItems);
+    expr_transform_function_.TransformItemCached(
+        quad_mask_, fPositionFullyOffScreenTop, -1, num_items_);
     if (bDrawPrimitives) {
-      m_quadMask.Draw();
+      quad_mask_.Draw();
     }
 
-    m_exprTransformFunction.TransformItemCached(
-        m_quadMask, fPositionFullyOffScreenBottom, m_iNumItems, m_iNumItems);
+    expr_transform_function_.TransformItemCached(
+        quad_mask_, fPositionFullyOffScreenBottom, num_items_, num_items_);
     if (bDrawPrimitives) {
-      m_quadMask.Draw();
+      quad_mask_.Draw();
     }
   }
 
-  float fFirstItemToDraw = m_fCurrentItem - fNumItemsToDraw / 2.f;
-  float fLastItemToDraw = m_fCurrentItem + fNumItemsToDraw / 2.f;
+  float fFirstItemToDraw = current_item_ - fNumItemsToDraw / 2.f;
+  float fLastItemToDraw = current_item_ + fNumItemsToDraw / 2.f;
   int iFirstItemToDraw = std::ceil(fFirstItemToDraw);
   int iLastItemToDraw = std::ceil(fLastItemToDraw);
-  if (!m_bLoop && !m_bWrap) {
-    iFirstItemToDraw = std::clamp(iFirstItemToDraw, 0, m_iNumItems);
-    iLastItemToDraw = std::clamp(iLastItemToDraw, 0, m_iNumItems);
+  if (!loop_ && !wrap_) {
+    iFirstItemToDraw = std::clamp(iFirstItemToDraw, 0, num_items_);
+    iLastItemToDraw = std::clamp(iLastItemToDraw, 0, num_items_);
   }
 
   std::vector<Actor*> subs;
@@ -268,19 +268,19 @@ void ActorScroller::PositionItemsAndDrawPrimitives(bool bDrawPrimitives) {
   {
     // Shift m_SubActors so iFirstItemToDraw is at the beginning.
     int iNewFirstIndex = iFirstItemToDraw;
-    int iDist = iNewFirstIndex - m_iFirstSubActorIndex;
-    m_iFirstSubActorIndex = iNewFirstIndex;
+    int iDist = iNewFirstIndex - first_sub_actor_index_;
+    first_sub_actor_index_ = iNewFirstIndex;
     ShiftSubActors(iDist);
   }
 
   int iNumToDraw = iLastItemToDraw - iFirstItemToDraw;
   for (int i = 0; i < iNumToDraw; ++i) {
     int iItem = i + iFirstItemToDraw;
-    float fPosition = iItem - m_fCurrentItem;
+    float fPosition = iItem - current_item_;
     int iIndex = i;  // index into m_SubActors
-    if (m_bLoop || m_bWrap) {
-      wrap(iIndex, m_SubActors.size());
-    } else if (iIndex < 0 || iIndex >= (int)m_SubActors.size()) {
+    if (loop_ || wrap_) {
+      wrap(iIndex, sub_actors_.size());
+    } else if (iIndex < 0 || iIndex >= (int)sub_actors_.size()) {
       continue;
     }
 
@@ -288,25 +288,25 @@ void ActorScroller::PositionItemsAndDrawPrimitives(bool bDrawPrimitives) {
     // unnecessary  entries in the position cache. On scrollers with lots of
     // items, especially with Subdivisions > 1, m_exprTransformFunction uses
     // too much memory.
-    if (!m_bFunctionDependsOnPositionOffset) {
+    if (!function_depends_on_position_offset_) {
       fPosition = 0;
     }
-    if (!m_bFunctionDependsOnItemIndex) {
+    if (!function_depends_on_item_index_) {
       iItem = 0;
     }
 
-    m_exprTransformFunction.TransformItemCached(
-        *m_SubActors[iIndex], fPosition, iItem, m_iNumItems);
+    expr_transform_function_.TransformItemCached(
+        *sub_actors_[iIndex], fPosition, iItem, num_items_);
     if (bDrawPrimitives) {
-      if (m_bDrawByZPosition) {
-        subs.push_back(m_SubActors[iIndex]);
+      if (draw_by_z_position_) {
+        subs.push_back(sub_actors_[iIndex]);
       } else {
-        m_SubActors[iIndex]->Draw();
+        sub_actors_[iIndex]->Draw();
       }
     }
   }
 
-  if (m_bDrawByZPosition) {
+  if (draw_by_z_position_) {
     ActorUtil::SortByZPosition(subs);
     for (Actor* a : subs) {
       a->Draw();

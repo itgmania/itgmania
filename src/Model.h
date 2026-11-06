@@ -32,8 +32,8 @@ class Model : public Actor {
   void LoadFromNode(const XNode* pNode) override;
 
   void PlayAnimation(const std::string& sAniName, float fPlayRate = 1);
-  void SetRate(float fRate) { m_fCurAnimationRate = fRate; }
-  void SetLoop(bool b) { m_bLoop = b; }
+  void SetRate(float fRate) { cur_animation_rate_ = fRate; }
+  void SetLoop(bool b) { loop_ = b; }
   void SetPosition(float fSeconds);
 
   virtual void Update(float fDelta) override;
@@ -45,12 +45,12 @@ class Model : public Actor {
   virtual int GetNumStates() const override;
   virtual void SetState(int iNewState) override;
   virtual float GetAnimationLengthSeconds() const override {
-    return m_animation_length_seconds;
+    return animation_length_seconds_;
   }
   virtual void RecalcAnimationLengthSeconds();
   virtual void SetSecondsIntoAnimation(float fSeconds) override;
 
-  std::string GetDefaultAnimation() const { return m_sDefaultAnimation; };
+  std::string GetDefaultAnimation() const { return default_animation_; };
   void SetDefaultAnimation(std::string sAnimation, float fPlayRate = 1);
 
   bool MaterialsNeedNormals() const;
@@ -61,36 +61,36 @@ class Model : public Actor {
   Model& operator=(const Model& rhs) = delete;
 
  private:
-  RageModelGeometry* m_pGeometry;
+  RageModelGeometry* geometry_;
 
-  float m_animation_length_seconds;
-  std::vector<msMaterial> m_Materials;
-  std::map<std::string, msAnimation> m_mapNameToAnimation;
-  const msAnimation* m_pCurAnimation;
+  float animation_length_seconds_;
+  std::vector<msMaterial> materials_;
+  std::map<std::string, msAnimation> map_name_to_animation_;
+  const msAnimation* cur_animation_;
 
   static void SetBones(
       const msAnimation* pAnimation, float fFrame,
       std::vector<myBone_t>& vpBones);
-  std::vector<myBone_t> m_vpBones;
+  std::vector<myBone_t> bones_;
 
   // If any vertex has a bone weight, then then render from m_pTempGeometry.
   // Otherwise, render directly from m_pGeometry.
-  RageCompiledGeometry* m_pTempGeometry;
+  RageCompiledGeometry* temp_geometry_;
   void UpdateTempGeometry();
 
   /* Keep a copy of the mesh data only if m_pTempGeometry is in use.  The normal
    * and position data will be changed; the rest is static and kept only to
    * prevent making a complete copy. */
-  std::vector<msMesh> m_vTempMeshes;
+  std::vector<msMesh> temp_meshes_;
 
   void DrawMesh(int i) const;
   void AdvanceFrame(float fDeltaTime);
 
-  float m_fCurFrame;
-  std::string m_sDefaultAnimation;
-  float m_fDefaultAnimationRate;
-  float m_fCurAnimationRate;
-  bool m_bLoop;
+  float cur_frame_;
+  std::string default_animation_;
+  float default_animation_rate_;
+  float cur_animation_rate_;
+  bool loop_;
 };
 
 #endif

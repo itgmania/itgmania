@@ -15,7 +15,7 @@ class ScreenUnlockBrowse : public ScreenSelectMaster {
   virtual void HandleMessage(const Message& msg);
 
  protected:
-  FadingBanner m_banner;
+  FadingBanner banner_;
 };
 
 #endif

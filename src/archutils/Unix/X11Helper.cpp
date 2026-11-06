@@ -120,7 +120,7 @@ bool X11Helper::MakeWindow(
   }
 
   // Hide the mouse cursor in certain situations.
-  if (!PREFSMAN->m_bShowMouseCursor) {
+  if (!PREFSMAN->show_mouse_cursor_) {
     const char pBlank[] = {0, 0, 0, 0, 0, 0, 0, 0};
     Pixmap BlankBitmap = XCreateBitmapFromData(Dpy, win, pBlank, 8, 8);
 
@@ -192,38 +192,38 @@ bool X11Helper::SetWMFullscreenMonitors(const DisplaySpec& target) {
         screens, end, [](XineramaScreenInfo& a, XineramaScreenInfo& b) {
           return a.y_org < b.y_org;
         });
-    monitors.top = topmost->screen_number;
+    monitors.top_ = topmost->screen_number;
 
     auto bottommost = std::max_element(
         screens, end, [](XineramaScreenInfo& a, XineramaScreenInfo& b) {
           return a.y_org < b.y_org;
         });
-    monitors.bottom = bottommost->screen_number;
+    monitors.bottom_ = bottommost->screen_number;
 
     auto leftmost = std::min_element(
         screens, end, [](XineramaScreenInfo& a, XineramaScreenInfo& b) {
           return a.x_org < b.x_org;
         });
-    monitors.left = leftmost->screen_number;
+    monitors.left_ = leftmost->screen_number;
 
     auto rightmost = std::max_element(
         screens, end, [](XineramaScreenInfo& a, XineramaScreenInfo& b) {
           return a.x_org < b.x_org;
         });
-    monitors.right = rightmost->screen_number;
+    monitors.right_ = rightmost->screen_number;
     found_bounds = true;
   } else if (target.currentMode() != nullptr) {
     auto mon = std::find_if(screens, end, [&](XineramaScreenInfo& screen) {
-      return screen.x_org == target.currentBounds().left &&
-             screen.y_org == target.currentBounds().top && screen.width >= 0 &&
+      return screen.x_org == target.currentBounds().left_ &&
+             screen.y_org == target.currentBounds().top_ && screen.width >= 0 &&
              static_cast<uint32_t>(screen.width) ==
-                 target.currentMode()->width &&
+                 target.currentMode()->width_ &&
              screen.height >= 0 &&
              static_cast<uint32_t>(screen.height) ==
-                 target.currentMode()->height;
+                 target.currentMode()->height_;
     });
     if (mon != end) {
-      monitors.left = monitors.right = monitors.top = monitors.bottom =
+      monitors.left_ = monitors.right_ = monitors.top_ = monitors.bottom_ =
           mon->screen_number;
       found_bounds = true;
     }
@@ -243,10 +243,10 @@ bool X11Helper::SetWMFullscreenMonitors(const DisplaySpec& target) {
   xclient.window = Win;
   xclient.message_type = XInternAtom(Dpy, "_NET_WM_FULLSCREEN_MONITORS", False);
   xclient.format = 32;
-  xclient.data.l[0] = monitors.top;
-  xclient.data.l[1] = monitors.bottom;
-  xclient.data.l[2] = monitors.left;
-  xclient.data.l[3] = monitors.right;
+  xclient.data.l[0] = monitors.top_;
+  xclient.data.l[1] = monitors.bottom_;
+  xclient.data.l[2] = monitors.left_;
+  xclient.data.l[3] = monitors.right_;
   xclient.data.l[4] = 1;
   XSendEvent(
       Dpy, attr.root, False, SubstructureRedirectMask | SubstructureNotifyMask,

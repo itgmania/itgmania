@@ -21,7 +21,7 @@ class RageDisplay_Null : public RageDisplay {
 
   bool BeginFrame() { return true; }
   void EndFrame();
-  ActualVideoModeParams GetActualVideoModeParams() const { return m_Params; }
+  ActualVideoModeParams GetActualVideoModeParams() const { return params_; }
   void SetBlendMode(BlendMode) {}
   bool SupportsTextureFormat(RagePixelFormat, bool /* realtime */ = false) {
     return true;
@@ -84,10 +84,10 @@ class RageDisplay_Null : public RageDisplay {
   void DrawSymmetricQuadStripInternal(
       const RageSpriteVertex v[], int /* iNumVerts */) {}
 
-  VideoModeParams m_Params;
+  VideoModeParams params_;
   std::string TryVideoMode(
       const VideoModeParams& p, bool& /* bNewDeviceOut */) {
-    m_Params = p;
+    params_ = p;
     return std::string();
   }
   RageSurface* CreateScreenshot();

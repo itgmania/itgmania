@@ -66,52 +66,52 @@ class TimingData {
 
   // Lookup tables for faster beat <-> time queries.
   struct GetBeatArgs {
-    float elapsed_time;
-    float beat;
-    float bps_out;
-    float warp_dest_out;
-    int warp_begin_out;
-    bool freeze_out;
-    bool delay_out;
+    float elapsed_time_;
+    float beat_;
+    float bps_out_;
+    float warp_dest_out_;
+    int warp_begin_out_;
+    bool freeze_out_;
+    bool delay_out_;
     GetBeatArgs()
-        : elapsed_time(0),
-          beat(0),
-          bps_out(0),
-          warp_dest_out(0),
-          warp_begin_out(-1),
-          freeze_out(false),
-          delay_out(false) {}
+        : elapsed_time_(0),
+          beat_(0),
+          bps_out_(0),
+          warp_dest_out_(0),
+          warp_begin_out_(-1),
+          freeze_out_(false),
+          delay_out_(false) {}
   };
   struct GetBeatStarts {
-    unsigned int bpm;
-    unsigned int warp;
-    unsigned int stop;
-    unsigned int delay;
-    int last_row;
-    float last_time;
-    float warp_destination;
-    bool is_warping;
+    unsigned int bpm_;
+    unsigned int warp_;
+    unsigned int stop_;
+    unsigned int delay_;
+    int last_row_;
+    float last_time_;
+    float warp_destination_;
+    bool is_warping_;
     // Row of the most recently entered warp.
-    int warp_begin_row;
+    int warp_begin_row_;
     GetBeatStarts()
-        : bpm(0),
-          warp(0),
-          stop(0),
-          delay(0),
-          last_row(0),
-          last_time(0),
-          warp_destination(0),
-          is_warping(false),
-          warp_begin_row(-1) {}
+        : bpm_(0),
+          warp_(0),
+          stop_(0),
+          delay_(0),
+          last_row_(0),
+          last_time_(0),
+          warp_destination_(0),
+          is_warping_(false),
+          warp_begin_row_(-1) {}
   };
   struct lookup_item_t {
-    float first;
-    GetBeatStarts second;
-    lookup_item_t(float f, GetBeatStarts& s) : first(f), second(s) {}
+    float first_;
+    GetBeatStarts second_;
+    lookup_item_t(float f, GetBeatStarts& s) : first_(f), second_(s) {}
   };
   typedef std::vector<lookup_item_t> beat_start_lookup_t;
-  mutable beat_start_lookup_t m_beat_start_lookup;
-  mutable beat_start_lookup_t m_time_start_lookup;
+  mutable beat_start_lookup_t beat_start_lookup_;
+  mutable beat_start_lookup_t time_start_lookup_;
 
   void EnsureLookups() const;
   void InvalidateLookups();
@@ -376,9 +376,9 @@ class TimingData {
       const  // shortcut for places that care only about the beat
   {
     GetBeatArgs args;
-    args.elapsed_time = elapsed_time;
+    args.elapsed_time_ = elapsed_time;
     GetBeatAndBPSFromElapsedTime(args);
-    return args.beat;
+    return args.beat_;
   }
   float GetElapsedTimeFromBeat(float fBeat) const;
 
@@ -387,9 +387,9 @@ class TimingData {
       const  // shortcut for places that care only about the beat
   {
     GetBeatArgs args;
-    args.elapsed_time = elapsed_time;
+    args.elapsed_time_ = elapsed_time;
     GetBeatAndBPSFromElapsedTimeNoOffset(args);
-    return args.beat;
+    return args.beat_;
   }
   float GetElapsedTimeFromBeatNoOffset(float fBeat) const;
 
@@ -411,8 +411,8 @@ class TimingData {
    */
   bool operator==(const TimingData& other) const {
     FOREACH_ENUM(TimingSegmentType, tst) {
-      const std::vector<TimingSegment*>& us = m_avpTimingSegments[tst];
-      const std::vector<TimingSegment*>& them = other.m_avpTimingSegments[tst];
+      const std::vector<TimingSegment*>& us = timing_segments_[tst];
+      const std::vector<TimingSegment*>& them = other.timing_segments_[tst];
 
       // optimization: check vector sizes before contents
       if (us.size() != them.size()) {
@@ -432,9 +432,9 @@ class TimingData {
       }
     }
 
-    return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds &&
-           this->m_fBeat0GroupOffsetInSeconds ==
-               other.m_fBeat0GroupOffsetInSeconds;
+    return this->beat0_offset_in_seconds_ == other.beat0_offset_in_seconds_ &&
+           this->beat0_group_offset_in_seconds_ ==
+               other.beat0_group_offset_in_seconds_;
   }
 
   /**
@@ -455,7 +455,7 @@ class TimingData {
     return const_cast<TimingData*>(this)->GetTimingSegments(tst);
   }
   std::vector<TimingSegment*>& GetTimingSegments(TimingSegmentType tst) {
-    return m_avpTimingSegments[tst];
+    return timing_segments_[tst];
   }
 
   /**
@@ -474,13 +474,13 @@ class TimingData {
    *
    * This is for informational purposes only.
    */
-  std::string m_sFile;
+  std::string file_;
 
   /** @brief The initial offset of a song. */
-  float m_fBeat0OffsetInSeconds;
+  float beat0_offset_in_seconds_;
 
   /** @brief The sync offset of this group */
-  float m_fBeat0GroupOffsetInSeconds;
+  float beat0_group_offset_in_seconds_;
 
   // XXX: this breaks encapsulation. get rid of it ASAP
   std::vector<std::string> ToVectorString(
@@ -492,7 +492,7 @@ class TimingData {
 
   // All of the following vectors must be sorted before gameplay.
   std::array<std::vector<TimingSegment*>, NUM_TimingSegmentType>
-      m_avpTimingSegments;
+      timing_segments_;
 };
 
 #endif

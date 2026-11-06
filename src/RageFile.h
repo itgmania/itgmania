@@ -44,13 +44,13 @@ class RageFile : public RageFileBasic {
    * it may give more information, such as the name of the archive the file
    * is in.  It has no parsable meaning.
    */
-  const std::string& GetRealPath() const { return m_Path; }
+  const std::string& GetRealPath() const { return path_; }
   std::string GetPath() const;
 
   bool Open(const std::string& path, int mode = READ);
   void Close();
-  bool IsOpen() const { return m_File != nullptr; }
-  int GetMode() const { return m_Mode; }
+  bool IsOpen() const { return file_ != nullptr; }
+  int GetMode() const { return mode_; }
 
   bool AtEOF() const;
   std::string GetError() const;
@@ -91,10 +91,10 @@ class RageFile : public RageFileBasic {
   void AssertRead() const;
   void AssertWrite() const;
 
-  RageFileBasic* m_File;
-  std::string m_Path;
-  std::string m_sError;
-  int m_Mode;
+  RageFileBasic* file_;
+  std::string path_;
+  std::string error_;
+  int mode_;
 
   // Swallow up warnings. If they must be used, define them.
   RageFile& operator=(const RageFile& rhs);

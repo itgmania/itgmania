@@ -11,11 +11,11 @@
 /* This contains the information necessary to backtrace a thread. */
 struct BacktraceContext {
 #if defined(CPU_X86) || defined(CPU_X86_64) || defined(__APPLE__)
-  const void *ip, *bp, *sp;
+  const void *ip_, *bp_, *sp_;
 #endif
 
 #if defined(UNIX) || defined(MACOSX)
-  pid_t pid;
+  pid_t pid_;
 #endif
 };
 

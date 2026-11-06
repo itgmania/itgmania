@@ -34,34 +34,34 @@ class ActorScroller : public ActorFrame {
   void LoadFromNode(const XNode* pNode);
   virtual ActorScroller* Copy() const;
 
-  void SetLoop(bool bLoop) { m_bLoop = bLoop; }
-  void SetWrap(bool bWrap) { m_bWrap = bWrap; }
+  void SetLoop(bool bLoop) { loop_ = bLoop; }
+  void SetWrap(bool bWrap) { wrap_ = bWrap; }
   void SetNumItemsToDraw(float fNumItemsToDraw) {
-    m_fNumItemsToDraw = fNumItemsToDraw;
+    num_items_to_draw_ = fNumItemsToDraw;
   }
-  void SetDestinationItem(float fItemIndex) { m_fDestinationItem = fItemIndex; }
+  void SetDestinationItem(float fItemIndex) { destination_item_ = fItemIndex; }
   void SetCurrentAndDestinationItem(float fItemIndex) {
-    m_fCurrentItem = m_fDestinationItem = fItemIndex;
+    current_item_ = destination_item_ = fItemIndex;
   }
-  float GetCurrentItem() const { return m_fCurrentItem; }
-  float GetDestinationItem() const { return m_fDestinationItem; }
+  float GetCurrentItem() const { return current_item_; }
+  float GetDestinationItem() const { return destination_item_; }
   void ScrollThroughAllItems();
   void ScrollWithPadding(float fItemPaddingStart, float fItemPaddingEnd);
   void SetPauseCountdownSeconds(float fSecs) {
-    m_fPauseCountdownSeconds = fSecs;
+    pause_countdown_seconds_ = fSecs;
   }
-  void SetFastCatchup(bool bOn) { m_bFastCatchup = bOn; }
-  void SetSecondsPerItem(float fSeconds) { m_fSecondsPerItem = fSeconds; }
+  void SetFastCatchup(bool bOn) { fast_catchup_ = bOn; }
+  void SetSecondsPerItem(float fSeconds) { seconds_per_item_ = fSeconds; }
   void SetSecondsPauseBetweenItems(float fSeconds) {
-    m_fSecondsPauseBetweenItems = fSeconds;
+    seconds_pause_between_items_ = fSeconds;
   }
-  float GetSecondsPauseBetweenItems() { return m_fSecondsPauseBetweenItems; }
+  float GetSecondsPauseBetweenItems() { return seconds_pause_between_items_; }
   void SetNumSubdivisions(int iNumSubdivisions) {
-    m_exprTransformFunction.SetNumSubdivisions(iNumSubdivisions);
+    expr_transform_function_.SetNumSubdivisions(iNumSubdivisions);
   }
   float GetSecondsForCompleteScrollThrough() const;
   float GetSecondsToDestination() const;
-  int GetNumItems() const { return m_iNumItems; }
+  int GetNumItems() const { return num_items_; }
 
   // Commands
   void PushSelf(lua_State* L);
@@ -70,7 +70,7 @@ class ActorScroller : public ActorFrame {
   void PositionItemsAndDrawPrimitives(bool bDrawPrimitives);
   virtual void ShiftSubActors(int iDist);
 
-  int m_iNumItems;
+  int num_items_;
   /**
    * @brief the current item we are focused on.
    *
@@ -79,29 +79,29 @@ class ActorScroller : public ActorFrame {
    *
    * The above comment was paraphrased from what was here previously. It could
    * use some clearing up. -Wolfman2000 */
-  float m_fCurrentItem;
-  float m_fDestinationItem;
+  float current_item_;
+  float destination_item_;
   /**
    * @brief How many seconds are there per item?
    *
    * If this is less than zero, then we are not scrolling. */
-  float m_fSecondsPerItem;
-  float m_fSecondsPauseBetweenItems;
-  float m_fNumItemsToDraw;
-  int m_iFirstSubActorIndex;
-  bool m_bLoop;
-  bool m_bWrap;
-  bool m_bFastCatchup;
-  bool m_bFunctionDependsOnPositionOffset;
-  bool m_bFunctionDependsOnItemIndex;
-  float m_fPauseCountdownSeconds;
-  float m_fQuantizePixels;
+  float seconds_per_item_;
+  float seconds_pause_between_items_;
+  float num_items_to_draw_;
+  int first_sub_actor_index_;
+  bool loop_;
+  bool wrap_;
+  bool fast_catchup_;
+  bool function_depends_on_position_offset_;
+  bool function_depends_on_item_index_;
+  float pause_countdown_seconds_;
+  float quantize_pixels_;
 
-  Quad m_quadMask;
-  float m_fMaskWidth, m_fMaskHeight;
+  Quad quad_mask_;
+  float mask_width_, mask_height_;
 
   LuaExpressionTransform
-      m_exprTransformFunction;  // params: self,offset,itemIndex,numItems
+      expr_transform_function_;  // params: self,offset,itemIndex,numItems
 };
 
 class ActorScrollerAutoDeleteChildren : public ActorScroller {

@@ -59,11 +59,11 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
   }
 
   // We can't dither to paletted surfaces.
-  ASSERT(dst->format->BytesPerPixel > 1);
+  ASSERT(dst->format_->bytes_per_pixel_ > 1);
 
   uint32_t src_cbits[4], dst_cbits[4];
-  RageSurfaceUtils::GetBitsPerChannel(src->format, src_cbits);
-  RageSurfaceUtils::GetBitsPerChannel(dst->format, dst_cbits);
+  RageSurfaceUtils::GetBitsPerChannel(src->format_, src_cbits);
+  RageSurfaceUtils::GetBitsPerChannel(dst->format_, dst_cbits);
 
   // Calculate the ratio from the old bit depth to the new for each color
   // channel.
@@ -83,14 +83,14 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
   const uint8_t alpha_max = uint8_t((1 << dst_cbits[3]) - 1);
 
   // For each row:
-  for (int row = 0; row < src->h; ++row) {
-    const uint8_t* srcp = src->pixels + row * src->pitch;
-    uint8_t* dstp = dst->pixels + row * dst->pitch;
+  for (int row = 0; row < src->h_; ++row) {
+    const uint8_t* srcp = src->pixels_ + row * src->pitch_;
+    uint8_t* dstp = dst->pixels_ + row * dst->pitch_;
 
     // For each pixel:
-    for (int col = 0; col < src->w; ++col) {
+    for (int col = 0; col < src->w_; ++col) {
       uint8_t colors[4];
-      RageSurfaceUtils::GetRawRGBAV(srcp, src->fmt, colors);
+      RageSurfaceUtils::GetRawRGBAV(srcp, src->fmt_, colors);
 
       // Note that we don't dither the alpha channel.
       for (int c = 0; c < 3; ++c) {
@@ -115,8 +115,8 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
       // Raw value -> int -> pixel
       RageSurfaceUtils::SetRawRGBAV(dstp, dst, colors);
 
-      srcp += src->format->BytesPerPixel;
-      dstp += dst->format->BytesPerPixel;
+      srcp += src->format_->bytes_per_pixel_;
+      dstp += dst->format_->bytes_per_pixel_;
     }
   }
 }
@@ -159,11 +159,11 @@ static uint8_t EDDitherPixel(
 void RageSurfaceUtils::ErrorDiffusionDither(
     const RageSurface* src, RageSurface* dst) {
   // We can't dither to paletted surfaces.
-  ASSERT(dst->format->BytesPerPixel > 1);
+  ASSERT(dst->format_->bytes_per_pixel_ > 1);
 
   uint32_t src_cbits[4], dst_cbits[4];
-  RageSurfaceUtils::GetBitsPerChannel(src->format, src_cbits);
-  RageSurfaceUtils::GetBitsPerChannel(dst->format, dst_cbits);
+  RageSurfaceUtils::GetBitsPerChannel(src->format_, src_cbits);
+  RageSurfaceUtils::GetBitsPerChannel(dst->format_, dst_cbits);
 
   // Calculate the ratio from the old bit depth to the new for each color
   // channel.
@@ -183,17 +183,17 @@ void RageSurfaceUtils::ErrorDiffusionDither(
   const uint8_t alpha_max = uint8_t((1 << dst_cbits[3]) - 1);
 
   // For each row:
-  for (int row = 0; row < src->h; ++row) {
+  for (int row = 0; row < src->h_; ++row) {
     int32_t accumError[4] = {
         0, 0, 0, 0};  // accum error values are reset every row
 
-    const uint8_t* srcp = src->pixels + row * src->pitch;
-    uint8_t* dstp = dst->pixels + row * dst->pitch;
+    const uint8_t* srcp = src->pixels_ + row * src->pitch_;
+    uint8_t* dstp = dst->pixels_ + row * dst->pitch_;
 
     // For each pixel in row:
-    for (int col = 0; col < src->w; ++col) {
+    for (int col = 0; col < src->w_; ++col) {
       uint8_t colors[4];
-      RageSurfaceUtils::GetRawRGBAV(srcp, src->fmt, colors);
+      RageSurfaceUtils::GetRawRGBAV(srcp, src->fmt_, colors);
 
       for (int c = 0; c < 3; ++c) {
         colors[c] = EDDitherPixel(col, row, colors[c], conv[c], accumError[c]);
@@ -215,8 +215,8 @@ void RageSurfaceUtils::ErrorDiffusionDither(
 
       RageSurfaceUtils::SetRawRGBAV(dstp, dst, colors);
 
-      srcp += src->format->BytesPerPixel;
-      dstp += dst->format->BytesPerPixel;
+      srcp += src->format_->bytes_per_pixel_;
+      dstp += dst->format_->bytes_per_pixel_;
     }
   }
 }

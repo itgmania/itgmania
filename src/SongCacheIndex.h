@@ -7,8 +7,8 @@
 #include "RageThreads.h"
 
 class SongCacheIndex {
-  IniFile CacheIndex;
-  mutable RageMutex Mutex;
+  IniFile cache_index_;
+  mutable RageMutex mutex_;
   static std::string MangleName(const std::string& Name);
 
  public:
@@ -21,7 +21,7 @@ class SongCacheIndex {
   void SaveCacheIndex();
   void AddCacheIndex(const std::string& path, unsigned hash);
   unsigned GetCacheHash(const std::string& path) const;
-  bool delay_save_cache;
+  bool delay_save_cache_;
 };
 
 extern SongCacheIndex*

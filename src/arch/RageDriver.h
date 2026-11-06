@@ -18,7 +18,7 @@ typedef RageDriver* (*CreateRageDriverFn)();
 struct DriverList {
   void Add(const istring& sName, CreateRageDriverFn pfn);
   RageDriver* Create(const std::string& sDriverName);
-  std::map<istring, CreateRageDriverFn>* m_pRegistrees;
+  std::map<istring, CreateRageDriverFn>* registrees_;
 };
 
 struct RegisterRageDriver {

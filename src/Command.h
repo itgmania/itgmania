@@ -15,22 +15,22 @@ class Command {
   std::string GetName()
       const;  // the command name is the first argument in all-lowercase
 
-  void Clear() { m_vsArgs.clear(); }
+  void Clear() { args_.clear(); }
 
   struct Arg {
-    std::string s;
-    Arg() : s("") {}
+    std::string s_;
+    Arg() : s_("") {}
   };
   Arg GetArg(unsigned index) const;
 
-  std::vector<std::string> m_vsArgs;
+  std::vector<std::string> args_;
 
-  Command() : m_vsArgs() {}
+  Command() : args_() {}
 };
 
 class Commands {
  public:
-  std::vector<Command> v;
+  std::vector<Command> v_;
 
   std::string GetOriginalCommandString()
       const;  // used when reporting an error in number of args

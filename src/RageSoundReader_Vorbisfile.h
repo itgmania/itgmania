@@ -18,18 +18,18 @@ class RageSoundReader_Vorbisfile : public RageSoundReader_FileReader {
   int SetPosition(int iFrame);
   int Read(float* pBuf, int iFrames);
   int GetSampleRate() const;
-  unsigned GetNumChannels() const { return channels; }
+  unsigned GetNumChannels() const { return channels_; }
   int GetNextSourceFrame() const;
   RageSoundReader_Vorbisfile();
   ~RageSoundReader_Vorbisfile();
   RageSoundReader_Vorbisfile* Copy() const;
 
  private:
-  OggVorbis_File* vf;
-  bool eof;
-  std::string filename;
-  int read_offset;
-  unsigned channels;
+  OggVorbis_File* vf_;
+  bool eof_;
+  std::string filename_;
+  int read_offset_;
+  unsigned channels_;
 };
 
 #endif

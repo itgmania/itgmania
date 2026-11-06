@@ -32,8 +32,8 @@ ThemeMetric<bool> SCROLL_SORT_ORDER("Banner", "ScrollSortOrder");
 ThemeMetric<float> SCROLL_SPEED_DIVISOR("Banner", "ScrollSpeedDivisor");
 
 Banner::Banner() {
-  m_bScrolling = false;
-  m_fPercentScrolling = 0;
+  scrolling_ = false;
+  percent_scrolling_ = 0;
 
   // By default, don't let banners scale their rate with tab/tilde.
   // This helps with animated/video banners.
@@ -43,7 +43,7 @@ Banner::Banner() {
 // Ugly: if sIsBanner is false, we're actually loading something other than a
 // banner.
 void Banner::Load(RageTextureID ID, bool bIsBanner) {
-  if (ID.filename == "") {
+  if (ID.filename_ == "") {
     LoadFallback();
     return;
   }
@@ -52,8 +52,8 @@ void Banner::Load(RageTextureID ID, bool bIsBanner) {
     ID = SongBannerTexture(ID);
   }
 
-  m_fPercentScrolling = 0;
-  m_bScrolling = false;
+  percent_scrolling_ = 0;
+  scrolling_ = false;
 
   TEXTUREMAN->DisableOddDimensionWarning();
   Sprite::Load(ID);
@@ -67,7 +67,7 @@ void Banner::LoadFromCachedBanner(const std::string& sPath) {
   }
 
   RageTextureID ID;
-  bool bLowRes = (PREFSMAN->m_ImageCache != IMGCACHE_FULL);
+  bool bLowRes = (PREFSMAN->image_cache_ != IMGCACHE_FULL);
   if (!bLowRes) {
     ID = Sprite::SongBannerTexture(sPath);
   } else {
@@ -87,25 +87,25 @@ void Banner::LoadFromCachedBanner(const std::string& sPath) {
 void Banner::Update(float fDeltaTime) {
   Sprite::Update(fDeltaTime);
 
-  if (m_bScrolling) {
-    m_fPercentScrolling += fDeltaTime / (float)SCROLL_SPEED_DIVISOR;
-    m_fPercentScrolling -= (int)m_fPercentScrolling;
+  if (scrolling_) {
+    percent_scrolling_ += fDeltaTime / (float)SCROLL_SPEED_DIVISOR;
+    percent_scrolling_ -= (int)percent_scrolling_;
 
     const RectF* pTextureRect = GetCurrentTextureCoordRect();
 
     float fTexCoords[8] = {
-        0 + m_fPercentScrolling, pTextureRect->top,     // top left
-        0 + m_fPercentScrolling, pTextureRect->bottom,  // bottom left
-        1 + m_fPercentScrolling, pTextureRect->bottom,  // bottom right
-        1 + m_fPercentScrolling, pTextureRect->top,     // top right
+        0 + percent_scrolling_, pTextureRect->top_,     // top left
+        0 + percent_scrolling_, pTextureRect->bottom_,  // bottom left
+        1 + percent_scrolling_, pTextureRect->bottom_,  // bottom right
+        1 + percent_scrolling_, pTextureRect->top_,     // top right
     };
     Sprite::SetCustomTextureCoords(fTexCoords);
   }
 }
 
 void Banner::SetScrolling(bool bScroll, float Percent) {
-  m_bScrolling = bScroll;
-  m_fPercentScrolling = Percent;
+  scrolling_ = bScroll;
+  percent_scrolling_ = Percent;
 
   // Set up the texture coord rects for the current state.
   Update(0);
@@ -121,12 +121,12 @@ void Banner::LoadFromSong(Song* pSong)  // nullptr means no song
     LoadFallback();
   }
 
-  m_bScrolling = false;
+  scrolling_ = false;
 }
 
 void Banner::LoadMode() {
   Load(THEME->GetPathG("Banner", "Mode"));
-  m_bScrolling = (bool)SCROLL_MODE;
+  scrolling_ = (bool)SCROLL_MODE;
 }
 
 void Banner::LoadFromSongGroup(std::string sSongGroup) {
@@ -136,7 +136,7 @@ void Banner::LoadFromSongGroup(std::string sSongGroup) {
   } else {
     LoadGroupFallback();
   }
-  m_bScrolling = false;
+  scrolling_ = false;
 }
 
 void Banner::LoadFromCourse(const Course* pCourse)  // nullptr means no course
@@ -149,7 +149,7 @@ void Banner::LoadFromCourse(const Course* pCourse)  // nullptr means no course
     LoadCourseFallback();
   }
 
-  m_bScrolling = false;
+  scrolling_ = false;
 }
 
 void Banner::LoadIconFromCharacter(const Character* pCharacter) {
@@ -161,7 +161,7 @@ void Banner::LoadIconFromCharacter(const Character* pCharacter) {
     LoadFallbackCharacterIcon();
   }
 
-  m_bScrolling = false;
+  scrolling_ = false;
 }
 
 void Banner::LoadBannerFromUnlockEntry(const UnlockEntry* pUE) {
@@ -170,7 +170,7 @@ void Banner::LoadBannerFromUnlockEntry(const UnlockEntry* pUE) {
   } else {
     std::string sFile = pUE->GetBannerFile();
     Load(sFile);
-    m_bScrolling = false;
+    scrolling_ = false;
   }
 }
 
@@ -180,7 +180,7 @@ void Banner::LoadBackgroundFromUnlockEntry(const UnlockEntry* pUE) {
   } else {
     std::string sFile = pUE->GetBackgroundFile();
     Load(sFile);
-    m_bScrolling = false;
+    scrolling_ = false;
   }
 }
 
@@ -207,12 +207,12 @@ void Banner::LoadFallbackCharacterIcon() {
 
 void Banner::LoadRoulette() {
   Load(THEME->GetPathG("Banner", "roulette"));
-  m_bScrolling = (bool)SCROLL_ROULETTE;
+  scrolling_ = (bool)SCROLL_ROULETTE;
 }
 
 void Banner::LoadRandom() {
   Load(THEME->GetPathG("Banner", "random"));
-  m_bScrolling = (bool)SCROLL_RANDOM;
+  scrolling_ = (bool)SCROLL_RANDOM;
 }
 
 void Banner::LoadFromSortOrder(SortOrder so) {
@@ -244,7 +244,7 @@ void Banner::LoadFromSortOrder(SortOrder so) {
           "Banner", ssprintf("%s", SortOrderToString(so).c_str())));
       break;
   }
-  m_bScrolling = (bool)SCROLL_SORT_ORDER;
+  scrolling_ = (bool)SCROLL_SORT_ORDER;
 }
 
 // lua start

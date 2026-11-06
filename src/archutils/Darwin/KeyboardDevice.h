@@ -10,7 +10,7 @@
 
 class KeyboardDevice : public HIDDevice {
  private:
-  std::unordered_map<IOHIDElementCookie, DeviceButton> m_Mapping;
+  std::unordered_map<IOHIDElementCookie, DeviceButton> mapping_;
 
  protected:
   bool AddLogicalDevice(int usagePage, int usage);

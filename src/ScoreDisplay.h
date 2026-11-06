@@ -23,8 +23,8 @@ class ScoreDisplay : public ActorFrame {
   virtual void OnJudgment(HoldNoteScore, TapNoteScore){};
 
  protected:
-  const PlayerState* m_pPlayerState;            // needed to look up stats
-  const PlayerStageStats* m_pPlayerStageStats;  // needed to look up stats
+  const PlayerState* player_state_;             // needed to look up stats
+  const PlayerStageStats* player_stage_stats_;  // needed to look up stats
 };
 
 #endif

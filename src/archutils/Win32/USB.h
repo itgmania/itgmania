@@ -26,10 +26,10 @@ class WindowsFileIO {
   void queue_read();
   int finish_read(void* p);
 
-  HANDLE m_Handle;
-  OVERLAPPED m_Overlapped;
-  char* m_pBuffer;
-  int m_iBlockSize;
+  HANDLE handle_;
+  OVERLAPPED overlapped_;
+  char* buffer_;
+  int block_size_;
 };
 
 /* WindowsFileIO - Windows USB I/O */
@@ -40,7 +40,7 @@ class USBDevice {
       int iVID, int iPID, int iBlockSize, int iNum, void (*pfnInit)(HANDLE));
   bool IsOpen() const;
 
-  WindowsFileIO m_IO;
+  WindowsFileIO io_;
 };
 
 #endif

@@ -9,43 +9,43 @@
 #include "global.h"
 
 void AutoActor::Unload() {
-  if (m_pActor != nullptr) {
-    delete m_pActor;
+  if (actor_ != nullptr) {
+    delete actor_;
   }
-  m_pActor = nullptr;
+  actor_ = nullptr;
 }
 
 AutoActor::AutoActor(const AutoActor& cpy) {
-  if (cpy.m_pActor == nullptr) {
-    m_pActor = nullptr;
+  if (cpy.actor_ == nullptr) {
+    actor_ = nullptr;
   } else {
-    m_pActor = cpy.m_pActor->Copy();
+    actor_ = cpy.actor_->Copy();
   }
 }
 
 AutoActor& AutoActor::operator=(const AutoActor& cpy) {
   Unload();
 
-  if (cpy.m_pActor == nullptr) {
-    m_pActor = nullptr;
+  if (cpy.actor_ == nullptr) {
+    actor_ = nullptr;
   } else {
-    m_pActor = cpy.m_pActor->Copy();
+    actor_ = cpy.actor_->Copy();
   }
   return *this;
 }
 
 void AutoActor::Load(Actor* pActor) {
   Unload();
-  m_pActor = pActor;
+  actor_ = pActor;
 }
 
 void AutoActor::Load(const std::string& sPath) {
   Unload();
-  m_pActor = ActorUtil::MakeActor(sPath);
+  actor_ = ActorUtil::MakeActor(sPath);
 
   // If a Condition is false, MakeActor will return nullptr.
-  if (m_pActor == nullptr) {
-    m_pActor = new Actor;
+  if (actor_ == nullptr) {
+    actor_ = new Actor;
   }
 }
 
@@ -54,15 +54,15 @@ void AutoActor::LoadB(
   ThemeManager::PathInfo pi;
   bool b = THEME->GetPathInfo(pi, EC_BGANIMATIONS, sMetricsGroup, sElement);
   ASSERT(b);
-  LuaThreadVariable var1("MatchingMetricsGroup", pi.sMatchingMetricsGroup);
-  LuaThreadVariable var2("MatchingElement", pi.sMatchingElement);
-  Load(pi.sResolvedPath);
+  LuaThreadVariable var1("MatchingMetricsGroup", pi.matching_metrics_group_);
+  LuaThreadVariable var2("MatchingElement", pi.matching_element_);
+  Load(pi.resolved_path_);
 }
 
 void AutoActor::LoadActorFromNode(const XNode* pNode, Actor* pParent) {
   Unload();
 
-  m_pActor = ActorUtil::LoadFromNode(pNode, pParent);
+  actor_ = ActorUtil::LoadFromNode(pNode, pParent);
 }
 
 /*

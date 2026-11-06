@@ -7,30 +7,30 @@
 #include "ThemeManager.h"
 
 DualScrollBar::DualScrollBar() {
-  m_fBarHeight = 100;
-  m_fBarTime = 1;
+  bar_height_ = 100;
+  bar_time_ = 1;
 }
 
 void DualScrollBar::Load(const std::string& sType) {
   FOREACH_PlayerNumber(pn) {
-    m_sprScrollThumbUnderHalf[pn].Load(
+    spr_scroll_thumb_under_half_[pn].Load(
         THEME->GetPathG(sType, ssprintf("thumb p%i", pn + 1)));
-    m_sprScrollThumbUnderHalf[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
-    this->AddChild(m_sprScrollThumbUnderHalf[pn]);
+    spr_scroll_thumb_under_half_[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
+    this->AddChild(spr_scroll_thumb_under_half_[pn]);
   }
 
   FOREACH_PlayerNumber(pn) {
-    m_sprScrollThumbOverHalf[pn].Load(
+    spr_scroll_thumb_over_half_[pn].Load(
         THEME->GetPathG(sType, ssprintf("thumb p%i", pn + 1)));
-    m_sprScrollThumbOverHalf[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
-    this->AddChild(m_sprScrollThumbOverHalf[pn]);
+    spr_scroll_thumb_over_half_[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
+    this->AddChild(spr_scroll_thumb_over_half_[pn]);
   }
 
-  m_sprScrollThumbUnderHalf[0]->SetCropLeft(.5f);
-  m_sprScrollThumbUnderHalf[1]->SetCropRight(.5f);
+  spr_scroll_thumb_under_half_[0]->SetCropLeft(.5f);
+  spr_scroll_thumb_under_half_[1]->SetCropRight(.5f);
 
-  m_sprScrollThumbOverHalf[0]->SetCropRight(.5f);
-  m_sprScrollThumbOverHalf[1]->SetCropLeft(.5f);
+  spr_scroll_thumb_over_half_[0]->SetCropRight(.5f);
+  spr_scroll_thumb_over_half_[1]->SetCropLeft(.5f);
 
   FOREACH_PlayerNumber(pn) SetPercentage(pn, 0);
 
@@ -38,23 +38,23 @@ void DualScrollBar::Load(const std::string& sType) {
 }
 
 void DualScrollBar::EnablePlayer(PlayerNumber pn, bool on) {
-  m_sprScrollThumbUnderHalf[pn]->SetVisible(on);
-  m_sprScrollThumbOverHalf[pn]->SetVisible(on);
+  spr_scroll_thumb_under_half_[pn]->SetVisible(on);
+  spr_scroll_thumb_over_half_[pn]->SetVisible(on);
 }
 
 void DualScrollBar::SetPercentage(PlayerNumber pn, float fPercent) {
   const float bottom =
-      m_fBarHeight / 2 - m_sprScrollThumbUnderHalf[pn]->GetZoomedHeight() / 2;
+      bar_height_ / 2 - spr_scroll_thumb_under_half_[pn]->GetZoomedHeight() / 2;
   const float top = -bottom;
 
   /* Position both thumbs. */
-  m_sprScrollThumbUnderHalf[pn]->StopTweening();
-  m_sprScrollThumbUnderHalf[pn]->BeginTweening(m_fBarTime);
-  m_sprScrollThumbUnderHalf[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
+  spr_scroll_thumb_under_half_[pn]->StopTweening();
+  spr_scroll_thumb_under_half_[pn]->BeginTweening(bar_time_);
+  spr_scroll_thumb_under_half_[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
 
-  m_sprScrollThumbOverHalf[pn]->StopTweening();
-  m_sprScrollThumbOverHalf[pn]->BeginTweening(m_fBarTime);
-  m_sprScrollThumbOverHalf[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
+  spr_scroll_thumb_over_half_[pn]->StopTweening();
+  spr_scroll_thumb_over_half_[pn]->BeginTweening(bar_time_);
+  spr_scroll_thumb_over_half_[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
 }
 
 /*

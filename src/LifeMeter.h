@@ -15,8 +15,8 @@ class LifeMeter : public ActorFrame {
 
   virtual void Load(
       const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
-    m_pPlayerState = pPlayerState;
-    m_pPlayerStageStats = pPlayerStageStats;
+    player_state_ = pPlayerState;
+    player_stage_stats_ = pPlayerStageStats;
   }
   virtual void OnLoadSong() {};
   virtual void OnSongEnded() {};
@@ -49,8 +49,8 @@ class LifeMeter : public ActorFrame {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  const PlayerState* m_pPlayerState;
-  PlayerStageStats* m_pPlayerStageStats;
+  const PlayerState* player_state_;
+  PlayerStageStats* player_stage_stats_;
 };
 
 #endif

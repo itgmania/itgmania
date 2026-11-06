@@ -13,8 +13,8 @@ class RageSoundDriver_Null : public RageSoundDriver {
   void Update();
 
  private:
-  int64_t m_iLastCursorPos;
-  int m_iSampleRate;
+  int64_t last_cursor_pos_;
+  int sample_rate_;
 };
 #define USE_RAGE_SOUND_NULL
 

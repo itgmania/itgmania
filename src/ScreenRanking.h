@@ -42,27 +42,27 @@ class ScreenRanking : public ScreenAttract {
  protected:
   struct PageToShow {
     PageToShow() {
-      pCourse = nullptr;
-      pTrail = nullptr;
+      course_ = nullptr;
+      trail_ = nullptr;
     }
 
-    int colorIndex;
-    std::vector<DifficultyAndStepsType> aTypes;
+    int color_index_;
+    std::vector<DifficultyAndStepsType> types_;
 
     // RankingPageType_Category
-    RankingCategory category;
+    RankingCategory category_;
 
     // RankingPageType_SpecificCourses
-    Course* pCourse;
-    Trail* pTrail;
+    Course* course_;
+    Trail* trail_;
   };
 
   virtual float SetPage(const PageToShow& pts);
 
-  BitmapText m_textStepsType;  // for category, course, all_steps
+  BitmapText text_steps_type_;  // for category, course, all_steps
 
-  std::vector<PageToShow> m_vPagesToShow;
-  unsigned m_iNextPageToShow;
+  std::vector<PageToShow> pages_to_show_;
+  unsigned next_page_to_show_;
 
   // Don't use the version in CommonMetrics because we may have multiple
   // ranking screens that want to show different types and difficulties.
@@ -73,15 +73,15 @@ class ScreenRanking : public ScreenAttract {
   ThemeMetric<std::string> COURSES_TO_SHOW;
   ThemeMetric<float> SECONDS_PER_PAGE;
 
-  Banner m_Banner;               // for course
-  BitmapText m_textCategory;     // for category
-  BitmapText m_textCourseTitle;  // for course
+  Banner banner_;                 // for course
+  BitmapText text_category_;      // for category
+  BitmapText text_course_title_;  // for course
 
-  AutoActor m_sprBullets[NUM_RANKING_LINES];   // for category and course
-  BitmapText m_textNames[NUM_RANKING_LINES];   // for category and course
-  BitmapText m_textScores[NUM_RANKING_LINES];  // for category and course
-  BitmapText m_textPoints[NUM_RANKING_LINES];  // for course
-  BitmapText m_textTime[NUM_RANKING_LINES];    // for course
+  AutoActor spr_bullets_[NUM_RANKING_LINES];   // for category and course
+  BitmapText text_names_[NUM_RANKING_LINES];   // for category and course
+  BitmapText text_scores_[NUM_RANKING_LINES];  // for category and course
+  BitmapText text_points_[NUM_RANKING_LINES];  // for course
+  BitmapText text_time_[NUM_RANKING_LINES];    // for course
   ThemeMetric1D<RageColor> STEPS_TYPE_COLOR;
 
   LocalizedString NO_SCORE_NAME;

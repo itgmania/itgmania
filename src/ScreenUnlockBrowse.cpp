@@ -17,7 +17,7 @@ REGISTER_SCREEN_CLASS(ScreenUnlockBrowse);
 void ScreenUnlockBrowse::Init() {
   int index = 0;
   // fill m_aGameCommands before calling Init()
-  for (const UnlockEntry& ue : UNLOCKMAN->m_UnlockEntries) {
+  for (const UnlockEntry& ue : UNLOCKMAN->unlock_entries_) {
     GameCommand gc;
     UnlockEntryStatus st = ue.GetUnlockEntryStatus();
     switch (st) {
@@ -25,23 +25,23 @@ void ScreenUnlockBrowse::Init() {
         FAIL_M(ssprintf("Invalid UnlockEntryStatus: %i", st));
       case UnlockEntryStatus_RequirementsMet:
       case UnlockEntryStatus_Unlocked:
-        gc.m_bInvalid = false;
+        gc.invalid_ = false;
         break;
       case UnlockEntryStatus_RequrementsNotMet:
         break;
     }
-    gc.m_iIndex = index++;
+    gc.index_ = index++;
     // gc.m_sUnlockEntryID = ue->m_sEntryID;
-    gc.m_sName = ssprintf("%d", gc.m_iIndex);
+    gc.name_ = ssprintf("%d", gc.index_);
 
-    m_aGameCommands.push_back(gc);
+    game_commands_.push_back(gc);
   }
 
   ScreenSelectMaster::Init();
 
-  m_banner.SetName("Banner");
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_banner);
-  this->AddChild(&m_banner);
+  banner_.SetName("Banner");
+  LOAD_ALL_COMMANDS_AND_SET_XY(banner_);
+  this->AddChild(&banner_);
 
   this->SubscribeToMessage(Message_MenuSelectionChanged);
 }
@@ -53,7 +53,7 @@ void ScreenUnlockBrowse::BeginScreen() {
 }
 
 bool ScreenUnlockBrowse::MenuStart(const InputEventPlus& input) {
-  m_soundStart.Play(true);
+  sound_start_.Play(true);
   this->PostScreenMessage(SM_BeginFadingOut, 0);
   return true;
 }
@@ -61,11 +61,11 @@ bool ScreenUnlockBrowse::MenuStart(const InputEventPlus& input) {
 void ScreenUnlockBrowse::HandleMessage(const Message& msg) {
   if (msg == Message_MenuSelectionChanged) {
     int iSelection = this->GetSelectionIndex(PLAYER_1);
-    const UnlockEntry& ue = UNLOCKMAN->m_UnlockEntries[iSelection];
+    const UnlockEntry& ue = UNLOCKMAN->unlock_entries_[iSelection];
     if (ue.IsLocked()) {
-      m_banner.LoadFallback();
+      banner_.LoadFallback();
     } else {
-      m_banner.LoadBannerFromUnlockEntry(&ue);
+      banner_.LoadBannerFromUnlockEntry(&ue);
     }
   }
 

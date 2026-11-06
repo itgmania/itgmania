@@ -76,90 +76,90 @@ class PlayerOptions {
    *
    * This code was taken from Init() to use proper initialization. */
   PlayerOptions()
-      : m_HideLightType(HideLightType_NoHideLights),
-        m_LifeType(LifeType_Bar),
-        m_DrainType(DrainType_Normal),
-        m_ModTimerType(ModTimerType_Default),
-        m_BatteryLives(4),
-        m_bSetScrollSpeed(false),
-        m_fTimeSpacing(0),
-        m_SpeedfTimeSpacing(1.0f),
-        m_fMaxScrollBPM(0),
-        m_SpeedfMaxScrollBPM(1.0f),
-        m_fScrollSpeed(1.0f),
-        m_SpeedfScrollSpeed(1.0f),
-        m_fScrollBPM(200),
-        m_SpeedfScrollBPM(1.0f),
-        m_fDark(0),
-        m_SpeedfDark(1.0f),
-        m_fBlind(0),
-        m_SpeedfBlind(1.0f),
-        m_fCover(0),
-        m_SpeedfCover(1.0f),
-        m_fRandAttack(0),
-        m_SpeedfRandAttack(1.0f),
-        m_fNoAttack(0),
-        m_SpeedfNoAttack(1.0f),
-        m_fPlayerAutoPlay(0),
-        m_SpeedfPlayerAutoPlay(1.0f),
-        m_fPerspectiveTilt(0),
-        m_SpeedfPerspectiveTilt(1.0f),
-        m_fSkew(0),
-        m_SpeedfSkew(1.0f),
-        m_fPassmark(0),
-        m_SpeedfPassmark(1.0f),
-        m_fRandomSpeed(0),
-        m_SpeedfRandomSpeed(1.0f),
-        m_fModTimerMult(0),
-        m_SpeedfModTimerMult(1.0f),
-        m_fModTimerOffset(0),
-        m_SpeedfModTimerOffset(1.0f),
-        m_fDrawSize(0),
-        m_SpeedfDrawSize(1.0f),
-        m_fDrawSizeBack(0),
-        m_SpeedfDrawSizeBack(1.0f),
-        m_bMuteOnError(false),
-        m_bStealthType(false),
-        m_bStealthPastReceptors(false),
-        m_bDizzyHolds(false),
-        m_bZBuffer(false),
-        m_bCosecant(false),
-        m_FailType(FailType_Immediate),
-        m_MinTNSToHideNotes(PREFSMAN->m_MinTNSToHideNotes) {
-    m_sNoteSkin = "";
-    m_fVisualDelay = 0.0f;
-    ZERO(m_fAccels);
-    ONE(m_SpeedfAccels);
-    ZERO(m_fEffects);
-    ONE(m_SpeedfEffects);
-    ZERO(m_fAppearances);
-    ONE(m_SpeedfAppearances);
-    ZERO(m_fScrolls);
-    ONE(m_SpeedfScrolls);
-    ZERO(m_bTurns);
-    ZERO(m_bTransforms);
-    ZERO(m_fMovesX);
-    ONE(m_SpeedfMovesX);
-    ZERO(m_fMovesY);
-    ONE(m_SpeedfMovesY);
-    ZERO(m_fMovesZ);
-    ONE(m_SpeedfMovesZ);
-    ZERO(m_fConfusionX);
-    ONE(m_SpeedfConfusionX);
-    ZERO(m_fConfusionY);
-    ONE(m_SpeedfConfusionY);
-    ZERO(m_fConfusionZ);
-    ONE(m_SpeedfConfusionZ);
-    ZERO(m_fDarks);
-    ONE(m_SpeedfDarks);
-    ZERO(m_fStealth);
-    ONE(m_SpeedfStealth);
-    ZERO(m_fTiny);
-    ONE(m_SpeedfTiny);
-    ZERO(m_fBumpy);
-    ONE(m_SpeedfBumpy);
-    ZERO(m_fReverse);
-    ONE(m_SpeedfReverse);
+      : hide_light_type_(HideLightType_NoHideLights),
+        life_type_(LifeType_Bar),
+        drain_type_(DrainType_Normal),
+        mod_timer_type_(ModTimerType_Default),
+        battery_lives_(4),
+        set_scroll_speed_(false),
+        time_spacing_(0),
+        speed_time_spacing_(1.0f),
+        max_scroll_bpm_(0),
+        speed_max_scroll_bpm_(1.0f),
+        scroll_speed_(1.0f),
+        speed_scroll_speed_(1.0f),
+        scroll_bpm_(200),
+        speed_scroll_bpm_(1.0f),
+        dark_(0),
+        speed_dark_(1.0f),
+        blind_(0),
+        speed_blind_(1.0f),
+        cover_(0),
+        speed_cover_(1.0f),
+        rand_attack_(0),
+        speed_rand_attack_(1.0f),
+        no_attack_(0),
+        speed_no_attack_(1.0f),
+        player_auto_play_(0),
+        speed_player_auto_play_(1.0f),
+        perspective_tilt_(0),
+        speed_perspective_tilt_(1.0f),
+        skew_(0),
+        speed_skew_(1.0f),
+        passmark_(0),
+        speed_passmark_(1.0f),
+        random_speed_(0),
+        speed_random_speed_(1.0f),
+        mod_timer_mult_(0),
+        speed_mod_timer_mult_(1.0f),
+        mod_timer_offset_(0),
+        speed_mod_timer_offset_(1.0f),
+        draw_size_(0),
+        speed_draw_size_(1.0f),
+        draw_size_back_(0),
+        speed_draw_size_back_(1.0f),
+        mute_on_error_(false),
+        stealth_type_(false),
+        stealth_past_receptors_(false),
+        dizzy_holds_(false),
+        z_buffer_(false),
+        cosecant_(false),
+        fail_type_(FailType_Immediate),
+        min_tns_to_hide_notes_(PREFSMAN->min_tns_to_hide_notes_) {
+    note_skin_ = "";
+    visual_delay_ = 0.0f;
+    ZERO(accels_);
+    ONE(speed_accels_);
+    ZERO(effects_);
+    ONE(speed_effects_);
+    ZERO(appearances_);
+    ONE(speed_appearances_);
+    ZERO(scrolls_);
+    ONE(speed_scrolls_);
+    ZERO(turns_);
+    ZERO(transforms_);
+    ZERO(moves_x_);
+    ONE(speed_moves_x_);
+    ZERO(moves_y_);
+    ONE(speed_moves_y_);
+    ZERO(moves_z_);
+    ONE(speed_moves_z_);
+    ZERO(confusion_x_);
+    ONE(speed_confusion_x_);
+    ZERO(confusion_y_);
+    ONE(speed_confusion_y_);
+    ZERO(confusion_z_);
+    ONE(speed_confusion_z_);
+    ZERO(darks_);
+    ONE(speed_darks_);
+    ZERO(stealth_);
+    ONE(speed_stealth_);
+    ZERO(tiny_);
+    ONE(speed_tiny_);
+    ZERO(bumpy_);
+    ONE(speed_bumpy_);
+    ZERO(reverse_);
+    ONE(speed_reverse_);
   };
   void Init();
   void Approach(const PlayerOptions& other, float fDeltaSeconds);
@@ -404,85 +404,85 @@ class PlayerOptions {
   float GetReversePercentForColumn(
       int iCol) const;  // accounts for all Directions
 
-  PlayerNumber m_pn;  // Needed for fetching the style.
+  PlayerNumber pn_;  // Needed for fetching the style.
 
-  HideLightType m_HideLightType;
-  LifeType m_LifeType;
-  DrainType m_DrainType;  // only used with LifeBar
-  ModTimerType m_ModTimerType;
-  int m_BatteryLives;
+  HideLightType hide_light_type_;
+  LifeType life_type_;
+  DrainType drain_type_;  // only used with LifeBar
+  ModTimerType mod_timer_type_;
+  int battery_lives_;
   /* All floats have a corresponding speed setting, which determines how fast
    * PlayerOptions::Approach approaches. */
-  bool m_bSetScrollSpeed;  // true if the scroll speed was set by FromString
-  float m_fTimeSpacing,
-      m_SpeedfTimeSpacing;  // instead of Beat spacing (CMods, mMods)
-  float m_fMaxScrollBPM, m_SpeedfMaxScrollBPM;
-  float m_fScrollSpeed, m_SpeedfScrollSpeed;  // used if !m_bTimeSpacing (xMods)
-  float m_fScrollBPM, m_SpeedfScrollBPM;      // used if m_bTimeSpacing (CMod)
-  float m_fAccels[NUM_ACCELS], m_SpeedfAccels[NUM_ACCELS];
-  float m_fEffects[NUM_EFFECTS], m_SpeedfEffects[NUM_EFFECTS];
-  float m_fAppearances[NUM_APPEARANCES], m_SpeedfAppearances[NUM_APPEARANCES];
-  float m_fScrolls[NUM_SCROLLS], m_SpeedfScrolls[NUM_SCROLLS];
-  float m_fDark, m_SpeedfDark;
-  float m_fBlind, m_SpeedfBlind;
-  float m_fCover, m_SpeedfCover;  // hide the background per-player--can't think
-                                  // of a good name
-  float m_fRandAttack, m_SpeedfRandAttack;
-  float m_fNoAttack, m_SpeedfNoAttack;
-  float m_fPlayerAutoPlay, m_SpeedfPlayerAutoPlay;
-  float m_fPerspectiveTilt,
-      m_SpeedfPerspectiveTilt;  // -1 = near, 0 = overhead, +1 = space
-  float m_fSkew, m_SpeedfSkew;  // 0 = vanish point is in center of player, 1 =
+  bool set_scroll_speed_;  // true if the scroll speed was set by FromString
+  float time_spacing_,
+      speed_time_spacing_;  // instead of Beat spacing (CMods, mMods)
+  float max_scroll_bpm_, speed_max_scroll_bpm_;
+  float scroll_speed_, speed_scroll_speed_;  // used if !m_bTimeSpacing (xMods)
+  float scroll_bpm_, speed_scroll_bpm_;      // used if m_bTimeSpacing (CMod)
+  float accels_[NUM_ACCELS], speed_accels_[NUM_ACCELS];
+  float effects_[NUM_EFFECTS], speed_effects_[NUM_EFFECTS];
+  float appearances_[NUM_APPEARANCES], speed_appearances_[NUM_APPEARANCES];
+  float scrolls_[NUM_SCROLLS], speed_scrolls_[NUM_SCROLLS];
+  float dark_, speed_dark_;
+  float blind_, speed_blind_;
+  float cover_, speed_cover_;  // hide the background per-player--can't think
+                               // of a good name
+  float rand_attack_, speed_rand_attack_;
+  float no_attack_, speed_no_attack_;
+  float player_auto_play_, speed_player_auto_play_;
+  float perspective_tilt_,
+      speed_perspective_tilt_;  // -1 = near, 0 = overhead, +1 = space
+  float skew_, speed_skew_;     // 0 = vanish point is in center of player, 1 =
                                 // vanish point is in center of screen
 
   /* If this is > 0, then the player must have life above this value at the end
    * of the song to pass.  This is independent of SongOptions::m_FailType. */
-  float m_fPassmark, m_SpeedfPassmark;
+  float passmark_, speed_passmark_;
 
-  float m_fRandomSpeed, m_SpeedfRandomSpeed;
-  float m_fModTimerMult, m_SpeedfModTimerMult;
-  float m_fModTimerOffset, m_SpeedfModTimerOffset;
-  float m_fDrawSize, m_SpeedfDrawSize;
-  float m_fDrawSizeBack, m_SpeedfDrawSizeBack;
+  float random_speed_, speed_random_speed_;
+  float mod_timer_mult_, speed_mod_timer_mult_;
+  float mod_timer_offset_, speed_mod_timer_offset_;
+  float draw_size_, speed_draw_size_;
+  float draw_size_back_, speed_draw_size_back_;
   /* The maximum column number is 16.*/
-  float m_fMovesX[16], m_SpeedfMovesX[16];
-  float m_fMovesY[16], m_SpeedfMovesY[16];
-  float m_fMovesZ[16], m_SpeedfMovesZ[16];
-  float m_fConfusionX[16], m_SpeedfConfusionX[16];
-  float m_fConfusionY[16], m_SpeedfConfusionY[16];
-  float m_fConfusionZ[16], m_SpeedfConfusionZ[16];
-  float m_fDarks[16], m_SpeedfDarks[16];
-  float m_fStealth[16], m_SpeedfStealth[16];
-  float m_fTiny[16], m_SpeedfTiny[16];
-  float m_fBumpy[16], m_SpeedfBumpy[16];
-  float m_fReverse[16], m_SpeedfReverse[16];
+  float moves_x_[16], speed_moves_x_[16];
+  float moves_y_[16], speed_moves_y_[16];
+  float moves_z_[16], speed_moves_z_[16];
+  float confusion_x_[16], speed_confusion_x_[16];
+  float confusion_y_[16], speed_confusion_y_[16];
+  float confusion_z_[16], speed_confusion_z_[16];
+  float darks_[16], speed_darks_[16];
+  float stealth_[16], speed_stealth_[16];
+  float tiny_[16], speed_tiny_[16];
+  float bumpy_[16], speed_bumpy_[16];
+  float reverse_[16], speed_reverse_[16];
 
-  bool m_bTurns[NUM_TURNS];
-  bool m_bTransforms[NUM_TRANSFORMS];
-  bool m_bMuteOnError;
-  bool m_bStealthType;
-  bool m_bStealthPastReceptors;
-  bool m_bDizzyHolds;
-  bool m_bZBuffer;
-  bool m_bCosecant;
+  bool turns_[NUM_TURNS];
+  bool transforms_[NUM_TRANSFORMS];
+  bool mute_on_error_;
+  bool stealth_type_;
+  bool stealth_past_receptors_;
+  bool dizzy_holds_;
+  bool z_buffer_;
+  bool cosecant_;
   /** @brief The method for which a player can fail a song. */
-  FailType m_FailType;
-  TapNoteScore m_MinTNSToHideNotes;
+  FailType fail_type_;
+  TapNoteScore min_tns_to_hide_notes_;
 
   /**
    * @brief The Noteskin to use.
    *
    * If an empty string, it means to not change from the default. */
-  std::string m_sNoteSkin;
+  std::string note_skin_;
 
   /** @brief The Visual Delay additionally applied on a per-player basis in ms.
    */
-  float m_fVisualDelay;
+  float visual_delay_;
 
   /** @brief The TimingWindow that can be disabled.
    *  Valid values are only W1-W5 which map to indices 0-5 respectively.
    *  Other values are ignored. */
-  std::bitset<5> m_twDisabledWindows;
+  std::bitset<5> disabled_windows_;
 
   void NextAccel();
   void NextEffect();

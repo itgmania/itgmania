@@ -61,18 +61,18 @@ class NoteField : public ActorFrame {
   // Allows the theme to modify the parameters to Step, SetPressed,
   // DidTapNote, and DidHoldNote before they pass on to the ghost arrows or
   // receptors. -Kyz
-  LuaReference m_StepCallback;
-  LuaReference m_SetPressedCallback;
-  LuaReference m_DidTapNoteCallback;
-  LuaReference m_DidHoldNoteCallback;
+  LuaReference step_callback_;
+  LuaReference set_pressed_callback_;
+  LuaReference did_tap_note_callback_;
+  LuaReference did_hold_note_callback_;
 
-  const PlayerState* GetPlayerState() const { return m_pPlayerState; }
+  const PlayerState* GetPlayerState() const { return player_state_; }
 
-  int m_iBeginMarker, m_iEndMarker;  // only used with MODE_EDIT
+  int begin_marker_, end_marker_;  // only used with MODE_EDIT
 
   // m_ColumnRenderers belongs in the protected section, but it's here in
   // public so that the Lua API can access it. -Kyz
-  std::vector<NoteColumnRenderer> m_ColumnRenderers;
+  std::vector<NoteColumnRenderer> column_renderers_;
 
   void SetBeatBars(bool active);
   bool GetBeatBars();
@@ -85,8 +85,8 @@ class NoteField : public ActorFrame {
   void UnloadWaveform();
   /** @brief Only show the waveform while actively editing steps, not while
    * playtesting/recording. */
-  void SetShowWaveform(bool active) { m_bShowWaveform = active; }
-  bool GetShowWaveform() const { return m_bShowWaveform; }
+  void SetShowWaveform(bool active) { show_waveform_ = active; }
+  bool GetShowWaveform() const { return show_waveform_; }
 
  protected:
   void CacheNoteSkin(const std::string& sNoteSkin);
@@ -118,55 +118,55 @@ class NoteField : public ActorFrame {
       const float beat, const std::string new_bg_name, const RageColor& glow);
   float GetWidth() const;
 
-  const NoteData* m_pNoteData;
+  const NoteData* note_data_;
 
-  const PlayerState* m_pPlayerState;
-  int m_iDrawDistanceAfterTargetsPixels;   // this should be a negative number
-  int m_iDrawDistanceBeforeTargetsPixels;  // this should be a positive number
-  float m_fYReverseOffsetPixels;
+  const PlayerState* player_state_;
+  int draw_distance_after_targets_pixels_;   // this should be a negative number
+  int draw_distance_before_targets_pixels_;  // this should be a positive number
+  float y_reverse_offset_pixels_;
 
   // This exists so that the board can be drawn underneath combo/judge. -Kyz
-  bool m_drawing_board_primitive;
+  bool drawing_board_primitive_;
 
   // color arrows
   struct NoteDisplayCols {
-    NoteDisplay* display;
-    ReceptorArrowRow m_ReceptorArrowRow;
-    GhostArrowRow m_GhostArrowRow;
-    NoteDisplayCols(int iNumCols) { display = new NoteDisplay[iNumCols]; }
-    ~NoteDisplayCols() { delete[] display; }
+    NoteDisplay* display_;
+    ReceptorArrowRow receptor_arrow_row_;
+    GhostArrowRow ghost_arrow_row_;
+    NoteDisplayCols(int iNumCols) { display_ = new NoteDisplay[iNumCols]; }
+    ~NoteDisplayCols() { delete[] display_; }
   };
 
-  NoteFieldRenderArgs m_FieldRenderArgs;
+  NoteFieldRenderArgs field_render_args_;
 
   /* All loaded note displays, mapped by their name. */
-  std::map<std::string, NoteDisplayCols*> m_NoteDisplays;
-  NoteDisplayCols* m_pCurDisplay;
-  NoteDisplayCols* m_pDisplays[NUM_PlayerNumber];
+  std::map<std::string, NoteDisplayCols*> note_displays_;
+  NoteDisplayCols* cur_display_;
+  NoteDisplayCols* displays_[NUM_PlayerNumber];
 
   // decorations, mostly used in MODE_EDIT
-  AutoActor m_sprBoard;
-  float m_fBoardOffsetPixels;
-  float m_fCurrentBeatLastUpdate;      // -1 on first update
-  float m_fYPosCurrentBeatLastUpdate;  // -1 on first update
+  AutoActor spr_board_;
+  float board_offset_pixels_;
+  float current_beat_last_update_;        // -1 on first update
+  float y_pos_current_beat_last_update_;  // -1 on first update
 
-  Sprite m_sprBeatBars;  // 4 frames: Measure, 4th, 8th, 16th
-  BitmapText m_textMeasureNumber;
-  Quad m_rectMarkerBar;
-  Quad m_rectAreaHighlight;
+  Sprite spr_beat_bars_;  // 4 frames: Measure, 4th, 8th, 16th
+  BitmapText text_measure_number_;
+  Quad rect_marker_bar_;
+  Quad rect_area_highlight_;
 
-  bool m_bShowBeatBars;
-  float m_fBarMeasureAlpha;
-  float m_fBar4thAlpha;
-  float m_fBar8thAlpha;
-  float m_fBar16thAlpha;
+  bool show_beat_bars_;
+  float bar_measure_alpha_;
+  float bar4th_alpha_;
+  float bar8th_alpha_;
+  float bar16th_alpha_;
 
   // Song waveform, shown behind the beat bars while actively editing steps.
-  bool m_bShowWaveform;
-  bool m_bWaveformIsStereo;
-  int m_iWaveformSampleRate;
-  std::vector<float> m_WaveformSamplesL;
-  std::vector<float> m_WaveformSamplesR;
+  bool show_waveform_;
+  bool waveform_is_stereo_;
+  int waveform_sample_rate_;
+  std::vector<float> waveform_samples_l_;
+  std::vector<float> waveform_samples_r_;
 };
 
 #endif

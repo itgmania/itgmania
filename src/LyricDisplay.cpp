@@ -15,71 +15,71 @@ static ThemeMetric<float> IN_LENGTH("LyricDisplay", "InLength");
 static ThemeMetric<float> OUT_LENGTH("LyricDisplay", "OutLength");
 
 LyricDisplay::LyricDisplay() {
-  m_textLyrics[0].SetName("LyricBack");
-  ActorUtil::LoadAllCommands(m_textLyrics[0], "LyricDisplay");
-  m_textLyrics[0].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
-  this->AddChild(&m_textLyrics[0]);
+  text_lyrics_[0].SetName("LyricBack");
+  ActorUtil::LoadAllCommands(text_lyrics_[0], "LyricDisplay");
+  text_lyrics_[0].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
+  this->AddChild(&text_lyrics_[0]);
 
-  m_textLyrics[1].SetName("LyricFront");
-  ActorUtil::LoadAllCommands(m_textLyrics[1], "LyricDisplay");
-  m_textLyrics[1].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
-  this->AddChild(&m_textLyrics[1]);
+  text_lyrics_[1].SetName("LyricFront");
+  ActorUtil::LoadAllCommands(text_lyrics_[1], "LyricDisplay");
+  text_lyrics_[1].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
+  this->AddChild(&text_lyrics_[1]);
 
   Init();
 }
 
 void LyricDisplay::Init() {
   for (int i = 0; i < 2; i++) {
-    m_textLyrics[i].SetText("");
+    text_lyrics_[i].SetText("");
   }
-  m_iCurLyricNumber = 0;
+  cur_lyric_number_ = 0;
 
-  m_fLastSecond = -500;
-  m_bStopped = false;
+  last_second_ = -500;
+  stopped_ = false;
 }
 
-void LyricDisplay::Stop() { m_bStopped = true; }
+void LyricDisplay::Stop() { stopped_ = true; }
 
 void LyricDisplay::Update(float fDeltaTime) {
-  if (m_bStopped) {
+  if (stopped_) {
     return;
   }
 
   ActorFrame::Update(fDeltaTime);
 
-  if (GAMESTATE->m_pCurSong == nullptr) {
+  if (GAMESTATE->cur_song_ == nullptr) {
     return;
   }
 
   // If the song has changed (in a course), reset.
-  if (GAMESTATE->m_Position.m_fMusicSeconds < m_fLastSecond) {
+  if (GAMESTATE->position_.music_seconds_ < last_second_) {
     Init();
   }
-  m_fLastSecond = GAMESTATE->m_Position.m_fMusicSeconds;
+  last_second_ = GAMESTATE->position_.music_seconds_;
 
-  if (m_iCurLyricNumber >= GAMESTATE->m_pCurSong->m_LyricSegments.size()) {
+  if (cur_lyric_number_ >= GAMESTATE->cur_song_->lyric_segments_.size()) {
     return;
   }
 
-  const Song* pSong = GAMESTATE->m_pCurSong;
+  const Song* pSong = GAMESTATE->cur_song_;
   const float fStartTime =
-      (pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime) -
+      (pSong->lyric_segments_[cur_lyric_number_].start_time_) -
       IN_LENGTH.GetValue();
 
-  if (GAMESTATE->m_Position.m_fMusicSeconds < fStartTime) {
+  if (GAMESTATE->position_.music_seconds_ < fStartTime) {
     return;
   }
 
   // Clamp this lyric to the beginning of the next or the end of the music.
   float fEndTime;
-  if (m_iCurLyricNumber + 1 < GAMESTATE->m_pCurSong->m_LyricSegments.size()) {
-    fEndTime = pSong->m_LyricSegments[m_iCurLyricNumber + 1].m_fStartTime;
+  if (cur_lyric_number_ + 1 < GAMESTATE->cur_song_->lyric_segments_.size()) {
+    fEndTime = pSong->lyric_segments_[cur_lyric_number_ + 1].start_time_;
   } else {
     fEndTime = pSong->GetLastSecond();
   }
 
   const float fDistance =
-      fEndTime - pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime;
+      fEndTime - pSong->lyric_segments_[cur_lyric_number_].start_time_;
   const float fTweenBufferTime = IN_LENGTH.GetValue() + OUT_LENGTH.GetValue();
 
   /* If it's negative, two lyrics are so close together that there's no time
@@ -88,18 +88,18 @@ void LyricDisplay::Update(float fDeltaTime) {
   float fShowLength = std::max(fDistance - fTweenBufferTime, 0.0f);
 
   // Make lyrics show faster for faster song rates.
-  fShowLength /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+  fShowLength /= GAMESTATE->song_options_.GetCurrent().music_rate_;
 
   const LyricSegment& seg =
-      GAMESTATE->m_pCurSong->m_LyricSegments[m_iCurLyricNumber];
+      GAMESTATE->cur_song_->lyric_segments_[cur_lyric_number_];
 
-  LuaThreadVariable var1("LyricText", seg.m_sLyric);
+  LuaThreadVariable var1("LyricText", seg.lyric_);
   LuaThreadVariable var2("LyricDuration", LuaReference::Create(fShowLength));
-  LuaThreadVariable var3("LyricColor", LuaReference::Create(seg.m_Color));
+  LuaThreadVariable var3("LyricColor", LuaReference::Create(seg.color_));
 
   PlayCommand("Changed");
 
-  m_iCurLyricNumber++;
+  cur_lyric_number_++;
 }
 
 /*

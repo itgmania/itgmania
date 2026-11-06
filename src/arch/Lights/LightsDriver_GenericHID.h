@@ -16,24 +16,24 @@ class USBContext {
     return instance;
   }
 
-  libusb_context* getContext() { return context; }
+  libusb_context* getContext() { return context_; }
 
  private:
   USBContext() {
-    int result = libusb_init_context(&context, NULL, 0);
+    int result = libusb_init_context(&context_, NULL, 0);
     if (result < 0) {
       // initialization error
-      context = nullptr;
+      context_ = nullptr;
     }
   }
 
   ~USBContext() {
-    if (context) {
-      libusb_exit(context);
+    if (context_) {
+      libusb_exit(context_);
     }
   }
 
-  libusb_context* context;
+  libusb_context* context_;
 
   // prevent copying
   USBContext(const USBContext&) = delete;
@@ -52,8 +52,8 @@ class LightsDriver_GenericHID : public LightsDriver {
   void WriteDevice(uint16_t out);
   void CloseDevice();
 
-  libusb_device_handle* DeviceHandle;
-  int iLightsOrder;
+  libusb_device_handle* device_handle_;
+  int lights_order_;
 };
 
 #endif  // LIGHTSDRIVER_LINUXPACDRIVE_H

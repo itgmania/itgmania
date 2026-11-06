@@ -19,11 +19,12 @@ HICON IconFromSurface(const RageSurface* pSrcImg) {
   {
     /* Round the width up to a multiple of 8, convert to 32-bit BGR, and reduce
      * to one-bit alpha. */
-    int iWidth = pSrcImg->w;
+    int iWidth = pSrcImg->w_;
     iWidth = (iWidth + 7) & ~7;
 
     pImg = CreateSurface(
-        iWidth, pSrcImg->h, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        iWidth, pSrcImg->h_, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,
+        0xFF000000);
     RageSurfaceUtils::Blit(pSrcImg, pImg);
   }
 
@@ -31,32 +32,32 @@ HICON IconFromSurface(const RageSurface* pSrcImg) {
 
   int iSize = sizeof(BITMAPINFOHEADER);
   int iSizeImage = 0;
-  iSizeImage += pImg->h * pImg->pitch;   /* image */
-  iSizeImage += (pImg->h * pImg->w) / 8; /* mask */
+  iSizeImage += pImg->h_ * pImg->pitch_;   /* image */
+  iSizeImage += (pImg->h_ * pImg->w_) / 8; /* mask */
 
   BITMAPINFOHEADER* pBitmap = (BITMAPINFOHEADER*)malloc(iSize + iSizeImage);
   memset(pBitmap, 0, iSize + iSizeImage);
 
   pBitmap->biSize = sizeof(BITMAPINFOHEADER);
-  pBitmap->biWidth = pImg->w;
-  pBitmap->biHeight = pImg->h * 2;
+  pBitmap->biWidth = pImg->w_;
+  pBitmap->biHeight = pImg->h_ * 2;
   pBitmap->biPlanes = 1;
   pBitmap->biBitCount = 32;
   pBitmap->biCompression = BI_RGB;
-  pBitmap->biSizeImage = pImg->h * pImg->pitch;
+  pBitmap->biSizeImage = pImg->h_ * pImg->pitch_;
 
   uint8_t* pImage = ((uint8_t*)pBitmap) + iSize;
-  uint8_t* pMask = pImage + pImg->h * pImg->pitch;
+  uint8_t* pMask = pImage + pImg->h_ * pImg->pitch_;
 
-  memcpy(pImage, pImg->pixels, pImg->h * pImg->pitch);
+  memcpy(pImage, pImg->pixels_, pImg->h_ * pImg->pitch_);
 
-  int iMaskPitch = pImg->w / 8;
-  for (int y = 0; y < pImg->h; ++y) {
+  int iMaskPitch = pImg->w_ / 8;
+  for (int y = 0; y < pImg->h_; ++y) {
     int bit = 0x80;
-    uint32_t* pRow = (uint32_t*)(pImage + y * pImg->pitch);
+    uint32_t* pRow = (uint32_t*)(pImage + y * pImg->pitch_);
     uint8_t* pMaskRow = pMask + y * iMaskPitch;
-    for (int x = 0; x < pImg->w; ++x) {
-      if (!(pRow[x] & pImg->fmt.Mask[3])) {
+    for (int x = 0; x < pImg->w_; ++x) {
+      if (!(pRow[x] & pImg->fmt_.mask_[3])) {
         /* Transparent; set this mask bit. */
         *pMaskRow |= bit;
         pRow[x] = 0;
@@ -71,7 +72,7 @@ HICON IconFromSurface(const RageSurface* pSrcImg) {
   }
 
   HICON icon = CreateIconFromResourceEx(
-      (BYTE*)pBitmap, iSize + iSizeImage, TRUE, 0x00030000, pImg->w, pImg->h,
+      (BYTE*)pBitmap, iSize + iSizeImage, TRUE, 0x00030000, pImg->w_, pImg->h_,
       LR_DEFAULTCOLOR);
 
   delete pImg;

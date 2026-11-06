@@ -36,7 +36,7 @@ MovieTexture_Generic::MovieTexture_Generic(
     RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder)
     : RageMovieTexture(ID) {
   LOG->Trace(
-      "MovieTexture_Generic::MovieTexture_Generic(%s)", ID.filename.c_str());
+      "MovieTexture_Generic::MovieTexture_Generic(%s)", ID.filename_.c_str());
 
   decoder_ = std::move(pDecoder);
 
@@ -52,12 +52,12 @@ MovieTexture_Generic::MovieTexture_Generic(
 }
 
 std::string MovieTexture_Generic::Init() {
-  std::string err = decoder_->Open(GetID().filename);
+  std::string err = decoder_->Open(GetID().filename_);
   if (err != "") {
     LOG->Warn(
         "MovieTexture_Generic::Init: failed to open decoder for file: %s, with "
         "error:\n%s",
-        GetID().filename.c_str(), err.c_str());
+        GetID().filename_.c_str(), err.c_str());
     return err;
   }
 
@@ -68,7 +68,7 @@ std::string MovieTexture_Generic::Init() {
   // Spawn background decoding worker thread so video I/O, demuxing, and color
   // conversion run completely asynchronously without blocking the main engine
   // render thread.
-  std::string filename = GetID().filename;
+  std::string filename = GetID().filename_;
   MovieDecoder* decoder_ptr = decoder_.get();
   decoding_thread_ =
       std::make_unique<std::thread>([this, decoder_ptr, filename]() {
@@ -86,8 +86,8 @@ std::string MovieTexture_Generic::Init() {
       });
 
   LOG->Trace(
-      "Resolution: %ix%i (%ix%i, %ix%i)", m_iSourceWidth, m_iSourceHeight,
-      m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
+      "Resolution: %ix%i (%ix%i, %ix%i)", source_width_, source_height_,
+      image_width_, image_height_, texture_width_, texture_height_);
 
   CHECKPOINT_M("Generic initialization completed. No errors found.");
 
@@ -135,15 +135,15 @@ class RageMovieTexture_Generic_Intermediate : public RageTexture {
       RageTextureID ID, int iWidth, int iHeight, int iImageWidth,
       int iImageHeight, int iTextureWidth, int iTextureHeight,
       RageSurfaceFormat SurfaceFormat, RagePixelFormat pixfmt)
-      : RageTexture(ID), m_SurfaceFormat(SurfaceFormat) {
-    m_PixFmt = pixfmt;
-    m_iSourceWidth = iWidth;
-    m_iSourceHeight = iHeight;
+      : RageTexture(ID), surface_format_(SurfaceFormat) {
+    pix_fmt_ = pixfmt;
+    source_width_ = iWidth;
+    source_height_ = iHeight;
 
-    m_iImageWidth = iImageWidth;
-    m_iImageHeight = iImageHeight;
-    m_iTextureWidth = iTextureWidth;
-    m_iTextureHeight = iTextureHeight;
+    image_width_ = iImageWidth;
+    image_height_ = iImageHeight;
+    texture_width_ = iTextureWidth;
+    texture_height_ = iTextureHeight;
 
     CreateFrameRects();
 
@@ -170,17 +170,17 @@ class RageMovieTexture_Generic_Intermediate : public RageTexture {
     }
 
     RageSurface* pSurface = CreateSurfaceFrom(
-        m_iImageWidth, m_iImageHeight, m_SurfaceFormat.BitsPerPixel,
-        m_SurfaceFormat.Mask[0], m_SurfaceFormat.Mask[1],
-        m_SurfaceFormat.Mask[2], m_SurfaceFormat.Mask[3], nullptr, 1);
+        image_width_, image_height_, surface_format_.bits_per_pixel_,
+        surface_format_.mask_[0], surface_format_.mask_[1],
+        surface_format_.mask_[2], surface_format_.mask_[3], nullptr, 1);
 
-    texture_handle_ = DISPLAY->CreateTexture(m_PixFmt, pSurface, false);
+    texture_handle_ = DISPLAY->CreateTexture(pix_fmt_, pSurface, false);
     delete pSurface;
   }
 
   uintptr_t texture_handle_;
-  RageSurfaceFormat m_SurfaceFormat;
-  RagePixelFormat m_PixFmt;
+  RageSurfaceFormat surface_format_;
+  RagePixelFormat pix_fmt_;
 };
 
 void MovieTexture_Generic::Invalidate() {
@@ -197,26 +197,26 @@ void MovieTexture_Generic::CreateTexture() {
 
   CHECKPOINT;
 
-  m_iSourceWidth = decoder_->GetWidth();
-  m_iSourceHeight = decoder_->GetHeight();
+  source_width_ = decoder_->GetWidth();
+  source_height_ = decoder_->GetHeight();
 
-  /* Adjust m_iSourceWidth to support different source aspect ratios. */
+  /* Adjust source_width_ to support different source aspect ratios. */
   float fSourceAspectRatio = decoder_->GetSourceAspectRatio();
   if (fSourceAspectRatio < 1) {
-    m_iSourceHeight = std::lrint(m_iSourceHeight / fSourceAspectRatio);
+    source_height_ = std::lrint(source_height_ / fSourceAspectRatio);
   } else if (fSourceAspectRatio > 1) {
-    m_iSourceWidth = std::lrint(m_iSourceWidth * fSourceAspectRatio);
+    source_width_ = std::lrint(source_width_ * fSourceAspectRatio);
   }
 
   /* HACK: Don't cap movie textures to the max texture size, since we
    * render them onto the texture at the source dimensions.  If we find a
    * fast way to resize movies, we can change this back. */
-  m_iImageWidth = m_iSourceWidth;
-  m_iImageHeight = m_iSourceHeight;
+  image_width_ = source_width_;
+  image_height_ = source_height_;
 
   /* Texture dimensions need to be a power of two; jump to the next. */
-  m_iTextureWidth = power_of_two(m_iImageWidth);
-  m_iTextureHeight = power_of_two(m_iImageHeight);
+  texture_width_ = power_of_two(image_width_);
+  texture_height_ = power_of_two(image_height_);
   MovieDecoderPixelFormatYCbCr fmt = PixelFormatYCbCr_Invalid;
   if (surface_ == nullptr) {
     ASSERT(texture_lock_ == nullptr);
@@ -225,23 +225,23 @@ void MovieTexture_Generic::CreateTexture() {
     }
 
     surface_ = decoder_->CreateCompatibleSurface(
-        m_iImageWidth, m_iImageHeight,
-        TEXTUREMAN->GetPrefs().m_iMovieColorDepth == 32, fmt);
+        image_width_, image_height_,
+        TEXTUREMAN->GetPrefs().movie_color_depth_ == 32, fmt);
     if (texture_lock_ != nullptr) {
-      delete[] surface_->pixels;
-      surface_->pixels = nullptr;
+      delete[] surface_->pixels_;
+      surface_->pixels_ = nullptr;
     }
   }
 
   RagePixelFormat pixfmt = DISPLAY->FindPixelFormat(
-      surface_->format->BitsPerPixel, surface_->format->Mask[0],
-      surface_->format->Mask[1], surface_->format->Mask[2],
-      surface_->format->Mask[3]);
+      surface_->format_->bits_per_pixel_, surface_->format_->mask_[0],
+      surface_->format_->mask_[1], surface_->format_->mask_[2],
+      surface_->format_->mask_[3]);
 
   if (pixfmt == RagePixelFormat_Invalid) {
     /* We weren't given a natively-supported pixel format.  Pick a supported
      * one.  This is a fallback case, and implies a second conversion. */
-    int depth = TEXTUREMAN->GetPrefs().m_iMovieColorDepth;
+    int depth = TEXTUREMAN->GetPrefs().movie_color_depth_;
     switch (depth) {
       default:
         FAIL_M(ssprintf("Unsupported movie color depth: %i", depth));
@@ -275,22 +275,22 @@ void MovieTexture_Generic::CreateTexture() {
     /* Create the render target.  This will receive the final, converted
      * texture. */
     RenderTargetParam param;
-    param.iWidth = m_iImageWidth;
-    param.iHeight = m_iImageHeight;
+    param.width_ = image_width_;
+    param.height_ = image_height_;
 
     RageTextureID TargetID(GetID());
-    TargetID.filename += " target";
+    TargetID.filename_ += " target";
     render_target_ = std::make_unique<RageTextureRenderTarget>(TargetID, param);
 
     /* Create the intermediate texture.  This receives the YUV image. */
     RageTextureID IntermedID(GetID());
-    IntermedID.filename += " intermediate";
+    IntermedID.filename_ += " intermediate";
 
     intermediate_texture_ =
         std::make_unique<RageMovieTexture_Generic_Intermediate>(
             IntermedID, decoder_->GetWidth(), decoder_->GetHeight(),
-            surface_->w, surface_->h, power_of_two(surface_->w),
-            power_of_two(surface_->h), *surface_->format, pixfmt);
+            surface_->w_, surface_->h_, power_of_two(surface_->w_),
+            power_of_two(surface_->h_), *surface_->format_, pixfmt);
 
     /* Configure the sprite.  This blits the intermediate onto the ifnal render
      * target. */
@@ -301,7 +301,7 @@ void MovieTexture_Generic::CreateTexture() {
      * the refcount when it unloads the texture.  Normally we'd make a "copy",
      * but we can't access RageTextureManager from here.  Just increment the
      * refcount. */
-    ++intermediate_texture_->m_iRefCount;
+    ++intermediate_texture_->ref_count_;
     sprite_->SetTexture(intermediate_texture_.get());
     sprite_->SetEffectMode(GetEffectMode(fmt));
 
@@ -432,8 +432,8 @@ void MovieTexture_Generic::UpdateFrame() {
     /* If we have no texture_lock_, we still have to upload the texture. */
     if (texture_lock_ == nullptr) {
       DISPLAY->UpdateTexture(
-          intermediate_texture_->GetTexHandle(), surface_, 0, 0, surface_->w,
-          surface_->h);
+          intermediate_texture_->GetTexHandle(), surface_, 0, 0, surface_->w_,
+          surface_->h_);
     }
     render_target_->BeginRenderingTo(false);
     sprite_->Draw();
@@ -441,7 +441,7 @@ void MovieTexture_Generic::UpdateFrame() {
   } else {
     if (texture_lock_ == nullptr) {
       DISPLAY->UpdateTexture(
-          texture_handle_, surface_, 0, 0, m_iImageWidth, m_iImageHeight);
+          texture_handle_, surface_, 0, 0, image_width_, image_height_);
     }
   }
 }

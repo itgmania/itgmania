@@ -9,10 +9,10 @@
 
 @interface LoadingWindowHelper : NSObject {
  @public
-  NSWindow* m_Window;
-  NSTextView* m_Text;
-  NSAutoreleasePool* m_Pool;
-  NSProgressIndicator* m_ProgressIndicator;
+  NSWindow* window_;
+  NSTextView* text_;
+  NSAutoreleasePool* pool_;
+  NSProgressIndicator* progress_indicator_;
 }
 - (void)setupWindow:(NSImage*)image;
 - (void)setProgress:(NSNumber*)progress;
@@ -29,33 +29,33 @@
 
   NSRect progressIndicatorRect;
   progressIndicatorRect = NSMakeRect(padding, padding, size.width - padding * 2.0f, 0);
-  m_ProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
-  [m_ProgressIndicator sizeToFit];
-  [m_ProgressIndicator setIndeterminate:YES];
-  [m_ProgressIndicator setMinValue:0];
-  [m_ProgressIndicator setMaxValue:1];
-  [m_ProgressIndicator setDoubleValue:0];
-  progressIndicatorRect = [m_ProgressIndicator frame];
+  progress_indicator_ = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
+  [progress_indicator_ sizeToFit];
+  [progress_indicator_ setIndeterminate:YES];
+  [progress_indicator_ setMinValue:0];
+  [progress_indicator_ setMaxValue:1];
+  [progress_indicator_ setDoubleValue:0];
+  progressIndicatorRect = [progress_indicator_ frame];
   float progressHeight = progressIndicatorRect.size.height;
 
   NSFont* font = [NSFont systemFontOfSize:0.0f];
   NSRect textRect;
   // Just give it a size until it is created.
   textRect = NSMakeRect(0, progressHeight + padding, size.width, size.height);
-  m_Text = [[NSTextView alloc] initWithFrame:textRect];
-  [m_Text setFont:font];
-  height = [[m_Text layoutManager] defaultLineHeightForFont:font] * 3 + 4;
+  text_ = [[NSTextView alloc] initWithFrame:textRect];
+  [text_ setFont:font];
+  height = [[text_ layoutManager] defaultLineHeightForFont:font] * 3 + 4;
   textRect = NSMakeRect(0, progressHeight + padding, size.width, height);
 
-  [m_Text setFrame:textRect];
-  [m_Text setEditable:NO];
-  [m_Text setSelectable:NO];
-  [m_Text setDrawsBackground:NO];
-  [m_Text setBackgroundColor:[NSColor lightGrayColor]];
-  [m_Text setAlignment:NSTextAlignmentCenter];
-  [m_Text setHorizontallyResizable:NO];
-  [m_Text setVerticallyResizable:NO];
-  [m_Text setString:@"Initializing Hardware..."];
+  [text_ setFrame:textRect];
+  [text_ setEditable:NO];
+  [text_ setSelectable:NO];
+  [text_ setDrawsBackground:NO];
+  [text_ setBackgroundColor:[NSColor lightGrayColor]];
+  [text_ setAlignment:NSTextAlignmentCenter];
+  [text_ setHorizontallyResizable:NO];
+  [text_ setVerticallyResizable:NO];
+  [text_ setString:@"Initializing Hardware..."];
 
   viewRect = NSMakeRect(0, height + progressHeight + padding, size.width, size.height);
   NSImageView* iView = [[NSImageView alloc] initWithFrame:viewRect];
@@ -63,42 +63,42 @@
   [iView setImageFrameStyle:NSImageFrameNone];
 
   windowRect = NSMakeRect(0, 0, size.width, size.height + height + progressHeight + padding);
-  m_Window = [[NSWindow alloc] initWithContentRect:windowRect
-                                         styleMask:NSWindowStyleMaskTitled
-                                           backing:NSBackingStoreBuffered
-                                             defer:YES];
+  window_ = [[NSWindow alloc] initWithContentRect:windowRect
+                                        styleMask:NSWindowStyleMaskTitled
+                                          backing:NSBackingStoreBuffered
+                                            defer:YES];
 
-  NSView* view = [m_Window contentView];
+  NSView* view = [window_ contentView];
 
   // Set some properties.
-  [m_Window setReleasedWhenClosed:YES];
-  [m_Window setExcludedFromWindowsMenu:YES];
-  [m_Window setTitle:@PRODUCT_FAMILY];
-  [m_Window center];
+  [window_ setReleasedWhenClosed:YES];
+  [window_ setExcludedFromWindowsMenu:YES];
+  [window_ setTitle:@PRODUCT_FAMILY];
+  [window_ center];
 
   // Set subviews.
-  [view addSubview:m_Text];
-  [m_Text release];
+  [view addSubview:text_];
+  [text_ release];
 
   [view addSubview:iView];
   [iView release];
 
-  [view addSubview:m_ProgressIndicator];
+  [view addSubview:progress_indicator_];
 
   // Display the window.
-  [m_Window makeKeyAndOrderFront:nil];
+  [window_ makeKeyAndOrderFront:nil];
 }
 
 - (void)setProgress:(NSNumber*)progress {
-  [m_ProgressIndicator setDoubleValue:[progress doubleValue]];
+  [progress_indicator_ setDoubleValue:[progress doubleValue]];
 }
 
 - (void)setTotalWork:(NSNumber*)totalWork {
-  [m_ProgressIndicator setMaxValue:[totalWork doubleValue]];
+  [progress_indicator_ setMaxValue:[totalWork doubleValue]];
 }
 
 - (void)setIndeterminate:(NSNumber*)indeterminate {
-  [m_ProgressIndicator setIndeterminate:([indeterminate doubleValue] > 0 ? YES : NO)];
+  [progress_indicator_ setIndeterminate:([indeterminate doubleValue] > 0 ? YES : NO)];
 }
 
 @end
@@ -111,10 +111,8 @@ LoadingWindow_MacOSX::~LoadingWindow_MacOSX() {
   if (!g_Helper) {
     return;
   }
-  NSAutoreleasePool* pool = g_Helper->m_Pool;
-  [g_Helper->m_Window performSelectorOnMainThread:@selector(close)
-                                       withObject:nil
-                                    waitUntilDone:YES];
+  NSAutoreleasePool* pool = g_Helper->pool_;
+  [g_Helper->window_ performSelectorOnMainThread:@selector(close) withObject:nil waitUntilDone:YES];
   [g_Helper release];
   g_Helper = nil;
   [pool release];
@@ -125,8 +123,8 @@ void LoadingWindow_MacOSX::SetText(std::string str) {
     return;
   }
   NSString* s = [[NSString alloc] initWithUTF8String:(str.c_str())];
-  [g_Helper->m_Text performSelectorOnMainThread:@selector(setString:)
-                                     withObject:(s ? s : @"")waitUntilDone:NO];
+  [g_Helper->text_ performSelectorOnMainThread:@selector(setString:)
+                                    withObject:(s ? s : @"")waitUntilDone:NO];
   [s release];
 }
 
@@ -163,7 +161,7 @@ void LoadingWindow_MacOSX::SetSplash(const RageSurface* pSplash) {
   }
 
   g_Helper = [[LoadingWindowHelper alloc] init];
-  g_Helper->m_Pool = pool;
+  g_Helper->pool_ = pool;
   [g_Helper performSelectorOnMainThread:@selector(setupWindow:) withObject:image waitUntilDone:NO];
   [image release];
 }

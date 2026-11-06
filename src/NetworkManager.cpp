@@ -37,14 +37,14 @@
 NetworkManager* NETWORK =
     nullptr;  // global and accessible from anywhere in our program
 
-Preference<bool> NetworkManager::httpEnabled(
+Preference<bool> NetworkManager::http_enabled_(
     "HttpEnabled", true, nullptr, PreferenceType::Immutable);
-Preference<std::string> NetworkManager::httpAllowHosts(
+Preference<std::string> NetworkManager::http_allow_hosts_(
     "HttpAllowHosts", "*.groovestats.com,*.itgmania.com", nullptr,
     PreferenceType::Immutable);
-Preference<int> NetworkManager::httpMaxConcurrentRequests(
+Preference<int> NetworkManager::http_max_concurrent_requests_(
     "HttpMaxConcurrentRequests", 6, nullptr, PreferenceType::Immutable);
-Preference<int> NetworkManager::httpMaxConcurrentDownloads(
+Preference<int> NetworkManager::http_max_concurrent_downloads_(
     "HttpMaxConcurrentDownloads", 6, nullptr, PreferenceType::Immutable);
 
 static const char* HttpErrorCodeNames[] = {
@@ -90,51 +90,52 @@ LuaXType(WebSocketMessageType);
 
 HttpRequestPool::HttpRequestPool(
     int maxThreads, bool ordered, const ix::SocketTLSOptions& tlsOptions)
-    : maxThreads(std::max(maxThreads, 1)),
-      ordered(ordered),
-      tlsOptions(tlsOptions) {}
+    : max_threads_(std::max(maxThreads, 1)),
+      ordered_(ordered),
+      tls_options_(tlsOptions) {}
 
 HttpRequestPool::~HttpRequestPool() { this->Stop(); }
 
 void HttpRequestPool::Enqueue(
     const ix::HttpRequestArgsPtr& request, Task task) {
   {
-    std::lock_guard<std::mutex> lock(this->mutex);
-    if (this->stopping) {
+    std::lock_guard<std::mutex> lock(this->mutex_);
+    if (this->stopping_) {
       return;
     }
 
-    this->queue.push_back(Job{request, std::move(task), this->nextSequence++});
+    this->queue_.push_back(
+        Job{request, std::move(task), this->next_sequence_++});
 
     // Start another thread when there are more requests waiting than idle
     // threads to take them.
-    if (this->idleThreads < static_cast<int>(this->queue.size()) &&
-        static_cast<int>(this->threads.size()) < this->maxThreads) {
-      this->running.emplace_back();
-      this->threads.emplace_back(
-          &HttpRequestPool::Run, this, this->threads.size());
+    if (this->idle_threads_ < static_cast<int>(this->queue_.size()) &&
+        static_cast<int>(this->threads_.size()) < this->max_threads_) {
+      this->running_.emplace_back();
+      this->threads_.emplace_back(
+          &HttpRequestPool::Run, this, this->threads_.size());
     }
   }
 
-  this->cv.notify_one();
+  this->cv_.notify_one();
 }
 
 void HttpRequestPool::Stop() {
   std::deque<Job> dropped;
   {
-    std::lock_guard<std::mutex> lock(this->mutex);
-    this->stopping = true;
-    dropped.swap(this->queue);
-    for (const auto& request : this->running) {
+    std::lock_guard<std::mutex> lock(this->mutex_);
+    this->stopping_ = true;
+    dropped.swap(this->queue_);
+    for (const auto& request : this->running_) {
       if (request) {
         request->cancel = true;
       }
     }
   }
 
-  this->cv.notify_all();
+  this->cv_.notify_all();
 
-  for (auto& thread : this->threads) {
+  for (auto& thread : this->threads_) {
     if (thread.joinable()) {
       thread.join();
     }
@@ -147,40 +148,40 @@ void HttpRequestPool::Stop() {
 void HttpRequestPool::Run(std::size_t slot) {
   // Synchronous client: one request at a time, on this thread.
   ix::HttpClient client;
-  client.setTLSOptions(this->tlsOptions);
+  client.setTLSOptions(this->tls_options_);
 
   while (true) {
     Job job;
     {
-      std::unique_lock<std::mutex> lock(this->mutex);
-      ++this->idleThreads;
-      this->cv.wait(
-          lock, [this] { return this->stopping || !this->queue.empty(); });
-      --this->idleThreads;
+      std::unique_lock<std::mutex> lock(this->mutex_);
+      ++this->idle_threads_;
+      this->cv_.wait(
+          lock, [this] { return this->stopping_ || !this->queue_.empty(); });
+      --this->idle_threads_;
 
-      if (this->stopping) {
+      if (this->stopping_) {
         return;
       }
 
-      job = std::move(this->queue.front());
-      this->queue.pop_front();
-      this->running[slot] = job.request;
+      job = std::move(this->queue_.front());
+      this->queue_.pop_front();
+      this->running_[slot] = job.request_;
     }
 
-    std::function<void()> result = job.task(client);
+    std::function<void()> result = job.task_(client);
 
     {
-      std::lock_guard<std::mutex> lock(this->mutex);
-      this->running[slot].reset();
+      std::lock_guard<std::mutex> lock(this->mutex_);
+      this->running_[slot].reset();
     }
 
-    this->Finish(job.sequence, std::move(result));
+    this->Finish(job.sequence_, std::move(result));
   }
 }
 
 void HttpRequestPool::Finish(
     std::uint64_t sequence, std::function<void()> result) {
-  if (!this->ordered) {
+  if (!this->ordered_) {
     if (result) {
       result();
     }
@@ -188,25 +189,25 @@ void HttpRequestPool::Finish(
   }
 
   {
-    std::lock_guard<std::mutex> lock(this->mutex);
-    this->waitingResults[sequence] = std::move(result);
+    std::lock_guard<std::mutex> lock(this->mutex_);
+    this->waiting_results_[sequence] = std::move(result);
   }
 
   // Hand on every result whose turn has come. Whichever thread finishes the
   // request that was holding them up does it, under resultMutex so that no
   // two threads ever hand results on at once and the order holds.
-  std::lock_guard<std::mutex> handingOn(this->resultMutex);
+  std::lock_guard<std::mutex> handingOn(this->result_mutex_);
   while (true) {
     std::function<void()> next;
     {
-      std::lock_guard<std::mutex> lock(this->mutex);
-      auto it = this->waitingResults.find(this->nextResult);
-      if (it == this->waitingResults.end()) {
+      std::lock_guard<std::mutex> lock(this->mutex_);
+      auto it = this->waiting_results_.find(this->next_result_);
+      if (it == this->waiting_results_.end()) {
         return;
       }
       next = std::move(it->second);
-      this->waitingResults.erase(it);
-      ++this->nextResult;
+      this->waiting_results_.erase(it);
+      ++this->next_result_;
     }
     if (next) {
       next();
@@ -231,23 +232,23 @@ NetworkManager::NetworkManager() {
     f.Read(data);
     f.Close();
 
-    this->tlsOptions.caFile = data;
+    this->tls_options_.caFile = data;
   } else {
     LOG->Warn(
         "Reading '%s' failed: %s", SpecialFiles::CA_BUNDLE_PATH.c_str(),
         f.GetError().c_str());
   }
 
-  this->requestPool = std::make_unique<HttpRequestPool>(
-      std::clamp(httpMaxConcurrentRequests.Get(), 1, kMaxConcurrencyLimit),
-      /*ordered=*/true, this->tlsOptions);
-  this->downloadPool = std::make_unique<HttpRequestPool>(
-      std::clamp(httpMaxConcurrentDownloads.Get(), 1, kMaxConcurrencyLimit),
-      /*ordered=*/false, this->tlsOptions);
+  this->request_pool_ = std::make_unique<HttpRequestPool>(
+      std::clamp(http_max_concurrent_requests_.Get(), 1, kMaxConcurrencyLimit),
+      /*ordered=*/true, this->tls_options_);
+  this->download_pool_ = std::make_unique<HttpRequestPool>(
+      std::clamp(http_max_concurrent_downloads_.Get(), 1, kMaxConcurrencyLimit),
+      /*ordered=*/false, this->tls_options_);
 
   this->ClearDownloads();
 
-  this->webSocketWorker =
+  this->web_socket_worker_ =
       std::thread(&NetworkManager::RunWebSocketWorker, this);
 }
 
@@ -266,20 +267,20 @@ NetworkManager::~NetworkManager() {
 void NetworkManager::CloseAllWebSockets() {
   // Drop queued websocket starts so no new connections come up after cleanup.
   {
-    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    this->webSocketWorkerQueue = {};
+    std::lock_guard<std::mutex> lock(this->web_socket_worker_mutex_);
+    this->web_socket_worker_queue_ = {};
   }
 
   // Stop all active websocket connections without aggressively clearing.
   std::vector<WebSocketHandlePtr> webSocketHandlesCopy;
   {
-    std::lock_guard<std::mutex> lock(this->webSocketHandlesMutex);
-    webSocketHandlesCopy = this->webSocketHandles;
+    std::lock_guard<std::mutex> lock(this->web_socket_handles_mutex_);
+    webSocketHandlesCopy = this->web_socket_handles_;
   }
 
   for (auto& handle : webSocketHandlesCopy) {
-    handle->webSocket.disableAutomaticReconnection();
-    handle->webSocket.stop();
+    handle->web_socket_.disableAutomaticReconnection();
+    handle->web_socket_.stop();
   }
 }
 
@@ -288,18 +289,19 @@ void NetworkManager::RunWebSocketWorker() {
     std::function<void()> task;
 
     {
-      std::unique_lock<std::mutex> lock(this->webSocketWorkerMutex);
-      this->webSocketWorkerCv.wait(lock, [this] {
-        return this->shutdownWorkers.load() ||
-               !this->webSocketWorkerQueue.empty();
+      std::unique_lock<std::mutex> lock(this->web_socket_worker_mutex_);
+      this->web_socket_worker_cv_.wait(lock, [this] {
+        return this->shutdown_workers_.load() ||
+               !this->web_socket_worker_queue_.empty();
       });
 
-      if (this->shutdownWorkers.load() && this->webSocketWorkerQueue.empty()) {
+      if (this->shutdown_workers_.load() &&
+          this->web_socket_worker_queue_.empty()) {
         return;
       }
 
-      task = std::move(this->webSocketWorkerQueue.front());
-      this->webSocketWorkerQueue.pop();
+      task = std::move(this->web_socket_worker_queue_.front());
+      this->web_socket_worker_queue_.pop();
     }
 
     task();
@@ -307,31 +309,31 @@ void NetworkManager::RunWebSocketWorker() {
 }
 
 void NetworkManager::StopWorkers() {
-  this->shutdownWorkers = true;
+  this->shutdown_workers_ = true;
 
   // Cancels the requests still running, so a download in progress doesn't
   // hold up quitting.
-  if (this->requestPool) {
-    this->requestPool->Stop();
+  if (this->request_pool_) {
+    this->request_pool_->Stop();
   }
-  if (this->downloadPool) {
-    this->downloadPool->Stop();
+  if (this->download_pool_) {
+    this->download_pool_->Stop();
   }
 
-  this->webSocketWorkerCv.notify_one();
+  this->web_socket_worker_cv_.notify_one();
 
-  if (this->webSocketWorker.joinable()) {
-    this->webSocketWorker.join();
+  if (this->web_socket_worker_.joinable()) {
+    this->web_socket_worker_.join();
   }
 }
 
 void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
-  if (this->shutdownWorkers.load()) {
+  if (this->shutdown_workers_.load()) {
     return;
   }
 
-  std::lock_guard<std::mutex> lock(this->mainThreadTaskMutex);
-  this->mainThreadTaskQueue.push(std::move(task));
+  std::lock_guard<std::mutex> lock(this->main_thread_task_mutex_);
+  this->main_thread_task_queue_.push(std::move(task));
 }
 
 void NetworkManager::Update() {
@@ -341,13 +343,13 @@ void NetworkManager::Update() {
   while (tasksProcessed < kMaxMainThreadTasksPerUpdate) {
     std::function<void()> task;
     {
-      std::lock_guard<std::mutex> lock(this->mainThreadTaskMutex);
-      if (this->mainThreadTaskQueue.empty()) {
+      std::lock_guard<std::mutex> lock(this->main_thread_task_mutex_);
+      if (this->main_thread_task_queue_.empty()) {
         break;
       }
 
-      task = std::move(this->mainThreadTaskQueue.front());
-      this->mainThreadTaskQueue.pop();
+      task = std::move(this->main_thread_task_queue_.front());
+      this->main_thread_task_queue_.pop();
     }
 
     task();
@@ -360,7 +362,7 @@ void NetworkManager::Update() {
 }
 
 bool NetworkManager::IsUrlAllowed(const std::string& url) {
-  if (!this->httpEnabled.Get()) {
+  if (!this->http_enabled_.Get()) {
     return false;
   }
 
@@ -383,7 +385,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
 
   MakeLower(host);
 
-  std::string allowedHostsStr = this->httpAllowHosts.Get();
+  std::string allowedHostsStr = this->http_allow_hosts_.Get();
   MakeLower(allowedHostsStr);
 
   std::vector<std::string> allowedHosts;
@@ -414,17 +416,17 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
   std::string downloadFilename;
 
   ix::HttpRequestArgsPtr req =
-      this->helperClient.createRequest(args.url, args.method);
-  req->body = args.body;
-  req->multipartBoundary = args.multipartBoundary;
+      this->helper_client_.createRequest(args.url_, args.method_);
+  req->body = args.body_;
+  req->multipartBoundary = args.multipart_boundary_;
 
   req->extraHeaders["User-Agent"] = this->GetUserAgent();
-  for (const auto& entry : args.headers) {
+  for (const auto& entry : args.headers_) {
     req->extraHeaders[entry.first] = entry.second;
   }
 
-  if (!args.downloadFile.empty()) {
-    downloadFilename = std::string("/Downloads/") + args.downloadFile;
+  if (!args.download_file_.empty()) {
+    downloadFilename = std::string("/Downloads/") + args.download_file_;
     if (!downloadFile->Open(
             downloadFilename, RageFile::WRITE | RageFile::STREAMED)) {
       req->cancel = true;
@@ -446,33 +448,33 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
     req->transferTimeout = INT_MAX;
   }
 
-  if (args.connectTimeout > 0) {
-    req->connectTimeout = args.connectTimeout;
+  if (args.connect_timeout_ > 0) {
+    req->connectTimeout = args.connect_timeout_;
   }
 
-  if (args.transferTimeout > 0) {
-    req->transferTimeout = args.transferTimeout;
+  if (args.transfer_timeout_ > 0) {
+    req->transferTimeout = args.transfer_timeout_;
   }
 
-  if (args.onProgress) {
-    req->onProgressCallback = args.onProgress;
+  if (args.on_progress_) {
+    req->onProgressCallback = args.on_progress_;
   }
 
-  HttpRequestPool& pool =
-      args.downloadFile.empty() ? *this->requestPool : *this->downloadPool;
+  HttpRequestPool& pool = args.download_file_.empty() ? *this->request_pool_
+                                                      : *this->download_pool_;
 
   pool.Enqueue(
       req,
       [this, req, args, downloadFile,
        downloadFilename](ix::HttpClient& client) -> std::function<void()> {
-        if (this->shutdownWorkers.load()) {
+        if (this->shutdown_workers_.load()) {
           return nullptr;
         }
 
         ix::HttpResponsePtr response =
             client.request(req->url, req->verb, req->body, req);
 
-        if (!args.downloadFile.empty()) {
+        if (!args.download_file_.empty()) {
           std::string error = downloadFile->GetError();
           downloadFile->Close();
 
@@ -481,16 +483,16 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
                 "could not write to " + downloadFile->GetPath() + ": " + error;
             FILEMAN->Remove(downloadFilename);
             return [args, errorMessage]() {
-              if (args.onFileError) {
-                args.onFileError(errorMessage);
+              if (args.on_file_error_) {
+                args.on_file_error_(errorMessage);
               }
             };
           }
         }
 
         return [args, response]() {
-          if (args.onResponse) {
-            args.onResponse(response);
+          if (args.on_response_) {
+            args.on_response_(response);
           }
         };
       });
@@ -500,19 +502,19 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
 
 WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
   auto handle = std::make_shared<WebSocketHandle>();
-  handle->onClose = args.onClose;
+  handle->on_close_ = args.on_close_;
 
-  handle->webSocket.setUrl(args.url);
-  handle->webSocket.setTLSOptions(this->tlsOptions);
+  handle->web_socket_.setUrl(args.url_);
+  handle->web_socket_.setTLSOptions(this->tls_options_);
 
-  if (args.enableDeflate) {
-    handle->webSocket.enablePerMessageDeflate();
+  if (args.enable_deflate_) {
+    handle->web_socket_.enablePerMessageDeflate();
   } else {
-    handle->webSocket.disablePerMessageDeflate();
+    handle->web_socket_.disablePerMessageDeflate();
   }
 
-  handle->webSocket.setOnMessageCallback(
-      [onMessage = args.onMessage](const ix::WebSocketMessagePtr& msg) {
+  handle->web_socket_.setOnMessageCallback(
+      [onMessage = args.on_message_](const ix::WebSocketMessagePtr& msg) {
         if (onMessage) {
           onMessage(*msg);
         }
@@ -520,53 +522,53 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
 
   ix::WebSocketHttpHeaders headers;
   headers["User-Agent"] = this->GetUserAgent();
-  for (const auto& entry : args.headers) {
+  for (const auto& entry : args.headers_) {
     headers[entry.first] = entry.second;
   }
-  handle->webSocket.setExtraHeaders(headers);
+  handle->web_socket_.setExtraHeaders(headers);
 
-  if (args.handshakeTimeout > -1) {
-    handle->webSocket.setHandshakeTimeout(args.handshakeTimeout);
+  if (args.handshake_timeout_ > -1) {
+    handle->web_socket_.setHandshakeTimeout(args.handshake_timeout_);
   }
 
-  if (args.pingInterval > -1) {
-    handle->webSocket.setPingInterval(args.pingInterval);
+  if (args.ping_interval_ > -1) {
+    handle->web_socket_.setPingInterval(args.ping_interval_);
   }
 
-  if (args.automaticReconnect) {
-    handle->webSocket.enableAutomaticReconnection();
+  if (args.automatic_reconnect_) {
+    handle->web_socket_.enableAutomaticReconnection();
   } else {
-    handle->webSocket.disableAutomaticReconnection();
+    handle->web_socket_.disableAutomaticReconnection();
   }
 
   {
-    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    this->webSocketWorkerQueue.push([this, handle]() {
-      if (this->shutdownWorkers.load()) {
+    std::lock_guard<std::mutex> lock(this->web_socket_worker_mutex_);
+    this->web_socket_worker_queue_.push([this, handle]() {
+      if (this->shutdown_workers_.load()) {
         return;
       }
 
-      handle->webSocket.start();
+      handle->web_socket_.start();
     });
   }
 
-  this->webSocketWorkerCv.notify_one();
+  this->web_socket_worker_cv_.notify_one();
 
   {
-    std::lock_guard<std::mutex> lock(this->webSocketHandlesMutex);
-    webSocketHandles.push_back(handle);
+    std::lock_guard<std::mutex> lock(this->web_socket_handles_mutex_);
+    web_socket_handles_.push_back(handle);
   }
 
   return handle;
 }
 
 std::string NetworkManager::UrlEncode(const std::string& value) {
-  return this->helperClient.urlEncode(value);
+  return this->helper_client_.urlEncode(value);
 }
 
 std::string NetworkManager::EncodeQueryParameters(
     const std::unordered_map<std::string, std::string>& query) {
-  return this->helperClient.serializeHttpParameters(query);
+  return this->helper_client_.serializeHttpParameters(query);
 }
 
 std::string NetworkManager::GetUserAgent() {
@@ -598,11 +600,11 @@ int HttpRequestFuture::Collect(lua_State* L) {
 int HttpRequestFuture::Cancel(lua_State* L) {
   void* udata = luaL_checkudata(L, 1, "HttpRequestFuture");
   auto fut = *static_cast<HttpRequestFuturePtr*>(udata);
-  fut->args->cancel = true;
+  fut->args_->cancel = true;
   return 0;
 }
 
-WebSocketHandle::~WebSocketHandle() { webSocket.stop(); }
+WebSocketHandle::~WebSocketHandle() { web_socket_.stop(); }
 
 int WebSocketHandle::Collect(lua_State* L) {
   void* udata = luaL_checkudata(L, 1, "WebSocketHandle");
@@ -616,11 +618,11 @@ int WebSocketHandle::Close(lua_State* L) {
   auto handle = *static_cast<WebSocketHandlePtr*>(udata);
 
   LUA->YieldLua();
-  handle->webSocket.stop();
+  handle->web_socket_.stop();
   LUA->UnyieldLua();
 
-  if (handle->onClose) {
-    handle->onClose();
+  if (handle->on_close_) {
+    handle->on_close_();
   }
 
   return 1;
@@ -636,7 +638,7 @@ int WebSocketHandle::Send(lua_State* L) {
 
   bool binary = lua_toboolean(L, 3);
 
-  auto info = handle->webSocket.send(data, binary);
+  auto info = handle->web_socket_.send(data, binary);
 
   lua_pushboolean(L, info.success);
   return 1;
@@ -699,7 +701,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     if (lua_isnil(L, -1)) {
       luaL_error(L, "url is required");
     } else if (lua_isstring(L, -1)) {
-      args.url = lua_tostring(L, -1);
+      args.url_ = lua_tostring(L, -1);
     } else {
       luaL_error(L, "url must be a string");
     }
@@ -718,7 +720,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           luaL_error(L, "unknown method: '%s'", method.c_str());
         }
 
-        args.method = method;
+        args.method_ = method;
       } else {
         luaL_error(L, "method must be a string");
       }
@@ -730,7 +732,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       if (lua_isstring(L, -1)) {
         size_t len;
         const char* s = lua_tolstring(L, -1, &len);
-        args.body = std::string(s, len);
+        args.body_ = std::string(s, len);
       } else {
         luaL_error(L, "body must be a string");
       }
@@ -742,7 +744,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       if (lua_isstring(L, -1)) {
         size_t len;
         const char* s = lua_tolstring(L, -1, &len);
-        args.multipartBoundary = std::string(s, len);
+        args.multipart_boundary_ = std::string(s, len);
       } else {
         luaL_error(L, "multipartBoundary must be a string");
       }
@@ -765,7 +767,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           std::string key = lua_tostring(L, -2);
           std::string value = lua_tostring(L, -1);
 
-          args.headers[key] = value;
+          args.headers_[key] = value;
 
           lua_pop(L, 1);
         }
@@ -778,7 +780,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "connectTimeout");
     if (!lua_isnil(L, -1)) {
       if (lua_isnumber(L, -1)) {
-        args.connectTimeout = lua_tointeger(L, -1);
+        args.connect_timeout_ = lua_tointeger(L, -1);
       } else {
         luaL_error(L, "connectTimeout must be an integer");
       }
@@ -788,7 +790,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "transferTimeout");
     if (!lua_isnil(L, -1)) {
       if (lua_isnumber(L, -1)) {
-        args.transferTimeout = lua_tointeger(L, -1);
+        args.transfer_timeout_ = lua_tointeger(L, -1);
       } else {
         luaL_error(L, "transferTimeout must be an integer");
       }
@@ -798,7 +800,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "downloadFile");
     if (!lua_isnil(L, -1)) {
       if (lua_isstring(L, -1)) {
-        args.downloadFile = lua_tostring(L, -1);
+        args.download_file_ = lua_tostring(L, -1);
       } else {
         luaL_error(L, "downloadFile must be a string");
       }
@@ -811,7 +813,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
         lua_pushvalue(L, -1);
         onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        args.onProgress = [p, onProgressRef](int current, int total) {
+        args.on_progress_ = [p, onProgressRef](int current, int total) {
           p->EnqueueMainThreadTask([current, total, onProgressRef]() {
             Lua* L = LUA->Get();
             handleProgress(L, current, total, onProgressRef);
@@ -838,8 +840,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
-    args.onFileError = [p, onProgressRef,
-                        onResponseRef](const std::string& errorMessage) {
+    args.on_file_error_ = [p, onProgressRef,
+                           onResponseRef](const std::string& errorMessage) {
       p->EnqueueMainThreadTask([errorMessage, onProgressRef, onResponseRef]() {
         Lua* L = LUA->Get();
 
@@ -853,8 +855,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       });
     };
 
-    args.onResponse = [p, onProgressRef,
-                       onResponseRef](const ix::HttpResponsePtr& response) {
+    args.on_response_ = [p, onProgressRef,
+                         onResponseRef](const ix::HttpResponsePtr& response) {
       p->EnqueueMainThreadTask([response, onProgressRef, onResponseRef]() {
         Lua* L = LUA->Get();
 
@@ -868,7 +870,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       });
     };
 
-    if (p->IsUrlAllowed(args.url)) {
+    if (p->IsUrlAllowed(args.url_)) {
       auto fut = p->HttpRequest(args);
 
       void* vp = lua_newuserdata(L, sizeof(std::shared_ptr<HttpRequestFuture>));
@@ -877,10 +879,10 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       lua_setmetatable(L, -2);
       return 1;
     } else {
-      LOG->Warn("blocked access to %s", args.url.c_str());
+      LOG->Warn("blocked access to %s", args.url_.c_str());
       luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
       if (onResponseRef != LUA_NOREF) {
-        handleUrlForbidden(L, args.url, onResponseRef);
+        handleUrlForbidden(L, args.url_, onResponseRef);
       }
       return 0;
     }
@@ -896,7 +898,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     if (lua_isnil(L, -1)) {
       luaL_error(L, "url is required");
     } else if (lua_isstring(L, -1)) {
-      args.url = lua_tostring(L, -1);
+      args.url_ = lua_tostring(L, -1);
     } else {
       luaL_error(L, "url must be a string");
     }
@@ -918,7 +920,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           std::string key = lua_tostring(L, -2);
           std::string value = lua_tostring(L, -1);
 
-          args.headers[key] = value;
+          args.headers_[key] = value;
 
           lua_pop(L, 1);
         }
@@ -931,7 +933,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "handshakeTimeout");
     if (!lua_isnil(L, -1)) {
       if (lua_isnumber(L, -1)) {
-        args.handshakeTimeout = lua_tointeger(L, -1);
+        args.handshake_timeout_ = lua_tointeger(L, -1);
       } else {
         luaL_error(L, "handshakeTimeout must be an integer");
       }
@@ -941,7 +943,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "pingInterval");
     if (!lua_isnil(L, -1)) {
       if (lua_isnumber(L, -1)) {
-        args.pingInterval = lua_tointeger(L, -1);
+        args.ping_interval_ = lua_tointeger(L, -1);
       } else {
         luaL_error(L, "pingInterval must be an integer");
       }
@@ -951,18 +953,18 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     lua_getfield(L, 1, "automaticReconnect");
     if (!lua_isnil(L, -1)) {
       if (lua_isboolean(L, -1)) {
-        args.automaticReconnect = lua_toboolean(L, -1);
+        args.automatic_reconnect_ = lua_toboolean(L, -1);
       } else {
         luaL_error(L, "automaticReconnect must be a boolean");
       }
     }
     lua_pop(L, 1);
 
-    args.enableDeflate = true;
+    args.enable_deflate_ = true;
     lua_getfield(L, 1, "enableDeflate");
     if (!lua_isnil(L, -1)) {
       if (lua_isboolean(L, -1)) {
-        args.enableDeflate = lua_toboolean(L, -1);
+        args.enable_deflate_ = lua_toboolean(L, -1);
       } else {
         luaL_error(L, "enableDeflate must be a boolean");
       }
@@ -980,7 +982,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
-    args.onMessage = [p, onMessageRef](const ix::WebSocketMessage& msg) {
+    args.on_message_ = [p, onMessageRef](const ix::WebSocketMessage& msg) {
       ix::WebSocketMessageType type = msg.type;
       std::string data = msg.str;
       ix::WebSocketErrorInfo errorInfo = msg.errorInfo;
@@ -1002,7 +1004,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           });
     };
 
-    args.onClose = [p, onMessageRef]() {
+    args.on_close_ = [p, onMessageRef]() {
       p->EnqueueMainThreadTask([onMessageRef]() {
         Lua* L = LUA->Get();
 
@@ -1014,7 +1016,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       });
     };
 
-    if (p->IsUrlAllowed(args.url)) {
+    if (p->IsUrlAllowed(args.url_)) {
       auto handle = p->WebSocket(args);
 
       void* vp = lua_newuserdata(L, sizeof(std::shared_ptr<WebSocketHandle>));
@@ -1023,9 +1025,9 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       lua_setmetatable(L, -2);
       return 1;
     } else {
-      LOG->Warn("blocked access to %s", args.url.c_str());
+      LOG->Warn("blocked access to %s", args.url_.c_str());
       if (onMessageRef != LUA_NOREF) {
-        handleWebSocketUrlForbidden(L, args.url, onMessageRef);
+        handleWebSocketUrlForbidden(L, args.url_, onMessageRef);
       }
       return 0;
     }

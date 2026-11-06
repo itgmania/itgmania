@@ -25,18 +25,18 @@ static struct FileDriverEntry_ZIP : public FileDriverEntry {
 } const g_RegisterDriver;
 
 RageFileDriverZip::RageFileDriverZip(const std::string& sPath)
-    : RageFileDriver(new NullFilenameDB), m_Mutex("RageFileDriverZip") {
-  m_bFileOwned = false;
-  m_pZip = nullptr;
+    : RageFileDriver(new NullFilenameDB), mutex_("RageFileDriverZip") {
+  file_owned_ = false;
+  zip_ = nullptr;
   Load(sPath);
 }
 
 bool RageFileDriverZip::Load(const std::string& sPath) {
-  ASSERT(m_pZip == nullptr); /* don't load twice */
+  ASSERT(zip_ == nullptr); /* don't load twice */
 
-  m_bFileOwned = true;
-  m_sPath = sPath;
-  m_Mutex.SetName(ssprintf("RageFileDriverZip(%s)", sPath.c_str()));
+  file_owned_ = true;
+  path_ = sPath;
+  mutex_.SetName(ssprintf("RageFileDriverZip(%s)", sPath.c_str()));
 
   RageFile* pFile = new RageFile;
 
@@ -47,7 +47,7 @@ bool RageFileDriverZip::Load(const std::string& sPath) {
     return false;
   }
 
-  m_pZip = pFile;
+  zip_ = pFile;
 
   return ParseZipfile();
 }
@@ -55,21 +55,20 @@ bool RageFileDriverZip::Load(const std::string& sPath) {
 bool RageFileDriverZip::ReadEndCentralRecord(
     int& iTotalEntries, int& iCentralDirectoryOffset) {
   std::string sError;
-  std::string sSig = FileReading::ReadString(*m_pZip, 4, sError);
-  FileReading::read_16_le(*m_pZip, sError); /* skip number of this disk */
+  std::string sSig = FileReading::ReadString(*zip_, 4, sError);
+  FileReading::read_16_le(*zip_, sError); /* skip number of this disk */
+  FileReading::read_16_le(*zip_, sError); /* skip disk with central directory */
   FileReading::read_16_le(
-      *m_pZip, sError); /* skip disk with central directory */
-  FileReading::read_16_le(
-      *m_pZip, sError); /* skip number of entries on this disk */
-  iTotalEntries = FileReading::read_16_le(*m_pZip, sError);
+      *zip_, sError); /* skip number of entries on this disk */
+  iTotalEntries = FileReading::read_16_le(*zip_, sError);
   FileReading::read_32_le(
-      *m_pZip, sError); /* skip size of the central directory */
-  iCentralDirectoryOffset = FileReading::read_32_le(*m_pZip, sError);
-  int iCommentLength = FileReading::read_16_le(*m_pZip, sError);
-  m_sComment = FileReading::ReadString(*m_pZip, iCommentLength, sError);
+      *zip_, sError); /* skip size of the central directory */
+  iCentralDirectoryOffset = FileReading::read_32_le(*zip_, sError);
+  int iCommentLength = FileReading::read_16_le(*zip_, sError);
+  comment_ = FileReading::ReadString(*zip_, iCommentLength, sError);
 
   if (sError != "") {
-    WARN(ssprintf("%s: %s", m_sPath.c_str(), sError.c_str()));
+    WARN(ssprintf("%s: %s", path_.c_str(), sError.c_str()));
     return false;
   }
 
@@ -78,8 +77,8 @@ bool RageFileDriverZip::ReadEndCentralRecord(
 
 /* Find the end of central directory record, and seek to it. */
 bool RageFileDriverZip::SeekToEndCentralRecord() {
-  const int iSearchTo = std::max(m_pZip->GetFileSize() - 1024 * 32, 0);
-  int iRealPos = m_pZip->GetFileSize();
+  const int iSearchTo = std::max(zip_->GetFileSize() - 1024 * 32, 0);
+  int iRealPos = zip_->GetFileSize();
 
   while (iRealPos > 0 && iRealPos >= iSearchTo) {
     /* Move back in the file; leave some overlap between checks, to handle
@@ -87,11 +86,11 @@ bool RageFileDriverZip::SeekToEndCentralRecord() {
     char buf[1024 * 4];
     iRealPos -= sizeof(buf) - 4;
     iRealPos = std::max(0, iRealPos);
-    m_pZip->Seek(iRealPos);
+    zip_->Seek(iRealPos);
 
-    int iGot = m_pZip->Read(buf, sizeof(buf));
+    int iGot = zip_->Read(buf, sizeof(buf));
     if (iGot == -1) {
-      WARN(ssprintf("%s: %s", m_sPath.c_str(), m_pZip->GetError().c_str()));
+      WARN(ssprintf("%s: %s", path_.c_str(), zip_->GetError().c_str()));
       return false;
     }
 
@@ -100,7 +99,7 @@ bool RageFileDriverZip::SeekToEndCentralRecord() {
         continue;
       }
 
-      m_pZip->Seek(iRealPos + iPos);
+      zip_->Seek(iRealPos + iPos);
       return true;
     }
   }
@@ -112,7 +111,7 @@ bool RageFileDriverZip::ParseZipfile() {
   if (!SeekToEndCentralRecord()) {
     WARN(ssprintf(
         "Couldn't open %s: couldn't find end of central directory record",
-        m_sPath.c_str()));
+        path_.c_str()));
     return false;
   }
 
@@ -123,12 +122,12 @@ bool RageFileDriverZip::ParseZipfile() {
   }
 
   /* Seek to the start of the central file directory. */
-  m_pZip->Seek(iCentralDirectoryOffset);
+  zip_->Seek(iCentralDirectoryOffset);
 
   /* Loop through files in central directory. */
   for (int i = 0; i < iTotalEntries; ++i) {
     FileInfo info;
-    info.m_iDataOffset = -1;
+    info.data_offset_ = -1;
     int got = ProcessCdirFileHdr(info);
     if (got == -1) { /* error */
       break;
@@ -138,15 +137,13 @@ bool RageFileDriverZip::ParseZipfile() {
     }
 
     FileInfo* pInfo = new FileInfo(info);
-    m_pFiles.push_back(pInfo);
-    FDB->AddFile(
-        "/" + pInfo->m_sName, pInfo->m_iUncompressedSize, pInfo->m_iCRC32,
-        pInfo);
+    files_.push_back(pInfo);
+    fdb_->AddFile(
+        "/" + pInfo->name_, pInfo->uncompressed_size_, pInfo->crc32_, pInfo);
   }
 
-  if (m_pFiles.size() == 0) {
-    WARN(
-        ssprintf("%s: no files found in central file header", m_sPath.c_str()));
+  if (files_.size() == 0) {
+    WARN(ssprintf("%s: no files found in central file header", path_.c_str()));
   }
 
   return true;
@@ -154,47 +151,46 @@ bool RageFileDriverZip::ParseZipfile() {
 
 int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
   std::string sError;
-  std::string sSig = FileReading::ReadString(*m_pZip, 4, sError);
+  std::string sSig = FileReading::ReadString(*zip_, 4, sError);
   if (sSig != "\x50\x4B\x01\x02") {
     WARN(ssprintf(
-        "%s: central directory record signature not found", m_sPath.c_str()));
+        "%s: central directory record signature not found", path_.c_str()));
     return -1;
   }
 
-  FileReading::read_8(*m_pZip, sError);     /* skip version made by */
-  FileReading::read_8(*m_pZip, sError);     /* skip OS made by */
-  FileReading::read_16_le(*m_pZip, sError); /* skip version needed to extract */
-  int iGeneralPurpose = FileReading::read_16_le(*m_pZip, sError);
-  info.m_iCompressionMethod =
-      (ZipCompressionMethod)FileReading::read_16_le(*m_pZip, sError);
-  FileReading::read_16_le(*m_pZip, sError); /* skip last mod file time */
-  FileReading::read_16_le(*m_pZip, sError); /* skip last mod file date */
-  info.m_iCRC32 = FileReading::read_32_le(*m_pZip, sError);
-  info.m_iCompressedSize = FileReading::read_32_le(*m_pZip, sError);
-  info.m_iUncompressedSize = FileReading::read_32_le(*m_pZip, sError);
-  int iFilenameLength = FileReading::read_16_le(*m_pZip, sError);
-  int iExtraFieldLength = FileReading::read_16_le(*m_pZip, sError);
-  int iFileCommentLength = FileReading::read_16_le(*m_pZip, sError);
-  FileReading::read_16_le(
-      *m_pZip, sError); /* relative offset of local header */
-  FileReading::read_16_le(*m_pZip, sError); /* skip internal file attributes */
-  unsigned iExternalFileAttributes = FileReading::read_32_le(*m_pZip, sError);
-  info.m_iOffset = FileReading::read_32_le(*m_pZip, sError);
+  FileReading::read_8(*zip_, sError);     /* skip version made by */
+  FileReading::read_8(*zip_, sError);     /* skip OS made by */
+  FileReading::read_16_le(*zip_, sError); /* skip version needed to extract */
+  int iGeneralPurpose = FileReading::read_16_le(*zip_, sError);
+  info.compression_method_ =
+      (ZipCompressionMethod)FileReading::read_16_le(*zip_, sError);
+  FileReading::read_16_le(*zip_, sError); /* skip last mod file time */
+  FileReading::read_16_le(*zip_, sError); /* skip last mod file date */
+  info.crc32_ = FileReading::read_32_le(*zip_, sError);
+  info.compressed_size_ = FileReading::read_32_le(*zip_, sError);
+  info.uncompressed_size_ = FileReading::read_32_le(*zip_, sError);
+  int iFilenameLength = FileReading::read_16_le(*zip_, sError);
+  int iExtraFieldLength = FileReading::read_16_le(*zip_, sError);
+  int iFileCommentLength = FileReading::read_16_le(*zip_, sError);
+  FileReading::read_16_le(*zip_, sError); /* relative offset of local header */
+  FileReading::read_16_le(*zip_, sError); /* skip internal file attributes */
+  unsigned iExternalFileAttributes = FileReading::read_32_le(*zip_, sError);
+  info.offset_ = FileReading::read_32_le(*zip_, sError);
 
   /* Check for errors before reading variable-length fields. */
   if (sError != "") {
-    WARN(ssprintf("%s: %s", m_sPath.c_str(), sError.c_str()));
+    WARN(ssprintf("%s: %s", path_.c_str(), sError.c_str()));
     return -1;
   }
 
-  info.m_sName = FileReading::ReadString(*m_pZip, iFilenameLength, sError);
+  info.name_ = FileReading::ReadString(*zip_, iFilenameLength, sError);
   FileReading::SkipBytes(
-      *m_pZip, iExtraFieldLength, sError); /* skip extra field */
+      *zip_, iExtraFieldLength, sError); /* skip extra field */
   FileReading::SkipBytes(
-      *m_pZip, iFileCommentLength, sError); /* skip file comment */
+      *zip_, iFileCommentLength, sError); /* skip file comment */
 
   if (sError != "") {
-    WARN(ssprintf("%s: %s", m_sPath.c_str(), sError.c_str()));
+    WARN(ssprintf("%s: %s", path_.c_str(), sError.c_str()));
     return -1;
   }
 
@@ -202,8 +198,8 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
    * leave the file pointer in the middle of a record. */
   if (iGeneralPurpose & 1) {
     WARN(ssprintf(
-        "Skipped encrypted \"%s\" in \"%s\"", info.m_sName.c_str(),
-        m_sPath.c_str()));
+        "Skipped encrypted \"%s\" in \"%s\"", info.name_.c_str(),
+        path_.c_str()));
     return 0;
   }
 
@@ -212,11 +208,11 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
     return 0;
   }
 
-  if (info.m_iCompressionMethod != STORED &&
-      info.m_iCompressionMethod != DEFLATED) {
+  if (info.compression_method_ != STORED &&
+      info.compression_method_ != DEFLATED) {
     WARN(ssprintf(
         "File \"%s\" in \"%s\" uses unsupported compression method %i",
-        info.m_sName.c_str(), m_sPath.c_str(), info.m_iCompressionMethod));
+        info.name_.c_str(), path_.c_str(), info.compression_method_));
 
     return 0;
   }
@@ -226,34 +222,34 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
 
 bool RageFileDriverZip::ReadLocalFileHeader(FileInfo& info) {
   /* Seek to and read the local file header. */
-  m_pZip->Seek(info.m_iOffset);
+  zip_->Seek(info.offset_);
 
   std::string sError;
-  std::string sSig = FileReading::ReadString(*m_pZip, 4, sError);
+  std::string sSig = FileReading::ReadString(*zip_, 4, sError);
 
   if (sError != "") {
     WARN(ssprintf(
-        "%s: error opening \"%s\": %s", m_sPath.c_str(), info.m_sName.c_str(),
+        "%s: error opening \"%s\": %s", path_.c_str(), info.name_.c_str(),
         sError.c_str()));
     return false;
   }
 
   if (sSig != "\x50\x4B\x03\x04") {
     WARN(ssprintf(
-        "%s: local file header not found for \"%s\"", m_sPath.c_str(),
-        info.m_sName.c_str()));
+        "%s: local file header not found for \"%s\"", path_.c_str(),
+        info.name_.c_str()));
     return false;
   }
 
   FileReading::SkipBytes(
-      *m_pZip, 22, sError); /* skip most of the local file header */
+      *zip_, 22, sError); /* skip most of the local file header */
 
-  const int iFilenameLength = FileReading::read_16_le(*m_pZip, sError);
-  const int iExtraFieldLength = FileReading::read_16_le(*m_pZip, sError);
-  info.m_iDataOffset = m_pZip->Tell() + iFilenameLength + iExtraFieldLength;
+  const int iFilenameLength = FileReading::read_16_le(*zip_, sError);
+  const int iExtraFieldLength = FileReading::read_16_le(*zip_, sError);
+  info.data_offset_ = zip_->Tell() + iFilenameLength + iExtraFieldLength;
 
   if (sError != "") {
-    WARN(ssprintf("%s: %s", m_sPath.c_str(), sError.c_str()));
+    WARN(ssprintf("%s: %s", path_.c_str(), sError.c_str()));
     return false;
   }
 
@@ -261,12 +257,12 @@ bool RageFileDriverZip::ReadLocalFileHeader(FileInfo& info) {
 }
 
 RageFileDriverZip::~RageFileDriverZip() {
-  for (unsigned i = 0; i < m_pFiles.size(); ++i) {
-    delete m_pFiles[i];
+  for (unsigned i = 0; i < files_.size(); ++i) {
+    delete files_[i];
   }
 
-  if (m_bFileOwned) {
-    delete m_pZip;
+  if (file_owned_) {
+    delete zip_;
   }
 }
 
@@ -277,36 +273,36 @@ RageFileBasic* RageFileDriverZip::Open(
     return nullptr;
   }
 
-  FileInfo* info = (FileInfo*)FDB->GetFilePriv(sPath);
+  FileInfo* info = (FileInfo*)fdb_->GetFilePriv(sPath);
   if (info == nullptr) {
     iErr = ENOENT;
     return nullptr;
   }
 
-  m_Mutex.Lock();
+  mutex_.Lock();
 
   /* If we haven't figured out the offset to the real data yet, do so now. */
-  if (info->m_iDataOffset == -1) {
+  if (info->data_offset_ == -1) {
     if (!ReadLocalFileHeader(*info)) {
-      m_Mutex.Unlock();
+      mutex_.Unlock();
       return nullptr;
     }
   }
 
   /* We won't do any further access to zip, except to copy it (which is
    * threadsafe), so we can unlock now. */
-  m_Mutex.Unlock();
+  mutex_.Unlock();
 
   RageFileDriverSlice* pSlice = new RageFileDriverSlice(
-      m_pZip->Copy(), info->m_iDataOffset, info->m_iCompressedSize);
+      zip_->Copy(), info->data_offset_, info->compressed_size_);
   pSlice->DeleteFileWhenFinished();
 
-  switch (info->m_iCompressionMethod) {
+  switch (info->compression_method_) {
     case STORED:
       return pSlice;
     case DEFLATED: {
       RageFileObjInflate* pInflate =
-          new RageFileObjInflate(pSlice, info->m_iUncompressedSize);
+          new RageFileObjInflate(pSlice, info->uncompressed_size_);
       pInflate->DeleteFileWhenFinished();
       return pInflate;
     }

@@ -26,11 +26,11 @@ class ScreenGameplayLesson : public ScreenGameplayNormal {
   void ChangeLessonPage(int iDir);
   void ResetAndRestartCurrentSong();
 
-  std::vector<AutoActor> m_vPages;
-  int m_iCurrentPageIndex;
+  std::vector<AutoActor> pages_;
+  int current_page_index_;
 
   enum Try { Try_1, Try_2, Try_3, NUM_Try };
-  Try m_Try;
+  Try try_;
 };
 
 #endif

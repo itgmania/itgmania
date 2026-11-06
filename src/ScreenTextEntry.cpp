@@ -36,7 +36,7 @@ static const char* g_szKeys[NUM_KeyboardRow][KEYS_PER_ROW] = {
      ""},
 };
 
-std::string ScreenTextEntry::s_sLastAnswer = "";
+std::string ScreenTextEntry::last_answer_ = "";
 
 // Settings:
 namespace {
@@ -123,7 +123,7 @@ bool ScreenTextEntry::IntValidate(
   return false;
 }
 
-bool ScreenTextEntry::s_bCancelledLast = false;
+bool ScreenTextEntry::cancelled_last_ = false;
 
 /* Handle UTF-8. Right now, we need to at least be able to backspace a whole
  * UTF-8 character. Better would be to operate in wchar_t.
@@ -136,31 +136,31 @@ REGISTER_SCREEN_CLASS(ScreenTextEntryVisual);
 void ScreenTextEntry::Init() {
   ScreenWithMenuElements::Init();
 
-  m_textQuestion.LoadFromFont(THEME->GetPathF(m_sName, "question"));
-  m_textQuestion.SetName("Question");
-  LOAD_ALL_COMMANDS(m_textQuestion);
-  this->AddChild(&m_textQuestion);
+  text_question_.LoadFromFont(THEME->GetPathF(name_, "question"));
+  text_question_.SetName("Question");
+  LOAD_ALL_COMMANDS(text_question_);
+  this->AddChild(&text_question_);
 
-  m_textAnswer.LoadFromFont(THEME->GetPathF(m_sName, "answer"));
-  m_textAnswer.SetName("Answer");
-  LOAD_ALL_COMMANDS(m_textAnswer);
-  this->AddChild(&m_textAnswer);
+  text_answer_.LoadFromFont(THEME->GetPathF(name_, "answer"));
+  text_answer_.SetName("Answer");
+  LOAD_ALL_COMMANDS(text_answer_);
+  this->AddChild(&text_answer_);
 
-  m_bShowAnswerCaret = false;
+  show_answer_caret_ = false;
   // m_iCaretLocation = 0;
 
-  m_sndType.Load(THEME->GetPathS(m_sName, "type"), true);
-  m_sndBackspace.Load(THEME->GetPathS(m_sName, "backspace"), true);
+  snd_type_.Load(THEME->GetPathS(name_, "type"), true);
+  snd_backspace_.Load(THEME->GetPathS(name_, "backspace"), true);
 }
 
 void ScreenTextEntry::BeginScreen() {
-  m_sAnswer = RStringToWstring(g_sInitialAnswer);
+  answer_ = RStringToWstring(g_sInitialAnswer);
 
   ScreenWithMenuElements::BeginScreen();
 
-  m_textQuestion.SetText(g_sQuestion);
-  SET_XY(m_textQuestion);
-  SET_XY(m_textAnswer);
+  text_question_.SetText(g_sQuestion);
+  SET_XY(text_question_);
+  SET_XY(text_answer_);
 
   UpdateAnswerText();
 }
@@ -170,9 +170,9 @@ static LocalizedString ANSWER_BLANK("ScreenTextEntry", "AnswerBlank");
 void ScreenTextEntry::UpdateAnswerText() {
   std::string s;
   if (g_bPassword) {
-    s = std::string(m_sAnswer.size(), '*');
+    s = std::string(answer_.size(), '*');
   } else {
-    s = WStringToRString(m_sAnswer);
+    s = WStringToRString(answer_);
   }
 
   bool bAnswerFull = (int)s.length() >= g_iMaxInputLength;
@@ -183,22 +183,22 @@ void ScreenTextEntry::UpdateAnswerText() {
 
   // Handle caret drawing
   // m_iCaretLocation = s.length()
-  if (m_bShowAnswerCaret && !bAnswerFull) {
+  if (show_answer_caret_ && !bAnswerFull) {
     s += ANSWER_CARET;  // was '_'
   } else {
     s += ANSWER_BLANK;  // was "  "
   }
 
   FontCharAliases::ReplaceMarkers(s);
-  m_textAnswer.SetText(s);
+  text_answer_.SetText(s);
 }
 
 void ScreenTextEntry::Update(float fDelta) {
   ScreenWithMenuElements::Update(fDelta);
 
-  if (m_timerToggleCursor.Ago() > 0.25f) {
-    m_timerToggleCursor.Touch();
-    m_bShowAnswerCaret = !m_bShowAnswerCaret;
+  if (timer_toggle_cursor_.Ago() > 0.25f) {
+    timer_toggle_cursor_.Touch();
+    show_answer_caret_ = !show_answer_caret_;
     UpdateAnswerText();
   }
 }
@@ -211,8 +211,8 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
 
   // bLCtrl and bRCtl are whether their respective Ctrl keys are held
   // We update them here.
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) {
-    switch (input.type) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) {
+    switch (input.type_) {
       case IET_FIRST_PRESS:
         bLCtrl = true;
         break;
@@ -224,8 +224,8 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
     }
   }
 
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL)) {
-    switch (input.type) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL)) {
+    switch (input.type_) {
       case IET_FIRST_PRESS:
         bRCtrl = true;
         break;
@@ -238,8 +238,8 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
   }
 
   bool bHandled = false;
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_BACK)) {
-    switch (input.type) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_BACK)) {
+    switch (input.type_) {
       case IET_FIRST_PRESS:
       case IET_REPEAT:
         BackspaceInAnswer();
@@ -247,8 +247,8 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
       default:
         break;
     }
-  } else if (input.type == IET_FIRST_PRESS) {
-    wchar_t c = INPUTMAN->DeviceInputToChar(input.DeviceI, true);
+  } else if (input.type_ == IET_FIRST_PRESS) {
+    wchar_t c = INPUTMAN->DeviceInputToChar(input.device_i_, true);
     // Detect Ctrl+V
     if ((c == L'v' || c == L'V') && (bLCtrl || bRCtrl)) {
       TryAppendToAnswer(HOOKS->GetClipboard());
@@ -270,38 +270,38 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
 
 void ScreenTextEntry::TryAppendToAnswer(std::string s) {
   {
-    std::wstring sNewAnswer = m_sAnswer + RStringToWstring(s);
+    std::wstring sNewAnswer = answer_ + RStringToWstring(s);
     if ((int)sNewAnswer.length() > g_iMaxInputLength) {
       SCREENMAN->PlayInvalidSound();
       return;
     }
   }
 
-  if (g_pValidateAppend && !g_pValidateAppend(WStringToRString(m_sAnswer), s)) {
+  if (g_pValidateAppend && !g_pValidateAppend(WStringToRString(answer_), s)) {
     SCREENMAN->PlayInvalidSound();
     return;
   }
 
-  std::wstring sNewAnswer = m_sAnswer + RStringToWstring(s);
-  m_sAnswer = sNewAnswer;
-  m_sndType.Play(true);
+  std::wstring sNewAnswer = answer_ + RStringToWstring(s);
+  answer_ = sNewAnswer;
+  snd_type_.Play(true);
   UpdateAnswerText();
 }
 
 void ScreenTextEntry::BackspaceInAnswer() {
-  if (m_sAnswer.empty()) {
+  if (answer_.empty()) {
     SCREENMAN->PlayInvalidSound();
     return;
   }
-  m_sAnswer.erase(m_sAnswer.end() - 1);
-  m_sndBackspace.Play(true);
+  answer_.erase(answer_.end() - 1);
+  snd_backspace_.Play(true);
   UpdateAnswerText();
 }
 
 bool ScreenTextEntry::MenuStart(const InputEventPlus& input) {
   // HACK: Only allow the screen to end on the Enter key.-aj
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
-      input.type == IET_FIRST_PRESS) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
+      input.type_ == IET_FIRST_PRESS) {
     End(false);
     return true;
   }
@@ -317,7 +317,7 @@ void ScreenTextEntry::End(bool bCancelled) {
     Cancel(SM_GoToNextScreen);
     // TweenOffScreen();
   } else {
-    std::string sAnswer = WStringToRString(m_sAnswer);
+    std::string sAnswer = WStringToRString(answer_);
     std::string sError;
     if (g_pValidate != nullptr) {
       bool bValidAnswer = g_pValidate(sAnswer, sError);
@@ -328,7 +328,7 @@ void ScreenTextEntry::End(bool bCancelled) {
     }
 
     if (g_pOnOK) {
-      std::string ret = WStringToRString(m_sAnswer);
+      std::string ret = WStringToRString(answer_);
       FontCharAliases::ReplaceMarkers(ret);
       g_pOnOK(ret);
     }
@@ -337,12 +337,12 @@ void ScreenTextEntry::End(bool bCancelled) {
     SCREENMAN->PlayStartSound();
   }
 
-  s_bCancelledLast = bCancelled;
-  s_sLastAnswer = bCancelled ? std::string("") : WStringToRString(m_sAnswer);
+  cancelled_last_ = bCancelled;
+  last_answer_ = bCancelled ? std::string("") : WStringToRString(answer_);
 }
 
 bool ScreenTextEntry::MenuBack(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
   End(true);
@@ -362,9 +362,9 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
   lua_getfield(L, iTab, "SendOnPop");
   const char* pStr = lua_tostring(L, -1);
   if (pStr == nullptr) {
-    smSendOnPop = SM_None;
+    send_on_pop_ = SM_None;
   } else {
-    smSendOnPop = ScreenMessageHelpers::ToScreenMessage(pStr);
+    send_on_pop_ = ScreenMessageHelpers::ToScreenMessage(pStr);
   }
   lua_settop(L, iTab);
 
@@ -376,7 +376,7 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
         "ScreenTextEntry \"Question\" entry is not a string.");
     pStr = "";
   }
-  sQuestion = pStr;
+  question_ = pStr;
   lua_settop(L, iTab);
 
   // Get Initial Answer
@@ -385,17 +385,17 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
   if (pStr == nullptr) {
     pStr = "";
   }
-  sInitialAnswer = pStr;
+  initial_answer_ = pStr;
   lua_settop(L, iTab);
 
   // Get Max Input Length
   lua_getfield(L, iTab, "MaxInputLength");
-  iMaxInputLength = lua_tointeger(L, -1);
+  max_input_length_ = lua_tointeger(L, -1);
   lua_settop(L, iTab);
 
   // Get Password
   lua_getfield(L, iTab, "Password");
-  bPassword = !!lua_toboolean(L, -1);
+  password_ = !!lua_toboolean(L, -1);
   lua_settop(L, iTab);
 
 #define SET_FUNCTION_MEMBER(memname)                            \
@@ -408,11 +408,11 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
   }                                                             \
   lua_settop(L, iTab);
 
-  SET_FUNCTION_MEMBER(Validate);
-  SET_FUNCTION_MEMBER(OnOK);
-  SET_FUNCTION_MEMBER(OnCancel);
-  SET_FUNCTION_MEMBER(ValidateAppend);
-  SET_FUNCTION_MEMBER(FormatAnswerForDisplay);
+  SET_FUNCTION_MEMBER(validate_);
+  SET_FUNCTION_MEMBER(on_ok_);
+  SET_FUNCTION_MEMBER(on_cancel_);
+  SET_FUNCTION_MEMBER(validate_append_);
+  SET_FUNCTION_MEMBER(format_answer_for_display_);
 #undef SET_FUNCTION_MEMBER
 }
 
@@ -540,19 +540,19 @@ static std::string FormatAnswerForDisplayFromLua(const std::string& sAnswer) {
 
 void ScreenTextEntry::LoadFromTextEntrySettings(
     const TextEntrySettings& settings) {
-  g_ValidateFunc = settings.Validate;
-  g_OnOKFunc = settings.OnOK;
-  g_OnCancelFunc = settings.OnCancel;
-  g_ValidateAppendFunc = settings.ValidateAppend;
-  g_FormatAnswerForDisplayFunc = settings.FormatAnswerForDisplay;
+  g_ValidateFunc = settings.validate_;
+  g_OnOKFunc = settings.on_ok_;
+  g_OnCancelFunc = settings.on_cancel_;
+  g_ValidateAppendFunc = settings.validate_append_;
+  g_FormatAnswerForDisplayFunc = settings.format_answer_for_display_;
 
   // set functions
   SetTextEntrySettings(
-      settings.sQuestion, settings.sInitialAnswer, settings.iMaxInputLength,
+      settings.question_, settings.initial_answer_, settings.max_input_length_,
       ValidateFromLua,  // Validate
       OnOKFromLua,      // OnOK
       OnCancelFromLua,  // OnCancel
-      settings.bPassword,
+      settings.password_,
       ValidateAppendFromLua,         // ValidateAppend
       FormatAnswerForDisplayFromLua  // FormatAnswerForDisplay
   );
@@ -578,58 +578,58 @@ LUA_REGISTER_DERIVED_CLASS(ScreenTextEntry, ScreenWithMenuElements)
 
 // begin ScreenTextEntryVisual
 void ScreenTextEntryVisual::Init() {
-  ROW_START_X.Load(m_sName, "RowStartX");
-  ROW_START_Y.Load(m_sName, "RowStartY");
-  ROW_END_X.Load(m_sName, "RowEndX");
-  ROW_END_Y.Load(m_sName, "RowEndY");
+  ROW_START_X.Load(name_, "RowStartX");
+  ROW_START_Y.Load(name_, "RowStartY");
+  ROW_END_X.Load(name_, "RowEndX");
+  ROW_END_Y.Load(name_, "RowEndY");
 
   ScreenTextEntry::Init();
 
-  m_sprCursor.Load(THEME->GetPathG(m_sName, "cursor"));
-  m_sprCursor->SetName("Cursor");
-  LOAD_ALL_COMMANDS(m_sprCursor);
-  this->AddChild(m_sprCursor);
+  spr_cursor_.Load(THEME->GetPathG(name_, "cursor"));
+  spr_cursor_->SetName("Cursor");
+  LOAD_ALL_COMMANDS(spr_cursor_);
+  this->AddChild(spr_cursor_);
 
   // Init keyboard
   {
     BitmapText text;
-    text.LoadFromFont(THEME->GetPathF(m_sName, "keyboard"));
+    text.LoadFromFont(THEME->GetPathF(name_, "keyboard"));
     text.SetName("Keys");
-    ActorUtil::LoadAllCommands(text, m_sName);
+    ActorUtil::LoadAllCommands(text, name_);
     text.PlayCommand("Init");
 
     FOREACH_KeyboardRow(r) {
       for (int x = 0; x < KEYS_PER_ROW; ++x) {
-        BitmapText*& pbt = m_ptextKeys[r][x];
+        BitmapText*& pbt = text_keys_[r][x];
         pbt = text.Copy();
         this->AddChild(pbt);
 
         std::string s = g_szKeys[r][x];
         if (!s.empty() && r == KEYBOARD_ROW_SPECIAL) {
-          s = THEME->GetString(m_sName, s);
+          s = THEME->GetString(name_, s);
         }
         pbt->SetText(s);
       }
     }
   }
 
-  m_sndChange.Load(THEME->GetPathS(m_sName, "change"), true);
+  snd_change_.Load(THEME->GetPathS(name_, "change"), true);
 }
 
 ScreenTextEntryVisual::~ScreenTextEntryVisual() {
   FOREACH_KeyboardRow(r) for (int x = 0; x < KEYS_PER_ROW; ++x)
-      RageUtil::SafeDelete(m_ptextKeys[r][x]);
+      RageUtil::SafeDelete(text_keys_[r][x]);
 }
 
 void ScreenTextEntryVisual::BeginScreen() {
   ScreenTextEntry::BeginScreen();
 
-  m_iFocusX = 0;
-  m_iFocusY = (KeyboardRow)0;
+  focus_x_ = 0;
+  focus_y_ = (KeyboardRow)0;
 
   FOREACH_KeyboardRow(r) {
     for (int x = 0; x < KEYS_PER_ROW; ++x) {
-      BitmapText& bt = *m_ptextKeys[r][x];
+      BitmapText& bt = *text_keys_[r][x];
       float fX =
           std::round(SCALE(x, 0, KEYS_PER_ROW - 1, ROW_START_X, ROW_END_X));
       float fY =
@@ -642,17 +642,17 @@ void ScreenTextEntryVisual::BeginScreen() {
 }
 
 void ScreenTextEntryVisual::PositionCursor() {
-  BitmapText& bt = *m_ptextKeys[m_iFocusY][m_iFocusX];
-  m_sprCursor->SetXY(bt.GetX(), bt.GetY());
-  m_sprCursor->PlayCommand(
-      m_iFocusY == KEYBOARD_ROW_SPECIAL ? "SpecialKey" : "RegularKey");
+  BitmapText& bt = *text_keys_[focus_y_][focus_x_];
+  spr_cursor_->SetXY(bt.GetX(), bt.GetY());
+  spr_cursor_->PlayCommand(
+      focus_y_ == KEYBOARD_ROW_SPECIAL ? "SpecialKey" : "RegularKey");
 }
 
 void ScreenTextEntryVisual::TextEnteredDirectly() {
   // If the user enters text with a keyboard, jump to DONE, so enter ends the
   // screen.
-  m_iFocusY = KEYBOARD_ROW_SPECIAL;
-  m_iFocusX = DONE;
+  focus_y_ = KEYBOARD_ROW_SPECIAL;
+  focus_x_ = DONE;
 
   PositionCursor();
 }
@@ -660,67 +660,67 @@ void ScreenTextEntryVisual::TextEnteredDirectly() {
 void ScreenTextEntryVisual::MoveX(int iDir) {
   std::string sKey;
   do {
-    m_iFocusX += iDir;
-    wrap(m_iFocusX, KEYS_PER_ROW);
+    focus_x_ += iDir;
+    wrap(focus_x_, KEYS_PER_ROW);
 
-    sKey = g_szKeys[m_iFocusY][m_iFocusX];
+    sKey = g_szKeys[focus_y_][focus_x_];
   } while (sKey == "");
 
-  m_sndChange.Play(true);
+  snd_change_.Play(true);
   PositionCursor();
 }
 
 void ScreenTextEntryVisual::MoveY(int iDir) {
   std::string sKey;
   do {
-    m_iFocusY = enum_add2(m_iFocusY, +iDir);
-    wrap(*ConvertValue<int>(&m_iFocusY), NUM_KeyboardRow);
+    focus_y_ = enum_add2(focus_y_, +iDir);
+    wrap(*ConvertValue<int>(&focus_y_), NUM_KeyboardRow);
 
     // HACK: Round to nearest option so that we always stop
     // on KEYBOARD_ROW_SPECIAL.
-    if (m_iFocusY == KEYBOARD_ROW_SPECIAL) {
+    if (focus_y_ == KEYBOARD_ROW_SPECIAL) {
       for (int i = 0; true; i++) {
-        sKey = g_szKeys[m_iFocusY][m_iFocusX];
+        sKey = g_szKeys[focus_y_][focus_x_];
         if (sKey != "") {
           break;
         }
 
         // UGLY: Probe one space to the left before looking to the right
-        m_iFocusX += (i == 0) ? -1 : +1;
-        wrap(m_iFocusX, KEYS_PER_ROW);
+        focus_x_ += (i == 0) ? -1 : +1;
+        wrap(focus_x_, KEYS_PER_ROW);
       }
     }
 
-    sKey = g_szKeys[m_iFocusY][m_iFocusX];
+    sKey = g_szKeys[focus_y_][focus_x_];
   } while (sKey == "");
 
-  m_sndChange.Play(true);
+  snd_change_.Play(true);
   PositionCursor();
 }
 
 bool ScreenTextEntryVisual::MenuLeft(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
   MoveX(-1);
   return true;
 }
 bool ScreenTextEntryVisual::MenuRight(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
   MoveX(+1);
   return true;
 }
 bool ScreenTextEntryVisual::MenuUp(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
   MoveY(-1);
   return true;
 }
 bool ScreenTextEntryVisual::MenuDown(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
   MoveY(+1);
@@ -728,11 +728,11 @@ bool ScreenTextEntryVisual::MenuDown(const InputEventPlus& input) {
 }
 
 bool ScreenTextEntryVisual::MenuStart(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
-  if (m_iFocusY == KEYBOARD_ROW_SPECIAL) {
-    switch (m_iFocusX) {
+  if (focus_y_ == KEYBOARD_ROW_SPECIAL) {
+    switch (focus_x_) {
       case SPACEBAR:
         TryAppendToAnswer(" ");
         break;
@@ -749,7 +749,7 @@ bool ScreenTextEntryVisual::MenuStart(const InputEventPlus& input) {
         return false;
     }
   } else {
-    TryAppendToAnswer(g_szKeys[m_iFocusY][m_iFocusX]);
+    TryAppendToAnswer(g_szKeys[focus_y_][focus_x_]);
   }
   return true;
 }

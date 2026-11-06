@@ -12,18 +12,18 @@ class DualScrollBar : public ActorFrame {
   DualScrollBar();
 
   void Load(const std::string& sType);
-  void SetBarHeight(float fHeight) { m_fBarHeight = fHeight; }
-  void SetBarTime(float fTime) { m_fBarTime = fTime; }
+  void SetBarHeight(float fHeight) { bar_height_ = fHeight; }
+  void SetBarTime(float fTime) { bar_time_ = fTime; }
   void SetPercentage(PlayerNumber pn, float fPercent);
   void EnablePlayer(PlayerNumber pn, bool on);
 
  private:
   /** @brief The height of the scrollbar. */
-  float m_fBarHeight;
-  float m_fBarTime;
+  float bar_height_;
+  float bar_time_;
 
-  AutoActor m_sprScrollThumbOverHalf[NUM_PLAYERS];
-  AutoActor m_sprScrollThumbUnderHalf[NUM_PLAYERS];
+  AutoActor spr_scroll_thumb_over_half_[NUM_PLAYERS];
+  AutoActor spr_scroll_thumb_under_half_[NUM_PLAYERS];
 };
 
 #endif

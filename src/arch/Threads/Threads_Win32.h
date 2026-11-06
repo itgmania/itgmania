@@ -12,11 +12,11 @@
 
 class ThreadImpl_Win32 : public ThreadImpl {
  public:
-  HANDLE ThreadHandle;
-  DWORD ThreadId;
+  HANDLE thread_handle_;
+  DWORD thread_id_;
 
-  int (*m_pFunc)(void* pData);
-  void* m_pData;
+  int (*func_)(void* pData);
+  void* data_;
 
   void Halt(bool Kill);
   void Resume();
@@ -38,7 +38,7 @@ class MutexImpl_Win32 : public MutexImpl {
   void Unlock();
 
  private:
-  HANDLE mutex;
+  HANDLE mutex_;
 };
 
 class EventImpl_Win32 : public EventImpl {
@@ -52,12 +52,12 @@ class EventImpl_Win32 : public EventImpl {
   bool WaitTimeoutSupported() const { return true; }
 
  private:
-  MutexImpl_Win32* m_pParent;
+  MutexImpl_Win32* parent_;
 
-  int m_iNumWaiting;
-  CRITICAL_SECTION m_iNumWaitingLock;
-  HANDLE m_WakeupSema;
-  HANDLE m_WaitersDone;
+  int num_waiting_;
+  CRITICAL_SECTION num_waiting_lock_;
+  HANDLE wakeup_sema_;
+  HANDLE waiters_done_;
 };
 
 class SemaImpl_Win32 : public SemaImpl {
@@ -68,7 +68,7 @@ class SemaImpl_Win32 : public SemaImpl {
   bool Wait();
 
  private:
-  HANDLE sem;
+  HANDLE sem_;
 };
 
 #endif

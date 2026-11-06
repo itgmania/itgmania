@@ -11,32 +11,32 @@
 
 namespace {
 struct StbWriteState {
-  RageFile* file;
-  std::string* error;
-  bool io_failed;
+  RageFile* file_;
+  std::string* error_;
+  bool io_failed_;
 };
 
 void StbWriteCallback(void* context, void* data, int size) {
   StbWriteState* state = static_cast<StbWriteState*>(context);
-  if (state->io_failed || size <= 0) {
+  if (state->io_failed_ || size <= 0) {
     return;
   }
 
-  const int wrote = state->file->Write(data, static_cast<size_t>(size));
+  const int wrote = state->file_->Write(data, static_cast<size_t>(size));
   if (wrote == size) {
     return;
   }
 
-  state->io_failed = true;
-  if (!state->error->empty()) {
+  state->io_failed_ = true;
+  if (!state->error_->empty()) {
     return;
   }
 
-  const std::string file_error = state->file->GetError();
+  const std::string file_error = state->file_->GetError();
   if (!file_error.empty()) {
-    *state->error = file_error;
+    *state->error_ = file_error;
   } else {
-    *state->error = "Image write failed";
+    *state->error_ = "Image write failed";
   }
 }
 
@@ -63,25 +63,26 @@ bool WriteSurface(
   switch (format) {
     case RageSurfaceSTBWriteFormat::BMP:
       result = stbi_write_bmp_to_func(
-          StbWriteCallback, &state, surface->w, surface->h, 3, surface->pixels);
+          StbWriteCallback, &state, surface->w_, surface->h_, 3,
+          surface->pixels_);
       break;
     case RageSurfaceSTBWriteFormat::JPEG:
       result = stbi_write_jpg_to_func(
-          StbWriteCallback, &state, surface->w, surface->h, 3, surface->pixels,
-          quality);
+          StbWriteCallback, &state, surface->w_, surface->h_, 3,
+          surface->pixels_, quality);
       break;
     case RageSurfaceSTBWriteFormat::PNG: {
       const int previous_level = stbi_write_png_compression_level;
       stbi_write_png_compression_level = 1;
       result = stbi_write_png_to_func(
-          StbWriteCallback, &state, surface->w, surface->h, 3, surface->pixels,
-          surface->pitch);
+          StbWriteCallback, &state, surface->w_, surface->h_, 3,
+          surface->pixels_, surface->pitch_);
       stbi_write_png_compression_level = previous_level;
       break;
     }
   }
 
-  if (state.io_failed) {
+  if (state.io_failed_) {
     return false;
   }
 
@@ -107,7 +108,7 @@ bool RageSurface_Save_STB(
     RageSurface* surface, RageFile& f, std::string& error,
     RageSurfaceSTBWriteFormat format, int quality) {
   RageSurface* converted_surface = CreateSurface(
-      surface->w, surface->h, 24, Swap24BE(0xFF0000), Swap24BE(0x00FF00),
+      surface->w_, surface->h_, 24, Swap24BE(0xFF0000), Swap24BE(0x00FF00),
       Swap24BE(0x0000FF), 0);
   RageSurfaceUtils::CopySurface(surface, converted_surface);
 

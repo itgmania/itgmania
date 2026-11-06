@@ -19,13 +19,13 @@ typedef uint64_t SeqNo;
 
 class Header {
  public:
-  size_t GetHeaderLength() const { return m_headerLength; }
-  size_t GetContentLength() const { return m_contentLength; }
+  size_t GetHeaderLength() const { return header_length_; }
+  size_t GetContentLength() const { return content_length_; }
   bool TryParse(const char* buffer, size_t length);
 
  private:
-  size_t m_headerLength;
-  size_t m_contentLength;
+  size_t header_length_;
+  size_t content_length_;
 };
 
 class Message : public Json::Value {

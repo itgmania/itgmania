@@ -10,13 +10,13 @@ struct UsbStorageDevice {
   void MakeBlank() { *this = {}; };
 
   // -1 means "don't know"
-  int iBus{-1};
-  int iPort{-1};
-  int iLevel{-1};
-  std::string sSerial{"none"};  // be different than a card with no serial
-  std::string sDevice{};
-  std::string sOsMountDir{};  // WITHOUT trailing slash
-  std::string sSysPath{};     // Linux: /sys/block name
+  int bus_{-1};
+  int port_{-1};
+  int level_{-1};
+  std::string serial_{"none"};  // be different than a card with no serial
+  std::string device_{};
+  std::string os_mount_dir_{};  // WITHOUT trailing slash
+  std::string sys_path_{};      // Linux: /sys/block name
   enum State {
     /* Empty device.  This is used only by MemoryCardManager. */
     STATE_NONE,
@@ -37,24 +37,24 @@ struct UsbStorageDevice {
     NUM_State,
     State_INVALID
   };
-  State m_State{STATE_NONE};
-  std::string m_sError{};
+  State state_{STATE_NONE};
+  std::string error_{};
 
   void SetError(const std::string& sError) {
-    m_State = STATE_ERROR;
-    m_sError = sError;
+    state_ = STATE_ERROR;
+    error_ = sError;
   }
 
-  bool bIsNameAvailable{false};  // Name in the profile on the memory card.
-  std::string sName{};           // Name in the profile on the memory card.
-  unsigned int idVendor{0};
-  unsigned int idProduct{0};
-  std::string sVendor{};
-  std::string sProduct{};
-  std::string sVolumeLabel{};
-  int iVolumeSizeMB{0};
+  bool is_name_available_{false};  // Name in the profile on the memory card.
+  std::string name_{};             // Name in the profile on the memory card.
+  unsigned int id_vendor_{0};
+  unsigned int id_product_{0};
+  std::string vendor_{};
+  std::string product_{};
+  std::string volume_label_{};
+  int volume_size_mb_{0};
 
-  bool IsBlank() const { return m_State == STATE_NONE; }
+  bool IsBlank() const { return state_ == STATE_NONE; }
   void SetOsMountDir(const std::string& s);
 
   bool operator==(const UsbStorageDevice& other) const;
@@ -89,7 +89,7 @@ class MemoryCardDriver {
   virtual bool TestWrite(UsbStorageDevice*) { return true; }
 
  private:
-  std::vector<UsbStorageDevice> m_vDevicesLastSeen;
+  std::vector<UsbStorageDevice> devices_last_seen_;
   bool NeedUpdate(bool bMount);
 };
 

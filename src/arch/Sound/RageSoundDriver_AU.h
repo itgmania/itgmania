@@ -16,7 +16,7 @@ class RageSoundDriver_AU : public RageSoundDriver {
   std::string Init();
   ~RageSoundDriver_AU();
   float GetPlayLatency() const;
-  int GetSampleRate() const { return m_iSampleRate; }
+  int GetSampleRate() const { return sample_rate_; }
   int64_t GetPosition() const;
 
  protected:
@@ -30,14 +30,14 @@ class RageSoundDriver_AU : public RageSoundDriver {
   static void NameHALThread(
       CFRunLoopObserverRef, CFRunLoopActivity activity, void* inRefCon);
 
-  double m_TimeScale;
-  AudioUnit m_OutputUnit;
-  int m_iSampleRate;
-  bool m_bDone;
-  bool m_bStarted;
-  RageThreadRegister* m_pIOThread;
-  RageThreadRegister* m_pNotificationThread;
-  RageSemaphore m_Semaphore;
+  double time_scale_;
+  AudioUnit output_unit_;
+  int sample_rate_;
+  bool done_;
+  bool started_;
+  RageThreadRegister* io_thread_;
+  RageThreadRegister* notification_thread_;
+  RageSemaphore semaphore_;
 };
 
 #endif

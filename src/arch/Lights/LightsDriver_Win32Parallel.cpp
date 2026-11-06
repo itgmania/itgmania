@@ -54,7 +54,7 @@ void LightsDriver_Win32Parallel::Set(const LightsState* ls) {
 
   {
     FOREACH_CabinetLight(cl) {
-      bool bOn = ls->m_bCabinetLights[cl];
+      bool bOn = ls->cabinet_lights_[cl];
       int index = CabinetLightToIndex(cl);
       int lpt;
       int pin;
@@ -70,7 +70,7 @@ void LightsDriver_Win32Parallel::Set(const LightsState* ls) {
 
   FOREACH_ENUM(GameController, gc) {
     FOREACH_ENUM(GameButton, gb) {
-      bool bOn = ls->m_bGameButtonLights[gc][gb];
+      bool bOn = ls->game_button_lights_[gc][gb];
       int index = GameControllerAndGameButtonToIndex(gc, gb);
       int lpt;
       int pin;

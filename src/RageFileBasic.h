@@ -72,14 +72,14 @@ class RageFileObj : public RageFileBasic {
   RageFileObj(const RageFileObj& cpy);
   virtual ~RageFileObj();
 
-  virtual std::string GetError() const { return m_sError; }
+  virtual std::string GetError() const { return error_; }
   virtual void ClearError() { SetError(""); }
 
-  bool AtEOF() const { return m_bEOF; }
+  bool AtEOF() const { return eof_; }
 
   int Seek(int iOffset);
   int Seek(int offset, int whence);
-  int Tell() const { return m_iFilePos; }
+  int Tell() const { return file_pos_; }
 
   int Read(void* pBuffer, size_t iBytes);
   int Read(std::string& buffer, int bytes = -1);
@@ -115,16 +115,16 @@ class RageFileObj : public RageFileBasic {
   void EnableReadBuffering();
   void EnableWriteBuffering(int iBytes = 1024 * 64);
 
-  void SetError(const std::string& sError) { m_sError = sError; }
-  std::string m_sError;
+  void SetError(const std::string& sError) { error_ = sError; }
+  std::string error_;
 
  private:
   int FillReadBuf();
   void ResetReadBuf();
   int EmptyWriteBuf();
 
-  bool m_bEOF;
-  int m_iFilePos;
+  bool eof_;
+  int file_pos_;
 
   /*
    * If read buffering is enabled, m_pReadBuffer is the buffer, m_pReadBuf is
@@ -144,24 +144,24 @@ class RageFileObj : public RageFileBasic {
    * a waste of memory.
    */
   enum { BSIZE = 1024 * 16 };
-  char* m_pReadBuffer;
-  char* m_pReadBuf;
-  int m_iReadBufAvail;
+  char* read_buffer_;
+  char* read_buf_;
+  int read_buf_avail_;
 
   /*
    * If write buffering is enabled, m_pWriteBuffer will be allocated, and
    * m_iWriteBufferPos is the file position of the start of the buffer.
    */
-  char* m_pWriteBuffer;
-  int m_iWriteBufferPos;
-  int m_iWriteBufferSize;
-  int m_iWriteBufferUsed;
+  char* write_buffer_;
+  int write_buffer_pos_;
+  int write_buffer_size_;
+  int write_buffer_used_;
 
   /* If EnableCRC32() is called, a CRC32 will be calculated as the file is read.
    * This is only meaningful if EnableCRC32() is called at the very start of the
    * file, and no seeking is performed. */
-  bool m_bCRC32Enabled;
-  uint32_t m_iCRC32;
+  bool crc32_enabled_;
+  uint32_t crc32_;
 
   // Swallow up warnings. If they must be used, define them.
   RageFileObj& operator=(const RageFileObj& rhs);

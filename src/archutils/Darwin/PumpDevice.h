@@ -9,7 +9,7 @@
 
 class PumpDevice : public HIDDevice {
  private:
-  InputDevice m_Id;
+  InputDevice id_;
 
  protected:
   bool AddLogicalDevice(int usagePage, int usage) { return true; }

@@ -50,23 +50,23 @@ REGISTER_SCREEN_CLASS(ScreenUnlockStatus);
 void ScreenUnlockStatus::Init() {
   ScreenAttract::Init();
 
-  unsigned iNumUnlocks = UNLOCKMAN->m_UnlockEntries.size();
+  unsigned iNumUnlocks = UNLOCKMAN->unlock_entries_.size();
 
-  if (!PREFSMAN->m_bUseUnlockSystem || iNumUnlocks == 0) {
+  if (!PREFSMAN->use_unlock_system_ || iNumUnlocks == 0) {
     this->PostScreenMessage(SM_GoToNextScreen, 0);
     return;
   }
 
-  unsigned NumUnlocks = UNLOCKMAN->m_UnlockEntries.size();
+  unsigned NumUnlocks = UNLOCKMAN->unlock_entries_.size();
 
-  PointsUntilNextUnlock.LoadFromFont(THEME->GetPathF("Common", "normal"));
-  PointsUntilNextUnlock.SetHorizAlign(align_left);
+  points_until_next_unlock_.LoadFromFont(THEME->GetPathF("Common", "normal"));
+  points_until_next_unlock_.SetHorizAlign(align_left);
 
   apActorCommands IconCommand = ICON_COMMAND;
   for (unsigned i = 1; i <= NumUnlocks; i++) {
     // get pertaining UnlockEntry
-    const UnlockEntry& entry = UNLOCKMAN->m_UnlockEntries[i - 1];
-    const Song* pSong = entry.m_Song.ToSong();
+    const UnlockEntry& entry = UNLOCKMAN->unlock_entries_[i - 1];
+    const Song* pSong = entry.song_.ToSong();
 
     if (pSong == nullptr) {
       continue;
@@ -82,10 +82,10 @@ void ScreenUnlockStatus::Init() {
     LOAD_ALL_COMMANDS_AND_SET_XY(pSpr);
 
     pSpr->RunCommands(IconCommand);
-    Unlocks.push_back(pSpr);
+    unlocks_.push_back(pSpr);
 
     if (!entry.IsLocked()) {
-      this->AddChild(Unlocks[Unlocks.size() - 1]);
+      this->AddChild(unlocks_[unlocks_.size() - 1]);
     }
   }
 
@@ -115,7 +115,7 @@ void ScreenUnlockStatus::Init() {
     }
 
     for (unsigned i = 1; i <= NumUnlocks; i++) {
-      const UnlockEntry& entry = UNLOCKMAN->m_UnlockEntries[i - 1];
+      const UnlockEntry& entry = UNLOCKMAN->unlock_entries_[i - 1];
 
       BitmapText* text = new BitmapText;
 
@@ -123,9 +123,9 @@ void ScreenUnlockStatus::Init() {
       text->SetHorizAlign(align_left);
       text->SetZoom(ScrollingTextZoom);
 
-      switch (entry.m_Type) {
+      switch (entry.type_) {
         case UnlockRewardType_Song: {
-          const Song* pSong = entry.m_Song.ToSong();
+          const Song* pSong = entry.song_.ToSong();
           ASSERT(pSong != nullptr);
 
           std::string title = pSong->GetDisplayMainTitle();
@@ -137,7 +137,7 @@ void ScreenUnlockStatus::Init() {
           text->SetText(title);
         } break;
         case UnlockRewardType_Course: {
-          const Course* pCourse = entry.m_Course.ToCourse();
+          const Course* pCourse = entry.course_.ToCourse();
           ASSERT(pCourse != nullptr);
 
           text->SetMaxWidth(MaxWidth);
@@ -155,10 +155,10 @@ void ScreenUnlockStatus::Init() {
         text->SetZoomX(1);
       } else {
         // unlocked. change color
-        const Song* pSong = entry.m_Song.ToSong();
+        const Song* pSong = entry.song_.ToSong();
         RageColor color = RageColor(1, 1, 1, 1);
         if (pSong) {
-          color = SONGMAN->GetSongGroupColor(pSong->m_sGroupName);
+          color = SONGMAN->GetSongGroupColor(pSong->group_name_);
         }
         text->SetGlobalDiffuseColor(color);
       }
@@ -197,7 +197,7 @@ void ScreenUnlockStatus::Init() {
         text->RunCommands(ActorUtil::ParseActorCommands(sCommand));
       }
 
-      item.push_back(text);
+      item_.push_back(text);
 
       if (UNLOCK_TEXT_SCROLL >= 2) {
         Sprite* IconCount = new Sprite;
@@ -242,13 +242,13 @@ void ScreenUnlockStatus::Init() {
           IconCount->RunCommands(ActorUtil::ParseActorCommands(sCommand));
         }
 
-        ItemIcons.push_back(IconCount);
+        item_icons_.push_back(IconCount);
 
         // LOG->Trace("Added unlock text %d", i);
 
         if (UNLOCK_TEXT_SCROLL == 3) {
           if (!entry.IsLocked()) {
-            LastUnlocks.push_back(i);
+            last_unlocks_.push_back(i);
           }
         }
       }
@@ -266,14 +266,14 @@ void ScreenUnlockStatus::Init() {
         (float)SecondsToScroll / (ScrollingTextRows * 3 + NumUnlocks + 4);
 
     for (unsigned i = 1; i <= UNLOCK_TEXT_SCROLL_ROWS; i++) {
-      if (i > LastUnlocks.size()) {
+      if (i > last_unlocks_.size()) {
         continue;
       }
 
-      unsigned NextIcon = LastUnlocks[LastUnlocks.size() - i];
+      unsigned NextIcon = last_unlocks_[last_unlocks_.size() - i];
 
-      const UnlockEntry& entry = UNLOCKMAN->m_UnlockEntries[NextIcon - 1];
-      const Song* pSong = entry.m_Song.ToSong();
+      const UnlockEntry& entry = UNLOCKMAN->unlock_entries_[NextIcon - 1];
+      const Song* pSong = entry.song_.ToSong();
       if (pSong == nullptr) {
         continue;
       }
@@ -293,7 +293,7 @@ void ScreenUnlockStatus::Init() {
       NewText->SetMaxWidth(MaxWidth);
       NewText->SetText(title);
 
-      RageColor color = SONGMAN->GetSongGroupColor(pSong->m_sGroupName);
+      RageColor color = SONGMAN->GetSongGroupColor(pSong->group_name_);
       NewText->SetGlobalDiffuseColor(color);
 
       NewText->SetXY(ScrollingTextX, ScrollingTextStartY);
@@ -326,8 +326,8 @@ void ScreenUnlockStatus::Init() {
         NewIcon->RunCommands(ActorUtil::ParseActorCommands(sCommand));
       }
 
-      ItemIcons.push_back(NewIcon);
-      item.push_back(NewText);
+      item_icons_.push_back(NewIcon);
+      item_.push_back(NewText);
     }
   }
 
@@ -337,37 +337,37 @@ void ScreenUnlockStatus::Init() {
   // which is still greater than 0.  By typecasting it as
   // an integer, you can achieve -1, which exits the loop.
 
-  for (int i = item.size() - 1; (int)i >= 0; i--) {
-    this->AddChild(item[i]);
+  for (int i = item_.size() - 1; (int)i >= 0; i--) {
+    this->AddChild(item_[i]);
   }
 
-  for (int i = ItemIcons.size() - 1; (int)i >= 0; i--) {
-    this->AddChild(ItemIcons[i]);
+  for (int i = item_icons_.size() - 1; (int)i >= 0; i--) {
+    this->AddChild(item_icons_[i]);
   }
 
-  PointsUntilNextUnlock.SetName("PointsDisplay");
+  points_until_next_unlock_.SetName("PointsDisplay");
 
   std::string PointDisplay = TYPE_TO_DISPLAY;
   if (PointDisplay == "DP" || PointDisplay == "Dance") {
     std::string sDP = ssprintf(
         "%d",
         (int)UNLOCKMAN->PointsUntilNextUnlock(UnlockRequirement_DancePoints));
-    PointsUntilNextUnlock.SetText(sDP);
+    points_until_next_unlock_.SetText(sDP);
   } else if (PointDisplay == "AP" || PointDisplay == "Arcade") {
     std::string sAP = ssprintf(
         "%d",
         (int)UNLOCKMAN->PointsUntilNextUnlock(UnlockRequirement_ArcadePoints));
-    PointsUntilNextUnlock.SetText(sAP);
+    points_until_next_unlock_.SetText(sAP);
   } else if (PointDisplay == "SP" || PointDisplay == "Song") {
     std::string sSP = ssprintf(
         "%d",
         (int)UNLOCKMAN->PointsUntilNextUnlock(UnlockRequirement_SongPoints));
-    PointsUntilNextUnlock.SetText(sSP);
+    points_until_next_unlock_.SetText(sSP);
   }
 
-  PointsUntilNextUnlock.SetZoom(POINTS_ZOOM);
-  LOAD_ALL_COMMANDS_AND_SET_XY(PointsUntilNextUnlock);
-  this->AddChild(&PointsUntilNextUnlock);
+  points_until_next_unlock_.SetZoom(POINTS_ZOOM);
+  LOAD_ALL_COMMANDS_AND_SET_XY(points_until_next_unlock_);
+  this->AddChild(&points_until_next_unlock_);
 
   this->ClearMessageQueue(
       SM_BeginFadingOut);  // ignore ScreenAttract's SecsToShow
@@ -376,20 +376,20 @@ void ScreenUnlockStatus::Init() {
 }
 
 ScreenUnlockStatus::~ScreenUnlockStatus() {
-  while (Unlocks.size() > 0) {
-    Sprite* entry = Unlocks[Unlocks.size() - 1];
+  while (unlocks_.size() > 0) {
+    Sprite* entry = unlocks_[unlocks_.size() - 1];
     RageUtil::SafeDelete(entry);
-    Unlocks.pop_back();
+    unlocks_.pop_back();
   }
-  while (item.size() > 0) {
-    BitmapText* entry = item[item.size() - 1];
+  while (item_.size() > 0) {
+    BitmapText* entry = item_[item_.size() - 1];
     RageUtil::SafeDelete(entry);
-    item.pop_back();
+    item_.pop_back();
   }
-  while (ItemIcons.size() > 0) {
-    Sprite* entry = ItemIcons[ItemIcons.size() - 1];
+  while (item_icons_.size() > 0) {
+    Sprite* entry = item_icons_[item_icons_.size() - 1];
     RageUtil::SafeDelete(entry);
-    ItemIcons.pop_back();
+    item_icons_.pop_back();
   }
 }
 

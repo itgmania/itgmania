@@ -17,7 +17,7 @@ class ScreenInstallOverlay : public Screen {
  private:
   void UpdateText();
 
-  BitmapText m_textStatus;
+  BitmapText text_status_;
 };
 
 #endif

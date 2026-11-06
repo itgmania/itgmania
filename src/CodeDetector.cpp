@@ -163,7 +163,7 @@ bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
     Code code = (Code)c;
 
     PlayerOptions po =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred();
+        GAMESTATE->player_state_[pn]->player_options_.GetPreferred();
 
     if (EnteredCode(controller, code)) {
       switch (code) {
@@ -189,10 +189,10 @@ bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
           po.NextTransform();
           break;
         case CODE_NEXT_SCROLL_SPEED:
-          INCREMENT_SCROLL_SPEED(po.m_fScrollSpeed);
+          INCREMENT_SCROLL_SPEED(po.scroll_speed_);
           break;
         case CODE_PREVIOUS_SCROLL_SPEED:
-          DECREMENT_SCROLL_SPEED(po.m_fScrollSpeed);
+          DECREMENT_SCROLL_SPEED(po.scroll_speed_);
           break;
         case CODE_NEXT_ACCEL:
           po.NextAccel();
@@ -210,32 +210,30 @@ bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
           po.NextScroll();
           break;
         case CODE_HOLDS:
-          TOGGLE(
-              po.m_bTransforms[PlayerOptions::TRANSFORM_NOHOLDS], true, false);
+          TOGGLE(po.transforms_[PlayerOptions::TRANSFORM_NOHOLDS], true, false);
           break;
         case CODE_MINES:
-          TOGGLE(
-              po.m_bTransforms[PlayerOptions::TRANSFORM_NOMINES], true, false);
+          TOGGLE(po.transforms_[PlayerOptions::TRANSFORM_NOMINES], true, false);
           break;
         case CODE_DARK:
-          FLOAT_TOGGLE(po.m_fDark);
+          FLOAT_TOGGLE(po.dark_);
           break;
         case CODE_CANCEL_ALL:
           GAMESTATE->GetDefaultPlayerOptions(po);
           break;
         case CODE_HIDDEN:
-          ZERO(po.m_fAppearances);
-          po.m_fAppearances[PlayerOptions::APPEARANCE_HIDDEN] = 1;
+          ZERO(po.appearances_);
+          po.appearances_[PlayerOptions::APPEARANCE_HIDDEN] = 1;
           break;
         case CODE_RANDOMVANISH:
-          ZERO(po.m_fAppearances);
-          po.m_fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH] = 1;
+          ZERO(po.appearances_);
+          po.appearances_[PlayerOptions::APPEARANCE_RANDOMVANISH] = 1;
           break;
         default:
           break;
       }
 
-      GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.Assign(
+      GAMESTATE->player_state_[pn]->player_options_.Assign(
           ModsLevel_Preferred, po);
 
       return true;  // don't check any more

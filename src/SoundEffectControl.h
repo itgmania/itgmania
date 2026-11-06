@@ -30,15 +30,15 @@ class SoundEffectControl {
   ThemeMetric<float> PROPERTY_CENTER;
   ThemeMetric<float> PROPERTY_MAX;
 
-  PlayerState* m_pPlayerState;
+  PlayerState* player_state_;
 
-  bool m_bLocked;
+  bool locked_;
 
-  float m_fSample;
-  float m_fLastLevel;
+  float sample_;
+  float last_level_;
 
-  const NoteData* m_pNoteData;
-  RageSoundReader* m_pSoundReader;
+  const NoteData* note_data_;
+  RageSoundReader* sound_reader_;
 };
 
 #endif

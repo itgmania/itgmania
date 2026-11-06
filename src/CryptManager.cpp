@@ -156,7 +156,7 @@ void CryptManager::GenerateRSAKey(
 
   rsa_key key;
   iRet = rsa_make_key(
-      &g_pPRNG->m_PRNG, g_pPRNG->m_iPRNG, keyLength / 8, 65537, &key);
+      &g_pPRNG->prng_, g_pPRNG->i_prng_, keyLength / 8, 65537, &key);
   if (iRet != CRYPT_OK) {
     LOG->Warn("GenerateRSAKey(%i) error: %s", keyLength, error_to_string(iRet));
     return;
@@ -252,7 +252,7 @@ bool CryptManager::Sign(
 
   int iRet = rsa_sign_hash_ex(
       buf_hash, sizeof(buf_hash), signature, &signature_len, LTC_PKCS_1_V1_5,
-      &g_pPRNG->m_PRNG, g_pPRNG->m_iPRNG, iHash, 0, &key.m_Key);
+      &g_pPRNG->prng_, g_pPRNG->i_prng_, iHash, 0, &key.key_);
   if (iRet != CRYPT_OK) {
     LOG->Warn("SignFileToFile error: %s", error_to_string(iRet));
     return false;
@@ -331,7 +331,7 @@ bool CryptManager::Verify(
   int iMatch;
   int iRet = rsa_verify_hash_ex(
       (const unsigned char*)sSignature.data(), sSignature.size(), buf_hash,
-      sizeof(buf_hash), LTC_PKCS_1_EMSA, iHash, 0, &iMatch, &key.m_Key);
+      sizeof(buf_hash), LTC_PKCS_1_EMSA, iHash, 0, &iMatch, &key.key_);
 
   if (iRet != CRYPT_OK) {
     LOG->Warn(
@@ -350,8 +350,8 @@ bool CryptManager::Verify(
 }
 
 void CryptManager::GetRandomBytes(void* pData, int iBytes) {
-  int iRet = prng_descriptor[g_pPRNG->m_iPRNG].read(
-      (unsigned char*)pData, iBytes, &g_pPRNG->m_PRNG);
+  int iRet = prng_descriptor[g_pPRNG->i_prng_].read(
+      (unsigned char*)pData, iBytes, &g_pPRNG->prng_);
   ASSERT(iRet == iBytes);
 }
 

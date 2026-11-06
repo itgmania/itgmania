@@ -70,9 +70,9 @@ static_assert(
 
 class LightsDriver_brokeio : public LightsDriver {
  private:
-  HidDevice dev;
-  uint8_t outputBuffer[BROKEIO_REPORT_MAX];
-  uint8_t prevOutputBuffer[BROKEIO_REPORT_MAX];
+  HidDevice dev_;
+  uint8_t output_buffer_[BROKEIO_REPORT_MAX];
+  uint8_t prev_output_buffer_[BROKEIO_REPORT_MAX];
 
  public:
   LightsDriver_brokeio();

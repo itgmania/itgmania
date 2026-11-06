@@ -21,8 +21,8 @@ REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO, Linux_PIUIO);
 
 LightsDriver_Linux_PIUIO::LightsDriver_Linux_PIUIO() {
   // Open port
-  fd = open("/dev/piuio0", O_WRONLY);
-  if (fd < 0) {
+  fd_ = open("/dev/piuio0", O_WRONLY);
+  if (fd_ < 0) {
     LOG->Warn(
         "Error opening serial port for lights. Error: %d %s", errno,
         strerror(errno));
@@ -32,8 +32,8 @@ LightsDriver_Linux_PIUIO::LightsDriver_Linux_PIUIO() {
 }
 
 LightsDriver_Linux_PIUIO::~LightsDriver_Linux_PIUIO() {
-  if (fd >= 0) {
-    close(fd);
+  if (fd_ >= 0) {
+    close(fd_);
   }
 }
 
@@ -41,80 +41,80 @@ void LightsDriver_Linux_PIUIO::Set(const LightsState* ls) {
   unsigned char buf[8] = {0, 0, 0, 0x08, 0x37, 0, 0, 0};
   static unsigned char oldbuf[8] = {0, 0, 0, 0x08, 0x37, 0, 0, 0};
 
-  if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+  if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
     buf[2] |= 0x80;
   }
-  if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+  if (ls->cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
     buf[3] |= 0x04;
   }
-  if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+  if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
     buf[3] |= 0x02;
   }
-  if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+  if (ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
     buf[3] |= 0x01;
   }
-  if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
-      ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+  if (ls->cabinet_lights_[LIGHT_BASS_LEFT] ||
+      ls->cabinet_lights_[LIGHT_BASS_RIGHT]) {
     buf[1] |= 0x04;
   }
 
-  std::string sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
+  std::string sInput = GAMESTATE->GetCurrentGame()->input_scheme_.name_;
   if (EqualsNoCase(sInput, "dance")) {
-    if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+    if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
       buf[2] |= 0x04;
     }
-    if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+    if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
       buf[2] |= 0x08;
     }
-    if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+    if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
       buf[2] |= 0x10;
     }
-    if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+    if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
       buf[2] |= 0x20;
     }
 
-    if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+    if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
       buf[0] |= 0x04;
     }
-    if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+    if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
       buf[0] |= 0x08;
     }
-    if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+    if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
       buf[0] |= 0x10;
     }
-    if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+    if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
       buf[0] |= 0x20;
     }
   } else if (EqualsNoCase(sInput, "pump")) {
-    if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPLEFT]) {
+    if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_UPLEFT]) {
       buf[0] |= 0x04;
     }
-    if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPRIGHT]) {
+    if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_UPRIGHT]) {
       buf[0] |= 0x08;
     }
-    if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_CENTER]) {
+    if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_CENTER]) {
       buf[0] |= 0x10;
     }
-    if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_DOWNLEFT]) {
+    if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_DOWNLEFT]) {
       buf[0] |= 0x20;
     }
-    if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_DOWNRIGHT]) {
+    if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_DOWNRIGHT]) {
       buf[0] |= 0x40;
     }
 
-    if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPLEFT]) {
+    if (ls->game_button_lights_[GameController_2][PUMP_BUTTON_UPLEFT]) {
       buf[2] |= 0x04;
     }
-    if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPRIGHT]) {
+    if (ls->game_button_lights_[GameController_2][PUMP_BUTTON_UPRIGHT]) {
       buf[2] |= 0x08;
     }
-    if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_CENTER]) {
+    if (ls->game_button_lights_[GameController_2][PUMP_BUTTON_CENTER]) {
       buf[2] |= 0x10;
     }
-    if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNLEFT]) {
+    if (ls->game_button_lights_[GameController_2][PUMP_BUTTON_DOWNLEFT]) {
       buf[2] |= 0x20;
     }
-    if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNRIGHT]) {
+    if (ls->game_button_lights_[GameController_2][PUMP_BUTTON_DOWNRIGHT]) {
       buf[2] |= 0x40;
     }
   }
@@ -123,7 +123,7 @@ void LightsDriver_Linux_PIUIO::Set(const LightsState* ls) {
   }
   memcpy(oldbuf, buf, 8);
 
-  if (write(fd, buf, 8) != 8) {
+  if (write(fd_, buf, 8) != 8) {
     LOG->Warn(
         "Error setting lights state. Error: %d %s", errno, strerror(errno));
     return;

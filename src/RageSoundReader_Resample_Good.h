@@ -35,18 +35,17 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
    * @return the exact rate. */
   float GetRate() const;
 
-  int GetSampleRate() const { return m_iSampleRate; }
+  int GetSampleRate() const { return sample_rate_; }
 
  private:
   void Reset();
   void ReopenResampler();
   void GetFactors(int& iDownFactor, int& iUpFactor) const;
 
-  std::vector<RageSoundResampler_Polyphase*>
-      m_apResamplers; /* one per channel */
+  std::vector<RageSoundResampler_Polyphase*> resamplers_; /* one per channel */
 
-  int m_iSampleRate;
-  float m_fRate;
+  int sample_rate_;
+  float rate_;
 };
 
 #endif

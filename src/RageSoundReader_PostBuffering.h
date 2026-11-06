@@ -19,7 +19,7 @@ class RageSoundReader_PostBuffering : public RageSoundReader_Filter {
   virtual bool SetProperty(const std::string& sProperty, float fValue);
 
  private:
-  float m_fVolume;
+  float volume_;
 };
 
 #endif

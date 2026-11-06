@@ -197,24 +197,24 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
     case DI8DEVTYPE_SCREENPOINTER:
     case DI8DEVTYPE_REMOTE:
     case DI8DEVTYPE_SUPPLEMENTAL: {
-      device.type = device.JOYSTICK;
+      device.type_ = device.JOYSTICK;
       break;
     }
 
     case DI8DEVTYPE_KEYBOARD:
-      device.type = device.KEYBOARD;
+      device.type_ = device.KEYBOARD;
       break;
     case DI8DEVTYPE_MOUSE:
-      device.type = device.MOUSE;
+      device.type_ = device.MOUSE;
       break;
     default:
       LOG->Info("DInput: Unrecognized device ignored.");
       return DIENUM_CONTINUE;
   }
 
-  device.JoystickInst = *pdidInstance;
+  device.joystick_inst_ = *pdidInstance;
 
-  switch (device.type) {
+  switch (device.type_) {
     case DIDevice::JOYSTICK:
       if (g_iNumJoysticks == NUM_JOYSTICKS) {
         return DIENUM_CONTINUE;
@@ -224,16 +224,16 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
         return DIENUM_CONTINUE;
       }
 
-      device.dev = enum_add2(DEVICE_JOY1, g_iNumJoysticks);
+      device.dev_ = enum_add2(DEVICE_JOY1, g_iNumJoysticks);
       g_iNumJoysticks++;
       break;
 
     case DIDevice::KEYBOARD:
-      device.dev = DEVICE_KEYBOARD;
+      device.dev_ = DEVICE_KEYBOARD;
       break;
 
     case DIDevice::MOUSE:
-      device.dev = DEVICE_MOUSE;
+      device.dev_ = DEVICE_MOUSE;
       break;
   }
 
@@ -286,7 +286,7 @@ InputHandler_DInput::InputHandler_DInput() {
 
   CheckForDirectInputDebugMode();
 
-  m_bShutdown = false;
+  shutdown_ = false;
   g_iNumJoysticks = 0;
 
   // find xinput joysticks first
@@ -296,9 +296,9 @@ InputHandler_DInput::InputHandler_DInput() {
 
     if (XInputGetState(i, &state) == ERROR_SUCCESS) {
       XIDevice xdevice;
-      xdevice.m_sName = ssprintf("XInput Device %u", i + 1);
-      xdevice.dev = enum_add2(InputDevice::DEVICE_JOY1, g_iNumJoysticks);
-      xdevice.m_dwXInputSlot = i;
+      xdevice.name_ = ssprintf("XInput Device %u", i + 1);
+      xdevice.dev_ = enum_add2(InputDevice::DEVICE_JOY1, g_iNumJoysticks);
+      xdevice.x_input_slot_ = i;
       g_iNumJoysticks++;
 
       XDevices.push_back(xdevice);
@@ -359,33 +359,33 @@ InputHandler_DInput::InputHandler_DInput() {
   for (unsigned i = 0; i < Devices.size(); ++i) {
     LOG->Info(
         "   %d: '%s' axes: %d, hats: %d, buttons: %d (%s)", i,
-        Devices[i].m_sName.c_str(), Devices[i].axes, Devices[i].hats,
-        Devices[i].buttons, Devices[i].buffered ? "buffered" : "unbuffered");
+        Devices[i].name_.c_str(), Devices[i].axes_, Devices[i].hats_,
+        Devices[i].buttons_, Devices[i].buffered_ ? "buffered" : "unbuffered");
   }
 
-  m_iLastSeenNumHidDevices = GetNumHidDevices();
-  m_iNumTimesLeftToPollForJoysticksChanged = 0;
-  m_iLastSeenNumJoysticks = GetNumJoysticksSlow();
+  last_seen_num_hid_devices_ = GetNumHidDevices();
+  num_times_left_to_poll_for_joysticks_changed_ = 0;
+  last_seen_num_joysticks_ = GetNumJoysticksSlow();
 
   StartThread();
 }
 
 void InputHandler_DInput::StartThread() {
-  ASSERT(!m_InputThread.IsCreated());
-  if (PREFSMAN->m_bThreadedInput) {
-    m_InputThread.SetName("DirectInput thread");
-    m_InputThread.Create(InputThread_Start, this);
+  ASSERT(!input_thread_.IsCreated());
+  if (PREFSMAN->threaded_input_) {
+    input_thread_.SetName("DirectInput thread");
+    input_thread_.Create(InputThread_Start, this);
   }
 }
 
 void InputHandler_DInput::ShutdownThread() {
-  m_bShutdown = true;
-  if (m_InputThread.IsCreated()) {
+  shutdown_ = true;
+  if (input_thread_.IsCreated()) {
     LOG->Trace("Shutting down DirectInput thread ...");
-    m_InputThread.Wait();
+    input_thread_.Wait();
     LOG->Trace("DirectInput thread shut down.");
   }
-  m_bShutdown = false;
+  shutdown_ = false;
 }
 
 InputHandler_DInput::~InputHandler_DInput() {
@@ -407,14 +407,14 @@ void InputHandler_DInput::WindowReset() {
   ShutdownThread();
 
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].type != Devices[i].KEYBOARD) {
+    if (Devices[i].type_ != Devices[i].KEYBOARD) {
       continue;
     }
 
     Devices[i].Close();
 
     // We lose buffered inputs here, so we need to clear all pressed keys.
-    INPUTFILTER->ResetDevice(Devices[i].dev);
+    INPUTFILTER->ResetDevice(Devices[i].dev_);
 
     bool ret = Devices[i].Open();
 
@@ -470,13 +470,13 @@ static HRESULT GetDeviceState(LPDIRECTINPUTDEVICE8 dev, int size, void* ptr) {
 /* This doesn't take a timestamp; instead, we let InputHandler::ButtonPressed
  * figure it out. Be sure to call InputHandler::Update() between each poll. */
 void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
-  switch (device.type) {
+  switch (device.type_) {
     default:
-      FAIL_M(ssprintf("Unsupported DI device type: %i", device.type));
+      FAIL_M(ssprintf("Unsupported DI device type: %i", device.type_));
     case DIDevice::KEYBOARD: {
       unsigned char keys[256];
 
-      HRESULT hr = GetDeviceState(device.Device, 256, keys);
+      HRESULT hr = GetDeviceState(device.device_, 256, keys);
       if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
         return;
       }
@@ -489,28 +489,28 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
       }
 
       for (int k = 0; k < 256; ++k) {
-        const DeviceButton key = (DeviceButton)device.Inputs[k].num;
-        ButtonPressed(DeviceInput(device.dev, key, !!(keys[k] & 0x80)));
+        const DeviceButton key = (DeviceButton)device.inputs_[k].num_;
+        ButtonPressed(DeviceInput(device.dev_, key, !!(keys[k] & 0x80)));
       }
     } break;
     case DIDevice::JOYSTICK: {
       DIJOYSTATE state;
 
-      HRESULT hr = GetDeviceState(device.Device, sizeof(state), &state);
+      HRESULT hr = GetDeviceState(device.device_, sizeof(state), &state);
       if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
         return;
       }
 
       // Set each known axis, button and POV.
-      for (unsigned i = 0; i < device.Inputs.size(); ++i) {
-        const input_t& in = device.Inputs[i];
-        const InputDevice dev = device.dev;
+      for (unsigned i = 0; i < device.inputs_.size(); ++i) {
+        const input_t& in = device.inputs_[i];
+        const InputDevice dev = device.dev_;
 
-        switch (in.type) {
+        switch (in.type_) {
           case input_t::BUTTON: {
             DeviceInput di(
-                dev, enum_add2(JOY_BUTTON_1, in.num),
-                !!state.rgbButtons[in.ofs - DIJOFS_BUTTON0], tm);
+                dev, enum_add2(JOY_BUTTON_1, in.num_),
+                !!state.rgbButtons[in.ofs_ - DIJOFS_BUTTON0], tm);
             ButtonPressed(di);
             break;
           }
@@ -518,35 +518,35 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
           case input_t::AXIS: {
             DeviceButton neg = DeviceButton_Invalid, pos = DeviceButton_Invalid;
             int val = 0;
-            if (in.ofs == DIJOFS_X) {
+            if (in.ofs_ == DIJOFS_X) {
               neg = JOY_LEFT;
               pos = JOY_RIGHT;
               val = state.lX;
-            } else if (in.ofs == DIJOFS_Y) {
+            } else if (in.ofs_ == DIJOFS_Y) {
               neg = JOY_UP;
               pos = JOY_DOWN;
               val = state.lY;
-            } else if (in.ofs == DIJOFS_Z) {
+            } else if (in.ofs_ == DIJOFS_Z) {
               neg = JOY_Z_UP;
               pos = JOY_Z_DOWN;
               val = state.lZ;
-            } else if (in.ofs == DIJOFS_RX) {
+            } else if (in.ofs_ == DIJOFS_RX) {
               neg = JOY_ROT_LEFT;
               pos = JOY_ROT_RIGHT;
               val = state.lRx;
-            } else if (in.ofs == DIJOFS_RY) {
+            } else if (in.ofs_ == DIJOFS_RY) {
               neg = JOY_ROT_UP;
               pos = JOY_ROT_DOWN;
               val = state.lRy;
-            } else if (in.ofs == DIJOFS_RZ) {
+            } else if (in.ofs_ == DIJOFS_RZ) {
               neg = JOY_ROT_Z_UP;
               pos = JOY_ROT_Z_DOWN;
               val = state.lRz;
-            } else if (in.ofs == DIJOFS_SLIDER(0)) {
+            } else if (in.ofs_ == DIJOFS_SLIDER(0)) {
               neg = JOY_AUX_1;
               pos = JOY_AUX_2;
               val = state.rglSlider[0];
-            } else if (in.ofs == DIJOFS_SLIDER(1)) {
+            } else if (in.ofs_ == DIJOFS_SLIDER(1)) {
               neg = JOY_AUX_3;
               pos = JOY_AUX_4;
               val = state.rglSlider[1];
@@ -554,7 +554,7 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
               LOG->MapLog(
                   "unknown input",
                   "Controller '%s' is returning an unknown joystick offset, %i",
-                  device.m_sName.c_str(), in.ofs);
+                  device.name_.c_str(), in.ofs_);
             }
 
             if (neg != DeviceButton_Invalid) {
@@ -567,9 +567,9 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
           }
 
           case input_t::HAT:
-            if (in.num == 0) {
+            if (in.num_ == 0) {
               const int pos =
-                  TranslatePOV(state.rgdwPOV[in.ofs - DIJOFS_POV(0)]);
+                  TranslatePOV(state.rgdwPOV[in.ofs_ - DIJOFS_POV(0)]);
               ButtonPressed(
                   DeviceInput(dev, JOY_HAT_UP, !!(pos & HAT_UP_MASK), tm));
               ButtonPressed(
@@ -588,39 +588,39 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
       // Not 100% perfect (or tested much) yet. -aj
       DIMOUSESTATE state;
 
-      HRESULT hr = GetDeviceState(device.Device, sizeof(state), &state);
+      HRESULT hr = GetDeviceState(device.device_, sizeof(state), &state);
       if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
         return;
       }
 
       // reset mousewheel
-      ButtonPressed(DeviceInput(device.dev, MOUSE_WHEELUP, 0, tm));
-      ButtonPressed(DeviceInput(device.dev, MOUSE_WHEELDOWN, 0, tm));
+      ButtonPressed(DeviceInput(device.dev_, MOUSE_WHEELUP, 0, tm));
+      ButtonPressed(DeviceInput(device.dev_, MOUSE_WHEELDOWN, 0, tm));
 
-      for (unsigned i = 0; i < device.Inputs.size(); ++i) {
-        const input_t& in = device.Inputs[i];
-        const InputDevice dev = device.dev;
+      for (unsigned i = 0; i < device.inputs_.size(); ++i) {
+        const input_t& in = device.inputs_[i];
+        const InputDevice dev = device.dev_;
 
-        switch (in.type) {
+        switch (in.type_) {
           case input_t::BUTTON: {
             DeviceInput di(
-                dev, enum_add2(MOUSE_LEFT, in.num),
-                !!state.rgbButtons[in.ofs - DIMOFS_BUTTON0], tm);
+                dev, enum_add2(MOUSE_LEFT, in.num_),
+                !!state.rgbButtons[in.ofs_ - DIMOFS_BUTTON0], tm);
             ButtonPressed(di);
             break;
           }
           case input_t::AXIS: {
             DeviceButton neg = DeviceButton_Invalid, pos = DeviceButton_Invalid;
             int val = 0;
-            if (in.ofs == DIMOFS_X) {
+            if (in.ofs_ == DIMOFS_X) {
               neg = MOUSE_X_LEFT;
               pos = MOUSE_X_RIGHT;
               val = state.lX;
-            } else if (in.ofs == DIMOFS_Y) {
+            } else if (in.ofs_ == DIMOFS_Y) {
               neg = MOUSE_Y_UP;
               pos = MOUSE_Y_DOWN;
               val = state.lY;
-            } else if (in.ofs == DIMOFS_Z) {
+            } else if (in.ofs_ == DIMOFS_Z) {
               neg = MOUSE_WHEELDOWN;
               pos = MOUSE_WHEELUP;
               val = state.lZ;
@@ -643,7 +643,7 @@ void InputHandler_DInput::UpdatePolled(DIDevice& device, const RageTimer& tm) {
               LOG->MapLog(
                   "unknown input",
                   "Mouse '%s' is returning an unknown mouse offset, %i",
-                  device.m_sName.c_str(), in.ofs);
+                  device.name_.c_str(), in.ofs_);
             }
             break;
           }
@@ -659,10 +659,10 @@ void InputHandler_DInput::UpdateBuffered(
   DIDEVICEOBJECTDATA evtbuf[INPUT_QSIZE];
 
   numevents = INPUT_QSIZE;
-  HRESULT hr = device.Device->GetDeviceData(
+  HRESULT hr = device.device_->GetDeviceData(
       sizeof(DIDEVICEOBJECTDATA), evtbuf, &numevents, 0);
   if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
-    INPUTFILTER->ResetDevice(device.dev);
+    INPUTFILTER->ResetDevice(device.dev_);
     return;
   }
 
@@ -675,50 +675,50 @@ void InputHandler_DInput::UpdateBuffered(
 
   if (GetForegroundWindow() != GraphicsWindow::GetHwnd()) {
     // Discard input when not focused, and release all keys.
-    INPUTFILTER->ResetDevice(device.dev);
+    INPUTFILTER->ResetDevice(device.dev_);
     return;
   }
 
   // reset mousewheel
-  ButtonPressed(DeviceInput(device.dev, MOUSE_WHEELUP, 0.0f, tm));
-  ButtonPressed(DeviceInput(device.dev, MOUSE_WHEELDOWN, 0.0f, tm));
+  ButtonPressed(DeviceInput(device.dev_, MOUSE_WHEELUP, 0.0f, tm));
+  ButtonPressed(DeviceInput(device.dev_, MOUSE_WHEELDOWN, 0.0f, tm));
 
   for (int i = 0; i < (int)numevents; ++i) {
-    for (unsigned j = 0; j < device.Inputs.size(); ++j) {
-      const input_t& in = device.Inputs[j];
-      const InputDevice dev = device.dev;
+    for (unsigned j = 0; j < device.inputs_.size(); ++j) {
+      const input_t& in = device.inputs_[j];
+      const InputDevice dev = device.dev_;
 
-      if (evtbuf[i].dwOfs != in.ofs) {
+      if (evtbuf[i].dwOfs != in.ofs_) {
         continue;
       }
 
-      switch (in.type) {
+      switch (in.type_) {
         case input_t::KEY:
           ButtonPressed(DeviceInput(
-              dev, (DeviceButton)in.num, !!(evtbuf[i].dwData & 0x80), tm));
+              dev, (DeviceButton)in.num_, !!(evtbuf[i].dwData & 0x80), tm));
           break;
 
         case input_t::BUTTON:
           if (dev == DEVICE_MOUSE) {
             DeviceButton mouseInput = DeviceButton_Invalid;
 
-            if (in.ofs == DIMOFS_BUTTON0) {
+            if (in.ofs_ == DIMOFS_BUTTON0) {
               mouseInput = MOUSE_LEFT;
-            } else if (in.ofs == DIMOFS_BUTTON1) {
+            } else if (in.ofs_ == DIMOFS_BUTTON1) {
               mouseInput = MOUSE_RIGHT;
-            } else if (in.ofs == DIMOFS_BUTTON2) {
+            } else if (in.ofs_ == DIMOFS_BUTTON2) {
               mouseInput = MOUSE_MIDDLE;
             } else {
               LOG->MapLog(
                   "unknown input",
                   "Mouse '%s' is returning an unknown mouse offset [button], "
                   "%i",
-                  device.m_sName.c_str(), in.ofs);
+                  device.name_.c_str(), in.ofs_);
             }
             ButtonPressed(DeviceInput(dev, mouseInput, !!evtbuf[i].dwData, tm));
           } else {
             ButtonPressed(DeviceInput(
-                dev, enum_add2(JOY_BUTTON_1, in.num), !!evtbuf[i].dwData, tm));
+                dev, enum_add2(JOY_BUTTON_1, in.num_), !!evtbuf[i].dwData, tm));
           }
           break;
 
@@ -731,13 +731,13 @@ void InputHandler_DInput::UpdateBuffered(
             // convert screen coordinates to client
             ScreenToClient(GraphicsWindow::GetHwnd(), &cursorPos);
 
-            if (in.ofs == DIMOFS_X) {
+            if (in.ofs_ == DIMOFS_X) {
               INPUTFILTER->UpdateCursorLocation(
                   (float)cursorPos.x, (float)cursorPos.y);
-            } else if (in.ofs == DIMOFS_Y) {
+            } else if (in.ofs_ == DIMOFS_Y) {
               INPUTFILTER->UpdateCursorLocation(
                   (float)cursorPos.x, (float)cursorPos.y);
-            } else if (in.ofs == DIMOFS_Z) {
+            } else if (in.ofs_ == DIMOFS_Z) {
               // positive values: WheelUp
               // negative values: WheelDown
               INPUTFILTER->UpdateMouseWheel(l);
@@ -784,39 +784,39 @@ void InputHandler_DInput::UpdateBuffered(
               LOG->MapLog(
                   "unknown input",
                   "Mouse '%s' is returning an unknown mouse offset [axis], %i",
-                  device.m_sName.c_str(), in.ofs);
+                  device.name_.c_str(), in.ofs_);
             }
           } else {
             // joystick
-            if (in.ofs == DIJOFS_X) {
+            if (in.ofs_ == DIJOFS_X) {
               up = JOY_LEFT;
               down = JOY_RIGHT;
-            } else if (in.ofs == DIJOFS_Y) {
+            } else if (in.ofs_ == DIJOFS_Y) {
               up = JOY_UP;
               down = JOY_DOWN;
-            } else if (in.ofs == DIJOFS_Z) {
+            } else if (in.ofs_ == DIJOFS_Z) {
               up = JOY_Z_UP;
               down = JOY_Z_DOWN;
-            } else if (in.ofs == DIJOFS_RX) {
+            } else if (in.ofs_ == DIJOFS_RX) {
               up = JOY_ROT_UP;
               down = JOY_ROT_DOWN;
-            } else if (in.ofs == DIJOFS_RY) {
+            } else if (in.ofs_ == DIJOFS_RY) {
               up = JOY_ROT_LEFT;
               down = JOY_ROT_RIGHT;
-            } else if (in.ofs == DIJOFS_RZ) {
+            } else if (in.ofs_ == DIJOFS_RZ) {
               up = JOY_ROT_Z_UP;
               down = JOY_ROT_Z_DOWN;
-            } else if (in.ofs == DIJOFS_SLIDER(0)) {
+            } else if (in.ofs_ == DIJOFS_SLIDER(0)) {
               up = JOY_AUX_1;
               down = JOY_AUX_2;
-            } else if (in.ofs == DIJOFS_SLIDER(1)) {
+            } else if (in.ofs_ == DIJOFS_SLIDER(1)) {
               up = JOY_AUX_3;
               down = JOY_AUX_4;
             } else {
               LOG->MapLog(
                   "unknown input",
                   "Controller '%s' is returning an unknown joystick offset, %i",
-                  device.m_sName.c_str(), in.ofs);
+                  device.name_.c_str(), in.ofs_);
             }
 
             float l = SCALE(int(evtbuf[i].dwData), 0.0f, 100.0f, 0.0f, 1.0f);
@@ -856,7 +856,7 @@ inline constexpr short XINPUT_GAMEPAD_THUMB_MAX =
 void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
   XINPUT_STATE state;
   ZeroMemory(&state, sizeof(XINPUT_STATE));
-  if (XInputGetState(device.m_dwXInputSlot, &state) == ERROR_SUCCESS) {
+  if (XInputGetState(device.x_input_slot_, &state) == ERROR_SUCCESS) {
     // map joysticks
     float lx = 0.f;
     float ly = 0.f;
@@ -871,10 +871,10 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
           state.Gamepad.sThumbLY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
           XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
     }
-    ButtonPressed(DeviceInput(device.dev, JOY_LEFT, std::max(-lx, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, std::max(+lx, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_UP, std::max(+ly, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_DOWN, std::max(-ly, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_LEFT, std::max(-lx, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_RIGHT, std::max(+lx, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_UP, std::max(+ly, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_DOWN, std::max(-ly, 0.f), tm));
 
     float rx = 0.f;
     float ry = 0.f;
@@ -889,89 +889,90 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
           state.Gamepad.sThumbRY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
           XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
     }
-    ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, std::max(-rx, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, std::max(+rx, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_UP_2, std::max(+ry, 0.f), tm));
-    ButtonPressed(DeviceInput(device.dev, JOY_DOWN_2, std::max(-ry, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_LEFT_2, std::max(-rx, 0.f), tm));
+    ButtonPressed(
+        DeviceInput(device.dev_, JOY_RIGHT_2, std::max(+rx, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_UP_2, std::max(+ry, 0.f), tm));
+    ButtonPressed(DeviceInput(device.dev_, JOY_DOWN_2, std::max(-ry, 0.f), tm));
 
     // map buttons
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_1, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_A),
-        tm));
+        device.dev_, JOY_BUTTON_1,
+        !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_A), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_2, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_B),
-        tm));
+        device.dev_, JOY_BUTTON_2,
+        !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_B), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_3, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_X),
-        tm));
+        device.dev_, JOY_BUTTON_3,
+        !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_X), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_4, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_Y),
-        tm));
+        device.dev_, JOY_BUTTON_4,
+        !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_Y), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_5,
+        device.dev_, JOY_BUTTON_5,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_START), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_6,
+        device.dev_, JOY_BUTTON_6,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_7,
+        device.dev_, JOY_BUTTON_7,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_8,
+        device.dev_, JOY_BUTTON_8,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_9,
+        device.dev_, JOY_BUTTON_9,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_10,
+        device.dev_, JOY_BUTTON_10,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER), tm));
 
     // map triggers to buttons
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_11,
+        device.dev_, JOY_BUTTON_11,
         !!(state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_BUTTON_12,
+        device.dev_, JOY_BUTTON_12,
         !!(state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD),
         tm));
 
     // map hat buttons
     ButtonPressed(DeviceInput(
-        device.dev, JOY_HAT_UP,
+        device.dev_, JOY_HAT_UP,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_HAT_DOWN,
+        device.dev_, JOY_HAT_DOWN,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_HAT_LEFT,
+        device.dev_, JOY_HAT_LEFT,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), tm));
     ButtonPressed(DeviceInput(
-        device.dev, JOY_HAT_RIGHT,
+        device.dev_, JOY_HAT_RIGHT,
         !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), tm));
   } else {
-    INPUTFILTER->ResetDevice(device.dev);
+    INPUTFILTER->ResetDevice(device.dev_);
     return;
   }
 }
 
 void InputHandler_DInput::PollAndAcquireDevices(bool bBuffered) {
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].buffered != bBuffered) {
+    if (Devices[i].buffered_ != bBuffered) {
       continue;
     }
 
-    HRESULT hr = Devices[i].Device->Poll();
+    HRESULT hr = Devices[i].device_->Poll();
     if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
-      INPUTFILTER->ResetDevice(Devices[i].dev);
+      INPUTFILTER->ResetDevice(Devices[i].dev_);
 
       /* This will fail with "access denied" on the keyboard if we don't
        * have focus. */
-      hr = Devices[i].Device->Acquire();
+      hr = Devices[i].device_->Acquire();
       if (hr != DI_OK) {
         continue;
       }
 
-      Devices[i].Device->Poll();
+      Devices[i].device_->Poll();
     }
   }
 }
@@ -980,7 +981,7 @@ void InputHandler_DInput::Update() {
   // Handle polled devices. Handle buffered, too, if there's no input thread to
   // do it.
   PollAndAcquireDevices(false);
-  if (!m_InputThread.IsCreated()) {
+  if (!input_thread_.IsCreated()) {
     PollAndAcquireDevices(true);
   }
 
@@ -989,9 +990,9 @@ void InputHandler_DInput::Update() {
   }
 
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered) {
+    if (!Devices[i].buffered_) {
       UpdatePolled(Devices[i], RageZeroTimer);
-    } else if (!m_InputThread.IsCreated()) {
+    } else if (!input_thread_.IsCreated()) {
       // If we have an input thread, it'll handle buffered devices.
       UpdateBuffered(Devices[i], RageZeroTimer);
     }
@@ -1018,27 +1019,27 @@ bool InputHandler_DInput::DevicesChanged() {
    * to use don't prompt for a driver though, and the wizard adds them pretty
    * quickly. */
 
-  int iOldNumHidDevices = m_iLastSeenNumHidDevices;
-  m_iLastSeenNumHidDevices = GetNumHidDevices();
-  if (iOldNumHidDevices != m_iLastSeenNumHidDevices) {
+  int iOldNumHidDevices = last_seen_num_hid_devices_;
+  last_seen_num_hid_devices_ = GetNumHidDevices();
+  if (iOldNumHidDevices != last_seen_num_hid_devices_) {
     LOG->Warn("HID devices changes");
-    m_iNumTimesLeftToPollForJoysticksChanged =
+    num_times_left_to_poll_for_joysticks_changed_ =
         (int)(POLL_FOR_JOYSTICK_CHANGES_LENGTH_SECONDS /
               POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS);
   }
 
-  if (m_iNumTimesLeftToPollForJoysticksChanged > 0) {
+  if (num_times_left_to_poll_for_joysticks_changed_ > 0) {
     static RageTimer timerPollJoysticks;
     if (timerPollJoysticks.Ago() >= POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS) {
-      m_iNumTimesLeftToPollForJoysticksChanged--;
+      num_times_left_to_poll_for_joysticks_changed_--;
       timerPollJoysticks.Touch();
       LOG->Warn("polling for joystick changes");
 
-      int iOldNumJoysticks = m_iLastSeenNumJoysticks;
-      m_iLastSeenNumJoysticks = GetNumJoysticksSlow();
-      if (iOldNumJoysticks != m_iLastSeenNumJoysticks) {
+      int iOldNumJoysticks = last_seen_num_joysticks_;
+      last_seen_num_joysticks_ = GetNumJoysticksSlow();
+      if (iOldNumJoysticks != last_seen_num_joysticks_) {
         LOG->Warn("joysticks changed");
-        m_iNumTimesLeftToPollForJoysticksChanged = 0;
+        num_times_left_to_poll_for_joysticks_changed_ = 0;
         return true;
       }
     }
@@ -1060,21 +1061,21 @@ void InputHandler_DInput::InputThreadMain() {
   std::vector<DIDevice*> BufferedDevices;
   HANDLE Handle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered) {
+    if (!Devices[i].buffered_) {
       continue;
     }
 
     BufferedDevices.push_back(&Devices[i]);
 
-    Devices[i].Device->Unacquire();
-    HRESULT hr = Devices[i].Device->SetEventNotification(Handle);
+    Devices[i].device_->Unacquire();
+    HRESULT hr = Devices[i].device_->SetEventNotification(Handle);
     if (FAILED(hr)) {
       LOG->Warn("IDirectInputDevice2_SetEventNotification failed on %i", i);
     }
-    Devices[i].Device->Acquire();
+    Devices[i].device_->Acquire();
   }
 
-  while (!m_bShutdown) {
+  while (!shutdown_) {
     CHECKPOINT;
     if (BufferedDevices.size()) {
       // Update buffered devices.
@@ -1106,12 +1107,12 @@ void InputHandler_DInput::InputThreadMain() {
   CHECKPOINT;
 
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered) {
+    if (!Devices[i].buffered_) {
       continue;
     }
 
-    Devices[i].Device->Unacquire();
-    Devices[i].Device->SetEventNotification(nullptr);
+    Devices[i].device_->Unacquire();
+    Devices[i].device_->SetEventNotification(nullptr);
   }
 
   CloseHandle(Handle);
@@ -1120,12 +1121,11 @@ void InputHandler_DInput::InputThreadMain() {
 void InputHandler_DInput::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
   for (unsigned i = 0; i < XDevices.size(); ++i) {
-    vDevicesOut.push_back(
-        InputDeviceInfo(XDevices[i].dev, XDevices[i].m_sName));
+    vDevicesOut.push_back(InputDeviceInfo(XDevices[i].dev_, XDevices[i].name_));
   }
 
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    vDevicesOut.push_back(InputDeviceInfo(Devices[i].dev, Devices[i].m_sName));
+    vDevicesOut.push_back(InputDeviceInfo(Devices[i].dev_, Devices[i].name_));
   }
 }
 
@@ -1179,12 +1179,12 @@ wchar_t InputHandler_DInput::DeviceButtonToChar(
   }
 
   for (const DIDevice& d : Devices) {
-    if (d.type != DIDevice::KEYBOARD) {
+    if (d.type_ != DIDevice::KEYBOARD) {
       continue;
     }
 
-    for (const input_t& i : d.Inputs) {
-      if (button != i.num) {
+    for (const input_t& i : d.inputs_) {
+      if (button != i.num_) {
         continue;
       }
 
@@ -1194,7 +1194,7 @@ wchar_t InputHandler_DInput::DeviceButtonToChar(
         GetKeyboardState(keys);
       }
       // todo: handle Caps Lock -freem
-      wchar_t c = ScancodeAndKeysToChar(i.ofs, keys);
+      wchar_t c = ScancodeAndKeysToChar(i.ofs_, keys);
       if (c) {
         return c;
       }

@@ -12,13 +12,13 @@ void RageColor::PushTable(lua_State* L) const {
   lua_newtable(L);
   int iTable = lua_gettop(L);
 
-  lua_pushnumber(L, r);
+  lua_pushnumber(L, r_);
   lua_rawseti(L, iTable, 1);
-  lua_pushnumber(L, g);
+  lua_pushnumber(L, g_);
   lua_rawseti(L, iTable, 2);
-  lua_pushnumber(L, b);
+  lua_pushnumber(L, b_);
   lua_rawseti(L, iTable, 3);
-  lua_pushnumber(L, a);
+  lua_pushnumber(L, a_);
   lua_rawseti(L, iTable, 4);
 }
 
@@ -31,13 +31,13 @@ void RageColor::FromStack(lua_State* L, int iPos) {
   int iFrom = lua_gettop(L);
 
   lua_rawgeti(L, iFrom, 1);
-  r = (float)lua_tonumber(L, -1);
+  r_ = (float)lua_tonumber(L, -1);
   lua_rawgeti(L, iFrom, 2);
-  g = (float)lua_tonumber(L, -1);
+  g_ = (float)lua_tonumber(L, -1);
   lua_rawgeti(L, iFrom, 3);
-  b = (float)lua_tonumber(L, -1);
+  b_ = (float)lua_tonumber(L, -1);
   lua_rawgeti(L, iFrom, 4);
-  a = (float)lua_tonumber(L, -1);
+  a_ = (float)lua_tonumber(L, -1);
   lua_pop(L, 5);
 }
 
@@ -45,18 +45,18 @@ void RageColor::FromStackCompat(lua_State* L, int iPos) {
   if (lua_type(L, iPos) == LUA_TTABLE) {
     FromStack(L, iPos);
   } else {
-    r = FArg(iPos + 0);
-    g = FArg(iPos + 1);
-    b = FArg(iPos + 2);
-    a = FArg(iPos + 3);
+    r_ = FArg(iPos + 0);
+    g_ = FArg(iPos + 1);
+    b_ = FArg(iPos + 2);
+    a_ = FArg(iPos + 3);
   }
 }
 
 std::string RageColor::ToString() const {
-  int iR = std::clamp(static_cast<int>(std::lrint(r * 255)), 0, 255);
-  int iG = std::clamp(static_cast<int>(std::lrint(g * 255)), 0, 255);
-  int iB = std::clamp(static_cast<int>(std::lrint(b * 255)), 0, 255);
-  int iA = std::clamp(static_cast<int>(std::lrint(a * 255)), 0, 255);
+  int iR = std::clamp(static_cast<int>(std::lrint(r_ * 255)), 0, 255);
+  int iG = std::clamp(static_cast<int>(std::lrint(g_ * 255)), 0, 255);
+  int iB = std::clamp(static_cast<int>(std::lrint(b_ * 255)), 0, 255);
+  int iA = std::clamp(static_cast<int>(std::lrint(a_ * 255)), 0, 255);
 
   if (iA == 255) {
     return ssprintf("#%02X%02X%02X", iR, iG, iB);
@@ -78,22 +78,22 @@ std::string RageColor::NormalizeColorString(std::string sColor) {
 
 void lerp_rage_color(
     RageColor& out, const RageColor& a, const RageColor& b, float t) {
-  out.b = lerp(t, a.b, b.b);
-  out.g = lerp(t, a.g, b.g);
-  out.r = lerp(t, a.r, b.r);
-  out.a = lerp(t, a.a, b.a);
+  out.b_ = lerp(t, a.b_, b.b_);
+  out.g_ = lerp(t, a.g_, b.g_);
+  out.r_ = lerp(t, a.r_, b.r_);
+  out.a_ = lerp(t, a.a_, b.a_);
 }
 
 void WeightedAvergeOfRSVs(
     RageSpriteVertex& average_out, const RageSpriteVertex& rsv1,
     const RageSpriteVertex& rsv2, float percent_between) {
-  average_out.p = lerp(percent_between, rsv1.p, rsv2.p);
-  average_out.n = lerp(percent_between, rsv1.n, rsv2.n);
-  average_out.c.b = lerp(percent_between, rsv1.c.b, rsv2.c.b);
-  average_out.c.g = lerp(percent_between, rsv1.c.g, rsv2.c.g);
-  average_out.c.r = lerp(percent_between, rsv1.c.r, rsv2.c.r);
-  average_out.c.a = lerp(percent_between, rsv1.c.a, rsv2.c.a);
-  average_out.t = lerp(percent_between, rsv1.t, rsv2.t);
+  average_out.p_ = lerp(percent_between, rsv1.p_, rsv2.p_);
+  average_out.n_ = lerp(percent_between, rsv1.n_, rsv2.n_);
+  average_out.c_.b_ = lerp(percent_between, rsv1.c_.b_, rsv2.c_.b_);
+  average_out.c_.g_ = lerp(percent_between, rsv1.c_.g_, rsv2.c_.g_);
+  average_out.c_.r_ = lerp(percent_between, rsv1.c_.r_, rsv2.c_.r_);
+  average_out.c_.a_ = lerp(percent_between, rsv1.c_.a_, rsv2.c_.a_);
+  average_out.t_ = lerp(percent_between, rsv1.t_, rsv2.t_);
 }
 
 /** @brief Utilities for working with Lua. */

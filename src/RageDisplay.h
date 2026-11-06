@@ -42,28 +42,28 @@ class RageCompiledGeometry {
 
  protected:
   size_t GetTotalVertices() const {
-    if (m_vMeshInfo.empty()) {
+    if (mesh_info_.empty()) {
       return 0;
     }
-    return m_vMeshInfo.back().iVertexStart + m_vMeshInfo.back().iVertexCount;
+    return mesh_info_.back().vertex_start_ + mesh_info_.back().vertex_count_;
   }
   size_t GetTotalTriangles() const {
-    if (m_vMeshInfo.empty()) {
+    if (mesh_info_.empty()) {
       return 0;
     }
-    return m_vMeshInfo.back().iTriangleStart +
-           m_vMeshInfo.back().iTriangleCount;
+    return mesh_info_.back().triangle_start_ +
+           mesh_info_.back().triangle_count_;
   }
 
   struct MeshInfo {
-    int iVertexStart;
-    int iVertexCount;
-    int iTriangleStart;
-    int iTriangleCount;
-    bool m_bNeedsTextureMatrixScale;
+    int vertex_start_;
+    int vertex_count_;
+    int triangle_start_;
+    int triangle_count_;
+    bool needs_texture_matrix_scale_;
   };
-  std::vector<MeshInfo> m_vMeshInfo;
-  bool m_bAnyNeedsTextureMatrixScale;
+  std::vector<MeshInfo> mesh_info_;
+  bool any_needs_texture_matrix_scale_;
 };
 
 enum RagePixelFormat {
@@ -96,63 +96,63 @@ class VideoModeParams {
       bool bTrilinearFiltering_, bool bAnisotropicFiltering_,
       bool bWindowIsFullscreenBorderless_, std::string sWindowTitle_,
       std::string sIconFile_, bool PAL_, float fDisplayAspectRatio_)
-      : windowed(windowed_),
-        sDisplayId(sDisplayId_),
-        width(width_),
-        height(height_),
-        bpp(bpp_),
-        rate(rate_),
-        vsync(vsync_),
-        interlaced(interlaced_),
-        bSmoothLines(bSmoothLines_),
-        bTrilinearFiltering(bTrilinearFiltering_),
-        bAnisotropicFiltering(bAnisotropicFiltering_),
-        bWindowIsFullscreenBorderless(bWindowIsFullscreenBorderless_),
-        sWindowTitle(sWindowTitle_),
-        sIconFile(sIconFile_),
-        PAL(PAL_),
-        fDisplayAspectRatio(fDisplayAspectRatio_) {}
+      : windowed_(windowed_),
+        display_id_(sDisplayId_),
+        width_(width_),
+        height_(height_),
+        bpp_(bpp_),
+        rate_(rate_),
+        vsync_(vsync_),
+        interlaced_(interlaced_),
+        smooth_lines_(bSmoothLines_),
+        trilinear_filtering_(bTrilinearFiltering_),
+        anisotropic_filtering_(bAnisotropicFiltering_),
+        window_is_fullscreen_borderless_(bWindowIsFullscreenBorderless_),
+        window_title_(sWindowTitle_),
+        icon_file_(sIconFile_),
+        pal_(PAL_),
+        display_aspect_ratio_(fDisplayAspectRatio_) {}
 
   VideoModeParams(const VideoModeParams& other) = default;
 
   VideoModeParams()
-      : windowed(false),
-        width(0),
-        height(0),
-        bpp(0),
-        rate(0),
-        vsync(false),
-        interlaced(false),
-        bSmoothLines(false),
-        bTrilinearFiltering(false),
-        bAnisotropicFiltering(false),
-        bWindowIsFullscreenBorderless(false),
-        sWindowTitle(std::string()),
-        sIconFile(std::string()),
-        PAL(false),
-        fDisplayAspectRatio(0.0f) {}
+      : windowed_(false),
+        width_(0),
+        height_(0),
+        bpp_(0),
+        rate_(0),
+        vsync_(false),
+        interlaced_(false),
+        smooth_lines_(false),
+        trilinear_filtering_(false),
+        anisotropic_filtering_(false),
+        window_is_fullscreen_borderless_(false),
+        window_title_(std::string()),
+        icon_file_(std::string()),
+        pal_(false),
+        display_aspect_ratio_(0.0f) {}
 
   // Subclassing VideoModeParams in ActualVideoModeParams. Make destructor
   // virtual just in case someone tries to delete one of those through a pointer
   // to base...
   virtual ~VideoModeParams() = default;
 
-  bool windowed;
-  std::string sDisplayId;
-  int width;
-  int height;
-  int bpp;
-  int rate;
-  bool vsync;
-  bool interlaced;
-  bool bSmoothLines;
-  bool bTrilinearFiltering;
-  bool bAnisotropicFiltering;
-  bool bWindowIsFullscreenBorderless;
-  std::string sWindowTitle;
-  std::string sIconFile;
-  bool PAL;
-  float fDisplayAspectRatio;
+  bool windowed_;
+  std::string display_id_;
+  int width_;
+  int height_;
+  int bpp_;
+  int rate_;
+  bool vsync_;
+  bool interlaced_;
+  bool smooth_lines_;
+  bool trilinear_filtering_;
+  bool anisotropic_filtering_;
+  bool window_is_fullscreen_borderless_;
+  std::string window_title_;
+  std::string icon_file_;
+  bool pal_;
+  float display_aspect_ratio_;
 };
 
 /**
@@ -164,21 +164,21 @@ class ActualVideoModeParams : public VideoModeParams {
  public:
   ActualVideoModeParams()
       : VideoModeParams(),
-        windowWidth(0),
-        windowHeight(0),
-        renderOffscreen(false) {}
+        window_width_(0),
+        window_height_(0),
+        render_offscreen_(false) {}
   ActualVideoModeParams(const VideoModeParams& params)
       : VideoModeParams(params),
-        windowWidth(params.width),
-        windowHeight(params.height),
-        renderOffscreen(false) {}
+        window_width_(params.width_),
+        window_height_(params.height_),
+        render_offscreen_(false) {}
   ActualVideoModeParams(
       const VideoModeParams& params, int windowWidth, int windowHeight,
       bool renderOffscreen)
       : VideoModeParams(params),
-        windowWidth(windowWidth),
-        windowHeight(windowHeight),
-        renderOffscreen(renderOffscreen) {}
+        window_width_(windowWidth),
+        window_height_(windowHeight),
+        render_offscreen_(renderOffscreen) {}
   ActualVideoModeParams(const ActualVideoModeParams& other) = default;
   ActualVideoModeParams& operator=(const ActualVideoModeParams& other) =
       default;
@@ -186,25 +186,25 @@ class ActualVideoModeParams : public VideoModeParams {
   // If bWindowIsFullscreenBorderless is true,
   // then these properties will differ from width/height (which describe the
   // render size)
-  int windowWidth;
-  int windowHeight;
-  bool renderOffscreen;
+  int window_width_;
+  int window_height_;
+  bool render_offscreen_;
 };
 
 struct RenderTargetParam {
   RenderTargetParam()
-      : iWidth(0),
-        iHeight(0),
-        bWithDepthBuffer(false),
-        bWithAlpha(false),
-        bFloat(false) {}
+      : width_(0),
+        height_(0),
+        with_depth_buffer_(false),
+        with_alpha_(false),
+        float_(false) {}
 
   // The dimensions of the actual render target, analogous to a window size:
-  int iWidth, iHeight;
+  int width_, height_;
 
-  bool bWithDepthBuffer;
-  bool bWithAlpha;
-  bool bFloat;
+  bool with_depth_buffer_;
+  bool with_alpha_;
+  bool float_;
 };
 
 struct RageTextureLock {
@@ -224,8 +224,8 @@ class RageDisplay {
 
  public:
   struct RagePixelFormatDesc {
-    int bpp;
-    unsigned int masks[4];
+    int bpp_;
+    unsigned int masks_[4];
   };
 
   virtual const RagePixelFormatDesc* GetPixelFormatDesc(
@@ -423,7 +423,7 @@ class RageDisplay {
   void TexturePopMatrix();
   void TextureTranslate(float x, float y);
   void TextureTranslate(const RageVector2& v) {
-    this->TextureTranslate(v.x, v.y);
+    this->TextureTranslate(v.x_, v.y_);
   }
 
   // Projection and View matrix stack functions.

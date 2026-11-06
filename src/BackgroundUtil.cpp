@@ -18,47 +18,47 @@
 #include "global.h"
 
 bool BackgroundDef::operator<(const BackgroundDef& other) const {
-  if (m_sEffect != other.m_sEffect) {
-    return m_sEffect < other.m_sEffect;
+  if (effect_ != other.effect_) {
+    return effect_ < other.effect_;
   }
-  if (m_sFile1 != other.m_sFile1) {
-    return m_sFile1 < other.m_sFile1;
+  if (file1_ != other.file1_) {
+    return file1_ < other.file1_;
   }
-  if (m_sFile2 != other.m_sFile2) {
-    return m_sFile2 < other.m_sFile2;
+  if (file2_ != other.file2_) {
+    return file2_ < other.file2_;
   }
-  if (m_sColor1 != other.m_sColor1) {
-    return m_sColor1 < other.m_sColor1;
+  if (color1_ != other.color1_) {
+    return color1_ < other.color1_;
   }
-  if (m_sColor2 != other.m_sColor2) {
-    return m_sColor2 < other.m_sColor2;
+  if (color2_ != other.color2_) {
+    return color2_ < other.color2_;
   }
   return false;
 }
 
 bool BackgroundDef::operator==(const BackgroundDef& other) const {
-  return m_sEffect == other.m_sEffect && m_sFile1 == other.m_sFile1 &&
-         m_sFile2 == other.m_sFile2 && m_sColor1 == other.m_sColor1 &&
-         m_sColor2 == other.m_sColor2;
+  return effect_ == other.effect_ && file1_ == other.file1_ &&
+         file2_ == other.file2_ && color1_ == other.color1_ &&
+         color2_ == other.color2_;
 }
 
 XNode* BackgroundDef::CreateNode() const {
   XNode* pNode = new XNode("BackgroundDef");
 
-  if (!m_sEffect.empty()) {
-    pNode->AppendAttr("Effect", m_sEffect);
+  if (!effect_.empty()) {
+    pNode->AppendAttr("Effect", effect_);
   }
-  if (!m_sFile1.empty()) {
-    pNode->AppendAttr("File1", m_sFile1);
+  if (!file1_.empty()) {
+    pNode->AppendAttr("File1", file1_);
   }
-  if (!m_sFile2.empty()) {
-    pNode->AppendAttr("File2", m_sFile2);
+  if (!file2_.empty()) {
+    pNode->AppendAttr("File2", file2_);
   }
-  if (!m_sColor1.empty()) {
-    pNode->AppendAttr("Color1", m_sColor1);
+  if (!color1_.empty()) {
+    pNode->AppendAttr("Color1", color1_);
   }
-  if (!m_sColor2.empty()) {
-    pNode->AppendAttr("Color2", m_sColor2);
+  if (!color2_.empty()) {
+    pNode->AppendAttr("Color2", color2_);
   }
 
   return pNode;
@@ -66,26 +66,26 @@ XNode* BackgroundDef::CreateNode() const {
 
 std::string BackgroundChange::GetTextDescription() const {
   std::vector<std::string> vsParts;
-  if (!m_def.m_sFile1.empty()) {
-    vsParts.push_back(m_def.m_sFile1);
+  if (!def_.file1_.empty()) {
+    vsParts.push_back(def_.file1_);
   }
-  if (!m_def.m_sFile2.empty()) {
-    vsParts.push_back(m_def.m_sFile2);
+  if (!def_.file2_.empty()) {
+    vsParts.push_back(def_.file2_);
   }
-  if (m_fRate != 1.0f) {
-    vsParts.push_back(ssprintf("%.2f%%", m_fRate * 100));
+  if (rate_ != 1.0f) {
+    vsParts.push_back(ssprintf("%.2f%%", rate_ * 100));
   }
-  if (!m_sTransition.empty()) {
-    vsParts.push_back(m_sTransition);
+  if (!transition_.empty()) {
+    vsParts.push_back(transition_);
   }
-  if (!m_def.m_sEffect.empty()) {
-    vsParts.push_back(m_def.m_sEffect);
+  if (!def_.effect_.empty()) {
+    vsParts.push_back(def_.effect_);
   }
-  if (!m_def.m_sColor1.empty()) {
-    vsParts.push_back(m_def.m_sColor1);
+  if (!def_.color1_.empty()) {
+    vsParts.push_back(def_.color1_);
   }
-  if (!m_def.m_sColor2.empty()) {
-    vsParts.push_back(m_def.m_sColor2);
+  if (!def_.color2_.empty()) {
+    vsParts.push_back(def_.color2_);
   }
 
   if (vsParts.empty()) {
@@ -101,15 +101,15 @@ std::string BackgroundChange::ToString() const {
    * (because it might contain '=') and then unescape the value
    * returned by the MsdFile. */
   return ssprintf(
-      "%.3f=%s=%.3f=%d=%d=%d=%s=%s=%s=%s=%s", this->m_fStartBeat,
-      SmEscape(this->m_def.m_sFile1).c_str(), this->m_fRate,
-      this->m_sTransition == SBT_CrossFade,        // backward compat
-      this->m_def.m_sEffect == SBE_StretchRewind,  // backward compat
-      this->m_def.m_sEffect != SBE_StretchNoLoop,  // backward compat
-      this->m_def.m_sEffect.c_str(), this->m_def.m_sFile2.c_str(),
-      this->m_sTransition.c_str(),
-      SmEscape(RageColor::NormalizeColorString(this->m_def.m_sColor1)).c_str(),
-      SmEscape(RageColor::NormalizeColorString(this->m_def.m_sColor2)).c_str());
+      "%.3f=%s=%.3f=%d=%d=%d=%s=%s=%s=%s=%s", this->start_beat_,
+      SmEscape(this->def_.file1_).c_str(), this->rate_,
+      this->transition_ == SBT_CrossFade,       // backward compat
+      this->def_.effect_ == SBE_StretchRewind,  // backward compat
+      this->def_.effect_ != SBE_StretchNoLoop,  // backward compat
+      this->def_.effect_.c_str(), this->def_.file2_.c_str(),
+      this->transition_.c_str(),
+      SmEscape(RageColor::NormalizeColorString(this->def_.color1_)).c_str(),
+      SmEscape(RageColor::NormalizeColorString(this->def_.color2_)).c_str());
 }
 
 const std::string BACKGROUND_EFFECTS_DIR = "BackgroundEffects/";
@@ -144,7 +144,7 @@ static void StripCvsAndSvn(
 
 int CompareBackgroundChanges(
     const BackgroundChange& seg1, const BackgroundChange& seg2) {
-  return seg1.m_fStartBeat < seg2.m_fStartBeat;
+  return seg1.start_beat_ < seg2.start_beat_;
 }
 
 void BackgroundUtil::SortBackgroundChangesArray(
@@ -273,18 +273,18 @@ static void GetFilterToFileNames(
     std::set<std::string>& vsPossibleFileNamesOut) {
   vsPossibleFileNamesOut.clear();
 
-  if (pSong->m_sGenre.empty()) {
+  if (pSong->genre_.empty()) {
     return;
   }
 
-  ASSERT(!pSong->m_sGroupName.empty());
+  ASSERT(!pSong->group_name_.empty());
   IniFile ini;
   std::string sPath =
-      sBaseDir + pSong->m_sGroupName + "/" + "BackgroundMapping.ini";
+      sBaseDir + pSong->group_name_ + "/" + "BackgroundMapping.ini";
   ini.ReadFile(sPath);
 
   std::string sSection;
-  bool bSuccess = ini.GetValue("GenreToSection", pSong->m_sGenre, sSection);
+  bool bSuccess = ini.GetValue("GenreToSection", pSong->genre_, sSection);
   if (!bSuccess) {
     // LOG->Warn( "Genre '%s' isn't mapped", pSong->m_sGenre.c_str() );
     return;
@@ -331,7 +331,7 @@ void GetGlobalRandomMoviePaths(
   // Check for an exact match
   if (!sMatch.empty()) {
     GetDirListing(
-        SONG_MOVIES_DIR + pSong->m_sGroupName + "/" + sMatch, vsPathsOut, false,
+        SONG_MOVIES_DIR + pSong->group_name_ + "/" + sMatch, vsPathsOut, false,
         true);  // search in SongMovies/SongGroupName/ first
     GetDirListing(SONG_MOVIES_DIR + sMatch, vsPathsOut, false, true);
     GetDirListing(RANDOMMOVIES_DIR + sMatch, vsPathsOut, false, true);
@@ -343,14 +343,14 @@ void GetGlobalRandomMoviePaths(
 
   // Search for the most appropriate background
   std::set<std::string> ssFileNameWhitelist;
-  if (bTryInsideOfSongGroupAndGenreFirst && pSong && !pSong->m_sGenre.empty()) {
+  if (bTryInsideOfSongGroupAndGenreFirst && pSong && !pSong->genre_.empty()) {
     GetFilterToFileNames(RANDOMMOVIES_DIR, pSong, ssFileNameWhitelist);
   }
 
   std::vector<std::string> vsDirsToTry;
   if (bTryInsideOfSongGroupFirst && pSong) {
-    ASSERT(!pSong->m_sGroupName.empty());
-    vsDirsToTry.push_back(RANDOMMOVIES_DIR + pSong->m_sGroupName + "/");
+    ASSERT(!pSong->group_name_.empty());
+    vsDirsToTry.push_back(RANDOMMOVIES_DIR + pSong->group_name_ + "/");
   }
   vsDirsToTry.push_back(RANDOMMOVIES_DIR);
 

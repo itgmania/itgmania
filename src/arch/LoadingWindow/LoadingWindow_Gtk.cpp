@@ -80,15 +80,15 @@ static void DeletePixels(guchar* pixels, gpointer data) {
 
 static GdkPixbuf* MakePixbuf(const RageSurface* pSrc) {
   RageSurface* pSurface = CreateSurface(
-      pSrc->w, pSrc->h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+      pSrc->w_, pSrc->h_, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
   RageSurfaceUtils::Blit(pSrc, pSurface, -1, -1);
 
   GdkPixbuf* pBuf = gdk_pixbuf_new_from_data(
-      pSurface->pixels, GDK_COLORSPACE_RGB, true, 8, pSurface->w, pSurface->h,
-      pSurface->pitch, DeletePixels, nullptr);
+      pSurface->pixels_, GDK_COLORSPACE_RGB, true, 8, pSurface->w_,
+      pSurface->h_, pSurface->pitch_, DeletePixels, nullptr);
 
   if (pBuf != nullptr) {
-    pSurface->pixels_owned = false;
+    pSurface->pixels_owned_ = false;
   }
 
   delete pSurface;
@@ -127,12 +127,12 @@ static void UpdateProgress(int progress, int totalWork) {
 
 void LoadingWindow_Gtk::SetProgress(const int progress) {
   LoadingWindow::SetProgress(progress);
-  UpdateProgress(m_progress, m_totalWork);
+  UpdateProgress(progress_, total_work_);
 }
 
 void LoadingWindow_Gtk::SetTotalWork(const int totalWork) {
   LoadingWindow::SetTotalWork(totalWork);
-  UpdateProgress(m_progress, m_totalWork);
+  UpdateProgress(progress_, total_work_);
 }
 
 void LoadingWindow_Gtk::SetIndeterminate(bool indeterminate) {

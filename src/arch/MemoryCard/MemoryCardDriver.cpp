@@ -33,29 +33,31 @@ Preference<MemoryCardDriverType> g_MemoryCardDriver(
     PreferenceType::Immutable);
 
 bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const {
-  if (iBus != other.iBus) {
+  if (bus_ != other.bus_) {
     return false;
   }
-  if (iPort != other.iPort) {
+  if (port_ != other.port_) {
     return false;
   }
-  if (iLevel != other.iLevel) {
+  if (level_ != other.level_) {
     return false;
   }
-  if (sOsMountDir != other.sOsMountDir) {
+  if (os_mount_dir_ != other.os_mount_dir_) {
     return false;
   }
   return true;
 }
 
-void UsbStorageDevice::SetOsMountDir(const std::string& s) { sOsMountDir = s; }
+void UsbStorageDevice::SetOsMountDir(const std::string& s) {
+  os_mount_dir_ = s;
+}
 
 bool MemoryCardDriver::NeedUpdate(bool bMount) {
   if (bMount) {
     /* Check if any devices need a write test. */
-    for (unsigned i = 0; i < m_vDevicesLastSeen.size(); i++) {
-      const UsbStorageDevice& d = m_vDevicesLastSeen[i];
-      if (d.m_State == UsbStorageDevice::STATE_CHECKING) {
+    for (unsigned i = 0; i < devices_last_seen_.size(); i++) {
+      const UsbStorageDevice& d = devices_last_seen_[i];
+      if (d.state_ == UsbStorageDevice::STATE_CHECKING) {
         return true;
       }
     }
@@ -70,7 +72,7 @@ bool MemoryCardDriver::DoOneUpdate(
     return false;
   }
 
-  std::vector<UsbStorageDevice> vOld = m_vDevicesLastSeen;  // copy
+  std::vector<UsbStorageDevice> vOld = devices_last_seen_;  // copy
   GetUSBStorageDevices(vStorageDevicesOut);
 
   // log connects
@@ -78,7 +80,7 @@ bool MemoryCardDriver::DoOneUpdate(
     std::vector<UsbStorageDevice>::iterator iter =
         find(vOld.begin(), vOld.end(), newd);
     if (iter == vOld.end()) {  // didn't find
-      LOG->Trace("New device connected: %s", newd.sDevice.c_str());
+      LOG->Trace("New device connected: %s", newd.device_.c_str());
     }
   }
 
@@ -95,24 +97,24 @@ bool MemoryCardDriver::DoOneUpdate(
         find(vOld.begin(), vOld.end(), d);
     if (iter == vOld.end())  // didn't find
     {
-      LOG->Trace("New device entering CHECKING: %s", d.sDevice.c_str());
-      d.m_State = UsbStorageDevice::STATE_CHECKING;
+      LOG->Trace("New device entering CHECKING: %s", d.device_.c_str());
+      d.state_ = UsbStorageDevice::STATE_CHECKING;
       continue;
     }
 
     /* Preserve the state of the device, and any data loaded from previous
      * checks. */
-    d.m_State = iter->m_State;
-    d.bIsNameAvailable = iter->bIsNameAvailable;
-    d.sName = iter->sName;
+    d.state_ = iter->state_;
+    d.is_name_available_ = iter->is_name_available_;
+    d.name_ = iter->name_;
 
     /* The device was here last time.  If CHECKING, check the device now, if
      * we're allowed to. */
-    if (d.m_State == UsbStorageDevice::STATE_CHECKING) {
+    if (d.state_ == UsbStorageDevice::STATE_CHECKING) {
       if (!bMount) {
         /* We can't check it now.  Keep STATE_CHECKING, and check it when we
          * can. */
-        d.m_State = UsbStorageDevice::STATE_CHECKING;
+        d.state_ = UsbStorageDevice::STATE_CHECKING;
         continue;
       }
 
@@ -125,24 +127,24 @@ bool MemoryCardDriver::DoOneUpdate(
         /* We've successfully mounted and tested the device.  Read the
          * profile name (by mounting a temporary, private mountpoint),
          * and then unmount it until Mount() is called. */
-        d.m_State = UsbStorageDevice::STATE_READY;
+        d.state_ = UsbStorageDevice::STATE_READY;
 
-        FILEMAN->Mount("dirro", d.sOsMountDir, TEMP_MOUNT_POINT);
-        d.bIsNameAvailable = PROFILEMAN->FastLoadProfileNameFromMemoryCard(
-            TEMP_MOUNT_POINT, d.sName);
-        FILEMAN->Unmount("dirro", d.sOsMountDir, TEMP_MOUNT_POINT);
+        FILEMAN->Mount("dirro", d.os_mount_dir_, TEMP_MOUNT_POINT);
+        d.is_name_available_ = PROFILEMAN->FastLoadProfileNameFromMemoryCard(
+            TEMP_MOUNT_POINT, d.name_);
+        FILEMAN->Unmount("dirro", d.os_mount_dir_, TEMP_MOUNT_POINT);
       }
 
       this->Unmount(&d);
 
       LOG->Trace(
           "WriteTest: %s, Name: %s",
-          d.m_State == UsbStorageDevice::STATE_ERROR ? "failed" : "succeeded",
-          d.sName.c_str());
+          d.state_ == UsbStorageDevice::STATE_ERROR ? "failed" : "succeeded",
+          d.name_.c_str());
     }
   }
 
-  m_vDevicesLastSeen = vStorageDevicesOut;
+  devices_last_seen_ = vStorageDevicesOut;
 
   return true;
 }

@@ -13,16 +13,16 @@
 static SubscriptionManager<IPreference> m_Subscribers;
 
 IPreference::IPreference(const std::string& sName, PreferenceType type)
-    : m_sName(sName),
-      m_bDoNotWrite(type == PreferenceType::Deprecated),
-      m_bImmutable(type == PreferenceType::Immutable) {
+    : name_(sName),
+      do_not_write_(type == PreferenceType::Deprecated),
+      immutable_(type == PreferenceType::Immutable) {
   m_Subscribers.Subscribe(this);
 }
 
 IPreference::~IPreference() { m_Subscribers.Unsubscribe(this); }
 
 IPreference* IPreference::GetPreferenceByName(const std::string& sName) {
-  for (IPreference* p : *m_Subscribers.m_pSubscribers) {
+  for (IPreference* p : *m_Subscribers.subscribers_) {
     if (!CompareNoCase(p->GetName(), sName)) {
       return p;
     }
@@ -32,20 +32,20 @@ IPreference* IPreference::GetPreferenceByName(const std::string& sName) {
 }
 
 void IPreference::LoadAllDefaults() {
-  for (IPreference* p : *m_Subscribers.m_pSubscribers) {
+  for (IPreference* p : *m_Subscribers.subscribers_) {
     p->LoadDefault();
   }
 }
 
 void IPreference::ReadAllPrefsFromNode(const XNode* pNode, bool bIsStatic) {
   ASSERT(pNode != nullptr);
-  for (IPreference* p : *m_Subscribers.m_pSubscribers) {
+  for (IPreference* p : *m_Subscribers.subscribers_) {
     p->ReadFrom(pNode, bIsStatic);
   }
 }
 
 void IPreference::SavePrefsToNode(XNode* pNode) {
-  for (IPreference* p : *m_Subscribers.m_pSubscribers) {
+  for (IPreference* p : *m_Subscribers.subscribers_) {
     p->WriteTo(pNode);
   }
 }
@@ -54,7 +54,7 @@ void IPreference::ReadAllDefaultsFromNode(const XNode* pNode) {
   if (pNode == nullptr) {
     return;
   }
-  for (IPreference* p : *m_Subscribers.m_pSubscribers) {
+  for (IPreference* p : *m_Subscribers.subscribers_) {
     p->ReadDefaultFrom(pNode);
   }
 }
@@ -63,7 +63,7 @@ void IPreference::PushValue(lua_State* L) const {
   if (LOG) {
     LOG->Trace(
         "The preference value \"%s\" is of a type not supported by Lua",
-        m_sName.c_str());
+        name_.c_str());
   }
 
   lua_pushnil(L);
@@ -73,7 +73,7 @@ void IPreference::SetFromStack(lua_State* L) {
   if (LOG) {
     LOG->Trace(
         "The preference value \"%s\" is of a type not supported by Lua",
-        m_sName.c_str());
+        name_.c_str());
   }
 
   lua_pop(L, 1);
@@ -81,26 +81,26 @@ void IPreference::SetFromStack(lua_State* L) {
 
 void IPreference::ReadFrom(const XNode* pNode, bool bIsStatic) {
   std::string sVal;
-  if (pNode->GetAttrValue(m_sName, sVal)) {
+  if (pNode->GetAttrValue(name_, sVal)) {
     FromString(sVal);
     if (bIsStatic) {
-      m_bDoNotWrite = true;
+      do_not_write_ = true;
     }
   }
 }
 
 void IPreference::WriteTo(XNode* pNode) const {
-  if (m_bDoNotWrite) {
+  if (do_not_write_) {
     return;
   }
 
-  pNode->AppendAttr(m_sName, ToString());
+  pNode->AppendAttr(name_, ToString());
 }
 
 /* Load our value from the node, and make it the new default. */
 void IPreference::ReadDefaultFrom(const XNode* pNode) {
   std::string sVal;
-  if (!pNode->GetAttrValue(m_sName, sVal)) {
+  if (!pNode->GetAttrValue(name_, sVal)) {
     return;
   }
   SetDefaultFromString(sVal);

@@ -7,9 +7,9 @@
 namespace {
 
 struct StreamSegment {
-  int streamStart;
-  int streamEnd;
-  bool isBreak;
+  int stream_start_;
+  int stream_end_;
+  bool is_break_;
 };
 
 std::vector<StreamSegment> GetStreamSegments(
@@ -61,8 +61,8 @@ std::string GenerateBreakdownTextLevel0(
     const std::vector<StreamSegment>& segments) {
   std::string text;
   for (const StreamSegment& segment : segments) {
-    const int segmentSize = segment.streamEnd - segment.streamStart;
-    if (!segment.isBreak) {
+    const int segmentSize = segment.stream_end_ - segment.stream_start_;
+    if (!segment.is_break_) {
       text += std::to_string(segmentSize);
     } else if (segmentSize == 1) {
       text += "-";
@@ -77,8 +77,8 @@ std::string GenerateBreakdownTextLevel1(
     const std::vector<StreamSegment>& segments) {
   std::string text;
   for (const StreamSegment& segment : segments) {
-    const int segmentSize = segment.streamEnd - segment.streamStart;
-    if (segment.isBreak) {
+    const int segmentSize = segment.stream_end_ - segment.stream_start_;
+    if (segment.is_break_) {
       text += GetBreakNotation(segmentSize);
     } else {
       text += std::to_string(segmentSize);
@@ -94,8 +94,8 @@ std::string GenerateBreakdownTextLevel2(
   bool isBroken = false;
 
   for (const StreamSegment& segment : segments) {
-    const int segmentSize = segment.streamEnd - segment.streamStart;
-    if (!segment.isBreak) {
+    const int segmentSize = segment.stream_end_ - segment.stream_start_;
+    if (!segment.is_break_) {
       segmentSum += segmentSize;
       continue;
     }
@@ -138,16 +138,17 @@ StreamBreakdown StreamBreakdown::Calculate(
       GetStreamSegments(notesPerMeasure, notesThreshold);
 
   for (const StreamSegment& segment : segments) {
-    if (!segment.isBreak) {
-      breakdown.totalStreamMeasures += segment.streamEnd - segment.streamStart;
+    if (!segment.is_break_) {
+      breakdown.total_stream_measures_ +=
+          segment.stream_end_ - segment.stream_start_;
     }
   }
-  breakdown.totalBreakMeasures =
-      static_cast<int>(notesPerMeasure.size()) - breakdown.totalStreamMeasures;
+  breakdown.total_break_measures_ = static_cast<int>(notesPerMeasure.size()) -
+                                    breakdown.total_stream_measures_;
 
-  breakdown.texts[0] = GenerateBreakdownTextLevel0(segments);
-  breakdown.texts[1] = GenerateBreakdownTextLevel1(segments);
-  breakdown.texts[2] = GenerateBreakdownTextLevel2(segments);
+  breakdown.texts_[0] = GenerateBreakdownTextLevel0(segments);
+  breakdown.texts_[1] = GenerateBreakdownTextLevel1(segments);
+  breakdown.texts_[2] = GenerateBreakdownTextLevel2(segments);
 
   return breakdown;
 }

@@ -35,39 +35,39 @@ void RageSoundDriver_DSound_Software::MixerThread() {
    * in the buffer. */
   char* locked_buf_init;
   unsigned len_init;
-  while (m_pPCM->get_output_buf(&locked_buf_init, &len_init, chunksize())) {
+  while (pcm_->get_output_buf(&locked_buf_init, &len_init, chunksize())) {
     memset(locked_buf_init, 0, len_init);
-    m_pPCM->release_output_buf(locked_buf_init, len_init);
+    pcm_->release_output_buf(locked_buf_init, len_init);
   }
 
   /* Start playing. */
-  m_pPCM->Play();
+  pcm_->Play();
 
-  while (!m_bShutdownMixerThread) {
+  while (!shutdown_mixer_thread_) {
     char* pLockedBuf;
     unsigned iLen;
     const int64_t iPlayPos =
-        m_pPCM->GetOutputPosition(); /* must be called before get_output_buf */
+        pcm_->GetOutputPosition(); /* must be called before get_output_buf */
 
-    if (!m_pPCM->get_output_buf(&pLockedBuf, &iLen, chunksize())) {
-      Sleep(chunksize() * 1000 / m_iSampleRate);
+    if (!pcm_->get_output_buf(&pLockedBuf, &iLen, chunksize())) {
+      Sleep(chunksize() * 1000 / sample_rate_);
       continue;
     }
 
     this->Mix(
         (int16_t*)pLockedBuf, iLen / bytes_per_frame, iPlayPos,
-        m_pPCM->GetPosition());
+        pcm_->GetPosition());
 
-    m_pPCM->release_output_buf(pLockedBuf, iLen);
+    pcm_->release_output_buf(pLockedBuf, iLen);
   }
 
   /* I'm not sure why, but if we don't stop the stream now, then the thread will
    * take 90ms (our buffer size) longer to close. */
-  m_pPCM->Stop();
+  pcm_->Stop();
 }
 
 int64_t RageSoundDriver_DSound_Software::GetPosition() const {
-  return m_pPCM->GetPosition();
+  return pcm_->GetPosition();
 }
 
 int RageSoundDriver_DSound_Software::MixerThread_start(void* p) {
@@ -76,62 +76,62 @@ int RageSoundDriver_DSound_Software::MixerThread_start(void* p) {
 }
 
 RageSoundDriver_DSound_Software::RageSoundDriver_DSound_Software()
-    : m_pPCM(nullptr), m_iSampleRate(0), m_bShutdownMixerThread(false) {}
+    : pcm_(nullptr), sample_rate_(0), shutdown_mixer_thread_(false) {}
 
 std::string RageSoundDriver_DSound_Software::Init() {
-  std::string sError = ds.Init();
+  std::string sError = ds_.Init();
   if (sError != "") {
     return sError;
   }
 
   /* If we're emulated, we're better off with the WaveOut driver; DS
    * emulation tends to be desynced. */
-  if (ds.IsEmulated()) {
+  if (ds_.IsEmulated()) {
     return "Driver unusable (emulated device)";
   }
 
   g_iMaxWriteahead = safe_writeahead;
-  if (PREFSMAN->m_iSoundWriteAhead) {
-    g_iMaxWriteahead = PREFSMAN->m_iSoundWriteAhead;
+  if (PREFSMAN->sound_write_ahead_) {
+    g_iMaxWriteahead = PREFSMAN->sound_write_ahead_;
   }
 
   /* Create a DirectSound stream, but don't force it into hardware. */
-  m_pPCM = new DSoundBuf;
-  m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-  if (m_iSampleRate == 0) {
-    m_iSampleRate = FALLBACK_SAMPLE_RATE;
+  pcm_ = new DSoundBuf;
+  sample_rate_ = PREFSMAN->sound_preferred_sample_rate_;
+  if (sample_rate_ == 0) {
+    sample_rate_ = FALLBACK_SAMPLE_RATE;
   }
-  // This m_iSampleRate (driver's) is then passed as the iSampleRate parameter
+  // This sample_rate_ (driver's) is then passed as the iSampleRate parameter
   // to DSoundBuf::Init()
-  sError = m_pPCM->Init(
-      ds, DSoundBuf::HW_DONT_CARE, channels, m_iSampleRate, 16,
+  sError = pcm_->Init(
+      ds_, DSoundBuf::HW_DONT_CARE, channels, sample_rate_, 16,
       g_iMaxWriteahead);
   if (sError != "") {
     return sError;
   }
 
-  LOG->Info("Software mixing at %i hz", m_iSampleRate);
+  LOG->Info("Software mixing at %i hz", sample_rate_);
 
   StartDecodeThread();
 
-  m_MixingThread.SetName("Mixer thread");
-  m_MixingThread.Create(MixerThread_start, this);
+  mixing_thread_.SetName("Mixer thread");
+  mixing_thread_.Create(MixerThread_start, this);
 
   return std::string();
 }
 
 RageSoundDriver_DSound_Software::~RageSoundDriver_DSound_Software() {
   /* Signal the mixing thread to quit. */
-  if (m_MixingThread.IsCreated()) {
-    m_bShutdownMixerThread = true;
+  if (mixing_thread_.IsCreated()) {
+    shutdown_mixer_thread_ = true;
     LOG->Trace("Shutting down mixer thread ...");
     LOG->Flush();
-    m_MixingThread.Wait();
+    mixing_thread_.Wait();
     LOG->Trace("Mixer thread shut down.");
     LOG->Flush();
   }
 
-  delete m_pPCM;
+  delete pcm_;
 }
 
 void RageSoundDriver_DSound_Software::SetupDecodingThread() {
@@ -143,11 +143,11 @@ void RageSoundDriver_DSound_Software::SetupDecodingThread() {
 }
 
 float RageSoundDriver_DSound_Software::GetPlayLatency() const {
-  return (1.0f / m_iSampleRate) * g_iMaxWriteahead;
+  return (1.0f / sample_rate_) * g_iMaxWriteahead;
 }
 
 int RageSoundDriver_DSound_Software::GetSampleRate() const {
-  return m_iSampleRate;
+  return sample_rate_;
 }
 
 /*

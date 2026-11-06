@@ -55,36 +55,36 @@
 #include "TimingSegments.h"
 #include "global.h"
 
-std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
-float AdjustSync::s_fGlobalOffsetSecondsOriginal = 0.0f;
-int AdjustSync::s_iAutosyncOffsetSample = 0;
-float AdjustSync::s_fAutosyncOffset[AdjustSync::OFFSET_SAMPLE_COUNT];
-float AdjustSync::s_fStandardDeviation = 0.0f;
-std::vector<std::pair<float, float>> AdjustSync::s_vAutosyncTempoData;
-float AdjustSync::s_fAverageError = 0.0f;
-const float AdjustSync::ERROR_TOO_HIGH = 0.025f;
-int AdjustSync::s_iStepsFiltered = 0;
+std::vector<TimingData> AdjustSync::timing_data_original_;
+float AdjustSync::global_offset_seconds_original_ = 0.0f;
+int AdjustSync::autosync_offset_sample_ = 0;
+float AdjustSync::autosync_offset_[AdjustSync::kOffsetSampleCount];
+float AdjustSync::standard_deviation_ = 0.0f;
+std::vector<std::pair<float, float>> AdjustSync::autosync_tempo_data_;
+float AdjustSync::average_error_ = 0.0f;
+const float AdjustSync::kErrorTooHigh = 0.025f;
+int AdjustSync::steps_filtered_ = 0;
 
 void AdjustSync::ResetOriginalSyncData() {
-  s_vpTimingDataOriginal.clear();
+  timing_data_original_.clear();
 
-  if (GAMESTATE->m_pCurSong) {
-    s_vpTimingDataOriginal.push_back(GAMESTATE->m_pCurSong->m_SongTiming);
-    const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+  if (GAMESTATE->cur_song_) {
+    timing_data_original_.push_back(GAMESTATE->cur_song_->song_timing_);
+    const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
     for (const Steps* s : vpSteps) {
-      s_vpTimingDataOriginal.push_back(s->m_Timing);
+      timing_data_original_.push_back(s->timing_);
     }
   } else {
-    s_vpTimingDataOriginal.push_back(TimingData());
+    timing_data_original_.push_back(TimingData());
   }
-  s_fGlobalOffsetSecondsOriginal = PREFSMAN->m_fGlobalOffsetSeconds;
+  global_offset_seconds_original_ = PREFSMAN->global_offset_seconds_;
 
   ResetAutosync();
 }
 
 void AdjustSync::ResetAutosync() {
-  s_iAutosyncOffsetSample = 0;
-  s_vAutosyncTempoData.clear();
+  autosync_offset_sample_ = 0;
+  autosync_tempo_data_.clear();
 }
 
 bool AdjustSync::IsSyncDataChanged() {
@@ -105,41 +105,41 @@ void AdjustSync::SaveSyncChanges() {
 
   /* TODO: Save all of the timing data changes.
    * Luckily, only the song timing data needs comparing here. */
-  if (GAMESTATE->m_pCurSong &&
-      s_vpTimingDataOriginal[0] != GAMESTATE->m_pCurSong->m_SongTiming) {
+  if (GAMESTATE->cur_song_ &&
+      timing_data_original_[0] != GAMESTATE->cur_song_->song_timing_) {
     if (GAMESTATE->IsEditing()) {
       MESSAGEMAN->Broadcast(Message_SongModified);
     } else {
-      GAMESTATE->m_pCurSong->Save();
+      GAMESTATE->cur_song_->Save();
     }
   }
-  if (s_fGlobalOffsetSecondsOriginal != PREFSMAN->m_fGlobalOffsetSeconds) {
+  if (global_offset_seconds_original_ != PREFSMAN->global_offset_seconds_) {
     PREFSMAN->SavePrefsToDisk();
   }
   ResetOriginalSyncData();
-  s_fStandardDeviation = 0.0f;
-  s_fAverageError = 0.0f;
+  standard_deviation_ = 0.0f;
+  average_error_ = 0.0f;
 }
 
 void AdjustSync::RevertSyncChanges() {
   if (GAMESTATE->IsCourseMode()) {
     return;
   }
-  PREFSMAN->m_fGlobalOffsetSeconds.Set(s_fGlobalOffsetSecondsOriginal);
+  PREFSMAN->global_offset_seconds_.Set(global_offset_seconds_original_);
 
   // The first one is ALWAYS the song timing.
-  GAMESTATE->m_pCurSong->m_SongTiming = s_vpTimingDataOriginal[0];
+  GAMESTATE->cur_song_->song_timing_ = timing_data_original_[0];
 
   unsigned location = 1;
-  const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+  const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
   for (Steps* s : vpSteps) {
-    s->m_Timing = s_vpTimingDataOriginal[location];
+    s->timing_ = timing_data_original_[location];
     location++;
   }
 
   ResetOriginalSyncData();
-  s_fStandardDeviation = 0.0f;
-  s_fAverageError = 0.0f;
+  standard_deviation_ = 0.0f;
+  average_error_ = 0.0f;
 }
 
 static LocalizedString AUTOSYNC_CORRECTION_APPLIED(
@@ -150,22 +150,22 @@ void AdjustSync::HandleAutosync(float fNoteOffBySeconds, float fStepTime) {
   if (GAMESTATE->IsCourseMode()) {
     return;
   }
-  AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+  AutosyncType type = GAMESTATE->song_options_.GetCurrent().autosync_type_;
   switch (type) {
     case AutosyncType_Off:
       return;
     case AutosyncType_Tempo: {
       // We collect all of the data and process it at the end
-      s_vAutosyncTempoData.push_back(
+      autosync_tempo_data_.push_back(
           std::make_pair(fStepTime, fNoteOffBySeconds));
       break;
     }
     case AutosyncType_Machine:
     case AutosyncType_Song: {
-      s_fAutosyncOffset[s_iAutosyncOffsetSample] = fNoteOffBySeconds;
-      ++s_iAutosyncOffsetSample;
+      autosync_offset_[autosync_offset_sample_] = fNoteOffBySeconds;
+      ++autosync_offset_sample_;
 
-      if (s_iAutosyncOffsetSample < OFFSET_SAMPLE_COUNT) {
+      if (autosync_offset_sample_ < kOffsetSampleCount) {
         break;  // need more
       }
 
@@ -181,7 +181,7 @@ void AdjustSync::HandleSongEnd() {
   if (GAMESTATE->IsCourseMode()) {
     return;
   }
-  if (GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType ==
+  if (GAMESTATE->song_options_.GetCurrent().autosync_type_ ==
       AutosyncType_Tempo) {
     AutosyncTempo();
   }
@@ -191,33 +191,33 @@ void AdjustSync::HandleSongEnd() {
 
 void AdjustSync::AutosyncOffset() {
   const float mean =
-      calc_mean(s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
+      calc_mean(autosync_offset_, autosync_offset_ + kOffsetSampleCount);
   const float stddev =
-      calc_stddev(s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
+      calc_stddev(autosync_offset_, autosync_offset_ + kOffsetSampleCount);
 
-  AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+  AutosyncType type = GAMESTATE->song_options_.GetCurrent().autosync_type_;
 
   if (stddev < .03f)  // If they stepped with less than .03 error
   {
     switch (type) {
       case AutosyncType_Song: {
-        GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
+        GAMESTATE->cur_song_->song_timing_.beat0_offset_in_seconds_ += mean;
         const std::vector<Steps*>& vpSteps =
-            GAMESTATE->m_pCurSong->GetAllSteps();
+            GAMESTATE->cur_song_->GetAllSteps();
         for (Steps* s : vpSteps) {
           // Empty TimingData means it's inherited
           // from the song and is already changed.
-          if (s->m_Timing.empty()) {
+          if (s->timing_.empty()) {
             continue;
           }
-          s->m_Timing.m_fBeat0OffsetInSeconds += mean;
+          s->timing_.beat0_offset_in_seconds_ += mean;
         }
         break;
       }
       case AutosyncType_Machine:
         // Step timing is not needed for this operation.
-        PREFSMAN->m_fGlobalOffsetSeconds.Set(
-            PREFSMAN->m_fGlobalOffsetSeconds + mean);
+        PREFSMAN->global_offset_seconds_.Set(
+            PREFSMAN->global_offset_seconds_ + mean);
         break;
       default:
         FAIL_M(ssprintf("Invalid autosync type: %i", type));
@@ -228,39 +228,39 @@ void AdjustSync::AutosyncOffset() {
     SCREENMAN->SystemMessage(AUTOSYNC_CORRECTION_NOT_APPLIED.GetValue());
   }
 
-  s_iAutosyncOffsetSample = 0;
-  s_fStandardDeviation = stddev;
+  autosync_offset_sample_ = 0;
+  standard_deviation_ = stddev;
 }
 
 void AdjustSync::AutosyncTempo() {
   float fSlope = 0.0f;
   float fIntercept = 0.0f;
   if (!CalcLeastSquares(
-          s_vAutosyncTempoData, fSlope, fIntercept, s_fAverageError)) {
-    s_vAutosyncTempoData.clear();
+          autosync_tempo_data_, fSlope, fIntercept, average_error_)) {
+    autosync_tempo_data_.clear();
     return;
   }
 
-  if (s_fAverageError < ERROR_TOO_HIGH) {
+  if (average_error_ < kErrorTooHigh) {
     /* Here we filter out any steps that are too far off.
      * If it turns out that we want to be even more selective, we can keep
      * only a fraction of the data, such as the 80% with the lowest error.
      * However, throwing away the ones with high error should be enough
      * in most cases. */
     float fFilteredError = 0;
-    s_iStepsFiltered = s_vAutosyncTempoData.size();
+    steps_filtered_ = autosync_tempo_data_.size();
     FilterHighErrorPoints(
-        s_vAutosyncTempoData, fSlope, fIntercept, ERROR_TOO_HIGH);
-    s_iStepsFiltered -= s_vAutosyncTempoData.size();
+        autosync_tempo_data_, fSlope, fIntercept, kErrorTooHigh);
+    steps_filtered_ -= autosync_tempo_data_.size();
 
     if (!CalcLeastSquares(
-            s_vAutosyncTempoData, fSlope, fIntercept, fFilteredError)) {
+            autosync_tempo_data_, fSlope, fIntercept, fFilteredError)) {
       return;
     }
 
-    GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fIntercept;
+    GAMESTATE->cur_song_->song_timing_.beat0_offset_in_seconds_ += fIntercept;
     const float fScaleBPM = 1.0f / (1.0f - fSlope);
-    TimingData& timing = GAMESTATE->m_pCurSong->m_SongTiming;
+    TimingData& timing = GAMESTATE->cur_song_->song_timing_;
 
     const std::vector<TimingSegment*>& bpms =
         timing.GetTimingSegments(SEGMENT_BPM);
@@ -294,7 +294,7 @@ void AdjustSync::AutosyncTempo() {
     SCREENMAN->SystemMessage(AUTOSYNC_CORRECTION_NOT_APPLIED.GetValue());
   }
 
-  s_vAutosyncTempoData.clear();
+  autosync_tempo_data_.clear();
 }
 
 static LocalizedString EARLIER("AdjustSync", "earlier");
@@ -319,8 +319,8 @@ static LocalizedString TAPS_IGNORED("AdjustSync", "%d taps ignored.");
 
 void AdjustSync::GetSyncChangeTextGlobal(std::vector<std::string>& vsAddTo) {
   {
-    float fOld = Quantize(AdjustSync::s_fGlobalOffsetSecondsOriginal, 0.001f);
-    float fNew = Quantize(PREFSMAN->m_fGlobalOffsetSeconds, 0.001f);
+    float fOld = Quantize(AdjustSync::global_offset_seconds_original_, 0.001f);
+    float fNew = Quantize(PREFSMAN->global_offset_seconds_, 0.001f);
     float fDelta = fNew - fOld;
 
     if (std::abs(fDelta) > 0.0001f) {
@@ -333,7 +333,7 @@ void AdjustSync::GetSyncChangeTextGlobal(std::vector<std::string>& vsAddTo) {
 
 // XXX: needs cleanup still -- vyhd
 void AdjustSync::GetSyncChangeTextSong(std::vector<std::string>& vsAddTo) {
-  if (GAMESTATE->m_pCurSong.Get()) {
+  if (GAMESTATE->cur_song_.Get()) {
 #define SEGMENTS_MISMATCH_MESSAGE(orig, test, segments_name)                 \
   if (orig.size() != test.size()) {                                          \
     LuaHelpers::ReportScriptError(                                           \
@@ -343,12 +343,12 @@ void AdjustSync::GetSyncChangeTextSong(std::vector<std::string>& vsAddTo) {
   }
 
     unsigned int iOriginalSize = vsAddTo.size();
-    TimingData& original = s_vpTimingDataOriginal[0];
-    TimingData& testing = GAMESTATE->m_pCurSong->m_SongTiming;
+    TimingData& original = timing_data_original_[0];
+    TimingData& testing = GAMESTATE->cur_song_->song_timing_;
 
     {
-      float fOld = Quantize(original.m_fBeat0OffsetInSeconds, 0.001f);
-      float fNew = Quantize(testing.m_fBeat0OffsetInSeconds, 0.001f);
+      float fOld = Quantize(original.beat0_offset_in_seconds_, 0.001f);
+      float fNew = Quantize(testing.beat0_offset_in_seconds_, 0.001f);
       float fDelta = fNew - fOld;
 
       if (std::abs(fDelta) > 0.0001f) {
@@ -437,12 +437,12 @@ void AdjustSync::GetSyncChangeTextSong(std::vector<std::string>& vsAddTo) {
       vsAddTo.push_back(s);
     }
 
-    if (vsAddTo.size() > iOriginalSize && s_fAverageError > 0.0f) {
-      vsAddTo.push_back(ssprintf(ERROR.GetValue().c_str(), s_fAverageError));
+    if (vsAddTo.size() > iOriginalSize && average_error_ > 0.0f) {
+      vsAddTo.push_back(ssprintf(ERROR.GetValue().c_str(), average_error_));
     }
-    if (vsAddTo.size() > iOriginalSize && s_iStepsFiltered > 0) {
+    if (vsAddTo.size() > iOriginalSize && steps_filtered_ > 0) {
       vsAddTo.push_back(
-          ssprintf(TAPS_IGNORED.GetValue().c_str(), s_iStepsFiltered));
+          ssprintf(TAPS_IGNORED.GetValue().c_str(), steps_filtered_));
     }
 #undef SEGMENTS_MISMATCH_MESSAGE
   }

@@ -15,24 +15,24 @@
 
 static const int DrawFrameRate = 20;
 class ScreenReloadSongsLoadingWindow : public LoadingWindow {
-  RageTimer m_LastDraw;
-  BitmapText& m_BitmapText;
+  RageTimer last_draw_;
+  BitmapText& bitmap_text_;
 
  public:
-  ScreenReloadSongsLoadingWindow(BitmapText& bt) : m_BitmapText(bt) {}
+  ScreenReloadSongsLoadingWindow(BitmapText& bt) : bitmap_text_(bt) {}
 
   void SetText(std::string str) {
-    m_BitmapText.SetText(str);
+    bitmap_text_.SetText(str);
     Paint();
   }
 
   void Paint() {
     /* We load songs much faster than we draw frames. Cap the draw rate,
      * so we don't slow down the reload. */
-    if (m_LastDraw.Ago() < 1.0f / DrawFrameRate) {
+    if (last_draw_.Ago() < 1.0f / DrawFrameRate) {
       return;
     }
-    m_LastDraw.GetDeltaTime();
+    last_draw_.GetDeltaTime();
 
     SCREENMAN->Draw();
   }
@@ -49,35 +49,35 @@ ScreenReloadSongs::ScreenReloadSongs() {}
 void ScreenReloadSongs::Init() {
   Screen::Init();
 
-  m_iUpdates = 0;
+  updates_ = 0;
 
-  m_Loading.SetName("LoadingText");
-  m_Loading.LoadFromFont(THEME->GetPathF(m_sName, "LoadingText"));
-  m_Loading.SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
-  this->AddChild(&m_Loading);
+  loading_.SetName("LoadingText");
+  loading_.LoadFromFont(THEME->GetPathF(name_, "LoadingText"));
+  loading_.SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
+  this->AddChild(&loading_);
 
-  m_pLoadingWindow = new ScreenReloadSongsLoadingWindow(m_Loading);
+  loading_window_ = new ScreenReloadSongsLoadingWindow(loading_);
 }
 
-ScreenReloadSongs::~ScreenReloadSongs() { delete m_pLoadingWindow; }
+ScreenReloadSongs::~ScreenReloadSongs() { delete loading_window_; }
 
 void ScreenReloadSongs::Update(float fDeltaTime) {
   Screen::Update(fDeltaTime);
 
   /* Start the reload on the second update. On the first (0), SCREENMAN->Draw
    * won't draw. */
-  ++m_iUpdates;
-  if (m_iUpdates != 2) {
+  ++updates_;
+  if (updates_ != 2) {
     return;
   }
 
   ASSERT(!IsFirstUpdate());
 
-  bool onlyLoadAdditions = THEME->GetMetricB(m_sName, "OnlyLoadAdditions");
+  bool onlyLoadAdditions = THEME->GetMetricB(name_, "OnlyLoadAdditions");
   if (onlyLoadAdditions) {
-    SONGMAN->LoadAdditions(m_pLoadingWindow);
+    SONGMAN->LoadAdditions(loading_window_);
   } else {
-    SONGMAN->Reload(false, m_pLoadingWindow);
+    SONGMAN->Reload(false, loading_window_);
   }
 
   SCREENMAN->PostMessageToTopScreen(SM_GoToNextScreen, 0);

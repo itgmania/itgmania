@@ -17,11 +17,11 @@ class DifficultyIcon : public Sprite {
  public:
   DifficultyIcon();
   virtual bool EarlyAbortDraw() const {
-    return m_bBlank || Sprite::EarlyAbortDraw();
+    return blank_ || Sprite::EarlyAbortDraw();
   }
 
   bool Load(std::string sFilePath);
-  virtual void Load(RageTextureID ID) { Load(ID.filename); }
+  virtual void Load(RageTextureID ID) { Load(ID.filename_); }
   virtual void LoadFromNode(const XNode* pNode);
   virtual DifficultyIcon* Copy() const;
 
@@ -35,8 +35,8 @@ class DifficultyIcon : public Sprite {
   void PushSelf(lua_State* L);
 
  protected:
-  bool m_bBlank;
-  PlayerNumber m_PlayerNumber;
+  bool blank_;
+  PlayerNumber player_number_;
 };
 
 #endif

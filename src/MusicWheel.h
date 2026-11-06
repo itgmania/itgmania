@@ -38,14 +38,14 @@ class MusicWheel : public WheelBase {
 
   virtual bool Select();  // return true if this selection ends the screen
   WheelItemDataType GetSelectedType() {
-    return GetCurWheelItemData(m_iSelection)->m_Type;
+    return GetCurWheelItemData(selection_)->type_;
   }
   Song* GetSelectedSong();
   Course* GetSelectedCourse() {
-    return GetCurWheelItemData(m_iSelection)->m_pCourse;
+    return GetCurWheelItemData(selection_)->course_;
   }
   std::string GetSelectedSection() {
-    return GetCurWheelItemData(m_iSelection)->m_sText;
+    return GetCurWheelItemData(selection_)->text_;
   }
 
   Song* GetPreferredSelectionForRandomOrPortal();
@@ -56,7 +56,7 @@ class MusicWheel : public WheelBase {
   bool SelectSection(const std::string& SectionName);
   bool CloseOpenSectionOneLevel();
   void SetOpenSection(std::string group);
-  SortOrder GetSortOrder() const { return m_SortOrder; }
+  SortOrder GetSortOrder() const { return sort_order_; }
   virtual void ChangeMusic(int dist); /* +1 or -1 */  // CHECK THIS
   void FinishChangingSorts();
   void PlayerJoined();
@@ -64,7 +64,7 @@ class MusicWheel : public WheelBase {
   std::string JumpToNextGroup();
   std::string JumpToPrevGroup();
   const MusicWheelItemData* GetCurWheelItemData(int i) {
-    return (const MusicWheelItemData*)m_CurWheelItemData[i];
+    return (const MusicWheelItemData*)cur_wheel_item_data_[i];
   }
 
   virtual void ReloadSongList();
@@ -85,9 +85,9 @@ class MusicWheel : public WheelBase {
   std::vector<MusicWheelItemData*>& getWheelItemsData(SortOrder so);
   void readyWheelItemsData(SortOrder so);
 
-  std::string m_sLastModeMenuItem;
-  SortOrder m_SortOrder;
-  RageSound m_soundChangeSort;
+  std::string last_mode_menu_item_;
+  SortOrder sort_order_;
+  RageSound sound_change_sort_;
 
   ThemeMetric<float> ROULETTE_SWITCH_SECONDS;
   ThemeMetric<int> ROULETTE_SLOW_DOWN_SWITCHES;
@@ -115,17 +115,17 @@ class MusicWheel : public WheelBase {
   ThemeMetric<RageColor> RANDOM_COLOR;
   ThemeMetric<RageColor> PORTAL_COLOR;
   ThemeMetric<RageColor> EMPTY_COLOR;
-  std::vector<int> m_viWheelPositions;
+  std::vector<int> wheel_positions_;
   ThemeMetric<std::string> CUSTOM_WHEEL_ITEM_NAMES;
   ThemeMetricMap<std::string> CUSTOM_CHOICES;
   ThemeMetricMap<RageColor> CUSTOM_CHOICE_COLORS;
-  std::string m_sExpandedParentSectionName;
+  std::string expanded_parent_section_name_;
 
  private:
   // use getWheelItemsData instead of touching this one
-  enum { INVALID, NEEDREFILTER, VALID } m_WheelItemDatasStatus[NUM_SortOrder];
-  std::vector<MusicWheelItemData*> m__WheelItemDatas[NUM_SortOrder];
-  std::vector<MusicWheelItemData*> m__UnFilteredWheelItemDatas[NUM_SortOrder];
+  enum { INVALID, NEEDREFILTER, VALID } wheel_item_datas_status_[NUM_SortOrder];
+  std::vector<MusicWheelItemData*> wheel_item_datas_[NUM_SortOrder];
+  std::vector<MusicWheelItemData*> un_filtered_wheel_item_datas_[NUM_SortOrder];
 
   void BuildWheelItemDatas(
       std::vector<MusicWheelItemData*>& arrayWheelItems, SortOrder so);

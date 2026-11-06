@@ -78,22 +78,22 @@ const float MODEL_X_TWO_PLAYERS[NUM_PLAYERS] = {+8, -8};
 const float MODEL_ROTATIONY_TWO_PLAYERS[NUM_PLAYERS] = {-90, 90};
 
 DancingCharacters::DancingCharacters()
-    : m_bDrawDangerLight(false),
-      m_CameraDistance(0),
-      m_CameraPanYStart(0),
-      m_CameraPanYEnd(0),
-      m_fLookAtHeight(0),
-      m_fCameraHeightStart(0),
-      m_fCameraHeightEnd(0),
-      m_fThisCameraStartBeat(0),
-      m_fThisCameraEndBeat(0) {
+    : draw_danger_light_(false),
+      camera_distance_(0),
+      camera_pan_y_start_(0),
+      camera_pan_y_end_(0),
+      look_at_height_(0),
+      camera_height_start_(0),
+      camera_height_end_(0),
+      this_camera_start_beat_(0),
+      this_camera_end_beat_(0) {
   FOREACH_PlayerNumber(p) {
-    m_pCharacter[p] = new Model;
+    character_[p] = new Model;
     if (!GAMESTATE->IsPlayerEnabled(p)) {
       continue;
     }
 
-    Character* pChar = GAMESTATE->m_pCurCharacters[p];
+    Character* pChar = GAMESTATE->cur_characters_[p];
     if (!pChar) {
       continue;
     }
@@ -103,139 +103,140 @@ DancingCharacters::DancingCharacters()
     }
 
     if (GAMESTATE->GetNumPlayersEnabled() == 2) {
-      m_pCharacter[p]->SetX(MODEL_X_TWO_PLAYERS[p]);
+      character_[p]->SetX(MODEL_X_TWO_PLAYERS[p]);
     } else {
-      m_pCharacter[p]->SetX(MODEL_X_ONE_PLAYER);
+      character_[p]->SetX(MODEL_X_ONE_PLAYER);
     }
 
-    switch (GAMESTATE->m_PlayMode) {
+    switch (GAMESTATE->play_mode_) {
       case PLAY_MODE_BATTLE:
       case PLAY_MODE_RAVE:
-        m_pCharacter[p]->SetRotationY(MODEL_ROTATIONY_TWO_PLAYERS[p]);
+        character_[p]->SetRotationY(MODEL_ROTATIONY_TWO_PLAYERS[p]);
       default:
         break;
     }
 
-    m_pCharacter[p]->LoadMilkshapeAscii(pChar->GetModelPath());
-    m_pCharacter[p]->LoadMilkshapeAsciiBones(
+    character_[p]->LoadMilkshapeAscii(pChar->GetModelPath());
+    character_[p]->LoadMilkshapeAsciiBones(
         "rest", pChar->GetRestAnimationPath());
-    m_pCharacter[p]->LoadMilkshapeAsciiBones(
+    character_[p]->LoadMilkshapeAsciiBones(
         "warmup", pChar->GetWarmUpAnimationPath());
-    m_pCharacter[p]->LoadMilkshapeAsciiBones(
+    character_[p]->LoadMilkshapeAsciiBones(
         "dance", pChar->GetDanceAnimationPath());
-    m_pCharacter[p]->SetCullMode(
+    character_[p]->SetCullMode(
         CULL_NONE);  // many of the models floating around have the vertex order
                      // flipped
 
-    m_pCharacter[p]->RunCommands(pChar->m_cmdInit);
+    character_[p]->RunCommands(pChar->init_);
   }
 }
 
 DancingCharacters::~DancingCharacters() {
-  FOREACH_PlayerNumber(p) delete m_pCharacter[p];
+  FOREACH_PlayerNumber(p) delete character_[p];
 }
 
 void DancingCharacters::LoadNextSong() {
   // initial camera sweep is still
-  m_CameraDistance = CAMERA_REST_DISTANCE;
-  m_CameraPanYStart = 0;
-  m_CameraPanYEnd = 0;
-  m_fCameraHeightStart = CAMERA_REST_LOOK_AT_HEIGHT;
-  m_fCameraHeightEnd = CAMERA_REST_LOOK_AT_HEIGHT;
-  m_fLookAtHeight = CAMERA_REST_LOOK_AT_HEIGHT;
-  m_fThisCameraStartBeat = 0;
-  m_fThisCameraEndBeat = 0;
+  camera_distance_ = CAMERA_REST_DISTANCE;
+  camera_pan_y_start_ = 0;
+  camera_pan_y_end_ = 0;
+  camera_height_start_ = CAMERA_REST_LOOK_AT_HEIGHT;
+  camera_height_end_ = CAMERA_REST_LOOK_AT_HEIGHT;
+  look_at_height_ = CAMERA_REST_LOOK_AT_HEIGHT;
+  this_camera_start_beat_ = 0;
+  this_camera_end_beat_ = 0;
 
-  ASSERT(GAMESTATE->m_pCurSong != nullptr);
-  m_fThisCameraEndBeat = GAMESTATE->m_pCurSong->GetFirstBeat();
+  ASSERT(GAMESTATE->cur_song_ != nullptr);
+  this_camera_end_beat_ = GAMESTATE->cur_song_->GetFirstBeat();
 
-  FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) m_pCharacter[p]
+  FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) character_[p]
       ->PlayAnimation("rest");
 }
 
 int Neg1OrPos1() { return RandomInt(2) ? -1 : +1; }
 
 void DancingCharacters::Update(float fDelta) {
-  if (GAMESTATE->m_Position.m_bFreeze || GAMESTATE->m_Position.m_bDelay) {
+  if (GAMESTATE->position_.freeze_ || GAMESTATE->position_.delay_) {
     // spin the camera Matrix-style
-    m_CameraPanYStart += fDelta * 40;
-    m_CameraPanYEnd += fDelta * 40;
+    camera_pan_y_start_ += fDelta * 40;
+    camera_pan_y_end_ += fDelta * 40;
   } else {
     // make the characters move
-    float fBPM = GAMESTATE->m_Position.m_fCurBPS * 60;
+    float fBPM = GAMESTATE->position_.cur_bps_ * 60;
     float fUpdateScale = SCALE(fBPM, 60.f, 300.f, 0.75f, 1.5f);
     rage_clamp(fUpdateScale, 0.75f, 1.5f);
 
     /* It's OK for the animation to go slower than natural when we're
      * at a very low music rate. */
-    fUpdateScale *= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+    fUpdateScale *= GAMESTATE->song_options_.GetCurrent().music_rate_;
 
     FOREACH_PlayerNumber(p) {
       if (GAMESTATE->IsPlayerEnabled(p)) {
-        m_pCharacter[p]->Update(fDelta * fUpdateScale);
+        character_[p]->Update(fDelta * fUpdateScale);
       }
     }
   }
 
   static bool bWasGameplayStarting = false;
-  bool bGameplayStarting = GAMESTATE->m_bGameplayLeadIn;
+  bool bGameplayStarting = GAMESTATE->gameplay_lead_in_;
   if (!bWasGameplayStarting && bGameplayStarting) {
-    FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) m_pCharacter[p]
+    FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) character_[p]
         ->PlayAnimation("warmup");
   }
   bWasGameplayStarting = bGameplayStarting;
 
-  static float fLastBeat = GAMESTATE->m_Position.m_fSongBeat;
-  float firstBeat = GAMESTATE->m_pCurSong->GetFirstBeat();
-  float fThisBeat = GAMESTATE->m_Position.m_fSongBeat;
+  static float fLastBeat = GAMESTATE->position_.song_beat_;
+  float firstBeat = GAMESTATE->cur_song_->GetFirstBeat();
+  float fThisBeat = GAMESTATE->position_.song_beat_;
   if (fLastBeat < firstBeat && fThisBeat >= firstBeat) {
-    FOREACH_PlayerNumber(p) m_pCharacter[p]->PlayAnimation("dance");
+    FOREACH_PlayerNumber(p) character_[p]->PlayAnimation("dance");
   }
   fLastBeat = fThisBeat;
 
   // time for a new sweep?
-  if (GAMESTATE->m_Position.m_fSongBeat > m_fThisCameraEndBeat) {
+  if (GAMESTATE->position_.song_beat_ > this_camera_end_beat_) {
     if (RandomInt(6) >= 4) {
       // sweeping camera
-      m_CameraDistance = CAMERA_SWEEP_DISTANCE +
+      camera_distance_ = CAMERA_SWEEP_DISTANCE +
                          RandomInt(-1, 1) * CAMERA_SWEEP_DISTANCE_VARIANCE;
-      m_CameraPanYStart = m_CameraPanYEnd =
+      camera_pan_y_start_ = camera_pan_y_end_ =
           RandomInt(-1, 1) * CAMERA_SWEEP_PAN_Y_RANGE_DEGREES;
-      m_fCameraHeightStart = m_fCameraHeightEnd = CAMERA_STILL_LOOK_AT_HEIGHT;
+      camera_height_start_ = camera_height_end_ = CAMERA_STILL_LOOK_AT_HEIGHT;
 
-      m_CameraPanYEnd += RandomInt(-1, 1) * CAMERA_SWEEP_PAN_Y_VARIANCE_DEGREES;
-      m_fCameraHeightStart = m_fCameraHeightEnd =
-          m_fCameraHeightStart +
+      camera_pan_y_end_ +=
+          RandomInt(-1, 1) * CAMERA_SWEEP_PAN_Y_VARIANCE_DEGREES;
+      camera_height_start_ = camera_height_end_ =
+          camera_height_start_ +
           RandomInt(-1, 1) * CAMERA_SWEEP_HEIGHT_VARIANCE;
 
       float fCameraHeightVariance =
           RandomInt(-1, 1) * CAMERA_SWEEP_HEIGHT_VARIANCE;
-      m_fCameraHeightStart -= fCameraHeightVariance;
-      m_fCameraHeightEnd += fCameraHeightVariance;
+      camera_height_start_ -= fCameraHeightVariance;
+      camera_height_end_ += fCameraHeightVariance;
 
-      m_fLookAtHeight = CAMERA_SWEEP_LOOK_AT_HEIGHT;
+      look_at_height_ = CAMERA_SWEEP_LOOK_AT_HEIGHT;
     } else {
       // still camera
-      m_CameraDistance = CAMERA_STILL_DISTANCE +
+      camera_distance_ = CAMERA_STILL_DISTANCE +
                          RandomInt(-1, 1) * CAMERA_STILL_DISTANCE_VARIANCE;
-      m_CameraPanYStart = m_CameraPanYEnd =
+      camera_pan_y_start_ = camera_pan_y_end_ =
           Neg1OrPos1() * CAMERA_STILL_PAN_Y_RANGE_DEGREES;
-      m_fCameraHeightStart = m_fCameraHeightEnd =
+      camera_height_start_ = camera_height_end_ =
           CAMERA_SWEEP_LOOK_AT_HEIGHT +
           Neg1OrPos1() * CAMERA_STILL_HEIGHT_VARIANCE;
 
-      m_fLookAtHeight = CAMERA_STILL_LOOK_AT_HEIGHT;
+      look_at_height_ = CAMERA_STILL_LOOK_AT_HEIGHT;
     }
 
-    int iCurBeat = (int)GAMESTATE->m_Position.m_fSongBeat;
+    int iCurBeat = (int)GAMESTATE->position_.song_beat_;
     // Need to convert it to a int, otherwise it complains.
     int NewBeatToSet = (int)AMM_BEATS_TIL_NEXTCAMERA;
     if (NewBeatToSet != 0) {
       iCurBeat -= iCurBeat % NewBeatToSet;
     }
 
-    m_fThisCameraStartBeat = (float)iCurBeat;
-    m_fThisCameraEndBeat = float(iCurBeat + AMM_BEATS_TIL_NEXTCAMERA);
+    this_camera_start_beat_ = (float)iCurBeat;
+    this_camera_end_beat_ = float(iCurBeat + AMM_BEATS_TIL_NEXTCAMERA);
   }
 }
 
@@ -243,30 +244,30 @@ void DancingCharacters::DrawPrimitives() {
   DISPLAY->CameraPushMatrix();
 
   float fPercentIntoSweep;
-  if (m_fThisCameraStartBeat == m_fThisCameraEndBeat) {
+  if (this_camera_start_beat_ == this_camera_end_beat_) {
     fPercentIntoSweep = 0;
   } else {
     fPercentIntoSweep = SCALE(
-        GAMESTATE->m_Position.m_fSongBeat, m_fThisCameraStartBeat,
-        m_fThisCameraEndBeat, 0.f, 1.f);
+        GAMESTATE->position_.song_beat_, this_camera_start_beat_,
+        this_camera_end_beat_, 0.f, 1.f);
   }
-  float fCameraPanY =
-      SCALE(fPercentIntoSweep, 0.f, 1.f, m_CameraPanYStart, m_CameraPanYEnd);
+  float fCameraPanY = SCALE(
+      fPercentIntoSweep, 0.f, 1.f, camera_pan_y_start_, camera_pan_y_end_);
   float fCameraHeight = SCALE(
-      fPercentIntoSweep, 0.f, 1.f, m_fCameraHeightStart, m_fCameraHeightEnd);
+      fPercentIntoSweep, 0.f, 1.f, camera_height_start_, camera_height_end_);
 
-  RageVector3 m_CameraPoint(0, fCameraHeight, -m_CameraDistance);
+  RageVector3 m_CameraPoint(0, fCameraHeight, -camera_distance_);
   RageMatrix CameraRot;
   RageMatrixRotationY(&CameraRot, fCameraPanY);
   RageVec3TransformCoord(&m_CameraPoint, &m_CameraPoint, &CameraRot);
 
-  RageVector3 m_LookAt(0, m_fLookAtHeight, 0);
+  RageVector3 m_LookAt(0, look_at_height_, 0);
 
   DISPLAY->LoadLookAt(CAM_FOV, m_CameraPoint, m_LookAt, RageVector3(0, 1, 0));
 
   FOREACH_EnabledPlayer(p) {
-    bool bFailed = STATSMAN->m_CurStageStats.m_player[p].m_bFailed;
-    bool bDanger = m_bDrawDangerLight;
+    bool bFailed = STATSMAN->cur_stage_stats_.player_[p].failed_;
+    bool bDanger = draw_danger_light_;
 
     DISPLAY->SetLighting(true);
 
@@ -281,15 +282,15 @@ void DancingCharacters::DrawPrimitives() {
         0, ambient, diffuse, specular,
         RageVector3(LIGHTING_X, LIGHTING_Y, LIGHTING_Z));
 
-    if (PREFSMAN->m_bCelShadeModels) {
-      m_pCharacter[p]->DrawCelShaded();
+    if (PREFSMAN->cel_shade_models_) {
+      character_[p]->DrawCelShaded();
 
       DISPLAY->SetLightOff(0);
       DISPLAY->SetLighting(false);
       continue;
     }
 
-    m_pCharacter[p]->Draw();
+    character_[p]->Draw();
 
     DISPLAY->SetLightOff(0);
     DISPLAY->SetLighting(false);

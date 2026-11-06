@@ -33,12 +33,12 @@ class RageMovieTextureDriver : public RageDriver {
  public:
   virtual ~RageMovieTextureDriver() {}
   virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError) = 0;
-  static DriverList m_pDriverList;
+  static DriverList driver_list_;
 };
 
-#define REGISTER_MOVIE_TEXTURE_CLASS(name)           \
-  static RegisterRageDriver register_##name(         \
-      &RageMovieTextureDriver::m_pDriverList, #name, \
+#define REGISTER_MOVIE_TEXTURE_CLASS(name)          \
+  static RegisterRageDriver register_##name(        \
+      &RageMovieTextureDriver::driver_list_, #name, \
       CreateClass<RageMovieTextureDriver_##name, RageDriver>)
 
 #endif

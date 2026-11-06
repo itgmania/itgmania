@@ -10,7 +10,7 @@ class Regex {
   Regex(const Regex& rhs);
   Regex& operator=(const Regex& rhs);
   ~Regex();
-  bool IsSet() const { return !m_sPattern.empty(); }
+  bool IsSet() const { return !pattern_.empty(); }
   void Set(const std::string& str);
   bool Compare(const std::string& sStr);
   bool Compare(const std::string& sStr, std::vector<std::string>& asMatches);
@@ -22,9 +22,9 @@ class Regex {
   void Compile();
   void Release();
 
-  void* m_pReg;
-  unsigned m_iBackrefs;
-  std::string m_sPattern;
+  void* reg_;
+  unsigned backrefs_;
+  std::string pattern_;
 };
 
 #endif

@@ -49,8 +49,8 @@ class ArchHooks {
    * @brief Determine if the user wants to quit (eg. ^C, or clicked a "close
    * window" button).
    * @return true if the user wants to quit, false otherwise. */
-  static bool UserQuit() { return g_bQuitting; }
-  static void SetUserQuit() { g_bQuitting = true; }
+  static bool UserQuit() { return quitting_; }
+  static void SetUserQuit() { quitting_ = true; }
 
   /*
    * Returns true if the user wants to toggle windowed mode and atomically
@@ -104,7 +104,7 @@ class ArchHooks {
   /*
    * Return true if the application has input focus.
    */
-  bool AppHasFocus() const { return m_bHasFocus; }
+  bool AppHasFocus() const { return has_focus_; }
 
   /*
    * Returns true if the application's focus has changed since last called.
@@ -121,10 +121,10 @@ class ArchHooks {
  private:
   static int64_t FixupTimeIfBackwards(int64_t usecs);
 
-  static bool g_bQuitting;
-  static bool g_bToggleWindowed;
-  bool m_bHasFocus;
-  bool m_bFocusChanged;
+  static bool quitting_;
+  static bool toggle_windowed_;
+  bool has_focus_;
+  bool focus_changed_;
 };
 
 #endif

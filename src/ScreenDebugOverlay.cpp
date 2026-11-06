@@ -124,7 +124,7 @@ class IDebugLine {
     sMessageOut = s1 + s2;
   };
 
-  DeviceInput m_Button;
+  DeviceInput button_;
 };
 
 static bool IsGameplay() {
@@ -137,38 +137,38 @@ REGISTER_SCREEN_CLASS(ScreenDebugOverlay);
 ScreenDebugOverlay::~ScreenDebugOverlay() {
   this->RemoveAllChildren();
 
-  for (BitmapText* p : m_vptextPages) {
+  for (BitmapText* p : text_pages_) {
     RageUtil::SafeDelete(p);
   }
-  for (BitmapText* p : m_vptextButton) {
+  for (BitmapText* p : text_button_) {
     RageUtil::SafeDelete(p);
   }
-  m_vptextButton.clear();
-  for (BitmapText* p : m_vptextFunction) {
+  text_button_.clear();
+  for (BitmapText* p : text_function_) {
     RageUtil::SafeDelete(p);
   }
-  m_vptextFunction.clear();
+  text_function_.clear();
 }
 
 const int MAX_DEBUG_LINES = 30;
 struct MapDebugToDI {
-  DeviceInput holdForDebug1;
-  DeviceInput holdForDebug2;
-  DeviceInput holdForSlow;
-  DeviceInput holdForFast;
-  DeviceInput toggleMute;
-  DeviceInput debugButton[MAX_DEBUG_LINES];
-  DeviceInput gameplayButton[MAX_DEBUG_LINES];
-  std::map<DeviceInput, int> pageButton;
+  DeviceInput hold_for_debug1_;
+  DeviceInput hold_for_debug2_;
+  DeviceInput hold_for_slow_;
+  DeviceInput hold_for_fast_;
+  DeviceInput toggle_mute_;
+  DeviceInput debug_button_[MAX_DEBUG_LINES];
+  DeviceInput gameplay_button_[MAX_DEBUG_LINES];
+  std::map<DeviceInput, int> page_button_;
   void Clear() {
-    holdForDebug1.MakeInvalid();
-    holdForDebug2.MakeInvalid();
-    holdForSlow.MakeInvalid();
-    holdForFast.MakeInvalid();
-    toggleMute.MakeInvalid();
+    hold_for_debug1_.MakeInvalid();
+    hold_for_debug2_.MakeInvalid();
+    hold_for_slow_.MakeInvalid();
+    hold_for_fast_.MakeInvalid();
+    toggle_mute_.MakeInvalid();
     for (int i = 0; i < MAX_DEBUG_LINES; i++) {
-      debugButton[i].MakeInvalid();
-      gameplayButton[i].MakeInvalid();
+      debug_button_[i].MakeInvalid();
+      gameplay_button_[i].MakeInvalid();
     }
   }
 };
@@ -176,7 +176,7 @@ static MapDebugToDI g_Mappings;
 
 static LocalizedString IN_GAMEPLAY("ScreenDebugOverlay", "%s in gameplay");
 static std::string GetDebugButtonName(const IDebugLine* pLine) {
-  std::string s = INPUTMAN->GetDeviceSpecificInputString(pLine->m_Button);
+  std::string s = INPUTMAN->GetDeviceSpecificInputString(pLine->button_);
   IDebugLine::Type type = pLine->GetType();
   switch (type) {
     case IDebugLine::all_screens:
@@ -202,7 +202,7 @@ static bool GetKeyFromMap(const std::map<U, V>& m, const V& val, U& key) {
 
 static LocalizedString DEBUG_MENU("ScreenDebugOverlay", "Debug Menu");
 void ScreenDebugOverlay::Init() {
-  g_bEnableDebugMenu = PREFSMAN->m_bDebugMenuEnabled.Get();
+  g_bEnableDebugMenu = PREFSMAN->debug_menu_enabled_.Get();
 
   Screen::Init();
 
@@ -215,48 +215,48 @@ void ScreenDebugOverlay::Init() {
   {
     g_Mappings.Clear();
 
-    g_Mappings.holdForDebug1 = DeviceInput(DEVICE_KEYBOARD, KEY_F3);
-    g_Mappings.holdForDebug2.MakeInvalid();
-    g_Mappings.holdForSlow = DeviceInput(DEVICE_KEYBOARD, KEY_ACCENT);
-    g_Mappings.holdForFast = DeviceInput(DEVICE_KEYBOARD, KEY_TAB);
-    g_Mappings.toggleMute = DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE);
+    g_Mappings.hold_for_debug1_ = DeviceInput(DEVICE_KEYBOARD, KEY_F3);
+    g_Mappings.hold_for_debug2_.MakeInvalid();
+    g_Mappings.hold_for_slow_ = DeviceInput(DEVICE_KEYBOARD, KEY_ACCENT);
+    g_Mappings.hold_for_fast_ = DeviceInput(DEVICE_KEYBOARD, KEY_TAB);
+    g_Mappings.toggle_mute_ = DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE);
 
     /* TODO: Find a better way of indicating which option is which here.
      * Maybe we should take a page from ScreenEdit's menus and make
      * RowDefs()? */
 
     int i = 0;
-    g_Mappings.gameplayButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F8);
-    g_Mappings.gameplayButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F7);
-    g_Mappings.gameplayButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F6);
+    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F8);
+    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F7);
+    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F6);
     i = 0;
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C1);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C2);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C3);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C4);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C5);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C6);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C7);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C8);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C9);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C0);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cq);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cw);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ce);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cr);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ct);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ci);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Co);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cp);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ca);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cs);
-    g_Mappings.debugButton[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cd);
-    g_Mappings.pageButton[DeviceInput(DEVICE_KEYBOARD, KEY_F5)] = 0;
-    g_Mappings.pageButton[DeviceInput(DEVICE_KEYBOARD, KEY_F6)] = 1;
-    g_Mappings.pageButton[DeviceInput(DEVICE_KEYBOARD, KEY_F7)] = 2;
-    g_Mappings.pageButton[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C1);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C2);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C3);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C4);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C5);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C6);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C7);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C8);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C9);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C0);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cq);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cw);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ce);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cr);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ct);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ci);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Co);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cp);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ca);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cs);
+    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cd);
+    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F5)] = 0;
+    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F6)] = 1;
+    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F7)] = 2;
+    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
   }
 
   std::map<std::string, int> iNextDebugButton;
@@ -267,42 +267,41 @@ void ScreenDebugOverlay::Init() {
     DeviceInput di;
     switch (p->GetType()) {
       case IDebugLine::all_screens:
-        di = g_Mappings.debugButton[iNextDebugButton[sPageName]++];
+        di = g_Mappings.debug_button_[iNextDebugButton[sPageName]++];
         break;
       case IDebugLine::gameplay_only:
-        di = g_Mappings.gameplayButton[iNextGameplayButton++];
+        di = g_Mappings.gameplay_button_[iNextGameplayButton++];
         break;
     }
-    p->m_Button = di;
+    p->button_ = di;
 
-    if (find(m_asPages.begin(), m_asPages.end(), sPageName) ==
-        m_asPages.end()) {
-      m_asPages.push_back(sPageName);
+    if (find(pages_.begin(), pages_.end(), sPageName) == pages_.end()) {
+      pages_.push_back(sPageName);
     }
   }
 
-  m_iCurrentPage = 0;
-  m_bForcedHidden = false;
+  current_page_ = 0;
+  forced_hidden_ = false;
 
-  m_Quad.StretchTo(RectF(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
-  m_Quad.SetDiffuse(BACKGROUND_COLOR);
-  this->AddChild(&m_Quad);
+  quad_.StretchTo(RectF(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+  quad_.SetDiffuse(BACKGROUND_COLOR);
+  this->AddChild(&quad_);
 
   // if you're going to add user commands, make sure to have the overrides
   // set after parsing the metrics. -aj
-  m_textHeader.SetName("HeaderText");
-  m_textHeader.LoadFromFont(THEME->GetPathF("ScreenDebugOverlay", "header"));
-  LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_textHeader);
-  m_textHeader.SetText(DEBUG_MENU);
-  this->AddChild(&m_textHeader);
+  text_header_.SetName("HeaderText");
+  text_header_.LoadFromFont(THEME->GetPathF("ScreenDebugOverlay", "header"));
+  LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(text_header_);
+  text_header_.SetText(DEBUG_MENU);
+  this->AddChild(&text_header_);
 
-  auto start = m_asPages.begin();
-  for (std::vector<std::string>::const_iterator s = m_asPages.begin();
-       s != m_asPages.end(); ++s) {
+  auto start = pages_.begin();
+  for (std::vector<std::string>::const_iterator s = pages_.begin();
+       s != pages_.end(); ++s) {
     int iPage = s - start;
 
     DeviceInput di;
-    bool b = GetKeyFromMap(g_Mappings.pageButton, iPage, di);
+    bool b = GetKeyFromMap(g_Mappings.page_button_, iPage, di);
     ASSERT(b);
 
     std::string sButton = INPUTMAN->GetDeviceSpecificInputString(di);
@@ -314,7 +313,7 @@ void ScreenDebugOverlay::Init() {
     // todo: Y value is still hardcoded. -aj
     p->SetXY(PAGE_START_X + iPage * PAGE_SPACING_X, SCREEN_TOP + 20);
     p->SetText(*s + " (" + sButton + ")");
-    m_vptextPages.push_back(p);
+    text_pages_.push_back(p);
     this->AddChild(p);
   }
 
@@ -326,7 +325,7 @@ void ScreenDebugOverlay::Init() {
       bt->SetHorizAlign(align_right);
       bt->SetText("blah");
       LOAD_ALL_COMMANDS_AND_ON_COMMAND(*bt);
-      m_vptextButton.push_back(bt);
+      text_button_.push_back(bt);
       this->AddChild(bt);
     }
     {
@@ -336,7 +335,7 @@ void ScreenDebugOverlay::Init() {
       bt->SetHorizAlign(align_left);
       bt->SetText("blah");
       LOAD_ALL_COMMANDS_AND_ON_COMMAND(*bt);
-      m_vptextFunction.push_back(bt);
+      text_function_.push_back(bt);
       this->AddChild(bt);
     }
   }
@@ -351,13 +350,13 @@ void ScreenDebugOverlay::Update(float fDeltaTime) {
 
   {
     float fRate = 1;
-    if (INPUTFILTER->IsBeingPressed(g_Mappings.holdForFast)) {
-      if (INPUTFILTER->IsBeingPressed(g_Mappings.holdForSlow)) {
+    if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_fast_)) {
+      if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
         fRate = 0;  // both; stop time
       } else {
         fRate *= 4;
       }
-    } else if (INPUTFILTER->IsBeingPressed(g_Mappings.holdForSlow)) {
+    } else if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
       fRate /= 4;
     }
 
@@ -374,16 +373,17 @@ void ScreenDebugOverlay::Update(float fDeltaTime) {
   fapproach(g_fImageScaleCurrent, g_fImageScaleDestination, fDeltaTime);
   if (bCenteringNeedsUpdate) {
     DISPLAY->ChangeCentering(
-        PREFSMAN->m_iCenterImageTranslateX, PREFSMAN->m_iCenterImageTranslateY,
-        PREFSMAN->m_fCenterImageAddWidth - (int)SCREEN_WIDTH +
+        PREFSMAN->center_image_translate_x_,
+        PREFSMAN->center_image_translate_y_,
+        PREFSMAN->center_image_add_width_ - (int)SCREEN_WIDTH +
             (int)(g_fImageScaleCurrent * SCREEN_WIDTH),
-        PREFSMAN->m_fCenterImageAddHeight - (int)SCREEN_HEIGHT +
+        PREFSMAN->center_image_add_height_ - (int)SCREEN_HEIGHT +
             (int)(g_fImageScaleCurrent * SCREEN_HEIGHT));
   }
 
   Screen::Update(fDeltaTime);
 
-  this->SetVisible(g_bIsDisplayed && !m_bForcedHidden);
+  this->SetVisible(g_bIsDisplayed && !forced_hidden_);
   if (!g_bIsDisplayed) {
     return;
   }
@@ -392,12 +392,12 @@ void ScreenDebugOverlay::Update(float fDeltaTime) {
 }
 
 void ScreenDebugOverlay::UpdateText() {
-  auto start = m_asPages.begin();
-  for (std::vector<std::string>::const_iterator s = m_asPages.begin();
-       s != m_asPages.end(); ++s) {
+  auto start = pages_.begin();
+  for (std::vector<std::string>::const_iterator s = pages_.begin();
+       s != pages_.end(); ++s) {
     int iPage = s - start;
-    m_vptextPages[iPage]->PlayCommand(
-        (iPage == m_iCurrentPage) ? "GainFocus" : "LoseFocus");
+    text_pages_[iPage]->PlayCommand(
+        (iPage == current_page_) ? "GainFocus" : "LoseFocus");
   }
 
   // todo: allow changing of various spacing/location things -aj
@@ -411,8 +411,8 @@ void ScreenDebugOverlay::UpdateText() {
 
     float fY = LINE_START_Y + iOffset * LINE_SPACING;
 
-    BitmapText& txt1 = *m_vptextButton[i];
-    BitmapText& txt2 = *m_vptextFunction[i];
+    BitmapText& txt1 = *text_button_[i];
+    BitmapText& txt2 = *text_function_[i];
     if (sPageName != GetCurrentPageName()) {
       txt1.SetVisible(false);
       txt2.SetVisible(false);
@@ -472,20 +472,20 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
     return Screen::Input(input);
   }
 
-  if (input.DeviceI == g_Mappings.holdForDebug1 ||
-      input.DeviceI == g_Mappings.holdForDebug2) {
+  if (input.device_i_ == g_Mappings.hold_for_debug1_ ||
+      input.device_i_ == g_Mappings.hold_for_debug2_) {
     bool bHoldingNeither =
-        (!g_Mappings.holdForDebug1.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
-        (!g_Mappings.holdForDebug2.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug2));
+        (!g_Mappings.hold_for_debug1_.IsValid() ||
+         !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
+        (!g_Mappings.hold_for_debug2_.IsValid() ||
+         !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
     bool bHoldingBoth =
-        (!g_Mappings.holdForDebug1.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
-        (!g_Mappings.holdForDebug2.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug2));
+        (!g_Mappings.hold_for_debug1_.IsValid() ||
+         INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
+        (!g_Mappings.hold_for_debug2_.IsValid() ||
+         INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
     if (bHoldingNeither) {
-      m_bForcedHidden = false;
+      forced_hidden_ = false;
     }
 
     if (bHoldingBoth) {
@@ -494,21 +494,21 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
       g_bIsDisplayed = false;
     }
   }
-  if (input.DeviceI == g_Mappings.toggleMute) {
-    PREFSMAN->m_MuteActions.Set(!PREFSMAN->m_MuteActions);
+  if (input.device_i_ == g_Mappings.toggle_mute_) {
+    PREFSMAN->mute_actions_.Set(!PREFSMAN->mute_actions_);
     SCREENMAN->SystemMessage(
-        PREFSMAN->m_MuteActions ? MUTE_ACTIONS_ON.GetValue()
+        PREFSMAN->mute_actions_ ? MUTE_ACTIONS_ON.GetValue()
                                 : MUTE_ACTIONS_OFF.GetValue());
   }
 
   int iPage = 0;
   if (g_bIsDisplayed &&
-      GetValueFromMap(g_Mappings.pageButton, input.DeviceI, iPage)) {
-    if (input.type != IET_FIRST_PRESS) {
+      GetValueFromMap(g_Mappings.page_button_, input.device_i_, iPage)) {
+    if (input.type_ != IET_FIRST_PRESS) {
       return true;  // eat the input but do nothing
     }
-    m_iCurrentPage = iPage;
-    rage_clamp(m_iCurrentPage, 0, (int)m_asPages.size() - 1);
+    current_page_ = iPage;
+    rage_clamp(current_page_, 0, (int)pages_.size() - 1);
     return true;
   }
 
@@ -540,8 +540,8 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
         FAIL_M(ssprintf("Invalid debug line type: %i", type));
     }
 
-    if (input.DeviceI == (*p)->m_Button) {
-      if (input.type != IET_FIRST_PRESS) {
+    if (input.device_i_ == (*p)->button_) {
+      if (input.type_ != IET_FIRST_PRESS) {
         return true;  // eat the input but do nothing
       }
 
@@ -552,14 +552,14 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
         LOG->Trace("DEBUG: %s", sMessage.c_str());
       }
       if ((*p)->ForceOffAfterUse()) {
-        m_bForcedHidden = true;
+        forced_hidden_ = true;
       }
 
       // update text to show the effect of what changed above
       UpdateText();
 
       // show what changed
-      BitmapText& bt = *m_vptextButton[i];
+      BitmapText& bt = *text_button_[i];
       bt.FinishTweening();
       bt.PlayCommand("Toggled");
 
@@ -671,8 +671,8 @@ class DebugLineAutoplay : public IDebugLine {
   virtual void DoAndLog(std::string& sMessageOut) {
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
     PlayerController pc =
-        GAMESTATE->m_pPlayerState[GAMESTATE->GetMasterPlayerNumber()]
-            ->m_PlayerController;
+        GAMESTATE->player_state_[GAMESTATE->GetMasterPlayerNumber()]
+            ->player_controller_;
     bool bHoldingShift =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
@@ -682,7 +682,7 @@ class DebugLineAutoplay : public IDebugLine {
       pc = (pc == PC_AUTOPLAY) ? PC_HUMAN : PC_AUTOPLAY;
     }
     GamePreferences::m_AutoPlay.Set(pc);
-    FOREACH_HumanPlayer(p) GAMESTATE->m_pPlayerState[p]->m_PlayerController =
+    FOREACH_HumanPlayer(p) GAMESTATE->player_state_[p]->player_controller_ =
         GamePreferences::m_AutoPlay;
 
     IDebugLine::DoAndLog(sMessageOut);
@@ -694,18 +694,17 @@ class DebugLineAssist : public IDebugLine {
   virtual Type GetType() const { return gameplay_only; }
   virtual std::string GetDisplayValue() {
     SongOptions so;
-    so.m_bAssistClap = GAMESTATE->m_SongOptions.GetSong().m_bAssistClap;
-    so.m_bAssistMetronome =
-        GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
-    if (so.m_bAssistClap || so.m_bAssistMetronome) {
+    so.assist_clap_ = GAMESTATE->song_options_.GetSong().assist_clap_;
+    so.assist_metronome_ = GAMESTATE->song_options_.GetSong().assist_metronome_;
+    if (so.assist_clap_ || so.assist_metronome_) {
       return so.GetLocalizedString();
     } else {
       return OFF.GetValue();
     }
   }
   virtual bool IsEnabled() {
-    return GAMESTATE->m_SongOptions.GetSong().m_bAssistClap ||
-           GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
+    return GAMESTATE->song_options_.GetSong().assist_clap_ ||
+           GAMESTATE->song_options_.GetSong().assist_metronome_;
   }
   virtual void DoAndLog(std::string& sMessageOut) {
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
@@ -713,16 +712,16 @@ class DebugLineAssist : public IDebugLine {
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT));
     bool b;
     if (bHoldingShift) {
-      b = !GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
+      b = !GAMESTATE->song_options_.GetSong().assist_metronome_;
     } else {
-      b = !GAMESTATE->m_SongOptions.GetSong().m_bAssistClap;
+      b = !GAMESTATE->song_options_.GetSong().assist_clap_;
     }
     if (bHoldingShift) {
       SO_GROUP_ASSIGN(
-          GAMESTATE->m_SongOptions, ModsLevel_Preferred, m_bAssistMetronome, b);
+          GAMESTATE->song_options_, ModsLevel_Preferred, assist_metronome_, b);
     } else {
       SO_GROUP_ASSIGN(
-          GAMESTATE->m_SongOptions, ModsLevel_Preferred, m_bAssistClap, b);
+          GAMESTATE->song_options_, ModsLevel_Preferred, assist_clap_, b);
     }
 
     IDebugLine::DoAndLog(sMessageOut);
@@ -732,7 +731,7 @@ class DebugLineAssist : public IDebugLine {
 class DebugLineAutosync : public IDebugLine {
   virtual std::string GetDisplayTitle() { return AUTOSYNC.GetValue(); }
   virtual std::string GetDisplayValue() {
-    AutosyncType type = GAMESTATE->m_SongOptions.GetSong().m_AutosyncType;
+    AutosyncType type = GAMESTATE->song_options_.GetSong().autosync_type_;
     switch (type) {
       case AutosyncType_Off:
         return OFF.GetValue();
@@ -752,11 +751,11 @@ class DebugLineAutosync : public IDebugLine {
   }
   virtual Type GetType() const { return IDebugLine::gameplay_only; }
   virtual bool IsEnabled() {
-    return GAMESTATE->m_SongOptions.GetSong().m_AutosyncType !=
+    return GAMESTATE->song_options_.GetSong().autosync_type_ !=
            AutosyncType_Off;
   }
   virtual void DoAndLog(std::string& sMessageOut) {
-    int as = GAMESTATE->m_SongOptions.GetSong().m_AutosyncType + 1;
+    int as = GAMESTATE->song_options_.GetSong().autosync_type_ + 1;
     bool bAllowSongAutosync = !GAMESTATE->IsCourseMode();
     if (!bAllowSongAutosync &&
         (as == AutosyncType_Song || as == AutosyncType_Tempo)) {
@@ -764,7 +763,7 @@ class DebugLineAutosync : public IDebugLine {
     }
     wrap(as, NUM_AutosyncType);
     SO_GROUP_ASSIGN(
-        GAMESTATE->m_SongOptions, ModsLevel_Song, m_AutosyncType,
+        GAMESTATE->song_options_, ModsLevel_Song, autosync_type_,
         AutosyncType(as));
     MESSAGEMAN->Broadcast(Message_AutosyncChanged);
     IDebugLine::DoAndLog(sMessageOut);
@@ -815,27 +814,27 @@ class DebugLineHalt : public IDebugLine {
 
 class DebugLineLightsDebug : public IDebugLine {
   virtual std::string GetDisplayTitle() { return LIGHTS_DEBUG.GetValue(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bDebugLights.Get(); }
+  virtual bool IsEnabled() { return PREFSMAN->debug_lights_.Get(); }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bDebugLights.Set(!PREFSMAN->m_bDebugLights);
+    PREFSMAN->debug_lights_.Set(!PREFSMAN->debug_lights_);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };
 
 class DebugLineStats : public IDebugLine {
   virtual std::string GetDisplayTitle() { return RENDERING_STATS.GetValue(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bShowStats.Get(); }
+  virtual bool IsEnabled() { return PREFSMAN->show_stats_.Get(); }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bShowStats.Set(!PREFSMAN->m_bShowStats);
+    PREFSMAN->show_stats_.Set(!PREFSMAN->show_stats_);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };
 
 class DebugLineVsync : public IDebugLine {
   virtual std::string GetDisplayTitle() { return VSYNC.GetValue(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bVsync.Get(); }
+  virtual bool IsEnabled() { return PREFSMAN->vsync_.Get(); }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bVsync.Set(!PREFSMAN->m_bVsync);
+    PREFSMAN->vsync_.Set(!PREFSMAN->vsync_);
     StepMania::ApplyGraphicOptions();
     IDebugLine::DoAndLog(sMessageOut);
   }
@@ -843,9 +842,9 @@ class DebugLineVsync : public IDebugLine {
 
 class DebugLineAllowMultitexture : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MULTITEXTURE.GetValue(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bAllowMultitexture.Get(); }
+  virtual bool IsEnabled() { return PREFSMAN->allow_multitexture_.Get(); }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bAllowMultitexture.Set(!PREFSMAN->m_bAllowMultitexture);
+    PREFSMAN->allow_multitexture_.Set(!PREFSMAN->allow_multitexture_);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };
@@ -922,11 +921,11 @@ class DebugLineResetKeyMapping : public IDebugLine {
 class DebugLineMuteActions : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MUTE_ACTIONS.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_MuteActions; }
+  virtual bool IsEnabled() { return PREFSMAN->mute_actions_; }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_MuteActions.Set(!PREFSMAN->m_MuteActions);
+    PREFSMAN->mute_actions_.Set(!PREFSMAN->mute_actions_);
     SCREENMAN->SystemMessage(
-        PREFSMAN->m_MuteActions ? MUTE_ACTIONS_ON.GetValue()
+        PREFSMAN->mute_actions_ ? MUTE_ACTIONS_ON.GetValue()
                                 : MUTE_ACTIONS_OFF.GetValue());
     IDebugLine::DoAndLog(sMessageOut);
   }
@@ -1015,7 +1014,7 @@ class DebugLineReloadTheme : public IDebugLine {
   virtual void DoAndLog(std::string& sMessageOut) {
     THEME->ReloadMetrics();
     TEXTUREMAN->ReloadAll();
-    NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
+    NOTESKIN->RefreshNoteSkinData(GAMESTATE->cur_game_);
     CodeDetector::RefreshCacheItems();
     // HACK: Don't update text below. Return immediately because this screen
     // was just destroyed as part of the theme reload.
@@ -1039,10 +1038,10 @@ class DebugLineReloadOverlayScreens : public IDebugLine {
 class DebugLineToggleErrors : public IDebugLine {
   virtual std::string GetDisplayTitle() { return TOGGLE_ERRORS.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_show_theme_errors; }
+  virtual bool IsEnabled() { return PREFSMAN->show_theme_errors_; }
   virtual std::string GetPageName() const { return "Theme"; }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_show_theme_errors.Set(!PREFSMAN->m_show_theme_errors);
+    PREFSMAN->show_theme_errors_.Set(!PREFSMAN->show_theme_errors_);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };
@@ -1079,7 +1078,7 @@ class DebugLineConvertXML : public IDebugLine {
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
   virtual void DoAndLog(std::string& sMessageOut) {
-    Song* cur_song = GAMESTATE->m_pCurSong;
+    Song* cur_song = GAMESTATE->cur_song_;
     if (cur_song) {
       convert_xmls_in_dir(cur_song->GetSongDir() + "/");
       IDebugLine::DoAndLog(sMessageOut);
@@ -1130,9 +1129,9 @@ class DebugLineReloadPreferences : public IDebugLine {
 class DebugLineMenuTimer : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MENU_TIMER.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bMenuTimer.Get(); }
+  virtual bool IsEnabled() { return PREFSMAN->menu_timer_.Get(); }
   virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bMenuTimer.Set(!PREFSMAN->m_bMenuTimer);
+    PREFSMAN->menu_timer_.Set(!PREFSMAN->menu_timer_);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };

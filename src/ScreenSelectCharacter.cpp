@@ -94,7 +94,7 @@ void ScreenSelectCharacter::Init() {
     return;
   }
 
-  switch (GAMESTATE->m_PlayMode) {
+  switch (GAMESTATE->play_mode_) {
     // For Rave/Battle mode, we force the players to select characters
     // (by not returning in this switch)
     case PLAY_MODE_BATTLE:
@@ -103,67 +103,67 @@ void ScreenSelectCharacter::Init() {
 
     default:
       /* Non Rave/Battle mode, just skip this screen if disabled. */
-      if (PREFSMAN->m_ShowDancingCharacters != SDC_Select) {
+      if (PREFSMAN->show_dancing_characters_ != SDC_Select) {
         this->PostScreenMessage(SM_GoToNextScreen, 0);
         return;
       }
   }
 
   FOREACH_PlayerNumber(p) {
-    m_iSelectedCharacter[p] = 0;
+    selected_character_[p] = 0;
     if (GAMESTATE->IsHumanPlayer(p)) {
-      m_SelectionRow[p] = CHOOSING_HUMAN_CHARACTER;
+      selection_row_[p] = CHOOSING_HUMAN_CHARACTER;
     }
   }
 
   FOREACH_EnabledPlayer(p) {
-    m_sprTitle[p].Load(THEME->GetPathG("ScreenSelectCharacter", "title 2x2"));
-    m_sprTitle[p].SetState(GAMESTATE->IsHumanPlayer(p) ? p : 2 + p);
-    m_sprTitle[p].StopAnimating();
-    m_sprTitle[p].RunCommands(TITLE_ON_COMMAND(p));
+    spr_title_[p].Load(THEME->GetPathG("ScreenSelectCharacter", "title 2x2"));
+    spr_title_[p].SetState(GAMESTATE->IsHumanPlayer(p) ? p : 2 + p);
+    spr_title_[p].StopAnimating();
+    spr_title_[p].RunCommands(TITLE_ON_COMMAND(p));
 
-    this->AddChild(&m_sprTitle[p]);
+    this->AddChild(&spr_title_[p]);
 
-    m_sprCard[p].RunCommands(CARD_ON_COMMAND(p));
-    this->AddChild(&m_sprCard[p]);
+    spr_card_[p].RunCommands(CARD_ON_COMMAND(p));
+    this->AddChild(&spr_card_[p]);
 
-    m_sprCardArrows[p].Load(
+    spr_card_arrows_[p].Load(
         THEME->GetPathG("ScreenSelectCharacter", "card arrows"));
-    m_sprCardArrows[p].RunCommands(CARD_ARROWS_ON_COMMAND(p));
-    this->AddChild(&m_sprCardArrows[p]);
+    spr_card_arrows_[p].RunCommands(CARD_ARROWS_ON_COMMAND(p));
+    this->AddChild(&spr_card_arrows_[p]);
 
     for (unsigned i = 0; i < MAX_CHAR_ICONS_TO_SHOW; i++) {
-      m_sprIcons[p][i].ScaleToClipped(ICON_WIDTH, ICON_HEIGHT);
-      this->AddChild(&m_sprIcons[p][i]);
+      spr_icons_[p][i].ScaleToClipped(ICON_WIDTH, ICON_HEIGHT);
+      this->AddChild(&spr_icons_[p][i]);
     }
 
-    if (GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE ||
-        GAMESTATE->m_PlayMode == PLAY_MODE_RAVE) {
-      m_sprAttackFrame[p].Load(
+    if (GAMESTATE->play_mode_ == PLAY_MODE_BATTLE ||
+        GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
+      spr_attack_frame_[p].Load(
           THEME->GetPathG("ScreenSelectCharacter", "attack frame 1x2"));
-      m_sprAttackFrame[p].StopAnimating();
-      m_sprAttackFrame[p].SetState(p);
-      m_sprAttackFrame[p].RunCommands(ATTACK_FRAME_ON_COMMAND(p));
-      this->AddChild(&m_sprAttackFrame[p]);
+      spr_attack_frame_[p].StopAnimating();
+      spr_attack_frame_[p].SetState(p);
+      spr_attack_frame_[p].RunCommands(ATTACK_FRAME_ON_COMMAND(p));
+      this->AddChild(&spr_attack_frame_[p]);
 
       for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
         for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
           float fX = ATTACK_ICONS_START_X(p) + ATTACK_ICONS_SPACING_X * j;
           float fY = ATTACK_ICONS_START_Y(p) + ATTACK_ICONS_SPACING_Y * i;
-          m_AttackIcons[p][i][j].SetXY(fX, fY);
-          m_AttackIcons[p][i][j].RunCommands(ATTACK_ICONS_ON_COMMAND(p));
-          this->AddChild(&m_AttackIcons[p][i][j]);
+          attack_icons_[p][i][j].SetXY(fX, fY);
+          attack_icons_[p][i][j].RunCommands(ATTACK_ICONS_ON_COMMAND(p));
+          this->AddChild(&attack_icons_[p][i][j]);
         }
       }
     }
   }
 
-  m_sprExplanation.Load(
+  spr_explanation_.Load(
       THEME->GetPathG("ScreenSelectCharacter", "explanation"));
-  m_sprExplanation.RunCommands(EXPLANATION_ON_COMMAND);
-  this->AddChild(&m_sprExplanation);
+  spr_explanation_.RunCommands(EXPLANATION_ON_COMMAND);
+  this->AddChild(&spr_explanation_);
 
-  m_soundChange.Load(THEME->GetPathS("ScreenSelectCharacter", "change"), true);
+  sound_change_.Load(THEME->GetPathS("ScreenSelectCharacter", "change"), true);
 
   SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("select group intro"));
 
@@ -174,7 +174,7 @@ void ScreenSelectCharacter::Init() {
     }
 
     for (unsigned i = 0; i < MAX_CHAR_ICONS_TO_SHOW; i++) {
-      m_sprIcons[p][i].RunCommands(ICONS_ON_COMMAND(p));
+      spr_icons_[p][i].RunCommands(ICONS_ON_COMMAND(p));
     }
   }
 }
@@ -207,7 +207,7 @@ void ScreenSelectCharacter::HandleScreenMessage(const ScreenMessage SM) {
 }
 
 PlayerNumber ScreenSelectCharacter::GetAffectedPlayerNumber(PlayerNumber pn) {
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_HUMAN_CHARACTER:
       return pn;
     case CHOOSING_CPU_CHARACTER:
@@ -216,16 +216,16 @@ PlayerNumber ScreenSelectCharacter::GetAffectedPlayerNumber(PlayerNumber pn) {
       return pn;
     default:
       FAIL_M(ssprintf(
-          "Invalid character selection state: %i", m_SelectionRow[pn]));
+          "Invalid character selection state: %i", selection_row_[pn]));
   }
 }
 
 void ScreenSelectCharacter::BeforeRowChange(PlayerNumber pn) {
   PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER:
-      m_sprCardArrows[pnAffected].StopEffect();
+      spr_card_arrows_[pnAffected].StopEffect();
       break;
     default:
       break;
@@ -234,10 +234,10 @@ void ScreenSelectCharacter::BeforeRowChange(PlayerNumber pn) {
 
 void ScreenSelectCharacter::AfterRowChange(PlayerNumber pn) {
   PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER:
-      m_sprCardArrows[pnAffected].SetEffectGlowShift(
+      spr_card_arrows_[pnAffected].SetEffectGlowShift(
           1.0f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
       break;
     default:
@@ -247,33 +247,33 @@ void ScreenSelectCharacter::AfterRowChange(PlayerNumber pn) {
 
 void ScreenSelectCharacter::AfterValueChange(PlayerNumber pn) {
   PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER: {
       std::vector<Character*> apCharacters;
       CHARMAN->GetCharacters(apCharacters);
-      Character* pChar = apCharacters[m_iSelectedCharacter[pnAffected]];
-      m_sprCard[pnAffected].UnloadTexture();
-      m_sprCard[pnAffected].Load(pChar->GetCardPath());
+      Character* pChar = apCharacters[selected_character_[pnAffected]];
+      spr_card_[pnAffected].UnloadTexture();
+      spr_card_[pnAffected].Load(pChar->GetCardPath());
 
-      if (GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE ||
-          GAMESTATE->m_PlayMode == PLAY_MODE_RAVE) {
+      if (GAMESTATE->play_mode_ == PLAY_MODE_BATTLE ||
+          GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
         for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
           for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
-            m_AttackIcons[pnAffected][i][j].Load("ScreenSelectCharacter");
-            m_AttackIcons[pnAffected][i][j].Set(pChar->m_sAttacks[i][j]);
+            attack_icons_[pnAffected][i][j].Load("ScreenSelectCharacter");
+            attack_icons_[pnAffected][i][j].Set(pChar->attacks_[i][j]);
           }
         }
       }
 
-      int c = m_iSelectedCharacter[pnAffected] - MAX_CHAR_ICONS_TO_SHOW / 2;
+      int c = selected_character_[pnAffected] - MAX_CHAR_ICONS_TO_SHOW / 2;
       wrap(c, apCharacters.size());
 
       for (unsigned i = 0; i < MAX_CHAR_ICONS_TO_SHOW; i++) {
         c++;
         wrap(c, apCharacters.size());
         Character* pCharacter = apCharacters[c];
-        Banner& banner = m_sprIcons[pnAffected][i];
+        Banner& banner = spr_icons_[pnAffected][i];
         banner.LoadIconFromCharacter(pCharacter);
         float fX =
             (pnAffected == PLAYER_1) ? 320 - ICON_WIDTH : 320 + ICON_WIDTH;
@@ -288,7 +288,7 @@ void ScreenSelectCharacter::AfterValueChange(PlayerNumber pn) {
       break;
     default:
       FAIL_M(ssprintf(
-          "Invalid character selection state: %i", m_SelectionRow[pn]));
+          "Invalid character selection state: %i", selection_row_[pn]));
   }
 }
 
@@ -301,26 +301,26 @@ bool ScreenSelectCharacter::MenuRight(const InputEventPlus& input) {
 }
 
 bool ScreenSelectCharacter::MenuUp(const InputEventPlus& input) {
-  Move(input.pn, -1);
+  Move(input.pn_, -1);
   return true;
 }
 
 bool ScreenSelectCharacter::MenuDown(const InputEventPlus& input) {
-  Move(input.pn, +1);
+  Move(input.pn_, +1);
   return true;
 }
 
 void ScreenSelectCharacter::Move(PlayerNumber pn, int deltaValue) {
   PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER: {
       std::vector<Character*> apCharacters;
       CHARMAN->GetCharacters(apCharacters);
-      m_iSelectedCharacter[pnAffected] += deltaValue;
-      wrap(m_iSelectedCharacter[pnAffected], apCharacters.size());
+      selected_character_[pnAffected] += deltaValue;
+      wrap(selected_character_[pnAffected], apCharacters.size());
       AfterValueChange(pn);
-      m_soundChange.Play(true);
+      sound_change_.Play(true);
       break;
     }
     default:
@@ -330,30 +330,30 @@ void ScreenSelectCharacter::Move(PlayerNumber pn, int deltaValue) {
 
 bool ScreenSelectCharacter::AllAreFinishedChoosing() const {
   FOREACH_HumanPlayer(
-      p) if (m_SelectionRow[p] != FINISHED_CHOOSING) return false;
+      p) if (selection_row_[p] != FINISHED_CHOOSING) return false;
   return true;
 }
 
 bool ScreenSelectCharacter::MenuStart(const InputEventPlus& input) {
-  MakeSelection(input.pn);
+  MakeSelection(input.pn_);
   return true;
 }
 
 void ScreenSelectCharacter::MakeSelection(PlayerNumber pn) {
-  if (m_SelectionRow[pn] == FINISHED_CHOOSING) {
+  if (selection_row_[pn] == FINISHED_CHOOSING) {
     return;
   }
 
   // change row
   BeforeRowChange(pn);
-  switch (m_SelectionRow[pn]) {
+  switch (selection_row_[pn]) {
     case CHOOSING_HUMAN_CHARACTER:
-      m_SelectionRow[pn] = GAMESTATE->AnyPlayersAreCpu()
+      selection_row_[pn] = GAMESTATE->AnyPlayersAreCpu()
                                ? CHOOSING_CPU_CHARACTER
                                : FINISHED_CHOOSING;
       break;
     case CHOOSING_CPU_CHARACTER:
-      m_SelectionRow[pn] = FINISHED_CHOOSING;
+      selection_row_[pn] = FINISHED_CHOOSING;
       break;
     default:
       break;
@@ -366,8 +366,8 @@ void ScreenSelectCharacter::MakeSelection(PlayerNumber pn) {
     FOREACH_PlayerNumber(p) {
       std::vector<Character*> apCharacters;
       CHARMAN->GetCharacters(apCharacters);
-      Character* pChar = apCharacters[m_iSelectedCharacter[p]];
-      GAMESTATE->m_pCurCharacters[p] = pChar;
+      Character* pChar = apCharacters[selected_character_[p]];
+      GAMESTATE->cur_characters_[p] = pChar;
     }
 
     StopTimer();
@@ -384,23 +384,23 @@ void ScreenSelectCharacter::TweenOffScreen() {
   ScreenWithMenuElements::TweenOffScreen();
 
   FOREACH_PlayerNumber(p) {
-    m_sprCard[p].RunCommands(CARD_OFF_COMMAND(p));
-    m_sprTitle[p].RunCommands(TITLE_OFF_COMMAND(p));
-    m_sprCardArrows[p].RunCommands(CARD_ARROWS_OFF_COMMAND(p));
-    if (GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE ||
-        GAMESTATE->m_PlayMode == PLAY_MODE_RAVE) {
-      m_sprAttackFrame[p].RunCommands(ATTACK_FRAME_OFF_COMMAND(p));
+    spr_card_[p].RunCommands(CARD_OFF_COMMAND(p));
+    spr_title_[p].RunCommands(TITLE_OFF_COMMAND(p));
+    spr_card_arrows_[p].RunCommands(CARD_ARROWS_OFF_COMMAND(p));
+    if (GAMESTATE->play_mode_ == PLAY_MODE_BATTLE ||
+        GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
+      spr_attack_frame_[p].RunCommands(ATTACK_FRAME_OFF_COMMAND(p));
       for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
         for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
-          m_AttackIcons[p][i][j].RunCommands(ATTACK_ICONS_OFF_COMMAND(p));
+          attack_icons_[p][i][j].RunCommands(ATTACK_ICONS_OFF_COMMAND(p));
         }
       }
     }
     for (unsigned i = 0; i < MAX_CHAR_ICONS_TO_SHOW; i++) {
-      m_sprIcons[p][i].RunCommands(ICONS_OFF_COMMAND(p));
+      spr_icons_[p][i].RunCommands(ICONS_OFF_COMMAND(p));
     }
   }
-  m_sprExplanation.RunCommands(EXPLANATION_OFF_COMMAND);
+  spr_explanation_.RunCommands(EXPLANATION_OFF_COMMAND);
 }
 
 /*

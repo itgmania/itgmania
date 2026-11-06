@@ -16,7 +16,7 @@ class ScreenSyncOverlay : public Screen {
   void ShowHelp();
   void HideHelp();
 
-  AutoActor m_overlay;
+  AutoActor overlay_;
 };
 
 #endif

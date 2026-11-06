@@ -19,8 +19,8 @@ class RageSoundReader_WAV : public RageSoundReader_FileReader {
   int GetLength() const;
   int SetPosition(int iFrame);
   int Read(float* pBuf, int iFrames);
-  int GetSampleRate() const { return m_WavData.m_iSampleRate; }
-  unsigned GetNumChannels() const { return m_WavData.m_iChannels; }
+  int GetSampleRate() const { return wav_data_.sample_rate_; }
+  unsigned GetNumChannels() const { return wav_data_.channels_; }
   int GetNextSourceFrame() const;
   RageSoundReader_WAV();
   ~RageSoundReader_WAV();
@@ -28,15 +28,15 @@ class RageSoundReader_WAV : public RageSoundReader_FileReader {
   RageSoundReader_WAV* Copy() const;
 
   struct WavData {
-    int32_t m_iDataChunkPos, m_iDataChunkSize, m_iExtraFmtPos, m_iSampleRate,
-        m_iFormatTag;
-    int16_t m_iChannels, m_iBitsPerSample, m_iBlockAlign, m_iExtraFmtBytes;
+    int32_t data_chunk_pos_, data_chunk_size_, extra_fmt_pos_, sample_rate_,
+        format_tag_;
+    int16_t channels_, bits_per_sample_, block_align_, extra_fmt_bytes_;
   };
 
  private:
-  WavData m_WavData;
+  WavData wav_data_;
 
-  WavReader* m_pImpl;
+  WavReader* impl_;
 };
 
 #endif

@@ -42,11 +42,11 @@ REGISTER_SCREEN_CLASS(ScreenSetTime);
 void ScreenSetTime::Init() {
   ScreenWithMenuElements::Init();
 
-  m_Selection = hour;
+  selection_ = hour;
 
   FOREACH_SetTimeSelection(s) {
-    BitmapText& title = m_textTitle[s];
-    BitmapText& value = m_textValue[s];
+    BitmapText& title = text_title_[s];
+    BitmapText& value = text_value_[s];
 
     title.LoadFromFont(THEME->GetPathF("Common", "title"));
     title.SetDiffuse(RageColor(1, 1, 1, 1));
@@ -68,12 +68,12 @@ void ScreenSetTime::Init() {
     value.SetDiffuse(RageColor(1, 1, 1, 1));
   }
 
-  m_soundChangeSelection.Load(
+  sound_change_selection_.Load(
       THEME->GetPathS("ScreenSetTime", "ChangeSelection"));
-  m_soundChangeValue.Load(THEME->GetPathS("ScreenSetTime", "ChangeValue"));
+  sound_change_value_.Load(THEME->GetPathS("ScreenSetTime", "ChangeValue"));
 
-  m_TimeOffset = 0;
-  m_Selection = (SetTimeSelection)0;
+  time_offset_ = 0;
+  selection_ = (SetTimeSelection)0;
   ChangeSelection(0);
 }
 
@@ -81,7 +81,7 @@ void ScreenSetTime::Update(float fDelta) {
   Screen::Update(fDelta);
 
   time_t iNow = time(nullptr);
-  iNow += m_TimeOffset;
+  iNow += time_offset_;
 
   tm now;
   localtime_r(&iNow, &now);
@@ -93,16 +93,16 @@ void ScreenSetTime::Update(float fDelta) {
   std::string sPrettyHour =
       ssprintf("%d %s", iPrettyHour, now.tm_hour >= 12 ? "pm" : "am");
 
-  m_textValue[hour].SetText(sPrettyHour);
-  m_textValue[minute].SetText(ssprintf("%02d", now.tm_min));
-  m_textValue[second].SetText(ssprintf("%02d", now.tm_sec));
-  m_textValue[year].SetText(ssprintf("%02d", now.tm_year + 1900));
-  m_textValue[month].SetText(MonthToString((Month)now.tm_mon));
-  m_textValue[day].SetText(ssprintf("%02d", now.tm_mday));
+  text_value_[hour].SetText(sPrettyHour);
+  text_value_[minute].SetText(ssprintf("%02d", now.tm_min));
+  text_value_[second].SetText(ssprintf("%02d", now.tm_sec));
+  text_value_[year].SetText(ssprintf("%02d", now.tm_year + 1900));
+  text_value_[month].SetText(MonthToString((Month)now.tm_mon));
+  text_value_[day].SetText(ssprintf("%02d", now.tm_mday));
 }
 
 bool ScreenSetTime::Input(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS && input.type != IET_REPEAT) {
+  if (input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT) {
     return false;  // ignore
   }
 
@@ -115,13 +115,13 @@ bool ScreenSetTime::Input(const InputEventPlus& input) {
 
 void ScreenSetTime::ChangeValue(int iDirection) {
   time_t iNow = time(nullptr);
-  time_t iAdjusted = iNow + m_TimeOffset;
+  time_t iAdjusted = iNow + time_offset_;
 
   tm adjusted;
   localtime_r(&iAdjusted, &adjusted);
 
   // tm now = GetLocalTime();
-  switch (m_Selection) {
+  switch (selection_) {
     case hour:
       adjusted.tm_hour += iDirection;
       break;
@@ -141,35 +141,35 @@ void ScreenSetTime::ChangeValue(int iDirection) {
       adjusted.tm_mday += iDirection;
       break;
     default:
-      FAIL_M(ssprintf("Invalid SetTimeSelection: %i", m_Selection));
+      FAIL_M(ssprintf("Invalid SetTimeSelection: %i", selection_));
   }
 
   /* Normalize: */
   iAdjusted = mktime(&adjusted);
 
-  m_TimeOffset = iAdjusted - iNow;
+  time_offset_ = iAdjusted - iNow;
 
-  m_soundChangeValue.Play(true);
+  sound_change_value_.Play(true);
 }
 
 void ScreenSetTime::ChangeSelection(int iDirection) {
   // set new value of m_Selection
-  SetTimeSelection OldSelection = m_Selection;
-  enum_add<SetTimeSelection>(m_Selection, iDirection);
+  SetTimeSelection OldSelection = selection_;
+  enum_add<SetTimeSelection>(selection_, iDirection);
 
   enum_clamp(
-      m_Selection, SetTimeSelection(0),
+      selection_, SetTimeSelection(0),
       SetTimeSelection(NUM_SetTimeSelection - 1));
-  if (iDirection != 0 && m_Selection == OldSelection) {
+  if (iDirection != 0 && selection_ == OldSelection) {
     return;  // can't move any more
   }
 
-  m_textValue[OldSelection].StopEffect();
-  m_textValue[m_Selection].SetEffectDiffuseShift(
+  text_value_[OldSelection].StopEffect();
+  text_value_[selection_].SetEffectDiffuseShift(
       1.f, RageColor(0.3f, 0.3f, 0.3f, 1), RageColor(1, 1, 1, 1));
 
   if (iDirection != 0) {
-    m_soundChangeSelection.Play(true);
+    sound_change_selection_.Play(true);
   }
 }
 
@@ -195,16 +195,16 @@ bool ScreenSetTime::MenuRight(const InputEventPlus& input) {
 
 bool ScreenSetTime::MenuStart(const InputEventPlus& input) {
   bool bHoldingLeftAndRight =
-      INPUTMAPPER->IsBeingPressed(GAME_BUTTON_RIGHT, input.pn) &&
-      INPUTMAPPER->IsBeingPressed(GAME_BUTTON_LEFT, input.pn);
+      INPUTMAPPER->IsBeingPressed(GAME_BUTTON_RIGHT, input.pn_) &&
+      INPUTMAPPER->IsBeingPressed(GAME_BUTTON_LEFT, input.pn_);
 
   if (bHoldingLeftAndRight) {
     ChangeSelection(-1);
-  } else if (m_Selection == NUM_SetTimeSelection - 1)  // last row
+  } else if (selection_ == NUM_SetTimeSelection - 1)  // last row
   {
     /* Save the new time. */
     time_t iNow = time(nullptr);
-    time_t iAdjusted = iNow + m_TimeOffset;
+    time_t iAdjusted = iNow + time_offset_;
 
     tm adjusted;
     localtime_r(&iAdjusted, &adjusted);
@@ -213,14 +213,14 @@ bool ScreenSetTime::MenuStart(const InputEventPlus& input) {
 
     /* We're going to draw a little more while we transition out.  We've already
      * set the new time; don't over-adjust visually. */
-    m_TimeOffset = 0;
+    time_offset_ = 0;
 
     FOREACH_SetTimeSelection(s) {
-      BitmapText& title = m_textTitle[s];
+      BitmapText& title = text_title_[s];
       title.BeginTweening(0.3f, TWEEN_LINEAR);
       title.SetDiffuse(RageColor(1, 1, 1, 0));
 
-      BitmapText& value = m_textValue[s];
+      BitmapText& value = text_value_[s];
       value.BeginTweening(0.3f, TWEEN_LINEAR);
       value.SetDiffuse(RageColor(1, 1, 1, 0));
     }

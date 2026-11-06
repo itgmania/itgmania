@@ -27,10 +27,10 @@ CharacterManager::CharacterManager() {
     LUA->Release(L);
   }
 
-  for (unsigned i = 0; i < m_pCharacters.size(); i++) {
-    RageUtil::SafeDelete(m_pCharacters[i]);
+  for (unsigned i = 0; i < characters_.size(); i++) {
+    RageUtil::SafeDelete(characters_[i]);
   }
-  m_pCharacters.clear();
+  characters_.clear();
 
   std::vector<std::string> as;
   GetDirListing(CHARACTERS_DIR "*", as, true, true);
@@ -49,7 +49,7 @@ CharacterManager::CharacterManager() {
 
     Character* pChar = new Character;
     if (pChar->Load(as[i])) {
-      m_pCharacters.push_back(pChar);
+      characters_.push_back(pChar);
     } else {
       delete pChar;
     }
@@ -66,8 +66,8 @@ CharacterManager::CharacterManager() {
 }
 
 CharacterManager::~CharacterManager() {
-  for (unsigned i = 0; i < m_pCharacters.size(); i++) {
-    RageUtil::SafeDelete(m_pCharacters[i]);
+  for (unsigned i = 0; i < characters_.size(); i++) {
+    RageUtil::SafeDelete(characters_[i]);
   }
 
   // Unregister with Lua.
@@ -75,9 +75,9 @@ CharacterManager::~CharacterManager() {
 }
 
 void CharacterManager::GetCharacters(std::vector<Character*>& apCharactersOut) {
-  for (unsigned i = 0; i < m_pCharacters.size(); i++) {
-    if (!m_pCharacters[i]->IsDefaultCharacter()) {
-      apCharactersOut.push_back(m_pCharacters[i]);
+  for (unsigned i = 0; i < characters_.size(); i++) {
+    if (!characters_[i]->IsDefaultCharacter()) {
+      apCharactersOut.push_back(characters_[i]);
     }
   }
 }
@@ -93,7 +93,7 @@ Character* CharacterManager::GetRandomCharacter() {
 }
 
 Character* CharacterManager::GetDefaultCharacter() {
-  for (Character* c : m_pCharacters) {
+  for (Character* c : characters_) {
     if (c->IsDefaultCharacter()) {
       return c;
     }
@@ -104,9 +104,9 @@ Character* CharacterManager::GetDefaultCharacter() {
 }
 
 Character* CharacterManager::GetCharacterFromID(std::string sCharacterID) {
-  for (unsigned i = 0; i < m_pCharacters.size(); i++) {
-    if (m_pCharacters[i]->m_sCharacterID == sCharacterID) {
-      return m_pCharacters[i];
+  for (unsigned i = 0; i < characters_.size(); i++) {
+    if (characters_[i]->character_id_ == sCharacterID) {
+      return characters_[i];
     }
   }
 

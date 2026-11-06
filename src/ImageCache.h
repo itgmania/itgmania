@@ -22,7 +22,7 @@ class ImageCache {
   void Demand(std::string sImageDir);
   void Undemand(std::string sImageDir);
 
-  bool delay_save_cache;
+  bool delay_save_cache_;
 
  private:
   static std::string GetImageCachePath(
@@ -30,7 +30,7 @@ class ImageCache {
   void UnloadAllImages();
   void CacheImageInternal(std::string sImageDir, std::string sImagePath);
 
-  IniFile ImageData;
+  IniFile image_data_;
 };
 
 extern ImageCache*

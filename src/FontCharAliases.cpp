@@ -111,8 +111,8 @@ static void InitCharAliases() {
   // that way we can dynamically add to the list easier. -aj
   // Hiragana:
   struct alias {
-    const char* str;
-    wchar_t chr;
+    const char* str_;
+    wchar_t chr_;
   } aliases[] = {
       {"ha", 0x3042},   /* あ */
       {"hi", 0x3044},   /* い */
@@ -378,13 +378,13 @@ static void InitCharAliases() {
       {nullptr, 0}};
 
   int iNextInternalUseCodepoint = 0xE000;
-  for (unsigned n = 0; aliases[n].str; ++n) {
-    int iCodepoint = aliases[n].chr;
+  for (unsigned n = 0; aliases[n].str_; ++n) {
+    int iCodepoint = aliases[n].chr_;
     if (iCodepoint == INTERNAL) {
       iCodepoint = iNextInternalUseCodepoint++;
     }
 
-    CharAliases[aliases[n].str] = iCodepoint;
+    CharAliases[aliases[n].str_] = iCodepoint;
   }
 
   for (aliasmap::const_iterator i = CharAliases.begin(); i != CharAliases.end();

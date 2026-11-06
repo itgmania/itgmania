@@ -14,14 +14,14 @@ struct lua_State;
 
 /** @brief The collective information about a Steps' Type. */
 struct StepsTypeInfo {
-  const char* szName;
+  const char* name_;
   /** @brief The number of tracks, or columns, of this type. */
-  int iNumTracks;
+  int num_tracks_;
   /** @brief A flag to determine if we allow this type to be autogen'ed to other
    * types. */
-  bool bAllowAutogen;
+  bool allow_autogen_;
   /** @brief The most basic StyleType that this StpesTypeInfo is used with. */
-  StepsTypeCategory m_StepsTypeCategory;
+  StepsTypeCategory steps_type_category_;
   std::string GetLocalizedString() const;
 };
 

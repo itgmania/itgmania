@@ -70,15 +70,15 @@ class Player : public ActorFrame {
         Player* p, float x, float tilt, float skew, float mini, float center_y,
         bool reverse);
     ~PlayerNoteFieldPositioner();
-    Player* player;
-    float original_y;
-    float y_offset;
+    Player* player_;
+    float original_y_;
+    float y_offset_;
   };
 
   struct TrackRowTapNote {
-    int iTrack;
-    int iRow;
-    TapNote* pTN;
+    int track_;
+    int row_;
+    TapNote* tn_;
   };
   void UpdateHoldNotes(
       int iSongRow, float fDeltaTime, std::vector<TrackRowTapNote>& vTN);
@@ -98,7 +98,7 @@ class Player : public ActorFrame {
    *
    * This is primarily for a lua hook.
    * @return the TimingData in question. */
-  TimingData GetPlayerTimingData() const { return *(this->m_Timing); }
+  TimingData GetPlayerTimingData() const { return *(this->timing_); }
 
   void DoTapScoreNone();
 
@@ -107,33 +107,33 @@ class Player : public ActorFrame {
   void FadeToFail();
   void CacheAllUsedNoteSkins();
   void ApplyWaitingTransforms();
-  void SetPaused(bool bPaused) { m_bPaused = bPaused; }
+  void SetPaused(bool bPaused) { paused_ = bPaused; }
 
   static float GetMaxStepDistanceSeconds();
   static float GetWindowSeconds(TimingWindow tw);
-  const NoteData& GetNoteData() const { return m_NoteData; }
-  bool HasVisibleParts() const { return m_pNoteField != nullptr; }
+  const NoteData& GetNoteData() const { return note_data_; }
+  bool HasVisibleParts() const { return note_field_ != nullptr; }
 
   void SetActorWithJudgmentPosition(Actor* pActor) {
-    m_pActorWithJudgmentPosition = pActor;
+    actor_with_judgment_position_ = pActor;
   }
   void SetActorWithComboPosition(Actor* pActor) {
-    m_pActorWithComboPosition = pActor;
+    actor_with_combo_position_ = pActor;
   }
 
   // OITG bug:  Actor::SetZoom only sets X and Y.  When mini is applied to
   // the notefield with SetZoom, it does not affect the range of bumpy.
   // m_oitg_zoom_mode provides compatibility with that bug.  Only used in
   // defective mode. -Kyz
-  bool m_oitg_zoom_mode;
+  bool oitg_zoom_mode_;
 
   // Lua
   virtual void PushSelf(lua_State* L);
 
-  PlayerState* GetPlayerState() { return this->m_pPlayerState; }
+  PlayerState* GetPlayerState() { return this->player_state_; }
   void ChangeLife(float delta);
   void SetLife(float value);
-  bool m_inside_lua_set_life;
+  bool inside_lua_set_life_;
 
  protected:
   void UpdateTapNotesMissedOlderThan(float fMissIfOlderThanThisBeat);
@@ -151,7 +151,8 @@ class Player : public ActorFrame {
 
   void SetMineJudgment(TapNoteScore tns, int iTrack);
   void SetJudgment(int iRow, int iFirstTrack, const TapNote& tn) {
-    SetJudgment(iRow, iFirstTrack, tn, tn.result.tns, tn.result.fTapNoteOffset);
+    SetJudgment(
+        iRow, iFirstTrack, tn, tn.result_.tns_, tn.result_.tap_note_offset_);
   }
   void SetJudgment(
       int iRow, int iFirstTrack, const TapNote& tn, TapNoteScore tns,
@@ -175,60 +176,60 @@ class Player : public ActorFrame {
   std::string ApplyRandomAttack();
 
   inline void HideNote(int col, int row) {
-    NoteData::iterator iter = m_NoteData.FindTapNote(col, row);
-    if (iter != m_NoteData.end(col)) {
-      iter->second.result.bHidden = true;
+    NoteData::iterator iter = note_data_.FindTapNote(col, row);
+    if (iter != note_data_.end(col)) {
+      iter->second.result_.hidden_ = true;
     }
   }
 
-  bool m_bLoaded;
+  bool loaded_;
 
   /** @brief The player's present state. */
-  PlayerState* m_pPlayerState;
+  PlayerState* player_state_;
   /** @brief The player's present stage stats. */
-  PlayerStageStats* m_pPlayerStageStats;
-  TimingData* m_Timing;
-  float m_fNoteFieldHeight;
+  PlayerStageStats* player_stage_stats_;
+  TimingData* timing_;
+  float note_field_height_;
 
-  bool m_bPaused;
-  bool m_bDelay;
+  bool paused_;
+  bool delay_;
 
-  NoteData& m_NoteData;
-  NoteField* m_pNoteField;
+  NoteData& note_data_;
+  NoteField* note_field_;
 
-  std::vector<HoldJudgment*> m_vpHoldJudgment;
+  std::vector<HoldJudgment*> hold_judgment_;
 
-  AutoActor m_sprJudgment;
-  AutoActor m_sprCombo;
-  Actor* m_pActorWithJudgmentPosition;
-  Actor* m_pActorWithComboPosition;
+  AutoActor spr_judgment_;
+  AutoActor spr_combo_;
+  Actor* actor_with_judgment_position_;
+  Actor* actor_with_combo_position_;
 
-  AttackDisplay* m_pAttackDisplay;
+  AttackDisplay* attack_display_;
 
-  LifeMeter* m_pLifeMeter;
-  CombinedLifeMeter* m_pCombinedLifeMeter;
-  ScoreDisplay* m_pScoreDisplay;
-  ScoreDisplay* m_pSecondaryScoreDisplay;
-  ScoreKeeper* m_pPrimaryScoreKeeper;
-  ScoreKeeper* m_pSecondaryScoreKeeper;
+  LifeMeter* life_meter_;
+  CombinedLifeMeter* combined_life_meter_;
+  ScoreDisplay* score_display_;
+  ScoreDisplay* secondary_score_display_;
+  ScoreKeeper* primary_score_keeper_;
+  ScoreKeeper* secondary_score_keeper_;
 
-  int m_iFirstUncrossedRow;  // used by hold checkpoints logic
-  NoteData::all_tracks_iterator* m_pIterNeedsTapJudging;
-  NoteData::all_tracks_iterator* m_pIterNeedsHoldJudging;
-  NoteData::all_tracks_iterator* m_pIterUncrossedRows;
-  NoteData::all_tracks_iterator* m_pIterUnjudgedRows;
-  NoteData::all_tracks_iterator* m_pIterUnjudgedMineRows;
-  unsigned int m_iLastSeenCombo;
-  bool m_bSeenComboYet;
-  JudgedRows* m_pJudgedRows;
+  int first_uncrossed_row_;  // used by hold checkpoints logic
+  NoteData::all_tracks_iterator* iter_needs_tap_judging_;
+  NoteData::all_tracks_iterator* iter_needs_hold_judging_;
+  NoteData::all_tracks_iterator* iter_uncrossed_rows_;
+  NoteData::all_tracks_iterator* iter_unjudged_rows_;
+  NoteData::all_tracks_iterator* iter_unjudged_mine_rows_;
+  unsigned int last_seen_combo_;
+  bool seen_combo_yet_;
+  JudgedRows* judged_rows_;
 
-  RageSound m_soundMine;
-  RageSound m_soundAttackLaunch;
-  RageSound m_soundAttackEnding;
+  RageSound sound_mine_;
+  RageSound sound_attack_launch_;
+  RageSound sound_attack_ending_;
 
-  float m_fActiveRandomAttackStart;
+  float active_random_attack_start_;
 
-  std::vector<RageSound> m_vKeysounds;
+  std::vector<RageSound> keysounds_;
 
   ThemeMetric<float> GRAY_ARROWS_Y_STANDARD;
   ThemeMetric<float> GRAY_ARROWS_Y_REVERSE;
@@ -244,30 +245,30 @@ class Player : public ActorFrame {
 
 #define NUM_REVERSE 2
 #define NUM_CENTERED 2
-  TweenState m_tsJudgment[NUM_REVERSE][NUM_CENTERED];
-  TweenState m_tsCombo[NUM_REVERSE][NUM_CENTERED];
+  TweenState judgment_[NUM_REVERSE][NUM_CENTERED];
+  TweenState combo_[NUM_REVERSE][NUM_CENTERED];
 
-  bool m_bSendJudgmentAndComboMessages;
-  bool m_bTickHolds;
+  bool send_judgment_and_combo_messages_;
+  bool tick_holds_;
   // This exists so that the board can be drawn underneath combo/judge. -Kyz
-  bool m_drawing_notefield_board;
+  bool drawing_notefield_board_;
 };
 
 class PlayerPlus {
-  Player* m_pPlayer;
-  NoteData m_NoteData;
+  Player* player_;
+  NoteData note_data_;
 
  public:
-  PlayerPlus() { m_pPlayer = new Player(m_NoteData); }
-  ~PlayerPlus() { delete m_pPlayer; }
+  PlayerPlus() { player_ = new Player(note_data_); }
+  ~PlayerPlus() { delete player_; }
   void Load(const NoteData& nd) {
-    m_NoteData = nd;
-    m_pPlayer->Load();
+    note_data_ = nd;
+    player_->Load();
   }
-  Player* operator->() { return m_pPlayer; }
-  const Player* operator->() const { return m_pPlayer; }
-  operator Player*() { return m_pPlayer; }
-  operator const Player*() const { return m_pPlayer; }
+  Player* operator->() { return player_; }
+  const Player* operator->() const { return player_; }
+  operator Player*() { return player_; }
+  operator const Player*() const { return player_; }
 };
 
 #endif

@@ -55,160 +55,160 @@
 
 typedef union {
   struct {
-    bool btn_UL_U : 1;
-    bool btn_UR_D : 1;
-    bool btn_CN_L : 1;
-    bool btn_LL_R : 1;
-    bool btn_LR_START : 1;
-    bool btn_SELECT : 1;
-    bool btn_MENU_LEFT : 1;
-    bool btn_MENU_RIGHT : 1;
+    bool btn_ul_u_ : 1;
+    bool btn_ur_d_ : 1;
+    bool btn_cn_l_ : 1;
+    bool btn_ll_r_ : 1;
+    bool btn_lr_start_ : 1;
+    bool btn_select_ : 1;
+    bool btn_menu_left_ : 1;
+    bool btn_menu_right_ : 1;
   };
-  uint8_t raw;
+  uint8_t raw_;
 } pumphid_player_byte_t;
 
 typedef union {
   struct {
-    bool pad0 : 1;
-    bool btn_TEST : 1;
-    bool btn_COIN : 1;
-    bool pad3 : 1;
-    bool pad4 : 1;
-    bool pad5 : 1;
-    bool btn_SERVICE : 1;
-    bool btn_CLR : 1;
+    bool pad0_ : 1;
+    bool btn_test_ : 1;
+    bool btn_coin_ : 1;
+    bool pad3_ : 1;
+    bool pad4_ : 1;
+    bool pad5_ : 1;
+    bool btn_service_ : 1;
+    bool btn_clr_ : 1;
   };
-  uint8_t raw;
+  uint8_t raw_;
 } pumphid_cabinet_byte_t;
 
 typedef union {
   struct {
-    bool btn_MENU_UL : 1;
-    bool btn_MENU_UR : 1;
-    bool btn_MENU_CN : 1;
-    bool btn_MENU_LL : 1;
-    bool btn_MENU_LR : 1;
-    bool pad5 : 1;
-    bool pad6 : 1;
-    bool pad7 : 1;
+    bool btn_menu_ul_ : 1;
+    bool btn_menu_ur_ : 1;
+    bool btn_menu_cn_ : 1;
+    bool btn_menu_ll_ : 1;
+    bool btn_menu_lr_ : 1;
+    bool pad5_ : 1;
+    bool pad6_ : 1;
+    bool pad7_ : 1;
   };
-  uint8_t raw;
+  uint8_t raw_;
 } pumphid_menu_byte_t;
 
 typedef union {
   struct {
-    pumphid_player_byte_t p1_sensor[PUMP_HID_NUMOFSENSORS];
-    pumphid_player_byte_t p2_sensor[PUMP_HID_NUMOFSENSORS];
+    pumphid_player_byte_t p1_sensor_[PUMP_HID_NUMOFSENSORS];
+    pumphid_player_byte_t p2_sensor_[PUMP_HID_NUMOFSENSORS];
 
-    pumphid_cabinet_byte_t cab0;
-    pumphid_cabinet_byte_t cab1;
+    pumphid_cabinet_byte_t cab0_;
+    pumphid_cabinet_byte_t cab1_;
 
-    pumphid_menu_byte_t p1_menu;
-    pumphid_menu_byte_t p2_menu;
+    pumphid_menu_byte_t p1_menu_;
+    pumphid_menu_byte_t p2_menu_;
 
-    uint8_t byte12;
-    uint8_t byte13;
+    uint8_t byte12_;
+    uint8_t byte13_;
     // TODO: Figure out what this counter does. Increments on every packet?
-    uint16_t counter;
+    uint16_t counter_;
   };
-  uint8_t raw_buff[PUMPHID_PAYLOADSIZE_FROMDEV];
+  uint8_t raw_buff_[PUMPHID_PAYLOADSIZE_FROMDEV];
 } pumphid_output_state_t;
 
 typedef union {
   struct {
     // fake padding byte for hidapi
-    uint8_t report_id_pad;
+    uint8_t report_id_pad_;
 
     // Byte 0: P1 lamps
-    uint8_t mux_setting_p1 : 2;
-    bool lamp_p1_ul : 1;
-    bool lamp_p1_ur : 1;
-    bool lamp_p1_cn : 1;
-    bool lamp_p1_ll : 1;
-    bool lamp_p1_lr : 1;
-    bool lamp_p1_pad7 : 1;
+    uint8_t mux_setting_p1_ : 2;
+    bool lamp_p1_ul_ : 1;
+    bool lamp_p1_ur_ : 1;
+    bool lamp_p1_cn_ : 1;
+    bool lamp_p1_ll_ : 1;
+    bool lamp_p1_lr_ : 1;
+    bool lamp_p1_pad7_ : 1;
 
     // Byte 1: Neon lights
-    bool pad0 : 1;
-    bool pad1 : 1;
-    bool lamp_neon : 1;
-    bool pad3 : 1;
-    bool pad4 : 1;
-    bool pad5 : 1;
-    bool pad6 : 1;
-    bool pad7 : 1;
+    bool pad0_ : 1;
+    bool pad1_ : 1;
+    bool lamp_neon_ : 1;
+    bool pad3_ : 1;
+    bool pad4_ : 1;
+    bool pad5_ : 1;
+    bool pad6_ : 1;
+    bool pad7_ : 1;
 
     // Byte 2: P2 lamps
-    uint8_t mux_setting_p2 : 2;
-    bool lamp_p2_ul : 1;
-    bool lamp_p2_ur : 1;
-    bool lamp_p2_cn : 1;
-    bool lamp_p2_ll : 1;
-    bool lamp_p2_lr : 1;
+    uint8_t mux_setting_p2_ : 2;
+    bool lamp_p2_ul_ : 1;
+    bool lamp_p2_ur_ : 1;
+    bool lamp_p2_cn_ : 1;
+    bool lamp_p2_ll_ : 1;
+    bool lamp_p2_lr_ : 1;
     // yes this is a cab lamp in a player byte... not a mistake, it's the
     // hardware.
-    bool lamp_mar_ul : 1;
+    bool lamp_mar_ul_ : 1;
 
     // Byte 3: Cabinet lamps
-    bool lamp_maq_lr : 1;
-    bool lamp_maq_ll : 1;
-    bool lamp_maq_ur : 1;
-    bool lamp_coin_pulse : 1;
-    bool lamp_usb_en : 1;
-    bool lamp_alwayson0 : 1;
-    bool lamp_alwayson1 : 1;
-    bool lamp_alwaysoff0 : 1;
+    bool lamp_maq_lr_ : 1;
+    bool lamp_maq_ll_ : 1;
+    bool lamp_maq_ur_ : 1;
+    bool lamp_coin_pulse_ : 1;
+    bool lamp_usb_en_ : 1;
+    bool lamp_alwayson0_ : 1;
+    bool lamp_alwayson1_ : 1;
+    bool lamp_alwaysoff0_ : 1;
 
     // Byte 4: P1 menu lamps
-    bool menu_p1_ul : 1;
-    bool menu_p1_ur : 1;
-    bool menu_p1_cn : 1;
-    bool menu_p1_ll : 1;
-    bool menu_p1_lr : 1;
-    bool menu_p1_pad5 : 1;
-    bool menu_p1_pad6 : 1;
-    bool menu_p1_pad7 : 1;
+    bool menu_p1_ul_ : 1;
+    bool menu_p1_ur_ : 1;
+    bool menu_p1_cn_ : 1;
+    bool menu_p1_ll_ : 1;
+    bool menu_p1_lr_ : 1;
+    bool menu_p1_pad5_ : 1;
+    bool menu_p1_pad6_ : 1;
+    bool menu_p1_pad7_ : 1;
 
     // Byte 5: P2 menu lamps
-    bool menu_p2_ul : 1;
-    bool menu_p2_ur : 1;
-    bool menu_p2_cn : 1;
-    bool menu_p2_ll : 1;
-    bool menu_p2_lr : 1;
-    bool menu_p2_pad5 : 1;
-    bool menu_p2_pad6 : 1;
-    bool menu_p2_pad7 : 1;
+    bool menu_p2_ul_ : 1;
+    bool menu_p2_ur_ : 1;
+    bool menu_p2_cn_ : 1;
+    bool menu_p2_ll_ : 1;
+    bool menu_p2_lr_ : 1;
+    bool menu_p2_pad5_ : 1;
+    bool menu_p2_pad6_ : 1;
+    bool menu_p2_pad7_ : 1;
 
     // Byte 6–15: Reserved/Raw
-    uint8_t byte6;
-    uint8_t byte7;
-    uint8_t byte8;
-    uint8_t byte9;
-    uint8_t byte10;
-    uint8_t byte11;
-    uint8_t byte12;
-    uint8_t byte13;
-    uint8_t byte14;
-    uint8_t byte15;
+    uint8_t byte6_;
+    uint8_t byte7_;
+    uint8_t byte8_;
+    uint8_t byte9_;
+    uint8_t byte10_;
+    uint8_t byte11_;
+    uint8_t byte12_;
+    uint8_t byte13_;
+    uint8_t byte14_;
+    uint8_t byte15_;
   };
-  uint8_t raw_buff[PUMPHID_PAYLOADSIZE_TODEV];
+  uint8_t raw_buff_[PUMPHID_PAYLOADSIZE_TODEV];
 } pumphid_input_state_t;
 
 // used to convert all of this info to 31 buttons for stepmania.
 typedef union {
   struct {
-    uint16_t p1 : 8;
-    uint16_t p2 : 8;
+    uint16_t p1_ : 8;
+    uint16_t p2_ : 8;
 
-    uint16_t p1_menu : 5;
-    uint16_t p2_menu : 5;
+    uint16_t p1_menu_ : 5;
+    uint16_t p2_menu_ : 5;
 
-    uint16_t cab : 5;
+    uint16_t cab_ : 5;
 
     // one extra bit in question.
-    uint16_t padding : 1;
+    uint16_t padding_ : 1;
   };
-  uint32_t raw;
+  uint32_t raw_;
 } pumphid_to_stepmania_t;
 
 #pragma pack(pop)
@@ -234,23 +234,23 @@ class InputHandler_PumpHID : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-  bool IsConnected() { return dev.IsConnected(); }
+  bool IsConnected() { return dev_.IsConnected(); }
 
  private:
   // all of the known device pid's that use this communication protocol.
-  inline static const std::vector<int> devPIDS = {
+  inline static const std::vector<int> kDevPids = {
       PUMPHID_PID_V1, PUMPHID_PID_V2};
 
   // ensure auto reconnect and blocking reads (since the device wants write/read
   // cycles properly.)
-  HidDevice dev =
-      HidDevice(PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
+  HidDevice dev_ =
+      HidDevice(PUMPHID_VID, kDevPids, PUMPHID_INTERFACE_NUM, true, false);
 
-  pumphid_output_state_t msg_from_device;
-  pumphid_input_state_t msg_to_device;
+  pumphid_output_state_t msg_from_device_;
+  pumphid_input_state_t msg_to_device_;
 
-  bool m_bShutdown;
-  RageThread InputThread;
+  bool shutdown_;
+  RageThread input_thread_;
 
   void BroadcastFullSensorStateHelper(
       PlayerNumber pn, uint8_t sensor_index, pumphid_player_byte_t state);

@@ -41,12 +41,12 @@ SortOrder GetDefaultSort();
 class GameState {
   /** @brief The player number used with Styles where one player controls both
    * sides. */
-  PlayerNumber masterPlayerNumber;
+  PlayerNumber master_player_number_;
   /** @brief The TimingData that is used for processing certain functions. */
-  TimingData* processedTiming;
+  TimingData* processed_timing_;
   /** @brief Whether the player has score data on their profile from playing
    * a song this game. */
-  bool m_bPlayerHasCommittedGameplay[NUM_PLAYERS];
+  bool player_has_committed_gameplay_[NUM_PLAYERS];
 
  public:
   /** @brief Set up the GameState with initial values. */
@@ -100,19 +100,19 @@ class GameState {
    * PREFSMAN->m_sCurrentGame stays in sync.
    * @param pGame the game to start using. */
   void SetCurGame(const Game* pGame);
-  BroadcastOnChangePtr<const Game> m_pCurGame;
+  BroadcastOnChangePtr<const Game> cur_game_;
 
  private:  // DO NOT access directly.  Use Get/SetCurrentStyle.
-  BroadcastOnChangePtr<const Style> m_pCurStyle;
+  BroadcastOnChangePtr<const Style> cur_style_;
   // Only used if the Game specifies that styles are separate.
-  const Style* m_SeparatedStyles[NUM_PlayerNumber];
+  const Style* separated_styles_[NUM_PlayerNumber];
 
  public:
   /** @brief Determine which side is joined.
    *
    * The left side is player 1, and the right side is player 2. */
-  bool m_bSideIsJoined[NUM_PLAYERS];       // left side, right side
-  BroadcastOnChange<PlayMode> m_PlayMode;  // many screens display different
+  bool side_is_joined_[NUM_PLAYERS];       // left side, right side
+  BroadcastOnChange<PlayMode> play_mode_;  // many screens display different
                                            // info depending on this value
   /**
    * @brief The number of coins presently in the machine.
@@ -120,7 +120,7 @@ class GameState {
    * Note that coins are not "credits". One may have to put in two coins
    * to get one credit, only to have to put in another four coins to get
    * the three credits needed to begin the game. */
-  BroadcastOnChange<int> m_iCoins;
+  BroadcastOnChange<int> coins_;
   bool DifficultiesLocked() const;
   bool ChangePreferredDifficultyAndStepsType(
       PlayerNumber pn, Difficulty dc, StepsType st);
@@ -133,13 +133,13 @@ class GameState {
   Difficulty GetEasiestStepsDifficulty() const;
   Difficulty GetHardestStepsDifficulty() const;
   RageTimer
-      m_timeGameStarted;  // from the moment the first player pressed Start
-  LuaTable* m_Environment;
+      time_game_started_;  // from the moment the first player pressed Start
+  LuaTable* environment_;
 
   // This is set to a random number per-game/round; it can be used for a random
   // seed.
-  int m_iGameSeed, m_iStageSeed;
-  std::string m_sStageGUID;
+  int game_seed_, stage_seed_;
+  std::string stage_guid_;
 
   void SetNewStageSeed();
 
@@ -148,9 +148,7 @@ class GameState {
    * @return true if a player can still enter the game, false otherwise. */
   bool PlayersCanJoin() const;
   int GetCoinsNeededToJoin() const;
-  bool EnoughCreditsToJoin() const {
-    return m_iCoins >= GetCoinsNeededToJoin();
-  }
+  bool EnoughCreditsToJoin() const { return coins_ >= GetCoinsNeededToJoin(); }
   int GetNumSidesJoined() const;
 
   const Game* GetCurrentGame() const;
@@ -202,44 +200,44 @@ class GameState {
   bool ShowW1() const;
 
   BroadcastOnChange<std::string>
-      m_sPreferredSongGroup;  // GROUP_ALL denotes no preferred group
+      preferred_song_group_;  // GROUP_ALL denotes no preferred group
   BroadcastOnChange<std::string>
-      m_sPreferredCourseGroup;       // GROUP_ALL denotes no preferred group
-  bool m_bFailTypeWasExplicitlySet;  // true if FailType was changed in the song
-                                     // options screen
-  BroadcastOnChange<StepsType> m_PreferredStepsType;
-  BroadcastOnChange1D<Difficulty, NUM_PLAYERS> m_PreferredDifficulty;
+      preferred_course_group_;         // GROUP_ALL denotes no preferred group
+  bool fail_type_was_explicitly_set_;  // true if FailType was changed in the
+                                       // song options screen
+  BroadcastOnChange<StepsType> preferred_steps_type_;
+  BroadcastOnChange1D<Difficulty, NUM_PLAYERS> preferred_difficulty_;
   BroadcastOnChange1D<CourseDifficulty, NUM_PLAYERS>
-      m_PreferredCourseDifficulty;           // used in nonstop
-  BroadcastOnChange<SortOrder> m_SortOrder;  // set by MusicWheel
-  SortOrder m_PreferredSortOrder;            // used by MusicWheel
-  EditMode m_EditMode;
-  bool IsEditing() const { return m_EditMode != EditMode_Invalid; }
+      preferred_course_difficulty_;          // used in nonstop
+  BroadcastOnChange<SortOrder> sort_order_;  // set by MusicWheel
+  SortOrder preferred_sort_order_;           // used by MusicWheel
+  EditMode edit_mode_;
+  bool IsEditing() const { return edit_mode_ != EditMode_Invalid; }
   /**
    * @brief Are we in the demonstration or jukebox mode?
    *
    * ScreenGameplay often does special things when this is set to true. */
-  bool m_bDemonstrationOrJukebox;
-  bool m_bJukeboxUsesModifiers;
-  int m_iNumStagesOfThisSong;
+  bool demonstration_or_jukebox_;
+  bool jukebox_uses_modifiers_;
+  int num_stages_of_this_song_;
   /**
    * @brief Increase this every stage while not resetting on a continue.
    *
    * This is cosmetic: it's not use for Stage or Screen branching logic. */
-  int m_iCurrentStageIndex;
+  int current_stage_index_;
   /**
    * @brief The number of stages available for the players.
    *
    * This resets whenever a player joins or continues. */
-  int m_iPlayerStageTokens[NUM_PLAYERS];
+  int player_stage_tokens_[NUM_PLAYERS];
   // This is necessary so that IsFinalStageForEveryHumanPlayer knows to
   // adjust for the current song cost.
-  bool m_AdjustTokensBySongCostForFinalStageCheck;
+  bool adjust_tokens_by_song_cost_for_final_stage_check_;
 
-  std::string sExpandedSectionName;
-  std::string sExpandedParentSectionName;
+  std::string expanded_section_name_;
+  std::string expanded_parent_section_name_;
 
-  std::string sLastOpenSection;
+  std::string last_open_section_;
 
   static int GetNumStagesMultiplierForSong(const Song* pSong);
   int GetNumStagesForCurrentSongAndStepsOrCourse() const;
@@ -260,13 +258,13 @@ class GameState {
   std::string GetPlayerDisplayName(PlayerNumber pn) const;
 
   void ActivatePremiumFree();
-  bool IsPremiumFreeActive() const { return m_bPremiumFreeActive; }
+  bool IsPremiumFreeActive() const { return premium_free_active_; }
   void StartPremiumFreeTimer();
   float GetPremiumFreeSecondsLeft() const;
   bool IsPremiumFreeExpired() const;
   bool IsSongAllowedByPremiumFree(const Song* song) const;
 
-  bool m_bLoadingNextSong;
+  bool loading_next_song_;
   int GetLoadingCourseSongIndex() const;
 
   int prepare_song_for_gameplay();
@@ -275,37 +273,37 @@ class GameState {
 
   // nullptr on ScreenSelectMusic if the currently selected wheel item isn't a
   // Song.
-  BroadcastOnChangePtr<Song> m_pCurSong;
+  BroadcastOnChangePtr<Song> cur_song_;
   // The last Song that the user manually changed to.
-  Song* m_pPreferredSong;
-  BroadcastOnChangePtr1D<Steps, NUM_PLAYERS> m_pCurSteps;
+  Song* preferred_song_;
+  BroadcastOnChangePtr1D<Steps, NUM_PLAYERS> cur_steps_;
 
   // nullptr on ScreenSelectMusic if the currently selected wheel item isn't a
   // Course.
-  BroadcastOnChangePtr<Course> m_pCurCourse;
+  BroadcastOnChangePtr<Course> cur_course_;
   // The last Course that the user manually changed to.
-  Course* m_pPreferredCourse;
-  BroadcastOnChangePtr1D<Trail, NUM_PLAYERS> m_pCurTrail;
+  Course* preferred_course_;
+  BroadcastOnChangePtr1D<Trail, NUM_PLAYERS> cur_trail_;
 
-  bool m_bBackedOutOfFinalStage;
+  bool backed_out_of_final_stage_;
 
-  bool m_bPremiumFreeActive;
-  int m_iPremiumFreeMinutes;
-  RageTimer m_PremiumFreeStartTime;
+  bool premium_free_active_;
+  int premium_free_minutes_;
+  RageTimer premium_free_start_time_;
 
   // Music statistics:
-  SongPosition m_Position;
+  SongPosition position_;
 
-  BroadcastOnChange<bool> m_bGameplayLeadIn;
+  BroadcastOnChange<bool> gameplay_lead_in_;
 
   // if re-adding noteskin changes in courses, add functions and such here -aj
   void GetAllUsedNoteSkins(std::vector<std::string>& out) const;
 
-  static const float MUSIC_SECONDS_INVALID;
+  static const float kMusicSecondsInvalid;
 
   void ResetMusicStatistics();  // Call this when it's time to play a new song.
                                 // Clears the values above.
-  void SetPaused(bool p) { m_paused = p; }
+  void SetPaused(bool p) { paused_ = p; }
   void UpdateSongPosition(
       float fPositionSeconds, const TimingData& timing,
       const RageTimer& timestamp = RageZeroTimer);
@@ -315,26 +313,26 @@ class GameState {
   bool OneIsHot() const;
 
   // Haste
-  float m_fHasteRate;  // [-1,+1]; 0 = normal speed
-  float m_fLastHasteUpdateMusicSeconds;
-  float m_fAccumulatedHasteSeconds;
+  float haste_rate_;  // [-1,+1]; 0 = normal speed
+  float last_haste_update_music_seconds_;
+  float accumulated_haste_seconds_;
 
   // used by themes that support heart rate entry.
-  RageTimer m_DanceStartTime;
-  float m_DanceDuration;
+  RageTimer dance_start_time_;
+  float dance_duration_;
 
   // Random Attacks & Attack Mines
-  std::vector<std::string> m_RandomAttacks;
+  std::vector<std::string> random_attacks_;
 
   // used in PLAY_MODE_BATTLE
-  float m_fOpponentHealthPercent;
+  float opponent_health_percent_;
 
   // used in PLAY_MODE_RAVE
-  float m_fTugLifePercentP1;
+  float tug_life_percent_p1_;
 
   // used in workout
-  bool m_bGoalComplete[NUM_PLAYERS];
-  bool m_bWorkoutGoalComplete;
+  bool goal_complete_[NUM_PLAYERS];
+  bool workout_goal_complete_;
 
   /** @brief Primarily called at the end of a song to stop all attacks. */
   void RemoveAllActiveAttacks();
@@ -344,14 +342,14 @@ class GameState {
   void ResetStageStatistics();
 
   // Options stuff
-  ModsGroup<SongOptions> m_SongOptions;
+  ModsGroup<SongOptions> song_options_;
 
   /**
    * @brief Did the current game mode change the default Noteskin?
    *
    * This is true if it has: see Edit/Sync Songs for a common example.
    * Note: any mode that wants to use this must set it explicitly. */
-  bool m_bDidModeChangeNoteSkin;
+  bool did_mode_change_note_skin_;
 
   void GetDefaultPlayerOptions(PlayerOptions& po);
   void GetDefaultSongOptions(SongOptions& so);
@@ -365,29 +363,29 @@ class GameState {
 
   FailType GetPlayerFailType(const PlayerState* pPlayerState) const;
   FailType GetPlayerFailType(PlayerNumber pn) const {
-    return GetPlayerFailType(m_pPlayerState[pn]);
+    return GetPlayerFailType(player_state_[pn]);
   }
 
   // character stuff
-  Character* m_pCurCharacters[NUM_PLAYERS];
+  Character* cur_characters_[NUM_PLAYERS];
 
-  bool HasEarnedExtraStage() const { return m_bEarnedExtraStage; }
+  bool HasEarnedExtraStage() const { return earned_extra_stage_; }
   EarnedExtraStage GetEarnedExtraStage() const {
     return CalculateEarnedExtraStage();
   }
 
   // Ranking Stuff
   struct RankingFeat {
-    enum { SONG, COURSE, CATEGORY } Type;
-    Song* pSong;      // valid if Type == SONG
-    Steps* pSteps;    // valid if Type == SONG
-    Course* pCourse;  // valid if Type == COURSE
-    Grade grade;
-    int iScore;
-    float fPercentDP;
-    std::string Banner;
-    std::string Feat;
-    std::string* pStringToFill;
+    enum { SONG, COURSE, CATEGORY } type_;
+    Song* song_;      // valid if Type == SONG
+    Steps* steps_;    // valid if Type == SONG
+    Course* course_;  // valid if Type == COURSE
+    Grade grade_;
+    int score_;
+    float percent_dp_;
+    std::string banner_;
+    std::string feat_;
+    std::string* string_to_fill_;
   };
 
   void GetRankingFeats(
@@ -396,31 +394,31 @@ class GameState {
   void StoreRankingName(
       PlayerNumber pn, std::string name);  // Called by name entry screens
   std::vector<std::string*>
-      m_vpsNamesThatWereFilled;  // filled on StoreRankingName,
+      names_that_were_filled_;  // filled on StoreRankingName,
   std::set<PlayerNumber>
-      m_sPlayersThatWereFilled;  // filled on StoreRankingName,
+      players_that_were_filled_;  // filled on StoreRankingName,
 
   // Award stuff
   // lowest priority in front, highest priority at the back.
-  std::deque<StageAward> m_vLastStageAwards[NUM_PLAYERS];
-  std::deque<PeakComboAward> m_vLastPeakComboAwards[NUM_PLAYERS];
+  std::deque<StageAward> last_stage_awards_[NUM_PLAYERS];
+  std::deque<PeakComboAward> last_peak_combo_awards_[NUM_PLAYERS];
 
   // Attract stuff
-  int m_iNumTimesThroughAttract;  // negative means play regardless of
-                                  // m_iAttractSoundFrequency setting
+  int num_times_through_attract_;  // negative means play regardless of
+                                   // m_iAttractSoundFrequency setting
   bool IsTimeToPlayAttractSounds() const;
   void VisitAttractScreen(const std::string sScreenName);
 
   // PlayerState
   /** @brief Allow access to each player's PlayerState. */
-  PlayerState* m_pPlayerState[NUM_PLAYERS];
+  PlayerState* player_state_[NUM_PLAYERS];
 
   // Preferences
-  static Preference<bool> m_bAutoJoin;
+  static Preference<bool> auto_join_;
 
   // These options have weird interactions depending on m_bEventMode,
   // so wrap them.
-  bool m_bTemporaryEventMode;
+  bool temporary_event_mode_;
   bool IsEventMode() const;
   CoinMode GetCoinMode() const;
   Premium GetPremium() const;
@@ -431,19 +429,19 @@ class GameState {
    * @brief Is the game right now using Song timing or Steps timing?
    *
    * Different options are available depending on this setting. */
-  bool m_bIsUsingStepTiming;
+  bool is_using_step_timing_;
   /**
    * @brief Are we presently in the Step Editor, where some rules apply
    * differently?
    *
    * TODO: Find a better way to implement this. */
-  bool m_bInStepEditor;
-  BroadcastOnChange<StepsType> m_stEdit;
-  BroadcastOnChange<CourseDifficulty> m_cdEdit;
-  BroadcastOnChangePtr<Steps> m_pEditSourceSteps;
-  BroadcastOnChange<StepsType> m_stEditSource;
-  BroadcastOnChange<int> m_iEditCourseEntryIndex;
-  BroadcastOnChange<std::string> m_sEditLocalProfileID;
+  bool in_step_editor_;
+  BroadcastOnChange<StepsType> st_edit_;
+  BroadcastOnChange<CourseDifficulty> cd_edit_;
+  BroadcastOnChangePtr<Steps> edit_source_steps_;
+  BroadcastOnChange<StepsType> edit_source_;
+  BroadcastOnChange<int> edit_course_entry_index_;
+  BroadcastOnChange<std::string> edit_local_profile_id_;
   Profile* GetEditLocalProfile();
 
   // Workout stuff
@@ -452,17 +450,17 @@ class GameState {
     return GetGoalPercentComplete(pn) >= 1;
   }
 
-  bool m_bDopefish;
+  bool dopefish_;
 
   // Autogen stuff.  This should probably be moved to its own singleton or
   // something when autogen is generalized and more customizable. -Kyz
   float GetAutoGenFarg(size_t i) {
-    if (i >= m_autogen_fargs.size()) {
+    if (i >= autogen_fargs_.size()) {
       return 0.0f;
     }
-    return m_autogen_fargs[i];
+    return autogen_fargs_[i];
   }
-  std::vector<float> m_autogen_fargs;
+  std::vector<float> autogen_fargs_;
 
   // Lua
   void PushSelf(lua_State* L);
@@ -472,13 +470,13 @@ class GameState {
   float GetPremiumFreeSeconds() const;
   float GetPremiumFreeSongGraceSeconds() const;
   EarnedExtraStage CalculateEarnedExtraStage() const;
-  int m_iAwardedExtraStages[NUM_PLAYERS];
-  bool m_bEarnedExtraStage;
+  int awarded_extra_stages_[NUM_PLAYERS];
+  bool earned_extra_stage_;
 
   // Timing position corrections
-  RageTimer m_LastPositionTimer;
-  float m_LastPositionSeconds;
-  bool m_paused;
+  RageTimer last_position_timer_;
+  float last_position_seconds_;
+  bool paused_;
 
   GameState(const GameState& rhs);
   GameState& operator=(const GameState& rhs);

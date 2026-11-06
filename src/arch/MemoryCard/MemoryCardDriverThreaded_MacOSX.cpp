@@ -26,19 +26,19 @@
 class MemoryCardDriverThreaded_MacOSX::Helper {
  public:
   Helper(MemoryCardDriverThreaded_MacOSX* driver) {
-    m_HandlerUPP = NewEventHandlerUPP(VolumesChanged);
+    handler_upp_ = NewEventHandlerUPP(VolumesChanged);
     EventTypeSpec types[] = {
         {kEventClassVolume, kEventVolumeMounted},
         {kEventClassVolume, kEventVolumeUnmounted}};
     UInt32 numTypes = sizeof(types) / sizeof(types[0]);
     OSStatus ret = InstallApplicationEventHandler(
-        m_HandlerUPP, numTypes, types, driver, &m_Handler);
+        handler_upp_, numTypes, types, driver, &handler_);
     ASSERT(ret == noErr);
   }
 
   ~Helper() {
-    RemoveEventHandler(m_Handler);
-    DisposeEventHandlerUPP(m_HandlerUPP);
+    RemoveEventHandler(handler_);
+    DisposeEventHandlerUPP(handler_upp_);
   }
 
  private:
@@ -46,37 +46,37 @@ class MemoryCardDriverThreaded_MacOSX::Helper {
       EventHandlerCallRef ref, EventRef event, void* p) {
     MemoryCardDriverThreaded_MacOSX* driver =
         (MemoryCardDriverThreaded_MacOSX*)p;
-    LockMut(driver->m_ChangedLock);
-    driver->m_bChanged = true;
+    LockMut(driver->changed_lock_);
+    driver->changed_ = true;
     return eventNotHandledErr;  // let others do something
   }
 
-  EventHandlerUPP m_HandlerUPP;
-  EventHandlerRef m_Handler;
+  EventHandlerUPP handler_upp_;
+  EventHandlerRef handler_;
 };
 
 MemoryCardDriverThreaded_MacOSX::MemoryCardDriverThreaded_MacOSX()
-    : m_ChangedLock("MC changed lock") {
-  m_bChanged = true;
-  m_pHelper = new Helper(this);
+    : changed_lock_("MC changed lock") {
+  changed_ = true;
+  helper_ = new Helper(this);
 }
 
 MemoryCardDriverThreaded_MacOSX::~MemoryCardDriverThreaded_MacOSX() {
-  delete m_pHelper;
+  delete helper_;
 }
 
 void MemoryCardDriverThreaded_MacOSX::Unmount(UsbStorageDevice* pDevice) {
 #if defined(SYNC_VOLUME_FULLSYNC) && defined(SYNC_VOLUME_WAIT)
 
   if (sync_volume_np(
-          pDevice->sOsMountDir.c_str(),
+          pDevice->os_mount_dir_.c_str(),
           SYNC_VOLUME_FULLSYNC | SYNC_VOLUME_WAIT) != 0) {
     LOG->Warn("Failed to flush the memory card.");
   }
 #else
   ParamBlockRec pb;
   Str255 name;  // A pascal string.
-  const std::string& base = Basename(pDevice->sOsMountDir);
+  const std::string& base = Basename(pDevice->os_mount_dir_);
 
   memset(&pb, 0, sizeof(pb));
   name[0] = std::min(base.length(), size_t(255));
@@ -92,8 +92,8 @@ void MemoryCardDriverThreaded_MacOSX::Unmount(UsbStorageDevice* pDevice) {
 }
 
 bool MemoryCardDriverThreaded_MacOSX::USBStorageDevicesChanged() {
-  LockMut(m_ChangedLock);
-  return m_bChanged;
+  LockMut(changed_lock_);
+  return changed_;
 }
 
 static int GetIntProperty(io_registry_entry_t entry, CFStringRef key) {
@@ -143,7 +143,7 @@ static std::string GetStringProperty(
 
 void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
     std::vector<UsbStorageDevice>& vDevicesOut) {
-  LockMut(m_ChangedLock);
+  LockMut(changed_lock_);
   // First, get all device paths
   struct statfs* fs;
   int num = getfsstat(nullptr, 0, MNT_NOWAIT);
@@ -214,30 +214,30 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
 
       LOG->Trace("Found memory card at path: %s.", fs[i].f_mntonname);
       usbd.SetOsMountDir(fs[i].f_mntonname);
-      usbd.iVolumeSizeMB =
+      usbd.volume_size_mb_ =
           int((uint64_t(fs[i].f_blocks) * fs[i].f_bsize) >> 20);
 
       // Now we can get some more information from the registry tree.
-      usbd.iBus = GetIntProperty(device, CFSTR("USB Address"));
-      usbd.iPort = GetIntProperty(device, CFSTR("PortNum"));
+      usbd.bus_ = GetIntProperty(device, CFSTR("USB Address"));
+      usbd.port_ = GetIntProperty(device, CFSTR("PortNum"));
       // usbd.iLevel ?
-      usbd.sSerial = GetStringProperty(device, CFSTR("USB Serial Number"));
-      usbd.sDevice = fs[i].f_mntfromname;
-      usbd.idVendor = GetIntProperty(device, CFSTR(kUSBVendorID));
-      usbd.idProduct = GetIntProperty(device, CFSTR(kUSBProductID));
-      usbd.sVendor = GetStringProperty(device, CFSTR("USB Vendor Name"));
-      usbd.sProduct = GetStringProperty(device, CFSTR("USB Product Name"));
+      usbd.serial_ = GetStringProperty(device, CFSTR("USB Serial Number"));
+      usbd.device_ = fs[i].f_mntfromname;
+      usbd.id_vendor_ = GetIntProperty(device, CFSTR(kUSBVendorID));
+      usbd.id_product_ = GetIntProperty(device, CFSTR(kUSBProductID));
+      usbd.vendor_ = GetStringProperty(device, CFSTR("USB Vendor Name"));
+      usbd.product_ = GetStringProperty(device, CFSTR("USB Product Name"));
       IOObjectRelease(device);
       break;  // We found what we wanted
     }
     IOObjectRelease(iter);
   }
-  m_bChanged = false;
+  changed_ = false;
   delete[] fs;
 }
 
 bool MemoryCardDriverThreaded_MacOSX::TestWrite(UsbStorageDevice* pDevice) {
-  if (access(pDevice->sOsMountDir.c_str(), W_OK)) {
+  if (access(pDevice->os_mount_dir_.c_str(), W_OK)) {
     pDevice->SetError("TestFailed");
     return false;
   }

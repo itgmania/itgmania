@@ -22,11 +22,11 @@ class MemoryCardDriverThreaded_MacOSX : public MemoryCardDriver {
   MemoryCardDriverThreaded_MacOSX(const MemoryCardDriverThreaded_MacOSX& m);
   MemoryCardDriverThreaded_MacOSX& operator=(
       const MemoryCardDriverThreaded_MacOSX& m);
-  bool m_bChanged;
-  RageMutex m_ChangedLock;
+  bool changed_;
+  RageMutex changed_lock_;
   class Helper;
   friend class Helper;
-  Helper* m_pHelper;
+  Helper* helper_;
 };
 
 #ifdef ARCH_MEMORY_CARD_DRIVER

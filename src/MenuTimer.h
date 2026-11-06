@@ -25,36 +25,36 @@ class MenuTimer : public ActorFrame {
   virtual void Update(float fDeltaTime);
 
   void SetSeconds(float fSeconds);
-  float GetSeconds() const { return m_fSecondsLeft; }
+  float GetSeconds() const { return seconds_left_; }
   void Start();    // resume countdown from paused
   void Pause();    // don't count down
   void Stop();     // set to "00" and pause
   void Disable();  // set to "99" and pause
   void Stall();    // pause countdown for a sec
-  void EnableSilent(bool bSilent) { m_bSilent = bSilent; }  // make timer silent
+  void EnableSilent(bool bSilent) { silent_ = bSilent; }  // make timer silent
   void EnableStealth(bool bStealth);  // make timer invisible and silent
 
   // Lua
   virtual void PushSelf(lua_State* L);
 
  protected:
-  float m_fSecondsLeft;
-  float m_fStallSeconds, m_fStallSecondsLeft;
-  bool m_bPaused;
+  float seconds_left_;
+  float stall_seconds_, stall_seconds_left_;
+  bool paused_;
 
   void SetText(float fSeconds);
 
 #define NUM_MENU_TIMER_TEXTS 2
 
-  bool m_bSilent;
+  bool silent_;
 
-  BitmapText m_text[NUM_MENU_TIMER_TEXTS];
+  BitmapText text_[NUM_MENU_TIMER_TEXTS];
 
-  LuaReference m_exprFormatText[NUM_MENU_TIMER_TEXTS];
+  LuaReference expr_format_text_[NUM_MENU_TIMER_TEXTS];
 
-  AutoActor m_sprFrame;
+  AutoActor spr_frame_;
 
-  RageSound m_soundBeep;
+  RageSound sound_beep_;
 
   ThemeMetric<int> WARNING_START;
   ThemeMetric<int> WARNING_BEEP_START;

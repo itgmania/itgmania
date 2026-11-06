@@ -9,7 +9,7 @@
 #include "arch/InputHandler/InputHandler.h"
 
 InputHandler_MonkeyKeyboard::InputHandler_MonkeyKeyboard() {
-  m_dbLast = DeviceButton_Invalid;
+  last_ = DeviceButton_Invalid;
 }
 
 InputHandler_MonkeyKeyboard::~InputHandler_MonkeyKeyboard() {}
@@ -55,31 +55,31 @@ static DeviceButton GetRandomKeyboardKey() {
 }
 
 void InputHandler_MonkeyKeyboard::Update() {
-  if (!PREFSMAN->m_bMonkeyInput) {
-    if (m_dbLast != DeviceButton_Invalid) {
+  if (!PREFSMAN->monkey_input_) {
+    if (last_ != DeviceButton_Invalid) {
       // End the previous key
-      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 0);
+      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, last_, 0);
       ButtonPressed(di);
-      m_dbLast = DeviceButton_Invalid;
+      last_ = DeviceButton_Invalid;
     }
     InputHandler::UpdateTimer();
     return;
   }
 
-  float fSecsAgo = m_timerPressButton.Ago();
+  float fSecsAgo = timer_press_button_.Ago();
 
   if (fSecsAgo > 0.5) {
-    if (m_dbLast != DeviceButton_Invalid) {
+    if (last_ != DeviceButton_Invalid) {
       // End the previous key
-      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 0);
+      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, last_, 0);
       ButtonPressed(di);
     }
 
     // Choose a new key and send it.
-    m_dbLast = GetRandomKeyboardKey();
-    DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 1);
+    last_ = GetRandomKeyboardKey();
+    DeviceInput di = DeviceInput(DEVICE_KEYBOARD, last_, 1);
     ButtonPressed(di);
-    m_timerPressButton.Touch();
+    timer_press_button_.Touch();
   }
 
   InputHandler::UpdateTimer();

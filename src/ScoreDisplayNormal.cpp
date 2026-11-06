@@ -17,18 +17,18 @@ ScoreDisplayNormal::ScoreDisplayNormal() {
 
   std::string sType = "ScoreDisplayNormal";
 
-  m_sprFrame.Load(THEME->GetPathG(sType, "Frame"));
-  m_sprFrame->SetName("Frame");
-  ActorUtil::LoadAllCommandsAndSetXY(m_sprFrame, sType);
-  this->AddChild(m_sprFrame);
+  spr_frame_.Load(THEME->GetPathG(sType, "Frame"));
+  spr_frame_->SetName("Frame");
+  ActorUtil::LoadAllCommandsAndSetXY(spr_frame_, sType);
+  this->AddChild(spr_frame_);
 
   // init the text
-  m_text.LoadFromFont(THEME->GetPathF("ScoreDisplayNormal", "Text"));
-  m_text.Load("RollingNumbers");
-  m_text.SetName("Text");
-  m_text.UpdateText();
-  ActorUtil::LoadAllCommandsAndSetXY(m_text, sType);
-  this->AddChild(&m_text);
+  text_.LoadFromFont(THEME->GetPathF("ScoreDisplayNormal", "Text"));
+  text_.Load("RollingNumbers");
+  text_.SetName("Text");
+  text_.UpdateText();
+  ActorUtil::LoadAllCommandsAndSetXY(text_, sType);
+  this->AddChild(&text_);
 }
 
 void ScoreDisplayNormal::Init(
@@ -50,7 +50,7 @@ void ScoreDisplayNormal::Init(
 void ScoreDisplayNormal::SetScore(int iNewScore) {
   float fScore = (float)iNewScore;
 
-  m_text.SetTargetNumber(fScore);
+  text_.SetTargetNumber(fScore);
 }
 
 /*

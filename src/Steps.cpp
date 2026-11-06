@@ -134,26 +134,26 @@ XToString(DisplayBPM);
 LuaXType(DisplayBPM);
 
 Steps::Steps(Song* song)
-    : m_StepsType(StepsType_Invalid),
-      m_pSong(song),
-      parent(nullptr),
-      m_pNoteData(new NoteData),
-      m_bNoteDataIsFilled(false),
-      m_sNoteDataCompressed(""),
-      m_sFilename(""),
-      m_bSavedToDisk(false),
-      m_LoadedFromProfile(ProfileSlot_Invalid),
-      m_iHash(0),
-      m_sDescription(""),
-      m_sChartStyle(""),
-      m_Difficulty(Difficulty_Invalid),
-      m_iMeter(0),
-      m_sGrooveStatsHash(""),
-      m_iGrooveStatsHashVersion(0),
-      m_sCredit(""),
-      displayBPMType(DISPLAY_BPM_ACTUAL),
-      specifiedBPMMin(0),
-      specifiedBPMMax(0) {}
+    : steps_type_(StepsType_Invalid),
+      song_(song),
+      parent_(nullptr),
+      note_data_(new NoteData),
+      note_data_is_filled_(false),
+      note_data_compressed_(""),
+      filename_(""),
+      saved_to_disk_(false),
+      loaded_from_profile_(ProfileSlot_Invalid),
+      hash_(0),
+      description_(""),
+      chart_style_(""),
+      difficulty_(Difficulty_Invalid),
+      meter_(0),
+      groove_stats_hash_(""),
+      groove_stats_hash_version_(0),
+      credit_(""),
+      display_bpm_type_(DISPLAY_BPM_ACTUAL),
+      specified_bpm_min_(0),
+      specified_bpm_max_(0) {}
 
 Steps::~Steps() {}
 
@@ -170,39 +170,39 @@ void Steps::GetDisplayBpms(DisplayBpms& AddTo) const {
 }
 
 bool Steps::HasAttacks() const {
-  return !this->m_Attacks.empty() ||
-         (this->m_pSong != nullptr && this->m_pSong->HasAttacks());
+  return !this->attacks_.empty() ||
+         (this->song_ != nullptr && this->song_->HasAttacks());
 }
 
 AttackArray Steps::GetAttacks() const {
   AttackArray attacks;
-  if (this->m_pSong != nullptr) {
-    attacks = this->m_pSong->m_Attacks;
+  if (this->song_ != nullptr) {
+    attacks = this->song_->attacks_;
   }
-  attacks.insert(attacks.end(), this->m_Attacks.begin(), this->m_Attacks.end());
+  attacks.insert(attacks.end(), this->attacks_.begin(), this->attacks_.end());
   return attacks;
 }
 
 unsigned Steps::GetHash() const {
-  if (parent) {
-    return parent->GetHash();
+  if (parent_) {
+    return parent_->GetHash();
   }
-  if (m_iHash) {
-    return m_iHash;
+  if (hash_) {
+    return hash_;
   }
-  if (m_sNoteDataCompressed.empty()) {
-    if (!m_bNoteDataIsFilled) {
+  if (note_data_compressed_.empty()) {
+    if (!note_data_is_filled_) {
       return 0;  // No data, no hash.
     }
     NoteDataUtil::GetSMNoteDataString(
-        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
+        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
-  m_iHash = GetHashForString(m_sNoteDataCompressed);
-  return m_iHash;
+  hash_ = GetHashForString(note_data_compressed_);
+  return hash_;
 }
 
 bool Steps::IsNoteDataEmpty() const {
-  return this->m_sNoteDataCompressed.empty();
+  return this->note_data_compressed_.empty();
 }
 
 bool Steps::GetNoteDataFromSimfile() {
@@ -257,25 +257,26 @@ bool Steps::GetNoteDataFromSimfile() {
 void Steps::SetNoteData(const NoteData& noteDataNew) {
   ASSERT(
       noteDataNew.GetNumTracks() ==
-      GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks);
+      GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_);
 
   DeAutogen(false);
 
-  *m_pNoteData = noteDataNew;
-  m_bNoteDataIsFilled = true;
+  *note_data_ = noteDataNew;
+  note_data_is_filled_ = true;
 
-  m_sNoteDataCompressed = std::string();
-  m_iHash = 0;
+  note_data_compressed_ = std::string();
+  hash_ = 0;
 }
 
 void Steps::GetNoteData(NoteData& noteDataOut) const {
   Decompress();
 
-  if (m_bNoteDataIsFilled) {
-    noteDataOut = *m_pNoteData;
+  if (note_data_is_filled_) {
+    noteDataOut = *note_data_;
   } else {
     noteDataOut.ClearAll();
-    noteDataOut.SetNumTracks(GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks);
+    noteDataOut.SetNumTracks(
+        GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_);
   }
 }
 
@@ -286,27 +287,27 @@ NoteData Steps::GetNoteData() const {
 }
 
 void Steps::SetSMNoteData(const std::string& notes_comp_) {
-  m_pNoteData->Init();
-  m_bNoteDataIsFilled = false;
+  note_data_->Init();
+  note_data_is_filled_ = false;
 
-  m_sNoteDataCompressed = notes_comp_;
-  m_iHash = 0;
+  note_data_compressed_ = notes_comp_;
+  hash_ = 0;
 }
 
 /* XXX: this function should pull data from m_sFilename, like Decompress() */
 void Steps::GetSMNoteData(std::string& notes_comp_out) const {
-  if (m_sNoteDataCompressed.empty()) {
-    if (!m_bNoteDataIsFilled) {
+  if (note_data_compressed_.empty()) {
+    if (!note_data_is_filled_) {
       /* no data is no data */
       notes_comp_out = "";
       return;
     }
 
     NoteDataUtil::GetSMNoteDataString(
-        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
+        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
 
-  notes_comp_out = m_sNoteDataCompressed;
+  notes_comp_out = note_data_compressed_;
 }
 
 float Steps::PredictMeter() const {
@@ -341,12 +342,12 @@ void Steps::TidyUpData() {
   // is a forwards compatibility feature, so that if a future version adds a
   // new style, editing a simfile with unrecognized Steps won't silently
   // delete them. -Kyz
-  if (m_StepsType == StepsType_Invalid) {
+  if (steps_type_ == StepsType_Invalid) {
     LOG->Warn(
         "Detected steps with unknown style '%s' in '%s'",
-        m_StepsTypeStr.c_str(), m_pSong->m_sSongFileName.c_str());
-  } else if (m_StepsTypeStr == "") {
-    m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(m_StepsType).szName;
+        steps_type_str_.c_str(), song_->song_file_name_.c_str());
+  } else if (steps_type_str_ == "") {
+    steps_type_str_ = GAMEMAN->GetStepsTypeInfo(steps_type_).name_;
   }
 
   if (GetDifficulty() == Difficulty_Invalid) {
@@ -383,7 +384,7 @@ void Steps::CalculateRadarValues(
     float fMusicLengthSeconds, const NoteData& tempNoteData) {
   // If we're autogen, don't calculate values.  GetRadarValues will take from
   // our parent.
-  if (parent != nullptr) {
+  if (parent_ != nullptr) {
     return;
   }
 
@@ -395,32 +396,32 @@ void Steps::CalculateRadarValues(
           return;
   */
 
-  FOREACH_PlayerNumber(pn) m_RadarValues[pn].Zero();
+  FOREACH_PlayerNumber(pn) radar_values_[pn].Zero();
 
   TimingData* timing = this->GetTimingData();
 
   std::vector<NoteData> splitNoteData;
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
-          tempNoteData, splitNoteData, m_StepsType)) {
+          tempNoteData, splitNoteData, steps_type_)) {
     FOREACH_PlayerNumber(pn) {
       NoteDataUtil::CalculateRadarValues(
-          splitNoteData[pn], fMusicLengthSeconds, timing, m_RadarValues[pn]);
+          splitNoteData[pn], fMusicLengthSeconds, timing, radar_values_[pn]);
     }
   } else {
     NoteDataUtil::CalculateRadarValues(
-        tempNoteData, fMusicLengthSeconds, timing, m_RadarValues[0]);
-    std::fill_n(m_RadarValues + 1, NUM_PLAYERS - 1, m_RadarValues[0]);
+        tempNoteData, fMusicLengthSeconds, timing, radar_values_[0]);
+    std::fill_n(radar_values_ + 1, NUM_PLAYERS - 1, radar_values_[0]);
   }
 }
 
 void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
-  if (parent != nullptr) {
+  if (parent_ != nullptr) {
     return;
   }
 
-  FOREACH_PlayerNumber(pn) m_TechCounts[pn].Zero();
+  FOREACH_PlayerNumber(pn) tech_counts_[pn].Zero();
 
-  const StepParity::StageLayout* layout = getLayout(this->m_StepsType);
+  const StepParity::StageLayout* layout = getLayout(this->steps_type_);
   // If we don't have a valid layout for this StepsType, then don't even
   // bother
   if (layout == nullptr) {
@@ -430,19 +431,19 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
 
   std::vector<NoteData> splitNoteData;
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
-          tempNoteData, splitNoteData, m_StepsType)) {
+          tempNoteData, splitNoteData, steps_type_)) {
     FOREACH_PlayerNumber(pn) {
       StepParity::StepParityGenerator gen{layout, timing};
       gen.analyzeNoteData(splitNoteData[pn]);
 
       std::vector<NoteAnnotation> tempNoteAnnotations;
       TechCounts::CalculateTechCountsFromRows(
-          gen.rows, layout, m_TechCounts[pn], tempNoteAnnotations);
+          gen.rows_, layout, tech_counts_[pn], tempNoteAnnotations);
 
       NoteAnnotationCache cachedAnnotations;
-      cachedAnnotations.decompressed = tempNoteAnnotations;
+      cachedAnnotations.decompressed_ = tempNoteAnnotations;
       cachedAnnotations.Compress();
-      m_NoteAnnotations.push_back(cachedAnnotations);
+      note_annotations_.push_back(cachedAnnotations);
     }
   } else {
     StepParity::StepParityGenerator gen{layout, timing};
@@ -450,18 +451,18 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
 
     std::vector<NoteAnnotation> tempNoteAnnotations;
     TechCounts::CalculateTechCountsFromRows(
-        gen.rows, layout, m_TechCounts[0], tempNoteAnnotations);
-    std::fill_n(m_TechCounts + 1, NUM_PLAYERS - 1, m_TechCounts[0]);
+        gen.rows_, layout, tech_counts_[0], tempNoteAnnotations);
+    std::fill_n(tech_counts_ + 1, NUM_PLAYERS - 1, tech_counts_[0]);
 
     NoteAnnotationCache cachedAnnotations;
-    cachedAnnotations.decompressed = tempNoteAnnotations;
+    cachedAnnotations.decompressed_ = tempNoteAnnotations;
     cachedAnnotations.Compress();
-    m_NoteAnnotations.push_back(cachedAnnotations);
+    note_annotations_.push_back(cachedAnnotations);
   }
 }
 
 void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
-  if (parent != nullptr) {
+  if (parent_ != nullptr) {
     return;
   }
 
@@ -471,7 +472,7 @@ void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
 
   std::vector<NoteData> splitNoteData;
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
-          tempNoteData, splitNoteData, m_StepsType)) {
+          tempNoteData, splitNoteData, steps_type_)) {
     measureInfoPerPlayer.resize(NUM_PLAYERS);
     FOREACH_PlayerNumber(pn) {
       MeasureInfo::CalculateMeasureInfo(
@@ -483,123 +484,124 @@ void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
         tempNoteData, timing, measureInfoPerPlayer[0]);
   }
 
-  m_NotesPerMeasure.clear();
-  m_NpsPerMeasure.clear();
-  m_PeakNps.clear();
-  m_StreamBreakdown.clear();
+  notes_per_measure_.clear();
+  nps_per_measure_.clear();
+  peak_nps_.clear();
+  stream_breakdown_.clear();
 
   for (MeasureInfo& mi : measureInfoPerPlayer) {
-    m_NotesPerMeasure.push_back(mi.notesPerMeasure);
-    m_NpsPerMeasure.push_back(mi.npsPerMeasure);
-    m_PeakNps.push_back(mi.peakNps);
-    m_StreamBreakdown.push_back(StreamBreakdown::Calculate(mi.notesPerMeasure));
+    notes_per_measure_.push_back(mi.notes_per_measure_);
+    nps_per_measure_.push_back(mi.nps_per_measure_);
+    peak_nps_.push_back(mi.peak_nps_);
+    stream_breakdown_.push_back(
+        StreamBreakdown::Calculate(mi.notes_per_measure_));
   }
 }
 
 void Steps::ChangeFilenamesForCustomSong() {
-  m_sFilename = custom_songify_path(m_sFilename);
+  filename_ = custom_songify_path(filename_);
 }
 
 void Steps::Decompress() const { const_cast<Steps*>(this)->Decompress(); }
 
 void Steps::Decompress() {
-  if (m_bNoteDataIsFilled) {
+  if (note_data_is_filled_) {
     return;  // already decompressed
   }
 
-  if (parent) {
+  if (parent_) {
     // get autogen m_pNoteData
     NoteData notedata;
-    parent->GetNoteData(notedata);
+    parent_->GetNoteData(notedata);
 
-    m_bNoteDataIsFilled = true;
+    note_data_is_filled_ = true;
 
-    int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks;
+    int iNewTracks = GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_;
 
     NoteDataUtil::LoadTransformedSlidingWindow(
-        notedata, *m_pNoteData, iNewTracks);
+        notedata, *note_data_, iNewTracks);
 
-    NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
+    NoteDataUtil::RemoveStretch(*note_data_, steps_type_);
     return;
   }
 
-  if (!m_sFilename.empty() && m_sNoteDataCompressed.empty()) {
+  if (!filename_.empty() && note_data_compressed_.empty()) {
     // We have NoteData on disk and not in memory. Load it.
     if (!this->GetNoteDataFromSimfile()) {
       LOG->Warn(
           "Couldn't load the %s chart's NoteData from \"%s\"",
-          DifficultyToString(m_Difficulty).c_str(), m_sFilename.c_str());
+          DifficultyToString(difficulty_).c_str(), filename_.c_str());
       return;
     }
 
-    this->GetSMNoteData(m_sNoteDataCompressed);
+    this->GetSMNoteData(note_data_compressed_);
   }
 
-  if (m_sNoteDataCompressed.empty()) {
+  if (note_data_compressed_.empty()) {
     /* there is no data, do nothing */
   } else {
     // load from compressed
     bool bComposite =
-        GAMEMAN->GetStepsTypeInfo(m_StepsType).m_StepsTypeCategory ==
+        GAMEMAN->GetStepsTypeInfo(steps_type_).steps_type_category_ ==
         StepsTypeCategory_Routine;
-    m_bNoteDataIsFilled = true;
-    m_pNoteData->SetNumTracks(
-        GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks);
+    note_data_is_filled_ = true;
+    note_data_->SetNumTracks(
+        GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_);
 
     NoteDataUtil::LoadFromSMNoteDataString(
-        *m_pNoteData, m_sNoteDataCompressed, bComposite);
+        *note_data_, note_data_compressed_, bComposite);
   }
 }
 
 void Steps::Compress() const {
   // Always leave lights data uncompressed.
-  if (this->m_StepsType == StepsType_lights_cabinet && m_bNoteDataIsFilled) {
-    m_sNoteDataCompressed = std::string();
+  if (this->steps_type_ == StepsType_lights_cabinet && note_data_is_filled_) {
+    note_data_compressed_ = std::string();
     return;
   }
 
   // Don't compress data in the editor: it's still in use.
-  if (GAMESTATE->m_bInStepEditor) {
+  if (GAMESTATE->in_step_editor_) {
     return;
   }
 
-  for (NoteAnnotationCache annotationCache : m_NoteAnnotations) {
+  for (NoteAnnotationCache annotationCache : note_annotations_) {
     annotationCache.Compress();
   }
 
-  if (!m_sFilename.empty() && m_LoadedFromProfile == ProfileSlot_Invalid) {
+  if (!filename_.empty() && loaded_from_profile_ == ProfileSlot_Invalid) {
     /* We have a file on disk; clear all data in memory.
      * Data on profiles can't be accessed normally (need to mount and time-out
      * the device), and when we start a game and load edits, we want to be
      * sure that it'll be available if the user picks it and pulls the device.
      * Also, Decompress() doesn't know how to load .edits. */
-    m_pNoteData->Init();
-    m_bNoteDataIsFilled = false;
+    note_data_->Init();
+    note_data_is_filled_ = false;
 
     /* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and
      * m_sNoteDataCompressed.reserve(0) don't always free the allocated memory.
      */
-    m_sNoteDataCompressed = std::string();
+    note_data_compressed_ = std::string();
     return;
   }
 
   // We have no file on disk. Compress the data, if necessary.
-  if (m_sNoteDataCompressed.empty()) {
-    if (!m_bNoteDataIsFilled) {
+  if (note_data_compressed_.empty()) {
+    if (!note_data_is_filled_) {
       return; /* no data is no data */
     }
     NoteDataUtil::GetSMNoteDataString(
-        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
+        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
 
-  m_pNoteData->Init();
-  m_bNoteDataIsFilled = false;
+  note_data_->Init();
+  note_data_is_filled_ = false;
 }
 
 /* Copy our parent's data. This is done when we're being changed from autogen
  * to normal. (needed?) */
 void Steps::DeAutogen(bool bCopyNoteData) {
-  if (!parent) {
+  if (!parent_) {
     return;  // OK
   }
 
@@ -607,36 +609,36 @@ void Steps::DeAutogen(bool bCopyNoteData) {
     Decompress();  // fills in m_pNoteData with sliding window transform
   }
 
-  m_sDescription = Real()->m_sDescription;
-  m_sChartStyle = Real()->m_sChartStyle;
-  m_Difficulty = Real()->m_Difficulty;
-  m_iMeter = Real()->m_iMeter;
+  description_ = Real()->description_;
+  chart_style_ = Real()->chart_style_;
+  difficulty_ = Real()->difficulty_;
+  meter_ = Real()->meter_;
   std::copy(
-      Real()->m_RadarValues, Real()->m_RadarValues + NUM_PLAYERS,
-      m_RadarValues);
+      Real()->radar_values_, Real()->radar_values_ + NUM_PLAYERS,
+      radar_values_);
   std::copy(
-      Real()->m_TechCounts, Real()->m_TechCounts + NUM_PLAYERS, m_TechCounts);
+      Real()->tech_counts_, Real()->tech_counts_ + NUM_PLAYERS, tech_counts_);
 
-  m_NpsPerMeasure.assign(
-      Real()->m_NpsPerMeasure.begin(), Real()->m_NpsPerMeasure.end());
-  m_NotesPerMeasure.assign(
-      Real()->m_NotesPerMeasure.begin(), Real()->m_NotesPerMeasure.end());
-  m_StreamBreakdown.assign(
-      Real()->m_StreamBreakdown.begin(), Real()->m_StreamBreakdown.end());
+  nps_per_measure_.assign(
+      Real()->nps_per_measure_.begin(), Real()->nps_per_measure_.end());
+  notes_per_measure_.assign(
+      Real()->notes_per_measure_.begin(), Real()->notes_per_measure_.end());
+  stream_breakdown_.assign(
+      Real()->stream_breakdown_.begin(), Real()->stream_breakdown_.end());
 
-  m_sCredit = Real()->m_sCredit;
-  parent = nullptr;
+  credit_ = Real()->credit_;
+  parent_ = nullptr;
 
   if (bCopyNoteData) {
     Compress();
   }
 }
 
-void Steps::AutogenFrom(const Steps* parent_, StepsType ntTo) {
-  parent = parent_;
-  m_StepsType = ntTo;
-  m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(ntTo).szName;
-  m_Timing = parent->m_Timing;
+void Steps::AutogenFrom(const Steps* parent, StepsType ntTo) {
+  parent_ = parent;
+  steps_type_ = ntTo;
+  steps_type_str_ = GAMEMAN->GetStepsTypeInfo(ntTo).name_;
+  timing_ = parent->timing_;
 }
 
 void Steps::CopyFrom(
@@ -644,16 +646,16 @@ void Steps::CopyFrom(
     float fMusicLengthSeconds)  // pSource does not have to be of the same
                                 // StepsType
 {
-  m_StepsType = ntTo;
-  m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(ntTo).szName;
+  steps_type_ = ntTo;
+  steps_type_str_ = GAMEMAN->GetStepsTypeInfo(ntTo).name_;
   NoteData noteData;
   pSource->GetNoteData(noteData);
-  noteData.SetNumTracks(GAMEMAN->GetStepsTypeInfo(ntTo).iNumTracks);
-  parent = nullptr;
-  m_Timing = pSource->m_Timing;
-  this->m_pSong = pSource->m_pSong;
-  this->m_Attacks = pSource->m_Attacks;
-  this->m_sAttackString = pSource->m_sAttackString;
+  noteData.SetNumTracks(GAMEMAN->GetStepsTypeInfo(ntTo).num_tracks_);
+  parent_ = nullptr;
+  timing_ = pSource->timing_;
+  this->song_ = pSource->song_;
+  this->attacks_ = pSource->attacks_;
+  this->attack_string_ = pSource->attack_string_;
   this->SetNoteData(noteData);
   this->SetDescription(pSource->GetDescription());
   this->SetDifficulty(pSource->GetDifficulty());
@@ -662,31 +664,31 @@ void Steps::CopyFrom(
 }
 
 void Steps::CreateBlank(StepsType ntTo) {
-  m_StepsType = ntTo;
-  m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(ntTo).szName;
+  steps_type_ = ntTo;
+  steps_type_str_ = GAMEMAN->GetStepsTypeInfo(ntTo).name_;
   NoteData noteData;
-  noteData.SetNumTracks(GAMEMAN->GetStepsTypeInfo(ntTo).iNumTracks);
+  noteData.SetNumTracks(GAMEMAN->GetStepsTypeInfo(ntTo).num_tracks_);
   this->SetNoteData(noteData);
 }
 
 void Steps::SetDifficultyAndDescription(
     Difficulty dc, std::string sDescription) {
   DeAutogen();
-  m_Difficulty = dc;
-  m_sDescription = sDescription;
+  difficulty_ = dc;
+  description_ = sDescription;
   if (GetDifficulty() == Difficulty_Edit) {
-    MakeValidEditDescription(m_sDescription);
+    MakeValidEditDescription(description_);
   }
 }
 
 void Steps::SetCredit(std::string sCredit) {
   DeAutogen();
-  m_sCredit = sCredit;
+  credit_ = sCredit;
 }
 
 void Steps::SetChartStyle(std::string sChartStyle) {
   DeAutogen();
-  m_sChartStyle = sChartStyle;
+  chart_style_ = sChartStyle;
 }
 
 bool Steps::MakeValidEditDescription(std::string& sPreferredDescription) {
@@ -700,11 +702,11 @@ bool Steps::MakeValidEditDescription(std::string& sPreferredDescription) {
 
 void Steps::SetMeter(int meter) {
   DeAutogen();
-  m_iMeter = meter;
+  meter_ = meter;
 }
 
 const TimingData* Steps::GetTimingData() const {
-  return m_Timing.empty() ? &m_pSong->m_SongTiming : &m_Timing;
+  return timing_.empty() ? &song_->song_timing_ : &timing_;
 }
 
 bool Steps::HasSignificantTimingChanges() const {
@@ -717,7 +719,7 @@ bool Steps::HasSignificantTimingChanges() const {
   if (timing->HasBpmChanges()) {
     // check to see if these changes are significant.
     DisplayBpms bpms;
-    m_pSong->GetDisplayBpms(bpms);
+    song_->GetDisplayBpms(bpms);
     if (bpms.GetMax() - bpms.GetMin() > 3.000f) {
       return true;
     }
@@ -728,55 +730,55 @@ bool Steps::HasSignificantTimingChanges() const {
 
 const std::string Steps::GetMusicPath() const {
   return Song::GetSongAssetPath(
-      m_MusicFile.empty() ? m_pSong->m_sMusicFile : m_MusicFile,
-      m_pSong->GetSongDir());
+      music_file_.empty() ? song_->music_file_ : music_file_,
+      song_->GetSongDir());
 }
 
-const std::string& Steps::GetMusicFile() const { return m_MusicFile; }
+const std::string& Steps::GetMusicFile() const { return music_file_; }
 
-void Steps::SetMusicFile(const std::string& file) { m_MusicFile = file; }
+void Steps::SetMusicFile(const std::string& file) { music_file_ = file; }
 
 void Steps::SetRadarValues(const RadarValues v[NUM_PLAYERS]) {
   DeAutogen();
-  std::copy(v, v + NUM_PLAYERS, m_RadarValues);
+  std::copy(v, v + NUM_PLAYERS, radar_values_);
 }
 
 void Steps::SetTechCounts(const TechCounts ts[NUM_PLAYERS]) {
   DeAutogen();
-  std::copy(ts, ts + NUM_PLAYERS, m_TechCounts);
+  std::copy(ts, ts + NUM_PLAYERS, tech_counts_);
 }
 
 void Steps::SetNoteAnnotations(
     std::vector<NoteAnnotationCache>& noteAnnotations) {
   DeAutogen();
-  m_NoteAnnotations.assign(noteAnnotations.begin(), noteAnnotations.end());
+  note_annotations_.assign(noteAnnotations.begin(), noteAnnotations.end());
 }
 
 void Steps::SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure) {
   DeAutogen();
-  m_NpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
+  nps_per_measure_.assign(npsPerMeasure.begin(), npsPerMeasure.end());
 }
 
 void Steps::SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure) {
   DeAutogen();
-  m_NotesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
+  notes_per_measure_.assign(notesPerMeasure.begin(), notesPerMeasure.end());
 }
 
 void Steps::SetStreamBreakdown(std::vector<StreamBreakdown>& streamBreakdown) {
   DeAutogen();
-  m_StreamBreakdown.assign(streamBreakdown.begin(), streamBreakdown.end());
+  stream_breakdown_.assign(streamBreakdown.begin(), streamBreakdown.end());
 }
 
 void Steps::SetPeakNps(std::vector<float>& peakNps) {
-  m_PeakNps.assign(peakNps.begin(), peakNps.end());
+  peak_nps_.assign(peakNps.begin(), peakNps.end());
 }
 
 const std::string Steps::GetGrooveStatsHash() const {
-  return m_sGrooveStatsHash;
+  return groove_stats_hash_;
 }
 
 int Steps::GetGrooveStatsHashVersion() const {
-  return m_iGrooveStatsHashVersion;
+  return groove_stats_hash_version_;
 }
 
 void Steps::CalculateGrooveStatsHash(const NoteData& noteData) {
@@ -800,8 +802,8 @@ void Steps::CalculateGrooveStatsHash(const NoteData& noteData) {
   smNoteData.append(bpmString);
   std::string gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
   gsKey = gsKey.substr(0, 16);
-  m_sGrooveStatsHash = gsKey;
-  m_iGrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
+  groove_stats_hash_ = gsKey;
+  groove_stats_hash_version_ = CURRENT_GROOVE_STATS_HASH_VERSION;
 }
 
 std::string Steps::MinimizedChartString(const NoteData& noteData) {
@@ -879,11 +881,11 @@ std::string Steps::MinimizedChartString(const NoteData& noteData) {
 }
 
 void Steps::SetGrooveStatsHash(const std::string& key) {
-  m_sGrooveStatsHash = key;
+  groove_stats_hash_ = key;
 }
 
 void Steps::SetGrooveStatsHashVersion(int version) {
-  m_iGrooveStatsHashVersion = version;
+  groove_stats_hash_version_ = version;
 }
 
 std::vector<ColumnCue> Steps::GetColumnCues(
@@ -893,7 +895,7 @@ std::vector<ColumnCue> Steps::GetColumnCues(
   this->GetNoteData(noteData);
   TimingData* timing = this->GetTimingData();
   ColumnCue::CalculateColumnCues(
-      noteData, timing, cues, pn, minDuration, m_StepsType);
+      noteData, timing, cues, pn, minDuration, steps_type_);
   return cues;
 }
 
@@ -904,12 +906,12 @@ const std::vector<float>& Steps::GetNpsPerMeasure(PlayerNumber pn) const {
   // will be the case for like 99.9% of charts).
 
   static const std::vector<float> EMPTY_VECTOR;
-  if (Real()->m_NpsPerMeasure.size() == 0) {
+  if (Real()->nps_per_measure_.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_NpsPerMeasure.size() <= pn) {
-    return Real()->m_NpsPerMeasure[PLAYER_1];
+  } else if (Real()->nps_per_measure_.size() <= pn) {
+    return Real()->nps_per_measure_[PLAYER_1];
   } else {
-    return Real()->m_NpsPerMeasure[pn];
+    return Real()->nps_per_measure_[pn];
   }
 }
 
@@ -919,12 +921,12 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
   static const std::vector<int> EMPTY_VECTOR;
-  if (Real()->m_NotesPerMeasure.size() == 0) {
+  if (Real()->notes_per_measure_.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_NotesPerMeasure.size() <= pn) {
-    return Real()->m_NotesPerMeasure[PLAYER_1];
+  } else if (Real()->notes_per_measure_.size() <= pn) {
+    return Real()->notes_per_measure_[PLAYER_1];
   } else {
-    return Real()->m_NotesPerMeasure[pn];
+    return Real()->notes_per_measure_[pn];
   }
 }
 
@@ -934,12 +936,12 @@ const StreamBreakdown& Steps::GetStreamBreakdown(PlayerNumber pn) const {
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
   static const StreamBreakdown EMPTY_BREAKDOWN;
-  if (Real()->m_StreamBreakdown.size() == 0) {
+  if (Real()->stream_breakdown_.size() == 0) {
     return EMPTY_BREAKDOWN;
-  } else if (Real()->m_StreamBreakdown.size() <= pn) {
-    return Real()->m_StreamBreakdown[PLAYER_1];
+  } else if (Real()->stream_breakdown_.size() <= pn) {
+    return Real()->stream_breakdown_[PLAYER_1];
   } else {
-    return Real()->m_StreamBreakdown[pn];
+    return Real()->stream_breakdown_[pn];
   }
 }
 
@@ -949,26 +951,26 @@ const std::vector<NoteAnnotation>& Steps::GetNoteAnnotations(
   // and GetNpsPerMeasure.
 
   static const std::vector<NoteAnnotation> EMPTY_VECTOR;
-  if (Real()->m_NoteAnnotations.size() == 0) {
+  if (Real()->note_annotations_.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_NoteAnnotations.size() <= pn) {
-    return Real()->m_NoteAnnotations[PLAYER_1].GetNoteAnnotations();
+  } else if (Real()->note_annotations_.size() <= pn) {
+    return Real()->note_annotations_[PLAYER_1].GetNoteAnnotations();
   } else {
-    return Real()->m_NoteAnnotations[pn].GetNoteAnnotations();
+    return Real()->note_annotations_[pn].GetNoteAnnotations();
   }
 }
 
 const std::vector<NoteAnnotationCache>& Steps::GetNoteAnnotationCaches() const {
-  return m_NoteAnnotations;
+  return note_annotations_;
 }
 
 float Steps::GetPeakNps(PlayerNumber pn) const {
-  if (Real()->m_PeakNps.size() == 0) {
+  if (Real()->peak_nps_.size() == 0) {
     return 0;
-  } else if (Real()->m_PeakNps.size() <= pn) {
-    return Real()->m_PeakNps[PLAYER_1];
+  } else if (Real()->peak_nps_.size() <= pn) {
+    return Real()->peak_nps_[PLAYER_1];
   } else {
-    return Real()->m_PeakNps[pn];
+    return Real()->peak_nps_[pn];
   }
 }
 
@@ -977,7 +979,7 @@ float Steps::GetPeakNps(PlayerNumber pn) const {
 /** @brief Allow Lua to have access to the Steps. */
 class LunaSteps : public Luna<Steps> {
  public:
-  DEFINE_METHOD(GetStepsType, m_StepsType)
+  DEFINE_METHOD(GetStepsType, steps_type_)
   DEFINE_METHOD(GetDifficulty, GetDifficulty())
   DEFINE_METHOD(GetDescription, GetDescription())
   DEFINE_METHOD(GetChartStyle, GetChartStyle())
@@ -1060,16 +1062,17 @@ class LunaSteps : public Luna<Steps> {
     const StreamBreakdown& breakdown = p->GetStreamBreakdown(pn);
 
     lua_createtable(L, 0, 3);
-    lua_createtable(L, static_cast<int>(breakdown.texts.size()), 0);
-    for (size_t i = 0; i < breakdown.texts.size(); ++i) {
-      lua_pushlstring(L, breakdown.texts[i].data(), breakdown.texts[i].size());
+    lua_createtable(L, static_cast<int>(breakdown.texts_.size()), 0);
+    for (size_t i = 0; i < breakdown.texts_.size(); ++i) {
+      lua_pushlstring(
+          L, breakdown.texts_[i].data(), breakdown.texts_[i].size());
       lua_rawseti(L, -2, static_cast<int>(i) + 1);
     }
     lua_setfield(L, -2, "Texts");
 
-    lua_pushinteger(L, breakdown.totalStreamMeasures);
+    lua_pushinteger(L, breakdown.total_stream_measures_);
     lua_setfield(L, -2, "TotalStream");
-    lua_pushinteger(L, breakdown.totalBreakMeasures);
+    lua_pushinteger(L, breakdown.total_break_measures_);
     lua_setfield(L, -2, "TotalBreak");
     return 1;
   }
@@ -1155,24 +1158,24 @@ class LunaSteps : public Luna<Steps> {
     for (unsigned i = 0; i < cues.size(); i++) {
       lua_newtable(L);
       lua_pushstring(L, "startTime");
-      lua_pushnumber(L, cues[i].startTime);
+      lua_pushnumber(L, cues[i].start_time_);
       lua_settable(L, -3);
 
       lua_pushstring(L, "duration");
-      lua_pushnumber(L, cues[i].duration);
+      lua_pushnumber(L, cues[i].duration_);
       lua_settable(L, -3);
 
       lua_pushstring(L, "columns");
-      lua_createtable(L, cues[i].columns.size(), 0);
+      lua_createtable(L, cues[i].columns_.size(), 0);
 
-      for (unsigned c = 0; c < cues[i].columns.size(); c++) {
+      for (unsigned c = 0; c < cues[i].columns_.size(); c++) {
         lua_newtable(L);
         lua_pushstring(L, "colNum");
-        lua_pushinteger(L, cues[i].columns[c].colNum);
+        lua_pushinteger(L, cues[i].columns_[c].col_num_);
         lua_settable(L, -3);
 
         lua_pushstring(L, "noteType");
-        lua_pushinteger(L, cues[i].columns[c].noteType);
+        lua_pushinteger(L, cues[i].columns_[c].note_type_);
         lua_settable(L, -3);
 
         lua_rawseti(L, -2, c + 1);
@@ -1196,7 +1199,7 @@ class LunaSteps : public Luna<Steps> {
     for (unsigned i = 0; i < rows.size(); i++) {
       lua_createtable(L, 0, 4);
       lua_pushstring(L, "beat");
-      lua_pushnumber(L, rows[i].beat);
+      lua_pushnumber(L, rows[i].beat_);
       lua_settable(L, -3);
 
       // add columns
@@ -1204,8 +1207,8 @@ class LunaSteps : public Luna<Steps> {
       lua_createtable(L, 0, 0);
       int colIndex = 1;
       for (StepParity::Foot f : StepParity::FEET) {
-        if (rows[i].whereTheFeetAre[f] != StepParity::INVALID_COLUMN) {
-          lua_pushnumber(L, rows[i].whereTheFeetAre[f] + 1);
+        if (rows[i].where_the_feet_are_[f] != StepParity::INVALID_COLUMN) {
+          lua_pushnumber(L, rows[i].where_the_feet_are_[f] + 1);
           Enum::Push(L, f);
           lua_settable(L, -3);
         }
@@ -1216,7 +1219,7 @@ class LunaSteps : public Luna<Steps> {
       lua_pushstring(L, "tech");
       lua_createtable(L, 0, 0);
       int techIndex = 1;
-      for (const TechCountsCategory techVal : rows[i].tech) {
+      for (const TechCountsCategory techVal : rows[i].tech_) {
         Enum::Push(L, techVal);
         lua_rawseti(L, -2, techIndex++);
       }

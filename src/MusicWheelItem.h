@@ -56,45 +56,45 @@ class MusicWheelItem : public WheelItemBase {
  private:
   ThemeMetric<bool> GRADES_SHOW_MACHINE;
 
-  AutoActor m_sprColorPart[NUM_MusicWheelItemType];
-  AutoActor m_sprNormalPart[NUM_MusicWheelItemType];
-  AutoActor m_sprOverPart[NUM_MusicWheelItemType];
+  AutoActor spr_color_part_[NUM_MusicWheelItemType];
+  AutoActor spr_normal_part_[NUM_MusicWheelItemType];
+  AutoActor spr_over_part_[NUM_MusicWheelItemType];
 
-  TextBanner m_TextBanner;  // used by Type_Song instead of m_pText
-  BitmapText* m_pText[NUM_MusicWheelItemType];
-  BitmapText* m_pTextSectionCount;
+  TextBanner text_banner_;  // used by Type_Song instead of m_pText
+  BitmapText* text_[NUM_MusicWheelItemType];
+  BitmapText* text_section_count_;
 
-  WheelNotifyIcon m_WheelNotifyIcon;
-  AutoActor m_pGradeDisplay[NUM_PLAYERS];
+  WheelNotifyIcon wheel_notify_icon_;
+  AutoActor grade_display_[NUM_PLAYERS];
 };
 
 struct MusicWheelItemData : public WheelItemBaseData {
   MusicWheelItemData()
-      : m_pCourse(nullptr),
-        m_pSong(nullptr),
-        m_pGroup(nullptr),
-        m_Flags(),
-        m_iSectionCount(0),
-        m_sParentSection(""),
-        m_sLabel(""),
-        m_pAction() {}
+      : course_(nullptr),
+        song_(nullptr),
+        group_(nullptr),
+        flags_(),
+        section_count_(0),
+        parent_section_(""),
+        label_(""),
+        action_() {}
   MusicWheelItemData(
       WheelItemDataType type, Song* pSong, std::string sSectionName,
       Course* pCourse, Group* pGroup, RageColor color, int iSectionCount,
       std::string sParentSection = "");
 
-  Course* m_pCourse;
-  Song* m_pSong;
-  Group* m_pGroup;
-  WheelNotifyIcon::Flags m_Flags;
+  Course* course_;
+  Song* song_;
+  Group* group_;
+  WheelNotifyIcon::Flags flags_;
 
   // for TYPE_SECTION
-  int m_iSectionCount;
-  std::string m_sParentSection;
+  int section_count_;
+  std::string parent_section_;
 
   // for TYPE_SORT
-  std::string m_sLabel;
-  HiddenPtr<GameCommand> m_pAction;
+  std::string label_;
+  HiddenPtr<GameCommand> action_;
 };
 
 #endif

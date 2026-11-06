@@ -8,19 +8,19 @@
 #include "RageUtil.h"
 #include "global.h"
 
-LuaExpressionTransform::LuaExpressionTransform() { m_iNumSubdivisions = 1; }
+LuaExpressionTransform::LuaExpressionTransform() { num_subdivisions_ = 1; }
 
 LuaExpressionTransform::~LuaExpressionTransform() {}
 
 void LuaExpressionTransform::SetFromReference(const LuaReference& ref) {
-  m_exprTransformFunction = ref;
+  expr_transform_function_ = ref;
 }
 
 void LuaExpressionTransform::TransformItemDirect(
     Actor& a, float fPositionOffsetFromCenter, int iItemIndex,
     int iNumItems) const {
   Lua* L = LUA->Get();
-  m_exprTransformFunction.PushSelf(L);
+  expr_transform_function_.PushSelf(L);
   ASSERT(!lua_isnil(L, -1));
   a.PushSelf(L);
   LuaHelpers::Push(L, fPositionOffsetFromCenter);
@@ -36,19 +36,19 @@ const Actor::TweenState& LuaExpressionTransform::GetTransformCached(
   PositionOffsetAndItemIndex key = {fPositionOffsetFromCenter, iItemIndex};
 
   std::map<PositionOffsetAndItemIndex, Actor::TweenState>::const_iterator iter =
-      m_mapPositionToTweenStateCache.find(key);
-  if (iter != m_mapPositionToTweenStateCache.end()) {
+      map_position_to_tween_state_cache_.find(key);
+  if (iter != map_position_to_tween_state_cache_.end()) {
     return iter->second;
   }
 
   Actor a;
   TransformItemDirect(a, fPositionOffsetFromCenter, iItemIndex, iNumItems);
-  return m_mapPositionToTweenStateCache[key] = a.DestTweenState();
+  return map_position_to_tween_state_cache_[key] = a.DestTweenState();
 }
 
 void LuaExpressionTransform::TransformItemCached(
     Actor& a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems) {
-  float fInterval = 1.0f / m_iNumSubdivisions;
+  float fInterval = 1.0f / num_subdivisions_;
   float fFloor = QuantizeDown(fPositionOffsetFromCenter, fInterval);
   float fCeil = QuantizeUp(fPositionOffsetFromCenter, fInterval);
 

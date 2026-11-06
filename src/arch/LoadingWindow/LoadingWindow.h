@@ -16,13 +16,13 @@ class LoadingWindow {
   virtual void SetText(std::string str) = 0;
   virtual void SetIcon(const RageSurface* pIcon) {}
   virtual void SetSplash(const RageSurface* pSplash) {}
-  virtual void SetProgress(const int progress) { m_progress = progress; }
-  virtual void SetTotalWork(const int totalWork) { m_totalWork = totalWork; }
+  virtual void SetProgress(const int progress) { progress_ = progress; }
+  virtual void SetTotalWork(const int totalWork) { total_work_ = totalWork; }
   virtual void SetIndeterminate(bool indeterminate) {}
 
  protected:
-  int m_progress;
-  int m_totalWork;
+  int progress_;
+  int total_work_;
 };
 
 #endif

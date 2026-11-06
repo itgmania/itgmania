@@ -21,7 +21,7 @@ class HoldJudgment : public ActorFrame {
 
  protected:
   void ResetAnimation();
-  AutoActor m_sprJudgment;
+  AutoActor spr_judgment_;
 };
 
 #endif

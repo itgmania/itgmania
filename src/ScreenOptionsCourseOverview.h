@@ -27,7 +27,7 @@ class ScreenOptionsCourseOverview : public ScreenOptions {
   virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
-  RageSound m_soundSave;
+  RageSound sound_save_;
   ThemeMetric<std::string> PLAY_SCREEN;
   ThemeMetric<std::string> EDIT_SCREEN;
 };

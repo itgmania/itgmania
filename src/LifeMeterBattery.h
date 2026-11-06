@@ -36,7 +36,7 @@ class LifeMeterBattery : public LifeMeter {
   virtual void BroadcastLifeChanged(bool lost_life);
 
   void Refresh();
-  int GetLivesLeft() { return m_iLivesLeft; }
+  int GetLivesLeft() { return lives_left_; }
   int GetTotalLives();
   void ChangeLives(int iLifeDiff);
 
@@ -47,8 +47,8 @@ class LifeMeterBattery : public LifeMeter {
   void SubtractLives(int iLives);
   void AddLives(int iLives);
 
-  int m_iLivesLeft;          // dead when 0
-  int m_iTrailingLivesLeft;  // lags m_iLivesLeft
+  int lives_left_;           // dead when 0
+  int trailing_lives_left_;  // lags m_iLivesLeft
 
   ThemeMetric<TapNoteScore> MIN_SCORE_TO_KEEP_LIFE;
   ThemeMetric<int> DANGER_THRESHOLD;
@@ -60,16 +60,16 @@ class LifeMeterBattery : public LifeMeter {
   ThemeMetric<LuaReference> COURSE_SONG_REWARD_LIVES;
   ThemeMetric<std::string> LIVES_FORMAT;
 
-  AutoActor m_sprFrame;
-  AutoActor m_sprBattery;
-  BitmapText m_textNumLives;
+  AutoActor spr_frame_;
+  AutoActor spr_battery_;
+  BitmapText text_num_lives_;
 
-  PercentageDisplay m_Percent;
+  PercentageDisplay percent_;
 
   /** @brief The sound played when a Player loses a life. */
-  RageSound m_soundLoseLife;
+  RageSound sound_lose_life_;
   /** @brief The sound played when a Player gains a life. */
-  RageSound m_soundGainLife;
+  RageSound sound_gain_life_;
 };
 
 #endif

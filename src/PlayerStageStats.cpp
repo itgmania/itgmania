@@ -51,126 +51,125 @@ const float LESSON_PASS_THRESHOLD = 0.8f;
 Grade GetGradeFromPercent(float fPercent);
 
 void PlayerStageStats::InternalInit() {
-  m_pStyle = nullptr;
-  m_player_number = PLAYER_1;
+  style_ = nullptr;
+  player_number_ = PLAYER_1;
 
-  m_bPlayerCanAchieveFullCombo = true;
-  m_bJoined = false;
-  m_vpPossibleSteps.clear();
-  m_iStepsPlayed = 0;
-  m_fAliveSeconds = 0;
-  m_bFailed = false;
-  m_iPossibleDancePoints = 0;
-  m_iCurPossibleDancePoints = 0;
-  m_iActualDancePoints = 0;
-  m_iPossibleGradePoints = 0;
-  m_iCurCombo = 0;
-  m_iMaxCombo = 0;
-  m_iCurMissCombo = 0;
-  m_iCurScoreMultiplier = 1;
-  m_iScore = 0;
-  m_iMaxScore = 0;
-  m_iCurMaxScore = 0;
-  m_iSongsPassed = 0;
-  m_iSongsPlayed = 0;
-  m_fLifeRemainingSeconds = 0;
-  m_iNumControllerSteps = 0;
-  m_fCaloriesBurned = 0;
+  player_can_achieve_full_combo_ = true;
+  joined_ = false;
+  possible_steps_.clear();
+  steps_played_ = 0;
+  alive_seconds_ = 0;
+  failed_ = false;
+  possible_dance_points_ = 0;
+  cur_possible_dance_points_ = 0;
+  actual_dance_points_ = 0;
+  possible_grade_points_ = 0;
+  cur_combo_ = 0;
+  max_combo_ = 0;
+  cur_miss_combo_ = 0;
+  cur_score_multiplier_ = 1;
+  score_ = 0;
+  max_score_ = 0;
+  cur_max_score_ = 0;
+  songs_passed_ = 0;
+  songs_played_ = 0;
+  life_remaining_seconds_ = 0;
+  num_controller_steps_ = 0;
+  calories_burned_ = 0;
 
-  ZERO(m_iTapNoteScores);
-  ZERO(m_iHoldNoteScores);
-  m_radarPossible.Zero();
-  m_radarActual.Zero();
+  ZERO(tap_note_scores_);
+  ZERO(hold_note_scores_);
+  radar_possible_.Zero();
+  radar_actual_.Zero();
 
-  m_fFirstSecond = FLT_MAX;
-  m_fLastSecond = 0;
+  first_second_ = FLT_MAX;
+  last_second_ = 0;
 
-  m_StageAward = StageAward_Invalid;
-  m_PeakComboAward = PeakComboAward_Invalid;
-  m_iPersonalHighScoreIndex = -1;
-  m_iMachineHighScoreIndex = -1;
-  m_bDisqualified = false;
-  m_rc = RankingCategory_Invalid;
-  m_HighScore = HighScore();
+  stage_award_ = StageAward_Invalid;
+  peak_combo_award_ = PeakComboAward_Invalid;
+  personal_high_score_index_ = -1;
+  machine_high_score_index_ = -1;
+  disqualified_ = false;
+  rc_ = RankingCategory_Invalid;
+  high_score_ = HighScore();
 }
 
-void PlayerStageStats::Init(PlayerNumber pn) { m_player_number = pn; }
+void PlayerStageStats::Init(PlayerNumber pn) { player_number_ = pn; }
 
 void PlayerStageStats::AddStats(const PlayerStageStats& other) {
-  m_pStyle = other.m_pStyle;
-  m_bJoined = other.m_bJoined;
-  for (Steps* s : other.m_vpPossibleSteps) {
-    m_vpPossibleSteps.push_back(s);
+  style_ = other.style_;
+  joined_ = other.joined_;
+  for (Steps* s : other.possible_steps_) {
+    possible_steps_.push_back(s);
   }
-  m_iStepsPlayed += other.m_iStepsPlayed;
-  m_fAliveSeconds += other.m_fAliveSeconds;
-  m_bFailed |= other.m_bFailed;
-  m_iPossibleDancePoints += other.m_iPossibleDancePoints;
-  m_iActualDancePoints += other.m_iActualDancePoints;
-  m_iCurPossibleDancePoints += other.m_iCurPossibleDancePoints;
-  m_iPossibleGradePoints += other.m_iPossibleGradePoints;
+  steps_played_ += other.steps_played_;
+  alive_seconds_ += other.alive_seconds_;
+  failed_ |= other.failed_;
+  possible_dance_points_ += other.possible_dance_points_;
+  actual_dance_points_ += other.actual_dance_points_;
+  cur_possible_dance_points_ += other.cur_possible_dance_points_;
+  possible_grade_points_ += other.possible_grade_points_;
 
   for (int t = 0; t < NUM_TapNoteScore; t++) {
-    m_iTapNoteScores[t] += other.m_iTapNoteScores[t];
+    tap_note_scores_[t] += other.tap_note_scores_[t];
   }
   for (int h = 0; h < NUM_HoldNoteScore; h++) {
-    m_iHoldNoteScores[h] += other.m_iHoldNoteScores[h];
+    hold_note_scores_[h] += other.hold_note_scores_[h];
   }
-  m_iCurCombo += other.m_iCurCombo;
-  m_iMaxCombo += other.m_iMaxCombo;
-  m_iCurMissCombo += other.m_iCurMissCombo;
-  m_iScore += other.m_iScore;
-  m_iMaxScore += other.m_iMaxScore;
-  m_iCurMaxScore += other.m_iCurMaxScore;
-  m_radarPossible += other.m_radarPossible;
-  m_radarActual += other.m_radarActual;
-  m_iSongsPassed += other.m_iSongsPassed;
-  m_iSongsPlayed += other.m_iSongsPlayed;
-  m_iNumControllerSteps += other.m_iNumControllerSteps;
-  m_fCaloriesBurned += other.m_fCaloriesBurned;
-  m_fLifeRemainingSeconds = other.m_fLifeRemainingSeconds;  // don't accumulate
-  m_bDisqualified |= other.m_bDisqualified;
+  cur_combo_ += other.cur_combo_;
+  max_combo_ += other.max_combo_;
+  cur_miss_combo_ += other.cur_miss_combo_;
+  score_ += other.score_;
+  max_score_ += other.max_score_;
+  cur_max_score_ += other.cur_max_score_;
+  radar_possible_ += other.radar_possible_;
+  radar_actual_ += other.radar_actual_;
+  songs_passed_ += other.songs_passed_;
+  songs_played_ += other.songs_played_;
+  num_controller_steps_ += other.num_controller_steps_;
+  calories_burned_ += other.calories_burned_;
+  life_remaining_seconds_ = other.life_remaining_seconds_;  // don't accumulate
+  disqualified_ |= other.disqualified_;
 
   // FirstSecond is always 0, and last second is the time of the last step,
   // so add 1 second between the stages so that the last element of this
   // stage's record isn't overwritten by the first element of the other
   // stage's record. -Kyz
-  const float fOtherFirstSecond = other.m_fFirstSecond + m_fLastSecond + 1.0f;
-  const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond + 1.0f;
-  m_fLastSecond = fOtherLastSecond;
+  const float fOtherFirstSecond = other.first_second_ + last_second_ + 1.0f;
+  const float fOtherLastSecond = other.last_second_ + last_second_ + 1.0f;
+  last_second_ = fOtherLastSecond;
 
   std::map<float, float>::const_iterator it;
-  for (it = other.m_fLifeRecord.begin(); it != other.m_fLifeRecord.end();
-       ++it) {
+  for (it = other.life_record_.begin(); it != other.life_record_.end(); ++it) {
     const float pos = it->first;
     const float life = it->second;
-    m_fLifeRecord[fOtherFirstSecond + pos] = life;
+    life_record_[fOtherFirstSecond + pos] = life;
   }
 
-  for (unsigned i = 0; i < other.m_ComboList.size(); ++i) {
-    const Combo_t& combo = other.m_ComboList[i];
+  for (unsigned i = 0; i < other.combo_list_.size(); ++i) {
+    const Combo_t& combo = other.combo_list_[i];
 
     Combo_t newcombo(combo);
-    newcombo.m_fStartSecond += fOtherFirstSecond;
-    m_ComboList.push_back(newcombo);
+    newcombo.start_second_ += fOtherFirstSecond;
+    combo_list_.push_back(newcombo);
   }
 
   /* Merge identical combos. This normally only happens in course mode, when
    * a combo continues between songs. */
-  for (unsigned i = 1; i < m_ComboList.size(); ++i) {
-    Combo_t& prevcombo = m_ComboList[i - 1];
-    Combo_t& combo = m_ComboList[i];
+  for (unsigned i = 1; i < combo_list_.size(); ++i) {
+    Combo_t& prevcombo = combo_list_[i - 1];
+    Combo_t& combo = combo_list_[i];
     const float PrevComboEnd =
-        prevcombo.m_fStartSecond + prevcombo.m_fSizeSeconds;
-    const float ThisComboStart = combo.m_fStartSecond;
+        prevcombo.start_second_ + prevcombo.size_seconds_;
+    const float ThisComboStart = combo.start_second_;
     if (std::abs(PrevComboEnd - ThisComboStart) > 0.001) {
       continue;
     }
 
     // These are really the same combo.
-    prevcombo.m_fSizeSeconds += combo.m_fSizeSeconds;
-    prevcombo.m_cnt += combo.m_cnt;
-    m_ComboList.erase(m_ComboList.begin() + i);
+    prevcombo.size_seconds_ += combo.size_seconds_;
+    prevcombo.cnt_ += combo.cnt_;
+    combo_list_.erase(combo_list_.begin() + i);
     --i;
   }
 }
@@ -188,7 +187,7 @@ Grade GetGradeFromPercent(float fPercent) {
 }
 
 Grade PlayerStageStats::GetGrade() const {
-  if (m_bFailed) {
+  if (failed_) {
     return Grade_Failed;
   }
 
@@ -197,14 +196,14 @@ Grade PlayerStageStats::GetGrade() const {
   float fActual = 0;
 
   bool bIsBeginner = false;
-  if (m_iStepsPlayed > 0 && !GAMESTATE->IsCourseMode()) {
-    bIsBeginner = m_vpPossibleSteps[0]->GetDifficulty() == Difficulty_Beginner;
+  if (steps_played_ > 0 && !GAMESTATE->IsCourseMode()) {
+    bIsBeginner = possible_steps_[0]->GetDifficulty() == Difficulty_Beginner;
   }
 
   FOREACH_ENUM(TapNoteScore, tns) {
     int iTapScoreValue =
         ScoreKeeperNormal::TapNoteScoreToGradePoints(tns, bIsBeginner);
-    fActual += m_iTapNoteScores[tns] * iTapScoreValue;
+    fActual += tap_note_scores_[tns] * iTapScoreValue;
     // LOG->Trace( "GetGrade actual: %i * %i", m_iTapNoteScores[tns],
     // iTapScoreValue );
   }
@@ -212,7 +211,7 @@ Grade PlayerStageStats::GetGrade() const {
   FOREACH_ENUM(HoldNoteScore, hns) {
     int iHoldScoreValue =
         ScoreKeeperNormal::HoldNoteScoreToGradePoints(hns, bIsBeginner);
-    fActual += m_iHoldNoteScores[hns] * iHoldScoreValue;
+    fActual += hold_note_scores_[hns] * iHoldScoreValue;
     // LOG->Trace( "GetGrade actual: %i * %i", m_iHoldNoteScores[hns],
     // iHoldScoreValue );
   }
@@ -221,7 +220,7 @@ Grade PlayerStageStats::GetGrade() const {
   // m_iPossibleGradePoints );
 
   float fPercent =
-      (m_iPossibleGradePoints == 0) ? 0 : fActual / m_iPossibleGradePoints;
+      (possible_grade_points_ == 0) ? 0 : fActual / possible_grade_points_;
 
   Grade grade = GetGradeFromPercent(fPercent);
 
@@ -303,7 +302,7 @@ std::string PlayerStageStats::FormatPercentScore(float fPercentDancePoints) {
 }
 
 float PlayerStageStats::GetPercentDancePoints() const {
-  return MakePercentScore(m_iActualDancePoints, m_iPossibleDancePoints);
+  return MakePercentScore(actual_dance_points_, possible_dance_points_);
 }
 
 // TODO: Make this use lua. Let more judgments be possible. -Wolfman2000
@@ -318,7 +317,7 @@ int PlayerStageStats::GetLessonScoreActual() const {
       case TNS_W3:
       case TNS_W2:
       case TNS_W1:
-        iScore += m_iTapNoteScores[tns];
+        iScore += tap_note_scores_[tns];
       default:
         break;
     }
@@ -327,7 +326,7 @@ int PlayerStageStats::GetLessonScoreActual() const {
   FOREACH_ENUM(HoldNoteScore, hns) {
     switch (hns) {
       case HNS_Held:
-        iScore += m_iHoldNoteScores[hns];
+        iScore += hold_note_scores_[hns];
       default:
         break;
     }
@@ -338,7 +337,7 @@ int PlayerStageStats::GetLessonScoreActual() const {
 
 int PlayerStageStats::GetLessonScoreNeeded() const {
   float fScore = std::accumulate(
-      m_vpPossibleSteps.begin(), m_vpPossibleSteps.end(), 0.f,
+      possible_steps_.begin(), possible_steps_.end(), 0.f,
       [](float total, const Steps* steps) {
         return total +
                steps->GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds];
@@ -347,23 +346,23 @@ int PlayerStageStats::GetLessonScoreNeeded() const {
 }
 
 void PlayerStageStats::ResetScoreForLesson() {
-  m_iCurPossibleDancePoints = 0;
-  m_iActualDancePoints = 0;
+  cur_possible_dance_points_ = 0;
+  actual_dance_points_ = 0;
   FOREACH_ENUM(TapNoteScore, tns)
-  m_iTapNoteScores[tns] = 0;
+  tap_note_scores_[tns] = 0;
   FOREACH_ENUM(HoldNoteScore, hns)
-  m_iHoldNoteScores[hns] = 0;
-  m_iCurCombo = 0;
-  m_iMaxCombo = 0;
-  m_iCurMissCombo = 0;
-  m_iScore = 0;
-  m_iCurMaxScore = 0;
-  m_iMaxScore = 0;
+  hold_note_scores_[hns] = 0;
+  cur_combo_ = 0;
+  max_combo_ = 0;
+  cur_miss_combo_ = 0;
+  score_ = 0;
+  cur_max_score_ = 0;
+  max_score_ = 0;
 }
 
 void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
   // Don't save life stats in endless courses, or could run OOM in a few hours.
-  if (GAMESTATE->m_pCurCourse && GAMESTATE->m_pCurCourse->IsEndless()) {
+  if (GAMESTATE->cur_course_ && GAMESTATE->cur_course_->IsEndless()) {
     return;
   }
 
@@ -371,8 +370,8 @@ void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
     return;
   }
 
-  m_fFirstSecond = std::min(fStepsSecond, m_fFirstSecond);
-  m_fLastSecond = std::max(fStepsSecond, m_fLastSecond);
+  first_second_ = std::min(fStepsSecond, first_second_);
+  last_second_ = std::max(fStepsSecond, last_second_);
   // LOG->Trace( "fLastSecond = %f", m_fLastSecond );
 
   // fStepsSecond will usually be greater than any value already in the map,
@@ -385,18 +384,18 @@ void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
   // entry.  Then the second call of the frame occurs and sets the life for
   // the current time to a lower value.
   // -Kyz
-  std::map<float, float>::iterator curr = m_fLifeRecord.find(fStepsSecond);
-  if (curr != m_fLifeRecord.end()) {
+  std::map<float, float>::iterator curr = life_record_.find(fStepsSecond);
+  if (curr != life_record_.end()) {
     if (curr->second != fLife) {
       // 2^-8
-      m_fLifeRecord[fStepsSecond - 0.00390625] = curr->second;
+      life_record_[fStepsSecond - 0.00390625] = curr->second;
     }
   }
-  m_fLifeRecord[fStepsSecond] = fLife;
+  life_record_[fStepsSecond] = fLife;
 
   Message msg(
       static_cast<MessageID>(
-          Message_LifeMeterChangedP1 + Enum::to_integral(m_player_number)));
+          Message_LifeMeterChangedP1 + Enum::to_integral(player_number_)));
   msg.SetParam("Life", fLife);
   msg.SetParam("StepsSecond", fStepsSecond);
   MESSAGEMAN->Broadcast(msg);
@@ -406,15 +405,15 @@ void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
   // we can eliminate record B without losing data. Only check the last three
   // records in the map since we're only inserting at the end, and we know all
   // earlier redundant records have already been removed.
-  std::map<float, float>::iterator C = m_fLifeRecord.end();
+  std::map<float, float>::iterator C = life_record_.end();
   --C;
-  if (C == m_fLifeRecord.begin()) {  // no earlier records left
+  if (C == life_record_.begin()) {  // no earlier records left
     return;
   }
 
   std::map<float, float>::iterator B = C;
   --B;
-  if (B == m_fLifeRecord.begin()) {  // no earlier records left
+  if (B == life_record_.begin()) {  // no earlier records left
     return;
   }
 
@@ -422,26 +421,26 @@ void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
   --A;
 
   if (A->second == B->second && B->second == C->second) {
-    m_fLifeRecord.erase(B);
+    life_record_.erase(B);
   }
 }
 
 float PlayerStageStats::GetLifeRecordLerpAt(float fStepsSecond) const {
-  if (m_fLifeRecord.empty()) {
+  if (life_record_.empty()) {
     return 0;
   }
 
   // Find the first element whose key is greater than k.
   std::map<float, float>::const_iterator later =
-      m_fLifeRecord.upper_bound(fStepsSecond);
+      life_record_.upper_bound(fStepsSecond);
 
   // Find the last element whose key is less than or equal to k.
   std::map<float, float>::const_iterator earlier = later;
-  if (earlier != m_fLifeRecord.begin()) {
+  if (earlier != life_record_.begin()) {
     --earlier;
   }
 
-  if (later == m_fLifeRecord.end()) {
+  if (later == life_record_.end()) {
     return earlier->second;
   }
 
@@ -465,10 +464,10 @@ void PlayerStageStats::GetLifeRecord(
 }
 
 float PlayerStageStats::GetCurrentLife() const {
-  if (m_fLifeRecord.empty()) {
+  if (life_record_.empty()) {
     return 0;
   }
-  std::map<float, float>::const_iterator iter = m_fLifeRecord.end();
+  std::map<float, float>::const_iterator iter = life_record_.end();
   --iter;
   return iter->second;
 }
@@ -477,7 +476,7 @@ float PlayerStageStats::GetCurrentLife() const {
  * record the amount of the first combo that comes from the previous song. */
 void PlayerStageStats::UpdateComboList(float fSecond, bool bRollover) {
   // Don't save combo stats in endless courses, or could run OOM in a few hours.
-  if (GAMESTATE->m_pCurCourse && GAMESTATE->m_pCurCourse->IsEndless()) {
+  if (GAMESTATE->cur_course_ && GAMESTATE->cur_course_->IsEndless()) {
     return;
   }
 
@@ -486,22 +485,22 @@ void PlayerStageStats::UpdateComboList(float fSecond, bool bRollover) {
   }
 
   if (!bRollover) {
-    m_fFirstSecond = std::min(fSecond, m_fFirstSecond);
-    m_fLastSecond = std::max(fSecond, m_fLastSecond);
+    first_second_ = std::min(fSecond, first_second_);
+    last_second_ = std::max(fSecond, last_second_);
     // LOG->Trace( "fLastSecond = %f", fLastSecond );
   }
 
-  int cnt = m_iCurCombo;
+  int cnt = cur_combo_;
   if (!cnt) {
     return;  // no combo
   }
 
-  if (m_ComboList.size() == 0 || m_ComboList.back().m_cnt >= cnt) {
+  if (combo_list_.size() == 0 || combo_list_.back().cnt_ >= cnt) {
     /* If the previous combo (if any) starts on -9999, then we rolled over
      * some combo, but missed the first step. Remove it. */
-    if (m_ComboList.size() && m_ComboList.back().m_fStartSecond == -9999) {
-      m_ComboList.erase(
-          m_ComboList.begin() + m_ComboList.size() - 1, m_ComboList.end());
+    if (combo_list_.size() && combo_list_.back().start_second_ == -9999) {
+      combo_list_.erase(
+          combo_list_.begin() + combo_list_.size() - 1, combo_list_.end());
     }
 
     // This is a new combo.
@@ -511,48 +510,48 @@ void PlayerStageStats::UpdateComboList(float fSecond, bool bRollover) {
      * this song), so put a placeholder in and set it on the next call.
      * (Otherwise, start will be less than fFirstPos.) */
     if (bRollover) {
-      NewCombo.m_fStartSecond = -9999;
+      NewCombo.start_second_ = -9999;
     } else {
-      NewCombo.m_fStartSecond = fSecond;
+      NewCombo.start_second_ = fSecond;
     }
-    m_ComboList.push_back(NewCombo);
+    combo_list_.push_back(NewCombo);
   }
 
-  Combo_t& combo = m_ComboList.back();
-  if (!bRollover && combo.m_fStartSecond == -9999) {
-    combo.m_fStartSecond = 0;
+  Combo_t& combo = combo_list_.back();
+  if (!bRollover && combo.start_second_ == -9999) {
+    combo.start_second_ = 0;
   }
 
-  combo.m_fSizeSeconds = fSecond - combo.m_fStartSecond;
-  combo.m_cnt = cnt;
+  combo.size_seconds_ = fSecond - combo.start_second_;
+  combo.cnt_ = cnt;
 
   if (bRollover) {
-    combo.m_rollover = cnt;
+    combo.rollover_ = cnt;
   }
 }
 
 /* This returns the largest combo contained within the song, as if
  * m_bComboContinuesBetweenSongs is turned off. */
 PlayerStageStats::Combo_t PlayerStageStats::GetMaxCombo() const {
-  if (m_ComboList.size() == 0) {
+  if (combo_list_.size() == 0) {
     return Combo_t();
   }
 
   int m = 0;
-  for (unsigned i = 1; i < m_ComboList.size(); ++i) {
-    if (m_ComboList[i].m_cnt > m_ComboList[m].m_cnt) {
+  for (unsigned i = 1; i < combo_list_.size(); ++i) {
+    if (combo_list_[i].cnt_ > combo_list_[m].cnt_) {
       m = i;
     }
   }
 
-  return m_ComboList[m];
+  return combo_list_[m];
 }
 
 int PlayerStageStats::GetComboAtStartOfStage() const {
-  if (m_ComboList.empty()) {
+  if (combo_list_.empty()) {
     return 0;
   } else {
-    return m_ComboList[0].m_rollover;
+    return combo_list_[0].rollover_;
   }
 }
 
@@ -562,36 +561,36 @@ bool PlayerStageStats::FullComboOfScore(
   ASSERT(tnsAllGreaterOrEqual <= TNS_W1);
 
   // if we've set MissCombo to anything besides 0, it's not a full combo
-  if (!m_bPlayerCanAchieveFullCombo) {
+  if (!player_can_achieve_full_combo_) {
     return false;
   }
 
   // If missed any holds, then it's not a full combo
-  if (m_iHoldNoteScores[HNS_LetGo] > 0) {
+  if (hold_note_scores_[HNS_LetGo] > 0) {
     return false;
   }
 
   // if any checkpoints were missed, it's not a full combo	either
-  if (m_iTapNoteScores[TNS_CheckpointMiss] > 0) {
+  if (tap_note_scores_[TNS_CheckpointMiss] > 0) {
     return false;
   }
 
   // If has any of the judgments below, then not a full combo
   for (int i = TNS_Miss; i < tnsAllGreaterOrEqual; i++) {
-    if (m_iTapNoteScores[i] > 0) {
+    if (tap_note_scores_[i] > 0) {
       return false;
     }
   }
 
   // hit any mines when they increment the miss combo? It's not a full combo.
-  if (g_MineHitIncrementsMissCombo && m_iTapNoteScores[TNS_HitMine] > 0) {
+  if (g_MineHitIncrementsMissCombo && tap_note_scores_[TNS_HitMine] > 0) {
     return false;
   }
 
   // If has at least one of the judgments equal to or above, then is a full
   // combo.
   for (int i = tnsAllGreaterOrEqual; i < NUM_TapNoteScore; i++) {
-    if (m_iTapNoteScores[i] > 0) {
+    if (tap_note_scores_[i] > 0) {
       return true;
     }
   }
@@ -613,33 +612,33 @@ TapNoteScore PlayerStageStats::GetBestFullComboTapNoteScore() const {
 bool PlayerStageStats::SingleDigitsOfScore(
     TapNoteScore tnsAllGreaterOrEqual) const {
   return FullComboOfScore(tnsAllGreaterOrEqual) &&
-         m_iTapNoteScores[tnsAllGreaterOrEqual] < 10;
+         tap_note_scores_[tnsAllGreaterOrEqual] < 10;
 }
 
 bool PlayerStageStats::OneOfScore(TapNoteScore tnsAllGreaterOrEqual) const {
   return FullComboOfScore(tnsAllGreaterOrEqual) &&
-         m_iTapNoteScores[tnsAllGreaterOrEqual] == 1;
+         tap_note_scores_[tnsAllGreaterOrEqual] == 1;
 }
 
 float PlayerStageStats::GetPercentageOfTaps(TapNoteScore tns) const {
   int iTotalTaps = 0;
   for (int i = TNS_Miss; i < NUM_TapNoteScore; i++) {
-    iTotalTaps += m_iTapNoteScores[i];
+    iTotalTaps += tap_note_scores_[i];
   }
-  return m_iTapNoteScores[tns] / (float)iTotalTaps;
+  return tap_note_scores_[tns] / (float)iTotalTaps;
 }
 
 void PlayerStageStats::CalcAwards(
     PlayerNumber p, bool bGaveUp, bool bUsedAutoplay) {
   // LOG->Trace( "hand out awards" );
 
-  m_PeakComboAward = PeakComboAward_Invalid;
+  peak_combo_award_ = PeakComboAward_Invalid;
 
   if (bGaveUp || bUsedAutoplay) {
     return;
   }
 
-  std::deque<StageAward>& vPdas = GAMESTATE->m_vLastStageAwards[p];
+  std::deque<StageAward>& vPdas = GAMESTATE->last_stage_awards_[p];
 
   // LOG->Trace( "per difficulty awards" );
 
@@ -687,16 +686,16 @@ void PlayerStageStats::CalcAwards(
   }
 
   if (!vPdas.empty()) {
-    m_StageAward = vPdas.back();
+    stage_award_ = vPdas.back();
   } else {
-    m_StageAward = StageAward_Invalid;
+    stage_award_ = StageAward_Invalid;
   }
 
   // LOG->Trace( "done with per difficulty awards" );
 
   // DO give peak combo awards if using easy mods
   int iComboAtStartOfStage = GetComboAtStartOfStage();
-  int iPeakCombo = GetMaxCombo().m_cnt;
+  int iPeakCombo = GetMaxCombo().cnt_;
 
   FOREACH_ENUM(PeakComboAward, pca) {
     int iLevel = 1000 * (pca + 1);
@@ -704,24 +703,24 @@ void PlayerStageStats::CalcAwards(
     // LOG->Trace( "pca = %d, iLevel = %d, bCrossedLevel = %d", pca, iLevel,
     // bCrossedLevel );
     if (bCrossedLevel) {
-      GAMESTATE->m_vLastPeakComboAwards[p].push_back(pca);
+      GAMESTATE->last_peak_combo_awards_[p].push_back(pca);
     }
   }
 
-  if (!GAMESTATE->m_vLastPeakComboAwards[p].empty()) {
-    m_PeakComboAward = GAMESTATE->m_vLastPeakComboAwards[p].back();
+  if (!GAMESTATE->last_peak_combo_awards_[p].empty()) {
+    peak_combo_award_ = GAMESTATE->last_peak_combo_awards_[p].back();
   } else {
-    m_PeakComboAward = PeakComboAward_Invalid;
+    peak_combo_award_ = PeakComboAward_Invalid;
   }
 
   // LOG->Trace( "done with per combo awards" );
 }
 
 bool PlayerStageStats::IsDisqualified() const {
-  if (!PREFSMAN->m_bDisqualification) {
+  if (!PREFSMAN->disqualification_) {
     return false;
   }
-  return m_bDisqualified;
+  return disqualified_;
 }
 
 LuaFunction(GetGradeFromPercent, GetGradeFromPercent(FArg(1))) LuaFunction(
@@ -732,88 +731,88 @@ LuaFunction(GetGradeFromPercent, GetGradeFromPercent(FArg(1))) LuaFunction(
     /** @brief Allow Lua to have access to the PlayerStageStats. */
     class LunaPlayerStageStats : public Luna<PlayerStageStats> {
  public:
-  DEFINE_METHOD(GetCaloriesBurned, m_fCaloriesBurned)
-  DEFINE_METHOD(GetNumControllerSteps, m_iNumControllerSteps)
-  DEFINE_METHOD(GetLifeRemainingSeconds, m_fLifeRemainingSeconds)
+  DEFINE_METHOD(GetCaloriesBurned, calories_burned_)
+  DEFINE_METHOD(GetNumControllerSteps, num_controller_steps_)
+  DEFINE_METHOD(GetLifeRemainingSeconds, life_remaining_seconds_)
   DEFINE_METHOD(GetSurvivalSeconds, GetSurvivalSeconds())
-  DEFINE_METHOD(GetCurrentCombo, m_iCurCombo)
-  DEFINE_METHOD(GetCurrentMissCombo, m_iCurMissCombo)
-  DEFINE_METHOD(GetCurrentScoreMultiplier, m_iCurScoreMultiplier)
-  DEFINE_METHOD(GetScore, m_iScore)
-  DEFINE_METHOD(GetCurMaxScore, m_iCurMaxScore)
+  DEFINE_METHOD(GetCurrentCombo, cur_combo_)
+  DEFINE_METHOD(GetCurrentMissCombo, cur_miss_combo_)
+  DEFINE_METHOD(GetCurrentScoreMultiplier, cur_score_multiplier_)
+  DEFINE_METHOD(GetScore, score_)
+  DEFINE_METHOD(GetCurMaxScore, cur_max_score_)
   DEFINE_METHOD(
-      GetTapNoteScores, m_iTapNoteScores[Enum::Check<TapNoteScore>(L, 1)])
+      GetTapNoteScores, tap_note_scores_[Enum::Check<TapNoteScore>(L, 1)])
   DEFINE_METHOD(
-      GetHoldNoteScores, m_iHoldNoteScores[Enum::Check<HoldNoteScore>(L, 1)])
+      GetHoldNoteScores, hold_note_scores_[Enum::Check<HoldNoteScore>(L, 1)])
   DEFINE_METHOD(FullCombo, FullCombo())
   DEFINE_METHOD(
       FullComboOfScore, FullComboOfScore(Enum::Check<TapNoteScore>(L, 1)))
-  DEFINE_METHOD(MaxCombo, GetMaxCombo().m_cnt)
+  DEFINE_METHOD(MaxCombo, GetMaxCombo().cnt_)
   DEFINE_METHOD(GetCurrentLife, GetCurrentLife())
   DEFINE_METHOD(GetGrade, GetGrade())
-  DEFINE_METHOD(GetActualDancePoints, m_iActualDancePoints)
-  DEFINE_METHOD(GetPossibleDancePoints, m_iPossibleDancePoints)
-  DEFINE_METHOD(GetCurrentPossibleDancePoints, m_iCurPossibleDancePoints)
+  DEFINE_METHOD(GetActualDancePoints, actual_dance_points_)
+  DEFINE_METHOD(GetPossibleDancePoints, possible_dance_points_)
+  DEFINE_METHOD(GetCurrentPossibleDancePoints, cur_possible_dance_points_)
   DEFINE_METHOD(GetPercentDancePoints, GetPercentDancePoints())
   DEFINE_METHOD(GetLessonScoreActual, GetLessonScoreActual())
   DEFINE_METHOD(GetLessonScoreNeeded, GetLessonScoreNeeded())
-  DEFINE_METHOD(GetPersonalHighScoreIndex, m_iPersonalHighScoreIndex)
-  DEFINE_METHOD(GetMachineHighScoreIndex, m_iMachineHighScoreIndex)
-  DEFINE_METHOD(GetStageAward, m_StageAward)
-  DEFINE_METHOD(GetPeakComboAward, m_PeakComboAward)
+  DEFINE_METHOD(GetPersonalHighScoreIndex, personal_high_score_index_)
+  DEFINE_METHOD(GetMachineHighScoreIndex, machine_high_score_index_)
+  DEFINE_METHOD(GetStageAward, stage_award_)
+  DEFINE_METHOD(GetPeakComboAward, peak_combo_award_)
   DEFINE_METHOD(IsDisqualified, IsDisqualified())
-  DEFINE_METHOD(GetAliveSeconds, m_fAliveSeconds)
+  DEFINE_METHOD(GetAliveSeconds, alive_seconds_)
   DEFINE_METHOD(
       GetPercentageOfTaps, GetPercentageOfTaps(Enum::Check<TapNoteScore>(L, 1)))
   DEFINE_METHOD(GetBestFullComboTapNoteScore, GetBestFullComboTapNoteScore())
-  DEFINE_METHOD(GetFailed, m_bFailed)
-  DEFINE_METHOD(GetSongsPassed, m_iSongsPassed)
-  DEFINE_METHOD(GetSongsPlayed, m_iSongsPlayed)
+  DEFINE_METHOD(GetFailed, failed_)
+  DEFINE_METHOD(GetSongsPassed, songs_passed_)
+  DEFINE_METHOD(GetSongsPlayed, songs_played_)
 
   static int GetHighScore(T* p, lua_State* L) {
-    p->m_HighScore.PushSelf(L);
+    p->high_score_.PushSelf(L);
     return 1;
   }
 
   static int GetPlayedSteps(T* p, lua_State* L) {
     lua_newtable(L);
     for (int i = 0;
-         i < (int)std::min(p->m_iStepsPlayed, (int)p->m_vpPossibleSteps.size());
+         i < (int)std::min(p->steps_played_, (int)p->possible_steps_.size());
          ++i) {
-      p->m_vpPossibleSteps[i]->PushSelf(L);
+      p->possible_steps_[i]->PushSelf(L);
       lua_rawseti(L, -2, i + 1);
     }
     return 1;
   }
   static int GetPossibleSteps(T* p, lua_State* L) {
     lua_newtable(L);
-    for (int i = 0; i < (int)p->m_vpPossibleSteps.size(); ++i) {
-      p->m_vpPossibleSteps[i]->PushSelf(L);
+    for (int i = 0; i < (int)p->possible_steps_.size(); ++i) {
+      p->possible_steps_[i]->PushSelf(L);
       lua_rawseti(L, -2, i + 1);
     }
     return 1;
   }
   static int GetComboList(T* p, lua_State* L) {
-    lua_createtable(L, p->m_ComboList.size(), 0);
-    for (size_t i = 0; i < p->m_ComboList.size(); ++i) {
+    lua_createtable(L, p->combo_list_.size(), 0);
+    for (size_t i = 0; i < p->combo_list_.size(); ++i) {
       lua_createtable(L, 0, 6);
       lua_pushstring(L, "StartSecond");
-      lua_pushnumber(L, p->m_ComboList[i].m_fStartSecond);
+      lua_pushnumber(L, p->combo_list_[i].start_second_);
       lua_rawset(L, -3);
       lua_pushstring(L, "SizeSeconds");
-      lua_pushnumber(L, p->m_ComboList[i].m_fSizeSeconds);
+      lua_pushnumber(L, p->combo_list_[i].size_seconds_);
       lua_rawset(L, -3);
       lua_pushstring(L, "Count");
-      lua_pushnumber(L, p->m_ComboList[i].m_cnt);
+      lua_pushnumber(L, p->combo_list_[i].cnt_);
       lua_rawset(L, -3);
       lua_pushstring(L, "Rollover");
-      lua_pushnumber(L, p->m_ComboList[i].m_rollover);
+      lua_pushnumber(L, p->combo_list_[i].rollover_);
       lua_rawset(L, -3);
       lua_pushstring(L, "StageCount");
-      lua_pushnumber(L, p->m_ComboList[i].GetStageCnt());
+      lua_pushnumber(L, p->combo_list_[i].GetStageCnt());
       lua_rawset(L, -3);
       lua_pushstring(L, "IsZero");
-      lua_pushnumber(L, p->m_ComboList[i].IsZero());
+      lua_pushnumber(L, p->combo_list_[i].IsZero());
       lua_rawset(L, -3);
       lua_rawseti(L, -2, i + 1);
     }
@@ -843,23 +842,23 @@ LuaFunction(GetGradeFromPercent, GetGradeFromPercent(FArg(1))) LuaFunction(
   }
 
   static int GetRadarPossible(T* p, lua_State* L) {
-    p->m_radarPossible.PushSelf(L);
+    p->radar_possible_.PushSelf(L);
     return 1;
   }
   static int GetRadarActual(T* p, lua_State* L) {
-    p->m_radarActual.PushSelf(L);
+    p->radar_actual_.PushSelf(L);
     return 1;
   }
   static int SetScore(T* p, lua_State* L) {
     if (IArg(1) >= 0) {
-      p->m_iScore = IArg(1);
+      p->score_ = IArg(1);
       return 1;
     }
     COMMON_RETURN_SELF;
   }
   static int SetCurMaxScore(T* p, lua_State* L) {
     if (IArg(1) >= 0) {
-      p->m_iCurMaxScore = IArg(1);
+      p->cur_max_score_ = IArg(1);
       return 1;
     }
     COMMON_RETURN_SELF;
@@ -868,11 +867,11 @@ LuaFunction(GetGradeFromPercent, GetGradeFromPercent(FArg(1))) LuaFunction(
     int actual = IArg(1);
     int possible = IArg(2);
     if (actual >= 0 && possible > 0) {
-      p->m_iPossibleDancePoints = possible;
+      p->possible_dance_points_ = possible;
       if (actual <= possible) {
-        p->m_iActualDancePoints = actual;
+        p->actual_dance_points_ = actual;
       } else {
-        p->m_iActualDancePoints = possible;
+        p->actual_dance_points_ = possible;
       }
       return 1;
     }
@@ -880,7 +879,7 @@ LuaFunction(GetGradeFromPercent, GetGradeFromPercent(FArg(1))) LuaFunction(
   }
 
   static int FailPlayer(T* p, lua_State* L) {
-    p->m_bFailed = true;
+    p->failed_ = true;
     COMMON_RETURN_SELF;
   }
 

@@ -41,25 +41,25 @@ class DensityGraph : public ActorMultiVertex {
 
  private:
   struct Point {
-    float x;
-    float y;
-    RageColor color;
+    float x_;
+    float y_;
+    RageColor color_;
   };
 
   void BuildAllVertices();
   void BuildVisibleVertices();
   void Emit(const std::vector<Point>& points);
 
-  Steps* m_pSteps;
-  PlayerNumber m_Player;
-  float m_ViewWidth;
-  float m_ViewHeight;
-  std::optional<float> m_GraphWidth;
-  float m_ScrollOffset;
-  RageColor m_BottomColor;
-  RageColor m_TopColor;
-  float m_Desaturation;
-  std::vector<Point> m_Points;
+  Steps* steps_;
+  PlayerNumber player_;
+  float view_width_;
+  float view_height_;
+  std::optional<float> graph_width_;
+  float scroll_offset_;
+  RageColor bottom_color_;
+  RageColor top_color_;
+  float desaturation_;
+  std::vector<Point> points_;
 };
 
 #endif

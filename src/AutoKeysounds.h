@@ -14,16 +14,16 @@ class AutoKeysounds {
   /** @brief Finish loading the main sounds, and setup the auto keysounds if
    * any. */
   void FinishLoading();
-  RageSound* GetSound() { return &m_sSound; }
-  RageSoundReader* GetSharedSound() { return m_pSharedSound; }
+  RageSound* GetSound() { return &sound_; }
+  RageSoundReader* GetSharedSound() { return shared_sound_; }
 
  protected:
   void LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain);
   static void LoadTracks(RageSoundReader*& pShared);
 
-  NoteData m_ndAutoKeysoundsOnly[NUM_PLAYERS];
-  RageSound m_sSound;
-  RageSoundReader* m_pSharedSound;  // owned by m_sSound
+  NoteData auto_keysounds_only_[NUM_PLAYERS];
+  RageSound sound_;
+  RageSoundReader* shared_sound_;  // owned by m_sSound
 };
 
 #endif

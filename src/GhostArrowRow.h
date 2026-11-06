@@ -25,13 +25,13 @@ class GhostArrowRow : public ActorFrame {
   void SetHoldShowing(int iCol, const TapNote& tn);
 
  protected:
-  float m_fYReverseOffsetPixels;
-  const PlayerState* m_pPlayerState;
+  float y_reverse_offset_pixels_;
+  const PlayerState* player_state_;
 
-  const std::vector<NoteColumnRenderer>* m_renderers;
-  std::vector<Actor*> m_Ghost;
-  std::vector<TapNoteSubType> m_bHoldShowing;
-  std::vector<TapNoteSubType> m_bLastHoldShowing;
+  const std::vector<NoteColumnRenderer>* renderers_;
+  std::vector<Actor*> ghost_;
+  std::vector<TapNoteSubType> hold_showing_;
+  std::vector<TapNoteSubType> last_hold_showing_;
 };
 
 #endif

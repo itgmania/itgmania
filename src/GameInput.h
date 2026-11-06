@@ -203,31 +203,32 @@ GameButton StringToGameButton(const InputScheme* pInputs, const std::string& s);
  * controller and button. */
 struct GameInput {
   GameInput()
-      : controller(GameController_Invalid), button(GameButton_Invalid) {}
+      : controller_(GameController_Invalid), button_(GameButton_Invalid) {}
 
-  GameInput(GameController c, GameButton b) : controller(c), button(b) {}
+  GameInput(GameController c, GameButton b) : controller_(c), button_(b) {}
 
-  GameController controller;
-  GameButton button;
+  GameController controller_;
+  GameButton button_;
 
   bool operator==(const GameInput& other) const {
-    return controller == other.controller && button == other.button;
+    return controller_ == other.controller_ && button_ == other.button_;
   };
   bool operator<(const GameInput& other) const {
-    if (controller < other.controller) {
+    if (controller_ < other.controller_) {
       return true;
-    } else if (controller > other.controller) {
+    } else if (controller_ > other.controller_) {
       return false;
     }
-    return button < other.button;
+    return button_ < other.button_;
   }
 
   inline bool IsValid() const {
-    return controller != GameController_Invalid && button != GameButton_Invalid;
+    return controller_ != GameController_Invalid &&
+           button_ != GameButton_Invalid;
   };
   inline void MakeInvalid() {
-    controller = GameController_Invalid;
-    button = GameButton_Invalid;
+    controller_ = GameController_Invalid;
+    button_ = GameButton_Invalid;
   };
 
   std::string ToString(const InputScheme* pInputs) const;

@@ -20,7 +20,7 @@ namespace LuaDebug {
 
 class Spinlock {
  public:
-  bool try_lock() { return !m_locked.test_and_set(std::memory_order_acquire); }
+  bool try_lock() { return !locked_.test_and_set(std::memory_order_acquire); }
 
   void lock() {
     while (!try_lock()) {
@@ -28,182 +28,183 @@ class Spinlock {
     }
   }
 
-  void unlock() { m_locked.clear(std::memory_order_release); }
+  void unlock() { locked_.clear(std::memory_order_release); }
 
  private:
-  std::atomic_flag m_locked = ATOMIC_FLAG_INIT;
+  std::atomic_flag locked_ = ATOMIC_FLAG_INIT;
 };
 
 class Debugger::Impl {
  public:
-  Impl() : m_luaDebugMutex("LuaDebug"), m_debuggeeState(DebuggeeState::Root{}) {
-    ASSERT(g_debugger == nullptr);
-    g_debugger = this;
+  Impl()
+      : lua_debug_mutex_("LuaDebug"), debuggee_state_(DebuggeeState::Root{}) {
+    ASSERT(debugger_ == nullptr);
+    debugger_ = this;
   }
 
   ~Impl() {
     // Clear breakpoints and continue execution.
-    LockMutex lock(m_luaDebugMutex);
+    LockMutex lock(lua_debug_mutex_);
 
     DeleteAllBreakpoints();
 
-    if (m_isPaused) {
+    if (is_paused_) {
       SendRequest(CreateContinueRequest(0));
     }
 
-    g_debugger = nullptr;
+    debugger_ = nullptr;
   }
 
   Impl(const Impl&) = delete;
   Impl& operator=(const Impl&) = delete;
 
   void ActivateState(lua_State* lua) {
-    LockMutex lock(m_luaDebugMutex);
+    LockMutex lock(lua_debug_mutex_);
 
     LuaThread* thread = nullptr;
-    for (LuaThread& t : m_threads) {
-      if (t.m_lua == lua) {
+    for (LuaThread& t : threads_) {
+      if (t.lua_ == lua) {
         thread = &t;
         break;
       }
     }
 
     if (thread == nullptr) {
-      LuaThread newThread{m_nextThreadId++, lua, true};
-      m_threads.push_back(newThread);
-      thread = &m_threads.back();
-      SendResponse(CreateThreadStartedEvent(thread->m_threadId));
+      LuaThread newThread{next_thread_id_++, lua, true};
+      threads_.push_back(newThread);
+      thread = &threads_.back();
+      SendResponse(CreateThreadStartedEvent(thread->thread_id_));
     }
 
-    lua_sethook(lua, m_luaHook, m_luaHookMask, 0);
+    lua_sethook(lua, lua_hook_, lua_hook_mask_, 0);
 
-    thread->m_active = true;
-    m_debuggeeState.AddThread(thread->m_threadId, lua);
+    thread->active_ = true;
+    debuggee_state_.AddThread(thread->thread_id_, lua);
   }
 
   void DeactivateState(lua_State* lua) {
-    LockMutex lock(m_luaDebugMutex);
-    std::lock_guard lock2(m_breakpointsLock);
+    LockMutex lock(lua_debug_mutex_);
+    std::lock_guard lock2(breakpoints_lock_);
 
     lua_sethook(lua, nullptr, 0, 0);
 
-    for (int i = m_breakpoints.size() - 1; i >= 0; i--) {
-      if (m_breakpoints[i].GetThread() == lua) {
-        m_breakpoints.erase(m_breakpoints.begin() + i);
+    for (int i = breakpoints_.size() - 1; i >= 0; i--) {
+      if (breakpoints_[i].GetThread() == lua) {
+        breakpoints_.erase(breakpoints_.begin() + i);
       }
     }
 
-    for (size_t i = 0; i < m_threads.size(); i++) {
-      if (m_threads[i].m_lua == lua) {
-        m_threads[i].m_active = false;
-        m_debuggeeState.RemoveThread(m_threads[i].m_threadId);
+    for (size_t i = 0; i < threads_.size(); i++) {
+      if (threads_[i].lua_ == lua) {
+        threads_[i].active_ = false;
+        debuggee_state_.RemoveThread(threads_[i].thread_id_);
       }
     }
   }
 
   void SendRequest(Request&& request) {
-    bool isLocked = m_luaDebugMutex.IsLockedByThisThread();
+    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
     if (!isLocked) {
-      m_luaDebugMutex.Lock();
+      lua_debug_mutex_.Lock();
     }
-    if (m_isPaused) {
-      m_toLuaThread.push(request);
-      m_luaDebugMutex.Broadcast();
+    if (is_paused_) {
+      to_lua_thread_.push(request);
+      lua_debug_mutex_.Broadcast();
     } else {
       HandleRequest(request);
     }
     if (!isLocked) {
-      m_luaDebugMutex.Unlock();
+      lua_debug_mutex_.Unlock();
     }
   }
 
   bool TryReceiveResponse(Response& response) {
-    LockMutex lock(m_luaDebugMutex);
-    if (m_toServerThread.empty()) {
+    LockMutex lock(lua_debug_mutex_);
+    if (to_server_thread_.empty()) {
       return false;
     }
-    response = std::move(m_toServerThread.front());
-    m_toServerThread.pop();
+    response = std::move(to_server_thread_.front());
+    to_server_thread_.pop();
     return true;
   }
 
   void SendResponse(Response&& response) {
-    bool isLocked = m_luaDebugMutex.IsLockedByThisThread();
+    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
     if (!isLocked) {
-      m_luaDebugMutex.Lock();
+      lua_debug_mutex_.Lock();
     }
-    m_toServerThread.push(std::move(response));
-    m_luaDebugMutex.Broadcast();
+    to_server_thread_.push(std::move(response));
+    lua_debug_mutex_.Broadcast();
     if (!isLocked) {
-      m_luaDebugMutex.Unlock();
+      lua_debug_mutex_.Unlock();
     }
   }
 
   bool TryReceiveRequest(Request& request) {
-    LockMutex lock(m_luaDebugMutex);
-    if (m_toLuaThread.empty()) {
+    LockMutex lock(lua_debug_mutex_);
+    if (to_lua_thread_.empty()) {
       return false;
     }
-    request = m_toLuaThread.front();
-    m_toLuaThread.pop();
+    request = to_lua_thread_.front();
+    to_lua_thread_.pop();
     return true;
   }
 
   void ReceiveRequest(Request& request) {
-    bool isLocked = m_luaDebugMutex.IsLockedByThisThread();
+    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
     if (!isLocked) {
-      m_luaDebugMutex.Lock();
+      lua_debug_mutex_.Lock();
     }
     while (!TryReceiveRequest(request)) {
-      m_luaDebugMutex.Wait();
+      lua_debug_mutex_.Wait();
     }
     if (!isLocked) {
-      m_luaDebugMutex.Unlock();
+      lua_debug_mutex_.Unlock();
     }
   }
 
  private:
   struct LuaThread {
-    ThreadId m_threadId;
-    lua_State* m_lua;
-    bool m_active;
+    ThreadId thread_id_;
+    lua_State* lua_;
+    bool active_;
   };
 
   // Locks access to the shared data. Signaled when m_toLuaThread or
   // m_toServerThread is available for reading.
-  RageEvent m_luaDebugMutex;
+  RageEvent lua_debug_mutex_;
 
   // Access to m_breakpoints is synchronized by locking
   //  1. m_luaDebugMutex AND m_breakpointsLock on the server thread
   //  2. m_luaDebugMutex OR m_breakpointsLock on the Lua thread.
   // When locking both, m_luaDebugMutex is locked first to prevent deadlocks.
-  Spinlock m_breakpointsLock;
+  Spinlock breakpoints_lock_;
 
   // Kept across client sessions
-  std::vector<LuaThread> m_threads;
-  ThreadId m_nextThreadId = 1;
-  BreakpointId m_nextBreakpointId = 1;
-  lua_Hook m_luaHook = nullptr;
-  int m_luaHookMask = 0;
-  std::vector<Breakpoint> m_breakpoints;
+  std::vector<LuaThread> threads_;
+  ThreadId next_thread_id_ = 1;
+  BreakpointId next_breakpoint_id_ = 1;
+  lua_Hook lua_hook_ = nullptr;
+  int lua_hook_mask_ = 0;
+  std::vector<Breakpoint> breakpoints_;
 
   // Client specific
   struct {
-    int linesOffset = 0;
-    bool supportsVariableType = false;
-    SeqNo nextMessageSeq = 1;
-  } m_client;
+    int lines_offset_ = 0;
+    bool supports_variable_type_ = false;
+    SeqNo next_message_seq_ = 1;
+  } client_;
 
   // State when execution is paused
-  bool m_isPaused = false;
-  ThreadId m_currentThread = 0;
-  DebuggeeState m_debuggeeState;
+  bool is_paused_ = false;
+  ThreadId current_thread_ = 0;
+  DebuggeeState debuggee_state_;
 
   // Communication between the Lua thread and the server thread.
-  std::queue<Request> m_toLuaThread;
-  std::queue<Response> m_toServerThread;
+  std::queue<Request> to_lua_thread_;
+  std::queue<Response> to_server_thread_;
 
-  void ContinueExecution() { m_isPaused = false; }
+  void ContinueExecution() { is_paused_ = false; }
 
   void ExecuteUnknownCommand(const Request& request) {
     SendResponse(CreateErrorResponse(request, "unknown command"));
@@ -211,10 +212,10 @@ class Debugger::Impl {
 
   void ExecuteInitializeCommand(const Request& request) {
     const Json::Value& args = request["arguments"];
-    m_client.linesOffset =
+    client_.lines_offset_ =
         args["linesStartAt1"].isBool() && !args["linesStartAt1"].asBool() ? -1
                                                                           : 0;
-    m_client.supportsVariableType = args["supportsVariableType"].asBool();
+    client_.supports_variable_type_ = args["supportsVariableType"].asBool();
 
     Response result = CreateDapResponse(request);
     result["body"]["supportsConfigurationDoneRequest"] = true;
@@ -227,8 +228,8 @@ class Debugger::Impl {
     SendResponse(std::move(result));
 
     SendResponse(CreateDapEvent("initialized"));
-    if (m_isPaused) {
-      SendResponse(CreateStoppedEvent(m_currentThread, "entry", {}));
+    if (is_paused_) {
+      SendResponse(CreateStoppedEvent(current_thread_, "entry", {}));
     }
   }
 
@@ -251,13 +252,13 @@ class Debugger::Impl {
     for (int i = 0; (size_t)i < breakpoints.size(); i++) {
       int lineNumber = breakpoints[i]["line"].asInt();
       if (lineNumber >= 0) {
-        lineNumber -= m_client.linesOffset;
+        lineNumber -= client_.lines_offset_;
       }
       if (lineNumber < 0) {
         lineNumber = 0;
       }
       lineNumbers.push_back(lineNumber);
-      newBreakpointIds.push_back(m_nextBreakpointId++);
+      newBreakpointIds.push_back(next_breakpoint_id_++);
     }
 
     std::vector<std::string> luaPaths = UnresolvePath(absPath);
@@ -287,7 +288,7 @@ class Debugger::Impl {
       Json::Value bpJson;
       bpJson["id"] = newBreakpointIds[i];
       bpJson["source"]["path"] = absPath;
-      bpJson["line"] = lineNumbers[i] + m_client.linesOffset;
+      bpJson["line"] = lineNumbers[i] + client_.lines_offset_;
       if (luaPaths.empty()) {
         bpJson["verified"] = false;
         bpJson["reason"] = "failed";
@@ -312,7 +313,7 @@ class Debugger::Impl {
     Json::Value breakpointsJson(Json::arrayValue);
     for (int i = 0; (size_t)i < breakpoints.size(); i++) {
       Breakpoint bp = Breakpoint::Function(
-          m_nextBreakpointId++, breakpoints[i]["name"].asString());
+          next_breakpoint_id_++, breakpoints[i]["name"].asString());
       bp.SetCondition(breakpoints[i]["condition"].asString());
       std::string hitCondition = breakpoints[i]["hitCondition"].asString();
       if (!hitCondition.empty()) {
@@ -337,38 +338,38 @@ class Debugger::Impl {
   void ExecutePauseCommand(const Request& request) {
     SendResponse(CreateDapResponse(request));
 
-    if (!m_isPaused) {
+    if (!is_paused_) {
       AddBreakpoint(Breakpoint::Pause());
     } else {
-      SendResponse(CreateStoppedEvent(m_currentThread, "pause", {}));
+      SendResponse(CreateStoppedEvent(current_thread_, "pause", {}));
     }
   }
 
   void ExecuteNextCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
-    DebuggeeState& thread = m_debuggeeState.GetThread(m_currentThread);
+    DebuggeeState& thread = debuggee_state_.GetThread(current_thread_);
     AddBreakpoint(Breakpoint::Next(thread.GetLua()));
     ContinueExecution();
     SendResponse(CreateDapResponse(request));
   }
 
   void ExecuteStepInCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
-    DebuggeeState& thread = m_debuggeeState.GetThread(m_currentThread);
+    DebuggeeState& thread = debuggee_state_.GetThread(current_thread_);
     AddBreakpoint(Breakpoint::Step(thread.GetLua()));
     ContinueExecution();
     SendResponse(CreateDapResponse(request));
   }
 
   void ExecuteStepOutCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
-    DebuggeeState& thread = m_debuggeeState.GetThread(m_currentThread);
+    DebuggeeState& thread = debuggee_state_.GetThread(current_thread_);
     AddBreakpoint(Breakpoint::Return(thread.GetLua()));
     ContinueExecution();
     SendResponse(CreateDapResponse(request));
@@ -377,7 +378,7 @@ class Debugger::Impl {
   void ExecuteContinueCommand(const Request& request) {
     ContinueExecution();
     SendResponse(CreateDapResponse(request));
-    if (!m_isPaused) {
+    if (!is_paused_) {
       SendResponse(CreateContinuedEvent(0));
     }
   }
@@ -386,19 +387,19 @@ class Debugger::Impl {
     DeleteAllBreakpoints();
 
     bool suspendDebuggee = request["arguments"]["suspendDebuggee"].asBool();
-    if (m_isPaused && !suspendDebuggee) {
+    if (is_paused_ && !suspendDebuggee) {
       ContinueExecution();
     }
 
-    m_client.linesOffset = 0;
-    m_client.supportsVariableType = false;
-    m_client.nextMessageSeq = 1;
+    client_.lines_offset_ = 0;
+    client_.supports_variable_type_ = false;
+    client_.next_message_seq_ = 1;
 
     SendResponse(CreateDapResponse(request));
   }
 
   void ExecuteEvaluateCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
@@ -406,8 +407,8 @@ class Debugger::Impl {
     ObjectRef frameId = request["arguments"]["frameId"].asInt();
 
     DebuggeeState& frameOrThread =
-        frameId ? m_debuggeeState.GetObject(frameId)
-                : m_debuggeeState.GetThread(m_currentThread);
+        frameId ? debuggee_state_.GetObject(frameId)
+                : debuggee_state_.GetThread(current_thread_);
     if (!frameOrThread) {
       return SendResponse(CreateErrorResponse(request, "no such frame"));
     }
@@ -455,7 +456,7 @@ class Debugger::Impl {
 
     Response response = CreateDapResponse(request);
     response["body"]["result"] = result;
-    if (m_client.supportsVariableType) {
+    if (client_.supports_variable_type_) {
       response["body"]["type"] = resultType;
     }
     response["body"]["variablesReference"] = variablesReference;
@@ -463,14 +464,14 @@ class Debugger::Impl {
   }
 
   void ExecuteSetVariableCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
     ObjectRef parentId = request["arguments"]["variablesReference"].asInt();
     std::string varName = request["arguments"]["name"].asString();
     std::string expression = request["arguments"]["value"].asString();
 
-    DebuggeeState& parent = m_debuggeeState.GetObject(parentId);
+    DebuggeeState& parent = debuggee_state_.GetObject(parentId);
     if (!parent) {
       return SendResponse(CreateErrorResponse(request, "no such variable"));
     }
@@ -505,7 +506,7 @@ class Debugger::Impl {
 
     Response response = CreateDapResponse(request);
     response["body"]["value"] = value;
-    if (m_client.supportsVariableType) {
+    if (client_.supports_variable_type_) {
       response["body"]["type"] = type;
     }
     if (luaType == LUA_TTABLE) {
@@ -516,7 +517,7 @@ class Debugger::Impl {
 
   void ExecuteThreadsCommand(const Request& request) {
     Json::Value threadsJson(Json::arrayValue);
-    for (DebuggeeState* thread : m_debuggeeState.GetChildren()) {
+    for (DebuggeeState* thread : debuggee_state_.GetChildren()) {
       if (thread->GetType() != DebuggeeState::Type::Thread) {
         continue;
       }
@@ -539,7 +540,7 @@ class Debugger::Impl {
   }
 
   void ExecuteStackTraceCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
@@ -550,7 +551,7 @@ class Debugger::Impl {
       levels = INT_MAX;
     }
 
-    DebuggeeState& thread = m_debuggeeState.GetThread(threadId);
+    DebuggeeState& thread = debuggee_state_.GetThread(threadId);
     if (!thread) {
       Response emptyResult = CreateDapResponse(request);
       emptyResult["body"]["stackFrames"] = Json::Value(Json::arrayValue);
@@ -596,7 +597,7 @@ class Debugger::Impl {
       }
 
       if (debug.currentline > 0) {
-        frameJson["line"] = debug.currentline + m_client.linesOffset;
+        frameJson["line"] = debug.currentline + client_.lines_offset_;
       } else {
         frameJson["line"] = 0;
       }
@@ -612,13 +613,13 @@ class Debugger::Impl {
   }
 
   void ExecuteScopesCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
     ObjectRef frameId = request["arguments"]["frameId"].asInt();
 
-    DebuggeeState& frame = m_debuggeeState.GetObject(frameId);
+    DebuggeeState& frame = debuggee_state_.GetObject(frameId);
     if (frame.GetType() != DebuggeeState::Type::StackFrame) {
       Response emptyResult = CreateDapResponse(request);
       emptyResult["body"]["scopes"] = Json::Value(Json::arrayValue);
@@ -661,13 +662,13 @@ class Debugger::Impl {
   }
 
   void ExecuteVariablesCommand(const Request& request) {
-    if (!m_isPaused) {
+    if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
     ObjectRef parentId = request["arguments"]["variablesReference"].asInt();
 
-    DebuggeeState& parent = m_debuggeeState.GetObject(parentId);
+    DebuggeeState& parent = debuggee_state_.GetObject(parentId);
     if (!parent.IsVariablesContainer()) {
       return SendResponse(CreateErrorResponse(request, "no such variable"));
     }
@@ -698,7 +699,7 @@ class Debugger::Impl {
       Json::Value varJson;
       varJson["name"] = var->GetName();
       varJson["value"] = LuaValueToString(L, -1);
-      if (m_client.supportsVariableType) {
+      if (client_.supports_variable_type_) {
         varJson["type"] = lua_typename(L, luaType);
       }
       varJson["variablesReference"] = luaType == LUA_TTABLE ? var->GetId() : 0;
@@ -795,44 +796,44 @@ class Debugger::Impl {
   }
 
   void UpdateHook() {
-    ASSERT(m_luaDebugMutex.IsLockedByThisThread());
+    ASSERT(lua_debug_mutex_.IsLockedByThisThread());
 
     int fullMask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
     int mask = 0;
-    for (Breakpoint& bp : m_breakpoints) {
+    for (Breakpoint& bp : breakpoints_) {
       mask |= bp.GetEventMask();
       if (mask == fullMask) {
         break;
       }
     }
 
-    if (m_luaHookMask != mask) {
-      m_luaHook = mask == 0 ? nullptr : LuaHook_Static;
-      m_luaHookMask = mask;
-      for (LuaThread& thread : m_threads) {
-        if (thread.m_active) {
-          lua_sethook(thread.m_lua, m_luaHook, m_luaHookMask, 0);
+    if (lua_hook_mask_ != mask) {
+      lua_hook_ = mask == 0 ? nullptr : LuaHook_Static;
+      lua_hook_mask_ = mask;
+      for (LuaThread& thread : threads_) {
+        if (thread.active_) {
+          lua_sethook(thread.lua_, lua_hook_, lua_hook_mask_, 0);
         }
       }
     }
   }
 
   void AddBreakpoint(Breakpoint breakpoint) {
-    LockMutex lock(m_luaDebugMutex);
-    std::lock_guard lock2(m_breakpointsLock);
+    LockMutex lock(lua_debug_mutex_);
+    std::lock_guard lock2(breakpoints_lock_);
 
-    m_breakpoints.push_back(breakpoint);
+    breakpoints_.push_back(breakpoint);
     UpdateHook();
   }
 
   void DeleteBreakpointsInSource(std::string source) {
-    LockMutex lock(m_luaDebugMutex);
-    std::lock_guard lock2(m_breakpointsLock);
+    LockMutex lock(lua_debug_mutex_);
+    std::lock_guard lock2(breakpoints_lock_);
 
     bool anyDeleted = false;
-    for (int i = m_breakpoints.size() - 1; i >= 0; i--) {
-      if (m_breakpoints[i].GetFileName() == source) {
-        m_breakpoints.erase(m_breakpoints.begin() + i);
+    for (int i = breakpoints_.size() - 1; i >= 0; i--) {
+      if (breakpoints_[i].GetFileName() == source) {
+        breakpoints_.erase(breakpoints_.begin() + i);
         anyDeleted = true;
       }
     }
@@ -842,13 +843,13 @@ class Debugger::Impl {
   }
 
   void DeleteAllFunctionBreakpoints() {
-    LockMutex lock(m_luaDebugMutex);
-    std::lock_guard lock2(m_breakpointsLock);
+    LockMutex lock(lua_debug_mutex_);
+    std::lock_guard lock2(breakpoints_lock_);
 
     bool anyDeleted = false;
-    for (int i = m_breakpoints.size() - 1; i >= 0; i--) {
-      if (!m_breakpoints[i].GetFunctionName().empty()) {
-        m_breakpoints.erase(m_breakpoints.begin() + i);
+    for (int i = breakpoints_.size() - 1; i >= 0; i--) {
+      if (!breakpoints_[i].GetFunctionName().empty()) {
+        breakpoints_.erase(breakpoints_.begin() + i);
         anyDeleted = true;
       }
     }
@@ -858,10 +859,10 @@ class Debugger::Impl {
   }
 
   void DeleteAllBreakpoints() {
-    LockMutex lock(m_luaDebugMutex);
-    std::lock_guard lock2(m_breakpointsLock);
+    LockMutex lock(lua_debug_mutex_);
+    std::lock_guard lock2(breakpoints_lock_);
 
-    m_breakpoints.clear();
+    breakpoints_.clear();
     UpdateHook();
   }
 
@@ -876,26 +877,26 @@ class Debugger::Impl {
     // m_breakpointsLock first. Only try to lock it once to avoid excessive
     // spinning if the server thread holds it for a long time.
     bool isAnyHit = false;
-    if (m_breakpointsLock.try_lock()) {
-      for (Breakpoint& bp : m_breakpoints) {
+    if (breakpoints_lock_.try_lock()) {
+      for (Breakpoint& bp : breakpoints_) {
         if (bp.IsHit(L, *ar)) {
           isAnyHit = true;
           break;
         }
       }
-      m_breakpointsLock.unlock();
+      breakpoints_lock_.unlock();
       if (!isAnyHit) {
         return;
       }
     }
 
-    LockMutex lock(m_luaDebugMutex);
+    LockMutex lock(lua_debug_mutex_);
 
     // Check again after acquiring m_luaDebugMutex. The breakpoints could have
     // changed between releasing m_breakpointsLock and acquiring
     // m_luaDebugMutex, or if we failed to acquire m_breakpointsLock at all.
     isAnyHit = false;
-    for (Breakpoint& bp : m_breakpoints) {
+    for (Breakpoint& bp : breakpoints_) {
       if (bp.IsHit(L, *ar)) {
         isAnyHit = true;
         break;
@@ -908,18 +909,18 @@ class Debugger::Impl {
     std::string source = ar->source ? ResolvePath(ar->source) : "";
     std::string sourceName = !source.empty() ? ar->short_src : "";
     int lineNumber =
-        ar->currentline > 0 ? ar->currentline + m_client.linesOffset : -1;
+        ar->currentline > 0 ? ar->currentline + client_.lines_offset_ : -1;
 
     DebuggeeState& currentStackFrame =
-        m_debuggeeState.GetThread(L).GetStackFrame(0);
-    m_currentThread = currentStackFrame.GetThreadId();
+        debuggee_state_.GetThread(L).GetStackFrame(0);
+    current_thread_ = currentStackFrame.GetThreadId();
 
     std::string reason;
     std::string evaluationErrors;
     std::vector<BreakpointId> hitBreakpointIds;
     bool anyDeleted = false;
-    for (size_t i = 0; i < m_breakpoints.size(); i++) {
-      Breakpoint& bp = m_breakpoints[i];
+    for (size_t i = 0; i < breakpoints_.size(); i++) {
+      Breakpoint& bp = breakpoints_[i];
       if (!bp.IsHit(L, *ar)) {
         continue;
       }
@@ -929,7 +930,7 @@ class Debugger::Impl {
         continue;
       }
       if (!evalError.empty()) {
-        m_isPaused = true;
+        is_paused_ = true;
         if (!evaluationErrors.empty()) {
           evaluationErrors.append("\n");
         }
@@ -941,7 +942,7 @@ class Debugger::Impl {
       }
 
       if (bp.IsBreak()) {
-        m_isPaused = true;
+        is_paused_ = true;
         reason = bp.GetReason();
         if (bp.GetId() != 0) {
           hitBreakpointIds.push_back(bp.GetId());
@@ -952,7 +953,7 @@ class Debugger::Impl {
       std::string logMessage =
           bp.EvaluateLogMessage(currentStackFrame, logError);
       if (!logError.empty()) {
-        m_isPaused = true;
+        is_paused_ = true;
         if (!evaluationErrors.empty()) {
           evaluationErrors.append("\n");
         }
@@ -969,7 +970,7 @@ class Debugger::Impl {
       }
 
       if (bp.IsTemporary()) {
-        m_breakpoints.erase(m_breakpoints.begin() + i);
+        breakpoints_.erase(breakpoints_.begin() + i);
         i--;
         anyDeleted = true;
       }
@@ -979,48 +980,48 @@ class Debugger::Impl {
       UpdateHook();
     }
 
-    if (m_isPaused) {
+    if (is_paused_) {
       if (!evaluationErrors.empty()) {
         SendResponse(CreateBreakpointEvaluationErrorEvent(
-            m_currentThread, evaluationErrors, hitBreakpointIds));
+            current_thread_, evaluationErrors, hitBreakpointIds));
       } else {
         SendResponse(
-            CreateStoppedEvent(m_currentThread, reason, hitBreakpointIds));
+            CreateStoppedEvent(current_thread_, reason, hitBreakpointIds));
       }
 
-      while (m_isPaused) {
+      while (is_paused_) {
         Request request;
         ReceiveRequest(request);
         HandleRequest(request);
       }
-      SendResponse(CreateContinuedEvent(m_currentThread));
+      SendResponse(CreateContinuedEvent(current_thread_));
     }
 
-    m_currentThread = 0;
-    m_debuggeeState.Invalidate();
+    current_thread_ = 0;
+    debuggee_state_.Invalidate();
   }
 
   // Need to use a static variable to pass the debugger to the Lua hook.
-  static Debugger::Impl* g_debugger;
+  static Debugger::Impl* debugger_;
 
   static void LuaHook_Static(lua_State* L, lua_Debug* debug) {
-    ASSERT(g_debugger != nullptr);
-    g_debugger->LuaHook(L, debug);
+    ASSERT(debugger_ != nullptr);
+    debugger_->LuaHook(L, debug);
   }
 };
 
-Debugger::Impl* Debugger::Impl::g_debugger;
+Debugger::Impl* Debugger::Impl::debugger_;
 
-Debugger::Debugger() : m_impl(new Debugger::Impl()) {}
+Debugger::Debugger() : impl_(new Debugger::Impl()) {}
 Debugger::~Debugger() = default;
 
-void Debugger::ActivateState(lua_State* lua) { m_impl->ActivateState(lua); }
-void Debugger::DeactivateState(lua_State* lua) { m_impl->DeactivateState(lua); }
+void Debugger::ActivateState(lua_State* lua) { impl_->ActivateState(lua); }
+void Debugger::DeactivateState(lua_State* lua) { impl_->DeactivateState(lua); }
 void Debugger::SendRequest(Request&& request) {
-  m_impl->SendRequest(std::move(request));
+  impl_->SendRequest(std::move(request));
 }
 bool Debugger::TryReceiveResponse(Response& response) {
-  return m_impl->TryReceiveResponse(response);
+  return impl_->TryReceiveResponse(response);
 }
 }  // namespace LuaDebug
 

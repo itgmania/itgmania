@@ -48,8 +48,8 @@
 #include "global.h"
 
 // metrics that are common to all ScreenEvaluation classes
-#define BANNER_WIDTH THEME->GetMetricF(m_sName, "BannerWidth")
-#define BANNER_HEIGHT THEME->GetMetricF(m_sName, "BannerHeight")
+#define BANNER_WIDTH THEME->GetMetricF(name_, "BannerWidth")
+#define BANNER_HEIGHT THEME->GetMetricF(name_, "BannerHeight")
 static const char* JudgmentLineNames[] = {"W1", "W2",   "W3",   "W4",
                                           "W5", "Miss", "Held", "MaxCombo"};
 XToString(JudgmentLine);
@@ -62,33 +62,33 @@ LuaFunction(
 static const char* DetailLineNames[NUM_DetailLine] = {
     "NumSteps", "Jumps", "Holds", "Mines", "Hands", "Rolls", "Lifts", "Fakes"};
 XToString(DetailLine);
-#define DETAILLINE_FORMAT THEME->GetMetric(m_sName, "DetailLineFormat")
+#define DETAILLINE_FORMAT THEME->GetMetric(name_, "DetailLineFormat")
 
-#define CHEER_DELAY_SECONDS THEME->GetMetricF(m_sName, "CheerDelaySeconds")
-#define BAR_ACTUAL_MAX_COMMAND THEME->GetMetricA(m_sName, "BarActualMaxCommand")
+#define CHEER_DELAY_SECONDS THEME->GetMetricF(name_, "CheerDelaySeconds")
+#define BAR_ACTUAL_MAX_COMMAND THEME->GetMetricA(name_, "BarActualMaxCommand")
 
 // metrics that are specific to classes derived from ScreenEvaluation
-#define SHOW_BANNER_AREA THEME->GetMetricB(m_sName, "ShowBannerArea")
-#define SHOW_GRADE_AREA THEME->GetMetricB(m_sName, "ShowGradeArea")
-#define SHOW_POINTS_AREA THEME->GetMetricB(m_sName, "ShowPointsArea")
-#define SHOW_BONUS_AREA THEME->GetMetricB(m_sName, "ShowBonusArea")
-#define SHOW_SURVIVED_AREA THEME->GetMetricB(m_sName, "ShowSurvivedArea")
-#define SHOW_WIN_AREA THEME->GetMetricB(m_sName, "ShowWinArea")
+#define SHOW_BANNER_AREA THEME->GetMetricB(name_, "ShowBannerArea")
+#define SHOW_GRADE_AREA THEME->GetMetricB(name_, "ShowGradeArea")
+#define SHOW_POINTS_AREA THEME->GetMetricB(name_, "ShowPointsArea")
+#define SHOW_BONUS_AREA THEME->GetMetricB(name_, "ShowBonusArea")
+#define SHOW_SURVIVED_AREA THEME->GetMetricB(name_, "ShowSurvivedArea")
+#define SHOW_WIN_AREA THEME->GetMetricB(name_, "ShowWinArea")
 #define SHOW_SHARED_JUDGMENT_LINE_LABELS \
-  THEME->GetMetricB(m_sName, "ShowSharedJudgmentLineLabels")
+  THEME->GetMetricB(name_, "ShowSharedJudgmentLineLabels")
 #define SHOW_JUDGMENT_LINE(l) \
-  THEME->GetMetricB(m_sName, "ShowJudgmentLine" + JudgmentLineToString(l))
+  THEME->GetMetricB(name_, "ShowJudgmentLine" + JudgmentLineToString(l))
 
-#define SHOW_DETAIL_AREA THEME->GetMetricB(m_sName, "ShowDetailArea")
-#define SHOW_SCORE_AREA THEME->GetMetricB(m_sName, "ShowScoreArea")
-#define SHOW_TIME_AREA THEME->GetMetricB(m_sName, "ShowTimeArea")
-#define SHOW_RECORDS_AREA THEME->GetMetricB(m_sName, "ShowRecordsArea")
+#define SHOW_DETAIL_AREA THEME->GetMetricB(name_, "ShowDetailArea")
+#define SHOW_SCORE_AREA THEME->GetMetricB(name_, "ShowScoreArea")
+#define SHOW_TIME_AREA THEME->GetMetricB(name_, "ShowTimeArea")
+#define SHOW_RECORDS_AREA THEME->GetMetricB(name_, "ShowRecordsArea")
 #define PLAYER_OPTIONS_HIDE_FAIL_TYPE \
-  THEME->GetMetricB(m_sName, "PlayerOptionsHideFailType")
+  THEME->GetMetricB(name_, "PlayerOptionsHideFailType")
 #define PLAYER_OPTIONS_SEPARATOR \
-  THEME->GetMetric(m_sName, "PlayerOptionsSeparator")
+  THEME->GetMetric(name_, "PlayerOptionsSeparator")
 #define CHECKPOINTS_WITH_JUDGMENTS \
-  THEME->GetMetricB(m_sName, "CheckpointsWithJudgments")
+  THEME->GetMetricB(name_, "CheckpointsWithJudgments")
 
 static ThemeMetric<TapNoteScore> g_MinScoreToMaintainCombo(
     "Gameplay", "MinScoreToMaintainCombo");
@@ -99,11 +99,11 @@ AutoScreenMessage(SM_PlayCheer);
 REGISTER_SCREEN_CLASS(ScreenEvaluation);
 
 ScreenEvaluation::ScreenEvaluation() {
-  GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck = false;
+  GAMESTATE->adjust_tokens_by_song_cost_for_final_stage_check_ = false;
 }
 
 ScreenEvaluation::~ScreenEvaluation() {
-  GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck = true;
+  GAMESTATE->adjust_tokens_by_song_cost_for_final_stage_check_ = true;
 }
 
 void ScreenEvaluation::Init() {
@@ -112,110 +112,109 @@ void ScreenEvaluation::Init() {
   // debugging
   // Only fill StageStats with fake info if we're the InitialScreen
   // (i.e. StageStats not already filled)
-  if (PREFSMAN->m_sTestInitialScreen.Get() == m_sName) {
+  if (PREFSMAN->test_initial_screen_.Get() == name_) {
     PROFILEMAN->LoadFirstAvailableProfile(PLAYER_1);
     PROFILEMAN->LoadFirstAvailableProfile(PLAYER_2);
 
-    STATSMAN->m_vPlayedStageStats.clear();
-    STATSMAN->m_vPlayedStageStats.push_back(StageStats());
-    StageStats& ss = STATSMAN->m_vPlayedStageStats.back();
+    STATSMAN->played_stage_stats_.clear();
+    STATSMAN->played_stage_stats_.push_back(StageStats());
+    StageStats& ss = STATSMAN->played_stage_stats_.back();
 
-    GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
+    GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
     GAMESTATE->SetCurrentStyle(
         GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(), "versus"),
         PLAYER_INVALID);
-    ss.m_playMode = GAMESTATE->m_PlayMode;
-    ss.m_Stage = Stage_1st;
-    enum_add(ss.m_Stage, rand() % 3);
-    ss.m_EarnedExtraStage = (EarnedExtraStage)(rand() % NUM_EarnedExtraStage);
+    ss.play_mode_ = GAMESTATE->play_mode_;
+    ss.stage_ = Stage_1st;
+    enum_add(ss.stage_, rand() % 3);
+    ss.earned_extra_stage_ = (EarnedExtraStage)(rand() % NUM_EarnedExtraStage);
     GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
-    GAMESTATE->m_pCurSong.Set(SONGMAN->GetRandomSong());
-    ss.m_vpPlayedSongs.push_back(GAMESTATE->m_pCurSong);
-    ss.m_vpPossibleSongs.push_back(GAMESTATE->m_pCurSong);
-    GAMESTATE->m_pCurCourse.Set(SONGMAN->GetRandomCourse());
-    GAMESTATE->m_iCurrentStageIndex = 0;
+    GAMESTATE->cur_song_.Set(SONGMAN->GetRandomSong());
+    ss.played_songs_.push_back(GAMESTATE->cur_song_);
+    ss.possible_songs_.push_back(GAMESTATE->cur_song_);
+    GAMESTATE->cur_course_.Set(SONGMAN->GetRandomCourse());
+    GAMESTATE->current_stage_index_ = 0;
     FOREACH_ENUM(PlayerNumber, p)
-    GAMESTATE->m_iPlayerStageTokens[p] = 1;
+    GAMESTATE->player_stage_tokens_[p] = 1;
 
     FOREACH_PlayerNumber(p) {
-      ss.m_player[p].m_pStyle = GAMESTATE->GetCurrentStyle(p);
+      ss.player_[p].style_ = GAMESTATE->GetCurrentStyle(p);
       if (RandomInt(2)) {
         PO_GROUP_ASSIGN_N(
-            GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage,
-            m_bTransforms, PlayerOptions::TRANSFORM_ECHO,
+            GAMESTATE->player_state_[p]->player_options_, ModsLevel_Stage,
+            transforms_, PlayerOptions::TRANSFORM_ECHO,
             true);  // show "disqualified"
       }
       SO_GROUP_ASSIGN(
-          GAMESTATE->m_SongOptions, ModsLevel_Stage, m_fMusicRate, 1.1f);
+          GAMESTATE->song_options_, ModsLevel_Stage, music_rate_, 1.1f);
 
       GAMESTATE->JoinPlayer(p);
-      GAMESTATE->m_pCurSteps[p].Set(GAMESTATE->m_pCurSong->GetAllSteps()[0]);
-      if (GAMESTATE->m_pCurCourse) {
+      GAMESTATE->cur_steps_[p].Set(GAMESTATE->cur_song_->GetAllSteps()[0]);
+      if (GAMESTATE->cur_course_) {
         std::vector<Trail*> apTrails;
-        GAMESTATE->m_pCurCourse->GetAllTrails(apTrails);
+        GAMESTATE->cur_course_->GetAllTrails(apTrails);
         if (apTrails.size()) {
-          GAMESTATE->m_pCurTrail[p].Set(apTrails[0]);
+          GAMESTATE->cur_trail_[p].Set(apTrails[0]);
         }
       }
-      ss.m_player[p].m_vpPossibleSteps.push_back(
-          GAMESTATE->m_pCurSteps[PLAYER_1]);
-      ss.m_player[p].m_iStepsPlayed = 1;
+      ss.player_[p].possible_steps_.push_back(GAMESTATE->cur_steps_[PLAYER_1]);
+      ss.player_[p].steps_played_ = 1;
 
       PO_GROUP_ASSIGN(
-          GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage,
-          m_fScrollSpeed, 2.0f);
+          GAMESTATE->player_state_[p]->player_options_, ModsLevel_Stage,
+          scroll_speed_, 2.0f);
       PO_GROUP_CALL(
-          GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage,
+          GAMESTATE->player_state_[p]->player_options_, ModsLevel_Stage,
           ChooseRandomModifiers);
     }
 
     for (float f = 0; f < 100.0f; f += 1.0f) {
       float fP1 = std::fmod(f / 100 * 4 + .3f, 1);
-      ss.m_player[PLAYER_1].SetLifeRecordAt(fP1, f);
-      ss.m_player[PLAYER_2].SetLifeRecordAt(1 - fP1, f);
+      ss.player_[PLAYER_1].SetLifeRecordAt(fP1, f);
+      ss.player_[PLAYER_2].SetLifeRecordAt(1 - fP1, f);
     }
 
     FOREACH_PlayerNumber(p) {
-      float fSeconds = GAMESTATE->m_pCurSong->GetStepsSeconds();
-      ss.m_player[p].m_iActualDancePoints = RandomInt(3);
-      ss.m_player[p].m_iPossibleDancePoints = 2;
+      float fSeconds = GAMESTATE->cur_song_->GetStepsSeconds();
+      ss.player_[p].actual_dance_points_ = RandomInt(3);
+      ss.player_[p].possible_dance_points_ = 2;
       if (RandomInt(2)) {
-        ss.m_player[p].m_iCurCombo = RandomInt(15000);
+        ss.player_[p].cur_combo_ = RandomInt(15000);
       } else {
-        ss.m_player[p].m_iCurCombo = 0;
+        ss.player_[p].cur_combo_ = 0;
       }
-      ss.m_player[p].UpdateComboList(0, true);
+      ss.player_[p].UpdateComboList(0, true);
 
-      ss.m_player[p].m_iCurCombo += 50;
-      ss.m_player[p].UpdateComboList(0.10f * fSeconds, false);
+      ss.player_[p].cur_combo_ += 50;
+      ss.player_[p].UpdateComboList(0.10f * fSeconds, false);
 
-      ss.m_player[p].m_iCurCombo = 0;
-      ss.m_player[p].UpdateComboList(0.15f * fSeconds, false);
-      ss.m_player[p].m_iCurCombo = 1;
-      ss.m_player[p].UpdateComboList(0.25f * fSeconds, false);
-      ss.m_player[p].m_iCurCombo = 50;
-      ss.m_player[p].UpdateComboList(0.35f * fSeconds, false);
-      ss.m_player[p].m_iCurCombo = 0;
-      ss.m_player[p].UpdateComboList(0.45f * fSeconds, false);
-      ss.m_player[p].m_iCurCombo = 1;
-      ss.m_player[p].UpdateComboList(0.50f * fSeconds, false);
-      ss.m_player[p].m_iCurCombo = 100;
-      ss.m_player[p].UpdateComboList(1.00f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 0;
+      ss.player_[p].UpdateComboList(0.15f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 1;
+      ss.player_[p].UpdateComboList(0.25f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 50;
+      ss.player_[p].UpdateComboList(0.35f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 0;
+      ss.player_[p].UpdateComboList(0.45f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 1;
+      ss.player_[p].UpdateComboList(0.50f * fSeconds, false);
+      ss.player_[p].cur_combo_ = 100;
+      ss.player_[p].UpdateComboList(1.00f * fSeconds, false);
       if (RandomInt(5) == 0) {
-        ss.m_player[p].m_bFailed = true;
+        ss.player_[p].failed_ = true;
       }
-      ss.m_player[p].m_iTapNoteScores[TNS_W1] = RandomInt(3);
-      ss.m_player[p].m_iTapNoteScores[TNS_W2] = RandomInt(3);
-      ss.m_player[p].m_iTapNoteScores[TNS_W3] = RandomInt(3);
-      ss.m_player[p].m_iPossibleGradePoints =
+      ss.player_[p].tap_note_scores_[TNS_W1] = RandomInt(3);
+      ss.player_[p].tap_note_scores_[TNS_W2] = RandomInt(3);
+      ss.player_[p].tap_note_scores_[TNS_W3] = RandomInt(3);
+      ss.player_[p].possible_grade_points_ =
           4 * ScoreKeeperNormal::TapNoteScoreToGradePoints(TNS_W1, false);
-      ss.m_player[p].m_fLifeRemainingSeconds = randomf(90, 580);
-      ss.m_player[p].m_iScore = rand() % (900 * 1000 * 1000);
-      ss.m_player[p].m_iPersonalHighScoreIndex = (rand() % 3) - 1;
-      ss.m_player[p].m_iMachineHighScoreIndex = (rand() % 3) - 1;
-      ss.m_player[p].m_PeakComboAward =
+      ss.player_[p].life_remaining_seconds_ = randomf(90, 580);
+      ss.player_[p].score_ = rand() % (900 * 1000 * 1000);
+      ss.player_[p].personal_high_score_index_ = (rand() % 3) - 1;
+      ss.player_[p].machine_high_score_index_ = (rand() % 3) - 1;
+      ss.player_[p].peak_combo_award_ =
           (PeakComboAward)(rand() % NUM_PeakComboAward);
-      ss.m_player[p].m_StageAward = (StageAward)(rand() % NUM_StageAward);
+      ss.player_[p].stage_award_ = (StageAward)(rand() % NUM_StageAward);
 
       FOREACH_ENUM(RadarCategory, rc) {
         switch (rc) {
@@ -224,9 +223,9 @@ void ScreenEvaluation::Init() {
           case RadarCategory_Air:
           case RadarCategory_Freeze:
           case RadarCategory_Chaos:
-            ss.m_player[p].m_radarPossible[rc] = randomf(0, 1);
-            ss.m_player[p].m_radarActual[rc] =
-                randomf(0, ss.m_player[p].m_radarPossible[rc]);
+            ss.player_[p].radar_possible_[rc] = randomf(0, 1);
+            ss.player_[p].radar_actual_[rc] =
+                randomf(0, ss.player_[p].radar_possible_[rc]);
             break;
           case RadarCategory_TapsAndHolds:
           case RadarCategory_Jumps:
@@ -236,9 +235,9 @@ void ScreenEvaluation::Init() {
           case RadarCategory_Rolls:
           case RadarCategory_Lifts:
           case RadarCategory_Fakes:
-            ss.m_player[p].m_radarPossible[rc] = float(1 + (rand() % 200));
-            ss.m_player[p].m_radarActual[rc] =
-                float(rand() % (int)(ss.m_player[p].m_radarPossible[rc]));
+            ss.player_[p].radar_possible_[rc] = float(1 + (rand() % 200));
+            ss.player_[p].radar_actual_[rc] =
+                float(rand() % (int)(ss.player_[p].radar_possible_[rc]));
             break;
           default:
             break;
@@ -249,27 +248,27 @@ void ScreenEvaluation::Init() {
     }
   }
 
-  if (STATSMAN->m_vPlayedStageStats.empty()) {
+  if (STATSMAN->played_stage_stats_.empty()) {
     LuaHelpers::ReportScriptError(
         "PlayerStageStats is empty!  Do not use SM_GoToNextScreen on "
         "ScreenGameplay, use SM_DoNextScreen instead so that ScreenGameplay "
         "can clean up properly.");
-    STATSMAN->m_vPlayedStageStats.push_back(STATSMAN->m_CurStageStats);
+    STATSMAN->played_stage_stats_.push_back(STATSMAN->cur_stage_stats_);
   }
-  m_pStageStats = &STATSMAN->m_vPlayedStageStats.back();
+  stage_stats_ = &STATSMAN->played_stage_stats_.back();
 
-  ZERO(m_bSavedScreenshot);
+  ZERO(saved_screenshot_);
 
   // Figure out which statistics and songs we're going to display
-  SUMMARY.Load(m_sName, "Summary");
+  SUMMARY.Load(name_, "Summary");
   if (SUMMARY) {
-    STATSMAN->GetFinalEvalStageStats(m_FinalEvalStageStats);
-    m_pStageStats = &m_FinalEvalStageStats;
+    STATSMAN->GetFinalEvalStageStats(final_eval_stage_stats_);
+    stage_stats_ = &final_eval_stage_stats_;
   }
 
   // update persistent statistics
   if (SUMMARY) {
-    m_pStageStats->FinalizeScores(true);
+    stage_stats_->FinalizeScores(true);
   }
 
   // Run this here, so STATSMAN->m_CurStageStats is available to overlays.
@@ -280,139 +279,138 @@ void ScreenEvaluation::Init() {
 
   FOREACH_PlayerNumber(p) {
     if (GAMESTATE->IsPlayerEnabled(p)) {
-      grade[p] = m_pStageStats->m_player[p].GetGrade();
+      grade[p] = stage_stats_->player_[p].GetGrade();
     } else {
       grade[p] = Grade_Failed;
     }
   }
 
   // load sounds
-  m_soundStart.Load(THEME->GetPathS(m_sName, "start"));
+  sound_start_.Load(THEME->GetPathS(name_, "start"));
 
   // init banner area
   if (SHOW_BANNER_AREA) {
     if (SUMMARY) {
       for (size_t i = 0;
-           i < m_pStageStats->m_vpPlayedSongs.size() && i < MAX_SONGS_TO_SHOW;
+           i < stage_stats_->played_songs_.size() && i < MAX_SONGS_TO_SHOW;
            i++) {
-        Song* pSong = m_pStageStats->m_vpPlayedSongs[i];
+        Song* pSong = stage_stats_->played_songs_[i];
 
-        m_SmallBanner[i].LoadFromSong(pSong);
-        m_SmallBanner[i].ScaleToClipped(BANNER_WIDTH, BANNER_HEIGHT);
-        m_SmallBanner[i].SetName(ssprintf("SmallBanner%u", (unsigned)i + 1));
-        ActorUtil::LoadAllCommands(m_SmallBanner[i], m_sName);
-        SET_XY(m_SmallBanner[i]);
-        this->AddChild(&m_SmallBanner[i]);
+        small_banner_[i].LoadFromSong(pSong);
+        small_banner_[i].ScaleToClipped(BANNER_WIDTH, BANNER_HEIGHT);
+        small_banner_[i].SetName(ssprintf("SmallBanner%u", (unsigned)i + 1));
+        ActorUtil::LoadAllCommands(small_banner_[i], name_);
+        SET_XY(small_banner_[i]);
+        this->AddChild(&small_banner_[i]);
 
-        m_sprSmallBannerFrame[i].Load(THEME->GetPathG(m_sName, "BannerFrame"));
-        m_sprSmallBannerFrame[i]->SetName(
+        spr_small_banner_frame_[i].Load(THEME->GetPathG(name_, "BannerFrame"));
+        spr_small_banner_frame_[i]->SetName(
             ssprintf("SmallBanner%u", (unsigned)i + 1));
-        ActorUtil::LoadAllCommands(*m_sprSmallBannerFrame[i], m_sName);
-        SET_XY(m_sprSmallBannerFrame[i]);
-        this->AddChild(m_sprSmallBannerFrame[i]);
+        ActorUtil::LoadAllCommands(*spr_small_banner_frame_[i], name_);
+        SET_XY(spr_small_banner_frame_[i]);
+        this->AddChild(spr_small_banner_frame_[i]);
       }
     } else {
       if (GAMESTATE->IsCourseMode()) {
-        m_LargeBanner.LoadFromCourse(GAMESTATE->m_pCurCourse);
+        large_banner_.LoadFromCourse(GAMESTATE->cur_course_);
       } else {
-        m_LargeBanner.LoadFromSong(GAMESTATE->m_pCurSong);
+        large_banner_.LoadFromSong(GAMESTATE->cur_song_);
       }
-      m_LargeBanner.ScaleToClipped(BANNER_WIDTH, BANNER_HEIGHT);
-      m_LargeBanner.SetName("LargeBanner");
-      ActorUtil::LoadAllCommands(m_LargeBanner, m_sName);
-      SET_XY(m_LargeBanner);
-      this->AddChild(&m_LargeBanner);
+      large_banner_.ScaleToClipped(BANNER_WIDTH, BANNER_HEIGHT);
+      large_banner_.SetName("LargeBanner");
+      ActorUtil::LoadAllCommands(large_banner_, name_);
+      SET_XY(large_banner_);
+      this->AddChild(&large_banner_);
 
-      m_sprLargeBannerFrame.Load(THEME->GetPathG(m_sName, "BannerFrame"));
-      m_sprLargeBannerFrame->SetName("LargeBannerFrame");
-      ActorUtil::LoadAllCommands(*m_sprLargeBannerFrame, m_sName);
-      SET_XY(m_sprLargeBannerFrame);
-      this->AddChild(m_sprLargeBannerFrame);
+      spr_large_banner_frame_.Load(THEME->GetPathG(name_, "BannerFrame"));
+      spr_large_banner_frame_->SetName("LargeBannerFrame");
+      ActorUtil::LoadAllCommands(*spr_large_banner_frame_, name_);
+      SET_XY(spr_large_banner_frame_);
+      this->AddChild(spr_large_banner_frame_);
     }
   }
 
   {
     if (!SUMMARY) {
       FOREACH_EnabledPlayer(p) {
-        m_textPlayerOptions[p].LoadFromFont(
-            THEME->GetPathF(m_sName, "PlayerOptions"));
-        m_textPlayerOptions[p].SetName(ssprintf("PlayerOptionsP%d", p + 1));
-        ActorUtil::LoadAllCommands(m_textPlayerOptions[p], m_sName);
-        SET_XY(m_textPlayerOptions[p]);
+        text_player_options_[p].LoadFromFont(
+            THEME->GetPathF(name_, "PlayerOptions"));
+        text_player_options_[p].SetName(ssprintf("PlayerOptionsP%d", p + 1));
+        ActorUtil::LoadAllCommands(text_player_options_[p], name_);
+        SET_XY(text_player_options_[p]);
         std::vector<std::string> v;
         PlayerOptions po =
-            GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetPreferred();
+            GAMESTATE->player_state_[p]->player_options_.GetPreferred();
         if (PLAYER_OPTIONS_HIDE_FAIL_TYPE) {
-          po.m_FailType = (FailType)0;  // blank out the fail type so that it
+          po.fail_type_ = (FailType)0;  // blank out the fail type so that it
                                         // won't show in the mods list
         }
         po.GetLocalizedMods(v);
         std::string sPO = join(PLAYER_OPTIONS_SEPARATOR, v);
-        m_textPlayerOptions[p].SetText(sPO);
-        this->AddChild(&m_textPlayerOptions[p]);
+        text_player_options_[p].SetText(sPO);
+        this->AddChild(&text_player_options_[p]);
       }
 
       {
-        m_textSongOptions.LoadFromFont(THEME->GetPathF(m_sName, "SongOptions"));
-        m_textSongOptions.SetName("SongOptions");
-        ActorUtil::LoadAllCommands(m_textSongOptions, m_sName);
-        SET_XY(m_textSongOptions);
-        m_textSongOptions.SetText(
-            GAMESTATE->m_SongOptions.GetStage().GetLocalizedString());
-        this->AddChild(&m_textSongOptions);
+        text_song_options_.LoadFromFont(THEME->GetPathF(name_, "SongOptions"));
+        text_song_options_.SetName("SongOptions");
+        ActorUtil::LoadAllCommands(text_song_options_, name_);
+        SET_XY(text_song_options_);
+        text_song_options_.SetText(
+            GAMESTATE->song_options_.GetStage().GetLocalizedString());
+        this->AddChild(&text_song_options_);
       }
     }
 
     // Dairy Queen'd (disqualified)
     FOREACH_EnabledPlayer(p) {
-      m_sprDisqualified[p].Load(THEME->GetPathG(m_sName, "Disqualified"));
-      m_sprDisqualified[p]->SetName(ssprintf("DisqualifiedP%d", p + 1));
-      LOAD_ALL_COMMANDS_AND_SET_XY(m_sprDisqualified[p]);
-      m_sprDisqualified[p]->SetVisible(
-          m_pStageStats->m_player[p].m_bDisqualified);
-      this->AddChild(m_sprDisqualified[p]);
+      spr_disqualified_[p].Load(THEME->GetPathG(name_, "Disqualified"));
+      spr_disqualified_[p]->SetName(ssprintf("DisqualifiedP%d", p + 1));
+      LOAD_ALL_COMMANDS_AND_SET_XY(spr_disqualified_[p]);
+      spr_disqualified_[p]->SetVisible(stage_stats_->player_[p].disqualified_);
+      this->AddChild(spr_disqualified_[p]);
     }
   }
 
   // init grade area
   if (SHOW_GRADE_AREA) {
     FOREACH_EnabledPlayer(p) {
-      m_sprGradeFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("GradeFrame p%d", p + 1)));
-      m_sprGradeFrame[p]->SetName(ssprintf("GradeFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprGradeFrame[p], m_sName);
-      SET_XY(m_sprGradeFrame[p]);
-      this->AddChild(m_sprGradeFrame[p]);
+      spr_grade_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("GradeFrame p%d", p + 1)));
+      spr_grade_frame_[p]->SetName(ssprintf("GradeFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_grade_frame_[p], name_);
+      SET_XY(spr_grade_frame_[p]);
+      this->AddChild(spr_grade_frame_[p]);
 
       // TODO: Re-add scrolling grade functionality
-      m_Grades[p].Load("GradeDisplayEval");
-      m_Grades[p].SetGrade(grade[p]);
-      m_Grades[p].SetName(ssprintf("GradeP%d", p + 1));
-      ActorUtil::LoadAllCommands(m_Grades[p], m_sName);
-      SET_XY(m_Grades[p]);
-      this->AddChild(&m_Grades[p]);
+      grades_[p].Load("GradeDisplayEval");
+      grades_[p].SetGrade(grade[p]);
+      grades_[p].SetName(ssprintf("GradeP%d", p + 1));
+      ActorUtil::LoadAllCommands(grades_[p], name_);
+      SET_XY(grades_[p]);
+      this->AddChild(&grades_[p]);
     }
   }
 
   // init points area
   if (SHOW_POINTS_AREA) {
     FOREACH_EnabledPlayer(p) {
-      m_sprPercentFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("PercentFrame p%d", p + 1)));
-      m_sprPercentFrame[p]->SetName(ssprintf("PercentFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprPercentFrame[p], m_sName);
-      SET_XY(m_sprPercentFrame[p]);
-      this->AddChild(m_sprPercentFrame[p]);
+      spr_percent_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("PercentFrame p%d", p + 1)));
+      spr_percent_frame_[p]->SetName(ssprintf("PercentFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_percent_frame_[p], name_);
+      SET_XY(spr_percent_frame_[p]);
+      this->AddChild(spr_percent_frame_[p]);
 
       /* Use "ScreenEvaluation Percent" in the [metrics], but position and
        * tween it with "PercentP1X", etc. */
-      m_Percent[p].SetName(ssprintf("PercentP%d", p + 1));
-      m_Percent[p].Load(
-          GAMESTATE->m_pPlayerState[p], &m_pStageStats->m_player[p],
+      percent_[p].SetName(ssprintf("PercentP%d", p + 1));
+      percent_[p].Load(
+          GAMESTATE->player_state_[p], &stage_stats_->player_[p],
           "ScreenEvaluation Percent", true);
-      ActorUtil::LoadAllCommands(m_Percent[p], m_sName);
-      SET_XY(m_Percent[p]);
-      this->AddChild(&m_Percent[p]);
+      ActorUtil::LoadAllCommands(percent_[p], name_);
+      SET_XY(percent_[p]);
+      this->AddChild(&percent_[p]);
     }
   }
 
@@ -421,57 +419,57 @@ void ScreenEvaluation::Init() {
     // In course mode, we need to make sure the bar doesn't overflow. -aj
     float fDivider = 1.0f;
     if (GAMESTATE->IsCourseMode()) {
-      fDivider = fDivider / GAMESTATE->m_pCurCourse->m_vEntries.size();
+      fDivider = fDivider / GAMESTATE->cur_course_->entries_.size();
     }
 
     FOREACH_EnabledPlayer(p) {
-      m_sprBonusFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("BonusFrame p%d", p + 1)));
-      m_sprBonusFrame[p]->SetName(ssprintf("BonusFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprBonusFrame[p], m_sName);
-      SET_XY(m_sprBonusFrame[p]);
-      this->AddChild(m_sprBonusFrame[p]);
+      spr_bonus_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("BonusFrame p%d", p + 1)));
+      spr_bonus_frame_[p]->SetName(ssprintf("BonusFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_bonus_frame_[p], name_);
+      SET_XY(spr_bonus_frame_[p]);
+      this->AddChild(spr_bonus_frame_[p]);
 
       // todo: convert this to use category names instead of numbers? -aj
       for (int r = 0; r < NUM_SHOWN_RADAR_CATEGORIES; r++)  // foreach line
       {
-        float possible = m_pStageStats->m_player[p].m_radarPossible[r];
-        float actual = m_pStageStats->m_player[p].m_radarActual[r];
+        float possible = stage_stats_->player_[p].radar_possible_[r];
+        float actual = stage_stats_->player_[p].radar_actual_[r];
         if (possible > 1.0) {
           actual /= possible;
           possible /= possible;
         }
-        m_sprPossibleBar[p][r].Load(
-            THEME->GetPathG(m_sName, ssprintf("BarPossible p%d", p + 1)));
-        m_sprPossibleBar[p][r].SetWidth(
-            m_sprPossibleBar[p][r].GetUnzoomedWidth() * possible * fDivider);
-        m_sprPossibleBar[p][r].SetName(
+        spr_possible_bar_[p][r].Load(
+            THEME->GetPathG(name_, ssprintf("BarPossible p%d", p + 1)));
+        spr_possible_bar_[p][r].SetWidth(
+            spr_possible_bar_[p][r].GetUnzoomedWidth() * possible * fDivider);
+        spr_possible_bar_[p][r].SetName(
             ssprintf("BarPossible%dP%d", r + 1, p + 1));
-        ActorUtil::LoadAllCommands(m_sprPossibleBar[p][r], m_sName);
-        SET_XY(m_sprPossibleBar[p][r]);
-        this->AddChild(&m_sprPossibleBar[p][r]);
+        ActorUtil::LoadAllCommands(spr_possible_bar_[p][r], name_);
+        SET_XY(spr_possible_bar_[p][r]);
+        this->AddChild(&spr_possible_bar_[p][r]);
 
-        m_sprActualBar[p][r].Load(
-            THEME->GetPathG(m_sName, ssprintf("BarActual p%d", p + 1)));
+        spr_actual_bar_[p][r].Load(
+            THEME->GetPathG(name_, ssprintf("BarActual p%d", p + 1)));
         // should be out of the possible bar, not actual (whatever value that is
         // at)
-        m_sprActualBar[p][r].SetWidth(
-            m_sprPossibleBar[p][r].GetUnzoomedWidth() * actual * fDivider);
+        spr_actual_bar_[p][r].SetWidth(
+            spr_possible_bar_[p][r].GetUnzoomedWidth() * actual * fDivider);
 
-        float value = (float)100 * m_sprActualBar[p][r].GetUnzoomedWidth() /
-                      m_sprPossibleBar[p][r].GetUnzoomedWidth();
+        float value = (float)100 * spr_actual_bar_[p][r].GetUnzoomedWidth() /
+                      spr_possible_bar_[p][r].GetUnzoomedWidth();
         LOG->Trace("Radar bar %d of 5 - %f percent", r, value);
 
-        m_sprActualBar[p][r].SetName(ssprintf("BarActual%dP%d", r + 1, p + 1));
-        ActorUtil::LoadAllCommands(m_sprActualBar[p][r], m_sName);
-        SET_XY(m_sprActualBar[p][r]);
+        spr_actual_bar_[p][r].SetName(ssprintf("BarActual%dP%d", r + 1, p + 1));
+        ActorUtil::LoadAllCommands(spr_actual_bar_[p][r], name_);
+        SET_XY(spr_actual_bar_[p][r]);
 
         // .99999 is fairly close to 1.00, so we use that.
         // todo: allow extra commands for AAA/AAAA? -aj
         if (actual > 0.99999f) {
-          m_sprActualBar[p][r].RunCommands(BAR_ACTUAL_MAX_COMMAND);
+          spr_actual_bar_[p][r].RunCommands(BAR_ACTUAL_MAX_COMMAND);
         }
-        this->AddChild(&m_sprActualBar[p][r]);
+        this->AddChild(&spr_actual_bar_[p][r]);
       }
     }
   }
@@ -479,52 +477,51 @@ void ScreenEvaluation::Init() {
   // init survived area
   if (SHOW_SURVIVED_AREA) {
     FOREACH_EnabledPlayer(p) {
-      m_sprSurvivedFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("SurvivedFrame p%d", p + 1)));
-      m_sprSurvivedFrame[p]->SetName(ssprintf("SurvivedFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprSurvivedFrame[p], m_sName);
-      SET_XY(m_sprSurvivedFrame[p]);
-      this->AddChild(m_sprSurvivedFrame[p]);
+      spr_survived_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("SurvivedFrame p%d", p + 1)));
+      spr_survived_frame_[p]->SetName(ssprintf("SurvivedFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_survived_frame_[p], name_);
+      SET_XY(spr_survived_frame_[p]);
+      this->AddChild(spr_survived_frame_[p]);
 
-      m_textSurvivedNumber[p].LoadFromFont(
-          THEME->GetPathF(m_sName, "SurvivedNumber"));
+      text_survived_number_[p].LoadFromFont(
+          THEME->GetPathF(name_, "SurvivedNumber"));
       // curewater: edited the "# stages cleared" text so it deducts one if you
       // failed. Should be accurate, but I'm not sure if its "standard" that
       // (bool)true = 1.  (assumption)
-      m_textSurvivedNumber[p].SetText(
-          ssprintf("%02d", m_pStageStats->m_player[p].m_iSongsPassed));
-      m_textSurvivedNumber[p].SetName(ssprintf("SurvivedNumberP%d", p + 1));
-      ActorUtil::LoadAllCommands(m_textSurvivedNumber[p], m_sName);
-      SET_XY(m_textSurvivedNumber[p]);
-      this->AddChild(&m_textSurvivedNumber[p]);
+      text_survived_number_[p].SetText(
+          ssprintf("%02d", stage_stats_->player_[p].songs_passed_));
+      text_survived_number_[p].SetName(ssprintf("SurvivedNumberP%d", p + 1));
+      ActorUtil::LoadAllCommands(text_survived_number_[p], name_);
+      SET_XY(text_survived_number_[p]);
+      this->AddChild(&text_survived_number_[p]);
     }
   }
 
   // init win area
   if (SHOW_WIN_AREA) {
     FOREACH_EnabledPlayer(p) {
-      m_sprWinFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("win frame p%d", p + 1)));
-      m_sprWinFrame[p]->SetName(ssprintf("WinFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprWinFrame[p], m_sName);
-      SET_XY(m_sprWinFrame[p]);
-      this->AddChild(m_sprWinFrame[p]);
+      spr_win_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("win frame p%d", p + 1)));
+      spr_win_frame_[p]->SetName(ssprintf("WinFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_win_frame_[p], name_);
+      SET_XY(spr_win_frame_[p]);
+      this->AddChild(spr_win_frame_[p]);
 
-      m_sprWin[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("win p%d 1x3", p + 1)));
-      m_sprWin[p].StopAnimating();
+      spr_win_[p].Load(THEME->GetPathG(name_, ssprintf("win p%d 1x3", p + 1)));
+      spr_win_[p].StopAnimating();
       int iFrame = GAMESTATE->GetStageResult(p);
-      m_sprWin[p].SetState(iFrame);
-      m_sprWin[p].SetName(ssprintf("WinP%d", p + 1));
-      ActorUtil::LoadAllCommands(m_sprWin[p], m_sName);
-      SET_XY(m_sprWin[p]);
-      this->AddChild(&m_sprWin[p]);
+      spr_win_[p].SetState(iFrame);
+      spr_win_[p].SetName(ssprintf("WinP%d", p + 1));
+      ActorUtil::LoadAllCommands(spr_win_[p], name_);
+      SET_XY(spr_win_[p]);
+      this->AddChild(&spr_win_[p]);
     }
   }
 
   // init judgment area
-  ROLLING_NUMBERS_CLASS.Load(m_sName, "RollingNumbersClass");
-  ROLLING_NUMBERS_MAX_COMBO_CLASS.Load(m_sName, "RollingNumbersMaxComboClass");
+  ROLLING_NUMBERS_CLASS.Load(name_, "RollingNumbersClass");
+  ROLLING_NUMBERS_MAX_COMBO_CLASS.Load(name_, "RollingNumbersMaxComboClass");
   FOREACH_ENUM(JudgmentLine, l) {
     if (l == JudgmentLine_W1 && !GAMESTATE->ShowW1()) {
       continue;  // skip
@@ -533,28 +530,29 @@ void ScreenEvaluation::Init() {
     if (SHOW_JUDGMENT_LINE(l)) {
       if (SHOW_SHARED_JUDGMENT_LINE_LABELS) {
         LuaThreadVariable var2("JudgmentLine", LuaReference::Create(l));
-        m_sprSharedJudgmentLineLabels[l].Load(THEME->GetPathG(
-            m_sName, "JudgmentLabel " + JudgmentLineToString(l)));
-        m_sprSharedJudgmentLineLabels[l]->SetName(
+        spr_shared_judgment_line_labels_[l].Load(
+            THEME->GetPathG(name_, "JudgmentLabel " + JudgmentLineToString(l)));
+        spr_shared_judgment_line_labels_[l]->SetName(
             JudgmentLineToString(l) + "Label");
-        ActorUtil::LoadAllCommands(m_sprSharedJudgmentLineLabels[l], m_sName);
-        SET_XY(m_sprSharedJudgmentLineLabels[l]);
-        this->AddChild(m_sprSharedJudgmentLineLabels[l]);
+        ActorUtil::LoadAllCommands(spr_shared_judgment_line_labels_[l], name_);
+        SET_XY(spr_shared_judgment_line_labels_[l]);
+        this->AddChild(spr_shared_judgment_line_labels_[l]);
       }
 
       FOREACH_EnabledPlayer(p) {
-        m_textJudgmentLineNumber[l][p].LoadFromFont(
-            THEME->GetPathF(m_sName, "JudgmentLineNumber"));
-        m_textJudgmentLineNumber[l][p].SetName(
+        text_judgment_line_number_[l][p].LoadFromFont(
+            THEME->GetPathF(name_, "JudgmentLineNumber"));
+        text_judgment_line_number_[l][p].SetName(
             JudgmentLineToString(l) + ssprintf("NumberP%d", p + 1));
         if (JudgmentLineToString(l) == "MaxCombo") {
-          m_textJudgmentLineNumber[l][p].Load(ROLLING_NUMBERS_MAX_COMBO_CLASS);
+          text_judgment_line_number_[l][p].Load(
+              ROLLING_NUMBERS_MAX_COMBO_CLASS);
         } else {
-          m_textJudgmentLineNumber[l][p].Load(ROLLING_NUMBERS_CLASS);
+          text_judgment_line_number_[l][p].Load(ROLLING_NUMBERS_CLASS);
         }
-        ActorUtil::LoadAllCommands(m_textJudgmentLineNumber[l][p], m_sName);
-        SET_XY(m_textJudgmentLineNumber[l][p]);
-        this->AddChild(&m_textJudgmentLineNumber[l][p]);
+        ActorUtil::LoadAllCommands(text_judgment_line_number_[l][p], name_);
+        SET_XY(text_judgment_line_number_[l][p]);
+        this->AddChild(&text_judgment_line_number_[l][p]);
 
         int iValue;
         switch (l) {
@@ -562,45 +560,45 @@ void ScreenEvaluation::Init() {
            * Something about checkpoints needing to be tied into
            * the correct judgments instead of just W1/W2. Misses are ok. */
           case JudgmentLine_W1:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_W1];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W1];
             if (CHECKPOINTS_WITH_JUDGMENTS && GAMESTATE->ShowW1()) {
-              iValue += m_pStageStats->m_player[p]
-                            .m_iTapNoteScores[TNS_CheckpointHit];
+              iValue +=
+                  stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointHit];
             }
             break;
           case JudgmentLine_W2:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_W2];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W2];
             if (CHECKPOINTS_WITH_JUDGMENTS && !GAMESTATE->ShowW1()) {
-              iValue += m_pStageStats->m_player[p]
-                            .m_iTapNoteScores[TNS_CheckpointHit];
+              iValue +=
+                  stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointHit];
             }
             break;
           case JudgmentLine_W3:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_W3];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W3];
             break;
           case JudgmentLine_W4:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_W4];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W4];
             break;
           case JudgmentLine_W5:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_W5];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W5];
             break;
           case JudgmentLine_Miss:
-            iValue = m_pStageStats->m_player[p].m_iTapNoteScores[TNS_Miss];
+            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_Miss];
             if (CHECKPOINTS_WITH_JUDGMENTS) {
-              iValue += m_pStageStats->m_player[p]
-                            .m_iTapNoteScores[TNS_CheckpointMiss];
+              iValue +=
+                  stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointMiss];
             }
             break;
           case JudgmentLine_Held:
-            iValue = m_pStageStats->m_player[p].m_iHoldNoteScores[HNS_Held];
+            iValue = stage_stats_->player_[p].hold_note_scores_[HNS_Held];
             break;
           case JudgmentLine_MaxCombo:
-            iValue = m_pStageStats->m_player[p].GetMaxCombo().m_cnt;
+            iValue = stage_stats_->player_[p].GetMaxCombo().cnt_;
             break;
             DEFAULT_FAIL(l);
         }
 
-        m_textJudgmentLineNumber[l][p].SetTargetNumber(float(iValue));
+        text_judgment_line_number_[l][p].SetTargetNumber(float(iValue));
       }
     }
   }
@@ -608,23 +606,23 @@ void ScreenEvaluation::Init() {
   // init detail area
   if (SHOW_DETAIL_AREA) {
     FOREACH_EnabledPlayer(p) {
-      m_sprDetailFrame[p].Load(
-          THEME->GetPathG(m_sName, ssprintf("DetailFrame p%d", p + 1)));
-      m_sprDetailFrame[p]->SetName(ssprintf("DetailFrameP%d", p + 1));
-      ActorUtil::LoadAllCommands(*m_sprDetailFrame[p], m_sName);
-      SET_XY(m_sprDetailFrame[p]);
-      this->AddChild(m_sprDetailFrame[p]);
+      spr_detail_frame_[p].Load(
+          THEME->GetPathG(name_, ssprintf("DetailFrame p%d", p + 1)));
+      spr_detail_frame_[p]->SetName(ssprintf("DetailFrameP%d", p + 1));
+      ActorUtil::LoadAllCommands(*spr_detail_frame_[p], name_);
+      SET_XY(spr_detail_frame_[p]);
+      this->AddChild(spr_detail_frame_[p]);
     }
 
     FOREACH_ENUM(DetailLine, l) {
       FOREACH_EnabledPlayer(p) {
-        m_textDetailText[l][p].LoadFromFont(
-            THEME->GetPathF(m_sName, "DetailLineNumber"));
-        m_textDetailText[l][p].SetName(
+        text_detail_text_[l][p].LoadFromFont(
+            THEME->GetPathF(name_, "DetailLineNumber"));
+        text_detail_text_[l][p].SetName(
             DetailLineToString(l) + ssprintf("NumberP%d", p + 1));
-        ActorUtil::LoadAllCommands(m_textDetailText[l][p], m_sName);
-        SET_XY(m_textDetailText[l][p]);
-        this->AddChild(&m_textDetailText[l][p]);
+        ActorUtil::LoadAllCommands(text_detail_text_[l][p], name_);
+        SET_XY(text_detail_text_[l][p]);
+        this->AddChild(&text_detail_text_[l][p]);
 
         static const int indices[NUM_DetailLine] = {
             RadarCategory_TapsAndHolds, RadarCategory_Jumps,
@@ -633,13 +631,13 @@ void ScreenEvaluation::Init() {
             RadarCategory_Lifts,        RadarCategory_Fakes};
         const int ind = indices[l];
         const int iActual =
-            std::lrint(m_pStageStats->m_player[p].m_radarActual[ind]);
+            std::lrint(stage_stats_->player_[p].radar_actual_[ind]);
         const int iPossible =
-            std::lrint(m_pStageStats->m_player[p].m_radarPossible[ind]);
+            std::lrint(stage_stats_->player_[p].radar_possible_[ind]);
 
         // todo: check if format string is valid
         // (two integer values in DETAILLINE_FORMAT) -aj
-        m_textDetailText[l][p].SetText(
+        text_detail_text_[l][p].SetText(
             ssprintf(DETAILLINE_FORMAT.c_str(), iActual, iPossible));
       }
     }
@@ -647,41 +645,40 @@ void ScreenEvaluation::Init() {
 
   // init score area
   if (SHOW_SCORE_AREA) {
-    m_sprScoreLabel.Load(THEME->GetPathG(m_sName, "ScoreLabel"));
-    m_sprScoreLabel->SetName("ScoreLabel");
-    ActorUtil::LoadAllCommands(*m_sprScoreLabel, m_sName);
-    SET_XY(m_sprScoreLabel);
-    this->AddChild(m_sprScoreLabel);
+    spr_score_label_.Load(THEME->GetPathG(name_, "ScoreLabel"));
+    spr_score_label_->SetName("ScoreLabel");
+    ActorUtil::LoadAllCommands(*spr_score_label_, name_);
+    SET_XY(spr_score_label_);
+    this->AddChild(spr_score_label_);
 
     FOREACH_EnabledPlayer(p) {
-      m_textScore[p].LoadFromFont(THEME->GetPathF(m_sName, "ScoreNumber"));
-      m_textScore[p].SetName(ssprintf("ScoreNumberP%d", p + 1));
-      m_textScore[p].Load("RollingNumbersEvaluation");
-      ActorUtil::LoadAllCommands(m_textScore[p], m_sName);
-      SET_XY(m_textScore[p]);
-      m_textScore[p].SetTargetNumber(
-          float(m_pStageStats->m_player[p].m_iScore));
-      this->AddChild(&m_textScore[p]);
+      text_score_[p].LoadFromFont(THEME->GetPathF(name_, "ScoreNumber"));
+      text_score_[p].SetName(ssprintf("ScoreNumberP%d", p + 1));
+      text_score_[p].Load("RollingNumbersEvaluation");
+      ActorUtil::LoadAllCommands(text_score_[p], name_);
+      SET_XY(text_score_[p]);
+      text_score_[p].SetTargetNumber(float(stage_stats_->player_[p].score_));
+      this->AddChild(&text_score_[p]);
     }
   }
 
   // init time area
   if (SHOW_TIME_AREA) {
-    m_sprTimeLabel.Load(THEME->GetPathG(m_sName, "TimeLabel"));
-    m_sprTimeLabel->SetName("TimeLabel");
-    ActorUtil::LoadAllCommands(*m_sprTimeLabel, m_sName);
-    SET_XY(m_sprTimeLabel);
-    this->AddChild(m_sprTimeLabel);
+    spr_time_label_.Load(THEME->GetPathG(name_, "TimeLabel"));
+    spr_time_label_->SetName("TimeLabel");
+    ActorUtil::LoadAllCommands(*spr_time_label_, name_);
+    SET_XY(spr_time_label_);
+    this->AddChild(spr_time_label_);
 
     FOREACH_EnabledPlayer(p) {
-      m_textTime[p].LoadFromFont(THEME->GetPathF(m_sName, "time"));
-      m_textTime[p].SetShadowLength(0);
-      m_textTime[p].SetName(ssprintf("TimeNumberP%d", p + 1));
-      ActorUtil::LoadAllCommands(m_textTime[p], m_sName);
-      SET_XY(m_textTime[p]);
-      m_textTime[p].SetText(
-          SecondsToMMSSMsMs(m_pStageStats->m_player[p].m_fAliveSeconds));
-      this->AddChild(&m_textTime[p]);
+      text_time_[p].LoadFromFont(THEME->GetPathF(name_, "time"));
+      text_time_[p].SetShadowLength(0);
+      text_time_[p].SetName(ssprintf("TimeNumberP%d", p + 1));
+      ActorUtil::LoadAllCommands(text_time_[p], name_);
+      SET_XY(text_time_[p]);
+      text_time_[p].SetText(
+          SecondsToMMSSMsMs(stage_stats_->player_[p].alive_seconds_));
+      this->AddChild(&text_time_[p]);
     }
   }
 
@@ -694,24 +691,24 @@ void ScreenEvaluation::Init() {
 
   FOREACH_PlayerNumber(p) {
     if (GAMESTATE->IsPlayerEnabled(p)) {
-      if ((m_pStageStats->m_player[p].m_iMachineHighScoreIndex == 0 ||
-           m_pStageStats->m_player[p].m_iPersonalHighScoreIndex == 0)) {
+      if ((stage_stats_->player_[p].machine_high_score_index_ == 0 ||
+           stage_stats_->player_[p].personal_high_score_index_ == 0)) {
         bOneHasNewTopRecord = true;
       }
 
-      if (m_pStageStats->m_player[p].FullComboOfScore(TNS_W4)) {
+      if (stage_stats_->player_[p].FullComboOfScore(TNS_W4)) {
         bOneHasFullW4Combo = true;
       }
 
-      if (m_pStageStats->m_player[p].FullComboOfScore(TNS_W3)) {
+      if (stage_stats_->player_[p].FullComboOfScore(TNS_W3)) {
         bOneHasFullW3Combo = true;
       }
 
-      if (m_pStageStats->m_player[p].FullComboOfScore(TNS_W2)) {
+      if (stage_stats_->player_[p].FullComboOfScore(TNS_W2)) {
         bOneHasFullW2Combo = true;
       }
 
-      if (m_pStageStats->m_player[p].FullComboOfScore(TNS_W1)) {
+      if (stage_stats_->player_[p].FullComboOfScore(TNS_W1)) {
         bOneHasFullW1Combo = true;
       }
     }
@@ -720,10 +717,10 @@ void ScreenEvaluation::Init() {
   Grade best_grade = Grade_NoData;
   FOREACH_PlayerNumber(p) best_grade = std::min(best_grade, grade[p]);
 
-  if (m_pStageStats->m_EarnedExtraStage != EarnedExtraStage_No) {
+  if (stage_stats_->earned_extra_stage_ != EarnedExtraStage_No) {
     SOUND->PlayOnce(THEME->GetPathS(
-        m_sName,
-        "try " + EarnedExtraStageToString(m_pStageStats->m_EarnedExtraStage)));
+        name_,
+        "try " + EarnedExtraStageToString(stage_stats_->earned_extra_stage_)));
   } else if (
       bOneHasNewTopRecord && ANNOUNCER->HasSoundsFor("evaluation new record")) {
     SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation new record"));
@@ -739,7 +736,7 @@ void ScreenEvaluation::Init() {
       SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo(
           "evaluation final " + GradeToOldString(best_grade)));
     } else {
-      switch (GAMESTATE->m_PlayMode) {
+      switch (GAMESTATE->play_mode_) {
         case PLAY_MODE_BATTLE: {
           bool bWon = GAMESTATE->GetStageResult(
                           GAMESTATE->GetMasterPlayerNumber()) == RESULT_WIN;
@@ -769,18 +766,18 @@ bool ScreenEvaluation::Input(const InputEventPlus& input) {
     return false;
   }
 
-  if (input.MenuI == GAME_BUTTON_RESTART && input.type == IET_FIRST_PRESS &&
+  if (input.menu_i_ == GAME_BUTTON_RESTART && input.type_ == IET_FIRST_PRESS &&
       GAMESTATE->IsEventMode() && !GAMESTATE->IsCourseMode()) {
     return MenuRestart(input);
   }
 
-  if (input.GameI.IsValid()) {
+  if (input.game_i_.IsValid()) {
     if (CodeDetector::EnteredCode(
-            input.GameI.controller, CODE_SAVE_SCREENSHOT1) ||
+            input.game_i_.controller_, CODE_SAVE_SCREENSHOT1) ||
         CodeDetector::EnteredCode(
-            input.GameI.controller, CODE_SAVE_SCREENSHOT2)) {
-      PlayerNumber pn = input.pn;
-      if (!m_bSavedScreenshot[pn] &&  // only allow one screenshot
+            input.game_i_.controller_, CODE_SAVE_SCREENSHOT2)) {
+      PlayerNumber pn = input.pn_;
+      if (!saved_screenshot_[pn] &&  // only allow one screenshot
           PROFILEMAN->IsPersistentProfile(pn)) {
         if (PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn)) {
           MEMCARDMAN->MountCard(pn);
@@ -795,11 +792,11 @@ bool ScreenEvaluation::Input(const InputEventPlus& input) {
         if (!sFileName.empty()) {
           std::string sPath = sDir + sFileName;
 
-          const HighScore& hs = m_pStageStats->m_player[pn].m_HighScore;
+          const HighScore& hs = stage_stats_->player_[pn].high_score_;
           Screenshot screenshot;
-          screenshot.sFileName = sFileName;
-          screenshot.sMD5 = BinaryToHex(CRYPTMAN->GetMD5ForFile(sPath));
-          screenshot.highScore = hs;
+          screenshot.file_name_ = sFileName;
+          screenshot.md5_ = BinaryToHex(CRYPTMAN->GetMD5ForFile(sPath));
+          screenshot.high_score_ = hs;
           pProfile->AddScreenshot(screenshot);
         }
 
@@ -807,7 +804,7 @@ bool ScreenEvaluation::Input(const InputEventPlus& input) {
           MEMCARDMAN->UnmountCard(pn);
         }
 
-        m_bSavedScreenshot[pn] = true;
+        saved_screenshot_[pn] = true;
         return true;  // handled
       }
     }
@@ -833,7 +830,7 @@ bool ScreenEvaluation::MenuStart(const InputEventPlus& input) {
     return false;
   }
 
-  m_soundStart.Play(true);
+  sound_start_.Play(true);
 
   HandleMenuStart();
   return true;

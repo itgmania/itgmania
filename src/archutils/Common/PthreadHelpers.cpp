@@ -123,15 +123,15 @@ bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
     return false;
   }
 
-  ctx->pid = pid_t(ThreadID);
+  ctx->pid_ = pid_t(ThreadID);
 #if defined(CPU_X86_64)
-  ctx->ip = (void*)regs.rip;
-  ctx->bp = (void*)regs.rbp;
-  ctx->sp = (void*)regs.rsp;
+  ctx->ip_ = (void*)regs.rip;
+  ctx->bp_ = (void*)regs.rbp;
+  ctx->sp_ = (void*)regs.rsp;
 #else
-  ctx->ip = (void*)regs.eip;
-  ctx->bp = (void*)regs.ebp;
-  ctx->sp = (void*)regs.esp;
+  ctx->ip_ = (void*)regs.eip;
+  ctx->bp_ = (void*)regs.ebp;
+  ctx->sp_ = (void*)regs.esp;
 #endif
 #elif defined(CPU_AARCH64)
   // NYI

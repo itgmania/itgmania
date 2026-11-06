@@ -45,18 +45,18 @@
 // VDI symbol lookup:
 namespace VDDebugInfo {
 struct Context {
-  Context() { pRVAHeap = nullptr; }
-  bool Loaded() const { return pRVAHeap != nullptr; }
-  std::string sRawBlock;
+  Context() { rva_heap_ = nullptr; }
+  bool Loaded() const { return rva_heap_ != nullptr; }
+  std::string raw_block_;
 
-  const unsigned char* pRVAHeap;
-  uintptr_t nFirstRVA;
+  const unsigned char* rva_heap_;
+  uintptr_t first_rva_;
 
-  const char* pFuncNameHeap;
-  const uintptr_t (*pSegments)[2];
-  int nSegments;
-  char sFilename[1024];
-  std::string sError;
+  const char* func_name_heap_;
+  const uintptr_t (*p_segments_)[2];
+  int n_segments_;
+  char filename_[1024];
+  std::string error_;
 };
 
 static void GetVDIPath(char* buf, int bufsiz) {
@@ -71,25 +71,25 @@ static void GetVDIPath(char* buf, int bufsiz) {
 }
 
 bool VDDebugInfoInitFromMemory(Context* pctx) {
-  if (pctx->sRawBlock[0] == '\x1f' && pctx->sRawBlock[1] == '\x8b') {
+  if (pctx->raw_block_[0] == '\x1f' && pctx->raw_block_[1] == '\x8b') {
     std::string sBufOut;
     std::string sError;
-    if (!GunzipString(pctx->sRawBlock, sBufOut, sError)) {
-      pctx->sError =
+    if (!GunzipString(pctx->raw_block_, sBufOut, sError)) {
+      pctx->error_ =
           werr_ssprintf(GetLastError(), "VDI error: %s", sError.c_str());
       return false;
     }
 
-    pctx->sRawBlock = sBufOut;
+    pctx->raw_block_ = sBufOut;
   }
 
-  const unsigned char* src = (const unsigned char*)pctx->sRawBlock.data();
+  const unsigned char* src = (const unsigned char*)pctx->raw_block_.data();
 
-  pctx->pRVAHeap = nullptr;
+  pctx->rva_heap_ = nullptr;
 
   static const char* header = "symbolic debug information";
   if (memcmp(src, header, strlen(header))) {
-    pctx->sError = "header doesn't match";
+    pctx->error_ = "header doesn't match";
     return false;
   }
 
@@ -103,20 +103,20 @@ bool VDDebugInfoInitFromMemory(Context* pctx) {
       reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
   src += 2 * (sizeof(int) + sizeof(size_t));
 
-  pctx->pRVAHeap =
+  pctx->rva_heap_ =
       reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
-  pctx->nFirstRVA = *reinterpret_cast<const uintptr_t*>(src);
-  pctx->pFuncNameHeap = reinterpret_cast<const char*>(src + *pRVASize);
-  pctx->pSegments =
+  pctx->first_rva_ = *reinterpret_cast<const uintptr_t*>(src);
+  pctx->func_name_heap_ = reinterpret_cast<const char*>(src + *pRVASize);
+  pctx->p_segments_ =
       reinterpret_cast<const uintptr_t (*)[2]>(src + *pRVASize + *pFNamSize);
-  pctx->nSegments = *pSegCnt;
+  pctx->n_segments_ = *pSegCnt;
 
   return true;
 }
 
 void VDDebugInfoDeinit(Context* pctx) {
-  if (!pctx->sRawBlock.empty()) {
-    pctx->sRawBlock = std::string();
+  if (!pctx->raw_block_.empty()) {
+    pctx->raw_block_ = std::string();
   }
 }
 
@@ -125,16 +125,16 @@ bool VDDebugInfoInitFromFile(Context* pctx) {
     return true;
   }
 
-  pctx->sRawBlock = std::string();
-  pctx->pRVAHeap = nullptr;
-  GetVDIPath(pctx->sFilename, ARRAYLEN(pctx->sFilename));
-  pctx->sError = std::string();
+  pctx->raw_block_ = std::string();
+  pctx->rva_heap_ = nullptr;
+  GetVDIPath(pctx->filename_, ARRAYLEN(pctx->filename_));
+  pctx->error_ = std::string();
 
   HANDLE h = CreateFile(
-      pctx->sFilename, GENERIC_READ, 0, nullptr, OPEN_EXISTING,
+      pctx->filename_, GENERIC_READ, 0, nullptr, OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL, nullptr);
   if (h == INVALID_HANDLE_VALUE) {
-    pctx->sError = werr_ssprintf(GetLastError(), "CreateFile failed");
+    pctx->error_ = werr_ssprintf(GetLastError(), "CreateFile failed");
     return false;
   }
 
@@ -150,7 +150,7 @@ bool VDDebugInfoInitFromFile(Context* pctx) {
     DWORD dwActual;
     int iRet = ReadFile(h, buffer, dwFileSize, &dwActual, nullptr);
     CloseHandle(h);
-    pctx->sRawBlock = buffer;
+    pctx->raw_block_ = buffer;
     delete[] buffer;
 
     if (!iRet || dwActual != dwFileSize) {
@@ -167,9 +167,9 @@ bool VDDebugInfoInitFromFile(Context* pctx) {
 }
 
 static bool PointerIsInAnySegment(const Context* pctx, uintptr_t rva) {
-  for (int i = 0; i < pctx->nSegments; ++i) {
-    if (rva >= pctx->pSegments[i][0] &&
-        rva < pctx->pSegments[i][0] + pctx->pSegments[i][1]) {
+  for (int i = 0; i < pctx->n_segments_; ++i) {
+    if (rva >= pctx->p_segments_[i][0] &&
+        rva < pctx->p_segments_[i][0] + pctx->p_segments_[i][1]) {
       return true;
     }
   }
@@ -191,12 +191,12 @@ intptr_t VDDebugInfoLookupRVA(
     return -1;
   }
 
-  const unsigned char* pr = pctx->pRVAHeap;
-  const unsigned char* pr_limit = (const unsigned char*)pctx->pFuncNameHeap;
+  const unsigned char* pr = pctx->rva_heap_;
+  const unsigned char* pr_limit = (const unsigned char*)pctx->func_name_heap_;
   size_t idx = 0;
 
   // Linearly unpack RVA deltas and find lower_bound
-  rva -= pctx->nFirstRVA;
+  rva -= pctx->first_rva_;
 
   if (static_cast<intptr_t>(rva) < 0) {
     return -1;
@@ -226,7 +226,7 @@ intptr_t VDDebugInfoLookupRVA(
   }
 
   // Decompress name for RVA
-  const char* fn_name = GetNameFromHeap(pctx->pFuncNameHeap, idx);
+  const char* fn_name = GetNameFromHeap(pctx->func_name_heap_, idx);
 
   if (!*fn_name) {
     fn_name = "(special)";
@@ -376,8 +376,8 @@ void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
   if (iAddress >= 0) {
     wsprintf(
         buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]",
-        reinterpret_cast<uintptr_t>(ptr), Demangle(tmp), pctx->nFirstRVA,
-        reinterpret_cast<uintptr_t>(ptr) - pctx->nFirstRVA - iAddress,
+        reinterpret_cast<uintptr_t>(ptr), Demangle(tmp), pctx->first_rva_,
+        reinterpret_cast<uintptr_t>(ptr) - pctx->first_rva_ - iAddress,
         iAddress);
     return;
   }
@@ -426,8 +426,8 @@ VDDebugInfo::Context g_debugInfo;
 std::string ReportCallStack(const void* const* Backtrace) {
   if (!g_debugInfo.Loaded()) {
     return ssprintf(
-        "debug resource file '%s': %s.\n", g_debugInfo.sFilename,
-        g_debugInfo.sError.c_str());
+        "debug resource file '%s': %s.\n", g_debugInfo.filename_,
+        g_debugInfo.error_.c_str());
   }
   /*
   if( g_debugInfo.nBuildNumber != int(version_num) )
@@ -450,12 +450,12 @@ std::string ReportCallStack(const void* const* Backtrace) {
 }  // namespace
 
 struct CompleteCrashData {
-  CrashInfo m_CrashInfo;
-  std::string m_sInfo;
-  std::string m_sAdditionalLog;
-  std::string m_sCrashedThread;
-  std::vector<std::string> m_asRecent;
-  std::vector<std::string> m_asCheckpoints;
+  CrashInfo crash_info_;
+  std::string info_;
+  std::string additional_log_;
+  std::string crashed_thread_;
+  std::vector<std::string> recent_;
+  std::vector<std::string> checkpoints_;
 };
 
 static void MakeCrashReport(const CompleteCrashData& Data, std::string& sOut) {
@@ -465,38 +465,38 @@ static void MakeCrashReport(const CompleteCrashData& Data, std::string& sOut) {
       (std::string(PRODUCT_FAMILY) + product_version).c_str(),
       ::sm_version_git_hash, version_date, version_time);
 
-  sOut += ssprintf("Crash reason: %s\n", Data.m_CrashInfo.m_CrashReason);
+  sOut += ssprintf("Crash reason: %s\n", Data.crash_info_.crash_reason_);
   sOut += ssprintf("\n");
 
   // Dump thread stacks
   static char buf[1024 * 32];
-  sOut += ssprintf("%s\n", join("\n", Data.m_asCheckpoints).c_str());
+  sOut += ssprintf("%s\n", join("\n", Data.checkpoints_).c_str());
 
-  sOut += ReportCallStack(Data.m_CrashInfo.m_BacktracePointers);
+  sOut += ReportCallStack(Data.crash_info_.backtrace_pointers_);
   sOut += ssprintf("\n");
 
-  if (Data.m_CrashInfo.m_AlternateThreadBacktrace[0]) {
-    for (int i = 0; i < CrashInfo::MAX_BACKTRACE_THREADS; ++i) {
-      if (!Data.m_CrashInfo.m_AlternateThreadBacktrace[i][0]) {
+  if (Data.crash_info_.alternate_thread_backtrace_[0]) {
+    for (int i = 0; i < CrashInfo::kMaxBacktraceThreads; ++i) {
+      if (!Data.crash_info_.alternate_thread_backtrace_[i][0]) {
         continue;
       }
 
       sOut +=
-          ssprintf("Thread %s:\n", Data.m_CrashInfo.m_AlternateThreadName[i]);
+          ssprintf("Thread %s:\n", Data.crash_info_.alternate_thread_name_[i]);
       sOut += ssprintf("\n");
-      sOut += ReportCallStack(Data.m_CrashInfo.m_AlternateThreadBacktrace[i]);
+      sOut += ReportCallStack(Data.crash_info_.alternate_thread_backtrace_[i]);
       sOut += ssprintf("");
     }
   }
 
   sOut += ssprintf("Static log:\n");
-  sOut += ssprintf("%s", Data.m_sInfo.c_str());
-  sOut += ssprintf("%s", Data.m_sAdditionalLog.c_str());
+  sOut += ssprintf("%s", Data.info_.c_str());
+  sOut += ssprintf("%s", Data.additional_log_.c_str());
   sOut += ssprintf("\n");
 
   sOut += ssprintf("Partial log:\n");
-  for (size_t i = 0; i < Data.m_asRecent.size(); ++i) {
-    sOut += ssprintf("%s\n", Data.m_asRecent[i].c_str());
+  for (size_t i = 0; i < Data.recent_.size(); ++i) {
+    sOut += ssprintf("%s\n", Data.recent_[i].c_str());
   }
   sOut += ssprintf("\n");
 
@@ -529,17 +529,17 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
   }
 
   // 1. Read the CrashData.
-  if (!ReadFromParent(iFD, &Data.m_CrashInfo, sizeof(Data.m_CrashInfo))) {
+  if (!ReadFromParent(iFD, &Data.crash_info_, sizeof(Data.crash_info_))) {
     return false;
   }
 
   // 2. Read info.
-  if (!ReadStringFromParent(iFD, Data.m_sInfo)) {
+  if (!ReadStringFromParent(iFD, Data.info_)) {
     return false;
   }
 
   // 3. Read AdditionalLog.
-  if (!ReadStringFromParent(iFD, Data.m_sAdditionalLog)) {
+  if (!ReadStringFromParent(iFD, Data.additional_log_)) {
     return false;
   }
 
@@ -553,7 +553,7 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
     if (!ReadStringFromParent(iFD, recentLog)) {
       return false;
     }
-    Data.m_asRecent.push_back(recentLog);
+    Data.recent_.push_back(recentLog);
   }
 
   // 5. Read CHECKPOINTs.
@@ -561,10 +561,10 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
   if (!ReadStringFromParent(iFD, checkpoints)) {
     return false;
   }
-  split(checkpoints, "$$", Data.m_asCheckpoints);
+  split(checkpoints, "$$", Data.checkpoints_);
 
   // 6. Read the crashed thread's name.
-  if (!ReadStringFromParent(iFD, Data.m_sCrashedThread)) {
+  if (!ReadStringFromParent(iFD, Data.crashed_thread_)) {
     return false;
   }
 

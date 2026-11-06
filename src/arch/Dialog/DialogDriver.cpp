@@ -8,15 +8,15 @@
 #include "RageUtil.h"
 #include "global.h"
 
-std::map<istring, CreateDialogDriverFn>* RegisterDialogDriver::g_pRegistrees;
+std::map<istring, CreateDialogDriverFn>* RegisterDialogDriver::registrees_;
 RegisterDialogDriver::RegisterDialogDriver(
     const istring& sName, CreateDialogDriverFn pfn) {
-  if (g_pRegistrees == nullptr) {
-    g_pRegistrees = new std::map<istring, CreateDialogDriverFn>;
+  if (registrees_ == nullptr) {
+    registrees_ = new std::map<istring, CreateDialogDriverFn>;
   }
 
-  ASSERT(g_pRegistrees->find(sName) == g_pRegistrees->end());
-  (*g_pRegistrees)[sName] = pfn;
+  ASSERT(registrees_->find(sName) == registrees_->end());
+  (*registrees_)[sName] = pfn;
 }
 
 REGISTER_DIALOG_DRIVER_CLASS(Null);
@@ -30,9 +30,9 @@ DialogDriver* DialogDriver::Create() {
 
   for (const std::string& Driver : asDriversToTry) {
     std::map<istring, CreateDialogDriverFn>::const_iterator iter =
-        RegisterDialogDriver::g_pRegistrees->find(istring(Driver.c_str()));
+        RegisterDialogDriver::registrees_->find(istring(Driver.c_str()));
 
-    if (iter == RegisterDialogDriver::g_pRegistrees->end()) {
+    if (iter == RegisterDialogDriver::registrees_->end()) {
       continue;
     }
 

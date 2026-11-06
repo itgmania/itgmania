@@ -21,22 +21,18 @@ extern const std::string SBT_CrossFade;
 struct BackgroundDef {
   bool operator<(const BackgroundDef& other) const;
   bool operator==(const BackgroundDef& other) const;
-  bool IsEmpty() const { return m_sFile1.empty() && m_sFile2.empty(); }
-  std::string m_sEffect;  // "" == automatically choose
-  std::string m_sFile1;   // must not be ""
-  std::string m_sFile2;   // may be ""
-  std::string m_sColor1;  // "" == use default
-  std::string m_sColor2;  // "" == use default
+  bool IsEmpty() const { return file1_.empty() && file2_.empty(); }
+  std::string effect_;  // "" == automatically choose
+  std::string file1_;   // must not be ""
+  std::string file2_;   // may be ""
+  std::string color1_;  // "" == use default
+  std::string color2_;  // "" == use default
 
   XNode* CreateNode() const;
 
   /** @brief Set up the BackgroundDef with default values. */
   BackgroundDef()
-      : m_sEffect(""),
-        m_sFile1(""),
-        m_sFile2(""),
-        m_sColor1(""),
-        m_sColor2("") {}
+      : effect_(""), file1_(""), file2_(""), color1_(""), color2_("") {}
 
   /**
    * @brief Set up the BackgroundDef with some defined values.
@@ -44,26 +40,21 @@ struct BackgroundDef {
    * @param f1 the primary filename for the definition.
    * @param f2 the secondary filename (optional). */
   BackgroundDef(std::string effect, std::string f1, std::string f2)
-      : m_sEffect(effect),
-        m_sFile1(f1),
-        m_sFile2(f2),
-        m_sColor1(""),
-        m_sColor2("") {}
+      : effect_(effect), file1_(f1), file2_(f2), color1_(""), color2_("") {}
 };
 
 struct BackgroundChange {
-  BackgroundChange()
-      : m_def(), m_fStartBeat(-1), m_fRate(1), m_sTransition("") {}
+  BackgroundChange() : def_(), start_beat_(-1), rate_(1), transition_("") {}
 
   BackgroundChange(
       float s, std::string f1, std::string f2 = std::string(), float r = 1.f,
       std::string e = SBE_Centered, std::string t = std::string())
-      : m_def(e, f1, f2), m_fStartBeat(s), m_fRate(r), m_sTransition(t) {}
+      : def_(e, f1, f2), start_beat_(s), rate_(r), transition_(t) {}
 
-  BackgroundDef m_def;
-  float m_fStartBeat;
-  float m_fRate;
-  std::string m_sTransition;
+  BackgroundDef def_;
+  float start_beat_;
+  float rate_;
+  std::string transition_;
 
   std::string GetTextDescription() const;
 

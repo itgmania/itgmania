@@ -15,7 +15,7 @@
 
 class CocoaEventDispatcher {
  public:
-  static CocoaEventDispatcher sharedDispatcher;
+  static CocoaEventDispatcher shared_dispatcher_;
 
   CocoaEventDispatcher();
   CocoaEventDispatcher(const CocoaEventDispatcher&) = delete;
@@ -27,13 +27,13 @@ class CocoaEventDispatcher {
 
  private:
   struct Responder {
-    unsigned ID;
-    std::function<void(EVENT_TYPE)> Function;
+    unsigned id_;
+    std::function<void(EVENT_TYPE)> function_;
   };
 
-  RageMutex m_Mutex;
-  std::vector<Responder> m_Responders;
-  unsigned m_NextResponderID;
+  RageMutex mutex_;
+  std::vector<Responder> responders_;
+  unsigned next_responder_id_;
 };
 
 #endif  // COCOA_EVENT_DISPATCHER_H

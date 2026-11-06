@@ -14,14 +14,14 @@
 REGISTER_ACTOR_CLASS(RollingNumbers);
 
 RollingNumbers::RollingNumbers() {
-  m_fCurrentNumber = 0;
-  m_fTargetNumber = 0;
-  m_fScoreVelocity = 0;
-  m_metrics_loaded = false;
+  current_number_ = 0;
+  target_number_ = 0;
+  score_velocity_ = 0;
+  metrics_loaded_ = false;
 }
 
 void RollingNumbers::Load(const std::string& sMetricsGroup) {
-  m_metrics_loaded = true;
+  metrics_loaded_ = true;
   TEXT_FORMAT.Load(sMetricsGroup, "TextFormat");
   APPROACH_SECONDS.Load(sMetricsGroup, "ApproachSeconds");
   COMMIFY.Load(sMetricsGroup, "Commify");
@@ -34,16 +34,16 @@ void RollingNumbers::DrawPart(
     const RageColor* diffuse, const RageColor& stroke, float crop_left,
     float crop_right) {
   for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
-    m_pTempState->diffuse[i] = diffuse[i];
+    temp_state_->diffuse_[i] = diffuse[i];
   }
   SetCurrStrokeColor(stroke);
-  m_pTempState->crop.left = crop_left;
-  m_pTempState->crop.right = crop_right;
+  temp_state_->crop_.left_ = crop_left;
+  temp_state_->crop_.right_ = crop_right;
   BitmapText::DrawPrimitives();
 }
 
 void RollingNumbers::DrawPrimitives() noexcept {
-  if (!m_metrics_loaded) {
+  if (!metrics_loaded_) {
     return;
   }
   RageColor diffuse_orig[NUM_DIFFUSE_COLORS];
@@ -51,11 +51,11 @@ void RollingNumbers::DrawPrimitives() noexcept {
   RageColor stroke_orig = GetCurrStrokeColor();
   RageColor stroke_temp = stroke_orig * LEADING_ZERO_MULTIPLY_COLOR;
   for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
-    diffuse_orig[i] = m_pTempState->diffuse[i];
-    diffuse_temp[i] = m_pTempState->diffuse[i] * LEADING_ZERO_MULTIPLY_COLOR;
+    diffuse_orig[i] = temp_state_->diffuse_[i];
+    diffuse_temp[i] = temp_state_->diffuse_[i] * LEADING_ZERO_MULTIPLY_COLOR;
   }
-  float original_crop_left = m_pTempState->crop.left;
-  float original_crop_right = m_pTempState->crop.right;
+  float original_crop_left = temp_state_->crop_.left_;
+  float original_crop_right = temp_state_->crop_.right_;
 
   std::string s = this->GetText();
   int i;
@@ -84,15 +84,15 @@ void RollingNumbers::DrawPrimitives() noexcept {
       diffuse_orig, stroke_orig, std::max(f, original_crop_left),
       std::max(0.0f, original_crop_right));
 
-  m_pTempState->crop.left = original_crop_left;
-  m_pTempState->crop.right = original_crop_right;
+  temp_state_->crop_.left_ = original_crop_left;
+  temp_state_->crop_.right_ = original_crop_right;
 }
 
 void RollingNumbers::Update(float fDeltaTime) {
-  if (m_fCurrentNumber != m_fTargetNumber) {
+  if (current_number_ != target_number_) {
     fapproach(
-        m_fCurrentNumber, m_fTargetNumber,
-        std::abs(m_fScoreVelocity) * fDeltaTime);
+        current_number_, target_number_,
+        std::abs(score_velocity_) * fDeltaTime);
     UpdateText();
   }
 
@@ -100,29 +100,29 @@ void RollingNumbers::Update(float fDeltaTime) {
 }
 
 void RollingNumbers::SetTargetNumber(float fTargetNumber) {
-  if (!m_metrics_loaded) {
+  if (!metrics_loaded_) {
     LuaHelpers::ReportScriptError(
         "You must use Load to load the metrics for a RollingNumbers actor "
         "before doing anything else.");
     return;
   }
-  if (fTargetNumber == m_fTargetNumber) {  // no change
+  if (fTargetNumber == target_number_) {  // no change
     return;
   }
-  m_fTargetNumber = fTargetNumber;
+  target_number_ = fTargetNumber;
   float approach_secs = APPROACH_SECONDS.GetValue();
   if (approach_secs > 0) {
-    m_fScoreVelocity = (m_fTargetNumber - m_fCurrentNumber) / approach_secs;
+    score_velocity_ = (target_number_ - current_number_) / approach_secs;
   } else {
-    m_fScoreVelocity = (m_fTargetNumber - m_fCurrentNumber);
+    score_velocity_ = (target_number_ - current_number_);
   }
 }
 
 void RollingNumbers::UpdateText() {
-  if (!m_metrics_loaded) {
+  if (!metrics_loaded_) {
     return;
   }
-  std::string s = ssprintf(TEXT_FORMAT.GetValue().c_str(), m_fCurrentNumber);
+  std::string s = ssprintf(TEXT_FORMAT.GetValue().c_str(), current_number_);
   if (COMMIFY) {
     s = Commify(s);
   }

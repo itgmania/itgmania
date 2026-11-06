@@ -62,13 +62,13 @@ void ExpectAttacksEqual(
   ASSERT_EQ(expectedStrings, actualStrings);
   ASSERT_EQ(expected.size(), actual.size());
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i].level, actual[i].level);
-    EXPECT_FLOAT_EQ(expected[i].fStartSecond, actual[i].fStartSecond);
-    EXPECT_FLOAT_EQ(expected[i].fSecsRemaining, actual[i].fSecsRemaining);
-    EXPECT_EQ(expected[i].sModifiers, actual[i].sModifiers);
-    EXPECT_EQ(expected[i].bOn, actual[i].bOn);
-    EXPECT_EQ(expected[i].bGlobal, actual[i].bGlobal);
-    EXPECT_EQ(expected[i].bShowInAttackList, actual[i].bShowInAttackList);
+    EXPECT_EQ(expected[i].level_, actual[i].level_);
+    EXPECT_FLOAT_EQ(expected[i].start_second_, actual[i].start_second_);
+    EXPECT_FLOAT_EQ(expected[i].secs_remaining_, actual[i].secs_remaining_);
+    EXPECT_EQ(expected[i].modifiers_, actual[i].modifiers_);
+    EXPECT_EQ(expected[i].on_, actual[i].on_);
+    EXPECT_EQ(expected[i].global_, actual[i].global_);
+    EXPECT_EQ(expected[i].show_in_attack_list_, actual[i].show_in_attack_list_);
   }
 }
 
@@ -77,19 +77,19 @@ void ExpectBackgroundChangesEqual(
     const std::vector<BackgroundChange>& actual) {
   ASSERT_EQ(expected.size(), actual.size());
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i].m_def.m_sEffect, actual[i].m_def.m_sEffect);
-    EXPECT_EQ(expected[i].m_def.m_sFile1, actual[i].m_def.m_sFile1);
-    EXPECT_EQ(expected[i].m_def.m_sFile2, actual[i].m_def.m_sFile2);
-    EXPECT_EQ(expected[i].m_def.m_sColor1, actual[i].m_def.m_sColor1);
-    EXPECT_EQ(expected[i].m_def.m_sColor2, actual[i].m_def.m_sColor2);
-    EXPECT_FLOAT_EQ(expected[i].m_fStartBeat, actual[i].m_fStartBeat);
-    EXPECT_FLOAT_EQ(expected[i].m_fRate, actual[i].m_fRate);
-    EXPECT_EQ(expected[i].m_sTransition, actual[i].m_sTransition);
+    EXPECT_EQ(expected[i].def_.effect_, actual[i].def_.effect_);
+    EXPECT_EQ(expected[i].def_.file1_, actual[i].def_.file1_);
+    EXPECT_EQ(expected[i].def_.file2_, actual[i].def_.file2_);
+    EXPECT_EQ(expected[i].def_.color1_, actual[i].def_.color1_);
+    EXPECT_EQ(expected[i].def_.color2_, actual[i].def_.color2_);
+    EXPECT_FLOAT_EQ(expected[i].start_beat_, actual[i].start_beat_);
+    EXPECT_FLOAT_EQ(expected[i].rate_, actual[i].rate_);
+    EXPECT_EQ(expected[i].transition_, actual[i].transition_);
   }
 }
 
 void AddTimingSegments(TimingData& timing) {
-  timing.m_fBeat0OffsetInSeconds = 1.25f;
+  timing.beat0_offset_in_seconds_ = 1.25f;
   timing.AddSegment(BPMSegment(0, 120.0f));
   timing.AddSegment(BPMSegment(BeatToNoteRow(16.0f), 93.5f));
   timing.AddSegment(StopSegment(BeatToNoteRow(8.0f), 0.25f));
@@ -109,8 +109,8 @@ Steps* MakeBasicSteps(
     Song& song, StepsType type, Difficulty difficulty,
     const std::string& chartName) {
   Steps* steps = song.CreateSteps();
-  steps->m_StepsType = type;
-  steps->m_StepsTypeStr = "dance-single";
+  steps->steps_type_ = type;
+  steps->steps_type_str_ = "dance-single";
   steps->SetChartName(chartName);
   steps->SetDescription("Description");
   steps->SetChartStyle("Style");
@@ -151,17 +151,17 @@ Steps* MakeFullSteps(Song& song) {
   steps->SetPeakNps(peakNps);
 
   std::vector<StreamBreakdown> breakdowns(notes.size());
-  breakdowns[0].texts = {"first-a", "first-b", "first-c"};
-  breakdowns[0].totalStreamMeasures = 7;
-  breakdowns[0].totalBreakMeasures = 3;
-  breakdowns[1].texts = {"second-a", "second-b", "second-c"};
-  breakdowns[1].totalStreamMeasures = 4;
-  breakdowns[1].totalBreakMeasures = 6;
+  breakdowns[0].texts_ = {"first-a", "first-b", "first-c"};
+  breakdowns[0].total_stream_measures_ = 7;
+  breakdowns[0].total_break_measures_ = 3;
+  breakdowns[1].texts_ = {"second-a", "second-b", "second-c"};
+  breakdowns[1].total_stream_measures_ = 4;
+  breakdowns[1].total_break_measures_ = 6;
   steps->SetStreamBreakdown(breakdowns);
 
   std::vector<NoteAnnotationCache> annotations(2);
-  annotations[0].compressed = "annotation-one";
-  annotations[1].compressed = "";
+  annotations[0].compressed_ = "annotation-one";
+  annotations[1].compressed_ = "";
   steps->SetNoteAnnotations(annotations);
 
   steps->SetGrooveStatsHash("groove-hash");
@@ -171,87 +171,87 @@ Steps* MakeFullSteps(Song& song) {
   steps->SetMaxBPM(202.0f);
 
   AddAttacks(steps->GetStepsAttacks(), steps->GetStepsAttackStrings());
-  AddTimingSegments(steps->m_Timing);
+  AddTimingSegments(steps->timing_);
   return steps;
 }
 
 void PopulateFullSong(Song& song) {
-  song.m_sSongFileName = "song.ssc";
-  song.m_sMainTitle = "Main Title";
-  song.m_sSubTitle = "Sub Title";
-  song.m_sArtist = "Artist";
-  song.m_sMainTitleTranslit = "Main Title Translit";
-  song.m_sSubTitleTranslit = "Sub Title Translit";
-  song.m_sArtistTranslit = "Artist Translit";
-  song.m_sGenre = "Genre";
-  song.m_sOrigin = "Origin";
-  song.m_sCredit = std::string("Cred\0it", 7);
-  song.m_sBannerFile = "banner.png";
-  song.m_sBackgroundFile = "background.png";
-  song.m_sPreviewVidFile = "preview.mp4";
-  song.m_sJacketFile = "jacket.png";
-  song.m_sCDFile = "cd.png";
-  song.m_sDiscFile = "disc.png";
-  song.m_sLyricsFile = "lyrics.lrc";
-  song.m_sCDTitleFile = "cdtitle.png";
-  song.m_sMusicFile = "music.ogg";
-  song.m_PreviewFile = "preview.ogg";
+  song.song_file_name_ = "song.ssc";
+  song.main_title_ = "Main Title";
+  song.sub_title_ = "Sub Title";
+  song.artist_ = "Artist";
+  song.main_title_translit_ = "Main Title Translit";
+  song.sub_title_translit_ = "Sub Title Translit";
+  song.artist_translit_ = "Artist Translit";
+  song.genre_ = "Genre";
+  song.origin_ = "Origin";
+  song.credit_ = std::string("Cred\0it", 7);
+  song.banner_file_ = "banner.png";
+  song.background_file_ = "background.png";
+  song.preview_vid_file_ = "preview.mp4";
+  song.jacket_file_ = "jacket.png";
+  song.cd_file_ = "cd.png";
+  song.disc_file_ = "disc.png";
+  song.lyrics_file_ = "lyrics.lrc";
+  song.cd_title_file_ = "cdtitle.png";
+  song.music_file_ = "music.ogg";
+  song.preview_file_ = "preview.ogg";
 
-  song.m_fMusicLengthSeconds = 123.5f;
-  song.m_fMusicSampleStartSeconds = 12.25f;
-  song.m_fMusicSampleLengthSeconds = 8.75f;
-  song.m_fSpecifiedBPMMin = 100.0f;
-  song.m_fSpecifiedBPMMax = 200.0f;
-  song.m_DisplayBPMType = DISPLAY_BPM_SPECIFIED;
-  song.m_SelectionDisplay = Song::SHOW_NEVER;
-  song.m_bHasMusic = true;
-  song.m_bHasBanner = true;
+  song.music_length_seconds_ = 123.5f;
+  song.music_sample_start_seconds_ = 12.25f;
+  song.music_sample_length_seconds_ = 8.75f;
+  song.specified_bpm_min_ = 100.0f;
+  song.specified_bpm_max_ = 200.0f;
+  song.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
+  song.selection_display_ = Song::SHOW_NEVER;
+  song.has_music_ = true;
+  song.has_banner_ = true;
   song.SetFirstSecondNoOffset(2.0f);
   song.SetLastSecondNoOffset(42.0f);
   song.SetSpecifiedLastSecond(45.0f);
 
-  song.m_vsKeysoundFile = {"one.wav", "", "three.wav"};
-  AddAttacks(song.m_Attacks, song.m_sAttackString);
-  AddTimingSegments(song.m_SongTiming);
+  song.keysound_file_ = {"one.wav", "", "three.wav"};
+  AddAttacks(song.attacks_, song.attack_string_);
+  AddTimingSegments(song.song_timing_);
 
   BackgroundChange bg1;
-  bg1.m_def.m_sEffect = "effect1";
-  bg1.m_def.m_sFile1 = "bg1.png";
-  bg1.m_def.m_sFile2 = "bg1b.png";
-  bg1.m_def.m_sColor1 = "0,1,0,1";
-  bg1.m_def.m_sColor2 = "0,0,1,1";
-  bg1.m_fStartBeat = 1.5f;
-  bg1.m_fRate = 1.25f;
-  bg1.m_sTransition = "transition1";
+  bg1.def_.effect_ = "effect1";
+  bg1.def_.file1_ = "bg1.png";
+  bg1.def_.file2_ = "bg1b.png";
+  bg1.def_.color1_ = "0,1,0,1";
+  bg1.def_.color2_ = "0,0,1,1";
+  bg1.start_beat_ = 1.5f;
+  bg1.rate_ = 1.25f;
+  bg1.transition_ = "transition1";
   song.AddBackgroundChange(BACKGROUND_LAYER_1, bg1);
 
   BackgroundChange bg2;
-  bg2.m_def.m_sEffect = "effect2";
-  bg2.m_def.m_sFile1 = "bg2.png";
-  bg2.m_def.m_sFile2 = "";
-  bg2.m_def.m_sColor1 = "";
-  bg2.m_def.m_sColor2 = "1,1,1,1";
-  bg2.m_fStartBeat = 2.5f;
-  bg2.m_fRate = 0.75f;
-  bg2.m_sTransition = "";
+  bg2.def_.effect_ = "effect2";
+  bg2.def_.file1_ = "bg2.png";
+  bg2.def_.file2_ = "";
+  bg2.def_.color1_ = "";
+  bg2.def_.color2_ = "1,1,1,1";
+  bg2.start_beat_ = 2.5f;
+  bg2.rate_ = 0.75f;
+  bg2.transition_ = "";
   song.AddBackgroundChange(BACKGROUND_LAYER_2, bg2);
 
   BackgroundChange foreground;
-  foreground.m_def.m_sEffect = "foreground effect";
-  foreground.m_def.m_sFile1 = "foreground.png";
-  foreground.m_def.m_sFile2 = "foreground2.png";
-  foreground.m_def.m_sColor1 = "1,0,0,1";
-  foreground.m_def.m_sColor2 = "";
-  foreground.m_fStartBeat = 3.5f;
-  foreground.m_fRate = 1.5f;
-  foreground.m_sTransition = "foreground transition";
+  foreground.def_.effect_ = "foreground effect";
+  foreground.def_.file1_ = "foreground.png";
+  foreground.def_.file2_ = "foreground2.png";
+  foreground.def_.color1_ = "1,0,0,1";
+  foreground.def_.color2_ = "";
+  foreground.start_beat_ = 3.5f;
+  foreground.rate_ = 1.5f;
+  foreground.transition_ = "foreground transition";
   song.AddForegroundChange(foreground);
 
   song.AddSteps(MakeFullSteps(song));
 
   Steps* unknown = MakeBasicSteps(
       song, StepsType_Invalid, Difficulty_Medium, "Unknown style");
-  unknown->m_StepsTypeStr = "future-single";
+  unknown->steps_type_str_ = "future-single";
   unknown->SetDescription("Unknown description");
   unknown->SetChartStyle("Unknown style");
   unknown->SetMeter(7);
@@ -260,8 +260,8 @@ void PopulateFullSong(Song& song) {
 }
 
 void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
-  EXPECT_EQ(expected.m_StepsType, actual.m_StepsType);
-  EXPECT_EQ(expected.m_StepsTypeStr, actual.m_StepsTypeStr);
+  EXPECT_EQ(expected.steps_type_, actual.steps_type_);
+  EXPECT_EQ(expected.steps_type_str_, actual.steps_type_str_);
   EXPECT_EQ(expected.GetChartName(), actual.GetChartName());
   EXPECT_EQ(expected.GetDescription(), actual.GetDescription());
   EXPECT_EQ(expected.GetChartStyle(), actual.GetChartStyle());
@@ -286,13 +286,13 @@ void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
       actual.GetAllStreamBreakdowns();
   ASSERT_EQ(expectedBreakdowns.size(), actualBreakdowns.size());
   for (size_t i = 0; i < expectedBreakdowns.size(); ++i) {
-    EXPECT_EQ(expectedBreakdowns[i].texts, actualBreakdowns[i].texts);
+    EXPECT_EQ(expectedBreakdowns[i].texts_, actualBreakdowns[i].texts_);
     EXPECT_EQ(
-        expectedBreakdowns[i].totalStreamMeasures,
-        actualBreakdowns[i].totalStreamMeasures);
+        expectedBreakdowns[i].total_stream_measures_,
+        actualBreakdowns[i].total_stream_measures_);
     EXPECT_EQ(
-        expectedBreakdowns[i].totalBreakMeasures,
-        actualBreakdowns[i].totalBreakMeasures);
+        expectedBreakdowns[i].total_break_measures_,
+        actualBreakdowns[i].total_break_measures_);
   }
 
   const std::vector<NoteAnnotationCache>& expectedAnnotations =
@@ -316,42 +316,43 @@ void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
   ExpectAttacksEqual(
       expected.GetStepsAttacks(), expected.GetStepsAttackStrings(),
       actual.GetStepsAttacks(), actual.GetStepsAttackStrings());
-  EXPECT_EQ(expected.m_Timing, actual.m_Timing);
+  EXPECT_EQ(expected.timing_, actual.timing_);
 }
 
 void ExpectSongsEqual(const Song& expected, const Song& actual) {
-  EXPECT_EQ(expected.m_sMainTitle, actual.m_sMainTitle);
-  EXPECT_EQ(expected.m_sSubTitle, actual.m_sSubTitle);
-  EXPECT_EQ(expected.m_sArtist, actual.m_sArtist);
-  EXPECT_EQ(expected.m_sMainTitleTranslit, actual.m_sMainTitleTranslit);
-  EXPECT_EQ(expected.m_sSubTitleTranslit, actual.m_sSubTitleTranslit);
-  EXPECT_EQ(expected.m_sArtistTranslit, actual.m_sArtistTranslit);
-  EXPECT_EQ(expected.m_sGenre, actual.m_sGenre);
-  EXPECT_EQ(expected.m_sOrigin, actual.m_sOrigin);
-  EXPECT_EQ(expected.m_sCredit, actual.m_sCredit);
-  EXPECT_EQ(expected.m_sBannerFile, actual.m_sBannerFile);
-  EXPECT_EQ(expected.m_sBackgroundFile, actual.m_sBackgroundFile);
-  EXPECT_EQ(expected.m_sPreviewVidFile, actual.m_sPreviewVidFile);
-  EXPECT_EQ(expected.m_sJacketFile, actual.m_sJacketFile);
-  EXPECT_EQ(expected.m_sCDFile, actual.m_sCDFile);
-  EXPECT_EQ(expected.m_sDiscFile, actual.m_sDiscFile);
-  EXPECT_EQ(expected.m_sLyricsFile, actual.m_sLyricsFile);
-  EXPECT_EQ(expected.m_sCDTitleFile, actual.m_sCDTitleFile);
-  EXPECT_EQ(expected.m_sMusicFile, actual.m_sMusicFile);
-  EXPECT_EQ(expected.m_PreviewFile, actual.m_PreviewFile);
-  EXPECT_EQ(expected.m_sSongFileName, actual.m_sSongFileName);
+  EXPECT_EQ(expected.main_title_, actual.main_title_);
+  EXPECT_EQ(expected.sub_title_, actual.sub_title_);
+  EXPECT_EQ(expected.artist_, actual.artist_);
+  EXPECT_EQ(expected.main_title_translit_, actual.main_title_translit_);
+  EXPECT_EQ(expected.sub_title_translit_, actual.sub_title_translit_);
+  EXPECT_EQ(expected.artist_translit_, actual.artist_translit_);
+  EXPECT_EQ(expected.genre_, actual.genre_);
+  EXPECT_EQ(expected.origin_, actual.origin_);
+  EXPECT_EQ(expected.credit_, actual.credit_);
+  EXPECT_EQ(expected.banner_file_, actual.banner_file_);
+  EXPECT_EQ(expected.background_file_, actual.background_file_);
+  EXPECT_EQ(expected.preview_vid_file_, actual.preview_vid_file_);
+  EXPECT_EQ(expected.jacket_file_, actual.jacket_file_);
+  EXPECT_EQ(expected.cd_file_, actual.cd_file_);
+  EXPECT_EQ(expected.disc_file_, actual.disc_file_);
+  EXPECT_EQ(expected.lyrics_file_, actual.lyrics_file_);
+  EXPECT_EQ(expected.cd_title_file_, actual.cd_title_file_);
+  EXPECT_EQ(expected.music_file_, actual.music_file_);
+  EXPECT_EQ(expected.preview_file_, actual.preview_file_);
+  EXPECT_EQ(expected.song_file_name_, actual.song_file_name_);
 
-  EXPECT_FLOAT_EQ(expected.m_fMusicLengthSeconds, actual.m_fMusicLengthSeconds);
+  EXPECT_FLOAT_EQ(expected.music_length_seconds_, actual.music_length_seconds_);
   EXPECT_FLOAT_EQ(
-      expected.m_fMusicSampleStartSeconds, actual.m_fMusicSampleStartSeconds);
+      expected.music_sample_start_seconds_, actual.music_sample_start_seconds_);
   EXPECT_FLOAT_EQ(
-      expected.m_fMusicSampleLengthSeconds, actual.m_fMusicSampleLengthSeconds);
-  EXPECT_FLOAT_EQ(expected.m_fSpecifiedBPMMin, actual.m_fSpecifiedBPMMin);
-  EXPECT_FLOAT_EQ(expected.m_fSpecifiedBPMMax, actual.m_fSpecifiedBPMMax);
-  EXPECT_EQ(expected.m_DisplayBPMType, actual.m_DisplayBPMType);
-  EXPECT_EQ(expected.m_SelectionDisplay, actual.m_SelectionDisplay);
-  EXPECT_EQ(expected.m_bHasMusic, actual.m_bHasMusic);
-  EXPECT_EQ(expected.m_bHasBanner, actual.m_bHasBanner);
+      expected.music_sample_length_seconds_,
+      actual.music_sample_length_seconds_);
+  EXPECT_FLOAT_EQ(expected.specified_bpm_min_, actual.specified_bpm_min_);
+  EXPECT_FLOAT_EQ(expected.specified_bpm_max_, actual.specified_bpm_max_);
+  EXPECT_EQ(expected.display_bpm_type_, actual.display_bpm_type_);
+  EXPECT_EQ(expected.selection_display_, actual.selection_display_);
+  EXPECT_EQ(expected.has_music_, actual.has_music_);
+  EXPECT_EQ(expected.has_banner_, actual.has_banner_);
   EXPECT_FLOAT_EQ(
       expected.GetFirstSecondNoOffset(), actual.GetFirstSecondNoOffset());
   EXPECT_FLOAT_EQ(
@@ -359,11 +360,11 @@ void ExpectSongsEqual(const Song& expected, const Song& actual) {
   EXPECT_FLOAT_EQ(
       expected.GetSpecifiedLastSecond(), actual.GetSpecifiedLastSecond());
 
-  EXPECT_EQ(expected.m_vsKeysoundFile, actual.m_vsKeysoundFile);
+  EXPECT_EQ(expected.keysound_file_, actual.keysound_file_);
   ExpectAttacksEqual(
-      expected.m_Attacks, expected.m_sAttackString, actual.m_Attacks,
-      actual.m_sAttackString);
-  EXPECT_EQ(expected.m_SongTiming, actual.m_SongTiming);
+      expected.attacks_, expected.attack_string_, actual.attacks_,
+      actual.attack_string_);
+  EXPECT_EQ(expected.song_timing_, actual.song_timing_);
 
   for (int layer = 0; layer < NUM_BackgroundLayer; ++layer) {
     ExpectBackgroundChangesEqual(
@@ -410,7 +411,7 @@ TEST_F(SongCacheBinaryTest, FullRoundTrip) {
 
   Song actual;
   ASSERT_TRUE(SongCacheBinary::Read(actual, path, false));
-  EXPECT_EQ(actual.m_SongTiming.m_sFile, path);
+  EXPECT_EQ(actual.song_timing_.file_, path);
   ExpectSongsEqual(expected, actual);
 }
 

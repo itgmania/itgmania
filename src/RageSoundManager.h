@@ -31,7 +31,7 @@ class RageSoundManager {
 
   void SetMixVolume();
   float GetVolumeOfNonCriticalSounds() const {
-    return m_fVolumeOfNonCriticalSounds;
+    return volume_of_non_critical_sounds_;
   }
   void SetVolumeOfNonCriticalSounds(float fVolumeOfNonCriticalSounds);
 
@@ -50,12 +50,12 @@ class RageSoundManager {
       const std::string& sPath, RageSoundReader_Preload* pSound);
 
  private:
-  std::map<std::string, RageSoundReader_Preload*> m_mapPreloadedSounds;
+  std::map<std::string, RageSoundReader_Preload*> map_preloaded_sounds_;
 
-  RageSoundDriver* m_pDriver;
+  RageSoundDriver* driver_;
 
   /* Prefs: */
-  float m_fVolumeOfNonCriticalSounds;
+  float volume_of_non_critical_sounds_;
   // Swallow up warnings. If they must be used, define them.
   RageSoundManager& operator=(const RageSoundManager& rhs);
   RageSoundManager(const RageSoundManager& rhs);

@@ -45,36 +45,36 @@ LuaXType(PadSensor);
 
 struct ButtonState {
   ButtonState();
-  bool m_BeingHeld;          // actual current state
-  bool m_bLastReportedHeld;  // last state reported by Update()
-  std::string m_sComment;
-  float m_fSecsHeld;
-  DeviceInput m_DeviceInput;
+  bool being_held_;          // actual current state
+  bool last_reported_held_;  // last state reported by Update()
+  std::string comment_;
+  float secs_held_;
+  DeviceInput device_input_;
 
   // Timestamp of m_BeingHeld changing.
-  RageTimer m_BeingHeldTime;
+  RageTimer being_held_time_;
 
   // The time that we actually reported the last event (used for debouncing).
-  RageTimer m_LastReportTime;
+  RageTimer last_report_time_;
 
   // The timestamp of the last reported change. Unlike m_BeingHeldTime, this
   // value is debounced along with the input state. (This is the same as
   // m_fSecsHeld, except this isn't affected by Update scaling.)
-  RageTimer m_LastInputTime;
+  RageTimer last_input_time_;
 };
 
 struct DeviceButtonPair {
-  InputDevice device;
-  DeviceButton button;
-  DeviceButtonPair(InputDevice d, DeviceButton b) : device(d), button(b) {}
+  InputDevice device_;
+  DeviceButton button_;
+  DeviceButtonPair(InputDevice d, DeviceButton b) : device_(d), button_(b) {}
 };
 
 inline bool operator<(
     const DeviceButtonPair& lhs, const DeviceButtonPair& rhs) {
-  if (lhs.device != rhs.device) {
-    return lhs.device < rhs.device;
+  if (lhs.device_ != rhs.device_) {
+    return lhs.device_ < rhs.device_;
   }
-  return lhs.button < rhs.button;
+  return lhs.button_ < rhs.button_;
 }
 inline bool operator>(
     const DeviceButtonPair& lhs, const DeviceButtonPair& rhs) {
@@ -98,10 +98,10 @@ namespace {
 typedef std::map<DeviceButtonPair, ButtonState> ButtonStateMap;
 ButtonStateMap g_ButtonStates;
 ButtonState& GetButtonState(const DeviceInput& di) {
-  DeviceButtonPair db(di.device, di.button);
+  DeviceButtonPair db(di.device_, di.button_);
   ButtonState& bs = g_ButtonStates[db];
-  bs.m_DeviceInput.button = di.button;
-  bs.m_DeviceInput.device = di.device;
+  bs.device_input_.button_ = di.button_;
+  bs.device_input_.device_ = di.device_;
   return bs;
 }
 
@@ -138,14 +138,14 @@ static const float REPEATS_PER_SEC = 8;
 static float g_fTimeBeforeRepeats, g_fTimeBetweenRepeats;
 
 InputFilter::InputFilter() {
-  queuemutex = new RageMutex("InputFilter");
+  queuemutex_ = new RageMutex("InputFilter");
 
   Reset();
   ResetRepeatRate();
 
-  m_MouseCoords.fX = 0;
-  m_MouseCoords.fY = 0;
-  m_MouseCoords.fZ = 0;
+  mouse_coords_.x_ = 0;
+  mouse_coords_.y_ = 0;
+  mouse_coords_.z_ = 0;
 
   // Register with Lua.
   {
@@ -158,7 +158,7 @@ InputFilter::InputFilter() {
 }
 
 InputFilter::~InputFilter() {
-  delete queuemutex;
+  delete queuemutex_;
   g_ButtonStates.clear();
   // Unregister with Lua.
   LUA->UnsetGlobal("INPUTFILTER");
@@ -182,26 +182,26 @@ void InputFilter::ResetRepeatRate() {
 }
 
 ButtonState::ButtonState()
-    : m_BeingHeldTime(RageZeroTimer), m_LastReportTime(RageZeroTimer) {
-  m_BeingHeld = false;
-  m_bLastReportedHeld = false;
-  m_fSecsHeld = 0;
+    : being_held_time_(RageZeroTimer), last_report_time_(RageZeroTimer) {
+  being_held_ = false;
+  last_reported_held_ = false;
+  secs_held_ = 0;
 }
 
 void InputFilter::ButtonPressed(const DeviceInput& di) {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
 
-  if (di.ts.IsZero()) {
+  if (di.ts_.IsZero()) {
     LOG->Warn("InputFilter::ButtonPressed: zero timestamp is invalid");
   }
 
   // Filter out input that is beyond the range of the current system.
-  if (di.device >= NUM_InputDevice) {
-    LOG->Trace("InputFilter::ButtonPressed: Invalid device %i", di.device);
+  if (di.device_ >= NUM_InputDevice) {
+    LOG->Trace("InputFilter::ButtonPressed: Invalid device %i", di.device_);
     return;
   }
-  if (di.button >= NUM_DeviceButton) {
-    LOG->Trace("InputFilter::ButtonPressed: Invalid button %i", di.button);
+  if (di.button_ >= NUM_DeviceButton) {
+    LOG->Trace("InputFilter::ButtonPressed: Invalid button %i", di.button_);
     return;
   }
 
@@ -212,12 +212,12 @@ void InputFilter::ButtonPressed(const DeviceInput& di) {
   RageTimer now;
   CheckButtonChange(bs, di, now);
 
-  bs.m_DeviceInput = di;
+  bs.device_input_ = di;
 
-  bool Down = di.bDown;
-  if (bs.m_BeingHeld != Down) {
-    bs.m_BeingHeld = Down;
-    bs.m_BeingHeldTime = di.ts;
+  bool Down = di.down_;
+  if (bs.being_held_ != Down) {
+    bs.being_held_ = Down;
+    bs.being_held_time_ = di.ts_;
   }
 
   // Try to report presses immediately.
@@ -227,14 +227,14 @@ void InputFilter::ButtonPressed(const DeviceInput& di) {
 
 /** @brief Release all buttons on the given device. */
 void InputFilter::ResetDevice(InputDevice device) {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
   RageTimer now;
 
   const ButtonStateMap ButtonStates(g_ButtonStates);
   for (const std::pair<const DeviceButtonPair, ButtonState>& b : ButtonStates) {
     const DeviceButtonPair& db = b.first;
-    if (db.device == device) {
-      ButtonPressed(DeviceInput(device, db.button, 0, now));
+    if (db.device_ == device) {
+      ButtonPressed(DeviceInput(device, db.button_, 0, now));
     }
   }
 }
@@ -242,7 +242,7 @@ void InputFilter::ResetDevice(InputDevice device) {
 /** @brief Check for reportable presses. */
 void InputFilter::CheckButtonChange(
     ButtonState& bs, DeviceInput di, const RageTimer& now) {
-  if (bs.m_BeingHeld == bs.m_bLastReportedHeld) {
+  if (bs.being_held_ == bs.last_reported_held_) {
     return;
   }
 
@@ -251,49 +251,49 @@ void InputFilter::CheckButtonChange(
   /* Possibly apply debounce,
    * If the input was coin, possibly apply distinct coin debounce in the else
    * below. */
-  if (!INPUTMAPPER->DeviceToGame(di, gi) || gi.button != GAME_BUTTON_COIN) {
+  if (!INPUTMAPPER->DeviceToGame(di, gi) || gi.button_ != GAME_BUTTON_COIN) {
     /* If the last IET_FIRST_PRESS or IET_RELEASE event was sent too recently,
      * wait a while before sending it. */
-    if (now - bs.m_LastReportTime < g_fInputDebounceTime) {
+    if (now - bs.last_report_time_ < g_fInputDebounceTime) {
       return;
     }
   } else {
-    if (now - bs.m_LastReportTime < PREFSMAN->m_fDebounceCoinInputTime) {
+    if (now - bs.last_report_time_ < PREFSMAN->debounce_coin_input_time_) {
       return;
     }
   }
 
-  bs.m_LastReportTime = now;
-  bs.m_bLastReportedHeld = bs.m_BeingHeld;
-  bs.m_fSecsHeld = 0;
-  bs.m_LastInputTime = bs.m_BeingHeldTime;
+  bs.last_report_time_ = now;
+  bs.last_reported_held_ = bs.being_held_;
+  bs.secs_held_ = 0;
+  bs.last_input_time_ = bs.being_held_time_;
 
-  di.ts = bs.m_BeingHeldTime;
-  if (!bs.m_bLastReportedHeld) {
-    di.level = 0;
+  di.ts_ = bs.being_held_time_;
+  if (!bs.last_reported_held_) {
+    di.level_ = 0;
   }
 
   MakeButtonStateList(g_CurrentState);
   ReportButtonChange(
-      di, bs.m_bLastReportedHeld ? IET_FIRST_PRESS : IET_RELEASE);
+      di, bs.last_reported_held_ ? IET_FIRST_PRESS : IET_RELEASE);
 
-  if (!bs.m_bLastReportedHeld) {
+  if (!bs.last_reported_held_) {
     g_DisableRepeat.erase(di);
   }
 }
 
 void InputFilter::ReportButtonChange(const DeviceInput& di, InputEventType t) {
-  queue.push_back(InputEvent());
-  InputEvent& ie = queue.back();
-  ie.type = t;
-  ie.di = di;
+  queue_.push_back(InputEvent());
+  InputEvent& ie = queue_.back();
+  ie.type_ = t;
+  ie.di_ = di;
 
   /* Include a list of all buttons that were pressed at the time of this event.
    * We can create this efficiently using g_ButtonStates. Use a vector and not
    * a map, for efficiency; most code will not use this information. Iterating
    * over g_ButtonStates will be in DeviceInput order, so users can binary
    * search this list (eg. std::lower_bound). */
-  ie.m_ButtonState = g_CurrentState;
+  ie.button_state_ = g_CurrentState;
 }
 
 void InputFilter::MakeButtonStateList(
@@ -303,9 +303,9 @@ void InputFilter::MakeButtonStateList(
   for (ButtonStateMap::const_iterator it = g_ButtonStates.begin();
        it != g_ButtonStates.end(); ++it) {
     const ButtonState& bs = it->second;
-    aInputOut.push_back(bs.m_DeviceInput);
-    aInputOut.back().ts = bs.m_LastInputTime;
-    aInputOut.back().bDown = bs.m_bLastReportedHeld;
+    aInputOut.push_back(bs.device_input_);
+    aInputOut.back().ts_ = bs.last_input_time_;
+    aInputOut.back().down_ = bs.last_reported_held_;
   }
 }
 
@@ -316,7 +316,7 @@ void InputFilter::Update(float fDeltaTime) {
 
   /* Make sure that nothing gets inserted while we do this, to prevent things
    * like "key pressed, key release, key repeat". */
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
 
   DeviceInput di(InputDevice_Invalid, DeviceButton_Invalid, 1.0f, now);
 
@@ -327,19 +327,19 @@ void InputFilter::Update(float fDeltaTime) {
   for (std::map<DeviceButtonPair, ButtonState>::iterator b =
            g_ButtonStates.begin();
        b != g_ButtonStates.end(); ++b) {
-    di.device = b->first.device;
-    di.button = b->first.button;
+    di.device_ = b->first.device_;
+    di.button_ = b->first.button_;
     ButtonState& bs = b->second;
 
     // Generate IET_FIRST_PRESS and IET_RELEASE events that were delayed.
     CheckButtonChange(bs, di, now);
 
     // Generate IET_REPEAT events.
-    if (!bs.m_bLastReportedHeld) {
+    if (!bs.last_reported_held_) {
       // If the key isn't pressed, and hasn't been pressed for a while
       // (so debouncing isn't interested in it), purge the entry.
-      if (now - bs.m_LastReportTime > g_fInputDebounceTime &&
-          bs.m_DeviceInput.level == 0.0f) {
+      if (now - bs.last_report_time_ > g_fInputDebounceTime &&
+          bs.device_input_.level_ == 0.0f) {
         ButtonsToErase.push_back(b);
       }
       continue;
@@ -350,9 +350,9 @@ void InputFilter::Update(float fDeltaTime) {
       continue;
     }
 
-    const float fOldHoldTime = bs.m_fSecsHeld;
-    bs.m_fSecsHeld += fDeltaTime;
-    const float fNewHoldTime = bs.m_fSecsHeld;
+    const float fOldHoldTime = bs.secs_held_;
+    bs.secs_held_ += fDeltaTime;
+    const float fNewHoldTime = bs.secs_held_;
 
     if (fNewHoldTime <= g_fTimeBeforeRepeats) {
       continue;
@@ -374,7 +374,7 @@ void InputFilter::Update(float fDeltaTime) {
     /* Set the timestamp to the exact time of the repeat. This way, as long
      * as tab/` aren't being used, the timestamp will always increase steadily
      * during repeats. */
-    di.ts = bs.m_LastInputTime + fRepeatTime;
+    di.ts_ = bs.last_input_time_ + fRepeatTime;
 
     ReportButtonChange(di, IET_REPEAT);
   }
@@ -396,18 +396,18 @@ const T* FindItemBinarySearch(IT begin, IT end, const T& i) {
 
 bool InputFilter::IsBeingPressed(
     const DeviceInput& di, const DeviceInputList* pButtonState) const {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
   if (pButtonState == nullptr) {
     pButtonState = &g_CurrentState;
   }
   const DeviceInput* pDI =
       FindItemBinarySearch(pButtonState->begin(), pButtonState->end(), di);
-  return pDI != nullptr && pDI->bDown;
+  return pDI != nullptr && pDI->down_;
 }
 
 float InputFilter::GetSecsHeld(
     const DeviceInput& di, const DeviceInputList* pButtonState) const {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
   if (pButtonState == nullptr) {
     pButtonState = &g_CurrentState;
   }
@@ -416,12 +416,12 @@ float InputFilter::GetSecsHeld(
   if (pDI == nullptr) {
     return 0;
   }
-  return pDI->ts.Ago();
+  return pDI->ts_.Ago();
 }
 
 float InputFilter::GetLevel(
     const DeviceInput& di, const DeviceInputList* pButtonState) const {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
   if (pButtonState == nullptr) {
     pButtonState = &g_CurrentState;
   }
@@ -430,26 +430,26 @@ float InputFilter::GetLevel(
   if (pDI == nullptr) {
     return 0.0f;
   }
-  return pDI->level;
+  return pDI->level_;
 }
 
 std::string InputFilter::GetButtonComment(const DeviceInput& di) const {
-  LockMut(*queuemutex);
-  return GetButtonState(di).m_sComment;
+  LockMut(*queuemutex_);
+  return GetButtonState(di).comment_;
 }
 
 void InputFilter::ResetKeyRepeat(const DeviceInput& di) {
-  LockMut(*queuemutex);
-  GetButtonState(di).m_fSecsHeld = 0;
+  LockMut(*queuemutex_);
+  GetButtonState(di).secs_held_ = 0;
 }
 
 /** @brief Stop repeating the specified key until released. */
 void InputFilter::RepeatStopKey(const DeviceInput& di) {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
 
   // If the button is up, do nothing.
   ButtonState& bs = GetButtonState(di);
-  if (!bs.m_bLastReportedHeld) {
+  if (!bs.last_reported_held_) {
     return;
   }
 
@@ -458,26 +458,26 @@ void InputFilter::RepeatStopKey(const DeviceInput& di) {
 
 void InputFilter::GetInputEvents(std::vector<InputEvent>& array) {
   array.clear();
-  LockMut(*queuemutex);
-  array.swap(queue);
+  LockMut(*queuemutex_);
+  array.swap(queue_);
 }
 
 void InputFilter::GetPressedButtons(std::vector<DeviceInput>& array) const {
-  LockMut(*queuemutex);
+  LockMut(*queuemutex_);
   array = g_CurrentState;
 }
 
 void InputFilter::UpdateCursorLocation(float _fX, float _fY) {
-  m_MouseCoords.fX = _fX;
-  m_MouseCoords.fY = _fY;
+  mouse_coords_.x_ = _fX;
+  mouse_coords_.y_ = _fY;
 }
 
-void InputFilter::UpdateMouseWheel(float _fZ) { m_MouseCoords.fZ = _fZ; }
+void InputFilter::UpdateMouseWheel(float _fZ) { mouse_coords_.z_ = _fZ; }
 
 bool InputFilter::setFullSensorStateBinary(
     PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed) {
   if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
-    m_Sensors[pn].SetBinary(panel, sensor, isPressed);
+    sensors_[pn].SetBinary(panel, sensor, isPressed);
     return true;
   }
   return false;
@@ -495,7 +495,7 @@ class LunaInputFilter : public Luna<InputFilter> {
     float fX = p->GetCursorX();
     // Scale input to the theme's dimensions
     fX = SCALE(
-        fX, 0, (PREFSMAN->m_iDisplayHeight * PREFSMAN->m_fDisplayAspectRatio),
+        fX, 0, (PREFSMAN->display_height_ * PREFSMAN->display_aspect_ratio_),
         SCREEN_LEFT, SCREEN_RIGHT);
     lua_pushnumber(L, fX);
     return 1;
@@ -503,7 +503,7 @@ class LunaInputFilter : public Luna<InputFilter> {
   static int GetMouseY(T* p, lua_State* L) {
     float fY = p->GetCursorY();
     // Scale input to the theme's dimensions
-    fY = SCALE(fY, 0, PREFSMAN->m_iDisplayHeight, SCREEN_TOP, SCREEN_BOTTOM);
+    fY = SCALE(fY, 0, PREFSMAN->display_height_, SCREEN_TOP, SCREEN_BOTTOM);
     lua_pushnumber(L, fY);
     return 1;
   }

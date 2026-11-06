@@ -14,9 +14,9 @@
 REGISTER_ACTOR_CLASS(HelpDisplay);
 
 HelpDisplay::HelpDisplay() {
-  m_iCurTipIndex = 0;
-  m_fSecsUntilSwitch = 0;
-  m_fSecsBetweenSwitches = 1;
+  cur_tip_index_ = 0;
+  secs_until_switch_ = 0;
+  secs_between_switches_ = 1;
 }
 
 void HelpDisplay::SetTips(
@@ -24,39 +24,39 @@ void HelpDisplay::SetTips(
     const std::vector<std::string>& arrayTipsAlt) {
   ASSERT(arrayTips.size() == arrayTipsAlt.size());
 
-  if (arrayTips == m_arrayTips && arrayTipsAlt == m_arrayTipsAlt) {
+  if (arrayTips == array_tips_ && arrayTipsAlt == array_tips_alt_) {
     return;
   }
 
   SetText("");
 
-  m_arrayTips = arrayTips;
-  m_arrayTipsAlt = arrayTipsAlt;
+  array_tips_ = arrayTips;
+  array_tips_alt_ = arrayTipsAlt;
 
-  m_iCurTipIndex = 0;
-  m_fSecsUntilSwitch = 0;
+  cur_tip_index_ = 0;
+  secs_until_switch_ = 0;
   Update(0);
 }
 
 void HelpDisplay::Update(float fDeltaTime) {
-  float fHibernate = m_fHibernateSecondsLeft;
+  float fHibernate = hibernate_seconds_left_;
 
   BitmapText::Update(fDeltaTime);
 
-  if (m_arrayTips.empty()) {
+  if (array_tips_.empty()) {
     return;
   }
 
-  m_fSecsUntilSwitch -= std::max(fDeltaTime - fHibernate, 0.0f);
-  if (m_fSecsUntilSwitch > 0) {
+  secs_until_switch_ -= std::max(fDeltaTime - fHibernate, 0.0f);
+  if (secs_until_switch_ > 0) {
     return;
   }
 
   // time to switch states
-  m_fSecsUntilSwitch = m_fSecsBetweenSwitches;
-  SetText(m_arrayTips[m_iCurTipIndex], m_arrayTipsAlt[m_iCurTipIndex]);
-  m_iCurTipIndex++;
-  m_iCurTipIndex = m_iCurTipIndex % m_arrayTips.size();
+  secs_until_switch_ = secs_between_switches_;
+  SetText(array_tips_[cur_tip_index_], array_tips_alt_[cur_tip_index_]);
+  cur_tip_index_++;
+  cur_tip_index_ = cur_tip_index_ % array_tips_.size();
 }
 
 #include "FontCharAliases.h"

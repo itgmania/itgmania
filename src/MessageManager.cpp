@@ -97,42 +97,42 @@ typedef std::set<IMessageSubscriber*> SubscribersSet;
 static std::map<std::string, SubscribersSet> g_MessageToSubscribers;
 
 Message::Message(const std::string& s) {
-  m_sName = s;
-  m_pParams = new LuaTable;
-  m_bBroadcast = false;
+  name_ = s;
+  params_ = new LuaTable;
+  broadcast_ = false;
 }
 
 Message::Message(const MessageID id) {
-  m_sName = MessageIDToString(id);
-  m_pParams = new LuaTable;
-  m_bBroadcast = false;
+  name_ = MessageIDToString(id);
+  params_ = new LuaTable;
+  broadcast_ = false;
 }
 
 Message::Message(const std::string& s, const LuaReference& params) {
-  m_sName = s;
-  m_bBroadcast = false;
+  name_ = s;
+  broadcast_ = false;
   Lua* L = LUA->Get();
-  m_pParams = new LuaTable;  // XXX: creates an extra table
+  params_ = new LuaTable;  // XXX: creates an extra table
   params.PushSelf(L);
-  m_pParams->SetFromStack(L);
+  params_->SetFromStack(L);
   LUA->Release(L);
   //	m_pParams = new LuaTable( params );
 }
 
-Message::~Message() { delete m_pParams; }
+Message::~Message() { delete params_; }
 
-const LuaReference& Message::GetParamTable() const { return *m_pParams; }
+const LuaReference& Message::GetParamTable() const { return *params_; }
 
 void Message::GetParamFromStack(lua_State* L, const std::string& sName) const {
-  m_pParams->Get(L, sName);
+  params_->Get(L, sName);
 }
 
 void Message::SetParamFromStack(lua_State* L, const std::string& sName) {
-  m_pParams->Set(L, sName);
+  params_->Set(L, sName);
 }
 
 MessageManager::MessageManager() {
-  m_Logging = false;
+  logging_ = false;
   // Register with Lua.
   {
     Lua* L = LUA->Get();
@@ -177,7 +177,7 @@ void MessageManager::Unsubscribe(
 }
 
 void MessageManager::Broadcast(Message& msg) const {
-  if (m_Logging) {
+  if (logging_) {
     LOG->Trace("MESSAGEMAN:Broadcast: %s", msg.GetName().c_str());
   }
   msg.SetBroadcast(true);
@@ -213,26 +213,26 @@ bool MessageManager::IsSubscribedToMessage(
 
 MessageSubscriber::MessageSubscriber(const MessageSubscriber& cpy)
     : IMessageSubscriber(cpy) {
-  for (const std::string& msg : cpy.m_vsSubscribedTo) {
+  for (const std::string& msg : cpy.subscribed_to_) {
     this->SubscribeToMessage(msg);
   }
 }
 
 void MessageSubscriber::SubscribeToMessage(const std::string& sMessageName) {
   MESSAGEMAN->Subscribe(this, sMessageName);
-  m_vsSubscribedTo.push_back(sMessageName);
+  subscribed_to_.push_back(sMessageName);
 }
 
 void MessageSubscriber::SubscribeToMessage(MessageID message) {
   MESSAGEMAN->Subscribe(this, message);
-  m_vsSubscribedTo.push_back(MessageIDToString(message));
+  subscribed_to_.push_back(MessageIDToString(message));
 }
 
 void MessageSubscriber::UnsubscribeAll() {
-  for (const std::string& s : m_vsSubscribedTo) {
+  for (const std::string& s : subscribed_to_) {
     MESSAGEMAN->Unsubscribe(this, s);
   }
-  m_vsSubscribedTo.clear();
+  subscribed_to_.clear();
 }
 
 // lua start

@@ -62,7 +62,7 @@ void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(
 
 std::string InputHandler_Win32_RTIO::GetDeviceSpecificInputString(
     const DeviceInput& di) {
-  switch (di.button) {
+  switch (di.button_) {
     case JOY_BUTTON_1:
       return "P1 Pad Left";
     case JOY_BUTTON_2:
@@ -281,107 +281,107 @@ void InputHandler_Win32_RTIO::HandleGameInput(
   int start2 = HexCharToInt(msg[6]);
 
   GAME_INPUT input_new;
-  input_new.P1_PadUp = (pad1 >> 3) & 1;
-  input_new.P1_PadDown = (pad1 >> 2) & 1;
-  input_new.P1_PadLeft = (pad1 >> 1) & 1;
-  input_new.P1_PadRight = pad1 & 1;
-  input_new.P2_PadUp = (pad2 >> 3) & 1;
-  input_new.P2_PadDown = (pad2 >> 2) & 1;
-  input_new.P2_PadLeft = (pad2 >> 1) & 1;
-  input_new.P2_PadRight = pad2 & 1;
-  input_new.P1_MenuUp = (menu1 >> 3) & 1;
-  input_new.P1_MenuDown = (menu1 >> 2) & 1;
-  input_new.P1_MenuLeft = (menu1 >> 1) & 1;
-  input_new.P1_MenuRight = menu1 & 1;
-  input_new.P2_MenuUp = (menu2 >> 3) & 1;
-  input_new.P2_MenuDown = (menu2 >> 2) & 1;
-  input_new.P2_MenuLeft = (menu2 >> 1) & 1;
-  input_new.P2_MenuRight = menu2 & 1;
-  input_new.P1_MenuStart = start1 & 1;
-  input_new.P2_MenuStart = start2 & 1;
+  input_new.p1_pad_up_ = (pad1 >> 3) & 1;
+  input_new.p1_pad_down_ = (pad1 >> 2) & 1;
+  input_new.p1_pad_left_ = (pad1 >> 1) & 1;
+  input_new.p1_pad_right_ = pad1 & 1;
+  input_new.p2_pad_up_ = (pad2 >> 3) & 1;
+  input_new.p2_pad_down_ = (pad2 >> 2) & 1;
+  input_new.p2_pad_left_ = (pad2 >> 1) & 1;
+  input_new.p2_pad_right_ = pad2 & 1;
+  input_new.p1_menu_up_ = (menu1 >> 3) & 1;
+  input_new.p1_menu_down_ = (menu1 >> 2) & 1;
+  input_new.p1_menu_left_ = (menu1 >> 1) & 1;
+  input_new.p1_menu_right_ = menu1 & 1;
+  input_new.p2_menu_up_ = (menu2 >> 3) & 1;
+  input_new.p2_menu_down_ = (menu2 >> 2) & 1;
+  input_new.p2_menu_left_ = (menu2 >> 1) & 1;
+  input_new.p2_menu_right_ = menu2 & 1;
+  input_new.p1_menu_start_ = start1 & 1;
+  input_new.p2_menu_start_ = start2 & 1;
 
-  if (input_new.P1_PadLeft != last_game_input_.P1_PadLeft) {
+  if (input_new.p1_pad_left_ != last_game_input_.p1_pad_left_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_1, (float)input_new.P1_PadLeft, now));
+        DeviceInput(id, JOY_BUTTON_1, (float)input_new.p1_pad_left_, now));
   }
-  if (input_new.P1_PadDown != last_game_input_.P1_PadDown) {
+  if (input_new.p1_pad_down_ != last_game_input_.p1_pad_down_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_2, (float)input_new.P1_PadDown, now));
+        DeviceInput(id, JOY_BUTTON_2, (float)input_new.p1_pad_down_, now));
   }
-  if (input_new.P1_PadUp != last_game_input_.P1_PadUp) {
+  if (input_new.p1_pad_up_ != last_game_input_.p1_pad_up_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_3, (float)input_new.P1_PadUp, now));
+        DeviceInput(id, JOY_BUTTON_3, (float)input_new.p1_pad_up_, now));
   }
-  if (input_new.P1_PadRight != last_game_input_.P1_PadRight) {
+  if (input_new.p1_pad_right_ != last_game_input_.p1_pad_right_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_4, (float)input_new.P1_PadRight, now));
+        DeviceInput(id, JOY_BUTTON_4, (float)input_new.p1_pad_right_, now));
   }
-  if (input_new.P1_MenuLeft != last_game_input_.P1_MenuLeft) {
+  if (input_new.p1_menu_left_ != last_game_input_.p1_menu_left_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_5, (float)input_new.P1_MenuLeft, now));
+        DeviceInput(id, JOY_BUTTON_5, (float)input_new.p1_menu_left_, now));
   }
-  if (input_new.P1_MenuDown != last_game_input_.P1_MenuDown) {
+  if (input_new.p1_menu_down_ != last_game_input_.p1_menu_down_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_6, (float)input_new.P1_MenuDown, now));
+        DeviceInput(id, JOY_BUTTON_6, (float)input_new.p1_menu_down_, now));
   }
-  if (input_new.P1_MenuUp != last_game_input_.P1_MenuUp) {
+  if (input_new.p1_menu_up_ != last_game_input_.p1_menu_up_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_7, (float)input_new.P1_MenuUp, now));
+        DeviceInput(id, JOY_BUTTON_7, (float)input_new.p1_menu_up_, now));
   }
-  if (input_new.P1_MenuRight != last_game_input_.P1_MenuRight) {
+  if (input_new.p1_menu_right_ != last_game_input_.p1_menu_right_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_8, (float)input_new.P1_MenuRight, now));
+        DeviceInput(id, JOY_BUTTON_8, (float)input_new.p1_menu_right_, now));
   }
-  if (input_new.P1_MenuStart != last_game_input_.P1_MenuStart) {
+  if (input_new.p1_menu_start_ != last_game_input_.p1_menu_start_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_9, (float)input_new.P1_MenuStart, now));
+        DeviceInput(id, JOY_BUTTON_9, (float)input_new.p1_menu_start_, now));
   }
-  if (input_new.P2_PadLeft != last_game_input_.P2_PadLeft) {
+  if (input_new.p2_pad_left_ != last_game_input_.p2_pad_left_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_10, (float)input_new.P2_PadLeft, now));
+        DeviceInput(id, JOY_BUTTON_10, (float)input_new.p2_pad_left_, now));
   }
-  if (input_new.P2_PadDown != last_game_input_.P2_PadDown) {
+  if (input_new.p2_pad_down_ != last_game_input_.p2_pad_down_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_11, (float)input_new.P2_PadDown, now));
+        DeviceInput(id, JOY_BUTTON_11, (float)input_new.p2_pad_down_, now));
   }
-  if (input_new.P2_PadUp != last_game_input_.P2_PadUp) {
+  if (input_new.p2_pad_up_ != last_game_input_.p2_pad_up_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_12, (float)input_new.P2_PadUp, now));
+        DeviceInput(id, JOY_BUTTON_12, (float)input_new.p2_pad_up_, now));
   }
-  if (input_new.P2_PadRight != last_game_input_.P2_PadRight) {
+  if (input_new.p2_pad_right_ != last_game_input_.p2_pad_right_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_13, (float)input_new.P2_PadRight, now));
+        DeviceInput(id, JOY_BUTTON_13, (float)input_new.p2_pad_right_, now));
   }
-  if (input_new.P2_MenuLeft != last_game_input_.P2_MenuLeft) {
+  if (input_new.p2_menu_left_ != last_game_input_.p2_menu_left_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_14, (float)input_new.P2_MenuLeft, now));
+        DeviceInput(id, JOY_BUTTON_14, (float)input_new.p2_menu_left_, now));
   }
-  if (input_new.P2_MenuDown != last_game_input_.P2_MenuDown) {
+  if (input_new.p2_menu_down_ != last_game_input_.p2_menu_down_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_15, (float)input_new.P2_MenuDown, now));
+        DeviceInput(id, JOY_BUTTON_15, (float)input_new.p2_menu_down_, now));
   }
-  if (input_new.P2_MenuUp != last_game_input_.P2_MenuUp) {
+  if (input_new.p2_menu_up_ != last_game_input_.p2_menu_up_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_16, (float)input_new.P2_MenuUp, now));
+        DeviceInput(id, JOY_BUTTON_16, (float)input_new.p2_menu_up_, now));
   }
-  if (input_new.P2_MenuRight != last_game_input_.P2_MenuRight) {
+  if (input_new.p2_menu_right_ != last_game_input_.p2_menu_right_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_17, (float)input_new.P2_MenuRight, now));
+        DeviceInput(id, JOY_BUTTON_17, (float)input_new.p2_menu_right_, now));
   }
-  if (input_new.P2_MenuStart != last_game_input_.P2_MenuStart) {
+  if (input_new.p2_menu_start_ != last_game_input_.p2_menu_start_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_18, (float)input_new.P2_MenuStart, now));
+        DeviceInput(id, JOY_BUTTON_18, (float)input_new.p2_menu_start_, now));
   }
   /*
           if (memcmp(&last_game_input_, &input_new, sizeof(GAME_INPUT)) != 0) {
           LOG->Trace("RTIO: P1:%d%d%d%d P2:%d%d%d%d M1:%d%d%d%d-%d
-     M2:%d%d%d%d-%d", input_new.P1_PadLeft, input_new.P1_PadDown,
-     input_new.P1_PadUp, input_new.P1_PadRight, input_new.P2_PadLeft,
-     input_new.P2_PadDown, input_new.P2_PadUp, input_new.P2_PadRight,
-          input_new.P1_MenuLeft, input_new.P1_MenuDown, input_new.P1_MenuUp,
-     input_new.P1_MenuRight, input_new.P1_MenuStart, input_new.P2_MenuLeft,
-     input_new.P2_MenuDown, input_new.P2_MenuUp, input_new.P2_MenuRight,
-     input_new.P2_MenuStart);
+     M2:%d%d%d%d-%d", input_new.p1_pad_left_, input_new.p1_pad_down_,
+     input_new.p1_pad_up_, input_new.p1_pad_right_, input_new.p2_pad_left_,
+     input_new.p2_pad_down_, input_new.p2_pad_up_, input_new.p2_pad_right_,
+          input_new.p1_menu_left_, input_new.p1_menu_down_,
+     input_new.p1_menu_up_, input_new.p1_menu_right_, input_new.p1_menu_start_,
+     input_new.p2_menu_left_, input_new.p2_menu_down_, input_new.p2_menu_up_,
+     input_new.p2_menu_right_, input_new.p2_menu_start_);
           }
   */
   memcpy(&last_game_input_, &input_new, sizeof(GAME_INPUT));
@@ -399,42 +399,42 @@ void InputHandler_Win32_RTIO::HandleOperatorInput(
   int select = HexCharToInt(msg[8]);
 
   OPERATOR_INPUT input_new;
-  input_new.P1_InsertCoin = coin1 & 1;
-  input_new.P2_InsertCoin = coin2 & 1;
-  input_new.VolumeUp = vol_up & 1;
-  input_new.VolumeDown = vol_dn & 1;
-  input_new.TestSwitch = test & 1;
-  input_new.SelectSwitch = select & 1;
+  input_new.p1_insert_coin_ = coin1 & 1;
+  input_new.p2_insert_coin_ = coin2 & 1;
+  input_new.volume_up_ = vol_up & 1;
+  input_new.volume_down_ = vol_dn & 1;
+  input_new.test_switch_ = test & 1;
+  input_new.select_switch_ = select & 1;
 
-  if (input_new.TestSwitch != last_operator_input_.TestSwitch) {
+  if (input_new.test_switch_ != last_operator_input_.test_switch_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_19, (float)input_new.TestSwitch, now));
+        DeviceInput(id, JOY_BUTTON_19, (float)input_new.test_switch_, now));
   }
-  if (input_new.SelectSwitch != last_operator_input_.SelectSwitch) {
+  if (input_new.select_switch_ != last_operator_input_.select_switch_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_20, (float)input_new.SelectSwitch, now));
+        DeviceInput(id, JOY_BUTTON_20, (float)input_new.select_switch_, now));
   }
-  if (input_new.P1_InsertCoin != last_operator_input_.P1_InsertCoin) {
+  if (input_new.p1_insert_coin_ != last_operator_input_.p1_insert_coin_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_21, (float)input_new.P1_InsertCoin, now));
-    if (input_new.P1_InsertCoin) {
+        DeviceInput(id, JOY_BUTTON_21, (float)input_new.p1_insert_coin_, now));
+    if (input_new.p1_insert_coin_) {
       counter_cycles_pending_++;
     }
   }
-  if (input_new.P2_InsertCoin != last_operator_input_.P2_InsertCoin) {
+  if (input_new.p2_insert_coin_ != last_operator_input_.p2_insert_coin_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_22, (float)input_new.P2_InsertCoin, now));
-    if (input_new.P2_InsertCoin) {
+        DeviceInput(id, JOY_BUTTON_22, (float)input_new.p2_insert_coin_, now));
+    if (input_new.p2_insert_coin_) {
       counter_cycles_pending_++;
     }
   }
-  if (input_new.VolumeDown != last_operator_input_.VolumeDown) {
+  if (input_new.volume_down_ != last_operator_input_.volume_down_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_23, (float)input_new.VolumeDown, now));
+        DeviceInput(id, JOY_BUTTON_23, (float)input_new.volume_down_, now));
   }
-  if (input_new.VolumeUp != last_operator_input_.VolumeUp) {
+  if (input_new.volume_up_ != last_operator_input_.volume_up_) {
     ButtonPressed(
-        DeviceInput(id, JOY_BUTTON_24, (float)input_new.VolumeUp, now));
+        DeviceInput(id, JOY_BUTTON_24, (float)input_new.volume_up_, now));
   }
   /*
           if (memcmp(&last_operator_input_, &input_new, sizeof(OPERATOR_INPUT))

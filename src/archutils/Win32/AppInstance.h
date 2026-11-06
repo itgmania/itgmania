@@ -8,11 +8,11 @@ class AppInstance {
  public:
   AppInstance();
   ~AppInstance();
-  HINSTANCE Get() const { return h; }
-  operator HINSTANCE() const { return h; }
+  HINSTANCE Get() const { return h_; }
+  operator HINSTANCE() const { return h_; }
 
  private:
-  HINSTANCE h;
+  HINSTANCE h_;
 };
 
 #endif

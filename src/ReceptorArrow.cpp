@@ -14,16 +14,16 @@
 #include "Style.h"
 
 ReceptorArrow::ReceptorArrow() {
-  m_bIsPressed = false;
-  m_bWasPressed = false;
-  m_bWasReverse = false;
+  is_pressed_ = false;
+  was_pressed_ = false;
+  was_reverse_ = false;
 }
 
 void ReceptorArrow::Load(const PlayerState* pPlayerState, int iColNo) {
-  m_pPlayerState = pPlayerState;
-  m_iColNo = iColNo;
+  player_state_ = pPlayerState;
+  col_no_ = iColNo;
 
-  const PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  const PlayerNumber pn = player_state_->player_number_;
   std::vector<GameInput> GameI;
   GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(iColNo, pn, GameI);
   NOTESKIN->SetPlayerNumber(pn);
@@ -31,53 +31,53 @@ void ReceptorArrow::Load(const PlayerState* pPlayerState, int iColNo) {
   // controllers are mapped to the same column?  Such a thing could be set
   // up in a style that uses two controllers and has a mapping that fits the
   // requirements. -Kyz
-  NOTESKIN->SetGameController(GameI[0].controller);
+  NOTESKIN->SetGameController(GameI[0].controller_);
 
   std::string sButton = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName(iColNo);
-  m_pReceptor.Load(NOTESKIN->LoadActor(sButton, "Receptor"));
-  this->AddChild(m_pReceptor);
+  receptor_.Load(NOTESKIN->LoadActor(sButton, "Receptor"));
+  this->AddChild(receptor_);
 
   bool bReverse =
-      m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(
-          m_iColNo) > 0.5f;
-  m_pReceptor->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
-  m_bWasReverse = bReverse;
+      player_state_->player_options_.GetCurrent().GetReversePercentForColumn(
+          col_no_) > 0.5f;
+  receptor_->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
+  was_reverse_ = bReverse;
 }
 
 void ReceptorArrow::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
   bool bReverse =
-      m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(
-          m_iColNo) > 0.5f;
-  if (bReverse != m_bWasReverse) {
-    m_pReceptor->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
-    m_bWasReverse = bReverse;
+      player_state_->player_options_.GetCurrent().GetReversePercentForColumn(
+          col_no_) > 0.5f;
+  if (bReverse != was_reverse_) {
+    receptor_->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
+    was_reverse_ = bReverse;
   }
 }
 
 void ReceptorArrow::DrawPrimitives() {
-  if (m_bWasPressed && !m_bIsPressed) {
-    m_pReceptor->PlayCommand("Lift");
-  } else if (!m_bWasPressed && m_bIsPressed) {
-    m_pReceptor->PlayCommand("Press");
+  if (was_pressed_ && !is_pressed_) {
+    receptor_->PlayCommand("Lift");
+  } else if (!was_pressed_ && is_pressed_) {
+    receptor_->PlayCommand("Press");
   }
 
-  m_bWasPressed = m_bIsPressed;
-  m_bIsPressed = false;  // it may get turned back on next update
+  was_pressed_ = is_pressed_;
+  is_pressed_ = false;  // it may get turned back on next update
 
   ActorFrame::DrawPrimitives();
 }
 
 void ReceptorArrow::Step(TapNoteScore score) {
-  m_bIsPressed = true;
+  is_pressed_ = true;
 
   std::string sJudge = TapNoteScoreToString(score);
-  m_pReceptor->PlayCommand(Capitalize(sJudge));
+  receptor_->PlayCommand(Capitalize(sJudge));
 }
 
 void ReceptorArrow::SetNoteUpcoming(bool b) {
-  m_pReceptor->PlayCommand(b ? "ShowNoteUpcoming" : "HideNoteUpcoming");
+  receptor_->PlayCommand(b ? "ShowNoteUpcoming" : "HideNoteUpcoming");
 }
 
 /*

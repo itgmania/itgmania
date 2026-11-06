@@ -5,18 +5,18 @@
 
 REGISTER_ACTOR_CLASS(ActorProxy);
 
-ActorProxy::ActorProxy() { m_pActorTarget = nullptr; }
+ActorProxy::ActorProxy() { actor_target_ = nullptr; }
 
 bool ActorProxy::EarlyAbortDraw() const {
-  return m_pActorTarget == nullptr || Actor::EarlyAbortDraw();
+  return actor_target_ == nullptr || Actor::EarlyAbortDraw();
 }
 
 void ActorProxy::DrawPrimitives() {
-  if (m_pActorTarget != nullptr) {
-    bool bVisible = m_pActorTarget->GetVisible();
-    m_pActorTarget->SetVisible(true);
-    m_pActorTarget->Draw();
-    m_pActorTarget->SetVisible(bVisible);
+  if (actor_target_ != nullptr) {
+    bool bVisible = actor_target_->GetVisible();
+    actor_target_->SetVisible(true);
+    actor_target_->Draw();
+    actor_target_->SetVisible(bVisible);
   }
 }
 

@@ -33,7 +33,7 @@ class ScreenOptionsEditCourse : public ScreenOptions {
   Song* GetSongForEntry(int iEntryIndex);
   Steps* GetStepsForEntry(int iEntryIndex);
 
-  std::vector<Song*> m_vpSongs;
+  std::vector<Song*> songs_;
 };
 
 #endif

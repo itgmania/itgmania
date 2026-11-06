@@ -38,16 +38,16 @@ int RageSoundDriver_ALSA9_Software::MixerThread_start(void* p) {
 void RageSoundDriver_ALSA9_Software::MixerThread() {
   setpriority(PRIO_PROCESS, 0, -15);
 
-  while (!m_bShutdown) {
-    while (!m_bShutdown && GetData());
+  while (!shutdown_) {
+    while (!shutdown_ && GetData());
 
-    m_pPCM->WaitUntilFramesCanBeFilled(100);
+    pcm_->WaitUntilFramesCanBeFilled(100);
   }
 }
 
 /* Returns the number of frames processed */
 bool RageSoundDriver_ALSA9_Software::GetData() {
-  const int frames_to_fill = m_pPCM->GetNumFramesToFill();
+  const int frames_to_fill = pcm_->GetNumFramesToFill();
   if (frames_to_fill <= 0) {
     return false;
   }
@@ -63,17 +63,17 @@ bool RageSoundDriver_ALSA9_Software::GetData() {
     bufsize = frames_to_fill;
   }
 
-  const int64_t play_pos = m_pPCM->GetPlayPos();
-  const int64_t cur_play_pos = m_pPCM->GetPosition();
+  const int64_t play_pos = pcm_->GetPlayPos();
+  const int64_t cur_play_pos = pcm_->GetPosition();
 
   this->Mix(buf, frames_to_fill, play_pos, cur_play_pos);
-  m_pPCM->Write(buf, frames_to_fill);
+  pcm_->Write(buf, frames_to_fill);
 
   return true;
 }
 
 int64_t RageSoundDriver_ALSA9_Software::GetPosition() const {
-  return m_pPCM->GetPosition();
+  return pcm_->GetPosition();
 }
 
 void RageSoundDriver_ALSA9_Software::SetupDecodingThread() {
@@ -81,8 +81,8 @@ void RageSoundDriver_ALSA9_Software::SetupDecodingThread() {
 }
 
 RageSoundDriver_ALSA9_Software::RageSoundDriver_ALSA9_Software() {
-  m_pPCM = nullptr;
-  m_bShutdown = false;
+  pcm_ = nullptr;
+  shutdown_ = false;
 }
 
 std::string RageSoundDriver_ALSA9_Software::Init() {
@@ -100,44 +100,44 @@ std::string RageSoundDriver_ALSA9_Software::Init() {
     g_iMaxWriteahead = g_iMaxWriteahead_linux_26;
   }
 
-  if (PREFSMAN->m_iSoundWriteAhead) {
-    g_iMaxWriteahead = PREFSMAN->m_iSoundWriteAhead;
+  if (PREFSMAN->sound_write_ahead_) {
+    g_iMaxWriteahead = PREFSMAN->sound_write_ahead_;
   }
 
-  m_pPCM = new Alsa9Buf();
-  sError = m_pPCM->Init(
+  pcm_ = new Alsa9Buf();
+  sError = pcm_->Init(
       g_iMaxWriteahead, g_iMaxWriteahead / num_chunks,
-      PREFSMAN->m_iSoundPreferredSampleRate);
+      PREFSMAN->sound_preferred_sample_rate_);
   if (sError != "") {
     return sError;
   }
 
-  m_iSampleRate = m_pPCM->GetSampleRate();
+  sample_rate_ = pcm_->GetSampleRate();
 
   StartDecodeThread();
 
-  m_MixingThread.SetName("RageSoundDriver_ALSA9_Software");
-  m_MixingThread.Create(MixerThread_start, this);
+  mixing_thread_.SetName("RageSoundDriver_ALSA9_Software");
+  mixing_thread_.Create(MixerThread_start, this);
 
   return "";
 }
 
 RageSoundDriver_ALSA9_Software::~RageSoundDriver_ALSA9_Software() {
-  if (m_MixingThread.IsCreated()) {
+  if (mixing_thread_.IsCreated()) {
     /* Signal the mixing thread to quit. */
-    m_bShutdown = true;
+    shutdown_ = true;
     LOG->Trace("Shutting down mixer thread ...");
-    m_MixingThread.Wait();
+    mixing_thread_.Wait();
     LOG->Trace("Mixer thread shut down.");
   }
 
-  delete m_pPCM;
+  delete pcm_;
 
   UnloadALSA();
 }
 
 float RageSoundDriver_ALSA9_Software::GetPlayLatency() const {
-  return float(g_iMaxWriteahead) / m_iSampleRate;
+  return float(g_iMaxWriteahead) / sample_rate_;
 }
 
 /*

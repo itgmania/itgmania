@@ -31,13 +31,13 @@ class OptionListRow : public ActorFrame {
   void Start();
 
  private:
-  OptionsList* m_pOptions;
+  OptionsList* options_;
 
-  std::vector<BitmapText> m_Text;
+  std::vector<BitmapText> text_;
   // underline for each ("self or child has selection")
-  std::vector<AutoActor> m_Underlines;
+  std::vector<AutoActor> underlines_;
 
-  bool m_bItemsInTwoRows;
+  bool items_in_two_rows_;
 
   ThemeMetric<float> ITEMS_SPACING_Y;
 };
@@ -52,7 +52,7 @@ class OptionsList : public ActorFrame {
   void Load(std::string sType, PlayerNumber pn);
   void Reset();
 
-  void Link(OptionsList* pLink) { m_pLinked = pLink; }
+  void Link(OptionsList* pLink) { linked_ = pLink; }
 
   /** @brief Show the top-level menu. */
   void Open();
@@ -61,7 +61,7 @@ class OptionsList : public ActorFrame {
   void Close();
 
   bool Input(const InputEventPlus& input);
-  bool IsOpened() const { return m_asMenuStack.size() > 0; }
+  bool IsOpened() const { return menu_stack_.size() > 0; }
 
   bool
   Start();  // return true if the last menu was popped in response to this press
@@ -87,30 +87,30 @@ class OptionsList : public ActorFrame {
   static int FindScreenInHandler(
       const OptionRowHandler* pHandler, std::string sScreen);
 
-  InputQueueCodeSet m_Codes;
+  InputQueueCodeSet codes_;
 
-  OptionsList* m_pLinked;
+  OptionsList* linked_;
 
-  bool m_bStartIsDown;
-  bool m_bAcceptStartRelease;
+  bool start_is_down_;
+  bool accept_start_release_;
 
-  std::map<std::string, OptionRowHandler*> m_Rows;
-  std::map<std::string, std::vector<bool> > m_bSelections;
-  std::set<std::string> m_setDirectRows;
+  std::map<std::string, OptionRowHandler*> rows_;
+  std::map<std::string, std::vector<bool> > selections_;
+  std::set<std::string> set_direct_rows_;
   std::set<std::string>
-      m_setTopMenus;  // list of top-level menus, pointing to submenus
+      set_top_menus_;  // list of top-level menus, pointing to submenus
 
-  PlayerNumber m_pn;
-  AutoActor m_Cursor;
-  OptionListRow m_Row[2];
-  int m_iCurrentRow;
+  PlayerNumber pn_;
+  AutoActor cursor_;
+  OptionListRow row_[2];
+  int current_row_;
 
-  std::vector<std::string> m_asMenuStack;
-  int m_iMenuStackSelection;
+  std::vector<std::string> menu_stack_;
+  int menu_stack_selection_;
 
  protected:
-  GameButton m_GameButtonPreviousItem;
-  GameButton m_GameButtonNextItem;
+  GameButton game_button_previous_item_;
+  GameButton game_button_next_item_;
 };
 
 #endif

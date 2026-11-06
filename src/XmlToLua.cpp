@@ -223,20 +223,20 @@ void convert_lua_chunk(std::string& chunk_text) {
 typedef std::map<std::string, std::string> condition_set_t;
 typedef std::map<std::string, std::string> field_cont_t;
 struct frame_t {
-  int frame;
-  float delay;
-  frame_t() : frame(0), delay(0.0f) {}
+  int frame_;
+  float delay_;
+  frame_t() : frame_(0), delay_(0.0f) {}
 };
 
 struct actor_template_t {
-  std::string type;
-  field_cont_t fields;
-  std::string condition;
-  std::string name;
-  std::vector<frame_t> frames;
-  std::vector<actor_template_t> children;
-  std::string x;
-  std::string y;
+  std::string type_;
+  field_cont_t fields_;
+  std::string condition_;
+  std::string name_;
+  std::vector<frame_t> frames_;
+  std::vector<actor_template_t> children_;
+  std::string x_;
+  std::string y_;
   void make_space_for_frame(int id);
   void store_cmd(const std::string& cmd_name, const std::string& full_cmd);
   void store_field(
@@ -258,8 +258,8 @@ struct actor_template_t {
 };
 
 void actor_template_t::make_space_for_frame(int id) {
-  if (id >= static_cast<int>(frames.size())) {
-    frames.resize(id + 1);
+  if (id >= static_cast<int>(frames_.size())) {
+    frames_.resize(id + 1);
   }
 }
 
@@ -268,7 +268,7 @@ void actor_template_t::store_cmd(
   if (Left(full_cmd, 1) == "%") {
     std::string cmd_text = Right(full_cmd, full_cmd.size() - 1);
     convert_lua_chunk(cmd_text);
-    fields[cmd_name] = cmd_text;
+    fields_[cmd_name] = cmd_text;
     return;
   }
   std::vector<std::string> cmds;
@@ -329,7 +329,7 @@ void actor_template_t::store_cmd(
           if (states_in_curr >= states_per - 1) {
             std::string next_name = unique_name("cmd");
             curr_cmd.push_back("queuecommand,\"" + next_name + "\"");
-            fields[this_name] = "cmd(" + join(";", curr_cmd) + ")";
+            fields_[this_name] = "cmd(" + join(";", curr_cmd) + ")";
             curr_cmd.clear();
             this_name = next_name;
             states_in_curr = 0;
@@ -338,10 +338,10 @@ void actor_template_t::store_cmd(
       }
     }
     if (!curr_cmd.empty()) {
-      fields[this_name] = "cmd(" + join(";", curr_cmd) + ")";
+      fields_[this_name] = "cmd(" + join(";", curr_cmd) + ")";
     }
   } else {
-    fields[cmd_name] = "cmd(" + join(";", cmds) + ")";
+    fields_[cmd_name] = "cmd(" + join(";", cmds) + ")";
   }
 }
 
@@ -357,7 +357,7 @@ void actor_template_t::store_field(
         Left(field_name, field_name.size() - 7) + "Command";
     store_cmd(real_field_name, value);
   } else {
-    fields[field_name] = pref + value + suf;
+    fields_[field_name] = pref + value + suf;
   }
 }
 void actor_template_t::store_field(
@@ -370,17 +370,17 @@ void actor_template_t::store_field(
 
 void actor_template_t::rename_field(
     const std::string& old_name, const std::string& new_name) {
-  field_cont_t::iterator old_field = fields.find(old_name);
-  if (old_field == fields.end()) {
+  field_cont_t::iterator old_field = fields_.find(old_name);
+  if (old_field == fields_.end()) {
     return;
   }
-  fields[new_name] = old_field->second;
-  fields.erase(old_field);
+  fields_[new_name] = old_field->second;
+  fields_.erase(old_field);
 }
 
 std::string actor_template_t::get_field(const std::string& field_name) {
-  field_cont_t::iterator field = fields.find(field_name);
-  if (field == fields.end()) {
+  field_cont_t::iterator field = fields_.find(field_name);
+  if (field == fields_.end()) {
     return "";
   }
   return field->second;
@@ -404,11 +404,11 @@ void actor_template_t::load_frames_from_file(
       if (field_type == "Frame") {
         int id = StringToInt(Right(attr->first, attr->first.size() - 5));
         make_space_for_frame(id);
-        attr->second->GetValue(frames[id].frame);
+        attr->second->GetValue(frames_[id].frame_);
       } else if (field_type == "Delay") {
         int id = StringToInt(Right(attr->first, attr->first.size() - 5));
         make_space_for_frame(id);
-        attr->second->GetValue(frames[id].delay);
+        attr->second->GetValue(frames_[id].delay_);
       } else if (field_type == "Textu") {
         store_field("Texture", attr->second, false, rel_path, "");
       } else {
@@ -438,27 +438,27 @@ void actor_template_t::load_model_from_file(
 void actor_template_t::load_node(
     const XNode& node, const std::string& dirname,
     condition_set_t& conditions) {
-  type = node.GetName();
+  type_ = node.GetName();
   bool type_set_by_automagic = false;
 #define set_type(auto_type)     \
   type_set_by_automagic = true; \
-  type = auto_type;
+  type_ = auto_type;
   FOREACH_CONST_Attr(&node, attr) {
     if (attr->first == "Name") {
-      attr->second->GetValue(name);
+      attr->second->GetValue(name_);
     } else if (attr->first == "Condition") {
       std::string cond_str;
       attr->second->GetValue(cond_str);
       condition_set_t::iterator cond = conditions.find(cond_str);
       if (cond == conditions.end()) {
-        condition = unique_name("cond");
-        conditions[cond_str] = condition;
+        condition_ = unique_name("cond");
+        conditions[cond_str] = condition_;
       } else {
-        condition = cond->second;
+        condition_ = cond->second;
       }
     } else if (attr->first == "Type" || attr->first == "Class") {
       if (!type_set_by_automagic) {
-        attr->second->GetValue(type);
+        attr->second->GetValue(type_);
       }
     } else if (attr->first == "__TEXT__") {
       // Ignore.  This attribute seems to be put in by the xml parser, and
@@ -549,11 +549,11 @@ void actor_template_t::load_node(
       store_field(attr->first, attr->second, true);
     }
   }
-  if (type == "BitmapText") {
+  if (type_ == "BitmapText") {
     rename_field("Texture", "Font");
     rename_field("File", "Font");
   }
-  if (type == "Sprite") {
+  if (type_ == "Sprite") {
     rename_field("File", "Texture");
   }
   const XNode* xren = node.GetChild("children");
@@ -561,47 +561,47 @@ void actor_template_t::load_node(
     FOREACH_CONST_Child(xren, child) {
       actor_template_t chill_plate;
       chill_plate.load_node(*child, dirname, conditions);
-      children.push_back(chill_plate);
+      children_.push_back(chill_plate);
     }
   }
-  if (!x.empty() || !y.empty()) {
-    std::string pos_init = "xy," + x + "," + y;
-    field_cont_t::iterator init = fields.find("InitCommand");
-    if (init != fields.end()) {
+  if (!x_.empty() || !y_.empty()) {
+    std::string pos_init = "xy," + x_ + "," + y_;
+    field_cont_t::iterator init = fields_.find("InitCommand");
+    if (init != fields_.end()) {
       pos_init = pos_init + ";queuecommand,xtl_passed_initCommand";
-      fields["xtl_passed_initCommand"] = init->second;
+      fields_["xtl_passed_initCommand"] = init->second;
     }
-    fields["InitCommand"] = "cmd(" + pos_init + ")";
+    fields_["InitCommand"] = "cmd(" + pos_init + ")";
   }
 }
 
 void actor_template_t::output_to_file(
     RageFile* file, const std::string& indent) {
-  if (!condition.empty()) {
-    file->Write(indent + "optional_actor(" + condition + "_result,\n");
+  if (!condition_.empty()) {
+    file->Write(indent + "optional_actor(" + condition_ + "_result,\n");
   }
-  if (type == "LoadActor") {
+  if (type_ == "LoadActor") {
     file->Write(indent + "LoadActor('" + get_field("File") + "') .. {\n");
   } else {
-    file->Write(indent + "Def." + type + "{\n");
+    file->Write(indent + "Def." + type_ + "{\n");
   }
   std::string subindent = indent + "  ";
-  if (name.empty()) {
-    name = unique_name("actor");
+  if (name_.empty()) {
+    name_ = unique_name("actor");
   }
-  file->Write(subindent + "Name= \"" + name + "\",\n");
-  if (!frames.empty()) {
+  file->Write(subindent + "Name= \"" + name_ + "\",\n");
+  if (!frames_.empty()) {
     file->Write(subindent + "Frames= {\n");
     std::string frameindent = subindent + "  ";
-    for (std::vector<frame_t>::iterator frame = frames.begin();
-         frame != frames.end(); ++frame) {
+    for (std::vector<frame_t>::iterator frame = frames_.begin();
+         frame != frames_.end(); ++frame) {
       file->Write(
-          frameindent + "{Frame= " + std::to_string(frame->frame) +
-          ", Delay= " + std::to_string(frame->delay) + "},\n");
+          frameindent + "{Frame= " + std::to_string(frame->frame_) +
+          ", Delay= " + std::to_string(frame->delay_) + "},\n");
     }
     file->Write(indent + "},\n");
   }
-  for (field_cont_t::iterator field = fields.begin(); field != fields.end();
+  for (field_cont_t::iterator field = fields_.begin(); field != fields_.end();
        ++field) {
     std::set<std::string>::iterator is_string =
         fields_that_are_strings.find(field->first);
@@ -611,13 +611,13 @@ void actor_template_t::output_to_file(
       file->Write(subindent + field->first + "= " + field->second + ",\n");
     }
   }
-  for (std::vector<actor_template_t>::iterator child = children.begin();
-       child != children.end(); ++child) {
+  for (std::vector<actor_template_t>::iterator child = children_.begin();
+       child != children_.end(); ++child) {
     child->output_to_file(file, subindent);
     file->Write(",\n");
   }
   file->Write(indent + "}");
-  if (!condition.empty()) {
+  if (!condition_.empty()) {
     file->Write(")");
   }
 }

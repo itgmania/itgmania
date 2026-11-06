@@ -14,19 +14,19 @@ struct CrashData {
 
     /* We're forcing a crash (eg. failed ASSERT). */
     FORCE_CRASH,
-  } type;
+  } type_;
 
   /* Everything except FORCE_CRASH_THIS_THREAD: */
   enum { MAX_BACKTRACE_THREADS = 32 };
-  const void* BacktracePointers[MAX_BACKTRACE_THREADS][BACKTRACE_MAX_SIZE];
-  char m_ThreadName[MAX_BACKTRACE_THREADS][128];
+  const void* backtrace_pointers_[MAX_BACKTRACE_THREADS][BACKTRACE_MAX_SIZE];
+  char thread_name_[MAX_BACKTRACE_THREADS][128];
 
   /* SIGNAL only: */
-  int signal;
-  siginfo_t si;
+  int signal_;
+  siginfo_t si_;
 
   /* FORCE_CRASH_THIS_THREAD and FORCE_CRASH_DEADLOCK only: */
-  char reason[256];
+  char reason_[256];
 };
 
 #define CHILD_MAGIC_PARAMETER "--private-do-crash-handler"

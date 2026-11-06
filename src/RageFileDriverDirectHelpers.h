@@ -51,7 +51,7 @@ class DirectFilenameDB : public FilenameDB {
 
  protected:
   virtual void PopulateFileSet(FileSet& fs, const std::string& sPath);
-  std::string root;
+  std::string root_;
 };
 
 #endif

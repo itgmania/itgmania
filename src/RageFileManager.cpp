@@ -46,14 +46,14 @@ struct LoadedDriver {
    * want to send the path "Songs/Foo/Bar" to it, then we actually
    * only send "Foo/Bar".  The path "Themes/Foo" is out of the scope
    * of the driver, and GetPath returns false. */
-  RageFileDriver* m_pDriver;
-  std::string m_sType, m_sRoot, m_sMountPoint;
+  RageFileDriver* driver_;
+  std::string type_, root_, mount_point_;
 
-  int m_iRefs;
+  int refs_;
 
   LoadedDriver() {
-    m_pDriver = nullptr;
-    m_iRefs = 0;
+    driver_ = nullptr;
+    refs_ = 0;
   }
   std::string GetPath(const std::string& sPath) const;
 };
@@ -65,7 +65,7 @@ static void ReferenceAllDrivers(std::vector<LoadedDriver*>& apDriverList) {
   g_Mutex->Lock();
   apDriverList = g_pDrivers;
   for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    ++apDriverList[i]->m_iRefs;
+    ++apDriverList[i]->refs_;
   }
   g_Mutex->Unlock();
 }
@@ -73,7 +73,7 @@ static void ReferenceAllDrivers(std::vector<LoadedDriver*>& apDriverList) {
 static void UnreferenceAllDrivers(std::vector<LoadedDriver*>& apDriverList) {
   g_Mutex->Lock();
   for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    --apDriverList[i]->m_iRefs;
+    --apDriverList[i]->refs_;
   }
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
@@ -92,15 +92,15 @@ RageFileDriver* RageFileManager::GetFileDriver(std::string sMountpoint) {
   g_Mutex->Lock();
   RageFileDriver* pRet = nullptr;
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (g_pDrivers[i]->m_sType == "mountpoints") {
+    if (g_pDrivers[i]->type_ == "mountpoints") {
       continue;
     }
-    if (CompareNoCase(g_pDrivers[i]->m_sMountPoint, sMountpoint)) {
+    if (CompareNoCase(g_pDrivers[i]->mount_point_, sMountpoint)) {
       continue;
     }
 
-    pRet = g_pDrivers[i]->m_pDriver;
-    ++g_pDrivers[i]->m_iRefs;
+    pRet = g_pDrivers[i]->driver_;
+    ++g_pDrivers[i]->refs_;
     break;
   }
   g_Mutex->Unlock();
@@ -114,13 +114,13 @@ void RageFileManager::ReleaseFileDriver(RageFileDriver* pDriver) {
   g_Mutex->Lock();
   unsigned i;
   for (i = 0; i < g_pDrivers.size(); ++i) {
-    if (g_pDrivers[i]->m_pDriver == pDriver) {
+    if (g_pDrivers[i]->driver_ == pDriver) {
       break;
     }
   }
   ASSERT(i != g_pDrivers.size());
 
-  --g_pDrivers[i]->m_iRefs;
+  --g_pDrivers[i]->refs_;
 
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
@@ -260,7 +260,7 @@ void RageFileManager::ProtectPath(const std::string& path) {
   NormalizePath(normalizedPath);
   MakeLower(normalizedPath);
 
-  m_protectedPaths.insert(normalizedPath);
+  protected_paths_.insert(normalizedPath);
 }
 
 bool RageFileManager::IsPathProtected(const std::string& path) {
@@ -268,7 +268,7 @@ bool RageFileManager::IsPathProtected(const std::string& path) {
   NormalizePath(normalizedPath);
   MakeLower(normalizedPath);
 
-  return m_protectedPaths.count(normalizedPath) > 0;
+  return protected_paths_.count(normalizedPath) > 0;
 }
 
 // Mountpoints as directories cause a problem.  If "Themes/default" is a
@@ -290,10 +290,10 @@ class RageFileDriverMountpoints : public RageFileDriver {
     /* XXX: Even though these two operations lock on their own, lock around
      * them, too.  That way, nothing can sneak in and get incorrect
      * results between the flush and the re-population. */
-    FDB->FlushDirCache();
+    fdb_->FlushDirCache();
     for (unsigned i = 0; i < apDrivers.size(); ++i) {
-      if (apDrivers[i]->m_sMountPoint != "/") {
-        FDB->AddFile(apDrivers[i]->m_sMountPoint, 0, 0);
+      if (apDrivers[i]->mount_point_ != "/") {
+        fdb_->AddFile(apDrivers[i]->mount_point_, 0, 0);
       }
     }
   }
@@ -431,9 +431,9 @@ RageFileManager::RageFileManager(const std::string& argv0) {
 
   g_Mountpoints = new RageFileDriverMountpoints;
   LoadedDriver* pLoadedDriver = new LoadedDriver;
-  pLoadedDriver->m_pDriver = g_Mountpoints;
-  pLoadedDriver->m_sMountPoint = "/";
-  pLoadedDriver->m_sType = "mountpoints";
+  pLoadedDriver->driver_ = g_Mountpoints;
+  pLoadedDriver->mount_point_ = "/";
+  pLoadedDriver->type_ = "mountpoints";
   g_pDrivers.push_back(pLoadedDriver);
 
   /* The mount path is unused, but must be nonempty. */
@@ -464,7 +464,7 @@ RageFileManager::~RageFileManager() {
   /* Note that drivers can use previously-loaded drivers, eg. to load a ZIP
    * from the FS.  Unload drivers in reverse order. */
   for (int i = g_pDrivers.size() - 1; i >= 0; --i) {
-    delete g_pDrivers[i]->m_pDriver;
+    delete g_pDrivers[i]->driver_;
     delete g_pDrivers[i];
   }
   g_pDrivers.clear();
@@ -480,17 +480,17 @@ RageFileManager::~RageFileManager() {
 std::string LoadedDriver::GetPath(const std::string& sPath) const {
   /* If the path begins with /@, only match mountpoints that begin with /@. */
   if (sPath.size() >= 2 && sPath[1] == '@') {
-    if (m_sMountPoint.size() < 2 || m_sMountPoint[1] != '@') {
+    if (mount_point_.size() < 2 || mount_point_[1] != '@') {
       return std::string();
     }
   }
 
-  if (CompareNoCase(Left(sPath, m_sMountPoint.size()), m_sMountPoint)) {
+  if (CompareNoCase(Left(sPath, mount_point_.size()), mount_point_)) {
     return std::string(); /* no match */
   }
 
   /* Add one, so we don't cut off the leading slash. */
-  std::string sRet = Right(sPath, sPath.size() - m_sMountPoint.size() + 1);
+  std::string sRet = Right(sPath, sPath.size() - mount_point_.size() + 1);
   return sRet;
 }
 
@@ -527,16 +527,15 @@ void RageFileManager::GetDirListing(
 
     const unsigned OldStart = AddTo.size();
 
-    pLoadedDriver->m_pDriver->GetDirListing(
-        p, AddTo, bOnlyDirs, bReturnPathToo);
+    pLoadedDriver->driver_->GetDirListing(p, AddTo, bOnlyDirs, bReturnPathToo);
     if (AddTo.size() != OldStart) {
       ++iDriversThatReturnedFiles;
     }
 
     /* If returning the path, prepend the mountpoint name to the files this
      * driver returned. */
-    if (bReturnPathToo && pLoadedDriver->m_sMountPoint.size() > 0) {
-      const std::string& mountPoint = pLoadedDriver->m_sMountPoint;
+    if (bReturnPathToo && pLoadedDriver->mount_point_.size() > 0) {
+      const std::string& mountPoint = pLoadedDriver->mount_point_;
       /* Skip the trailing slash on the mountpoint; there's already a slash
        * there. */
       const std::string& trimPoint =
@@ -594,7 +593,7 @@ bool RageFileManager::Move(
       continue;
     }
 
-    bool ret = aDriverList[i]->m_pDriver->Move(sOldDriverPath, sNewDriverPath);
+    bool ret = aDriverList[i]->driver_->Move(sOldDriverPath, sNewDriverPath);
     if (ret) {
       Deleted = true;
     }
@@ -653,7 +652,7 @@ bool RageFileManager::Remove(const std::string& sPath_) {
       continue;
     }
 
-    bool ret = apDriverList[i]->m_pDriver->Remove(p);
+    bool ret = apDriverList[i]->driver_->Remove(p);
     if (ret) {
       bDeleted = true;
     }
@@ -751,10 +750,10 @@ bool RageFileManager::Mount(
   CHECKPOINT_M(ssprintf("Driver %s successfully made.", sType.c_str()));
 
   LoadedDriver* pLoadedDriver = new LoadedDriver;
-  pLoadedDriver->m_pDriver = pDriver;
-  pLoadedDriver->m_sType = sType;
-  pLoadedDriver->m_sRoot = sRoot;
-  pLoadedDriver->m_sMountPoint = sMountPoint;
+  pLoadedDriver->driver_ = pDriver;
+  pLoadedDriver->type_ = sType;
+  pLoadedDriver->root_ = sRoot;
+  pLoadedDriver->mount_point_ = sMountPoint;
 
   AddFilesystemDriver(pLoadedDriver);
   return true;
@@ -778,18 +777,18 @@ void RageFileManager::Unmount(
   std::vector<LoadedDriver*> apDriverListToUnmount;
   g_Mutex->Lock();
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (!sType.empty() && CompareNoCase(g_pDrivers[i]->m_sType, sType)) {
+    if (!sType.empty() && CompareNoCase(g_pDrivers[i]->type_, sType)) {
       continue;
     }
-    if (!sRoot.empty() && CompareNoCase(g_pDrivers[i]->m_sRoot, sRoot)) {
+    if (!sRoot.empty() && CompareNoCase(g_pDrivers[i]->root_, sRoot)) {
       continue;
     }
     if (!sMountPoint.empty() &&
-        CompareNoCase(g_pDrivers[i]->m_sMountPoint, sMountPoint)) {
+        CompareNoCase(g_pDrivers[i]->mount_point_, sMountPoint)) {
       continue;
     }
 
-    ++g_pDrivers[i]->m_iRefs;
+    ++g_pDrivers[i]->refs_;
     apDriverListToUnmount.push_back(g_pDrivers[i]);
     g_pDrivers.erase(g_pDrivers.begin() + i);
     --i;
@@ -805,12 +804,12 @@ void RageFileManager::Unmount(
      * using it; wait for that operation to complete. Note that two Unmount()
      * calls that want to remove the same mountpoint will deadlock here. */
     g_Mutex->Lock();
-    while (apDriverListToUnmount[0]->m_iRefs > 1) {
+    while (apDriverListToUnmount[0]->refs_ > 1) {
       g_Mutex->Wait();
     }
     g_Mutex->Unlock();
 
-    delete apDriverListToUnmount[0]->m_pDriver;
+    delete apDriverListToUnmount[0]->driver_;
     delete apDriverListToUnmount[0];
     apDriverListToUnmount.erase(apDriverListToUnmount.begin());
   }
@@ -821,9 +820,9 @@ void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& asMounts) {
 
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
     DriverLocation l;
-    l.MountPoint = g_pDrivers[i]->m_sMountPoint;
-    l.Type = g_pDrivers[i]->m_sType;
-    l.Root = g_pDrivers[i]->m_sRoot;
+    l.mount_point_ = g_pDrivers[i]->mount_point_;
+    l.type_ = g_pDrivers[i]->type_;
+    l.root_ = g_pDrivers[i]->root_;
     asMounts.push_back(l);
   }
 }
@@ -835,7 +834,7 @@ void RageFileManager::FlushDirCache(const std::string& sPath_) {
 
   if (sPath == "") {
     for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-      g_pDrivers[i]->m_pDriver->FlushDirCache("");
+      g_pDrivers[i]->driver_->FlushDirCache("");
     }
     return;
   }
@@ -847,7 +846,7 @@ void RageFileManager::FlushDirCache(const std::string& sPath_) {
     if (path.size() == 0) {
       continue;
     }
-    g_pDrivers[i]->m_pDriver->FlushDirCache(path);
+    g_pDrivers[i]->driver_->FlushDirCache(path);
   }
 }
 
@@ -866,7 +865,7 @@ RageFileManager::FileType RageFileManager::GetFileType(
     if (p.size() == 0) {
       continue;
     }
-    ret = apDriverList[i]->m_pDriver->GetFileType(p);
+    ret = apDriverList[i]->driver_->GetFileType(p);
     if (ret != TYPE_NONE) {
       break;
     }
@@ -891,7 +890,7 @@ int RageFileManager::GetFileSizeInBytes(const std::string& sPath_) {
     if (p.size() == 0) {
       continue;
     }
-    iRet = apDriverList[i]->m_pDriver->GetFileSizeInBytes(p);
+    iRet = apDriverList[i]->driver_->GetFileSizeInBytes(p);
     if (iRet != -1) {
       break;
     }
@@ -915,7 +914,7 @@ int RageFileManager::GetFileHash(const std::string& sPath_) {
     if (p.size() == 0) {
       continue;
     }
-    iRet = apDriverList[i]->m_pDriver->GetFileHash(p);
+    iRet = apDriverList[i]->driver_->GetFileHash(p);
     if (iRet != -1) {
       break;
     }
@@ -984,7 +983,7 @@ void RageFileManager::CacheFile(
   std::string sPath = sPath_;
   NormalizePath(sPath);
   sPath = it->second->GetPath(sPath);
-  it->second->m_pDriver->FDB->CacheFile(sPath);
+  it->second->driver_->fdb_->CacheFile(sPath);
   g_mFileDriverMap.erase(it);
   g_Mutex->Unlock();
 }
@@ -1001,7 +1000,7 @@ RageFileBasic* RageFileManager::OpenForReading(
       continue;
     }
     int error;
-    RageFileBasic* ret = ld.m_pDriver->Open(path, mode, error);
+    RageFileBasic* ret = ld.driver_->Open(path, mode, error);
     if (ret) {
       UnreferenceAllDrivers(apDriverList);
       return ret;
@@ -1050,7 +1049,7 @@ RageFileBasic* RageFileManager::OpenForWriting(
       continue;
     }
 
-    const int value = ld.m_pDriver->GetPathValue(path);
+    const int value = ld.driver_->GetPathValue(path);
     if (value == -1) {
       continue;
     }
@@ -1079,7 +1078,7 @@ RageFileBasic* RageFileManager::OpenForWriting(
     ASSERT(!sDriverPath.empty());
 
     int iThisError;
-    RageFileBasic* pRet = ld.m_pDriver->Open(sDriverPath, mode, iThisError);
+    RageFileBasic* pRet = ld.driver_->Open(sDriverPath, mode, iThisError);
     if (pRet) {
       g_Mutex->Lock();
       g_mFileDriverMap[pRet] = &ld;

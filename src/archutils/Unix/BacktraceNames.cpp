@@ -20,14 +20,14 @@
 
 void BacktraceNames::Demangle() {
   /* demangle the name using __cxa_demangle() if needed */
-  if (Symbol.substr(0, 2) != "_Z") {
+  if (symbol_.substr(0, 2) != "_Z") {
     return;
   }
 
   int status = 0;
-  char* name = abi::__cxa_demangle(Symbol.c_str(), nullptr, nullptr, &status);
+  char* name = abi::__cxa_demangle(symbol_.c_str(), nullptr, nullptr, &status);
   if (name) {
-    Symbol = name;
+    symbol_ = name;
     free(name);
     return;
   }
@@ -37,7 +37,7 @@ void BacktraceNames::Demangle() {
       fprintf(stderr, "Out of memory\n");
       break;
     case -2:
-      fprintf(stderr, "Invalid mangled name: %s.\n", Symbol.c_str());
+      fprintf(stderr, "Invalid mangled name: %s.\n", symbol_.c_str());
       break;
     case -3:
       fprintf(stderr, "Invalid arguments.\n");
@@ -52,7 +52,7 @@ void BacktraceNames::Demangle() {}
 #endif
 
 std::string BacktraceNames::Format() const {
-  std::string ShortenedPath = File;
+  std::string ShortenedPath = file_;
   if (ShortenedPath != "") {
     /* Abbreviate the module name. */
     size_t slash = ShortenedPath.rfind('/');
@@ -62,9 +62,9 @@ std::string BacktraceNames::Format() const {
     ShortenedPath = std::string("(") + ShortenedPath + ")";
   }
 
-  std::string ret = ssprintf("%0*lx: ", int(sizeof(void*) * 2), (long)Address);
-  if (Symbol != "") {
-    ret += Symbol + " ";
+  std::string ret = ssprintf("%0*lx: ", int(sizeof(void*) * 2), (long)address_);
+  if (symbol_ != "") {
+    ret += symbol_ + " ";
   }
   ret += ShortenedPath;
 
@@ -75,7 +75,7 @@ std::string BacktraceNames::Format() const {
 /* This version simply asks libdl, which is more robust. */
 #include <dlfcn.h>
 void BacktraceNames::FromAddr(void* const p) {
-  Address = (intptr_t)p;
+  address_ = (intptr_t)p;
 
   /*
    * When calling a function that doesn't return, gcc will truncate a function.
@@ -105,18 +105,18 @@ void BacktraceNames::FromAddr(void* const p) {
     }
   }
 
-  Symbol = di.dli_sname ? di.dli_sname : "";
-  File = di.dli_fname;
-  Offset = (char*)(p) - (char*)di.dli_saddr;
+  symbol_ = di.dli_sname ? di.dli_sname : "";
+  file_ = di.dli_fname;
+  offset_ = (char*)(p) - (char*)di.dli_saddr;
 }
 
 #else
 #warning Undefined BACKTRACE_LOOKUP_METHOD_*
 void BacktraceNames::FromAddr(void* const p) {
-  Address = intptr_t(p);
-  Offset = 0;
-  Symbol = "";
-  File = "";
+  address_ = intptr_t(p);
+  offset_ = 0;
+  symbol_ = "";
+  file_ = "";
 }
 #endif
 

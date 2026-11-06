@@ -22,10 +22,10 @@ class MeterDisplay : public ActorFrame {
   void PushSelf(lua_State* L);
 
  private:
-  float m_fStreamWidth;
-  float m_fPercent;
-  AutoActor m_sprStream;
-  AutoActor m_sprTip;
+  float stream_width_;
+  float percent_;
+  AutoActor spr_stream_;
+  AutoActor spr_tip_;
 };
 
 class SongMeterDisplay : public MeterDisplay {

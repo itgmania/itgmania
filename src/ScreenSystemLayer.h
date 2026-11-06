@@ -12,8 +12,8 @@ class ScreenSystemLayer : public Screen {
   virtual void Init();
 
  private:
-  AutoActor m_sprOverlay;
-  AutoActor m_errLayer;
+  AutoActor spr_overlay_;
+  AutoActor err_layer_;
 };
 
 #endif

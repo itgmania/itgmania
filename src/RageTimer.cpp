@@ -62,8 +62,8 @@ uint64_t RageTimer::GetTimeSinceStartMicroseconds() {
 void RageTimer::Touch() {
   uint64_t usecs = GetTime();
 
-  this->m_secs = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-  this->m_us = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+  this->secs_ = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+  this->us_ = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
 float RageTimer::Ago() const {
@@ -98,10 +98,10 @@ float RageTimer::operator-(const RageTimer& rhs) const {
 }
 
 bool RageTimer::operator<(const RageTimer& rhs) const {
-  if (m_secs != rhs.m_secs) {
-    return m_secs < rhs.m_secs;
+  if (secs_ != rhs.secs_) {
+    return secs_ < rhs.secs_;
   }
-  return m_us < rhs.m_us;
+  return us_ < rhs.us_;
 }
 
 RageTimer RageTimer::Sum(const RageTimer& lhs, float tm) {
@@ -116,14 +116,14 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm) {
   RageTimer ret(0, 0);
 
   // Calculate the sum of the seconds and microseconds
-  ret.m_secs = seconds + lhs.m_secs;
-  ret.m_us = us + lhs.m_us;
+  ret.secs_ = seconds + lhs.secs_;
+  ret.us_ = us + lhs.us_;
 
   // Adjust the seconds and microseconds if microseconds is greater than or
   // equal to TIMESTAMP_RESOLUTION
-  if (ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL) {
-    ret.m_us -= ONE_SECOND_IN_MICROSECONDS_ULL;
-    ++ret.m_secs;
+  if (ret.us_ >= ONE_SECOND_IN_MICROSECONDS_ULL) {
+    ret.us_ -= ONE_SECOND_IN_MICROSECONDS_ULL;
+    ++ret.secs_;
   }
 
   return ret;
@@ -131,8 +131,8 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm) {
 
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs) {
   // Calculate the difference in seconds and microseconds respectively
-  int64_t secs = lhs.m_secs - rhs.m_secs;
-  int64_t us = lhs.m_us - rhs.m_us;
+  int64_t secs = lhs.secs_ - rhs.secs_;
+  int64_t us = lhs.us_ - rhs.us_;
 
   // Adjust seconds and microseconds if microseconds is negative
   if (us < 0) {

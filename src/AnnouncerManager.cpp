@@ -68,9 +68,9 @@ std::string AnnouncerManager::GetAnnouncerDirFromName(
 
 void AnnouncerManager::SwitchAnnouncer(std::string sNewAnnouncerName) {
   if (!DoesAnnouncerExist(sNewAnnouncerName)) {
-    m_sCurAnnouncerName = "";
+    cur_announcer_name_ = "";
   } else {
-    m_sCurAnnouncerName = sNewAnnouncerName;
+    cur_announcer_name_ = sNewAnnouncerName;
   }
 }
 
@@ -158,7 +158,7 @@ std::string AnnouncerManager::GetPathTo(
 }
 
 std::string AnnouncerManager::GetPathTo(std::string sFolderName) {
-  return GetPathTo(m_sCurAnnouncerName, sFolderName);
+  return GetPathTo(cur_announcer_name_, sFolderName);
 }
 
 bool AnnouncerManager::HasSoundsFor(std::string sFolderName) {
@@ -172,12 +172,12 @@ void AnnouncerManager::NextAnnouncer() {
     return;
   }
 
-  if (m_sCurAnnouncerName == "") {
+  if (cur_announcer_name_ == "") {
     SwitchAnnouncer(as[0]);
   } else {
     unsigned i;
     for (i = 0; i < as.size(); i++) {
-      if (EqualsNoCase(as[i], m_sCurAnnouncerName)) {
+      if (EqualsNoCase(as[i], cur_announcer_name_)) {
         break;
       }
     }

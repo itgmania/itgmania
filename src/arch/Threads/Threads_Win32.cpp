@@ -48,24 +48,24 @@ void ThreadImpl_Win32::Halt(bool Kill) {
   if (Kill) {
     ExitThread(0);  // 0 indicates the thread was terminated
   } else {
-    SuspendThread(ThreadHandle);
+    SuspendThread(thread_handle_);
   }
 }
 
-void ThreadImpl_Win32::Resume() { ResumeThread(ThreadHandle); }
+void ThreadImpl_Win32::Resume() { ResumeThread(thread_handle_); }
 
 uint64_t ThreadImpl_Win32::GetThreadId() const {
-  return static_cast<uint64_t>(ThreadId);
+  return static_cast<uint64_t>(thread_id_);
 }
 
 int ThreadImpl_Win32::Wait() {
-  WaitForSingleObject(ThreadHandle, INFINITE);
+  WaitForSingleObject(thread_handle_, INFINITE);
 
   DWORD ret;
-  GetExitCodeThread(ThreadHandle, &ret);
+  GetExitCodeThread(thread_handle_, &ret);
 
-  CloseHandle(ThreadHandle);
-  ThreadHandle = nullptr;
+  CloseHandle(thread_handle_);
+  thread_handle_ = nullptr;
 
   return ret;
 }
@@ -74,19 +74,19 @@ int ThreadImpl_Win32::Wait() {
 #define MS_VC_EXCEPTION 0x406d1388
 
 typedef struct tagTHREADNAME_INFO {
-  DWORD dwType;      // must be 0x1000
-  LPCSTR szName;     // pointer to name (in same addr space)
-  DWORD dwThreadID;  // thread ID (-1 caller thread)
-  DWORD dwFlags;     // reserved for future use, must be zero
+  DWORD type_;       // must be 0x1000
+  LPCSTR name_;      // pointer to name (in same addr space)
+  DWORD thread_id_;  // thread ID (-1 caller thread)
+  DWORD flags_;      // reserved for future use, must be zero
 } THREADNAME_INFO;
 
 static void SetThreadName(DWORD dwThreadID, LPCTSTR szThreadName) {
 #if defined(_MSC_VER)
   THREADNAME_INFO info;
-  info.dwType = 0x1000;
-  info.szName = szThreadName;
-  info.dwThreadID = dwThreadID;
-  info.dwFlags = 0;
+  info.type_ = 0x1000;
+  info.name_ = szThreadName;
+  info.thread_id_ = dwThreadID;
+  info.flags_ = 0;
 
 #ifdef _DEBUG
   __try {
@@ -110,7 +110,7 @@ static DWORD WINAPI StartThread(LPVOID pData) {
 
   SetThreadName(GetCurrentThreadId(), RageThread::GetCurrentThreadName());
 
-  DWORD ret = static_cast<DWORD>(pThis->m_pFunc(pThis->m_pData));
+  DWORD ret = static_cast<DWORD>(pThis->func_(pThis->data_));
 
   std::lock_guard<std::mutex> lock(g_ThreadDataMutex);
   for (int i = 0; i < MAX_THREADS; ++i) {
@@ -151,17 +151,17 @@ ThreadImpl* MakeThisThread() {
 
   const HANDLE CurProc = GetCurrentProcess();
   int ret = DuplicateHandle(
-      CurProc, GetCurrentThread(), CurProc, &thread->ThreadHandle, 0, false,
+      CurProc, GetCurrentThread(), CurProc, &thread->thread_handle_, 0, false,
       DUPLICATE_SAME_ACCESS);
 
   if (!ret) {
-    thread->ThreadHandle = nullptr;
+    thread->thread_handle_ = nullptr;
   }
 
-  thread->ThreadId = GetCurrentThreadId();
+  thread->thread_id_ = GetCurrentThreadId();
 
   int slot = GetOpenSlot(GetCurrentThreadId());
-  g_ThreadHandles[slot] = thread->ThreadHandle;
+  g_ThreadHandles[slot] = thread->thread_handle_;
 
   return thread.release();
 }
@@ -170,21 +170,21 @@ ThreadImpl* MakeThread(
     int (*pFunc)(void* pData), void* pData, uint64_t* piThreadID) {
   std::unique_ptr<ThreadImpl_Win32> thread =
       std::make_unique<ThreadImpl_Win32>();
-  thread->m_pFunc = pFunc;
-  thread->m_pData = pData;
+  thread->func_ = pFunc;
+  thread->data_ = pData;
 
-  thread->ThreadHandle = CreateThread(
+  thread->thread_handle_ = CreateThread(
       nullptr, 0, &StartThread, thread.get(), CREATE_SUSPENDED,
-      &thread->ThreadId);
-  *piThreadID = static_cast<uint64_t>(thread->ThreadId);
+      &thread->thread_id_);
+  *piThreadID = static_cast<uint64_t>(thread->thread_id_);
   ASSERT_M(
-      thread->ThreadHandle != nullptr,
+      thread->thread_handle_ != nullptr,
       ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str()));
 
-  int slot = GetOpenSlot(thread->ThreadId);
-  g_ThreadHandles[slot] = thread->ThreadHandle;
+  int slot = GetOpenSlot(thread->thread_id_);
+  g_ThreadHandles[slot] = thread->thread_handle_;
 
-  int iRet = ResumeThread(thread->ThreadHandle);
+  int iRet = ResumeThread(thread->thread_handle_);
   ASSERT_M(
       iRet == 1,
       ssprintf("%s", werr_ssprintf(GetLastError(), "ResumeThread").c_str()));
@@ -193,11 +193,11 @@ ThreadImpl* MakeThread(
 }
 
 MutexImpl_Win32::MutexImpl_Win32() {
-  mutex = CreateMutex(nullptr, false, nullptr);
-  ASSERT_M(mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex"));
+  mutex_ = CreateMutex(nullptr, false, nullptr);
+  ASSERT_M(mutex_ != nullptr, werr_ssprintf(GetLastError(), "CreateMutex"));
 }
 
-MutexImpl_Win32::~MutexImpl_Win32() { CloseHandle(mutex); }
+MutexImpl_Win32::~MutexImpl_Win32() { CloseHandle(mutex_); }
 
 /* NOTE(sukibaby):  the function name here is a bit misleading.
  * It provides additional error handling and assertions which
@@ -230,7 +230,7 @@ static bool SimpleWaitForSingleObject(HANDLE h, DWORD ms) {
 }
 
 bool MutexImpl_Win32::Lock() {
-  DWORD dwWaitResult = WaitForSingleObject(mutex, INFINITE);
+  DWORD dwWaitResult = WaitForSingleObject(mutex_, INFINITE);
   switch (dwWaitResult) {
     case WAIT_OBJECT_0:
       return true;
@@ -248,10 +248,10 @@ bool MutexImpl_Win32::Lock() {
   }
 }
 
-bool MutexImpl_Win32::TryLock() { return SimpleWaitForSingleObject(mutex, 0); }
+bool MutexImpl_Win32::TryLock() { return SimpleWaitForSingleObject(mutex_, 0); }
 
 void MutexImpl_Win32::Unlock() {
-  const bool ret = !!ReleaseMutex(mutex);
+  const bool ret = !!ReleaseMutex(mutex_);
 
   /* We can't ASSERT here, since this is called from checkpoints,
    * which is called from ASSERT. */
@@ -267,29 +267,29 @@ uint64_t GetInvalidThreadId() { return 0; }
 MutexImpl* MakeMutex() { return new MutexImpl_Win32(); }
 
 EventImpl_Win32::EventImpl_Win32(MutexImpl_Win32* pParent) {
-  m_pParent = pParent;
-  m_iNumWaiting = 0;
-  m_WakeupSema = CreateSemaphore(nullptr, 0, 0x7fffffff, nullptr);
-  InitializeCriticalSection(&m_iNumWaitingLock);
-  m_WaitersDone = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+  parent_ = pParent;
+  num_waiting_ = 0;
+  wakeup_sema_ = CreateSemaphore(nullptr, 0, 0x7fffffff, nullptr);
+  InitializeCriticalSection(&num_waiting_lock_);
+  waiters_done_ = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 }
 
 EventImpl_Win32::~EventImpl_Win32() {
   ASSERT_M(
-      m_iNumWaiting == 0,
-      ssprintf("event destroyed while still in use (%i)", m_iNumWaiting));
+      num_waiting_ == 0,
+      ssprintf("event destroyed while still in use (%i)", num_waiting_));
 
-  // We don't own m_pParent; don't free it.
-  CloseHandle(m_WakeupSema);
-  DeleteCriticalSection(&m_iNumWaitingLock);
-  CloseHandle(m_WaitersDone);
+  // We don't own parent_; don't free it.
+  CloseHandle(wakeup_sema_);
+  DeleteCriticalSection(&num_waiting_lock_);
+  CloseHandle(waiters_done_);
 }
 
 // Event logic from http://www.cs.wustl.edu/~schmidt/win32-cv-1.html.
 bool EventImpl_Win32::Wait(RageTimer* pTimeout) {
-  EnterCriticalSection(&m_iNumWaitingLock);
-  ++m_iNumWaiting;
-  LeaveCriticalSection(&m_iNumWaitingLock);
+  EnterCriticalSection(&num_waiting_lock_);
+  ++num_waiting_;
+  LeaveCriticalSection(&num_waiting_lock_);
 
   unsigned iMilliseconds = INFINITE;
   if (pTimeout != nullptr) {
@@ -301,65 +301,65 @@ bool EventImpl_Win32::Wait(RageTimer* pTimeout) {
   // Unlock the mutex and wait for a signal.
   bool bSuccess =
       (SignalObjectAndWait(
-           m_pParent->mutex, m_WakeupSema, iMilliseconds, FALSE) ==
+           parent_->mutex_, wakeup_sema_, iMilliseconds, FALSE) ==
        WAIT_OBJECT_0);
 
-  EnterCriticalSection(&m_iNumWaitingLock);
+  EnterCriticalSection(&num_waiting_lock_);
   if (!bSuccess) {
     /* Avoid a race condition: someone may have signalled the object
      * between SignalObjectAndWait and EnterCriticalSection.
-     * While we hold m_iNumWaitingLock, poll (with a zero timeout) the
+     * While we hold num_waiting_lock_, poll (with a zero timeout) the
      * object one last time. */
-    if (WaitForSingleObject(m_WakeupSema, 0) == WAIT_OBJECT_0) {
+    if (WaitForSingleObject(wakeup_sema_, 0) == WAIT_OBJECT_0) {
       bSuccess = true;
     }
   }
-  --m_iNumWaiting;
-  bool bLastWaiting = (m_iNumWaiting == 0);
-  LeaveCriticalSection(&m_iNumWaitingLock);
+  --num_waiting_;
+  bool bLastWaiting = (num_waiting_ == 0);
+  LeaveCriticalSection(&num_waiting_lock_);
 
   /* If we're the last waiter to wake up, and we were actually woken by
    * another thread (not by timeout), wake up the signaller. */
   if (bLastWaiting && bSuccess) {
-    SignalObjectAndWait(m_WaitersDone, m_pParent->mutex, INFINITE, FALSE);
+    SignalObjectAndWait(waiters_done_, parent_->mutex_, INFINITE, FALSE);
   } else {
-    WaitForSingleObject(m_pParent->mutex, INFINITE);
+    WaitForSingleObject(parent_->mutex_, INFINITE);
   }
 
   return bSuccess;
 }
 
 void EventImpl_Win32::Signal() {
-  EnterCriticalSection(&m_iNumWaitingLock);
+  EnterCriticalSection(&num_waiting_lock_);
 
-  if (m_iNumWaiting == 0) {
-    LeaveCriticalSection(&m_iNumWaitingLock);
+  if (num_waiting_ == 0) {
+    LeaveCriticalSection(&num_waiting_lock_);
     return;
   }
 
-  ReleaseSemaphore(m_WakeupSema, 1, 0);
+  ReleaseSemaphore(wakeup_sema_, 1, 0);
 
-  LeaveCriticalSection(&m_iNumWaitingLock);
+  LeaveCriticalSection(&num_waiting_lock_);
 
-  // The waiter will touch m_WaitersDone.
-  WaitForSingleObject(m_WaitersDone, INFINITE);
+  // The waiter will touch waiters_done_.
+  WaitForSingleObject(waiters_done_, INFINITE);
 }
 
 void EventImpl_Win32::Broadcast() {
-  EnterCriticalSection(&m_iNumWaitingLock);
+  EnterCriticalSection(&num_waiting_lock_);
 
-  if (m_iNumWaiting == 0) {
-    LeaveCriticalSection(&m_iNumWaitingLock);
+  if (num_waiting_ == 0) {
+    LeaveCriticalSection(&num_waiting_lock_);
     return;
   }
 
-  ReleaseSemaphore(m_WakeupSema, m_iNumWaiting, 0);
+  ReleaseSemaphore(wakeup_sema_, num_waiting_, 0);
 
-  LeaveCriticalSection(&m_iNumWaitingLock);
+  LeaveCriticalSection(&num_waiting_lock_);
 
-  /* The last waiter will touch m_WaitersDone, so we wait for all waiters
+  /* The last waiter will touch waiters_done_, so we wait for all waiters
    * to wake up and start waiting for the mutex before returning. */
-  WaitForSingleObject(m_WaitersDone, INFINITE);
+  WaitForSingleObject(waiters_done_, INFINITE);
 }
 
 EventImpl* MakeEvent(MutexImpl* pMutex) {
@@ -369,12 +369,12 @@ EventImpl* MakeEvent(MutexImpl* pMutex) {
 }
 
 SemaImpl_Win32::SemaImpl_Win32(int iInitialValue) {
-  sem = CreateSemaphore(nullptr, iInitialValue, 999999999, nullptr);
+  sem_ = CreateSemaphore(nullptr, iInitialValue, 999999999, nullptr);
 }
 
-SemaImpl_Win32::~SemaImpl_Win32() { CloseHandle(sem); }
+SemaImpl_Win32::~SemaImpl_Win32() { CloseHandle(sem_); }
 
-void SemaImpl_Win32::Post() { ReleaseSemaphore(sem, 1, nullptr); }
+void SemaImpl_Win32::Post() { ReleaseSemaphore(sem_, 1, nullptr); }
 
 bool SemaImpl_Win32::Wait() {
   int len = 15000;
@@ -383,7 +383,7 @@ bool SemaImpl_Win32::Wait() {
   while (tries--) {
     /* Wait for 15 seconds. If it takes longer than that, we're
      * probably deadlocked. */
-    if (SimpleWaitForSingleObject(sem, len)) {
+    if (SimpleWaitForSingleObject(sem_, len)) {
       return true;
     }
 

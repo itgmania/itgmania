@@ -37,33 +37,33 @@ REGISTER_SCREEN_CLASS(ScreenBookkeeping);
 void ScreenBookkeeping::Init() {
   ScreenWithMenuElements::Init();
 
-  m_textAllTime.LoadFromFont(THEME->GetPathF(m_sName, "AllTime"));
-  m_textAllTime.SetName("AllTime");
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_textAllTime);
-  this->AddChild(&m_textAllTime);
+  text_all_time_.LoadFromFont(THEME->GetPathF(name_, "AllTime"));
+  text_all_time_.SetName("AllTime");
+  LOAD_ALL_COMMANDS_AND_SET_XY(text_all_time_);
+  this->AddChild(&text_all_time_);
 
-  m_textTitle.LoadFromFont(THEME->GetPathF(m_sName, "title"));
-  m_textTitle.SetName("Title");
-  LOAD_ALL_COMMANDS_AND_SET_XY(m_textTitle);
-  this->AddChild(&m_textTitle);
+  text_title_.LoadFromFont(THEME->GetPathF(name_, "title"));
+  text_title_.SetName("Title");
+  LOAD_ALL_COMMANDS_AND_SET_XY(text_title_);
+  this->AddChild(&text_title_);
 
   for (int i = 0; i < NUM_BOOKKEEPING_COLS; i++) {
-    m_textData[i].LoadFromFont(THEME->GetPathF(m_sName, "data"));
-    m_textData[i].SetName("Data");
-    LOAD_ALL_COMMANDS_AND_SET_XY(m_textData[i]);
+    text_data_[i].LoadFromFont(THEME->GetPathF(name_, "data"));
+    text_data_[i].SetName("Data");
+    LOAD_ALL_COMMANDS_AND_SET_XY(text_data_[i]);
     float fX = SCALE(
         i, 0.f, NUM_BOOKKEEPING_COLS - 1, SCREEN_LEFT + 50, SCREEN_RIGHT - 160);
-    m_textData[i].SetX(fX);
-    this->AddChild(&m_textData[i]);
+    text_data_[i].SetX(fX);
+    this->AddChild(&text_data_[i]);
   }
 
   FOREACH_ENUM(BookkeepingView, i) {
-    if (THEME->GetMetricB(m_sName, "Show" + BookkeepingViewToString(i))) {
-      m_vBookkeepingViews.push_back(i);
+    if (THEME->GetMetricB(name_, "Show" + BookkeepingViewToString(i))) {
+      bookkeeping_views_.push_back(i);
     }
   }
 
-  m_iViewIndex = 0;
+  view_index_ = 0;
 
   UpdateView();
 }
@@ -73,7 +73,7 @@ void ScreenBookkeeping::Update(float fDelta) {
 }
 
 bool ScreenBookkeeping::Input(const InputEventPlus& input) {
-  if (input.type != IET_FIRST_PRESS && input.type != IET_REPEAT) {
+  if (input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT) {
     return false;  // ignore
   }
 
@@ -81,16 +81,16 @@ bool ScreenBookkeeping::Input(const InputEventPlus& input) {
 }
 
 bool ScreenBookkeeping::MenuLeft(const InputEventPlus& input) {
-  m_iViewIndex--;
-  rage_clamp(m_iViewIndex, 0, m_vBookkeepingViews.size() - 1);
+  view_index_--;
+  rage_clamp(view_index_, 0, bookkeeping_views_.size() - 1);
 
   UpdateView();
   return true;
 }
 
 bool ScreenBookkeeping::MenuRight(const InputEventPlus& input) {
-  m_iViewIndex++;
-  rage_clamp(m_iViewIndex, 0, m_vBookkeepingViews.size() - 1);
+  view_index_++;
+  rage_clamp(view_index_, 0, bookkeeping_views_.size() - 1);
 
   UpdateView();
   return true;
@@ -133,13 +133,13 @@ static LocalizedString DAY_OF_WEEK(
 static LocalizedString HOUR_OF_DAY(
     "ScreenBookkeeping", "Coin Data by Hour of Day, All-Time");
 void ScreenBookkeeping::UpdateView() {
-  BookkeepingView view = m_vBookkeepingViews[m_iViewIndex];
+  BookkeepingView view = bookkeeping_views_[view_index_];
 
   {
     std::string s;
     s += ALL_TIME.GetValue();
     s += ssprintf(" %i\n", BOOKKEEPER->GetCoinsTotal());
-    m_textAllTime.SetText(s);
+    text_all_time_.SetText(s);
   }
 
   switch (view) {
@@ -155,7 +155,7 @@ void ScreenBookkeeping::UpdateView() {
         iCount += pProfile->GetSongNumTimesPlayed(pSong);
         vpSongs.push_back(pSong);
       }
-      m_textTitle.SetText(ssprintf(SONG_PLAYS.GetValue().c_str(), iCount));
+      text_title_.SetText(ssprintf(SONG_PLAYS.GetValue().c_str(), iCount));
       SongUtil::SortSongPointerArrayByNumPlays(vpSongs, pProfile, true);
 
       const int iSongPerCol = 15;
@@ -176,12 +176,12 @@ void ScreenBookkeeping::UpdateView() {
             iSongIndex++;
           }
         }
-        m_textData[i].SetText(s);
-        m_textData[i].SetHorizAlign(align_left);
+        text_data_[i].SetText(s);
+        text_data_[i].SetHorizAlign(align_left);
       }
     } break;
     case BookkeepingView_LastDays: {
-      m_textTitle.SetText(
+      text_title_.SetText(
           ssprintf(LAST_DAYS.GetValue().c_str(), NUM_LAST_DAYS));
 
       int coins[NUM_LAST_DAYS];
@@ -198,15 +198,15 @@ void ScreenBookkeeping::UpdateView() {
       sTitle += ALL_TIME.GetValue() + "\n";
       sData += ssprintf("%i\n", iTotalLast);
 
-      m_textData[0].SetText("");
-      m_textData[1].SetHorizAlign(align_left);
-      m_textData[1].SetText(sTitle);
-      m_textData[2].SetText("");
-      m_textData[3].SetHorizAlign(align_right);
-      m_textData[3].SetText(sData);
+      text_data_[0].SetText("");
+      text_data_[1].SetHorizAlign(align_left);
+      text_data_[1].SetText(sTitle);
+      text_data_[2].SetText("");
+      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetText(sData);
     } break;
     case BookkeepingView_LastWeeks: {
-      m_textTitle.SetText(
+      text_title_.SetText(
           ssprintf(LAST_WEEKS.GetValue().c_str(), NUM_LAST_WEEKS));
 
       int coins[NUM_LAST_WEEKS];
@@ -221,12 +221,12 @@ void ScreenBookkeeping::UpdateView() {
                    ssprintf(": %d", coins[week]) + "\n";
         }
 
-        m_textData[col].SetHorizAlign(align_left);
-        m_textData[col].SetText(sTemp);
+        text_data_[col].SetHorizAlign(align_left);
+        text_data_[col].SetText(sTemp);
       }
     } break;
     case BookkeepingView_DayOfWeek: {
-      m_textTitle.SetText(DAY_OF_WEEK);
+      text_title_.SetText(DAY_OF_WEEK);
 
       int coins[DAYS_IN_WEEK];
       BOOKKEEPER->GetCoinsByDayOfWeek(coins);
@@ -237,15 +237,15 @@ void ScreenBookkeeping::UpdateView() {
         sData += ssprintf("%d", coins[i]) + "\n";
       }
 
-      m_textData[0].SetText("");
-      m_textData[1].SetHorizAlign(align_left);
-      m_textData[1].SetText(sTitle);
-      m_textData[2].SetText("");
-      m_textData[3].SetHorizAlign(align_right);
-      m_textData[3].SetText(sData);
+      text_data_[0].SetText("");
+      text_data_[1].SetHorizAlign(align_left);
+      text_data_[1].SetText(sTitle);
+      text_data_[2].SetText("");
+      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetText(sData);
     } break;
     case BookkeepingView_HourOfDay: {
-      m_textTitle.SetText(HOUR_OF_DAY);
+      text_title_.SetText(HOUR_OF_DAY);
 
       int coins[HOURS_IN_DAY];
       BOOKKEEPER->GetCoinsByHour(coins);
@@ -262,14 +262,14 @@ void ScreenBookkeeping::UpdateView() {
         sData2 += ssprintf("%d", coins[i]) + "\n";
       }
 
-      m_textData[0].SetHorizAlign(align_left);
-      m_textData[0].SetText(sTitle1);
-      m_textData[1].SetHorizAlign(align_right);
-      m_textData[1].SetText(sData1);
-      m_textData[2].SetHorizAlign(align_left);
-      m_textData[2].SetText(sTitle2);
-      m_textData[3].SetHorizAlign(align_right);
-      m_textData[3].SetText(sData2);
+      text_data_[0].SetHorizAlign(align_left);
+      text_data_[0].SetText(sTitle1);
+      text_data_[1].SetHorizAlign(align_right);
+      text_data_[1].SetText(sData1);
+      text_data_[2].SetHorizAlign(align_left);
+      text_data_[2].SetText(sTitle2);
+      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetText(sData2);
     } break;
     default:
       FAIL_M(ssprintf("Invalid BookkeepingView: %i", view));

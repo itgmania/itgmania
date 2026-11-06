@@ -5,20 +5,20 @@
 #include <cstdint>
 #include <vector>
 
-RageSoundMixBuffer::RageSoundMixBuffer() : m_iOffset(0) {}
+RageSoundMixBuffer::RageSoundMixBuffer() : offset_(0) {}
 RageSoundMixBuffer::~RageSoundMixBuffer() {}
 
 /* write() will start mixing iOffset samples into the buffer.  Be careful; this
  * is measured in samples, not frames, so if the data is stereo, multiply by
  * two. */
 void RageSoundMixBuffer::SetWriteOffset(int iOffset) {
-  m_iOffset = static_cast<int>(iOffset);
+  offset_ = static_cast<int>(iOffset);
 }
 
 void RageSoundMixBuffer::Extend(unsigned iSamples) {
-  const unsigned realsize = iSamples + m_iOffset;
-  if (m_pMixbuf.size() < realsize) {
-    m_pMixbuf.resize(realsize, 0.0f);
+  const unsigned realsize = iSamples + offset_;
+  if (mixbuf_.size() < realsize) {
+    mixbuf_.resize(realsize, 0.0f);
   }
 }
 
@@ -33,7 +33,7 @@ void RageSoundMixBuffer::write(
   Extend(iSize * iDestStride - (iDestStride - 1));
 
   // Load the audio at m_iOffset into the buffer.
-  float* pDestBuf = &m_pMixbuf[m_iOffset];
+  float* pDestBuf = &mixbuf_[offset_];
 
   while (iSize) {
     *pDestBuf += *pBuf;
@@ -44,32 +44,32 @@ void RageSoundMixBuffer::write(
 }
 
 void RageSoundMixBuffer::read(int16_t* pBuf) {
-  for (unsigned iPos = 0; iPos < m_pMixbuf.size(); ++iPos) {
+  for (unsigned iPos = 0; iPos < mixbuf_.size(); ++iPos) {
     // do the read
-    float iOut = m_pMixbuf[iPos];
+    float iOut = mixbuf_[iPos];
     // ensure volume is within expected levels to prevent clipping
     iOut = std::clamp(iOut, -1.0f, +1.0f);
     // round rather than truncate to minimize distortion
     pBuf[iPos] = static_cast<int16_t>(std::round(iOut * INT16_MAX));
   }
-  m_pMixbuf.clear();
+  mixbuf_.clear();
 }
 
 void RageSoundMixBuffer::read(float* pBuf) {
   // ensure volume is within expected levels to prevent clipping
-  std::transform(m_pMixbuf.begin(), m_pMixbuf.end(), pBuf, [](float s) {
+  std::transform(mixbuf_.begin(), mixbuf_.end(), pBuf, [](float s) {
     return std::clamp(s, -1.0f, +1.0f);
   });
-  m_pMixbuf.clear();
+  mixbuf_.clear();
 }
 
 void RageSoundMixBuffer::read_deinterlace(float** pBufs, int channels) {
-  for (unsigned i = 0; i < m_pMixbuf.size() / channels; ++i) {
+  for (unsigned i = 0; i < mixbuf_.size() / channels; ++i) {
     for (int ch = 0; ch < channels; ++ch) {
-      pBufs[ch][i] = m_pMixbuf[channels * i + ch];
+      pBufs[ch][i] = mixbuf_[channels * i + ch];
     }
   }
-  m_pMixbuf.clear();
+  mixbuf_.clear();
 }
 
 /*

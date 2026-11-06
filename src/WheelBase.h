@@ -54,26 +54,28 @@ class WheelBase : public ActorFrame {
 
   virtual bool Select();  // return true if this selection can end the screen
 
-  WheelState GetWheelState() { return m_WheelState; }
-  bool WheelIsLocked() { return (m_WheelState == STATE_LOCKED ? true : false); }
+  WheelState GetWheelState() { return wheel_state_; }
+  bool WheelIsLocked() { return (wheel_state_ == STATE_LOCKED ? true : false); }
   void RebuildWheelItems(int dist = INT_MAX);  // INT_MAX = refresh all
   // Update the list of songs to match whatever songs are indexed by the song
   // manager (SONGMAN)
   virtual void ReloadSongList() {}
 
-  virtual unsigned int GetNumItems() const { return m_CurWheelItemData.size(); }
-  bool IsEmpty() { return m_bEmpty; }
+  virtual unsigned int GetNumItems() const {
+    return cur_wheel_item_data_.size();
+  }
+  bool IsEmpty() { return empty_; }
   WheelItemBase* GetWheelItem(int i) {
-    if (i < 0 || i >= (int)m_WheelBaseItems.size()) {
+    if (i < 0 || i >= (int)wheel_base_items_.size()) {
       return nullptr;
     }
-    return m_WheelBaseItems[i];
+    return wheel_base_items_[i];
   }
-  std::string GetExpandedSectionName() { return m_sExpandedSectionName; }
-  int GetCurrentIndex() { return m_iSelection; }
+  std::string GetExpandedSectionName() { return expanded_section_name_; }
+  int GetCurrentIndex() { return selection_; }
 
   WheelItemDataType GetSelectedType() {
-    return m_CurWheelItemData[m_iSelection]->m_Type;
+    return cur_wheel_item_data_[selection_]->type_;
   }
 
   // Lua
@@ -88,32 +90,32 @@ class WheelBase : public ActorFrame {
   virtual bool MoveSpecific(int n);
   void SetPositions();
 
-  ScrollBar m_ScrollBar;
-  AutoActor m_sprHighlight;
+  ScrollBar scroll_bar_;
+  AutoActor spr_highlight_;
 
-  std::vector<WheelItemBaseData*> m_CurWheelItemData;
-  std::vector<WheelItemBase*> m_WheelBaseItems;
+  std::vector<WheelItemBaseData*> cur_wheel_item_data_;
+  std::vector<WheelItemBase*> wheel_base_items_;
 
-  bool m_bEmpty;
-  int m_iSelection;  // index into m_CurWheelItemBaseData
-  std::string m_sExpandedSectionName;
+  bool empty_;
+  int selection_;  // index into m_CurWheelItemBaseData
+  std::string expanded_section_name_;
 
-  int m_iSwitchesLeftInSpinDown;
-  float m_fLockedWheelVelocity;
+  int switches_left_in_spin_down_;
+  float locked_wheel_velocity_;
   // 0 = none; -1 or 1 = up/down
-  int m_Moving;
-  RageTimer m_MovingSoundTimer;
-  float m_TimeBeforeMovingBegins;
-  float m_SpinSpeed;
+  int moving_;
+  RageTimer moving_sound_timer_;
+  float time_before_moving_begins_;
+  float spin_speed_;
 
-  WheelState m_WheelState;
-  float m_fTimeLeftInState;
-  float m_fPositionOffsetFromSelection;
+  WheelState wheel_state_;
+  float time_left_in_state_;
+  float position_offset_from_selection_;
 
-  RageSound m_soundChangeMusic;
-  RageSound m_soundExpand;
-  RageSound m_soundCollapse;
-  RageSound m_soundLocked;
+  RageSound sound_change_music_;
+  RageSound sound_expand_;
+  RageSound sound_collapse_;
+  RageSound sound_locked_;
 
   //	bool WheelItemIsVisible(int n);
   void UpdateScrollbar();
@@ -121,7 +123,7 @@ class WheelBase : public ActorFrame {
   ThemeMetric<float> SWITCH_SECONDS;
   ThemeMetric<float> LOCKED_INITIAL_VELOCITY;
   ThemeMetric<int> SCROLL_BAR_HEIGHT;
-  LuaExpressionTransform m_exprItemTransformFunction;
+  LuaExpressionTransform expr_item_transform_function_;
   ThemeMetric<float> NUM_WHEEL_ITEMS_TO_DRAW;
   ThemeMetric<RageColor> WHEEL_ITEM_LOCKED_COLOR;
 };

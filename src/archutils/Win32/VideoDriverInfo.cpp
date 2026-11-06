@@ -62,7 +62,7 @@ std::string GetPrimaryVideoDriverName() {
     return "(ERROR DETECTING VIDEO DRIVER)";
   }
 
-  return info.sDescription;
+  return info.description_;
 }
 
 /* Get info for the given card number.  Return false if that card doesn't exist.
@@ -98,17 +98,17 @@ bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info) {
   while (iCardno < (int)lst.size()) {
     const std::string sKey = lst[iCardno];
 
-    if (!RegistryAccess::GetRegValue(sKey, "DriverDesc", info.sDescription)) {
+    if (!RegistryAccess::GetRegValue(sKey, "DriverDesc", info.description_)) {
       /* Remove this one from the list and ignore it, */
       lst.erase(lst.begin() + iCardno);
       continue;
     }
-    TrimRight(info.sDescription);
+    TrimRight(info.description_);
 
-    RegistryAccess::GetRegValue(sKey, "DriverDate", info.sDate);
-    RegistryAccess::GetRegValue(sKey, "MatchingDeviceId", info.sDeviceID);
-    RegistryAccess::GetRegValue(sKey, "ProviderName", info.sProvider);
-    RegistryAccess::GetRegValue(sKey, "DriverVersion", info.sVersion);
+    RegistryAccess::GetRegValue(sKey, "DriverDate", info.date_);
+    RegistryAccess::GetRegValue(sKey, "MatchingDeviceId", info.device_id_);
+    RegistryAccess::GetRegValue(sKey, "ProviderName", info.provider_);
+    RegistryAccess::GetRegValue(sKey, "DriverVersion", info.version_);
 
     return true;
   }

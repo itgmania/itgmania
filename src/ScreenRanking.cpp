@@ -54,132 +54,132 @@ static std::string STEPS_TYPE_COLOR_NAME(size_t i) {
 
 void ScreenRanking::Init() {
   STEPS_TYPES_TO_SHOW.Load(
-      m_sName,
+      name_,
       "StepsTypesToHide");  // tricky: The metric name is "hide" because
                             // ThemeMetricStepsTypesToShow takes a list of what
                             // to hide and returns what StepsTypes to show
-  PAGE_FADE_SECONDS.Load(m_sName, "PageFadeSeconds");
+  PAGE_FADE_SECONDS.Load(name_, "PageFadeSeconds");
 
   ScreenAttract::Init();
 
-  m_textStepsType.SetName("StepsType");
-  m_textStepsType.LoadFromFont(THEME->GetPathF(m_sName, "StepsType"));
-  m_textStepsType.SetShadowLength(0);
-  this->AddChild(&m_textStepsType);
-  LOAD_ALL_COMMANDS(m_textStepsType);
+  text_steps_type_.SetName("StepsType");
+  text_steps_type_.LoadFromFont(THEME->GetPathF(name_, "StepsType"));
+  text_steps_type_.SetShadowLength(0);
+  this->AddChild(&text_steps_type_);
+  LOAD_ALL_COMMANDS(text_steps_type_);
 
-  RANKING_TYPE.Load(m_sName, "RankingType");
-  COURSES_TO_SHOW.Load(m_sName, "CoursesToShow");
-  SECONDS_PER_PAGE.Load(m_sName, "SecondsPerPage");
+  RANKING_TYPE.Load(name_, "RankingType");
+  COURSES_TO_SHOW.Load(name_, "CoursesToShow");
+  SECONDS_PER_PAGE.Load(name_, "SecondsPerPage");
 
-  NO_SCORE_NAME.Load(m_sName, "NoScoreName");
-  ROW_SPACING_X.Load(m_sName, "RowSpacingX");
-  ROW_SPACING_Y.Load(m_sName, "RowSpacingY");
-  BULLET_START_X.Load(m_sName, "BulletStartX");
-  BULLET_START_Y.Load(m_sName, "BulletStartY");
-  NAME_START_X.Load(m_sName, "NameStartX");
-  NAME_START_Y.Load(m_sName, "NameStartY");
-  SCORE_START_X.Load(m_sName, "ScoreStartX");
-  SCORE_START_Y.Load(m_sName, "ScoreStartY");
-  POINTS_START_X.Load(m_sName, "PointsStartX");
-  POINTS_START_Y.Load(m_sName, "PointsStartY");
-  TIME_START_X.Load(m_sName, "TimeStartX");
-  TIME_START_Y.Load(m_sName, "TimeStartY");
-  STEPS_TYPE_COLOR.Load(m_sName, STEPS_TYPE_COLOR_NAME, NUM_RANKING_LINES);
+  NO_SCORE_NAME.Load(name_, "NoScoreName");
+  ROW_SPACING_X.Load(name_, "RowSpacingX");
+  ROW_SPACING_Y.Load(name_, "RowSpacingY");
+  BULLET_START_X.Load(name_, "BulletStartX");
+  BULLET_START_Y.Load(name_, "BulletStartY");
+  NAME_START_X.Load(name_, "NameStartX");
+  NAME_START_Y.Load(name_, "NameStartY");
+  SCORE_START_X.Load(name_, "ScoreStartX");
+  SCORE_START_Y.Load(name_, "ScoreStartY");
+  POINTS_START_X.Load(name_, "PointsStartX");
+  POINTS_START_Y.Load(name_, "PointsStartY");
+  TIME_START_X.Load(name_, "TimeStartX");
+  TIME_START_Y.Load(name_, "TimeStartY");
+  STEPS_TYPE_COLOR.Load(name_, STEPS_TYPE_COLOR_NAME, NUM_RANKING_LINES);
 
   if (RANKING_TYPE == RankingType_Category) {
-    m_textCategory.SetName("Category");
-    m_textCategory.LoadFromFont(THEME->GetPathF(m_sName, "category"));
+    text_category_.SetName("Category");
+    text_category_.LoadFromFont(THEME->GetPathF(name_, "category"));
     // m_textCategory.SetShadowLength( 0 );
-    this->AddChild(&m_textCategory);
-    LOAD_ALL_COMMANDS(m_textCategory);
+    this->AddChild(&text_category_);
+    LOAD_ALL_COMMANDS(text_category_);
 
     for (unsigned i = 0; i < STEPS_TYPES_TO_SHOW.GetValue().size(); i++) {
       for (int c = 0; c < NUM_RankingCategory; c++) {
         PageToShow pts;
-        pts.colorIndex = i;
-        pts.category = (RankingCategory)c;
+        pts.color_index_ = i;
+        pts.category_ = (RankingCategory)c;
         StepsType st = STEPS_TYPES_TO_SHOW.GetValue()[i];
-        pts.aTypes.push_back(std::make_pair(Difficulty_Invalid, st));
-        m_vPagesToShow.push_back(pts);
+        pts.types_.push_back(std::make_pair(Difficulty_Invalid, st));
+        pages_to_show_.push_back(pts);
       }
     }
   }
 
   if (RANKING_TYPE == RankingType_SpecificTrail) {
-    m_Banner.SetName("Banner");
-    this->AddChild(&m_Banner);
-    LOAD_ALL_COMMANDS(m_Banner);
+    banner_.SetName("Banner");
+    this->AddChild(&banner_);
+    LOAD_ALL_COMMANDS(banner_);
 
-    m_textCourseTitle.SetName("CourseTitle");
-    m_textCourseTitle.LoadFromFont(THEME->GetPathF(m_sName, "course title"));
+    text_course_title_.SetName("CourseTitle");
+    text_course_title_.LoadFromFont(THEME->GetPathF(name_, "course title"));
     // m_textCourseTitle.SetShadowLength( 0 );
-    this->AddChild(&m_textCourseTitle);
-    LOAD_ALL_COMMANDS(m_textCourseTitle);
+    this->AddChild(&text_course_title_);
+    LOAD_ALL_COMMANDS(text_course_title_);
 
     std::vector<std::string> asCoursePaths;
     split(COURSES_TO_SHOW, ",", asCoursePaths, true);
     for (unsigned i = 0; i < STEPS_TYPES_TO_SHOW.GetValue().size(); i++) {
       for (unsigned c = 0; c < asCoursePaths.size(); c++) {
         PageToShow pts;
-        pts.colorIndex = i;
+        pts.color_index_ = i;
         StepsType st = STEPS_TYPES_TO_SHOW.GetValue()[i];
-        pts.aTypes.push_back(std::make_pair(Difficulty_Invalid, st));
-        pts.pCourse = SONGMAN->GetCourseFromPath(asCoursePaths[c]);
-        if (pts.pCourse == nullptr) {
+        pts.types_.push_back(std::make_pair(Difficulty_Invalid, st));
+        pts.course_ = SONGMAN->GetCourseFromPath(asCoursePaths[c]);
+        if (pts.course_ == nullptr) {
           continue;
         }
 
-        pts.pTrail = pts.pCourse->GetTrail(st);
-        if (pts.pTrail == nullptr) {
+        pts.trail_ = pts.course_->GetTrail(st);
+        if (pts.trail_ == nullptr) {
           continue;
         }
 
-        m_vPagesToShow.push_back(pts);
+        pages_to_show_.push_back(pts);
       }
     }
   }
 
   for (int l = 0; l < NUM_RANKING_LINES; l++) {
-    m_sprBullets[l].Load(
-        THEME->GetPathG(m_sName, ssprintf("bullets 1x%d", NUM_RANKING_LINES)));
-    m_sprBullets[l]->SetName(ssprintf("Bullet%d", l + 1));
-    m_sprBullets[l]->StopAnimating();
-    m_sprBullets[l]->SetState(l);
-    m_sprBullets[l]->SetXY(BULLET_X(l), BULLET_Y(l));
-    ActorUtil::LoadAllCommands(*m_sprBullets[l], m_sName);
-    this->AddChild(m_sprBullets[l]);
+    spr_bullets_[l].Load(
+        THEME->GetPathG(name_, ssprintf("bullets 1x%d", NUM_RANKING_LINES)));
+    spr_bullets_[l]->SetName(ssprintf("Bullet%d", l + 1));
+    spr_bullets_[l]->StopAnimating();
+    spr_bullets_[l]->SetState(l);
+    spr_bullets_[l]->SetXY(BULLET_X(l), BULLET_Y(l));
+    ActorUtil::LoadAllCommands(*spr_bullets_[l], name_);
+    this->AddChild(spr_bullets_[l]);
 
-    m_textNames[l].SetName(ssprintf("Name%d", l + 1));
-    m_textNames[l].LoadFromFont(THEME->GetPathF(m_sName, "name"));
-    m_textNames[l].SetXY(NAME_X(l), NAME_Y(l));
-    ActorUtil::LoadAllCommands(m_textNames[l], m_sName);
-    this->AddChild(&m_textNames[l]);
+    text_names_[l].SetName(ssprintf("Name%d", l + 1));
+    text_names_[l].LoadFromFont(THEME->GetPathF(name_, "name"));
+    text_names_[l].SetXY(NAME_X(l), NAME_Y(l));
+    ActorUtil::LoadAllCommands(text_names_[l], name_);
+    this->AddChild(&text_names_[l]);
 
-    m_textScores[l].SetName(ssprintf("Score%d", l + 1));
-    m_textScores[l].LoadFromFont(THEME->GetPathF(m_sName, "score"));
-    m_textScores[l].SetXY(SCORE_X(l), SCORE_Y(l));
-    ActorUtil::LoadAllCommands(m_textScores[l], m_sName);
-    this->AddChild(&m_textScores[l]);
+    text_scores_[l].SetName(ssprintf("Score%d", l + 1));
+    text_scores_[l].LoadFromFont(THEME->GetPathF(name_, "score"));
+    text_scores_[l].SetXY(SCORE_X(l), SCORE_Y(l));
+    ActorUtil::LoadAllCommands(text_scores_[l], name_);
+    this->AddChild(&text_scores_[l]);
 
-    m_textPoints[l].SetName(ssprintf("Points%d", l + 1));
-    m_textPoints[l].LoadFromFont(THEME->GetPathF(m_sName, "points"));
-    m_textPoints[l].SetVisible(false);
-    m_textPoints[l].SetXY(POINTS_X(l), POINTS_Y(l));
-    ActorUtil::LoadAllCommands(m_textPoints[l], m_sName);
-    this->AddChild(&m_textPoints[l]);
+    text_points_[l].SetName(ssprintf("Points%d", l + 1));
+    text_points_[l].LoadFromFont(THEME->GetPathF(name_, "points"));
+    text_points_[l].SetVisible(false);
+    text_points_[l].SetXY(POINTS_X(l), POINTS_Y(l));
+    ActorUtil::LoadAllCommands(text_points_[l], name_);
+    this->AddChild(&text_points_[l]);
 
-    m_textTime[l].SetName(ssprintf("Time%d", l + 1));
-    m_textTime[l].LoadFromFont(THEME->GetPathF(m_sName, "time"));
-    m_textTime[l].SetVisible(false);
-    m_textTime[l].SetXY(TIME_X(l), TIME_Y(l));
-    ActorUtil::LoadAllCommands(m_textTime[l], m_sName);
-    this->AddChild(&m_textTime[l]);
+    text_time_[l].SetName(ssprintf("Time%d", l + 1));
+    text_time_[l].LoadFromFont(THEME->GetPathF(name_, "time"));
+    text_time_[l].SetVisible(false);
+    text_time_[l].SetXY(TIME_X(l), TIME_Y(l));
+    ActorUtil::LoadAllCommands(text_time_[l], name_);
+    this->AddChild(&text_time_[l]);
   }
 }
 
 void ScreenRanking::BeginScreen() {
-  m_iNextPageToShow = 0;
+  next_page_to_show_ = 0;
 
   ScreenAttract::BeginScreen();
 
@@ -188,9 +188,9 @@ void ScreenRanking::BeginScreen() {
 
 void ScreenRanking::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_ShowNextPage) {
-    if (m_iNextPageToShow < m_vPagesToShow.size()) {
-      float fSecsToShow = SetPage(m_vPagesToShow[m_iNextPageToShow]);
-      ++m_iNextPageToShow;
+    if (next_page_to_show_ < pages_to_show_.size()) {
+      float fSecsToShow = SetPage(pages_to_show_[next_page_to_show_]);
+      ++next_page_to_show_;
       this->SortByDrawOrder();
 
       this->PlayCommand("NextPage");
@@ -212,8 +212,8 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
   SCREENMAN->ZeroNextUpdate();
 
   // init page
-  StepsType st = pts.aTypes.front().second;
-  m_textStepsType.SetText(GAMEMAN->GetStepsTypeInfo(st).GetLocalizedString());
+  StepsType st = pts.types_.front().second;
+  text_steps_type_.SetText(GAMEMAN->GetStepsTypeInfo(st).GetLocalizedString());
 
   bool bShowScores = false;
   bool bShowPoints = false;
@@ -223,121 +223,123 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
       bShowScores = true;
       break;
     case RankingType_SpecificTrail:
-      bShowScores = !pts.pCourse->IsOni();
-      bShowPoints = pts.pCourse->IsOni();
-      bShowTime = pts.pCourse->IsOni();
+      bShowScores = !pts.course_->IsOni();
+      bShowPoints = pts.course_->IsOni();
+      bShowTime = pts.course_->IsOni();
       break;
     default:
       break;
   }
 
   for (int l = 0; l < NUM_RANKING_LINES; l++) {
-    m_textNames[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+    text_names_[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    m_textScores[l].SetVisible(bShowScores);
-    m_textScores[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+    text_scores_[l].SetVisible(bShowScores);
+    text_scores_[l].SetDiffuseColor(
+        STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    m_textPoints[l].SetVisible(bShowPoints);
-    m_textPoints[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+    text_points_[l].SetVisible(bShowPoints);
+    text_points_[l].SetDiffuseColor(
+        STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    m_textTime[l].SetVisible(bShowTime);
-    m_textTime[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+    text_time_[l].SetVisible(bShowTime);
+    text_time_[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.color_index_));
   }
 
   RankingType rtype = RANKING_TYPE;
   switch (rtype) {
     case RankingType_Category: {
-      m_textCategory.SetText(ssprintf("Type %c", 'A' + pts.category));
+      text_category_.SetText(ssprintf("Type %c", 'A' + pts.category_));
 
       for (int l = 0; l < NUM_RANKING_LINES; l++) {
         // No need to shadow at this point.
-        st = pts.aTypes.front().second;
+        st = pts.types_.front().second;
         HighScoreList& hsl =
             PROFILEMAN->GetMachineProfile()->GetCategoryHighScoreList(
-                st, pts.category);
+                st, pts.category_);
         HighScore hs;
         bool bRecentHighScore = false;
-        if (l < (int)hsl.vHighScores.size()) {
-          hs = hsl.vHighScores[l];
-          std::string* psName = hsl.vHighScores[l].GetNameMutable();
+        if (l < (int)hsl.high_scores_.size()) {
+          hs = hsl.high_scores_[l];
+          std::string* psName = hsl.high_scores_[l].GetNameMutable();
           bRecentHighScore =
               find(
-                  GAMESTATE->m_vpsNamesThatWereFilled.begin(),
-                  GAMESTATE->m_vpsNamesThatWereFilled.end(),
-                  psName) != GAMESTATE->m_vpsNamesThatWereFilled.end();
+                  GAMESTATE->names_that_were_filled_.begin(),
+                  GAMESTATE->names_that_were_filled_.end(),
+                  psName) != GAMESTATE->names_that_were_filled_.end();
         } else {
           hs.SetName(NO_SCORE_NAME);
         }
 
-        m_textNames[l].SetText(hs.GetDisplayName());
-        m_textScores[l].SetText(ssprintf("%09i", hs.GetScore()));
-        m_textNames[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
-        m_textScores[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+        text_names_[l].SetText(hs.GetDisplayName());
+        text_scores_[l].SetText(ssprintf("%09i", hs.GetScore()));
+        text_names_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
+        text_scores_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
         if (bRecentHighScore) {
-          m_textNames[l].SetEffectGlowBlink(
+          text_names_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
-          m_textScores[l].SetEffectGlowBlink(
+          text_scores_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
         } else {
-          m_textNames[l].StopEffect();
-          m_textScores[l].StopEffect();
+          text_names_[l].StopEffect();
+          text_scores_[l].StopEffect();
         }
       }
     }
       return SECONDS_PER_PAGE;
     case RankingType_SpecificTrail: {
-      m_textCourseTitle.SetText(pts.pCourse->GetDisplayFullTitle());
+      text_course_title_.SetText(pts.course_->GetDisplayFullTitle());
 
-      m_Banner.LoadFromCourse(pts.pCourse);
+      banner_.LoadFromCourse(pts.course_);
 
       const HighScoreList& hsl =
           PROFILEMAN->GetMachineProfile()->GetCourseHighScoreList(
-              pts.pCourse, pts.pTrail);
+              pts.course_, pts.trail_);
       for (int l = 0; l < NUM_RANKING_LINES; l++) {
         HighScore hs;
         bool bRecentHighScore = false;
-        if (l < (int)hsl.vHighScores.size()) {
-          hs = hsl.vHighScores[l];
-          const std::string* psName = hsl.vHighScores[l].GetNameMutable();
+        if (l < (int)hsl.high_scores_.size()) {
+          hs = hsl.high_scores_[l];
+          const std::string* psName = hsl.high_scores_[l].GetNameMutable();
           bRecentHighScore =
               find(
-                  GAMESTATE->m_vpsNamesThatWereFilled.begin(),
-                  GAMESTATE->m_vpsNamesThatWereFilled.end(),
-                  psName) != GAMESTATE->m_vpsNamesThatWereFilled.end();
+                  GAMESTATE->names_that_were_filled_.begin(),
+                  GAMESTATE->names_that_were_filled_.end(),
+                  psName) != GAMESTATE->names_that_were_filled_.end();
         } else {
           hs.SetName(NO_SCORE_NAME);
         }
 
-        m_textNames[l].SetText(hs.GetDisplayName());
-        if (pts.pCourse->IsOni()) {
-          m_textPoints[l].SetText(ssprintf("%04d", hs.GetScore()));
-          m_textTime[l].SetText(SecondsToMMSSMsMs(hs.GetSurviveSeconds()));
-          m_textScores[l].SetText("");
+        text_names_[l].SetText(hs.GetDisplayName());
+        if (pts.course_->IsOni()) {
+          text_points_[l].SetText(ssprintf("%04d", hs.GetScore()));
+          text_time_[l].SetText(SecondsToMMSSMsMs(hs.GetSurviveSeconds()));
+          text_scores_[l].SetText("");
         } else {
-          m_textPoints[l].SetText("");
-          m_textTime[l].SetText("");
-          m_textScores[l].SetText(ssprintf("%09d", hs.GetScore()));
+          text_points_[l].SetText("");
+          text_time_[l].SetText("");
+          text_scores_[l].SetText(ssprintf("%09d", hs.GetScore()));
         }
-        m_textNames[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
-        m_textPoints[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
-        m_textTime[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
-        m_textScores[l].SetDiffuseColor(
-            STEPS_TYPE_COLOR.GetValue(pts.colorIndex));
+        text_names_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
+        text_points_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
+        text_time_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
+        text_scores_[l].SetDiffuseColor(
+            STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
         if (bRecentHighScore) {
-          m_textNames[l].SetEffectGlowBlink(
+          text_names_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
-          m_textScores[l].SetEffectGlowBlink(
+          text_scores_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
         } else {
-          m_textNames[l].StopEffect();
-          m_textScores[l].StopEffect();
+          text_names_[l].StopEffect();
+          text_scores_[l].StopEffect();
         }
       }
     }

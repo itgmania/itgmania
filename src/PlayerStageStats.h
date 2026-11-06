@@ -37,19 +37,19 @@ class PlayerStageStats {
   int GetLessonScoreNeeded() const;
   void ResetScoreForLesson();
 
-  PlayerNumber m_player_number;
-  const Style* m_pStyle;
+  PlayerNumber player_number_;
+  const Style* style_;
 
-  bool m_bJoined;
-  bool m_bPlayerCanAchieveFullCombo;
-  std::vector<Steps*> m_vpPossibleSteps;
-  int m_iStepsPlayed;  // how many of m_vpPossibleStepshow many of
-                       // m_vpPossibleSteps were played
+  bool joined_;
+  bool player_can_achieve_full_combo_;
+  std::vector<Steps*> possible_steps_;
+  int steps_played_;  // how many of m_vpPossibleStepshow many of
+                      // m_vpPossibleSteps were played
   /**
    * @brief How far into the music did the Player last before failing?
    *
    * This is updated by Gameplay, and scaled by the music rate. */
-  float m_fAliveSeconds;
+  float alive_seconds_;
 
   /**
    * @brief Have the Players failed at any point during the song?
@@ -58,50 +58,50 @@ class PlayerStageStats {
    *
    * If health recovery is possible after failing (requires two players),
    * this is only set if both players were failing at the same time. */
-  bool m_bFailed;
+  bool failed_;
 
-  int m_iPossibleDancePoints;
-  int m_iCurPossibleDancePoints;
-  int m_iActualDancePoints;
-  int m_iPossibleGradePoints;
-  int m_iTapNoteScores[NUM_TapNoteScore];
-  int m_iHoldNoteScores[NUM_HoldNoteScore];
+  int possible_dance_points_;
+  int cur_possible_dance_points_;
+  int actual_dance_points_;
+  int possible_grade_points_;
+  int tap_note_scores_[NUM_TapNoteScore];
+  int hold_note_scores_[NUM_HoldNoteScore];
   /** @brief The Player's current combo. */
-  unsigned int m_iCurCombo;
+  unsigned int cur_combo_;
   /** @brief The Player's max combo. */
-  unsigned int m_iMaxCombo;
+  unsigned int max_combo_;
   /** @brief The Player's current miss combo. */
-  unsigned int m_iCurMissCombo;
-  int m_iCurScoreMultiplier;
+  unsigned int cur_miss_combo_;
+  int cur_score_multiplier_;
   /** @brief The player's current score. */
-  unsigned int m_iScore;
+  unsigned int score_;
   /** @brief The theoretically highest score the Player could have at this
    * point. */
-  unsigned int m_iCurMaxScore;
+  unsigned int cur_max_score_;
   /** @brief The maximum score the Player can get this goaround. */
-  unsigned int m_iMaxScore;
+  unsigned int max_score_;
 
   /**
    * @brief The possible RadarValues for a song.
    *
    * This is filled in by ScreenGameplay on the start of the notes. */
-  RadarValues m_radarPossible;
-  RadarValues m_radarActual;
+  RadarValues radar_possible_;
+  RadarValues radar_actual_;
   /** @brief How many songs were passed by the Player? */
-  int m_iSongsPassed;
+  int songs_passed_;
   /** @brief How many songs were played by the Player? */
-  int m_iSongsPlayed;
+  int songs_played_;
   /**
    * @brief How many seconds were left for the Player?
    *
    * This is used in the Survival mode. */
-  float m_fLifeRemainingSeconds;
+  float life_remaining_seconds_;
 
   // workout
-  float m_iNumControllerSteps;
-  float m_fCaloriesBurned;
+  float num_controller_steps_;
+  float calories_burned_;
 
-  std::map<float, float> m_fLifeRecord;
+  std::map<float, float> life_record_;
   void SetLifeRecordAt(float fLife, float fStepsSecond);
   void GetLifeRecord(
       float* fLifeOut, int iNumSamples, float fStepsEndSecond) const;
@@ -115,34 +115,34 @@ class PlayerStageStats {
      * @brief The start time of the combo.
      *
      * This uses the same scale as the combo list mapping. */
-    float m_fStartSecond;
+    float start_second_;
     /**
      * @brief The size time of the combo.
      *
      * This uses the same scale as the life record. */
-    float m_fSizeSeconds;
+    float size_seconds_;
 
     /** @brief The size of the Combo, in steps. */
-    int m_cnt;
+    int cnt_;
 
     /**
      * @brief The size of the combo that didn't come from this stage.
      *
      * This is generally rolled over from the last song.
      * It is also a subset of m_cnt. */
-    int m_rollover;
+    int rollover_;
 
     /**
      * @brief Retrieve the size of the combo that came from this song.
      * @return this song's combo size. */
-    int GetStageCnt() const { return m_cnt - m_rollover; }
+    int GetStageCnt() const { return cnt_ - rollover_; }
 
-    Combo_t() : m_fStartSecond(0), m_fSizeSeconds(0), m_cnt(0), m_rollover(0) {}
-    bool IsZero() const { return m_fStartSecond < 0; }
+    Combo_t() : start_second_(0), size_seconds_(0), cnt_(0), rollover_(0) {}
+    bool IsZero() const { return start_second_ < 0; }
   };
-  std::vector<Combo_t> m_ComboList;
-  float m_fFirstSecond;
-  float m_fLastSecond;
+  std::vector<Combo_t> combo_list_;
+  float first_second_;
+  float last_second_;
 
   int GetComboAtStartOfStage() const;
   bool FullComboOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
@@ -155,21 +155,21 @@ class PlayerStageStats {
   Combo_t GetMaxCombo() const;
 
   float GetSurvivalSeconds() const {
-    return m_fAliveSeconds + m_fLifeRemainingSeconds;
+    return alive_seconds_ + life_remaining_seconds_;
   }
 
   // Final results:
   void CalcAwards(PlayerNumber p, bool bGaveUp, bool bUsedAutoplay);
-  StageAward m_StageAward;
-  PeakComboAward m_PeakComboAward;
+  StageAward stage_award_;
+  PeakComboAward peak_combo_award_;
 
-  int m_iPersonalHighScoreIndex;
-  int m_iMachineHighScoreIndex;
-  bool m_bDisqualified;
+  int personal_high_score_index_;
+  int machine_high_score_index_;
+  bool disqualified_;
   bool IsDisqualified() const;
 
-  RankingCategory m_rc;
-  HighScore m_HighScore;
+  RankingCategory rc_;
+  HighScore high_score_;
 
   // Lua
   void PushSelf(lua_State* L);

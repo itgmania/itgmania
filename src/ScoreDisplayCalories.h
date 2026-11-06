@@ -27,8 +27,8 @@ class ScoreDisplayCalories : public RollingNumbers {
   virtual void PushSelf(lua_State* L);
 
  private:
-  PlayerNumber m_PlayerNumber;
-  std::string m_sMessageOnStep;
+  PlayerNumber player_number_;
+  std::string message_on_step_;
 };
 
 #endif

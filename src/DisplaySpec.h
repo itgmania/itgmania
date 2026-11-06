@@ -10,15 +10,15 @@
 
 struct DisplayMode {
   // Width (in pixels) of the display in this mode
-  unsigned int width;
+  unsigned int width_;
   // Height (in pixels) of the display in this mode
-  unsigned int height;
+  unsigned int height_;
   /** Refresh rate, in hz, of the display for the given mode
    * MacOS Quartz Display Services provides rate as double,
    * winapi DEVMODE uses 32bit unsigned int (still gives rate as hz),
    * RandR gives 32 bit pixel clock, which is then divided by width*height.
    */
-  double refreshRate;
+  double refresh_rate_;
   /*
    * Bits-per-pixel is *not* a property of the DisplayMode for our purposes:
    * bit-depth is going to be a property of the OpenGL/D3D context, not a
@@ -26,14 +26,14 @@ struct DisplayMode {
    */
 
   bool operator<(const DisplayMode& other) const {
-    if (width != other.width) {
-      return width < other.width;
+    if (width_ != other.width_) {
+      return width_ < other.width_;
     }
-    if (height != other.height) {
-      return height < other.height;
+    if (height_ != other.height_) {
+      return height_ < other.height_;
     }
-    if (refreshRate != other.refreshRate) {
-      return refreshRate < other.refreshRate;
+    if (refresh_rate_ != other.refresh_rate_) {
+      return refresh_rate_ < other.refresh_rate_;
     }
     return false;
   }
@@ -54,22 +54,23 @@ class DisplaySpec {
       const std::string& id, const std::string& name,
       const std::set<DisplayMode>& modes, const DisplayMode& curMode,
       const RectI& curBounds, const bool isVirtual = false)
-      : m_sId(id),
-        m_sName(name),
-        m_sModes(modes),
-        m_bCurModeActive(true),
-        m_CurMode(curMode),
-        m_rectBounds(curBounds),
-        m_bIsVirtual(isVirtual) {
-    if (m_sModes.find(curMode) == m_sModes.end()) {
+      : id_(id),
+        name_(name),
+        modes_(modes),
+        cur_mode_active_(true),
+        cur_mode_(curMode),
+        rect_bounds_(curBounds),
+        is_virtual_(isVirtual) {
+    if (modes_.find(curMode) == modes_.end()) {
       // This is an error, make a failing assertion with a descriptive error
       // message
       std::stringstream msgStream;
-      msgStream << "DisplaySpec current mode (" << curMode.width << "x"
-                << curMode.height << "@" << curMode.refreshRate
+      msgStream << "DisplaySpec current mode (" << curMode.width_ << "x"
+                << curMode.height_ << "@" << curMode.refresh_rate_
                 << ") not in given list of supported modes: ";
       for (auto& m : modes) {
-        msgStream << m.width << "x" << m.height << "@" << m.refreshRate << ", ";
+        msgStream << m.width_ << "x" << m.height_ << "@" << m.refresh_rate_
+                  << ", ";
       }
       auto msg = msgStream.str();
       // Drop the trailing ", "
@@ -86,33 +87,33 @@ class DisplaySpec {
   DisplaySpec(
       const std::string id, const std::string name,
       const std::set<DisplayMode> modes, const bool isVirtual = false)
-      : m_sId(id),
-        m_sName(name),
-        m_sModes(modes),
-        m_bCurModeActive(false),
-        m_CurMode({}),
-        m_bIsVirtual(isVirtual) {}
+      : id_(id),
+        name_(name),
+        modes_(modes),
+        cur_mode_active_(false),
+        cur_mode_({}),
+        is_virtual_(isVirtual) {}
 
   // Create a specification for a display supporting a single (and currently
   // active) mode
   DisplaySpec(std::string id, std::string name, DisplayMode mode)
-      : m_sId(id),
-        m_sName(name),
-        m_bCurModeActive(true),
-        m_CurMode(mode),
-        m_bIsVirtual(false) {
-    m_sModes.insert(mode);
-    m_rectBounds = RectI(0, 0, mode.width, mode.height);
+      : id_(id),
+        name_(name),
+        cur_mode_active_(true),
+        cur_mode_(mode),
+        is_virtual_(false) {
+    modes_.insert(mode);
+    rect_bounds_ = RectI(0, 0, mode.width_, mode.height_);
   }
 
   DisplaySpec(const DisplaySpec& other) = default;
   DisplaySpec& operator=(const DisplaySpec& other) = default;
 
-  std::string name() const { return m_sName; }
+  std::string name() const { return name_; }
 
-  std::string id() const { return m_sId; }
+  std::string id() const { return id_; }
 
-  const std::set<DisplayMode>& supportedModes() const { return m_sModes; }
+  const std::set<DisplayMode>& supportedModes() const { return modes_; }
 
   /*
    * Return a pointer to the currently active display mode, or nullptr if
@@ -123,12 +124,12 @@ class DisplaySpec {
    * connecting/disconnecting a crtc
    */
   const DisplayMode* currentMode() const {
-    return m_bCurModeActive ? &m_CurMode : nullptr;
+    return cur_mode_active_ ? &cur_mode_ : nullptr;
   }
 
-  const RectI& currentBounds() const { return m_rectBounds; }
+  const RectI& currentBounds() const { return rect_bounds_; }
 
-  bool isVirtual() const { return m_bIsVirtual; }
+  bool isVirtual() const { return is_virtual_; }
 
   /**
    * @brief Determine if one DisplaySpec compares less than the other.
@@ -139,26 +140,26 @@ class DisplaySpec {
    * @param other the other DisplaySpec to check.
    * @return true if this DisplaySpec is less than the other, or false
    * otherwise. */
-  bool operator<(const DisplaySpec& other) const { return m_sId < other.id(); }
+  bool operator<(const DisplaySpec& other) const { return id_ < other.id(); }
 
   // Lua
   void PushSelf(lua_State* L);
 
  private:
   // Unique identifier of the display
-  std::string m_sId;
+  std::string id_;
   // "Human-readable" display name
-  std::string m_sName;
+  std::string name_;
   // Modes supported by this display
-  std::set<DisplayMode> m_sModes;
+  std::set<DisplayMode> modes_;
   // currently configured mode, if available
-  bool m_bCurModeActive;
-  DisplayMode m_CurMode;
+  bool cur_mode_active_;
+  DisplayMode cur_mode_;
   // The current bounds of this display in global display coordinate space
-  RectI m_rectBounds;
+  RectI rect_bounds_;
   // Flag is "true" when display represents a logical display like an X screen
   // or the Win32 "Virtual screen"
-  bool m_bIsVirtual;
+  bool is_virtual_;
 };
 /** @brief The collection of DisplaySpec available within the program. */
 typedef std::set<DisplaySpec> DisplaySpecs;

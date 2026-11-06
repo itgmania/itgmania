@@ -14,15 +14,15 @@
 ScoreDisplayOni::ScoreDisplayOni() {
   LOG->Trace("ScoreDisplayOni::ScoreDisplayOni()");
 
-  m_sprFrame.Load(THEME->GetPathG("ScoreDisplayOni", "frame"));
-  this->AddChild(&m_sprFrame);
+  spr_frame_.Load(THEME->GetPathG("ScoreDisplayOni", "frame"));
+  this->AddChild(&spr_frame_);
 
   // init the text
-  m_text.LoadFromFont(THEME->GetPathF("ScoreDisplayOni", "numbers"));
-  m_text.SetName("ScoreDisplayOni Numbers");
-  m_text.SetShadowLength(0);
-  LOAD_ALL_COMMANDS(m_text);
-  this->AddChild(&m_text);
+  text_.LoadFromFont(THEME->GetPathF("ScoreDisplayOni", "numbers"));
+  text_.SetName("ScoreDisplayOni Numbers");
+  text_.SetShadowLength(0);
+  LOAD_ALL_COMMANDS(text_);
+  this->AddChild(&text_);
 }
 
 void ScoreDisplayOni::Init(
@@ -35,14 +35,14 @@ void ScoreDisplayOni::Update(float fDelta) {
   ScoreDisplay::Update(fDelta);
 
   // TODO: Remove use of PlayerNumber.
-  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  PlayerNumber pn = player_state_->player_number_;
 
   float fSecsIntoPlay = 0;
   if (GAMESTATE->IsPlayerEnabled(pn)) {
-    fSecsIntoPlay = STATSMAN->m_CurStageStats.m_player[pn].m_fAliveSeconds;
+    fSecsIntoPlay = STATSMAN->cur_stage_stats_.player_[pn].alive_seconds_;
   }
 
-  m_text.SetText(SecondsToMMSSMsMs(fSecsIntoPlay));
+  text_.SetText(SecondsToMMSSMsMs(fSecsIntoPlay));
 }
 
 /*

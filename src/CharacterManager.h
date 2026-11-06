@@ -28,7 +28,7 @@ class CharacterManager {
   void PushSelf(lua_State* L);
 
  private:
-  std::vector<Character*> m_pCharacters;
+  std::vector<Character*> characters_;
 };
 
 extern CharacterManager*

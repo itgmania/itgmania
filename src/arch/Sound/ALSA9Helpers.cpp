@@ -27,13 +27,13 @@
 bool Alsa9Buf::SetHWParams() {
   int err;
 
-  if (dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
-    dsnd_pcm_drop(pcm);
+  if (dsnd_pcm_state(pcm_) == SND_PCM_STATE_PREPARED) {
+    dsnd_pcm_drop(pcm_);
   }
 
-  if (dsnd_pcm_state(pcm) != SND_PCM_STATE_OPEN) {
+  if (dsnd_pcm_state(pcm_) != SND_PCM_STATE_OPEN) {
     /* Reset the stream to SND_PCM_STATE_OPEN. */
-    err = dsnd_pcm_hw_free(pcm);
+    err = dsnd_pcm_hw_free(pcm_);
     ALSA_ASSERT("dsnd_pcm_hw_free");
   }
   //	ASSERT_M( dsnd_pcm_state(pcm) == SND_PCM_STATE_OPEN, ssprintf("(%s)",
@@ -43,43 +43,43 @@ bool Alsa9Buf::SetHWParams() {
   snd_pcm_hw_params_t* hwparams;
   dsnd_pcm_hw_params_alloca(&hwparams);
 
-  err = dsnd_pcm_hw_params_any(pcm, hwparams);
+  err = dsnd_pcm_hw_params_any(pcm_, hwparams);
   ALSA_CHECK("dsnd_pcm_hw_params_any");
 
   /* Set to interleaved mmap mode. */
   err = dsnd_pcm_hw_params_set_access(
-      pcm, hwparams, SND_PCM_ACCESS_MMAP_INTERLEAVED);
+      pcm_, hwparams, SND_PCM_ACCESS_MMAP_INTERLEAVED);
   ALSA_CHECK("dsnd_pcm_hw_params_set_access");
 
   /* Set the PCM format: signed 16bit, native endian. */
-  err = dsnd_pcm_hw_params_set_format(pcm, hwparams, SND_PCM_FORMAT_S16);
+  err = dsnd_pcm_hw_params_set_format(pcm_, hwparams, SND_PCM_FORMAT_S16);
   ALSA_CHECK("dsnd_pcm_hw_params_set_format");
 
   /* Set the number of channels. */
-  err = dsnd_pcm_hw_params_set_channels(pcm, hwparams, 2);
+  err = dsnd_pcm_hw_params_set_channels(pcm_, hwparams, 2);
   ALSA_CHECK("dsnd_pcm_hw_params_set_channels");
 
   /* Set the sample rate. */
-  err = dsnd_pcm_hw_params_set_rate_near(pcm, hwparams, &samplerate, 0);
+  err = dsnd_pcm_hw_params_set_rate_near(pcm_, hwparams, &samplerate_, 0);
   ALSA_CHECK("dsnd_pcm_hw_params_set_rate_near");
 
   /* Set the buffersize to the writeahead, and then copy back the actual value
    * we got. */
-  writeahead = preferred_writeahead;
-  err = dsnd_pcm_hw_params_set_buffer_size_near(pcm, hwparams, &writeahead);
+  writeahead_ = preferred_writeahead_;
+  err = dsnd_pcm_hw_params_set_buffer_size_near(pcm_, hwparams, &writeahead_);
   ALSA_CHECK("dsnd_pcm_hw_params_set_buffer_size_near");
 
   /* The period size is roughly equivalent to what we call the chunksize. */
   int dir = 0;
-  chunksize = preferred_chunksize;
-  err =
-      dsnd_pcm_hw_params_set_period_size_near(pcm, hwparams, &chunksize, &dir);
+  chunksize_ = preferred_chunksize_;
+  err = dsnd_pcm_hw_params_set_period_size_near(
+      pcm_, hwparams, &chunksize_, &dir);
   ALSA_CHECK("dsnd_pcm_hw_params_set_period_size_near");
 
   //	LOG->Info("asked for %i period, got %i", chunksize, period_size);
 
   /* write the hardware parameters to the device */
-  err = dsnd_pcm_hw_params(pcm, hwparams);
+  err = dsnd_pcm_hw_params(pcm_, hwparams);
   ALSA_CHECK("dsnd_pcm_hw_params");
 
   return true;
@@ -88,14 +88,14 @@ bool Alsa9Buf::SetHWParams() {
 bool Alsa9Buf::SetSWParams() {
   snd_pcm_sw_params_t* swparams;
   dsnd_pcm_sw_params_alloca(&swparams);
-  dsnd_pcm_sw_params_current(pcm, swparams);
+  dsnd_pcm_sw_params_current(pcm_, swparams);
 
-  int err = dsnd_pcm_sw_params_set_xfer_align(pcm, swparams, 1);
+  int err = dsnd_pcm_sw_params_set_xfer_align(pcm_, swparams, 1);
   ALSA_ASSERT("dsnd_pcm_sw_params_set_xfer_align");
 
   /* chunksize has been set to the period size.  Set avail_min to the period
    * size, too, so poll() wakes up once per chunk. */
-  err = dsnd_pcm_sw_params_set_avail_min(pcm, swparams, chunksize);
+  err = dsnd_pcm_sw_params_set_avail_min(pcm_, swparams, chunksize_);
   ALSA_ASSERT("dsnd_pcm_sw_params_set_avail_min");
 
   /* If this fails, we might have bound dsnd_pcm_sw_params_set_avail_min to
@@ -107,13 +107,13 @@ bool Alsa9Buf::SetSWParams() {
   err = dsnd_pcm_sw_params_get_boundary(swparams, &boundary);
   ALSA_ASSERT("dsnd_pcm_sw_params_get_boundary");
 
-  err = dsnd_pcm_sw_params_set_stop_threshold(pcm, swparams, boundary);
+  err = dsnd_pcm_sw_params_set_stop_threshold(pcm_, swparams, boundary);
   ALSA_ASSERT("dsnd_pcm_sw_params_set_stop_threshold");
 
-  err = dsnd_pcm_sw_params(pcm, swparams);
+  err = dsnd_pcm_sw_params(pcm_, swparams);
   ALSA_ASSERT("dsnd_pcm_sw_params");
 
-  err = dsnd_pcm_prepare(pcm);
+  err = dsnd_pcm_prepare(pcm_);
   ALSA_ASSERT("dsnd_pcm_prepare");
 
   return true;
@@ -142,8 +142,8 @@ void Alsa9Buf::InitializeErrorHandler() {
 }
 
 static std::string DeviceName() {
-  if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
-    return PREFSMAN->m_iSoundDevice;
+  if (!PREFSMAN->sound_device_.Get().empty()) {
+    return PREFSMAN->sound_device_;
   }
   return "default";
 }
@@ -221,28 +221,28 @@ void Alsa9Buf::GetSoundCardDebugInfo() {
     LOG->Info("No ALSA sound cards were found.");
   }
 
-  if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
+  if (!PREFSMAN->sound_device_.Get().empty()) {
     LOG->Info(
         "ALSA device overridden to \"%s\"",
-        PREFSMAN->m_iSoundDevice.Get().c_str());
+        PREFSMAN->sound_device_.Get().c_str());
   }
 }
 
 Alsa9Buf::Alsa9Buf() {
-  samplerate = 44100;
-  last_cursor_pos = 0;
-  preferred_writeahead = 8192;
-  preferred_chunksize = 1024;
-  pcm = nullptr;
+  samplerate_ = 44100;
+  last_cursor_pos_ = 0;
+  preferred_writeahead_ = 8192;
+  preferred_chunksize_ = 1024;
+  pcm_ = nullptr;
 }
 
 std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
-  preferred_writeahead = iWriteahead;
-  preferred_chunksize = iChunkSize;
+  preferred_writeahead_ = iWriteahead;
+  preferred_chunksize_ = iChunkSize;
   if (iSampleRate == 0) {
-    samplerate = FALLBACK_SAMPLE_RATE;
+    samplerate_ = FALLBACK_SAMPLE_RATE;
   } else {
-    samplerate = iSampleRate;
+    samplerate_ = iSampleRate;
   }
 
   GetSoundCardDebugInfo();
@@ -252,7 +252,7 @@ std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
   /* Open the device. */
   int err;
   err = dsnd_pcm_open(
-      &pcm, DeviceName().c_str(), SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+      &pcm_, DeviceName().c_str(), SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
   if (err < 0) {
     return ssprintf(
         "dsnd_pcm_open(%s): %s", DeviceName().c_str(), dsnd_strerror(err));
@@ -265,25 +265,25 @@ std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
 
   SetSWParams();
 
-  LOG->Info("ALSA: Mixing at %ihz", samplerate);
+  LOG->Info("ALSA: Mixing at %ihz", samplerate_);
 
-  if (preferred_writeahead != writeahead) {
+  if (preferred_writeahead_ != writeahead_) {
     LOG->Info(
         "ALSA: writeahead adjusted from %u to %u",
-        (unsigned)preferred_writeahead, (unsigned)writeahead);
+        (unsigned)preferred_writeahead_, (unsigned)writeahead_);
   }
-  if (preferred_chunksize != chunksize) {
+  if (preferred_chunksize_ != chunksize_) {
     LOG->Info(
-        "ALSA: chunksize adjusted from %u to %u", (unsigned)preferred_chunksize,
-        (unsigned)chunksize);
+        "ALSA: chunksize adjusted from %u to %u",
+        (unsigned)preferred_chunksize_, (unsigned)chunksize_);
   }
 
   return "";
 }
 
 Alsa9Buf::~Alsa9Buf() {
-  if (pcm != nullptr) {
-    dsnd_pcm_close(pcm);
+  if (pcm_ != nullptr) {
+    dsnd_pcm_close(pcm_);
   }
 }
 
@@ -293,16 +293,16 @@ Alsa9Buf::~Alsa9Buf() {
 int Alsa9Buf::GetNumFramesToFill() {
   /* Make sure we can write ahead at least two chunks.  Otherwise, we'll only
    * fill one chunk ahead, and underrun. */
-  int ActualWriteahead = std::max(writeahead, chunksize * 2);
+  int ActualWriteahead = std::max(writeahead_, chunksize_ * 2);
 
-  snd_pcm_sframes_t avail_frames = dsnd_pcm_avail_update(pcm);
+  snd_pcm_sframes_t avail_frames = dsnd_pcm_avail_update(pcm_);
 
-  int total_frames = writeahead;
+  int total_frames = writeahead_;
   if (avail_frames > total_frames) {
     /* underrun */
     const int size = avail_frames - total_frames;
     LOG->Trace("underrun (%i frames)", size);
-    int large_skip_threshold = 2 * samplerate;
+    int large_skip_threshold = 2 * samplerate_;
 
     /* For small underruns, ignore them.  We'll return the maximum writeahead
      * and ALSA will just discard the data.  GetPosition will return consistent
@@ -312,12 +312,12 @@ int Alsa9Buf::GetNumFramesToFill() {
       /* It's a large skip.  Catch up.  If we fall too far behind, the sound
        * thread will be decoding as fast as it can, which will steal too many
        * cycles from the rendering thread. */
-      dsnd_pcm_forward(pcm, size);
+      dsnd_pcm_forward(pcm_, size);
     }
   }
 
   if (avail_frames < 0) {
-    avail_frames = dsnd_pcm_avail_update(pcm);
+    avail_frames = dsnd_pcm_avail_update(pcm_);
   }
 
   if (avail_frames < 0) {
@@ -344,15 +344,15 @@ int Alsa9Buf::GetNumFramesToFill() {
   /* If we have less than a chunk empty, don't fill at all.  Otherwise, we'll
    * spend a lot of CPU filling in partial chunks, instead of waiting for some
    * sound to play and then filling a whole chunk at once. */
-  if (unfilled_frames < (int)chunksize) {
+  if (unfilled_frames < (int)chunksize_) {
     return 0;
   }
 
-  return chunksize;
+  return chunksize_;
 }
 
 bool Alsa9Buf::WaitUntilFramesCanBeFilled(int timeout_ms) {
-  int err = dsnd_pcm_wait(pcm, timeout_ms);
+  int err = dsnd_pcm_wait(pcm_, timeout_ms);
   /* EINTR is normal; don't warn. */
   if (err == -EINTR) {
     return false;
@@ -366,7 +366,7 @@ void Alsa9Buf::Write(const int16_t* buffer, int frames) {
   /* We should be able to write it all.  If we don't, treat it as an error. */
   int wrote;
   do {
-    wrote = dsnd_pcm_mmap_writei(pcm, (const char*)buffer, frames);
+    wrote = dsnd_pcm_mmap_writei(pcm_, (const char*)buffer, frames);
   } while (wrote == -EAGAIN);
 
   if (wrote < 0) {
@@ -376,25 +376,25 @@ void Alsa9Buf::Write(const int16_t* buffer, int frames) {
     return;
   }
 
-  last_cursor_pos += wrote;
+  last_cursor_pos_ += wrote;
   if (wrote < frames) {
     LOG->Trace("Couldn't write whole buffer? (%i < %i)", wrote, frames);
   }
 }
 
 int64_t Alsa9Buf::GetPosition() const {
-  if (dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
-    return last_cursor_pos;
+  if (dsnd_pcm_state(pcm_) == SND_PCM_STATE_PREPARED) {
+    return last_cursor_pos_;
   }
 
-  dsnd_pcm_hwsync(pcm);
+  dsnd_pcm_hwsync(pcm_);
 
   /* delay is returned in frames */
   snd_pcm_sframes_t delay;
-  int err = dsnd_pcm_delay(pcm, &delay);
+  int err = dsnd_pcm_delay(pcm_, &delay);
   ALSA_ASSERT("dsnd_pcm_delay");
 
-  return last_cursor_pos - delay;
+  return last_cursor_pos_ - delay;
 }
 
 /*

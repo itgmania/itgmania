@@ -37,24 +37,24 @@ bool LightsDriver_Linux_Leds::WriteLight(const char* filename, bool state) {
   }
 
   // write and close the file.
-  fprintf(f, "%d", state ? LINUX_LED_STATE_ON : LINUX_LED_STATE_OFF);
+  fprintf(f, "%d", state ? kLinuxLedStateOn : kLinuxLedStateOff);
   fclose(f);
 
   return true;
 }
 
 bool LightsDriver_Linux_Leds::IsDance() {
-  pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  sInputName = pInput->m_szName;
+  input_ = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  input_name_ = input_->name_;
 
-  return EqualsNoCase(sInputName, "dance");
+  return EqualsNoCase(input_name_, "dance");
 }
 
 bool LightsDriver_Linux_Leds::IsPump() {
-  pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  sInputName = pInput->m_szName;
+  input_ = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  input_name_ = input_->name_;
 
-  return EqualsNoCase(sInputName, "pump");
+  return EqualsNoCase(input_name_, "pump");
 }
 
 void LightsDriver_Linux_Leds::SetLight(
@@ -70,17 +70,17 @@ void LightsDriver_Linux_Leds::SetCabinetLights(
   const char* baseFileLocation = GetGameControllerLightFile();
 
   if (baseFileLocation != nullptr) {
-    char fileName[LINUX_LED_MAX_DIRECTORY_LENGTH];
+    char fileName[kLinuxLedMaxDirectoryLength];
 
     FOREACH_CabinetLight(light) {
       // valid lights are zero and positive.
       if (intArray[light] >= 0) {
         // don't waste sprintf time if we don't need to change the light
-        if (previousLS.m_bCabinetLights[light] != ls->m_bCabinetLights[light]) {
+        if (previous_ls_.cabinet_lights_[light] != ls->cabinet_lights_[light]) {
           sprintf(fileName, baseFileLocation, intArray[light]);
           SetLight(
-              fileName, previousLS.m_bCabinetLights[light],
-              ls->m_bCabinetLights[light]);
+              fileName, previous_ls_.cabinet_lights_[light],
+              ls->cabinet_lights_[light]);
         }
       }
     }
@@ -91,11 +91,11 @@ void LightsDriver_Linux_Leds::SetCoinCounter(int index, const LightsState* ls) {
   const char* baseFileLocation = GetGameControllerLightFile();
 
   if (baseFileLocation != nullptr && index >= 0) {
-    char fileName[LINUX_LED_MAX_DIRECTORY_LENGTH];
+    char fileName[kLinuxLedMaxDirectoryLength];
 
-    if (previousLS.m_bCoinCounter != ls->m_bCoinCounter) {
+    if (previous_ls_.coin_counter_ != ls->coin_counter_) {
       sprintf(fileName, baseFileLocation, index);
-      SetLight(fileName, previousLS.m_bCoinCounter, ls->m_bCoinCounter);
+      SetLight(fileName, previous_ls_.coin_counter_, ls->coin_counter_);
     }
   }
 }
@@ -105,19 +105,19 @@ void LightsDriver_Linux_Leds::SetGameControllerLights(
   const char* baseFileLocation = GetGameControllerLightFile();
 
   if (baseFileLocation != nullptr) {
-    char fileName[LINUX_LED_MAX_DIRECTORY_LENGTH];
+    char fileName[kLinuxLedMaxDirectoryLength];
 
     // iterate over all gamebuttons, including the menu/start/etc buttons.
     FOREACH_ENUM(GameButton, gb) {
       // valid lights are zero and positive.
       if (intArray[gb] >= 0) {
         // don't waste sprintf time if we don't need to change the light
-        if (previousLS.m_bGameButtonLights[gc][gb] !=
-            ls->m_bGameButtonLights[gc][gb]) {
+        if (previous_ls_.game_button_lights_[gc][gb] !=
+            ls->game_button_lights_[gc][gb]) {
           sprintf(fileName, baseFileLocation, intArray[gb]);
           SetLight(
-              fileName, previousLS.m_bGameButtonLights[gc][gb],
-              ls->m_bGameButtonLights[gc][gb]);
+              fileName, previous_ls_.game_button_lights_[gc][gb],
+              ls->game_button_lights_[gc][gb]);
         }
       }
     }

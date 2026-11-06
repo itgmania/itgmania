@@ -52,45 +52,45 @@ typedef union {
     // this matches the physical location of each output with the variable name.
     // see this code snippet:
     // https://github.com/itgmania/itgmania/issues/921#issuecomment-3008263137
-    bool led09 : 1;
-    bool led10 : 1;
-    bool led11 : 1;
-    bool led12 : 1;
-    bool led13 : 1;
-    bool led14 : 1;
-    bool led15 : 1;
-    bool led16 : 1;
+    bool led09_ : 1;
+    bool led10_ : 1;
+    bool led11_ : 1;
+    bool led12_ : 1;
+    bool led13_ : 1;
+    bool led14_ : 1;
+    bool led15_ : 1;
+    bool led16_ : 1;
 
-    bool led01 : 1;
-    bool led02 : 1;
-    bool led03 : 1;
-    bool led04 : 1;
-    bool led05 : 1;
-    bool led06 : 1;
-    bool led07 : 1;
-    bool led08 : 1;
+    bool led01_ : 1;
+    bool led02_ : 1;
+    bool led03_ : 1;
+    bool led04_ : 1;
+    bool led05_ : 1;
+    bool led06_ : 1;
+    bool led07_ : 1;
+    bool led08_ : 1;
   };
-  uint16_t raw;
+  uint16_t raw_;
 } pacdrive_leds_t;
 
 #pragma pack(pop)
 
 typedef union {
   struct {
-    uint8_t report_id;
-    uint8_t pad0;
-    uint8_t pad1;
-    pacdrive_leds_t leds;
+    uint8_t report_id_;
+    uint8_t pad0_;
+    uint8_t pad1_;
+    pacdrive_leds_t leds_;
   };
-  uint8_t raw_state[PACDRIVE_HIDREPORT_SIZE];
+  uint8_t raw_state_[PACDRIVE_HIDREPORT_SIZE];
 } pacdrive_state_t;
 
 class LightsDriver_PacDrive : public LightsDriver {
  private:
-  HidDevice dev;
+  HidDevice dev_;
 
-  pacdrive_state_t state;
-  pacdrive_leds_t prev_led_state;
+  pacdrive_state_t state_;
+  pacdrive_leds_t prev_led_state_;
 
  public:
   LightsDriver_PacDrive();

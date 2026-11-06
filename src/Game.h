@@ -31,32 +31,32 @@ class Style;
 /** @brief Holds information about a particular style of a game (e.g. "single",
  * "double"). */
 struct Game {
-  const char* m_szName;
-  const Style* const* m_apStyles;
+  const char* name_;
+  const Style* const* styles_;
 
   /** @brief Do we count multiple notes in a row as separate notes, or as one
    * note? */
-  bool m_bCountNotesSeparately;
-  bool m_PlayersHaveSeparateStyles;
+  bool count_notes_separately_;
+  bool players_have_separate_styles_;
 
-  InputScheme m_InputScheme;
+  InputScheme input_scheme_;
 
   struct PerButtonInfo {
-    GameButtonType m_gbt;
+    GameButtonType gbt_;
   };
   /**
    * @brief Data for each Game-specific GameButton.
    *
    * This starts at GAME_BUTTON_NEXT. */
-  PerButtonInfo m_PerButtonInfo[NUM_GameButton];
+  PerButtonInfo per_button_info_[NUM_GameButton];
   const PerButtonInfo* GetPerButtonInfo(GameButton gb) const;
 
   TapNoteScore MapTapNoteScore(TapNoteScore tns) const;
-  TapNoteScore m_mapW1To;
-  TapNoteScore m_mapW2To;
-  TapNoteScore m_mapW3To;
-  TapNoteScore m_mapW4To;
-  TapNoteScore m_mapW5To;
+  TapNoteScore map_w1_to_;
+  TapNoteScore map_w2_to_;
+  TapNoteScore map_w3_to_;
+  TapNoteScore map_w4_to_;
+  TapNoteScore map_w5_to_;
   TapNoteScore GetMapJudgmentTo(TapNoteScore tns) const;
 
   // Lua

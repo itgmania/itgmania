@@ -59,12 +59,12 @@ class PlayerInfo {
    * @return the player's state and stage stats index.
    */
   PlayerNumber GetPlayerStateAndStageStatsIndex() {
-    return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn;
+    return pn_ == PLAYER_INVALID ? PLAYER_1 : pn_;
   }
   PlayerState* GetPlayerState();
   PlayerStageStats* GetPlayerStageStats();
   PlayerNumber GetStepsAndTrailIndex() {
-    return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn;
+    return pn_ == PLAYER_INVALID ? PLAYER_1 : pn_;
   }
   /**
    * @brief Determine if the player information is enabled.
@@ -74,63 +74,63 @@ class PlayerInfo {
    * @brief Retrieve the name of the Player based on the mode.
    * @return the name of the Player. */
   std::string GetName() const {
-    if (m_bIsDummy) {
-      return ssprintf("Dummy%d", m_iDummyIndex);
+    if (is_dummy_) {
+      return ssprintf("Dummy%d", dummy_index_);
     }
-    return PlayerNumberToString(m_pn);
+    return PlayerNumberToString(pn_);
   }
 
   // Lua
   void PushSelf(lua_State* L);
 
   /** @brief The present Player's number. */
-  PlayerNumber m_pn;
-  bool m_bIsDummy;
-  int m_iDummyIndex;
-  bool m_bPlayerEnabled;  // IsEnabled cache for iterators
-  PlayerState m_PlayerStateDummy;
-  PlayerStageStats m_PlayerStageStatsDummy;
-  SoundEffectControl m_SoundEffectControl;
+  PlayerNumber pn_;
+  bool is_dummy_;
+  int dummy_index_;
+  bool player_enabled_;  // IsEnabled cache for iterators
+  PlayerState player_state_dummy_;
+  PlayerStageStats player_stage_stats_dummy_;
+  SoundEffectControl sound_effect_control_;
 
   /**
    * @brief The list of Steps a player has to go through in this set.
    *
    * The size may be greater than 1 if playing a course. */
-  std::vector<Steps*> m_vpStepsQueue;
+  std::vector<Steps*> steps_queue_;
   /**
    * @brief The list of attack modifiers a player has to go through in this set.
    *
    * The size may be greater than 1 if playing a course. */
-  std::vector<AttackArray> m_asModifiersQueue;
+  std::vector<AttackArray> modifiers_queue_;
 
   /** @brief The LifeMeter showing a Player's health. */
-  LifeMeter* m_pLifeMeter;
+  LifeMeter* life_meter_;
   /** @brief The current Song number in a Course. */
-  BitmapText* m_ptextCourseSongNumber;
+  BitmapText* text_course_song_number_;
   /** @brief The description of the current Steps. */
-  BitmapText* m_ptextStepsDescription;
+  BitmapText* text_steps_description_;
 
   /** @brief The display for the primary ScoreKeeper. */
-  ScoreDisplay* m_pPrimaryScoreDisplay;
+  ScoreDisplay* primary_score_display_;
   /** @brief The display for the secondary ScoreKeeper. */
-  ScoreDisplay* m_pSecondaryScoreDisplay;
+  ScoreDisplay* secondary_score_display_;
   /** @brief The primary ScoreKeeper for keeping track of the score. */
-  ScoreKeeper* m_pPrimaryScoreKeeper;
+  ScoreKeeper* primary_score_keeper_;
   /** @brief The secondary ScoreKeeper. Only used in PLAY_MODE_RAVE. */
-  ScoreKeeper* m_pSecondaryScoreKeeper;
+  ScoreKeeper* secondary_score_keeper_;
   /** @brief The current PlayerOptions that are activated. */
-  BitmapText* m_ptextPlayerOptions;
+  BitmapText* text_player_options_;
   /** @brief The current attack modifiers that are in play for the moment. */
-  ActiveAttackList* m_pActiveAttackList;
+  ActiveAttackList* active_attack_list_;
 
   /** @brief The NoteData the Player has to get through. */
-  NoteData m_NoteData;
+  NoteData note_data_;
   /** @brief The specific Player that is going to play. */
-  Player* m_pPlayer;
+  Player* player_;
 
-  StepsDisplay* m_pStepsDisplay;
+  StepsDisplay* steps_display_;
 
-  AutoActor m_sprOniGameOver;
+  AutoActor spr_oni_game_over_;
 };
 
 /** @brief The music plays, the notes scroll, and the Player is pressing
@@ -167,27 +167,27 @@ class ScreenGameplay : public ScreenWithMenuElements {
   Song* GetNextCourseSong() const;
   LifeMeter* GetLifeMeter(PlayerNumber pn);
   CombinedLifeMeter* GetCombinedLifeMeter() const {
-    return m_pCombinedLifeMeter;
+    return combined_life_meter_;
   }
   PlayerInfo* GetPlayerInfo(PlayerNumber pn);
   PlayerInfo* GetDummyPlayerInfo(int iDummyIndex);
   void Pause(bool bPause) { PauseGame(bPause); }
-  bool IsPaused() const { return m_bPaused; }
+  bool IsPaused() const { return paused_; }
   float GetHasteRate();
 
   void FailFadeRemovePlayer(PlayerInfo* pi);
   void FailFadeRemovePlayer(PlayerNumber pn);
   void BeginBackingOutFromGameplay();
 
-  std::vector<float> m_HasteTurningPoints;  // Values at which the meaning of
-                                            // GAMESTATE->m_fHasteRate changes.
+  std::vector<float> haste_turning_points_;  // Values at which the meaning of
+                                             // GAMESTATE->m_fHasteRate changes.
   std::vector<float>
-      m_HasteAddAmounts;  // Amounts that are added to speed depending on what
-                          // turning point has been passed.
-  float m_fHasteTimeBetweenUpdates;  // Seconds between haste updates.
-  float m_fHasteLifeSwitchPoint;     // Life amount below which
-                                     // GAMESTATE->m_fHasteRate is based on the
-                                     // life amount.
+      haste_add_amounts_;  // Amounts that are added to speed depending on what
+                           // turning point has been passed.
+  float haste_time_between_updates_;  // Seconds between haste updates.
+  float haste_life_switch_point_;     // Life amount below which
+                                      // GAMESTATE->m_fHasteRate is based on the
+                                      // life amount.
 
  protected:
   virtual bool UseSongBackgroundAndForeground() const { return true; }
@@ -230,7 +230,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
   void PlayAnnouncer(
       const std::string& type, float fSeconds, float* fDeltaSeconds);
   void PlayAnnouncer(const std::string& type, float fSeconds) {
-    PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment);
+    PlayAnnouncer(type, fSeconds, &time_since_last_dancing_comment_);
   }
   void UpdateLights();
   void SendCrossedMessages();
@@ -246,7 +246,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual void InitSongQueues();
 
   void UpdateHasteRate();
-  float m_fCurrHasteRate;
+  float curr_haste_rate_;
   // These exist so that the haste rate isn't recalculated every time
   // GetHasteRate is called, which is at least once per frame. -Kyz
 
@@ -258,88 +258,88 @@ class ScreenGameplay : public ScreenWithMenuElements {
     STATE_OUTRO,   /**< The ending state, pressing Back isn't allowed here. */
     NUM_DANCING_STATES
   }
-  /** @brief The specific point within ScreenGameplay. */ m_DancingState;
+  /** @brief The specific point within ScreenGameplay. */ dancing_state_;
 
  private:
-  bool m_bPaused;
+  bool paused_;
   // set_paused_internal exists because GameState's pause variable needs to
   // be kept in sync with ScreenGameplay's.
   void set_paused_internal(bool p);
 
  protected:
-  GameController m_PauseController;
+  GameController pause_controller_;
   /**
    * @brief The songs left to play.
    *
    * The size can be greater than 1 if playing a course. */
-  std::vector<Song*> m_apSongsQueue;
+  std::vector<Song*> songs_queue_;
 
-  float m_fTimeSinceLastDancingComment;  // this counter is only running while
-                                         // STATE_DANCING
+  float time_since_last_dancing_comment_;  // this counter is only running while
+                                           // STATE_DANCING
 
-  LyricDisplay m_LyricDisplay;
+  LyricDisplay lyric_display_;
 
-  Background* m_pSongBackground;
-  Foreground* m_pSongForeground;
+  Background* song_background_;
+  Foreground* song_foreground_;
 
   /** @brief Used between songs in a course to show the next song. */
-  Transition m_NextSong;
+  Transition next_song_;
 
-  CombinedLifeMeter* m_pCombinedLifeMeter;
+  CombinedLifeMeter* combined_life_meter_;
 
-  BitmapText m_textSongOptions;
+  BitmapText text_song_options_;
 
-  BitmapText m_textDebug;
+  BitmapText text_debug_;
 
-  RageTimer m_GiveUpTimer;
-  bool m_gave_up;
-  RageTimer m_SkipSongTimer;
-  bool m_skipped_song;
+  RageTimer give_up_timer_;
+  bool gave_up_;
+  RageTimer skip_song_timer_;
+  bool skipped_song_;
   void AbortGiveUpText(bool show_abort_text);
   void AbortSkipSong(bool show_text);
   void AbortGiveUp(bool bShowText);
   void ResetGiveUpTimers(bool show_text);
 
-  Transition m_Ready;
-  Transition m_Go;
+  Transition ready_;
+  Transition go_;
   /** @brief The transition to use when all players have failed. */
-  Transition m_Failed;
+  Transition failed_;
   /** @brief The transition to use when one player earns an easter egg. */
-  Transition m_Toasty;
+  Transition toasty_;
 
   /**
    * @brief How much time has the player survived in the extra stage?
    *
    * TODO: Move this into a BGA. */
-  BitmapText m_textSurviveTime;
+  BitmapText text_survive_time_;
 
-  AutoKeysounds m_AutoKeysounds;
+  AutoKeysounds auto_keysounds_;
 
-  bool m_bZeroDeltaOnNextUpdate;
+  bool zero_delta_on_next_update_;
 
-  GameplayAssist m_GameplayAssist;
-  RageSound* m_pSoundMusic;
+  GameplayAssist gameplay_assist_;
+  RageSound* sound_music_;
 
-  BeginnerHelper m_BeginnerHelper;
+  BeginnerHelper beginner_helper_;
 
   /** @brief The NoteData that controls the lights on an arcade cabinet. */
-  NoteData m_CabinetLightsNoteData;
+  NoteData cabinet_lights_note_data_;
 
   std::vector<PlayerInfo>
-      m_vPlayerInfo;  // filled by SGameplay derivatives in FillPlayerInfo
+      player_info_;  // filled by SGameplay derivatives in FillPlayerInfo
   /** @brief Shared routine scorekeeper instance for shared-sides play. */
-  ScoreKeeper* m_pRoutineSharedScoreKeeper;
+  ScoreKeeper* routine_shared_score_keeper_;
   virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut) = 0;
   virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep) {
-    return m_vPlayerInfo[iep.pn];
+    return player_info_[iep.pn_];
   }
 
-  RageTimer m_timerGameplaySeconds;
+  RageTimer timer_gameplay_seconds_;
 
   // m_delaying_ready_announce is for handling a case where the ready
   // announcer sound needs to be delayed.  See HandleScreenMessage for more.
   // -Kyz
-  bool m_delaying_ready_announce;
+  bool delaying_ready_announce_;
 };
 
 std::vector<PlayerInfo>::iterator GetNextEnabledPlayerInfo(

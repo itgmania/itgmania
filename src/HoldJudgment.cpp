@@ -14,12 +14,12 @@ REGISTER_ACTOR_CLASS(HoldJudgment);
 HoldJudgment::HoldJudgment() {}
 
 void HoldJudgment::Load(const std::string& sPath) {
-  m_sprJudgment.Load(sPath);
-  m_sprJudgment->StopAnimating();
-  m_sprJudgment->SetName("HoldJudgment");
-  ActorUtil::LoadAllCommands(*m_sprJudgment, "HoldJudgment");
+  spr_judgment_.Load(sPath);
+  spr_judgment_->StopAnimating();
+  spr_judgment_->SetName("HoldJudgment");
+  ActorUtil::LoadAllCommands(*spr_judgment_, "HoldJudgment");
   ResetAnimation();
-  this->AddChild(m_sprJudgment);
+  this->AddChild(spr_judgment_);
 }
 
 void HoldJudgment::LoadFromNode(const XNode* pNode) {
@@ -38,11 +38,11 @@ void HoldJudgment::LoadFromNode(const XNode* pNode) {
 }
 
 void HoldJudgment::ResetAnimation() {
-  ASSERT(m_sprJudgment.IsLoaded());
-  m_sprJudgment->SetDiffuse(RageColor(1, 1, 1, 0));
-  m_sprJudgment->SetXY(0, 0);
-  m_sprJudgment->StopTweening();
-  m_sprJudgment->StopEffect();
+  ASSERT(spr_judgment_.IsLoaded());
+  spr_judgment_->SetDiffuse(RageColor(1, 1, 1, 0));
+  spr_judgment_->SetXY(0, 0);
+  spr_judgment_->StopTweening();
+  spr_judgment_->StopEffect();
 }
 
 void HoldJudgment::SetHoldJudgment(HoldNoteScore hns) {
@@ -55,16 +55,16 @@ void HoldJudgment::SetHoldJudgment(HoldNoteScore hns) {
 
   switch (hns) {
     case HNS_Held:
-      m_sprJudgment->SetState(0);
-      m_sprJudgment->PlayCommand("Held");
+      spr_judgment_->SetState(0);
+      spr_judgment_->PlayCommand("Held");
       break;
     case HNS_LetGo:
-      m_sprJudgment->SetState(1);
-      m_sprJudgment->PlayCommand("LetGo");
+      spr_judgment_->SetState(1);
+      spr_judgment_->PlayCommand("LetGo");
       break;
     case HNS_Missed:
       // m_sprJudgment->SetState( 2 ); // Matt: Not until after 5.0
-      m_sprJudgment->PlayCommand("MissedHold");
+      spr_judgment_->PlayCommand("MissedHold");
       break;
     case HNS_None:
     default:

@@ -35,8 +35,8 @@ class BackgroundLoader {
   void Abort();
 
  private:
-  RageThread m_LoadThread;
-  bool m_bShutdownThread;
+  RageThread load_thread_;
+  bool shutdown_thread_;
   void LoadThread();
   static int LoadThread_Start(void* p) {
     ((BackgroundLoader*)p)->LoadThread();
@@ -46,23 +46,23 @@ class BackgroundLoader {
   std::string GetRequest();
 
   std::string GetCachePath(std::string sPath) const;
-  std::string m_sCachePathPrefix;
+  std::string cache_path_prefix_;
 
-  RageSemaphore m_StartSem;
+  RageSemaphore start_sem_;
 
   /* Lock before accessing any of the rest of the object.  Don't keep this
    * locked while doing expensive operations, like reading files. */
-  RageMutex m_Mutex;
+  RageMutex mutex_;
 
-  std::vector<std::string> m_CacheRequests;
+  std::vector<std::string> cache_requests_;
 
   /* Filename to number of completed requests */
-  std::map<std::string, int> m_FinishedRequests;
+  std::map<std::string, int> finished_requests_;
 
-  bool m_sThreadIsActive;
-  bool m_sThreadShouldAbort;
+  bool thread_is_active_;
+  bool thread_should_abort_;
 
-  RageFileDriverCached* m_pDriver;
+  RageFileDriverCached* driver_;
 };
 
 #endif

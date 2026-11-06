@@ -93,26 +93,26 @@ static Preference<bool> g_bAllowMultipleInstances(
 
 void StepMania::GetPreferredVideoModeParams(VideoModeParams& paramsOut) {
   // resolution handling code that probably needs fixing
-  int iWidth = PREFSMAN->m_iDisplayWidth;
-  if (PREFSMAN->m_bWindowed) {
+  int iWidth = PREFSMAN->display_width_;
+  if (PREFSMAN->windowed_) {
     // float fRatio = PREFSMAN->m_iDisplayHeight;
     // iWidth = PREFSMAN->m_iDisplayHeight * fRatio;
     iWidth =
-        std::ceil(PREFSMAN->m_iDisplayHeight * PREFSMAN->m_fDisplayAspectRatio);
+        std::ceil(PREFSMAN->display_height_ * PREFSMAN->display_aspect_ratio_);
     // ceil causes the width to come out odd when it shouldn't.
     // 576 * 1.7778 = 1024.0128, which is rounded to 1025. -Kyz
     iWidth -= iWidth % 2;
   }
 
   paramsOut = VideoModeParams(
-      PREFSMAN->m_bWindowed || PREFSMAN->m_bFullscreenIsBorderlessWindow,
-      PREFSMAN->m_sDisplayId, iWidth, PREFSMAN->m_iDisplayHeight,
-      PREFSMAN->m_iDisplayColorDepth, PREFSMAN->m_iRefreshRate,
-      PREFSMAN->m_bVsync, PREFSMAN->m_bInterlaced, PREFSMAN->m_bSmoothLines,
-      PREFSMAN->m_bTrilinearFiltering, PREFSMAN->m_bAnisotropicFiltering,
-      !PREFSMAN->m_bWindowed && PREFSMAN->m_bFullscreenIsBorderlessWindow,
+      PREFSMAN->windowed_ || PREFSMAN->fullscreen_is_borderless_window_,
+      PREFSMAN->display_id_, iWidth, PREFSMAN->display_height_,
+      PREFSMAN->display_color_depth_, PREFSMAN->refresh_rate_, PREFSMAN->vsync_,
+      PREFSMAN->interlaced_, PREFSMAN->smooth_lines_,
+      PREFSMAN->trilinear_filtering_, PREFSMAN->anisotropic_filtering_,
+      !PREFSMAN->windowed_ && PREFSMAN->fullscreen_is_borderless_window_,
       CommonMetrics::WINDOW_TITLE, THEME->GetPathG("Common", "window icon"),
-      PREFSMAN->m_bPAL, PREFSMAN->m_fDisplayAspectRatio);
+      PREFSMAN->pal_, PREFSMAN->display_aspect_ratio_);
 }
 
 static LocalizedString COLOR("StepMania", "color");
@@ -131,11 +131,11 @@ static std::string GetActualGraphicOptionsString() {
                         TEXTURE.GetValue() + " %dHz %s %s";
   std::string sLog = ssprintf(
       sFormat.c_str(), DISPLAY->GetApiDescription().c_str(),
-      (params.windowed ? WINDOWED : FULLSCREEN).GetValue().c_str(),
-      (int)params.width, (int)params.height, (int)params.bpp,
-      (int)PREFSMAN->m_iTextureColorDepth, (int)params.rate,
-      (params.vsync ? VSYNC : NO_VSYNC).GetValue().c_str(),
-      (PREFSMAN->m_bSmoothLines ? SMOOTH_LINES : NO_SMOOTH_LINES)
+      (params.windowed_ ? WINDOWED : FULLSCREEN).GetValue().c_str(),
+      (int)params.width_, (int)params.height_, (int)params.bpp_,
+      (int)PREFSMAN->texture_color_depth_, (int)params.rate_,
+      (params.vsync_ ? VSYNC : NO_VSYNC).GetValue().c_str(),
+      (PREFSMAN->smooth_lines_ ? SMOOTH_LINES : NO_SMOOTH_LINES)
           .GetValue()
           .c_str());
   return sLog;
@@ -146,37 +146,37 @@ static void StoreActualGraphicOptions() {
    * we don't go through the process of auto-detecting a usable video mode
    * every time. */
   const VideoModeParams& params = DISPLAY->GetActualVideoModeParams();
-  PREFSMAN->m_bWindowed.Set(
-      params.windowed && !params.bWindowIsFullscreenBorderless);
-  if (!params.windowed && !params.bWindowIsFullscreenBorderless) {
+  PREFSMAN->windowed_.Set(
+      params.windowed_ && !params.window_is_fullscreen_borderless_);
+  if (!params.windowed_ && !params.window_is_fullscreen_borderless_) {
     // In all other cases, want to preserve the value of this preference,
     // but if DISPLAY decides to go fullscreen exclusive, we'll persist that
     // decision
-    PREFSMAN->m_bFullscreenIsBorderlessWindow.Set(false);
+    PREFSMAN->fullscreen_is_borderless_window_.Set(false);
   }
 
   /* If we're windowed, we may have tweaked the width based on the aspect ratio.
    * Don't save this new value over the preferred value. */
-  if (!PREFSMAN->m_bWindowed) {
-    PREFSMAN->m_iDisplayWidth.Set(params.width);
-    PREFSMAN->m_iDisplayHeight.Set(params.height);
+  if (!PREFSMAN->windowed_) {
+    PREFSMAN->display_width_.Set(params.width_);
+    PREFSMAN->display_height_.Set(params.height_);
   }
-  PREFSMAN->m_iDisplayColorDepth.Set(params.bpp);
-  if (PREFSMAN->m_iRefreshRate != REFRESH_DEFAULT) {
-    PREFSMAN->m_iRefreshRate.Set(params.rate);
+  PREFSMAN->display_color_depth_.Set(params.bpp_);
+  if (PREFSMAN->refresh_rate_ != REFRESH_DEFAULT) {
+    PREFSMAN->refresh_rate_.Set(params.rate_);
   }
-  PREFSMAN->m_bVsync.Set(params.vsync);
+  PREFSMAN->vsync_.Set(params.vsync_);
 
-  Dialog::SetWindowed(params.windowed);
+  Dialog::SetWindowed(params.windowed_);
 }
 
 static RageDisplay* CreateDisplay();
 
 bool StepMania::GetHighResolutionTextures() {
-  switch (PREFSMAN->m_HighResolutionTextures) {
+  switch (PREFSMAN->high_resolution_textures_) {
     default:
     case HighResolutionTextures_Auto: {
-      int height = PREFSMAN->m_iDisplayHeight;
+      int height = PREFSMAN->display_height_;
       return height > THEME->GetMetricI("Common", "ScreenHeight");
     }
     case HighResolutionTextures_ForceOn:
@@ -188,8 +188,8 @@ bool StepMania::GetHighResolutionTextures() {
 
 static void update_centering() {
   DISPLAY->ChangeCentering(
-      PREFSMAN->m_iCenterImageTranslateX, PREFSMAN->m_iCenterImageTranslateY,
-      PREFSMAN->m_fCenterImageAddWidth, PREFSMAN->m_fCenterImageAddHeight);
+      PREFSMAN->center_image_translate_x_, PREFSMAN->center_image_translate_y_,
+      PREFSMAN->center_image_add_width_, PREFSMAN->center_image_add_height_);
 }
 
 static void StartDisplay() {
@@ -203,12 +203,12 @@ static void StartDisplay() {
 
   TEXTUREMAN = new RageTextureManager;
   TEXTUREMAN->SetPrefs(RageTextureManagerPrefs(
-      PREFSMAN->m_iTextureColorDepth, PREFSMAN->m_iMovieColorDepth,
-      PREFSMAN->m_bDelayedTextureDelete, PREFSMAN->m_iMaxTextureResolution,
-      StepMania::GetHighResolutionTextures(), PREFSMAN->m_bForceMipMaps));
+      PREFSMAN->texture_color_depth_, PREFSMAN->movie_color_depth_,
+      PREFSMAN->delayed_texture_delete_, PREFSMAN->max_texture_resolution_,
+      StepMania::GetHighResolutionTextures(), PREFSMAN->force_mip_maps_));
 
   MODELMAN = new ModelManager;
-  MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->m_bDelayedModelDelete));
+  MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->delayed_model_delete_));
 }
 
 void StepMania::ApplyGraphicOptions() {
@@ -224,12 +224,12 @@ void StepMania::ApplyGraphicOptions() {
   update_centering();
 
   bNeedReload |= TEXTUREMAN->SetPrefs(RageTextureManagerPrefs(
-      PREFSMAN->m_iTextureColorDepth, PREFSMAN->m_iMovieColorDepth,
-      PREFSMAN->m_bDelayedTextureDelete, PREFSMAN->m_iMaxTextureResolution,
-      StepMania::GetHighResolutionTextures(), PREFSMAN->m_bForceMipMaps));
+      PREFSMAN->texture_color_depth_, PREFSMAN->movie_color_depth_,
+      PREFSMAN->delayed_texture_delete_, PREFSMAN->max_texture_resolution_,
+      StepMania::GetHighResolutionTextures(), PREFSMAN->force_mip_maps_));
 
   bNeedReload |=
-      MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->m_bDelayedModelDelete));
+      MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->delayed_model_delete_));
 
   if (bNeedReload) {
     TEXTUREMAN->ReloadAll();
@@ -329,12 +329,12 @@ void StepMania::ResetGame() {
   GAMESTATE->Reset();
 
   if (!THEME->DoesThemeExist(THEME->GetCurThemeName())) {
-    std::string sGameName = GAMESTATE->GetCurrentGame()->m_szName;
+    std::string sGameName = GAMESTATE->GetCurrentGame()->name_;
     if (!THEME->DoesThemeExist(sGameName)) {
-      sGameName = PREFSMAN->m_sDefaultTheme;  // was previously "default" -aj
+      sGameName = PREFSMAN->default_theme_;  // was previously "default" -aj
     }
     THEME->SwitchThemeAndLanguage(
-        sGameName, THEME->GetCurLanguage(), PREFSMAN->m_bPseudoLocalize);
+        sGameName, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
     TEXTUREMAN->DoDelayedDelete();
   }
 
@@ -343,9 +343,9 @@ void StepMania::ResetGame() {
 
 ThemeMetric<std::string> INITIAL_SCREEN("Common", "InitialScreen");
 std::string StepMania::GetInitialScreen() {
-  if (PREFSMAN->m_sTestInitialScreen.Get() != "" &&
-      SCREENMAN->IsScreenNameValid(PREFSMAN->m_sTestInitialScreen)) {
-    return PREFSMAN->m_sTestInitialScreen;
+  if (PREFSMAN->test_initial_screen_.Get() != "" &&
+      SCREENMAN->IsScreenNameValid(PREFSMAN->test_initial_screen_)) {
+    return PREFSMAN->test_initial_screen_;
   }
   std::string screen_name = INITIAL_SCREEN.GetValue();
   if (!SCREENMAN->IsScreenNameValid(screen_name)) {
@@ -370,30 +370,30 @@ std::string StepMania::GetSelectMusicScreen() {
 #include "RageDisplay_Null.h"
 
 struct VideoCardDefaults {
-  std::string sDriverRegex;
-  std::string sVideoRenderers;
-  int iWidth;
-  int iHeight;
-  int iDisplayColor;
-  int iTextureColor;
-  int iMovieColor;
-  int iTextureSize;
-  bool bSmoothLines;
+  std::string driver_regex_;
+  std::string video_renderers_;
+  int width_;
+  int height_;
+  int display_color_;
+  int texture_color_;
+  int movie_color_;
+  int texture_size_;
+  bool smooth_lines_;
 
   VideoCardDefaults() {}
   VideoCardDefaults(
       std::string sDriverRegex_, std::string sVideoRenderers_, int iWidth_,
       int iHeight_, int iDisplayColor_, int iTextureColor_, int iMovieColor_,
       int iTextureSize_, bool bSmoothLines_) {
-    sDriverRegex = sDriverRegex_;
-    sVideoRenderers = sVideoRenderers_;
-    iWidth = iWidth_;
-    iHeight = iHeight_;
-    iDisplayColor = iDisplayColor_;
-    iTextureColor = iTextureColor_;
-    iMovieColor = iMovieColor_;
-    iTextureSize = iTextureSize_;
-    bSmoothLines = bSmoothLines_;
+    driver_regex_ = sDriverRegex_;
+    video_renderers_ = sVideoRenderers_;
+    width_ = iWidth_;
+    height_ = iHeight_;
+    display_color_ = iDisplayColor_;
+    texture_color_ = iTextureColor_;
+    movie_color_ = iMovieColor_;
+    texture_size_ = iTextureSize_;
+    smooth_lines_ = bSmoothLines_;
   }
 } const g_VideoCardDefaults[] = {
     // These lines correspond to the struct defined above.
@@ -433,7 +433,7 @@ bool CheckVideoDefaultSettings() {
 
   LOG->Trace(
       "Last seen video driver: %s",
-      PREFSMAN->m_sLastSeenVideoDriver.Get().c_str());
+      PREFSMAN->last_seen_video_driver_.Get().c_str());
 
   VideoCardDefaults defaults;
 
@@ -441,7 +441,7 @@ bool CheckVideoDefaultSettings() {
   for (i = 0; i < ARRAYLEN(g_VideoCardDefaults); i++) {
     defaults = g_VideoCardDefaults[i];
 
-    std::string sDriverRegex = defaults.sDriverRegex;
+    std::string sDriverRegex = defaults.driver_regex_;
     Regex regex(sDriverRegex);
     if (regex.Compare(sVideoDriver)) {
       LOG->Trace(
@@ -455,41 +455,41 @@ bool CheckVideoDefaultSettings() {
   }
 
   bool bSetDefaultVideoParams = false;
-  if (PREFSMAN->m_sVideoRenderers.Get() == "") {
+  if (PREFSMAN->video_renderers_.Get() == "") {
     bSetDefaultVideoParams = true;
     LOG->Trace("Applying defaults for %s.", sVideoDriver.c_str());
-  } else if (PREFSMAN->m_sLastSeenVideoDriver.Get() != sVideoDriver) {
+  } else if (PREFSMAN->last_seen_video_driver_.Get() != sVideoDriver) {
     bSetDefaultVideoParams = true;
     LOG->Trace(
         "Video card has changed from %s to %s.  Applying new defaults.",
-        PREFSMAN->m_sLastSeenVideoDriver.Get().c_str(), sVideoDriver.c_str());
+        PREFSMAN->last_seen_video_driver_.Get().c_str(), sVideoDriver.c_str());
   }
 
   if (bSetDefaultVideoParams) {
-    PREFSMAN->m_sVideoRenderers.Set(defaults.sVideoRenderers);
-    PREFSMAN->m_iDisplayWidth.Set(defaults.iWidth);
-    PREFSMAN->m_iDisplayHeight.Set(defaults.iHeight);
-    PREFSMAN->m_iDisplayColorDepth.Set(defaults.iDisplayColor);
-    PREFSMAN->m_iTextureColorDepth.Set(defaults.iTextureColor);
-    PREFSMAN->m_iMovieColorDepth.Set(defaults.iMovieColor);
-    PREFSMAN->m_iMaxTextureResolution.Set(defaults.iTextureSize);
-    PREFSMAN->m_bSmoothLines.Set(defaults.bSmoothLines);
+    PREFSMAN->video_renderers_.Set(defaults.video_renderers_);
+    PREFSMAN->display_width_.Set(defaults.width_);
+    PREFSMAN->display_height_.Set(defaults.height_);
+    PREFSMAN->display_color_depth_.Set(defaults.display_color_);
+    PREFSMAN->texture_color_depth_.Set(defaults.texture_color_);
+    PREFSMAN->movie_color_depth_.Set(defaults.movie_color_);
+    PREFSMAN->max_texture_resolution_.Set(defaults.texture_size_);
+    PREFSMAN->smooth_lines_.Set(defaults.smooth_lines_);
     // this only worked when we started in fullscreen by default. -aj
     // PREFSMAN->m_fDisplayAspectRatio.Set( HOOKS->GetDisplayAspectRatio() );
     // now that we start in windowed mode, use the new default aspect ratio.
-    PREFSMAN->m_fDisplayAspectRatio.Set(PREFSMAN->m_fDisplayAspectRatio);
+    PREFSMAN->display_aspect_ratio_.Set(PREFSMAN->display_aspect_ratio_);
 
     // Update last seen video card
-    PREFSMAN->m_sLastSeenVideoDriver.Set(GetVideoDriverName());
+    PREFSMAN->last_seen_video_driver_.Set(GetVideoDriverName());
   } else if (CompareNoCase(
-                 PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
+                 PREFSMAN->video_renderers_.Get(), defaults.video_renderers_)) {
     LOG->Warn(
         "Video renderer list has been changed from '%s' to '%s'",
-        defaults.sVideoRenderers.c_str(),
-        PREFSMAN->m_sVideoRenderers.Get().c_str());
+        defaults.video_renderers_.c_str(),
+        PREFSMAN->video_renderers_.Get().c_str());
   }
 
-  LOG->Info("Video renderers: '%s'", PREFSMAN->m_sVideoRenderers.Get().c_str());
+  LOG->Info("Video renderers: '%s'", PREFSMAN->video_renderers_.Get().c_str());
   return bSetDefaultVideoParams;
 }
 
@@ -546,7 +546,7 @@ RageDisplay* CreateDisplay() {
       "\n\n";
 
   std::vector<std::string> asRenderers;
-  split(PREFSMAN->m_sVideoRenderers, ",", asRenderers, true);
+  split(PREFSMAN->video_renderers_, ",", asRenderers, true);
 
   if (asRenderers.empty()) {
     RageException::Throw("%s", ERROR_NO_VIDEO_RENDERERS.GetValue().c_str());
@@ -577,7 +577,7 @@ RageDisplay* CreateDisplay() {
     }
 
     std::string sError =
-        pRet->Init(params, PREFSMAN->m_bAllowUnacceleratedRenderer);
+        pRet->Init(params, PREFSMAN->allow_unaccelerated_renderer_);
     if (!sError.empty()) {
       error +=
           ssprintf(ERROR_INITIALIZING.GetValue().c_str(), sRenderer.c_str()) +
@@ -609,7 +609,7 @@ static void SwitchToLastPlayedGame() {
     pGame = GAMEMAN->GetDefaultGame();
     LOG->Warn(
         "Default NoteSkin for \"%s\" missing, reverting to \"%s\"",
-        pGame->m_szName, GAMEMAN->GetDefaultGame()->m_szName);
+        pGame->name_, GAMEMAN->GetDefaultGame()->name_);
   }
 
   ASSERT(GAMEMAN->IsGameEnabled(pGame));
@@ -626,13 +626,13 @@ void StepMania::InitializeCurrentGame(const Game* g) {
 
   GAMESTATE->SetCurGame(g);
 
-  std::string sAnnouncer = PREFSMAN->m_sAnnouncer;
-  std::string sTheme = PREFSMAN->m_sTheme;
-  std::string sGametype = GAMESTATE->GetCurrentGame()->m_szName;
-  std::string sLanguage = PREFSMAN->m_sLanguage;
+  std::string sAnnouncer = PREFSMAN->announcer_;
+  std::string sTheme = PREFSMAN->theme_;
+  std::string sGametype = GAMESTATE->GetCurrentGame()->name_;
+  std::string sLanguage = PREFSMAN->language_;
 
   if (sAnnouncer.empty()) {
-    sAnnouncer = GAMESTATE->GetCurrentGame()->m_szName;
+    sAnnouncer = GAMESTATE->GetCurrentGame()->name_;
   }
   std::string argCurGame;
   if (GetCommandlineArgument("game", &argCurGame) && argCurGame != sGametype) {
@@ -654,23 +654,23 @@ void StepMania::InitializeCurrentGame(const Game* g) {
   if (GetCommandlineArgument("theme", &argTheme) && argTheme != sTheme) {
     sTheme = argTheme;
     // set theme in preferences too for correct behavior  -aj
-    PREFSMAN->m_sTheme.Set(sTheme);
+    PREFSMAN->theme_.Set(sTheme);
   }
 
   std::string argLanguage;
   if (GetCommandlineArgument("language", &argLanguage)) {
     sLanguage = argLanguage;
     // set language in preferences too for correct behavior -aj
-    PREFSMAN->m_sLanguage.Set(sLanguage);
+    PREFSMAN->language_.Set(sLanguage);
   }
 
   // it's OK to call these functions with names that don't exist.
   ANNOUNCER->SwitchAnnouncer(sAnnouncer);
-  THEME->SwitchThemeAndLanguage(sTheme, sLanguage, PREFSMAN->m_bPseudoLocalize);
+  THEME->SwitchThemeAndLanguage(sTheme, sLanguage, PREFSMAN->pseudo_localize_);
 
   // Set the input scheme for the new game, and load keymaps.
   if (INPUTMAPPER) {
-    INPUTMAPPER->SetInputScheme(&g->m_InputScheme);
+    INPUTMAPPER->SetInputScheme(&g->input_scheme_);
     INPUTMAPPER->ReadMappingsFromDisk();
   }
 }
@@ -749,12 +749,12 @@ static void WriteLogHeader() {
 }
 
 static void ApplyLogPreferences() {
-  LOG->SetShowLogOutput(PREFSMAN->m_bShowLogOutput);
-  LOG->SetLogToDisk(PREFSMAN->m_bLogToDisk);
-  LOG->SetInfoToDisk(PREFSMAN->m_bLogToDisk);
-  LOG->SetUserLogToDisk(PREFSMAN->m_bLogToDisk);
-  LOG->SetFlushing(PREFSMAN->m_bForceLogFlush);
-  Checkpoints::LogCheckpoints(PREFSMAN->m_bLogCheckpoints);
+  LOG->SetShowLogOutput(PREFSMAN->show_log_output_);
+  LOG->SetLogToDisk(PREFSMAN->log_to_disk_);
+  LOG->SetInfoToDisk(PREFSMAN->log_to_disk_);
+  LOG->SetUserLogToDisk(PREFSMAN->log_to_disk_);
+  LOG->SetFlushing(PREFSMAN->force_log_flush_);
+  Checkpoints::LogCheckpoints(PREFSMAN->log_checkpoints_);
 }
 
 static LocalizedString COULDNT_OPEN_LOADING_WINDOW(
@@ -815,16 +815,17 @@ int sm_main(int argc, char* argv[]) {
   WriteLogHeader();
 
   // Set up alternative filesystem trees.
-  MountFolders("dirro", PREFSMAN->m_sAdditionalFoldersReadOnly.Get(), "/");
-  MountFolders("dir", PREFSMAN->m_sAdditionalFoldersWritable.Get(), "/");
+  MountFolders("dirro", PREFSMAN->additional_folders_read_only_.Get(), "/");
+  MountFolders("dir", PREFSMAN->additional_folders_writable_.Get(), "/");
   MountFolders(
-      "dirro", PREFSMAN->m_sAdditionalSongFoldersReadOnly.Get(), "/Songs");
+      "dirro", PREFSMAN->additional_song_folders_read_only_.Get(), "/Songs");
   MountFolders(
-      "dir", PREFSMAN->m_sAdditionalSongFoldersWritable.Get(), "/Songs");
+      "dir", PREFSMAN->additional_song_folders_writable_.Get(), "/Songs");
   MountFolders(
-      "dirro", PREFSMAN->m_sAdditionalCourseFoldersReadOnly.Get(), "/Courses");
+      "dirro", PREFSMAN->additional_course_folders_read_only_.Get(),
+      "/Courses");
   MountFolders(
-      "dir", PREFSMAN->m_sAdditionalCourseFoldersWritable.Get(), "/Courses");
+      "dir", PREFSMAN->additional_course_folders_writable_.Get(), "/Courses");
 
   MountTreeOfZips(SpecialFiles::PACKAGES_DIR);
 
@@ -874,7 +875,7 @@ int sm_main(int argc, char* argv[]) {
   CommandLineActions::Handle(pLoadingWindow);
 
   if (GetCommandlineArgument("dopefish")) {
-    GAMESTATE->m_bDopefish = true;
+    GAMESTATE->dopefish_ = true;
   }
 
   {
@@ -895,10 +896,10 @@ int sm_main(int argc, char* argv[]) {
     delete pSurface;
   }
 
-  if (PREFSMAN->m_iSoundWriteAhead) {
+  if (PREFSMAN->sound_write_ahead_) {
     LOG->Info(
         "Sound writeahead has been overridden to %i",
-        PREFSMAN->m_iSoundWriteAhead.Get());
+        PREFSMAN->sound_write_ahead_.Get());
   }
 
   SOUNDMAN = new RageSoundManager;
@@ -921,7 +922,7 @@ int sm_main(int argc, char* argv[]) {
   SONGMAN->InitAll(
       pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
   CRYPTMAN = new CryptManager;  // need to do this before ProfileMan
-  if (PREFSMAN->m_bSignProfileData) {
+  if (PREFSMAN->sign_profile_data_) {
     CRYPTMAN->GenerateGlobalKeys();
   }
   MEMCARDMAN = new MemoryCardManager;
@@ -1020,7 +1021,7 @@ std::string StepMania::SaveScreenshot(
 
   SCREENMAN->PlayScreenshotSound();
 
-  if (PREFSMAN->m_bSignProfileData && MakeSignature) {
+  if (PREFSMAN->sign_profile_data_ && MakeSignature) {
     CryptManager::SignFileToFile(Path);
   }
 
@@ -1032,31 +1033,31 @@ void StepMania::InsertCoin(int iNum, bool bCountInBookkeeping) {
     LIGHTSMAN->PulseCoinCounter();
     BOOKKEEPER->CoinInserted();
   }
-  int iNumCoinsOld = GAMESTATE->m_iCoins;
+  int iNumCoinsOld = GAMESTATE->coins_;
 
   // Don't allow GAMESTATE's coin count to become negative.
-  if (GAMESTATE->m_iCoins + iNum >= 0) {
-    GAMESTATE->m_iCoins.Set(GAMESTATE->m_iCoins + iNum);
+  if (GAMESTATE->coins_ + iNum >= 0) {
+    GAMESTATE->coins_.Set(GAMESTATE->coins_ + iNum);
   }
 
-  int iCredits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
-  bool bMaxCredits = iCredits >= PREFSMAN->m_iMaxNumCredits;
+  int iCredits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
+  bool bMaxCredits = iCredits >= PREFSMAN->max_num_credits_;
   if (bMaxCredits) {
-    GAMESTATE->m_iCoins.Set(
-        PREFSMAN->m_iMaxNumCredits * PREFSMAN->m_iCoinsPerCredit);
+    GAMESTATE->coins_.Set(
+        PREFSMAN->max_num_credits_ * PREFSMAN->coins_per_credit_);
   }
 
   LOG->Trace(
-      "%i coins inserted, %i needed to play", GAMESTATE->m_iCoins.Get(),
-      PREFSMAN->m_iCoinsPerCredit.Get());
+      "%i coins inserted, %i needed to play", GAMESTATE->coins_.Get(),
+      PREFSMAN->coins_per_credit_.Get());
 
   // On InsertCoin, make sure to update Coins file
-  BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+  BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
   // If inserting coins, play an appropriate sound; if deducting coins, don't
   // play anything.
   if (iNum > 0) {
-    if (iNumCoinsOld != GAMESTATE->m_iCoins) {
+    if (iNumCoinsOld != GAMESTATE->coins_) {
       SCREENMAN->PlayCoinSound();
     } else {
       SCREENMAN->PlayInvalidSound();
@@ -1065,7 +1066,7 @@ void StepMania::InsertCoin(int iNum, bool bCountInBookkeeping) {
 
   /* If AutoJoin and a player is already joined, then try to join a player.
    * (If no players are joined, they'll join on the first JoinInput.) */
-  if (GAMESTATE->m_bAutoJoin.Get() && GAMESTATE->GetNumSidesJoined() > 0) {
+  if (GAMESTATE->auto_join_.Get() && GAMESTATE->GetNumSidesJoined() > 0) {
     if (GAMESTATE->GetNumSidesJoined() > 0 && GAMESTATE->JoinPlayers()) {
       SCREENMAN->PlayStartSound();
     }
@@ -1081,16 +1082,16 @@ void StepMania::InsertCoin(int iNum, bool bCountInBookkeeping) {
 }
 
 void StepMania::InsertCredit() {
-  InsertCoin(PREFSMAN->m_iCoinsPerCredit, false);
+  InsertCoin(PREFSMAN->coins_per_credit_, false);
 }
 
 void StepMania::ClearCredits() {
-  LOG->Trace("%i coins cleared", GAMESTATE->m_iCoins.Get());
-  GAMESTATE->m_iCoins.Set(0);
+  LOG->Trace("%i coins cleared", GAMESTATE->coins_.Get());
+  GAMESTATE->coins_.Set(0);
   SCREENMAN->PlayInvalidSound();
 
   // Update Coins file to make sure credits are cleared.
-  BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+  BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
   // TODO: remove this redundant message and things that depend on it
   Message msg("CoinInserted");
@@ -1112,11 +1113,11 @@ static LocalizedString RELOADED_OVERLAY_SCREENS(
     "ThemeManager", "Reloaded overlay screens");
 bool HandleGlobalInputs(const InputEventPlus& input) {
   // None of the globals keys act on types other than FIRST_PRESS
-  if (input.type != IET_FIRST_PRESS) {
+  if (input.type_ != IET_FIRST_PRESS) {
     return false;
   }
 
-  switch (input.MenuI) {
+  switch (input.menu_i_) {
     case GAME_BUTTON_OPERATOR:
       /* Global operator key, to get quick access to the options menu. Don't
        * do this if we're on a "system menu", which includes the editor
@@ -1148,19 +1149,19 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
    * (where it saved bookkeeping and machine profile). -aj */
   bool bIsShiftHeld =
       INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.InputList) ||
+          DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.input_list_) ||
       INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.InputList);
+          DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.input_list_);
   bool bIsCtrlHeld =
       INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.InputList) ||
+          DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.input_list_) ||
       INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.InputList);
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F2)) {
+          DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.input_list_);
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_F2)) {
     if (bIsShiftHeld && !bIsCtrlHeld) {
       // Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
       THEME->ReloadMetrics();
-      NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
+      NOTESKIN->RefreshNoteSkinData(GAMESTATE->cur_game_);
       CodeDetector::RefreshCacheItems();
       SCREENMAN->SystemMessage(RELOADED_METRICS);
     } else if (bIsCtrlHeld && !bIsShiftHeld) {
@@ -1180,7 +1181,7 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
       // F2 alone: refresh metrics, textures, noteskins, codedetector cache
       THEME->ReloadMetrics();
       TEXTUREMAN->ReloadAll();
-      NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
+      NOTESKIN->RefreshNoteSkinData(GAMESTATE->cur_game_);
       CodeDetector::RefreshCacheItems();
       SCREENMAN->SystemMessage(RELOADED_METRICS_AND_TEXTURES);
     }
@@ -1188,29 +1189,29 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
     return true;
   }
 
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE)) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE)) {
     Message msg("ToggleConsoleDisplay");
     MESSAGEMAN->Broadcast(msg);
     return true;
   }
 
 #if !defined(MACOSX)
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F4)) {
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_F4)) {
     if (INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
+            DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
         INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList)) {
+            DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_)) {
       // pressed Alt+F4
       ArchHooks::SetUserQuit();
       return true;
     }
   }
 #else
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
       (INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
+           DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_) ||
        INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList))) {
+           DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_))) {
     /* The user quit is handled by the menu item so we don't need to set it
      * here; however, we do want to return that it has been handled since
      * this will happen first. */
@@ -1221,24 +1222,24 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
   bool bDoScreenshot =
 #if defined(MACOSX)
       // Notebooks don't have F13. Use cmd-F12 as well.
-      input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) ||
-      input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F13) ||
-      (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
+      input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) ||
+      input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_F13) ||
+      (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
        (INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
+            DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_) ||
         INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList)));
+            DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_)));
 #else
       /* The default Windows message handler will capture the desktop window
        * upon pressing PrntScrn, or will capture the foreground with focus upon
        * pressing Alt+PrntScrn. Windows will do this whether or not we save a
        * screenshot ourself by dumping the frame buffer. */
       // "if pressing PrintScreen and not pressing Alt"
-      input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
+      input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
       !INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) &&
+          DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_) &&
       !INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList);
+          DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_);
 #endif
   if (bDoScreenshot) {
     // If holding Shift save uncompressed, else save compressed
@@ -1253,11 +1254,11 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
     return true;  // handled
   }
 
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
+  if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
       (INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
+           DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
        INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList))) {
+           DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_))) {
     // alt-enter
     /* In macOS, this is a menu item and will be handled as such. This will
      * happen first and then the lower priority GUI thread will happen second,
@@ -1299,25 +1300,27 @@ void HandleInputEvents(float fDeltaTime) {
 
   for (unsigned i = 0; i < ieArray.size(); i++) {
     InputEventPlus input;
-    input.DeviceI = ieArray[i].di;
-    input.type = ieArray[i].type;
-    swap(input.InputList, ieArray[i].m_ButtonState);
+    input.device_i_ = ieArray[i].di_;
+    input.type_ = ieArray[i].type_;
+    swap(input.input_list_, ieArray[i].button_state_);
 
-    INPUTMAPPER->DeviceToGame(input.DeviceI, input.GameI);
+    INPUTMAPPER->DeviceToGame(input.device_i_, input.game_i_);
 
-    if (input.GameI.IsValid()) {
-      input.MenuI = INPUTMAPPER->GameButtonToMenuButton(input.GameI.button);
-      input.pn = INPUTMAPPER->ControllerToPlayerNumber(input.GameI.controller);
+    if (input.game_i_.IsValid()) {
+      input.menu_i_ =
+          INPUTMAPPER->GameButtonToMenuButton(input.game_i_.button_);
+      input.pn_ =
+          INPUTMAPPER->ControllerToPlayerNumber(input.game_i_.controller_);
     }
 
     INPUTQUEUE->RememberInput(input);
 
     // When a GameButton is pressed, stop repeating other keys on the same
     // controller.
-    if (input.type == IET_FIRST_PRESS && input.MenuI != GameButton_Invalid) {
+    if (input.type_ == IET_FIRST_PRESS && input.menu_i_ != GameButton_Invalid) {
       FOREACH_ENUM(GameButton, m) {
-        if (input.MenuI != m) {
-          INPUTMAPPER->RepeatStopKey(m, input.pn);
+        if (input.menu_i_ != m) {
+          INPUTMAPPER->RepeatStopKey(m, input.pn_);
         }
       }
     }
@@ -1329,15 +1332,15 @@ void HandleInputEvents(float fDeltaTime) {
     // check back in event mode
     if (GAMESTATE->IsEventMode() &&
         CodeDetector::EnteredCode(
-            input.GameI.controller, CODE_BACK_IN_EVENT_MODE)) {
-      input.MenuI = GAME_BUTTON_BACK;
+            input.game_i_.controller_, CODE_BACK_IN_EVENT_MODE)) {
+      input.menu_i_ = GAME_BUTTON_BACK;
     }
 
     SCREENMAN->Input(input);
   }
 
   if (ArchHooks::GetAndClearToggleWindowed()) {
-    PREFSMAN->m_bWindowed.Set(!PREFSMAN->m_bWindowed);
+    PREFSMAN->windowed_.Set(!PREFSMAN->windowed_);
     StepMania::ApplyGraphicOptions();
   }
 }

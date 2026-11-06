@@ -31,26 +31,26 @@ void ScreenOptionsExportPackage::Init() {
 
 void ScreenOptionsExportPackage::BeginScreen() {
   // Fill m_vsPackageTypes:
-  m_vsPackageTypes.push_back("Themes");
-  m_vsPackageTypes.push_back("NoteSkins");
-  m_vsPackageTypes.push_back("Courses");
-  m_vsPackageTypes.push_back("Songs");
+  package_types_.push_back("Themes");
+  package_types_.push_back("NoteSkins");
+  package_types_.push_back("Courses");
+  package_types_.push_back("Songs");
   // announcers, characters, others?
 
   std::vector<OptionRowHandler*> OptionRowHandlers;
-  for (const std::string& s : m_vsPackageTypes) {
+  for (const std::string& s : package_types_) {
     OptionRowHandler* pHand = OptionRowHandlerUtil::MakeNull();
-    OptionRowDefinition& def = pHand->m_Def;
+    OptionRowDefinition& def = pHand->def_;
 
-    def.m_sName = s;
-    def.m_bAllowExplanation = false;
+    def.name_ = s;
+    def.allow_explanation_ = false;
     // def.m_sExplanationName = "# files, # MB, # subdirs";
-    def.m_bAllowThemeTitle = false;
-    def.m_bAllowThemeItems = false;
-    def.m_layoutType = LAYOUT_SHOW_ALL_IN_ROW;
-    def.m_bOneChoiceForAllPlayers = true;
-    def.m_vsChoices.clear();
-    def.m_vsChoices.push_back("");
+    def.allow_theme_title_ = false;
+    def.allow_theme_items_ = false;
+    def.layout_type_ = LAYOUT_SHOW_ALL_IN_ROW;
+    def.one_choice_for_all_players_ = true;
+    def.choices_.clear();
+    def.choices_.push_back("");
     OptionRowHandlers.push_back(pHand);
   }
   ScreenOptions::InitMenu(OptionRowHandlers);
@@ -66,12 +66,12 @@ void ScreenOptionsExportPackage::ProcessMenuStart(const InputEventPlus& input) {
   // switch to the subpage with the specified type
   // int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
   int iRow = GetCurrentRow();
-  if (m_pRows[iRow]->GetRowType() == OptionRow::RowType_Exit) {
+  if (rows_[iRow]->GetRowType() == OptionRow::RowType_Exit) {
     ScreenOptions::ProcessMenuStart(input);
     return;
   }
 
-  ExportPackages::m_sPackageType = m_vsPackageTypes[iRow];
+  ExportPackages::m_sPackageType = package_types_[iRow];
 
   SCREENMAN->PlayStartSound();
   this->BeginFadingOut();
@@ -104,13 +104,13 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
   if (*s_packageType == "Themes") {
     // add themes
     GetDirListing(
-        SpecialFiles::THEMES_DIR + "*", m_vsPossibleDirsToExport, true, true);
+        SpecialFiles::THEMES_DIR + "*", possible_dirs_to_export_, true, true);
   } else if (*s_packageType == "NoteSkins") {
     // add noteskins
     std::vector<std::string> vs;
     GetDirListing(SpecialFiles::NOTESKINS_DIR + "*", vs, true, true);
     for (const std::string& s : vs) {
-      GetDirListing(s + "*", m_vsPossibleDirsToExport, true, true);
+      GetDirListing(s + "*", possible_dirs_to_export_, true, true);
     }
   } else if (*s_packageType == "Courses") {
     // Add courses. Only support courses that are in a group folder.
@@ -120,15 +120,15 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
     StripCvsAndSvn(vs);
     StripMacResourceForks(vs);
     for (const std::string& s : vs) {
-      m_vsPossibleDirsToExport.push_back(s);
-      GetDirListing(s + "/*", m_vsPossibleDirsToExport, true, true);
+      possible_dirs_to_export_.push_back(s);
+      GetDirListing(s + "/*", possible_dirs_to_export_, true, true);
     }
   } else if (*s_packageType == "Songs") {
     // Add song groups
     std::vector<std::string> asAllGroups;
     SONGMAN->GetSongGroupNames(asAllGroups);
     for (const std::string& s : asAllGroups) {
-      m_vsPossibleDirsToExport.push_back(s);
+      possible_dirs_to_export_.push_back(s);
     }
   } else if (*s_packageType == "SubGroup") {
     // ExportPackages::m_sFolder
@@ -137,25 +137,25 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
         SpecialFiles::SONGS_DIR + "/" + ExportPackages::m_sFolder + "/*", vs,
         true, true);
     for (const std::string& s : vs) {
-      m_vsPossibleDirsToExport.push_back(s);
-      GetDirListing(s + "/*", m_vsPossibleDirsToExport, true, true);
+      possible_dirs_to_export_.push_back(s);
+      GetDirListing(s + "/*", possible_dirs_to_export_, true, true);
     }
   }
-  StripCvsAndSvn(m_vsPossibleDirsToExport);
-  StripMacResourceForks(m_vsPossibleDirsToExport);
+  StripCvsAndSvn(possible_dirs_to_export_);
+  StripMacResourceForks(possible_dirs_to_export_);
 
   std::vector<OptionRowHandler*> OptionRowHandlers;
-  for (const std::string& s : m_vsPossibleDirsToExport) {
+  for (const std::string& s : possible_dirs_to_export_) {
     OptionRowHandler* pHand = OptionRowHandlerUtil::MakeNull();
-    OptionRowDefinition& def = pHand->m_Def;
-    def.m_layoutType = LAYOUT_SHOW_ALL_IN_ROW;
-    def.m_bAllowThemeTitle = false;
-    def.m_bAllowThemeItems = false;
-    def.m_bAllowExplanation = false;
-    def.m_sName = s;
-    def.m_sExplanationName = "# files, # MB, # subdirs";
+    OptionRowDefinition& def = pHand->def_;
+    def.layout_type_ = LAYOUT_SHOW_ALL_IN_ROW;
+    def.allow_theme_title_ = false;
+    def.allow_theme_items_ = false;
+    def.allow_explanation_ = false;
+    def.name_ = s;
+    def.explanation_name_ = "# files, # MB, # subdirs";
 
-    def.m_vsChoices.push_back("");
+    def.choices_.push_back("");
     OptionRowHandlers.push_back(pHand);
   }
   ScreenOptions::InitMenu(OptionRowHandlers);
@@ -196,8 +196,8 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart(
     return;
   }
 
-  int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
-  if (m_pRows[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
+  int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+  if (rows_[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
     ScreenOptions::ProcessMenuStart(input);
     return;
   }
@@ -207,12 +207,12 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart(
       ExportPackages::m_sPackageType == "Songs") {
     // find folder name
     ExportPackages::m_sPackageType = "SubGroup";
-    ExportPackages::m_sFolder = m_vsPossibleDirsToExport[iCurRow];
+    ExportPackages::m_sFolder = possible_dirs_to_export_[iCurRow];
     SCREENMAN->SetNewScreen("ScreenOptionsExportPackageSubPage");
     return;
   }
 
-  std::string sDirToExport = m_vsPossibleDirsToExport[iCurRow];
+  std::string sDirToExport = possible_dirs_to_export_[iCurRow];
   std::string sPackageName =
       ReplaceInvalidFileNameChars(sDirToExport + ".smzip");
 

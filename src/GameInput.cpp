@@ -35,8 +35,8 @@ GameButton StringToGameButton(
 }
 
 std::string GameInput::ToString(const InputScheme* pInputs) const {
-  return GameControllerToString(controller) + std::string("_") +
-         GameButtonToString(pInputs, button);
+  return GameControllerToString(controller_) + std::string("_") +
+         GameButtonToString(pInputs, button_);
 }
 
 bool GameInput::FromString(const InputScheme* pInputs, const std::string& s) {
@@ -44,12 +44,12 @@ bool GameInput::FromString(const InputScheme* pInputs, const std::string& s) {
   char szButton[32] = "";
 
   if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", szController, szButton)) {
-    controller = GameController_Invalid;
+    controller_ = GameController_Invalid;
     return false;
   }
 
-  controller = StringToGameController(szController);
-  button = StringToGameButton(pInputs, szButton);
+  controller_ = StringToGameController(szController);
+  button_ = StringToGameButton(pInputs, szButton);
   return true;
 };
 

@@ -10,32 +10,32 @@ struct TitleFields {
       std::string& sTitle, std::string& sSubtitle, std::string& sArtist,
       std::string& sTitleTranslit, std::string& sSubtitleTranslit,
       std::string& sArtistTranslit) const {
-    sTitle = Title;
-    sSubtitle = Subtitle;
-    sArtist = Artist;
-    sTitleTranslit = TitleTranslit;
-    sSubtitleTranslit = SubtitleTranslit;
-    sArtistTranslit = ArtistTranslit;
+    sTitle = title_;
+    sSubtitle = subtitle_;
+    sArtist = artist_;
+    sTitleTranslit = title_translit_;
+    sSubtitleTranslit = subtitle_translit_;
+    sArtistTranslit = artist_translit_;
   }
 
   void LoadFromStrings(
       std::string sTitle, std::string sSubtitle, std::string sArtist,
       std::string sTitleTranslit, std::string sSubtitleTranslit,
       std::string sArtistTranslit) {
-    Title = sTitle;
-    Subtitle = sSubtitle;
-    Artist = sArtist;
-    TitleTranslit = sTitleTranslit;
-    SubtitleTranslit = sSubtitleTranslit;
-    ArtistTranslit = sArtistTranslit;
+    title_ = sTitle;
+    subtitle_ = sSubtitle;
+    artist_ = sArtist;
+    title_translit_ = sTitleTranslit;
+    subtitle_translit_ = sSubtitleTranslit;
+    artist_translit_ = sArtistTranslit;
   }
-  std::string Title, Subtitle, Artist;
-  std::string TitleTranslit, SubtitleTranslit, ArtistTranslit;
+  std::string title_, subtitle_, artist_;
+  std::string title_translit_, subtitle_translit_, artist_translit_;
 };
 struct TitleTrans;
 /** @brief Automatic translation for Song titles. */
 class TitleSubst {
-  std::vector<TitleTrans*> ttab;
+  std::vector<TitleTrans*> ttab_;
 
   void AddTrans(const TitleTrans& tr);
 

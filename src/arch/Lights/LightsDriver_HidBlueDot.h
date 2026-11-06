@@ -32,9 +32,9 @@ class LightsDriver_HidBlueDot : public LightsDriver {
     m_PadP2_Right
   };
 
-  uint8_t m_iCabData[3];
-  uint8_t m_iPadData[3];
-  HidDevice dev;
+  uint8_t cab_data_[3];
+  uint8_t pad_data_[3];
+  HidDevice dev_;
 
   void SetLight(unsigned char* buffer, int index, bool value);
   void SetPadLight(PadLightIndex index, bool value);

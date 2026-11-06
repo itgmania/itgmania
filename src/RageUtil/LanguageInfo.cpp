@@ -153,7 +153,7 @@ static const LanguageInfo g_langs[] = {
 
 const LanguageInfo* GetLanguageInfo(const std::string& sIsoCode) {
   for (unsigned i = 0; i < ARRAYLEN(g_langs); ++i) {
-    if (EqualsNoCase(sIsoCode, g_langs[i].szIsoCode)) {
+    if (EqualsNoCase(sIsoCode, g_langs[i].iso_code_)) {
       return &g_langs[i];
     }
   }

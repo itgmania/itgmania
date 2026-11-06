@@ -25,37 +25,37 @@ void DynamicActorScroller::LoadFromNode(const XNode* pNode) {
    * The <children> node loads only one; we copy the rest.
    *
    * Make one extra copy if masking is enabled. */
-  if (m_SubActors.size() != 1) {
+  if (sub_actors_.size() != 1) {
     LuaHelpers::ReportScriptErrorFmt(
         "%s: DynamicActorScroller: loaded %i nodes; require exactly one",
-        ActorUtil::GetWhere(pNode).c_str(), (int)m_SubActors.size());
+        ActorUtil::GetWhere(pNode).c_str(), (int)sub_actors_.size());
     // Remove all but one.
-    for (size_t i = 1; i < m_SubActors.size(); i++) {
-      delete m_SubActors[i];
+    for (size_t i = 1; i < sub_actors_.size(); i++) {
+      delete sub_actors_[i];
     }
-    m_SubActors.resize(1);
+    sub_actors_.resize(1);
   }
 
-  int iNumCopies = (int)m_fNumItemsToDraw;
-  if (m_quadMask.GetVisible()) {
+  int iNumCopies = (int)num_items_to_draw_;
+  if (quad_mask_.GetVisible()) {
     iNumCopies += 1;
   }
   for (int i = 1; i < iNumCopies; ++i) {
-    Actor* pCopy = m_SubActors[0]->Copy();
+    Actor* pCopy = sub_actors_[0]->Copy();
     this->AddChild(pCopy);
   }
 
   {
     Lua* L = LUA->Get();
     pNode->PushAttrValue(L, "LoadFunction");
-    m_LoadFunction.SetFromStack(L);
+    load_function_.SetFromStack(L);
     LUA->Release(L);
   }
 
   // Call the expression with line = nil to find out the number of lines.
   {
     Lua* L = LUA->Get();
-    m_LoadFunction.PushSelf(L);
+    load_function_.PushSelf(L);
     ASSERT(!lua_isnil(L, -1));
     lua_pushnil(L);
     lua_pushnil(L);
@@ -63,7 +63,7 @@ void DynamicActorScroller::LoadFromNode(const XNode* pNode) {
     std::string Error = "Error running LoadFunction: ";
     LuaHelpers::RunScriptOnStack(L, Error, 2, 1, true);  // 2 args, 1 result
 
-    m_iNumItems = (int)luaL_checknumber(L, -1);
+    num_items_ = (int)luaL_checknumber(L, -1);
     lua_pop(L, 1);
     LUA->Release(L);
   }
@@ -85,51 +85,51 @@ void DynamicActorScroller::ShiftSubActors(int iDist) {
     return;
   }
 
-  if (m_bLoop) {
+  if (loop_) {
     /* Optimization: in a loop of 10, when we loop around from 9 to 0,
      * iDist will be -9.  Moving -9 is equivalent to moving +1, and
      * reconfigures much fewer actors. */
     int iWrapped = iDist;
-    wrap(iWrapped, m_iNumItems);
+    wrap(iWrapped, num_items_);
     if (std::abs(iWrapped) < std::abs(iDist)) {
       iDist = iWrapped;
     }
   }
 
   int iFirstToReconfigure = 0;
-  int iLastToReconfigure = (int)m_SubActors.size();
-  if (iDist > 0 && iDist < (int)m_SubActors.size()) {
-    iFirstToReconfigure = m_SubActors.size() - iDist;
-  } else if (iDist < 0 && -iDist < (int)m_SubActors.size()) {
+  int iLastToReconfigure = (int)sub_actors_.size();
+  if (iDist > 0 && iDist < (int)sub_actors_.size()) {
+    iFirstToReconfigure = sub_actors_.size() - iDist;
+  } else if (iDist < 0 && -iDist < (int)sub_actors_.size()) {
     iLastToReconfigure = -iDist;
   }
 
   for (int i = iFirstToReconfigure; i < iLastToReconfigure; i++) {
     int iIndex = i;  // index into m_SubActors
-    int iItem = i + m_iFirstSubActorIndex;
-    if (m_bLoop) {
-      wrap(iIndex, m_SubActors.size());
-      wrap(iItem, m_iNumItems);
+    int iItem = i + first_sub_actor_index_;
+    if (loop_) {
+      wrap(iIndex, sub_actors_.size());
+      wrap(iItem, num_items_);
     } else if (
-        iIndex < 0 || iIndex >= m_iNumItems || iItem < 0 ||
-        iItem >= m_iNumItems) {
+        iIndex < 0 || iIndex >= num_items_ || iItem < 0 ||
+        iItem >= num_items_) {
       continue;
     }
 
     {
       Lua* L = LUA->Get();
       lua_pushnumber(L, i);
-      m_SubActors[iIndex]->m_pLuaInstance->Set(L, "ItemIndex");
+      sub_actors_[iIndex]->lua_instance_->Set(L, "ItemIndex");
       LUA->Release(L);
     }
 
-    ConfigureActor(m_SubActors[iIndex], iItem);
+    ConfigureActor(sub_actors_[iIndex], iItem);
   }
 }
 
 void DynamicActorScroller::ConfigureActor(Actor* pActor, int iItem) {
   Lua* L = LUA->Get();
-  m_LoadFunction.PushSelf(L);
+  load_function_.PushSelf(L);
   ASSERT(!lua_isnil(L, -1));
   pActor->PushSelf(L);
   LuaHelpers::Push(L, iItem);

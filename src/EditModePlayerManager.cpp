@@ -25,7 +25,7 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 
     PlayerPlus& player = *players_[pn];
     player->Init(
-        "Player", GAMESTATE->m_pPlayerState[pn], nullptr, nullptr, nullptr,
+        "Player", GAMESTATE->player_state_[pn], nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr);
     player.Load(note_data);
 
@@ -35,27 +35,27 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
     player->SetAlias("Player" + PlayerNumberToString(pn));
 
     if ((GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-             ->m_StyleType == StyleType_TwoPlayersSharedSides) &&
+             ->style_type_ == StyleType_TwoPlayersSharedSides) &&
         pn != PLAYER_1) {
       // Ensure P2 has the same PlayerOptions (speed, mini, modifiers, etc)
       // but ensure each player has their own noteskin.
       const std::string preferred_noteskin =
-          GAMESTATE->m_pPlayerState[pn]
-              ->m_PlayerOptions.GetPreferred()
-              .m_sNoteSkin;
-      player->GetPlayerState()->m_PlayerOptions =
-          GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions;
+          GAMESTATE->player_state_[pn]
+              ->player_options_.GetPreferred()
+              .note_skin_;
+      player->GetPlayerState()->player_options_ =
+          GAMESTATE->player_state_[PLAYER_1]->player_options_;
       if (!preferred_noteskin.empty()) {
         PO_GROUP_ASSIGN(
-            player->GetPlayerState()->m_PlayerOptions, ModsLevel_Preferred,
-            m_sNoteSkin, preferred_noteskin);
+            player->GetPlayerState()->player_options_, ModsLevel_Preferred,
+            note_skin_, preferred_noteskin);
       }
     }
     player->CacheAllUsedNoteSkins();
-    GAMESTATE->m_pPlayerState[pn]->m_PlayerController = PC_HUMAN;
+    GAMESTATE->player_state_[pn]->player_controller_ = PC_HUMAN;
     player->SetY(SCREEN_CENTER_Y);
     player->SetZoom(SCREEN_HEIGHT / 480);
-    StyleType style_type = GAMESTATE->GetCurrentStyle(pn)->m_StyleType;
+    StyleType style_type = GAMESTATE->GetCurrentStyle(pn)->style_type_;
     if (center_) {
       // Use the doubles style positioning for centering.
       style_type = StyleType_OnePlayerTwoSides;
@@ -90,28 +90,31 @@ void EditModePlayerManager::SetVisible(bool visible) {
 
 bool EditModePlayerManager::HandleGameplayInput(
     const InputEventPlus& input, const GameButtonType& gbt) {
-  PlayerNumber pn = input.pn;
+  PlayerNumber pn = input.pn_;
 
   if (gbt == GameButtonType_Step && GAMESTATE->IsPlayerEnabled(pn)) {
-    if (GAMESTATE->m_pPlayerState[pn]->m_PlayerController == PC_AUTOPLAY) {
+    if (GAMESTATE->player_state_[pn]->player_controller_ == PC_AUTOPLAY) {
       return false;
     }
     const int iCol =
-        GAMESTATE->GetCurrentStyle(pn)->GameInputToColumn(input.GameI);
+        GAMESTATE->GetCurrentStyle(pn)->GameInputToColumn(input.game_i_);
     if (iCol != -1) {
       // Pass inputs for both players to Player 1 in routine style.
       if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-              ->m_StyleType == StyleType_TwoPlayersSharedSides) {
+              ->style_type_ == StyleType_TwoPlayersSharedSides) {
         (*players_[PLAYER_1])
             ->Step(
-                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+                iCol, -1, input.device_i_.ts_, false,
+                input.type_ == IET_RELEASE);
         (*players_[PLAYER_2])
             ->Step(
-                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+                iCol, -1, input.device_i_.ts_, false,
+                input.type_ == IET_RELEASE);
       } else {
         (*players_[pn])
             ->Step(
-                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+                iCol, -1, input.device_i_.ts_, false,
+                input.type_ == IET_RELEASE);
       }
     }
     return true;
@@ -121,12 +124,12 @@ bool EditModePlayerManager::HandleGameplayInput(
 
 void EditModePlayerManager::SetupAutoplay() {
   for (auto& player : players_) {
-    if (GAMESTATE->m_pPlayerState[player.first]
-            ->m_PlayerOptions.GetCurrent()
-            .m_fPlayerAutoPlay != 0) {
-      GAMESTATE->m_pPlayerState[player.first]->m_PlayerController = PC_AUTOPLAY;
+    if (GAMESTATE->player_state_[player.first]
+            ->player_options_.GetCurrent()
+            .player_auto_play_ != 0) {
+      GAMESTATE->player_state_[player.first]->player_controller_ = PC_AUTOPLAY;
     } else {
-      GAMESTATE->m_pPlayerState[player.first]->m_PlayerController =
+      GAMESTATE->player_state_[player.first]->player_controller_ =
           GamePreferences::m_AutoPlay;
     }
   }

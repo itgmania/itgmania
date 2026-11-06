@@ -13,13 +13,13 @@ class WheelNotifyIcon : public Sprite {
 
   struct Flags {
     Flags() {
-      bHasBeginnerOr1Meter = bEdits = false;
-      iPlayersBestNumber = iStagesForSong = 0;
+      has_beginner_or1_meter_ = edits_ = false;
+      players_best_number_ = stages_for_song_ = 0;
     }
-    bool bHasBeginnerOr1Meter;
-    int iPlayersBestNumber;
-    bool bEdits;
-    int iStagesForSong;
+    bool has_beginner_or1_meter_;
+    int players_best_number_;
+    bool edits_;
+    int stages_for_song_;
   };
 
   void SetFlags(Flags flags);
@@ -43,7 +43,7 @@ class WheelNotifyIcon : public Sprite {
   };
 
   /** @brief the list of Icons to show. */
-  std::vector<Icons> m_vIconsToShow;
+  std::vector<Icons> icons_to_show_;
 };
 
 #endif

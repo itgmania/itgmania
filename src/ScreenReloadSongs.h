@@ -15,9 +15,9 @@ class ScreenReloadSongs : public Screen {
   void Update(float fDeltaTime);
 
  private:
-  int m_iUpdates;
-  LoadingWindow* m_pLoadingWindow;
-  BitmapText m_Loading;
+  int updates_;
+  LoadingWindow* loading_window_;
+  BitmapText loading_;
 };
 
 #endif
