@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 
+#include "DiscordManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "InputFilter.h"
@@ -11,7 +12,6 @@
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
 #include "NetworkManager.h"
-#include "DiscordManager.h"
 #include "PeriodicCaller.h"
 #include "Preference.h"
 #include "PrefsManager.h"
