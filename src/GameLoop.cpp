@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 
+#include "DiscordManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "InputFilter.h"
@@ -265,6 +266,7 @@ void GameLoop::UpdateAllButDraw() {
   GAMESTATE->Update(fDeltaTime);
   NETWORK->Update();
   SCREENMAN->Update(fDeltaTime);
+  DISCORD->Update();
   MEMCARDMAN->Update();
 
   /* Important: Process input AFTER updating game logic, or input will be

@@ -68,6 +68,7 @@
 #include <vector>
 
 #include "ActorUtil.h"
+#include "DiscordManager.h"
 #include "EnumHelper.h"
 #include "GameSoundManager.h"
 #include "InputEventPlus.h"
@@ -292,6 +293,9 @@ ScreenManager::~ScreenManager() {
 
 // This is called when we start up, and when the theme changes or is reloaded.
 void ScreenManager::ThemeChanged() {
+  if (DISCORD) {
+    DISCORD->Reset();
+  }
   LOG->Trace("ScreenManager::ThemeChanged");
 
   // reload common sounds

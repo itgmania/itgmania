@@ -1034,6 +1034,13 @@ static void InitializeConfOptions() {
   g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("FastNoteRendering", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowStats", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordEnabled", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordShowSongInfo", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordShowEditorSongInfo", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordShowLobbyInfo", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordAllowJoin", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordPublicParty", MovePref<bool>, "Private", "Public"));
+  ADD(ConfOption("DiscordShowElapsedTime", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowBanners", MovePref<bool>, "Off", "On"));
 
   // Sound options
