@@ -44,7 +44,7 @@ void WheelItemBase::Load(std::string sType) {
 }
 
 void WheelItemBase::LoadFromWheelItemData(
-    const WheelItemBaseData* pWID, int iIndex, bool bHasFocus, int iDrawIndex) {
+    const WheelItemBaseData* pWID, int iIndex, int iDrawIndex) {
   ASSERT(pWID != nullptr);
   m_pData = pWID;
 }

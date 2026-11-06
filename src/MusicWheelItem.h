@@ -48,8 +48,7 @@ class MusicWheelItem : public WheelItemBase {
   virtual MusicWheelItem* Copy() const { return new MusicWheelItem(*this); }
 
   virtual void LoadFromWheelItemData(
-      const WheelItemBaseData* pWID, int iIndex, bool bHasFocus,
-      int iDrawIndex);
+      const WheelItemBaseData* pWID, int iIndex, int iDrawIndex);
   virtual void HandleMessage(const Message& msg);
   void RefreshGrades();
 
