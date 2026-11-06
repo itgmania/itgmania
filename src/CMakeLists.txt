@@ -95,6 +95,9 @@ add_executable("${SM_EXE_NAME}" ${SM_EXECUTABLE_OPTIONS}
 
 target_link_libraries("${SM_EXE_NAME}" PRIVATE itgmania_core)
 
+include("${SM_CMAKE_DIR}/DiscordSDK.cmake")
+sm_copy_discord_runtime("${SM_EXE_NAME}")
+
 set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME "${SM_NAME_RELEASE}"
                                  RELEASE_OUTPUT_NAME "${SM_NAME_RELEASE}"
@@ -564,6 +567,19 @@ else()
 endif()
 
 if(NOT APPLE)
+  if(WITH_DISCORD_SDK)
+    if(WIN32)
+      install(FILES "${DISCORD_SDK_RUNTIME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+      if(EXISTS "${DISCORD_SDK_NOTICES}")
+        install(FILES "${DISCORD_SDK_NOTICES}" DESTINATION "${SM_FULL_INSTALLATION_PATH}" RENAME "Discord-SDK-Notices.txt")
+      endif()
+    else()
+      install(FILES "${DISCORD_SDK_RUNTIME}" DESTINATION "${SM_INSTALL_DESTINATION}")
+      if(EXISTS "${DISCORD_SDK_NOTICES}")
+        install(FILES "${DISCORD_SDK_NOTICES}" DESTINATION "${SM_INSTALL_DESTINATION}" RENAME "Discord-SDK-Notices.txt")
+      endif()
+    endif()
+  endif()
   install(DIRECTORY "${SM_ROOT_DIR}/Announcers" DESTINATION "${SM_INSTALL_DESTINATION}")
   install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations" DESTINATION "${SM_INSTALL_DESTINATION}")
   install(DIRECTORY "${SM_ROOT_DIR}/Themes" DESTINATION "${SM_INSTALL_DESTINATION}")
@@ -614,6 +630,7 @@ if(WITH_CLUB_FANTASTIC)
 endif()
 
 add_executable(itgmania_unit_tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_discord_presence.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ragefile.cpp"
@@ -623,6 +640,7 @@ target_link_libraries(itgmania_unit_tests
   PRIVATE itgmania_core GTest::gtest)
 
 sm_copy_runtime_libraries(itgmania_unit_tests)
+sm_copy_discord_runtime(itgmania_unit_tests)
 
 add_custom_target(run-tests
   COMMAND $<TARGET_FILE:itgmania_unit_tests>

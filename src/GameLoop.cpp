@@ -11,6 +11,7 @@
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
 #include "NetworkManager.h"
+#include "DiscordManager.h"
 #include "PeriodicCaller.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -265,6 +266,7 @@ void GameLoop::UpdateAllButDraw() {
   GAMESTATE->Update(fDeltaTime);
   NETWORK->Update();
   SCREENMAN->Update(fDeltaTime);
+  DISCORD->Update();
   MEMCARDMAN->Update();
 
   /* Important: Process input AFTER updating game logic, or input will be

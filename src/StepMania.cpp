@@ -70,6 +70,7 @@
 #include "MessageManager.h"
 #include "ModelManager.h"
 #include "NetworkManager.h"
+#include "DiscordManager.h"
 #include "NoteSkinManager.h"
 #include "PrefsManager.h"
 #include "Profile.h"
@@ -273,6 +274,7 @@ void ShutdownGame() {
   }
 
   RageUtil::SafeDelete(NETWORK);
+  RageUtil::SafeDelete(DISCORD);
   RageUtil::SafeDelete(SCREENMAN);
   RageUtil::SafeDelete(STATSMAN);
   RageUtil::SafeDelete(MESSAGEMAN);
@@ -838,6 +840,7 @@ int sm_main(int argc, char* argv[]) {
 
   // Set up the messaging system early to have well defined code.
   MESSAGEMAN = new MessageManager;
+  DISCORD = new DiscordManager;
 
   // Create game objects
   GAMESTATE = new GameState;
