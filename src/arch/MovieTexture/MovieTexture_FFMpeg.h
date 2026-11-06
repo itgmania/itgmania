@@ -70,6 +70,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
 
   void Rewind() override;
   void Rollover() override;
+  float Seek(float seconds, bool loop) override;
 
   int GetFrame(RageSurface* surface_out) override;
 
@@ -102,7 +103,8 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   float CalculatePTS(avcodec::AVFrame* frame);
   float CalculateDuration(avcodec::AVFrame* frame);
   void ConvertFrame(avcodec::AVFrame* raw_frame, ConvertedFrame& out_frame);
-  void SeekToStart();
+  bool SeekInput(float seconds);
+  bool SeekToStart();
   void HandleReset();
 
   avcodec::AVStream* av_stream_ = nullptr;
@@ -130,10 +132,14 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   // constant memory reallocation.
   std::vector<std::unique_ptr<ConvertedFrame>> frame_pool_;
 
-  float timestamp_offset_ = 0.0f;
+  int64_t timestamp_origin_ = AV_NOPTS_VALUE;
   float last_pts_ = 0.0f;
   float last_duration_ = 0.0f;
-  bool first_pts_seen_ = false;
+  // Seek retains its lookahead image for the worker without converting any
+  // discarded images or losing the next image in the stream.
+  avcodec::AVFrame* pending_frame_ = nullptr;
+  float pending_pts_ = 0.0f;
+  float pending_duration_ = 0.0f;
 
   std::atomic<bool> cancel_{false};
   std::atomic<bool> looping_{false};

@@ -65,6 +65,18 @@ std::string MovieTexture_Generic::Init() {
   CreateFrameRects();
   decoder_->SetLooping(loop_);
 
+  StartDecoding();
+
+  LOG->Trace(
+      "Resolution: %ix%i (%ix%i, %ix%i)", m_iSourceWidth, m_iSourceHeight,
+      m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
+
+  CHECKPOINT_M("Generic initialization completed. No errors found.");
+
+  return std::string();
+}
+
+void MovieTexture_Generic::StartDecoding() {
   // Spawn background decoding worker thread so video I/O, demuxing, and color
   // conversion run completely asynchronously without blocking the main engine
   // render thread.
@@ -84,14 +96,6 @@ std::string MovieTexture_Generic::Init() {
             "Done decoding video file \"%s\", took %f seconds",
             filename.c_str(), timer.Ago());
       });
-
-  LOG->Trace(
-      "Resolution: %ix%i (%ix%i, %ix%i)", m_iSourceWidth, m_iSourceHeight,
-      m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
-
-  CHECKPOINT_M("Generic initialization completed. No errors found.");
-
-  return std::string();
 }
 
 MovieTexture_Generic::~MovieTexture_Generic() {
@@ -332,10 +336,9 @@ void MovieTexture_Generic::UpdateMovie(float seconds) {
 
   if (finished_) {
     if (loop_) {
-      finished_ = false;
-      first_frame_displayed_ = false;
-      clock_ = 0.0f;
-      decoder_->Rewind();
+      // Non-looping EOF may have terminated the worker. Seeking also restarts
+      // it, so enabling looping after EOF cannot leave a frozen texture.
+      SetPosition(0);
     } else {
       return;
     }
@@ -460,21 +463,25 @@ EffectMode MovieTexture_Generic::GetEffectMode(
 void MovieTexture_Generic::Reload() {}
 
 void MovieTexture_Generic::SetPosition(float seconds) {
-  // TODO: The only non-zero use case of this function would be practice mode.
-  // Implement this by mathing out fSeconds and frame counts to seek the
-  // video.
-  if (seconds != 0) {
-    LOG->Warn(
-        "MovieTexture_Generic::SetPosition(%f): non-0 seeking unsupported; "
-        "ignored",
-        seconds);
+  if (failure_ || !std::isfinite(seconds)) {
     return;
   }
-
-  LOG->Trace("Seek to %f", seconds);
-  clock_ = 0;
+  decoder_->Cancel();
+  if (decoding_thread_ && decoding_thread_->joinable()) {
+    decoding_thread_->join();
+  }
+  clock_ = decoder_->Seek(std::max(seconds, 0.0f), loop_);
+  finished_ = false;
   first_frame_displayed_ = false;
-  decoder_->Rewind();
+  if (clock_ < 0) {
+    failure_ = true;
+    LOG->Warn("Could not seek movie %s", GetID().filename.c_str());
+    return;
+  }
+  if (decoder_->IsCurrentFrameReady()) {
+    UpdateFrame();
+  }
+  StartDecoding();
 }
 
 uintptr_t MovieTexture_Generic::GetTexHandle() const {
