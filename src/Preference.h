@@ -50,6 +50,7 @@ class IPreference {
   const std::string& GetName() const { return m_sName; }
 
   static IPreference* GetPreferenceByName(const std::string& sName);
+  static std::vector<IPreference*> GetAllPreferences();
   static void LoadAllDefaults();
   static void ReadAllPrefsFromNode(const XNode* pNode, bool bIsStatic);
   static void SavePrefsToNode(XNode* pNode);

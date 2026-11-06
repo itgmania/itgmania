@@ -1,5 +1,6 @@
 #include "PrefsManager.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -664,6 +665,36 @@ class LunaPrefsManager : public Luna<PrefsManager> {
     return 1;
   }
 
+  static int GetPreferenceNames(T* p, lua_State* L) {
+    std::vector<IPreference*> preferences = IPreference::GetAllPreferences();
+    std::sort(
+        preferences.begin(), preferences.end(),
+        [](const IPreference* lhs, const IPreference* rhs) {
+          return lhs->GetName() < rhs->GetName();
+        });
+
+    lua_createtable(L, static_cast<int>(preferences.size()), 0);
+    for (size_t i = 0; i < preferences.size(); ++i) {
+      lua_pushstring(L, preferences[i]->GetName().c_str());
+      lua_rawseti(L, -2, static_cast<int>(i + 1));
+    }
+    return 1;
+  }
+
+  static int GetPreferenceType(T* p, lua_State* L) {
+    std::string sName = SArg(1);
+    IPreference* pPref = IPreference::GetPreferenceByName(sName);
+    if (dynamic_cast<Preference<int>*>(pPref) != nullptr ||
+        dynamic_cast<Preference<unsigned int>*>(pPref) != nullptr) {
+      lua_pushstring(L, "Integer");
+    } else if (dynamic_cast<Preference<float>*>(pPref) != nullptr) {
+      lua_pushstring(L, "Float");
+    } else {
+      lua_pushstring(L, "Other");
+    }
+    return 1;
+  }
+
   static int SavePreferences(T* p, lua_State* L) {
     p->SavePrefsToDisk();
     COMMON_RETURN_SELF;
@@ -674,6 +705,8 @@ class LunaPrefsManager : public Luna<PrefsManager> {
     ADD_METHOD(SetPreference);
     ADD_METHOD(SetPreferenceToDefault);
     ADD_METHOD(PreferenceExists);
+    ADD_METHOD(GetPreferenceNames);
+    ADD_METHOD(GetPreferenceType);
     ADD_METHOD(SavePreferences);
   }
 };
