@@ -18,8 +18,8 @@
 
 #include "RageFile.h"
 
-void MsdFile::AddParam(const char* buf, int len) {
-  values.back().params.push_back(std::string(buf, len));
+void MsdFile::AddParam(const std::string& s) {
+  values.back().params.push_back(s);
 }
 
 void MsdFile::AddValue() /* (no extra charge) */
@@ -33,12 +33,10 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
 
   bool ReadingValue = false;
   int i = 0;
-  char* cProcessed = new char[len];
-  int iProcessedLen = -1;
+  std::string cur;
   while (i < len) {
+    // Lines beginning with two slashes are comments.
     if (i + 1 < len && buf[i] == '/' && buf[i + 1] == '/') {
-      /* Skip a comment entirely; don't copy the comment to the value/parameter
-       */
       do {
         i++;
       } while (i < len && buf[i] != '\n');
@@ -47,14 +45,13 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
     }
 
     if (ReadingValue && buf[i] == '#') {
-      /* Unfortunately, many of these files are missing ;'s.
-       * If we get a # when we thought we were inside a value, assume we
-       * missed the ;.  Back up and end the value. */
-      // Make sure this # is the first non-whitespace character on the line.
+      /* Unfortunately, many of these files are missing ;'s. If we get a # as
+       * the first non-whitespace char in a line when we thought we were inside
+       * a value, assume we missed the ;. Back up and end the value. */
       bool FirstChar = true;
-      int j = iProcessedLen;
-      while (j > 0 && cProcessed[j - 1] != '\r' && cProcessed[j - 1] != '\n') {
-        if (cProcessed[j - 1] == ' ' || cProcessed[j - 1] == '\t') {
+      size_t j = cur.size();
+      while (j > 0 && cur[j - 1] != '\r' && cur[j - 1] != '\n') {
+        if (cur[j - 1] == ' ' || cur[j - 1] == '\t') {
           --j;
           continue;
         }
@@ -66,21 +63,18 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
       if (!FirstChar) {
         /* We're not the first char on a line.  Treat it as if it were a normal
          * character. */
-        cProcessed[iProcessedLen++] = buf[i++];
+        cur.push_back(buf[i++]);
         continue;
       }
 
       /* Skip newlines and whitespace before adding the value. */
-      iProcessedLen = j;
-      while (iProcessedLen > 0 && (cProcessed[iProcessedLen - 1] == '\r' ||
-                                   cProcessed[iProcessedLen - 1] == '\n' ||
-                                   cProcessed[iProcessedLen - 1] == ' ' ||
-                                   cProcessed[iProcessedLen - 1] == '\t')) {
-        --iProcessedLen;
+      while (!cur.empty() && (cur.back() == '\r' || cur.back() == '\n' ||
+                              cur.back() == ' ' || cur.back() == '\t')) {
+        cur.pop_back();
       }
 
-      AddParam(cProcessed, iProcessedLen);
-      iProcessedLen = 0;
+      AddParam(cur);
+      cur.clear();
       ReadingValue = false;
     }
 
@@ -100,14 +94,14 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
     }
 
     /* : and ; end the current param, if any. */
-    if (iProcessedLen != -1 && (buf[i] == ':' || buf[i] == ';')) {
-      AddParam(cProcessed, iProcessedLen);
+    if (buf[i] == ':' || buf[i] == ';') {
+      AddParam(cur);
     }
 
     /* # and : begin new params. */
     if (buf[i] == '#' || buf[i] == ':') {
       ++i;
-      iProcessedLen = 0;
+      cur.clear();
       continue;
     }
 
@@ -126,27 +120,38 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
       if (bUnescape) {
         ++i;
       }
-      // Otherwise, add the '\\' to cProcessed here, so that
-      // whatever character is coming next stays escaped in
-      // the resulting value/parameter string
-      // (and most importantly, it doesn't get parsed as a control character)
-      // on the next iteration
+      // Otherwise, add the '\\' here, so that whatever character is coming next
+      // stays escaped (and doesn't get parsed as a control character).
       else {
-        cProcessed[iProcessedLen++] = buf[i++];
+        cur.push_back(buf[i++]);
       }
+
+      if (i < len) {
+        cur.push_back(buf[i++]);
+      }
+      continue;
     }
 
-    if (i < len) {
-      cProcessed[iProcessedLen++] = buf[i++];
+    // Add everything up to next special character(s).
+    const int start = i;
+    while (i < len) {
+      const char c = buf[i];
+      if (c == '#' || c == ':' || c == ';' || c == '\\') {
+        break;
+      }
+      if (c == '/' && i + 1 < len && buf[i + 1] == '/') {
+        break;
+      }
+      ++i;
     }
+    // memcpy is faster than appending one at a time.
+    cur.append(buf + start, i - start);
   }
 
   /* Add any unterminated value at the very end. */
   if (ReadingValue) {
-    AddParam(cProcessed, iProcessedLen);
+    AddParam(cur);
   }
-
-  delete[] cProcessed;
 }
 
 // returns true if successful, false otherwise
