@@ -1039,6 +1039,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption("DiscordShowEditorSongInfo", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("DiscordShowLobbyInfo", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("DiscordAllowJoin", MovePref<bool>, "Off", "On"));
+  ADD(ConfOption("DiscordPublicParty", MovePref<bool>, "Private", "Public"));
   ADD(ConfOption("DiscordShowElapsedTime", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowBanners", MovePref<bool>, "Off", "On"));
 

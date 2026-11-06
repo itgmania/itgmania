@@ -17,7 +17,8 @@ class DiscordSDK {
       Log log);
   ~DiscordSDK();
   void RunCallbacks();
-  void Update(const DiscordActivity& fields, Completion completed);
+  void Update(
+      const DiscordActivity& fields, bool publicParty, Completion completed);
   void Clear();
 
  private:

@@ -32,7 +32,8 @@ void DiscordSDK::RunCallbacks() { discordpp::RunCallbacks(); }
 
 void DiscordSDK::Clear() { impl->client.ClearRichPresence(); }
 
-void DiscordSDK::Update(const DiscordActivity& fields, Completion completed) {
+void DiscordSDK::Update(
+    const DiscordActivity& fields, bool publicParty, Completion completed) {
   auto get = [&fields](const char* key) -> std::string {
     auto it = fields.find(key);
     return it == fields.end() ? "" : it->second;
@@ -76,6 +77,11 @@ void DiscordSDK::Update(const DiscordActivity& fields, Completion completed) {
     party.SetId(get("partyId"));
     party.SetCurrentSize(static_cast<int32_t>(current));
     party.SetMaxSize(static_cast<int32_t>(maximum));
+    // Explicitly set this: the SDK otherwise defaults to Private.
+    // Discord eligibility/privacy settings and lobby passwords still apply.
+    party.SetPrivacy(
+        publicParty ? discordpp::ActivityPartyPrivacy::Public
+                    : discordpp::ActivityPartyPrivacy::Private);
     activity.SetParty(party);
     if (!get("joinSecret").empty()) {
       discordpp::ActivitySecrets secrets;

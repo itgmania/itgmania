@@ -33,6 +33,7 @@ static Preference<bool> shareSongs("DiscordShowSongInfo", true);
 static Preference<bool> shareEditorSongs("DiscordShowEditorSongInfo", false);
 static Preference<bool> shareLobbies("DiscordShowLobbyInfo", true);
 static Preference<bool> allowJoining("DiscordAllowJoin", true);
+static Preference<bool> publicParty("DiscordPublicParty", true);
 static Preference<bool> showElapsed("DiscordShowElapsedTime", true);
 static Preference<std::string> applicationId(
     "DiscordApplicationId", "1568037250422407288");
@@ -240,7 +241,8 @@ void DiscordManager::Update() {
       editing ? shareEditorSongs.Get() : shareSongs.Get(), shareLobbies.Get(),
       allowJoining.Get(), showElapsed.Get()};
   const int mask = (privacy.shareSong ? 1 : 0) | (privacy.shareLobby ? 2 : 0) |
-                   (privacy.allowJoin ? 4 : 0) | (privacy.showElapsed ? 8 : 0);
+                   (privacy.allowJoin ? 4 : 0) | (privacy.showElapsed ? 8 : 0) |
+                   (publicParty.Get() ? 16 : 0);
   if (impl->privacyMask != mask) {
     // Clear previously shared information immediately when privacy changes;
     // do not leave it visible while waiting for the normal update interval.
@@ -358,25 +360,27 @@ void DiscordManager::Update() {
   // Restore presence after Discord restarts, even when the game is idle.
   impl->refreshAt = now + std::chrono::minutes(2);
   std::weak_ptr<Impl::Delivery> delivery = impl->delivery;
-  impl->sdk->Update(activity, [delivery](bool success, float retryAfter) {
-    if (auto state = delivery.lock()) {
-      state->inFlight = false;
-      state->succeeded = success;
-      if (!success) {
-        const double delay =
-            std::isfinite(retryAfter)
-                ? std::max(15.0, static_cast<double>(retryAfter))
-                : 15.0;
-        state->retryAt =
-            std::chrono::steady_clock::now() +
-            std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::duration<double>(std::min(delay, 86400.0)));
-        LOG->Trace(
-            "Discord presence update failed; will retry after %.0f seconds.",
-            delay);
-      }
-    }
-  });
+  impl->sdk->Update(
+      activity, publicParty.Get(), [delivery](bool success, float retryAfter) {
+        if (auto state = delivery.lock()) {
+          state->inFlight = false;
+          state->succeeded = success;
+          if (!success) {
+            const double delay =
+                std::isfinite(retryAfter)
+                    ? std::max(15.0, static_cast<double>(retryAfter))
+                    : 15.0;
+            state->retryAt =
+                std::chrono::steady_clock::now() +
+                std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::duration<double>(std::min(delay, 86400.0)));
+            LOG->Trace(
+                "Discord presence update failed; will retry after %.0f "
+                "seconds.",
+                delay);
+          }
+        }
+      });
 #endif
 }
 
