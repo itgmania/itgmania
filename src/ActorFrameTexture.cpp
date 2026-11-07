@@ -120,11 +120,11 @@ class LunaActorFrameTexture : public Luna<ActorFrameTexture> {
     COMMON_RETURN_SELF;
   }
   static int GetTexture(T* p, lua_State* L) {
-    RageTexture* pTexture = p->GetTexture();
-    if (pTexture == nullptr) {
+    RageTexture* texture = p->GetTexture();
+    if (texture == nullptr) {
       lua_pushnil(L);
     } else {
-      pTexture->PushSelf(L);
+      texture->PushSelf(L);
     }
     return 1;
   }

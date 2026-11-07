@@ -21,11 +21,11 @@
 
 class DeviceList : public BitmapText {
  public:
-  void Update(float fDeltaTime) {
+  void Update(float delta_time) {
     // Update devices text
     this->SetText(INPUTMAN->GetDisplayDevicesString());
 
-    BitmapText::Update(fDeltaTime);
+    BitmapText::Update(delta_time);
   }
 
   virtual DeviceList* Copy() const;
@@ -39,59 +39,59 @@ static LocalizedString NOT_MAPPED("ScreenTestInput", "not mapped");
 class InputList : public BitmapText {
   virtual InputList* Copy() const;
 
-  void Update(float fDeltaTime) {
+  void Update(float delta_time) {
     // Update input texts
-    std::vector<std::string> asInputs;
+    std::vector<std::string> inputs;
 
-    std::vector<DeviceInput> DeviceInputs;
-    INPUTFILTER->GetPressedButtons(DeviceInputs);
-    for (const DeviceInput& di : DeviceInputs) {
+    std::vector<DeviceInput> device_inputs;
+    INPUTFILTER->GetPressedButtons(device_inputs);
+    for (const DeviceInput& di : device_inputs) {
       if (!di.down_ && di.level_ == 0.0f) {
         continue;
       }
 
-      std::string sTemp;
-      sTemp += INPUTMAN->GetDeviceSpecificInputString(di);
+      std::string temp;
+      temp += INPUTMAN->GetDeviceSpecificInputString(di);
       if (di.level_ == 1.0f) {
-        sTemp += ssprintf(" - 1 ");
+        temp += ssprintf(" - 1 ");
       } else {
-        sTemp += ssprintf(" - %.3f ", di.level_);
+        temp += ssprintf(" - %.3f ", di.level_);
       }
 
       GameInput gi;
       if (INPUTMAPPER->DeviceToGame(di, gi)) {
-        std::string sName = GameButtonToLocalizedString(
+        std::string name = GameButtonToLocalizedString(
             INPUTMAPPER->GetInputScheme(), gi.button_);
-        sTemp += ssprintf(
+        temp += ssprintf(
             " - %s %d %s", CONTROLLER.GetValue().c_str(), gi.controller_ + 1,
-            sName.c_str());
+            name.c_str());
 
         if (!PREFSMAN->only_dedicated_menu_buttons_) {
           GameButton mb =
               INPUTMAPPER->GetInputScheme()->GameButtonToMenuButton(gi.button_);
           if (mb != GameButton_Invalid && mb != gi.button_) {
-            std::string sGameButtonString =
+            std::string game_button_string =
                 GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), mb);
-            sTemp += ssprintf(
-                " - (%s %s)", sGameButtonString.c_str(),
+            temp += ssprintf(
+                " - (%s %s)", game_button_string.c_str(),
                 SECONDARY.GetValue().c_str());
           }
         }
       } else {
-        sTemp += " - " + NOT_MAPPED.GetValue();
+        temp += " - " + NOT_MAPPED.GetValue();
       }
 
-      std::string sComment = INPUTFILTER->GetButtonComment(di);
-      if (sComment != "") {
-        sTemp += " - " + sComment;
+      std::string comment = INPUTFILTER->GetButtonComment(di);
+      if (comment != "") {
+        temp += " - " + comment;
       }
 
-      asInputs.push_back(sTemp);
+      inputs.push_back(temp);
     }
 
-    this->SetText(join("\n", asInputs));
+    this->SetText(join("\n", inputs));
 
-    BitmapText::Update(fDeltaTime);
+    BitmapText::Update(delta_time);
   }
 };
 
@@ -100,30 +100,30 @@ REGISTER_ACTOR_CLASS(InputList);
 REGISTER_SCREEN_CLASS(ScreenTestInput);
 
 bool ScreenTestInput::Input(const InputEventPlus& input) {
-  std::string sMessage = input.device_i_.ToString();
-  bool bHandled = false;
+  std::string message = input.device_i_.ToString();
+  bool handled = false;
   switch (input.type_) {
     case IET_FIRST_PRESS:
     case IET_RELEASE: {
       switch (input.type_) {
         case IET_FIRST_PRESS:
-          sMessage += "Pressed";
+          message += "Pressed";
           break;
         case IET_RELEASE:
-          sMessage += "Released";
+          message += "Released";
           break;
         default:
           break;
       }
-      MESSAGEMAN->Broadcast(sMessage);
-      bHandled = true;
+      MESSAGEMAN->Broadcast(message);
+      handled = true;
       break;
     }
     default:
       break;
   }
 
-  return Screen::Input(input) || bHandled;  // default handler
+  return Screen::Input(input) || handled;  // default handler
 }
 
 void ScreenTestInput::BeginScreen() {

@@ -58,13 +58,13 @@ namespace ActorUtil {
 void InitFileTypeLists();
 const std::vector<std::string>& GetTypeExtensionList(FileType ft);
 // Every screen should register its class at program initialization.
-void Register(const std::string& sClassName, CreateActorFn pfn);
+void Register(const std::string& class_name, CreateActorFn pfn);
 
 apActorCommands ParseActorCommands(
-    const std::string& sCommands, const std::string& sName = "");
-void SetXY(Actor& actor, const std::string& sMetricsGroup);
-inline void PlayCommand(Actor& actor, const std::string& sCommandName) {
-  actor.PlayCommand(sCommandName);
+    const std::string& commands, const std::string& name = "");
+void SetXY(Actor& actor, const std::string& metrics_group);
+inline void PlayCommand(Actor& actor, const std::string& command_name) {
+  actor.PlayCommand(command_name);
 }
 inline void OnCommand(Actor& actor) {
   ASSERT_M(
@@ -88,102 +88,102 @@ inline void OffCommand(Actor& actor) {
 }
 
 void LoadCommand(
-    Actor& actor, const std::string& sMetricsGroup,
-    const std::string& sCommandName);
+    Actor& actor, const std::string& metrics_group,
+    const std::string& command_name);
 void LoadCommandFromName(
-    Actor& actor, const std::string& sMetricsGroup,
-    const std::string& sCommandName, const std::string& sName);
-void LoadAllCommands(Actor& actor, const std::string& sMetricsGroup);
+    Actor& actor, const std::string& metrics_group,
+    const std::string& command_name, const std::string& name);
+void LoadAllCommands(Actor& actor, const std::string& metrics_group);
 void LoadAllCommandsFromName(
-    Actor& actor, const std::string& sMetricsGroup, const std::string& sName);
+    Actor& actor, const std::string& metrics_group, const std::string& name);
 
 inline void LoadAllCommandsAndSetXY(
-    Actor& actor, const std::string& sMetricsGroup) {
-  LoadAllCommands(actor, sMetricsGroup);
-  SetXY(actor, sMetricsGroup);
+    Actor& actor, const std::string& metrics_group) {
+  LoadAllCommands(actor, metrics_group);
+  SetXY(actor, metrics_group);
 }
 inline void LoadAllCommandsAndOnCommand(
-    Actor& actor, const std::string& sMetricsGroup) {
-  LoadAllCommands(actor, sMetricsGroup);
+    Actor& actor, const std::string& metrics_group) {
+  LoadAllCommands(actor, metrics_group);
   OnCommand(actor);
 }
-inline void SetXYAndOnCommand(Actor& actor, const std::string& sMetricsGroup) {
-  SetXY(actor, sMetricsGroup);
+inline void SetXYAndOnCommand(Actor& actor, const std::string& metrics_group) {
+  SetXY(actor, metrics_group);
   OnCommand(actor);
 }
 inline void LoadAllCommandsAndSetXYAndOnCommand(
-    Actor& actor, const std::string& sMetricsGroup) {
-  LoadAllCommands(actor, sMetricsGroup);
-  SetXY(actor, sMetricsGroup);
+    Actor& actor, const std::string& metrics_group) {
+  LoadAllCommands(actor, metrics_group);
+  SetXY(actor, metrics_group);
   OnCommand(actor);
 }
 
 /* convenience */
-inline void SetXY(Actor* pActor, const std::string& sMetricsGroup) {
-  SetXY(*pActor, sMetricsGroup);
+inline void SetXY(Actor* actor, const std::string& metrics_group) {
+  SetXY(*actor, metrics_group);
 }
-inline void PlayCommand(Actor* pActor, const std::string& sCommandName) {
-  if (pActor) {
-    pActor->PlayCommand(sCommandName);
+inline void PlayCommand(Actor* actor, const std::string& command_name) {
+  if (actor) {
+    actor->PlayCommand(command_name);
   }
 }
-inline void OnCommand(Actor* pActor) {
-  if (pActor) {
-    ActorUtil::OnCommand(*pActor);
+inline void OnCommand(Actor* actor) {
+  if (actor) {
+    ActorUtil::OnCommand(*actor);
   }
 }
-inline void OffCommand(Actor* pActor) {
-  if (pActor) {
-    ActorUtil::OffCommand(*pActor);
+inline void OffCommand(Actor* actor) {
+  if (actor) {
+    ActorUtil::OffCommand(*actor);
   }
 }
 
-inline void LoadAllCommands(Actor* pActor, const std::string& sMetricsGroup) {
-  if (pActor) {
-    LoadAllCommands(*pActor, sMetricsGroup);
+inline void LoadAllCommands(Actor* actor, const std::string& metrics_group) {
+  if (actor) {
+    LoadAllCommands(*actor, metrics_group);
   }
 }
 
 inline void LoadAllCommandsAndSetXY(
-    Actor* pActor, const std::string& sMetricsGroup) {
-  if (pActor) {
-    LoadAllCommandsAndSetXY(*pActor, sMetricsGroup);
+    Actor* actor, const std::string& metrics_group) {
+  if (actor) {
+    LoadAllCommandsAndSetXY(*actor, metrics_group);
   }
 }
 inline void LoadAllCommandsAndOnCommand(
-    Actor* pActor, const std::string& sMetricsGroup) {
-  if (pActor) {
-    LoadAllCommandsAndOnCommand(*pActor, sMetricsGroup);
+    Actor* actor, const std::string& metrics_group) {
+  if (actor) {
+    LoadAllCommandsAndOnCommand(*actor, metrics_group);
   }
 }
-inline void SetXYAndOnCommand(Actor* pActor, const std::string& sMetricsGroup) {
-  if (pActor) {
-    SetXYAndOnCommand(*pActor, sMetricsGroup);
+inline void SetXYAndOnCommand(Actor* actor, const std::string& metrics_group) {
+  if (actor) {
+    SetXYAndOnCommand(*actor, metrics_group);
   }
 }
 inline void LoadAllCommandsAndSetXYAndOnCommand(
-    Actor* pActor, const std::string& sMetricsGroup) {
-  if (pActor) {
-    LoadAllCommandsAndSetXYAndOnCommand(*pActor, sMetricsGroup);
+    Actor* actor, const std::string& metrics_group) {
+  if (actor) {
+    LoadAllCommandsAndSetXYAndOnCommand(*actor, metrics_group);
   }
 }
 
 // Return a Sprite, BitmapText, or Model depending on the file type
-Actor* LoadFromNode(const XNode* pNode, Actor* pParentActor = nullptr);
-Actor* MakeActor(const std::string& sPath, Actor* pParentActor = nullptr);
-std::string GetSourcePath(const XNode* pNode);
-std::string GetWhere(const XNode* pNode);
+Actor* LoadFromNode(const XNode* node, Actor* parent_actor = nullptr);
+Actor* MakeActor(const std::string& path, Actor* parent_actor = nullptr);
+std::string GetSourcePath(const XNode* node);
+std::string GetWhere(const XNode* node);
 bool GetAttrPath(
-    const XNode* pNode, const std::string& sName, std::string& sOut,
+    const XNode* node, const std::string& name, std::string& out,
     bool optional = false);
 bool LoadTableFromStackShowErrors(Lua* L);
 
 bool ResolvePath(
-    std::string& sPath, const std::string& sName, bool optional = false);
+    std::string& path, const std::string& name, bool optional = false);
 
-void SortByZPosition(std::vector<Actor*>& vActors);
+void SortByZPosition(std::vector<Actor*>& actors);
 
-FileType GetFileType(const std::string& sPath);
+FileType GetFileType(const std::string& path);
 };  // namespace ActorUtil
 
 #define SET_XY(actor) ActorUtil::SetXY(actor, name_)

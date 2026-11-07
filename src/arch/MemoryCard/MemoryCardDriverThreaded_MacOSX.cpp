@@ -30,9 +30,9 @@ class MemoryCardDriverThreaded_MacOSX::Helper {
     EventTypeSpec types[] = {
         {kEventClassVolume, kEventVolumeMounted},
         {kEventClassVolume, kEventVolumeUnmounted}};
-    UInt32 numTypes = sizeof(types) / sizeof(types[0]);
+    UInt32 num_types = sizeof(types) / sizeof(types[0]);
     OSStatus ret = InstallApplicationEventHandler(
-        handler_upp_, numTypes, types, driver, &handler_);
+        handler_upp_, num_types, types, driver, &handler_);
     ASSERT(ret == noErr);
   }
 
@@ -65,18 +65,18 @@ MemoryCardDriverThreaded_MacOSX::~MemoryCardDriverThreaded_MacOSX() {
   delete helper_;
 }
 
-void MemoryCardDriverThreaded_MacOSX::Unmount(UsbStorageDevice* pDevice) {
+void MemoryCardDriverThreaded_MacOSX::Unmount(UsbStorageDevice* device) {
 #if defined(SYNC_VOLUME_FULLSYNC) && defined(SYNC_VOLUME_WAIT)
 
   if (sync_volume_np(
-          pDevice->os_mount_dir_.c_str(),
+          device->os_mount_dir_.c_str(),
           SYNC_VOLUME_FULLSYNC | SYNC_VOLUME_WAIT) != 0) {
     LOG->Warn("Failed to flush the memory card.");
   }
 #else
   ParamBlockRec pb;
   Str255 name;  // A pascal string.
-  const std::string& base = Basename(pDevice->os_mount_dir_);
+  const std::string& base = Basename(device->os_mount_dir_);
 
   memset(&pb, 0, sizeof(pb));
   name[0] = std::min(base.length(), size_t(255));
@@ -142,7 +142,7 @@ static std::string GetStringProperty(
 }
 
 void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
-    std::vector<UsbStorageDevice>& vDevicesOut) {
+    std::vector<UsbStorageDevice>& devices_out) {
   LockMut(changed_lock_);
   // First, get all device paths
   struct statfs* fs;
@@ -158,14 +158,14 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
       continue;
     }
 
-    const std::string& sDevicePath = fs[i].f_mntfromname;
-    const std::string& sDisk = Basename(sDevicePath);  // disk#[[s#] ...]
+    const std::string& device_path = fs[i].f_mntfromname;
+    const std::string& disk = Basename(device_path);  // disk#[[s#] ...]
 
     // Now that we have the disk name, look up the IOServices associated with
     // it.
     CFMutableDictionaryRef dict;
 
-    if (!(dict = IOBSDNameMatching(kIOMasterPortDefault, 0, sDisk.c_str()))) {
+    if (!(dict = IOBSDNameMatching(kIOMasterPortDefault, 0, disk.c_str()))) {
       continue;
     }
 
@@ -209,8 +209,8 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
       }
 
       // At this point, it is pretty safe to say that we've found a USB device.
-      vDevicesOut.push_back(UsbStorageDevice());
-      UsbStorageDevice& usbd = vDevicesOut.back();
+      devices_out.push_back(UsbStorageDevice());
+      UsbStorageDevice& usbd = devices_out.back();
 
       LOG->Trace("Found memory card at path: %s.", fs[i].f_mntonname);
       usbd.SetOsMountDir(fs[i].f_mntonname);
@@ -236,9 +236,9 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices(
   delete[] fs;
 }
 
-bool MemoryCardDriverThreaded_MacOSX::TestWrite(UsbStorageDevice* pDevice) {
-  if (access(pDevice->os_mount_dir_.c_str(), W_OK)) {
-    pDevice->SetError("TestFailed");
+bool MemoryCardDriverThreaded_MacOSX::TestWrite(UsbStorageDevice* device) {
+  if (access(device->os_mount_dir_.c_str(), W_OK)) {
+    device->SetError("TestFailed");
     return false;
   }
   return true;

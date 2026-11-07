@@ -68,8 +68,8 @@ class LightsDriver_stac2 : public LightsDriver {
   bool state_changed_[STAC2_MAX_NUMBER];
   uint8_t output_buffer_[STAC2_MAX_NUMBER][STAC2_HIDREPORT_SIZE];
 
-  void HandleState(const LightsState* ls, GameController ctrlNum);
-  void SetBuffer(int index, bool lightState, GameController ctrlNum);
+  void HandleState(const LightsState* ls, GameController ctrl_num);
+  void SetBuffer(int index, bool light_state, GameController ctrl_num);
 
  public:
   LightsDriver_stac2();

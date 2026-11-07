@@ -7,30 +7,30 @@
 #include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 
-RageSoundReader_Pan::RageSoundReader_Pan(RageSoundReader* pSource)
-    : RageSoundReader_Filter(pSource) {
+RageSoundReader_Pan::RageSoundReader_Pan(RageSoundReader* source)
+    : RageSoundReader_Filter(source) {
   pan_ = 0;
 }
 
-int RageSoundReader_Pan::Read(float* pBuf, int iFrames) {
-  iFrames = source_->Read(pBuf, iFrames);
-  if (iFrames < 0) {
-    return iFrames;
+int RageSoundReader_Pan::Read(float* buf, int frames) {
+  frames = source_->Read(buf, frames);
+  if (frames < 0) {
+    return frames;
   }
 
-  int iSamples = iFrames * source_->GetNumChannels();
+  int samples = frames * source_->GetNumChannels();
 
   if (source_->GetNumChannels() == 1) {
-    RageSoundUtil::ConvertMonoToStereoInPlace(pBuf, iSamples);
-    iSamples *= 2;
+    RageSoundUtil::ConvertMonoToStereoInPlace(buf, samples);
+    samples *= 2;
   }
 
   /* This block goes from iStreamFrame to iStreamFrame+iGotFrames. */
   if (GetNumChannels() == 2 && pan_ != 0.0) {
-    RageSoundUtil::Pan(pBuf, iFrames, pan_);
+    RageSoundUtil::Pan(buf, frames, pan_);
   }
 
-  return iFrames;
+  return frames;
 }
 
 unsigned RageSoundReader_Pan::GetNumChannels() const {
@@ -38,13 +38,13 @@ unsigned RageSoundReader_Pan::GetNumChannels() const {
 }
 
 bool RageSoundReader_Pan::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "Pan") {
-    pan_ = fValue;
+    const std::string& property, float value) {
+  if (property == "Pan") {
+    pan_ = value;
     return true;
   }
 
-  return RageSoundReader_Filter::SetProperty(sProperty, fValue);
+  return RageSoundReader_Filter::SetProperty(property, value);
 }
 
 /*

@@ -55,16 +55,16 @@ RageDisplay_Null::RageDisplay_Null() {
 
 std::string RageDisplay_Null::Init(
     const VideoModeParams& p, bool /* bAllowUnacceleratedRenderer */) {
-  bool bIgnore = false;
-  SetVideoMode(p, bIgnore);
+  bool ignore = false;
+  SetVideoMode(p, ignore);
   return std::string();
 }
 
 void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs& out) const {
   out.clear();
-  DisplayMode nullMode = {640U, 480U, 30.0};
-  DisplaySpec nullSpec("NullDisplay", "NullDisplay", nullMode);
-  out.insert(nullSpec);
+  DisplayMode null_mode = {640U, 480U, 30.0};
+  DisplaySpec null_spec("NullDisplay", "NullDisplay", null_mode);
+  out.insert(null_spec);
 }
 
 RageSurface* RageDisplay_Null::CreateScreenshot() {
@@ -98,7 +98,7 @@ class RageCompiledGeometryNull : public RageCompiledGeometry {
  public:
   void Allocate(const std::vector<msMesh>&) {}
   void Change(const std::vector<msMesh>&) {}
-  void Draw(int iMeshIndex) const {}
+  void Draw(int mesh_index) const {}
 };
 
 RageCompiledGeometry* RageDisplay_Null::CreateCompiledGeometry() {

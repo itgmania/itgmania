@@ -54,9 +54,9 @@ InputHandler_Win32_RTIO::~InputHandler_Win32_RTIO() {
 }
 
 void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   // We use a joystick device so we can get automatic input mapping
-  vDevicesOut.push_back(
+  devices_out.push_back(
       InputDeviceInfo(InputDevice(DEVICE_JOY1), "Raw Thrills I/O"));
 }
 

@@ -1,10 +1,10 @@
 #include "ScoreDisplay.h"
 
 void ScoreDisplay::Init(
-    const PlayerState* pPlayerState,
-    const PlayerStageStats* pPlayerStageStats) {
-  player_state_ = pPlayerState;
-  player_stage_stats_ = pPlayerStageStats;
+    const PlayerState* player_state,
+    const PlayerStageStats* player_stage_stats) {
+  player_state_ = player_state;
+  player_stage_stats_ = player_stage_stats;
 }
 
 /*

@@ -39,8 +39,8 @@ LuaXType(HighScoresType);
 REGISTER_SCREEN_CLASS(ScreenHighScores);
 
 static void GetAllSongsToShow(
-    std::vector<Song*>& vpOut, int iNumMostRecentScoresToShow) {
-  vpOut.clear();
+    std::vector<Song*>& out, int num_most_recent_scores_to_show) {
+  out.clear();
   for (Song* s : SONGMAN->GetAllSongs()) {
     if (!s->NormallyDisplayed()) {
       continue;  // skip
@@ -48,43 +48,43 @@ static void GetAllSongsToShow(
     if (!s->ShowInDemonstrationAndRanking()) {
       continue;  // skip
     }
-    vpOut.push_back(s);
+    out.push_back(s);
   }
 
-  if ((int)vpOut.size() > iNumMostRecentScoresToShow) {
-    SongUtil::SortSongPointerArrayByTitle(vpOut);
-    SongUtil::SortByMostRecentlyPlayedForMachine(vpOut);
-    if ((int)vpOut.size() > iNumMostRecentScoresToShow) {
-      vpOut.erase(vpOut.begin() + iNumMostRecentScoresToShow, vpOut.end());
+  if ((int)out.size() > num_most_recent_scores_to_show) {
+    SongUtil::SortSongPointerArrayByTitle(out);
+    SongUtil::SortByMostRecentlyPlayedForMachine(out);
+    if ((int)out.size() > num_most_recent_scores_to_show) {
+      out.erase(out.begin() + num_most_recent_scores_to_show, out.end());
     }
   }
 }
 
 static void GetAllCoursesToShow(
-    std::vector<Course*>& vpOut, CourseType ct,
-    int iNumMostRecentScoresToShow) {
-  vpOut.clear();
-  std::vector<Course*> vpCourses;
+    std::vector<Course*>& out, CourseType ct,
+    int num_most_recent_scores_to_show) {
+  out.clear();
+  std::vector<Course*> courses;
   if (ct == CourseType_Invalid) {
-    SONGMAN->GetAllCourses(vpCourses, false);
+    SONGMAN->GetAllCourses(courses, false);
   } else {
-    SONGMAN->GetCourses(ct, vpCourses, false);
+    SONGMAN->GetCourses(ct, courses, false);
   }
 
-  for (Course* c : vpCourses) {
+  for (Course* c : courses) {
     if (UNLOCKMAN->CourseIsLocked(c)) {
       continue;  // skip
     }
     if (!c->ShowInDemonstrationAndRanking()) {
       continue;  // skip
     }
-    vpOut.push_back(c);
+    out.push_back(c);
   }
-  if ((int)vpOut.size() > iNumMostRecentScoresToShow) {
-    CourseUtil::SortCoursePointerArrayByTitle(vpOut);
-    CourseUtil::SortByMostRecentlyPlayedForMachine(vpOut);
-    if ((int)vpOut.size() > iNumMostRecentScoresToShow) {
-      vpOut.erase(vpOut.begin() + iNumMostRecentScoresToShow, vpOut.end());
+  if ((int)out.size() > num_most_recent_scores_to_show) {
+    CourseUtil::SortCoursePointerArrayByTitle(out);
+    CourseUtil::SortByMostRecentlyPlayedForMachine(out);
+    if ((int)out.size() > num_most_recent_scores_to_show) {
+      out.erase(out.begin() + num_most_recent_scores_to_show, out.end());
     }
   }
 }
@@ -94,25 +94,25 @@ static void GetAllCoursesToShow(
 ScoreScroller::ScoreScroller() { this->DeleteChildrenWhenDone(); }
 
 void ScoreScroller::SetDisplay(
-    const std::vector<DifficultyAndStepsType>& DifficultiesToShow) {
-  difficulties_to_show_ = DifficultiesToShow;
+    const std::vector<DifficultyAndStepsType>& difficulties_to_show) {
+  difficulties_to_show_ = difficulties_to_show;
   ShiftSubActors(INT_MAX);
 }
 
-bool ScoreScroller::Scroll(int iDir) {
+bool ScoreScroller::Scroll(int dir) {
   if ((int)score_row_item_data_.size() <= SCROLLER_ITEMS_TO_DRAW) {
     return false;
   }
 
-  float fDest = GetDestinationItem();
-  float fOldDest = fDest;
-  fDest += iDir;
-  float fLowClamp = (SCROLLER_ITEMS_TO_DRAW - 1) / 2.0f;
-  float fHighClamp =
+  float dest = GetDestinationItem();
+  float old_dest = dest;
+  dest += dir;
+  float low_clamp = (SCROLLER_ITEMS_TO_DRAW - 1) / 2.0f;
+  float high_clamp =
       score_row_item_data_.size() - (SCROLLER_ITEMS_TO_DRAW - 1) / 2.0f - 1;
-  rage_clamp(fDest, fLowClamp, fHighClamp);
-  if (fOldDest != fDest) {
-    SetDestinationItem(fDest);
+  rage_clamp(dest, low_clamp, high_clamp);
+  if (old_dest != dest) {
+    SetDestinationItem(dest);
     return true;
   } else {
     return false;
@@ -123,11 +123,11 @@ void ScoreScroller::ScrollTop() {
   SetCurrentAndDestinationItem((SCROLLER_ITEMS_TO_DRAW - 1) / 2.0f);
 }
 
-void ScoreScroller::ConfigureActor(Actor* pActor, int iItem) {
+void ScoreScroller::ConfigureActor(Actor* actor, int i_item) {
   LOG->Trace("ScoreScroller::ConfigureActor");
 
-  Actor& item = *dynamic_cast<Actor*>(pActor);
-  const ScoreRowItemData& data = score_row_item_data_[iItem];
+  Actor& item = *dynamic_cast<Actor*>(actor);
+  const ScoreRowItemData& data = score_row_item_data_[i_item];
 
   Message msg("Set");
   if (data.song_ != nullptr) {
@@ -148,16 +148,16 @@ void ScoreScroller::ConfigureActor(Actor* pActor, int iItem) {
     StepsType st = iter.second;
 
     if (data.song_ != nullptr) {
-      const Song* pSong = data.song_;
-      Steps* pSteps = SongUtil::GetStepsByDifficulty(pSong, st, dc, false);
-      if (pSteps && UNLOCKMAN->StepsIsLocked(pSong, pSteps)) {
-        pSteps = nullptr;
+      const Song* song = data.song_;
+      Steps* steps = SongUtil::GetStepsByDifficulty(song, st, dc, false);
+      if (steps && UNLOCKMAN->StepsIsLocked(song, steps)) {
+        steps = nullptr;
       }
-      LuaHelpers::Push(L, pSteps);
+      LuaHelpers::Push(L, steps);
     } else if (data.course_ != nullptr) {
-      const Course* pCourse = data.course_;
-      Trail* pTrail = pCourse->GetTrail(st, dc);
-      LuaHelpers::Push(L, pTrail);
+      const Course* course = data.course_;
+      Trail* trail = course->GetTrail(st, dc);
+      LuaHelpers::Push(L, trail);
     }
     // Because pSteps or pTrail can be nullptr, what we're creating in Lua is
     // not an array. It must be iterated using pairs(), not ipairs().
@@ -171,39 +171,39 @@ void ScoreScroller::ConfigureActor(Actor* pActor, int iItem) {
   LOG->Trace("end ScoreScroller::ConfigureActor");
 }
 
-void ScoreScroller::LoadSongs(int iNumRecentScores) {
-  std::vector<Song*> vpSongs;
-  GetAllSongsToShow(vpSongs, iNumRecentScores);
-  score_row_item_data_.resize(vpSongs.size());
+void ScoreScroller::LoadSongs(int num_recent_scores) {
+  std::vector<Song*> songs;
+  GetAllSongsToShow(songs, num_recent_scores);
+  score_row_item_data_.resize(songs.size());
   for (unsigned i = 0; i < score_row_item_data_.size(); ++i) {
-    score_row_item_data_[i].song_ = vpSongs[i];
+    score_row_item_data_[i].song_ = songs[i];
   }
 }
 
-void ScoreScroller::LoadCourses(CourseType ct, int iNumRecentScores) {
-  std::vector<Course*> vpCourses;
-  GetAllCoursesToShow(vpCourses, ct, iNumRecentScores);
-  score_row_item_data_.resize(vpCourses.size());
+void ScoreScroller::LoadCourses(CourseType ct, int num_recent_scores) {
+  std::vector<Course*> courses;
+  GetAllCoursesToShow(courses, ct, num_recent_scores);
+  score_row_item_data_.resize(courses.size());
   for (unsigned i = 0; i < score_row_item_data_.size(); ++i) {
-    score_row_item_data_[i].course_ = vpCourses[i];
+    score_row_item_data_[i].course_ = courses[i];
   }
 }
 
-void ScoreScroller::Load(std::string sMetricsGroup) {
-  SCROLLER_ITEMS_TO_DRAW.Load(sMetricsGroup, "ScrollerItemsToDraw");
-  SCROLLER_SECONDS_PER_ITEM.Load(sMetricsGroup, "ScrollerSecondsPerItem");
+void ScoreScroller::Load(std::string metrics_group) {
+  SCROLLER_ITEMS_TO_DRAW.Load(metrics_group, "ScrollerItemsToDraw");
+  SCROLLER_SECONDS_PER_ITEM.Load(metrics_group, "ScrollerSecondsPerItem");
 
-  int iNumCopies = SCROLLER_ITEMS_TO_DRAW + 1;
-  for (int i = 0; i < iNumCopies; ++i) {
-    Actor* pActor =
-        ActorUtil::MakeActor(THEME->GetPathG(sMetricsGroup, "ScrollerItem"));
-    if (pActor != nullptr) {
-      this->AddChild(pActor);
+  int num_copies = SCROLLER_ITEMS_TO_DRAW + 1;
+  for (int i = 0; i < num_copies; ++i) {
+    Actor* actor =
+        ActorUtil::MakeActor(THEME->GetPathG(metrics_group, "ScrollerItem"));
+    if (actor != nullptr) {
+      this->AddChild(actor);
     }
   }
 
   DynamicActorScroller::SetTransformFromReference(
-      THEME->GetMetricR(sMetricsGroup, "ScrollerItemTransformFunction"));
+      THEME->GetMetricR(metrics_group, "ScrollerItemTransformFunction"));
   DynamicActorScroller::SetNumItemsToDraw((float)SCROLLER_ITEMS_TO_DRAW);
   DynamicActorScroller::SetSecondsPerItem(SCROLLER_SECONDS_PER_ITEM);
   DynamicActorScroller::Load2();
@@ -287,8 +287,8 @@ void ScreenHighScores::BeginScreen() {
   }
 
   if (!MANUAL_SCROLLING) {
-    float fSecs = scroller_.GetSecondsForCompleteScrollThrough();
-    this->PostScreenMessage(SM_BeginFadingOut, fSecs);
+    float secs = scroller_.GetSecondsForCompleteScrollThrough();
+    this->PostScreenMessage(SM_BeginFadingOut, secs);
   }
 }
 
@@ -307,13 +307,13 @@ bool ScreenHighScores::Input(const InputEventPlus& input) {
   }
 }
 
-void ScreenHighScores::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_BeginFadingOut) /* Screen is starting to tween out. */
+void ScreenHighScores::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_BeginFadingOut) /* Screen is starting to tween out. */
   {
     StartTransitioningScreen(SM_GoToNextScreen);
   }
 
-  ScreenAttract::HandleScreenMessage(SM);
+  ScreenAttract::HandleScreenMessage(sm);
 }
 
 bool ScreenHighScores::MenuStart(const InputEventPlus& input) {
@@ -338,12 +338,12 @@ bool ScreenHighScores::MenuBack(const InputEventPlus& input) {
   return true;
 }
 
-void ScreenHighScores::DoScroll(int iDir) {
-  if (!scroller_.Scroll(iDir)) {
-    iDir = 0;
+void ScreenHighScores::DoScroll(int dir) {
+  if (!scroller_.Scroll(dir)) {
+    dir = 0;
   }
   Message msg("Scrolled");
-  msg.SetParam("Dir", iDir);
+  msg.SetParam("Dir", dir);
   this->HandleMessage(msg);
 }
 

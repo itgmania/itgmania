@@ -15,10 +15,10 @@ class BGAnimationLayer : public ActorFrame {
   BGAnimationLayer();
   ~BGAnimationLayer();
 
-  void LoadFromAniLayerFile(const std::string& sPath);
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromAniLayerFile(const std::string& path);
+  void LoadFromNode(const XNode* node);
 
-  void UpdateInternal(float fDeltaTime);
+  void UpdateInternal(float delta_time);
 
  protected:
   std::vector<RageVector3> particle_velocity_;

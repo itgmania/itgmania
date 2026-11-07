@@ -20,14 +20,14 @@ void InitializeCurrentGame(const Game* g);
 
 // If successful, return filename of screenshot in sDir, else return ""
 std::string SaveScreenshot(
-    std::string Dir, bool SaveCompressed, bool MakeSignature,
-    std::string NamePrefix, std::string NameSuffix);
+    std::string dir, bool save_compressed, bool make_signature,
+    std::string name_prefix, std::string name_suffix);
 
-void InsertCoin(int iNum = 1, bool bCountInBookkeeping = true);
+void InsertCoin(int num = 1, bool count_in_bookkeeping = true);
 void InsertCredit();
 void ClearCredits();
 
-void GetPreferredVideoModeParams(VideoModeParams& paramsOut);
+void GetPreferredVideoModeParams(VideoModeParams& params_out);
 bool GetHighResolutionTextures();
 }  // namespace StepMania
 

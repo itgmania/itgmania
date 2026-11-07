@@ -15,18 +15,18 @@ class TimingData;
 struct SMALoader : public SMLoader {
   SMALoader() : SMLoader(".sma") {}
 
-  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
+  virtual bool LoadFromSimfile(const std::string& path, Song& out);
 
-  void ProcessBeatsPerMeasure(TimingData& out, const std::string sParam);
+  void ProcessBeatsPerMeasure(TimingData& out, const std::string param);
   void ProcessMultipliers(
-      TimingData& out, const int iRowsPerBeat, const std::string sParam);
+      TimingData& out, const int rows_per_beat, const std::string param);
   /**
    * @brief Process the Speed Segments from the string.
    * @param out the TimingData being modified.
    * @param line the string in question.
    * @param rowsPerBeat the number of rows per beat for this purpose. */
   virtual void ProcessSpeeds(
-      TimingData& out, const std::string line, const int rowsPerBeat);
+      TimingData& out, const std::string line, const int rows_per_beat);
 };
 
 #endif

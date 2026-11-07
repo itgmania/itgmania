@@ -15,20 +15,20 @@ class ImageCache {
   void ReadFromDisk();
   void WriteToDisk();
 
-  RageTextureID LoadCachedImage(std::string sImageDir, std::string sImagePath);
-  void CacheImage(std::string sImageDir, std::string sImagePath);
-  void LoadImage(std::string sImageDir, std::string sImagePath);
+  RageTextureID LoadCachedImage(std::string image_dir, std::string image_path);
+  void CacheImage(std::string image_dir, std::string image_path);
+  void LoadImage(std::string image_dir, std::string image_path);
 
-  void Demand(std::string sImageDir);
-  void Undemand(std::string sImageDir);
+  void Demand(std::string image_dir);
+  void Undemand(std::string image_dir);
 
   bool delay_save_cache_;
 
  private:
   static std::string GetImageCachePath(
-      std::string sImageDir, std::string sImagePath);
+      std::string image_dir, std::string image_path);
   void UnloadAllImages();
-  void CacheImageInternal(std::string sImageDir, std::string sImagePath);
+  void CacheImageInternal(std::string image_dir, std::string image_path);
 
   IniFile image_data_;
 };

@@ -25,17 +25,17 @@
 std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
 
 static void LuaInformation() {
-  XNode* pNode = LuaHelpers::GetLuaInformation();
-  pNode->AppendAttr("xmlns", "http://www.stepmania.com");
-  pNode->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-  pNode->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
+  XNode* node = LuaHelpers::GetLuaInformation();
+  node->AppendAttr("xmlns", "http://www.stepmania.com");
+  node->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+  node->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
 
-  pNode->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
-  pNode->AppendChild("Date", DateTime::GetNowDate().GetString());
+  node->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
+  node->AppendChild("Date", DateTime::GetNowDate().GetString());
 
-  XmlFileUtil::SaveToFile(pNode, "Lua.xml", "Lua.xsl");
+  XmlFileUtil::SaveToFile(node, "Lua.xml", "Lua.xsl");
 
-  delete pNode;
+  delete node;
 }
 
 /**
@@ -46,9 +46,9 @@ static void LuaInformation() {
  * regardless of any preferences (tested by shakesoda on Mac). -aj */
 static void Version() {
 #if defined(_WIN32)
-  std::string sProductID =
+  std::string product_id =
       ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str());
-  std::string sVersion = ssprintf(
+  std::string version = ssprintf(
       "build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date,
       version_time);
 
@@ -57,30 +57,30 @@ static void Version() {
   freopen("CONOUT$", "wb", stderr);
 
   fprintf(
-      stdout, "Version Information:\n%s %s\n", sProductID.c_str(),
-      sVersion.c_str());
+      stdout, "Version Information:\n%s %s\n", product_id.c_str(),
+      version.c_str());
   fprintf(stdout, "Press any key to exit.");
   _getch();
 #endif  // WIN32
 }
 
-void CommandLineActions::Handle(LoadingWindow* pLW) {
+void CommandLineActions::Handle(LoadingWindow* lw) {
   CommandLineArgs args;
   for (int i = 0; i < g_argc; ++i) {
     args.argv_.push_back(g_argv[i]);
   }
   ToProcess.push_back(args);
 
-  bool bExitAfter = false;
+  bool exit_after = false;
   if (GetCommandlineArgument("ExportLuaInformation")) {
     LuaInformation();
-    bExitAfter = true;
+    exit_after = true;
   }
   if (GetCommandlineArgument("version")) {
     Version();
-    bExitAfter = true;
+    exit_after = true;
   }
-  if (bExitAfter) {
+  if (exit_after) {
     exit(0);
   }
 }

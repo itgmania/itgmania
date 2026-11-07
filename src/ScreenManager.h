@@ -18,38 +18,38 @@ class ScreenManager {
   ~ScreenManager();
 
   // pass these messages along to the current state
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
   void Draw();
   void Input(const InputEventPlus& input);
 
   // Main screen stack management
-  void SetNewScreen(const std::string& sName);
+  void SetNewScreen(const std::string& name);
   void AddNewScreenToTop(
-      const std::string& sName, ScreenMessage SendOnPop = SM_None);
+      const std::string& name, ScreenMessage send_on_pop = SM_None);
   /**
    * @brief Create and cache the requested Screen.
    *
    * This is so that the next call to SetNewScreen for this Screen
    * will be very quick.
    * @param sScreenName the Screen to prepare. */
-  void PrepareScreen(const std::string& sScreenName);
-  void GroupScreen(const std::string& sScreenName);
-  void PersistantScreen(const std::string& sScreenName);
-  void PopTopScreen(ScreenMessage SM);
+  void PrepareScreen(const std::string& screen_name);
+  void GroupScreen(const std::string& screen_name);
+  void PersistantScreen(const std::string& screen_name);
+  void PopTopScreen(ScreenMessage sm);
   void PopAllScreens();
   Screen* GetTopScreen();
-  Screen* GetScreen(int iPosition);
+  Screen* GetScreen(int position);
   bool AllowOperatorMenuButton() const;
 
   bool IsScreenNameValid(const std::string& name) const;
 
   // System messages
-  void SystemMessage(const std::string& sMessage);
-  void SystemMessageNoAnimate(const std::string& sMessage);
+  void SystemMessage(const std::string& message);
+  void SystemMessageNoAnimate(const std::string& message);
 
   // Screen messages
-  void PostMessageToTopScreen(ScreenMessage SM, float fDelay);
-  void SendMessageToTopScreen(ScreenMessage SM);
+  void PostMessageToTopScreen(ScreenMessage sm, float delay);
+  void SendMessageToTopScreen(ScreenMessage sm);
 
   void RefreshCreditsMessages();
   void ThemeChanged();
@@ -65,7 +65,7 @@ class ScreenManager {
    * @param pScreen the Screen to check.
    * @return true if it's on the stack while not on the bottom, or false
    * otherwise. */
-  bool IsStackedScreen(const Screen* pScreen) const;
+  bool IsStackedScreen(const Screen* screen) const;
 
   bool get_input_redirected(PlayerNumber pn);
   void set_input_redirected(PlayerNumber pn, bool redir);
@@ -91,10 +91,10 @@ class ScreenManager {
   // in Input.
   bool reload_overlay_screens_after_input_;
 
-  Screen* MakeNewScreen(const std::string& sName);
+  Screen* MakeNewScreen(const std::string& name);
   void LoadDelayedScreen();
-  bool ActivatePreparedScreenAndBackground(const std::string& sScreenName);
-  ScreenMessage PopTopScreenInternal(bool bSendLoseFocus = true);
+  bool ActivatePreparedScreenAndBackground(const std::string& screen_name);
+  ScreenMessage PopTopScreenInternal(bool send_lose_focus = true);
 
   // Keep these sounds always loaded, because they could be
   // played at any time.  We want to eliminate SOUND->PlayOnce

@@ -80,37 +80,37 @@ ITween* ITween::CreateFromType(TweenType tt) {
   }
 }
 
-ITween* ITween::CreateFromStack(Lua* L, int iStackPos) {
-  TweenType iType = Enum::Check<TweenType>(L, iStackPos);
-  if (iType == TWEEN_BEZIER) {
-    luaL_checktype(L, iStackPos + 1, LUA_TTABLE);
-    int iArgs = lua_objlen(L, iStackPos + 1);
-    if (iArgs != 4 && iArgs != 8) {
+ITween* ITween::CreateFromStack(Lua* L, int stack_pos) {
+  TweenType type = Enum::Check<TweenType>(L, stack_pos);
+  if (type == TWEEN_BEZIER) {
+    luaL_checktype(L, stack_pos + 1, LUA_TTABLE);
+    int args = lua_objlen(L, stack_pos + 1);
+    if (args != 4 && args != 8) {
       LuaHelpers::ReportScriptErrorFmt(
           "Tween::CreateFromStack: table argument must have 4 or 8 entries");
       return nullptr;
     }
 
-    float fC[8];
-    for (int i = 0; i < iArgs; ++i) {
-      lua_rawgeti(L, iStackPos + 1, i + 1);
-      fC[i] = (float)lua_tonumber(L, -1);
+    float c[8];
+    for (int i = 0; i < args; ++i) {
+      lua_rawgeti(L, stack_pos + 1, i + 1);
+      c[i] = (float)lua_tonumber(L, -1);
     }
 
-    lua_pop(L, iArgs);
-    if (iArgs == 4) {
-      InterpolateBezier1D* pBezier = new InterpolateBezier1D;
-      pBezier->bezier_.SetFromBezier(fC[0], fC[1], fC[2], fC[3]);
-      return pBezier;
-    } else if (iArgs == 8) {
-      InterpolateBezier2D* pBezier = new InterpolateBezier2D;
-      pBezier->bezier_.SetFromBezier(
-          fC[0], fC[1], fC[2], fC[3], fC[4], fC[5], fC[6], fC[7]);
-      return pBezier;
+    lua_pop(L, args);
+    if (args == 4) {
+      InterpolateBezier1D* bezier = new InterpolateBezier1D;
+      bezier->bezier_.SetFromBezier(c[0], c[1], c[2], c[3]);
+      return bezier;
+    } else if (args == 8) {
+      InterpolateBezier2D* bezier = new InterpolateBezier2D;
+      bezier->bezier_.SetFromBezier(
+          c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]);
+      return bezier;
     }
   }
 
-  return CreateFromType(iType);
+  return CreateFromType(type);
 }
 
 /*

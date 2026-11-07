@@ -16,10 +16,10 @@
 #include "StdString.h"
 
 static std::vector<std::string> GenerateRankingToFillInMarker() {
-  std::vector<std::string> vRankings;
+  std::vector<std::string> rankings;
   FOREACH_ENUM(PlayerNumber, pn)
-  vRankings.push_back(ssprintf("#P%d#", pn + 1));
-  return vRankings;
+  rankings.push_back(ssprintf("#P%d#", pn + 1));
+  return rankings;
 }
 extern const std::vector<std::string> RANKING_TO_FILL_IN_MARKER(
     GenerateRankingToFillInMarker());
@@ -42,15 +42,15 @@ std::string StepsTypeToString(StepsType st) {
   /* foo-bar -> Foo_Bar */
   Replace(s, '-', '_');
 
-  bool bCapitalizeNextLetter = true;
+  bool capitalize_next_letter = true;
   for (int i = 0; i < (int)s.length(); i++) {
-    if (bCapitalizeNextLetter) {
+    if (capitalize_next_letter) {
       s[i] = toupper(s[i]);
-      bCapitalizeNextLetter = false;
+      capitalize_next_letter = false;
     }
 
     if (s[i] == '_') {
-      bCapitalizeNextLetter = true;
+      capitalize_next_letter = true;
     }
   }
 
@@ -76,12 +76,12 @@ LuaFunction(
     PlayModeToLocalizedString(Enum::Check<PlayMode>(L, 1)));
 LuaXType(PlayMode);
 
-RankingCategory AverageMeterToRankingCategory(int iAverageMeter) {
-  if (iAverageMeter <= 3) {
+RankingCategory AverageMeterToRankingCategory(int average_meter) {
+  if (average_meter <= 3) {
     return RANKING_A;
-  } else if (iAverageMeter <= 6) {
+  } else if (average_meter <= 6) {
     return RANKING_B;
-  } else if (iAverageMeter <= 9) {
+  } else if (average_meter <= 9) {
     return RANKING_C;
   } else {
     return RANKING_D;
@@ -316,29 +316,29 @@ LuaXType(PeakComboAward);
 void DisplayBpms::Add(float f) { bpms_.push_back(f); }
 
 float DisplayBpms::GetMin() const {
-  float fMin = FLT_MAX;
+  float min = FLT_MAX;
   for (const float& f : bpms_) {
     if (f != -1) {
-      fMin = std::min(fMin, f);
+      min = std::min(min, f);
     }
   }
-  if (fMin == FLT_MAX) {
+  if (min == FLT_MAX) {
     return 0;
   } else {
-    return fMin;
+    return min;
   }
 }
 
 float DisplayBpms::GetMax() const { return this->GetMaxWithin(); }
 
 float DisplayBpms::GetMaxWithin(float highest) const {
-  float fMax = 0;
+  float max = 0;
   for (const float& f : bpms_) {
     if (f != -1) {
-      fMax = std::clamp(std::max(fMax, f), 0.0f, highest);
+      max = std::clamp(std::max(max, f), 0.0f, highest);
     }
   }
-  return fMax;
+  return max;
 }
 
 bool DisplayBpms::BpmIsConstant() const {

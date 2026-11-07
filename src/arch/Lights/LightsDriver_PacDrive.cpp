@@ -23,9 +23,9 @@ LightsDriver_PacDrive::LightsDriver_PacDrive()
   prev_led_state_.raw_ = 0;
   memset(state_.raw_state_, 0x00, sizeof(state_.raw_state_));
 
-  std::string lightOrder = g_sPacDriveLightOrdering.Get();
-  if (CompareNoCase(lightOrder, "lumenar") == 0 ||
-      CompareNoCase(lightOrder, "openitg") == 0) {
+  std::string light_order = g_sPacDriveLightOrdering.Get();
+  if (CompareNoCase(light_order, "lumenar") == 0 ||
+      CompareNoCase(light_order, "openitg") == 0) {
     iPacDriveLightOrder = 1;
   }
 }

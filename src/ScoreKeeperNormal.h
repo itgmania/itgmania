@@ -53,7 +53,7 @@ class ScoreKeeperNormal : public ScoreKeeper {
 
   virtual void AddTapScore(TapNoteScore tns);
   virtual void AddHoldScore(HoldNoteScore hns);
-  virtual void AddTapRowScore(TapNoteScore tns, const NoteData& nd, int iRow);
+  virtual void AddTapRowScore(TapNoteScore tns, const NoteData& nd, int row);
 
   /* Configuration: */
   /* Score after each tap will be rounded to the nearest m_iRoundTo; 1 to do
@@ -63,44 +63,42 @@ class ScoreKeeperNormal : public ScoreKeeper {
 
  public:
   ScoreKeeperNormal(
-      PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+      PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
   void Load(
-      const std::vector<Song*>& apSongs, const std::vector<Steps*>& apSteps,
-      const std::vector<AttackArray>& asModifiers);
+      const std::vector<Song*>& songs, const std::vector<Steps*>& steps,
+      const std::vector<AttackArray>& modifiers);
 
   // before a song plays (called multiple times if course)
   void OnNextSong(
-      int iSongInCourseIndex, const Steps* pSteps, const NoteData* pNoteData);
+      int song_in_course_index, const Steps* steps, const NoteData* note_data);
 
   void HandleTapScore(const TapNote& tn);
-  void HandleTapRowScore(const NoteData& nd, int iRow);
+  void HandleTapRowScore(const NoteData& nd, int row);
   void HandleHoldScore(const TapNote& tn);
   void HandleHoldActiveSeconds(float /* fMusicSecondsHeld */) {};
   void HandleHoldCheckpointScore(
-      const NoteData& nd, int iRow, int iNumHoldsHeldThisRow,
-      int iNumHoldsMissedThisRow);
+      const NoteData& nd, int row, int num_holds_held_this_row,
+      int num_holds_missed_this_row);
   void HandleTapScoreNone();
 
   // This must be calculated using only cached radar values so that we can
   // do it quickly.
   static int GetPossibleDancePoints(
-      NoteData* nd, const TimingData* td, float fSongSeconds);
+      NoteData* nd, const TimingData* td, float song_seconds);
   static int GetPossibleDancePoints(
-      NoteData* ndPre, NoteData* ndPost, const TimingData* td,
-      float fSongSeconds);
+      NoteData* pre, NoteData* post, const TimingData* td, float song_seconds);
   static int GetPossibleGradePoints(
-      NoteData* nd, const TimingData* td, float fSongSeconds);
+      NoteData* nd, const TimingData* td, float song_seconds);
   static int GetPossibleGradePoints(
-      NoteData* ndPre, NoteData* ndPost, const TimingData* td,
-      float fSongSeconds);
+      NoteData* pre, NoteData* post, const TimingData* td, float song_seconds);
 
   int TapNoteScoreToDancePoints(TapNoteScore tns) const;
   int HoldNoteScoreToDancePoints(HoldNoteScore hns) const;
-  static int TapNoteScoreToDancePoints(TapNoteScore tns, bool bBeginner);
-  static int HoldNoteScoreToDancePoints(HoldNoteScore hns, bool bBeginner);
-  static int TapNoteScoreToGradePoints(TapNoteScore tns, bool bBeginner);
-  static int HoldNoteScoreToGradePoints(HoldNoteScore hns, bool bBeginner);
+  static int TapNoteScoreToDancePoints(TapNoteScore tns, bool beginner);
+  static int HoldNoteScoreToDancePoints(HoldNoteScore hns, bool beginner);
+  static int TapNoteScoreToGradePoints(TapNoteScore tns, bool beginner);
+  static int HoldNoteScoreToGradePoints(HoldNoteScore hns, bool beginner);
 
  private:
   /**
@@ -111,13 +109,13 @@ class ScoreKeeperNormal : public ScoreKeeper {
   void HandleTapNoteScoreInternal(
       TapNoteScore tns, TapNoteScore maximum, int row);
   void HandleComboInternal(
-      int iNumHitContinueCombo, int iNumHitMaintainCombo, int iNumBreakCombo,
-      int iRow = -1);
+      int num_hit_continue_combo, int num_hit_maintain_combo,
+      int num_break_combo, int row = -1);
   void HandleRowComboInternal(
-      TapNoteScore tns, int iNumTapsInRow, int iRow = -1);
+      TapNoteScore tns, int num_taps_in_row, int row = -1);
   void GetRowCounts(
-      const NoteData& nd, int iRow, int& iNumHitContinueCombo,
-      int& iNumHitMaintainCombo, int& iNumBreakCombo);
+      const NoteData& nd, int row, int& num_hit_continue_combo,
+      int& num_hit_maintain_combo, int& num_break_combo);
 };
 
 #endif

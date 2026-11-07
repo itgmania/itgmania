@@ -22,7 +22,7 @@ namespace CourseLoaderCRS {
  * @param out the course file.
  * @return its success or failure.
  */
-bool LoadFromCRSFile(const std::string& sPath, Course& out);
+bool LoadFromCRSFile(const std::string& path, Course& out);
 /**
  * @brief Attempt to load the course information from the msd context.
  * @param sPath the path to the file.
@@ -32,14 +32,14 @@ bool LoadFromCRSFile(const std::string& sPath, Course& out);
  * @return its success or failure.
  */
 bool LoadFromMsd(
-    const std::string& sPath, const MsdFile& msd, Course& out, bool bFromCache);
+    const std::string& path, const MsdFile& msd, Course& out, bool from_cache);
 /**
  * @brief Attempt to load an edit course from the hard drive.
  * @param sEditFilePath a path on the hard drive to check.
  * @param slot the Profile of the user with the edit course.
  * @return its success or failure.
  */
-bool LoadEditFromFile(const std::string& sEditFilePath, ProfileSlot slot);
+bool LoadEditFromFile(const std::string& edit_file_path, ProfileSlot slot);
 
 /**
  * @brief Parse the list of parameters from a `#MODS` tag.
@@ -49,8 +49,8 @@ bool LoadEditFromFile(const std::string& sEditFilePath, ProfileSlot slot);
  * @return its success or failure
  */
 bool ParseCourseMods(
-    const MsdFile::value_t& sParams, AttackArray& attacks,
-    const std::string& sPath);
+    const MsdFile::value_t& params, AttackArray& attacks,
+    const std::string& path);
 
 /**
  * @brief Parse the list of parameters from a `#SONG` tag.
@@ -60,8 +60,8 @@ bool ParseCourseMods(
  * @return its success or failure
  */
 bool ParseCourseSong(
-    const MsdFile::value_t& sParams, CourseEntry& new_entry,
-    const std::string& sPath);
+    const MsdFile::value_t& params, CourseEntry& new_entry,
+    const std::string& path);
 
 /**
  * @brief Parse the list of parameters from a `#SONGSELECT` tag.
@@ -71,8 +71,8 @@ bool ParseCourseSong(
  * @return its success or failure
  */
 bool ParseCourseSongSelect(
-    const MsdFile::value_t& sParams, CourseEntry& new_entry,
-    const std::string& sPath);
+    const MsdFile::value_t& params, CourseEntry& new_entry,
+    const std::string& path);
 
 /**
  * @brief Parse a param string as a comma-separated list into a vector of
@@ -84,8 +84,8 @@ bool ParseCourseSongSelect(
  * @return its success or failure
  */
 bool ParseCommaSeparatedList(
-    const std::string& sParamValue, std::vector<std::string>& dest,
-    const std::string& sParamName, const std::string& sPath);
+    const std::string& param_value, std::vector<std::string>& dest,
+    const std::string& param_name, const std::string& path);
 
 /**
  * @brief Parses a param string as a ranged value of type T numbers.
@@ -100,8 +100,8 @@ bool ParseCommaSeparatedList(
  */
 template <typename T>
 bool ParseRangedValue(
-    const std::string& sParamValue, T& minValue, T& maxValue,
-    const std::string& sParamName, const std::string& sPath);
+    const std::string& param_value, T& min_value, T& max_value,
+    const std::string& param_name, const std::string& path);
 /**
  * @brief Performs some basic sanity checking and sets the song sort of the
  * new_entry
@@ -113,7 +113,7 @@ bool ParseRangedValue(
  * @return its success or failure
  */
 bool SetCourseSongSort(
-    CourseEntry& new_entry, SongSort sort, int index, const std::string& sPath);
+    CourseEntry& new_entry, SongSort sort, int index, const std::string& path);
 }  // namespace CourseLoaderCRS
 
 #endif

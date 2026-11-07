@@ -33,21 +33,20 @@ class RageSoundManager {
   float GetVolumeOfNonCriticalSounds() const {
     return volume_of_non_critical_sounds_;
   }
-  void SetVolumeOfNonCriticalSounds(float fVolumeOfNonCriticalSounds);
+  void SetVolumeOfNonCriticalSounds(float volume_of_non_critical_sounds);
 
   void Update();
-  void StartMixing(RageSoundBase* snd);        /* used by RageSound */
-  void StopMixing(RageSoundBase* snd);         /* used by RageSound */
-  bool Pause(RageSoundBase* snd, bool bPause); /* used by RageSound */
+  void StartMixing(RageSoundBase* snd);       /* used by RageSound */
+  void StopMixing(RageSoundBase* snd);        /* used by RageSound */
+  bool Pause(RageSoundBase* snd, bool pause); /* used by RageSound */
   bool GetPlayingPosition(
-      const RageSoundBase* snd, int& iSourceFrame,
-      RageTimer* pTimer = nullptr); /* used by RageSound */
+      const RageSoundBase* snd, int& source_frame,
+      RageTimer* timer = nullptr); /* used by RageSound */
   float GetPlayLatency() const;
   int GetDriverSampleRate() const;
 
-  RageSoundReader* GetLoadedSound(const std::string& sPath);
-  void AddLoadedSound(
-      const std::string& sPath, RageSoundReader_Preload* pSound);
+  RageSoundReader* GetLoadedSound(const std::string& path);
+  void AddLoadedSound(const std::string& path, RageSoundReader_Preload* sound);
 
  private:
   std::map<std::string, RageSoundReader_Preload*> map_preloaded_sounds_;

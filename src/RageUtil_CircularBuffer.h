@@ -100,8 +100,8 @@ class CircBuf {
 
   unsigned capacity() const { return size_; }
 
-  void reserve(unsigned n, int iBlockSize = 1) {
-    block_size_ = iBlockSize;
+  void reserve(unsigned n, int block_size = 1) {
+    block_size_ = block_size;
 
     clear();
     delete[] buf_;
@@ -112,7 +112,7 @@ class CircBuf {
      * since that would be ambiguous with an empty buffer. */
     if (n != 0) {
       size_ = n + 1;
-      size_ = ((size_ + iBlockSize - 1) / iBlockSize) * iBlockSize;  // round up
+      size_ = ((size_ + block_size - 1) / block_size) * block_size;  // round up
 
       buf_ = new T[size_];
     } else {
@@ -131,70 +131,70 @@ class CircBuf {
   /* Indicate that n elements have been read. */
   void advance_read_pointer(int n) { read_pos_ = (read_pos_ + n) % size_; }
 
-  void get_write_pointers(T* pPointers[2], unsigned pSizes[2]) {
+  void get_write_pointers(T* pointers[2], unsigned sizes[2]) {
     const int rpos = read_pos_;
     const int wpos = write_pos_;
 
     if (rpos <= wpos) {
       /* The buffer looks like "eeeeDDDDeeee" or "eeeeeeeeeeee" (e = empty, D =
        * data). */
-      pPointers[0] = buf_ + wpos;
-      pPointers[1] = buf_;
+      pointers[0] = buf_ + wpos;
+      pointers[1] = buf_;
 
-      pSizes[0] = size_ - wpos;
-      pSizes[1] = rpos;
+      sizes[0] = size_ - wpos;
+      sizes[1] = rpos;
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-      pPointers[0] = buf_ + wpos;
-      pPointers[1] = nullptr;
+      pointers[0] = buf_ + wpos;
+      pointers[1] = nullptr;
 
-      pSizes[0] = rpos - wpos;
-      pSizes[1] = 0;
+      sizes[0] = rpos - wpos;
+      sizes[1] = 0;
     }
 
     /* Subtract the blocksize, to account for the element that we never fill
      * while keeping the entries aligned to m_iBlockSize. */
-    if (pSizes[1]) {
-      pSizes[1] -= block_size_;
+    if (sizes[1]) {
+      sizes[1] -= block_size_;
     } else {
-      pSizes[0] -= block_size_;
+      sizes[0] -= block_size_;
     }
   }
 
   /* Like get_write_pointers, but only return the first range available. */
-  T* get_write_pointer(unsigned* pSizes) {
-    T* pBothPointers[2];
-    unsigned iBothSizes[2];
-    get_write_pointers(pBothPointers, iBothSizes);
-    *pSizes = iBothSizes[0];
-    return pBothPointers[0];
+  T* get_write_pointer(unsigned* sizes) {
+    T* both_pointers[2];
+    unsigned both_sizes[2];
+    get_write_pointers(both_pointers, both_sizes);
+    *sizes = both_sizes[0];
+    return both_pointers[0];
   }
 
-  void get_read_pointers(T* pPointers[2], unsigned pSizes[2]) {
+  void get_read_pointers(T* pointers[2], unsigned sizes[2]) {
     const int rpos = read_pos_;
     const int wpos = write_pos_;
 
     if (rpos < wpos) {
       /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-      pPointers[0] = buf_ + rpos;
-      pPointers[1] = nullptr;
+      pointers[0] = buf_ + rpos;
+      pointers[1] = nullptr;
 
-      pSizes[0] = wpos - rpos;
-      pSizes[1] = 0;
+      sizes[0] = wpos - rpos;
+      sizes[1] = 0;
     } else if (rpos > wpos) {
       /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-      pPointers[0] = buf_ + rpos;
-      pPointers[1] = buf_;
+      pointers[0] = buf_ + rpos;
+      pointers[1] = buf_;
 
-      pSizes[0] = size_ - rpos;
-      pSizes[1] = wpos;
+      sizes[0] = size_ - rpos;
+      sizes[1] = wpos;
     } else {
       /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
-      pPointers[0] = nullptr;
-      pPointers[1] = nullptr;
+      pointers[0] = nullptr;
+      pointers[1] = nullptr;
 
-      pSizes[0] = 0;
-      pSizes[1] = 0;
+      sizes[0] = 0;
+      sizes[1] = 0;
     }
   }
 

@@ -13,10 +13,10 @@ class ScoreDisplayNormal : public ScoreDisplay {
   ScoreDisplayNormal();
 
   virtual void Init(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
 
-  virtual void SetScore(int iNewScore);
+  virtual void SetScore(int new_score);
   virtual void SetText(std::string s) { text_.SetText(s); }
 
  protected:

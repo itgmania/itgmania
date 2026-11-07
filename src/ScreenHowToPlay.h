@@ -16,8 +16,8 @@ class ScreenHowToPlay : public ScreenAttract {
   virtual void Init();
   ~ScreenHowToPlay();
 
-  virtual void Update(float fDelta);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void Update(float delta);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   // Lua
   virtual void PushSelf(lua_State* L);

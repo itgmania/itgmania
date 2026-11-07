@@ -21,31 +21,31 @@ struct RageFileObjMemFile {
   int refs_;
   RageMutex mutex_;
 
-  static void AddReference(RageFileObjMemFile* pFile) {
-    pFile->mutex_.Lock();
-    ++pFile->refs_;
-    pFile->mutex_.Unlock();
+  static void AddReference(RageFileObjMemFile* file) {
+    file->mutex_.Lock();
+    ++file->refs_;
+    file->mutex_.Unlock();
   }
 
-  static void ReleaseReference(RageFileObjMemFile* pFile) {
-    pFile->mutex_.Lock();
-    const int iRefs = --pFile->refs_;
-    const bool bShouldDelete = (pFile->refs_ == 0);
-    pFile->mutex_.Unlock();
-    ASSERT(iRefs >= 0);
+  static void ReleaseReference(RageFileObjMemFile* file) {
+    file->mutex_.Lock();
+    const int refs = --file->refs_;
+    const bool should_delete = (file->refs_ == 0);
+    file->mutex_.Unlock();
+    ASSERT(refs >= 0);
 
-    if (bShouldDelete) {
-      delete pFile;
+    if (should_delete) {
+      delete file;
     }
   }
 };
 
-RageFileObjMem::RageFileObjMem(RageFileObjMemFile* pFile) {
-  if (pFile == nullptr) {
-    pFile = new RageFileObjMemFile;
+RageFileObjMem::RageFileObjMem(RageFileObjMemFile* file) {
+  if (file == nullptr) {
+    file = new RageFileObjMemFile;
   }
 
-  file_ = pFile;
+  file_ = file;
   file_pos_ = 0;
   RageFileObjMemFile::AddReference(file_);
 }
@@ -94,15 +94,15 @@ RageFileObjMem::RageFileObjMem(const RageFileObjMem& cpy) : RageFileObj(cpy) {
 }
 
 RageFileObjMem* RageFileObjMem::Copy() const {
-  RageFileObjMem* pRet = new RageFileObjMem(*this);
-  return pRet;
+  RageFileObjMem* ret = new RageFileObjMem(*this);
+  return ret;
 }
 
 const std::string& RageFileObjMem::GetString() const { return file_->buf_; }
 
-void RageFileObjMem::PutString(const std::string& sBuf) {
+void RageFileObjMem::PutString(const std::string& buf) {
   file_->mutex_.Lock();
-  file_->buf_ = sBuf;
+  file_->buf_ = buf;
   file_->mutex_.Unlock();
 }
 
@@ -111,62 +111,62 @@ RageFileDriverMem::RageFileDriverMem()
 
 RageFileDriverMem::~RageFileDriverMem() {
   for (unsigned i = 0; i < files_.size(); ++i) {
-    RageFileObjMemFile* pFile = files_[i];
-    RageFileObjMemFile::ReleaseReference(pFile);
+    RageFileObjMemFile* file = files_[i];
+    RageFileObjMemFile::ReleaseReference(file);
   }
 }
 
 RageFileBasic* RageFileDriverMem::Open(
-    const std::string& sPath, int mode, int& err) {
+    const std::string& path, int mode, int& err) {
   LockMut(mutex_);
 
   if (mode == RageFile::WRITE) {
     /* If the file exists, delete it. */
-    Remove(sPath);
+    Remove(path);
 
-    RageFileObjMemFile* pFile = new RageFileObjMemFile;
+    RageFileObjMemFile* file = new RageFileObjMemFile;
 
     /* Add one reference, representing the file in the filesystem. */
-    RageFileObjMemFile::AddReference(pFile);
+    RageFileObjMemFile::AddReference(file);
 
-    files_.push_back(pFile);
-    fdb_->AddFile(sPath, 0, 0, pFile);
+    files_.push_back(file);
+    fdb_->AddFile(path, 0, 0, file);
 
-    return new RageFileObjMem(pFile);
+    return new RageFileObjMem(file);
   }
 
-  RageFileObjMemFile* pFile = (RageFileObjMemFile*)fdb_->GetFilePriv(sPath);
-  if (pFile == nullptr) {
+  RageFileObjMemFile* file = (RageFileObjMemFile*)fdb_->GetFilePriv(path);
+  if (file == nullptr) {
     err = ENOENT;
     return nullptr;
   }
 
-  return new RageFileObjMem(pFile);
+  return new RageFileObjMem(file);
 }
 
-bool RageFileDriverMem::Remove(const std::string& sPath) {
+bool RageFileDriverMem::Remove(const std::string& path) {
   LockMut(mutex_);
 
-  RageFileObjMemFile* pFile = (RageFileObjMemFile*)fdb_->GetFilePriv(sPath);
-  if (pFile == nullptr) {
+  RageFileObjMemFile* file = (RageFileObjMemFile*)fdb_->GetFilePriv(path);
+  if (file == nullptr) {
     return false;
   }
 
   /* Unregister the file. */
-  fdb_->DelFile(sPath);
+  fdb_->DelFile(path);
   std::vector<RageFileObjMemFile*>::iterator it =
-      find(files_.begin(), files_.end(), pFile);
+      find(files_.begin(), files_.end(), file);
   ASSERT(it != files_.end());
   files_.erase(it);
 
-  RageFileObjMemFile::ReleaseReference(pFile);
+  RageFileObjMemFile::ReleaseReference(file);
 
   return true;
 }
 
 static struct FileDriverEntry_MEM : public FileDriverEntry {
   FileDriverEntry_MEM() : FileDriverEntry("MEM") {}
-  RageFileDriver* Create(const std::string& sRoot) const {
+  RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverMem();
   }
 } const g_RegisterDriver;

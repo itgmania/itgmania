@@ -37,25 +37,25 @@ CharacterManager::CharacterManager() {
   StripCvsAndSvn(as);
   StripMacResourceForks(as);
 
-  bool FoundDefault = false;
+  bool found_default = false;
   for (unsigned i = 0; i < as.size(); i++) {
-    std::string sCharName, sDummy;
-    splitpath(as[i], sDummy, sCharName, sDummy);
-    MakeLower(sCharName);
+    std::string char_name, dummy;
+    splitpath(as[i], dummy, char_name, dummy);
+    MakeLower(char_name);
 
-    if (CompareNoCase(sCharName, "default") == 0) {
-      FoundDefault = true;
+    if (CompareNoCase(char_name, "default") == 0) {
+      found_default = true;
     }
 
-    Character* pChar = new Character;
-    if (pChar->Load(as[i])) {
-      characters_.push_back(pChar);
+    Character* p_char = new Character;
+    if (p_char->Load(as[i])) {
+      characters_.push_back(p_char);
     } else {
-      delete pChar;
+      delete p_char;
     }
   }
 
-  if (!FoundDefault) {
+  if (!found_default) {
     RageException::Throw("'Characters/default' is missing.");
   }
 
@@ -74,19 +74,19 @@ CharacterManager::~CharacterManager() {
   LUA->UnsetGlobal("CHARMAN");
 }
 
-void CharacterManager::GetCharacters(std::vector<Character*>& apCharactersOut) {
+void CharacterManager::GetCharacters(std::vector<Character*>& characters_out) {
   for (unsigned i = 0; i < characters_.size(); i++) {
     if (!characters_[i]->IsDefaultCharacter()) {
-      apCharactersOut.push_back(characters_[i]);
+      characters_out.push_back(characters_[i]);
     }
   }
 }
 
 Character* CharacterManager::GetRandomCharacter() {
-  std::vector<Character*> apCharacters;
-  GetCharacters(apCharacters);
-  if (apCharacters.size()) {
-    return apCharacters[RandomInt(apCharacters.size())];
+  std::vector<Character*> characters;
+  GetCharacters(characters);
+  if (characters.size()) {
+    return characters[RandomInt(characters.size())];
   } else {
     return GetDefaultCharacter();
   }
@@ -103,9 +103,9 @@ Character* CharacterManager::GetDefaultCharacter() {
   FAIL_M("There must be a default character available!");
 }
 
-Character* CharacterManager::GetCharacterFromID(std::string sCharacterID) {
+Character* CharacterManager::GetCharacterFromID(std::string character_id) {
   for (unsigned i = 0; i < characters_.size(); i++) {
-    if (characters_[i]->character_id_ == sCharacterID) {
+    if (characters_[i]->character_id_ == character_id) {
       return characters_[i];
     }
   }
@@ -120,9 +120,9 @@ Character* CharacterManager::GetCharacterFromID(std::string sCharacterID) {
 class LunaCharacterManager : public Luna<CharacterManager> {
  public:
   static int GetCharacter(T* p, lua_State* L) {
-    Character* pCharacter = p->GetCharacterFromID(SArg(1));
-    if (pCharacter != nullptr) {
-      pCharacter->PushSelf(L);
+    Character* character = p->GetCharacterFromID(SArg(1));
+    if (character != nullptr) {
+      character->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -130,9 +130,9 @@ class LunaCharacterManager : public Luna<CharacterManager> {
     return 1;
   }
   static int GetRandomCharacter(T* p, lua_State* L) {
-    Character* pCharacter = p->GetRandomCharacter();
-    if (pCharacter != nullptr) {
-      pCharacter->PushSelf(L);
+    Character* character = p->GetRandomCharacter();
+    if (character != nullptr) {
+      character->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -140,10 +140,10 @@ class LunaCharacterManager : public Luna<CharacterManager> {
     return 1;
   }
   static int GetAllCharacters(T* p, lua_State* L) {
-    std::vector<Character*> vChars;
-    p->GetCharacters(vChars);
+    std::vector<Character*> chars;
+    p->GetCharacters(chars);
 
-    LuaHelpers::CreateTableFromArray(vChars, L);
+    LuaHelpers::CreateTableFromArray(chars, L);
     return 1;
   }
   static int GetCharacterCount(T* p, lua_State* L) {

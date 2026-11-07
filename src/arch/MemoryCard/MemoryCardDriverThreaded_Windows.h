@@ -12,13 +12,13 @@ class MemoryCardDriverThreaded_Windows : public MemoryCardDriver {
   MemoryCardDriverThreaded_Windows();
   virtual ~MemoryCardDriverThreaded_Windows();
 
-  virtual bool Mount(UsbStorageDevice* pDevice);
-  virtual void Unmount(UsbStorageDevice* pDevice);
+  virtual bool Mount(UsbStorageDevice* device);
+  virtual void Unmount(UsbStorageDevice* device);
 
  private:
-  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& vDevicesOut);
+  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& devices_out);
   bool USBStorageDevicesChanged();
-  bool TestWrite(UsbStorageDevice* pDevice);
+  bool TestWrite(UsbStorageDevice* device);
 
   DWORD last_logical_drives_;
 };

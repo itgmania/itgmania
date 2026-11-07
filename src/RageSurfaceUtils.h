@@ -30,10 +30,10 @@ void GetBitsPerChannel(const RageSurfaceFormat* fmt, uint32_t bits[4]);
 void CopySurface(const RageSurface* src, RageSurface* dest);
 bool ConvertSurface(
     const RageSurface* src, RageSurface*& dst, int width, int height, int bpp,
-    uint32_t R, uint32_t G, uint32_t B, uint32_t A);
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a);
 void ConvertSurface(
-    RageSurface*& image, int width, int height, int bpp, uint32_t R, uint32_t G,
-    uint32_t B, uint32_t A);
+    RageSurface*& image, int width, int height, int bpp, uint32_t r, uint32_t g,
+    uint32_t b, uint32_t a);
 
 void FixHiddenAlpha(RageSurface* img);
 
@@ -56,7 +56,8 @@ RageSurface* LoadSurface(std::string file);
 
 /* Quickly palettize to an gray/alpha texture. */
 RageSurface* PalettizeToGrayscale(
-    const RageSurface* src_surf, unsigned int GrayBits, unsigned int AlphaBits);
+    const RageSurface* src_surf, unsigned int gray_bits,
+    unsigned int alpha_bits);
 
 RageSurface* MakeDummySurface(int height, int width);
 

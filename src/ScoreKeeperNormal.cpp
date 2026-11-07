@@ -49,15 +49,15 @@ static ThemeMetric1D<int> g_iGradeWeight(
     "ScoreKeeperNormal", GradeWeightName, NUM_ScoreEvent);
 
 ScoreKeeperNormal::ScoreKeeperNormal(
-    PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats)
-    : ScoreKeeper(pPlayerState, pPlayerStageStats) {}
+    PlayerState* player_state, PlayerStageStats* player_stage_stats)
+    : ScoreKeeper(player_state, player_stage_stats) {}
 
 void ScoreKeeperNormal::Load(
-    const std::vector<Song*>& apSongs, const std::vector<Steps*>& apSteps,
-    const std::vector<AttackArray>& asModifiers) {
-  steps_ = apSteps;
-  ASSERT(apSongs.size() == apSteps.size());
-  ASSERT(apSongs.size() == asModifiers.size());
+    const std::vector<Song*>& songs, const std::vector<Steps*>& ap_steps,
+    const std::vector<AttackArray>& modifiers) {
+  steps_ = ap_steps;
+  ASSERT(songs.size() == ap_steps.size());
+  ASSERT(songs.size() == modifiers.size());
 
   // True if a jump is one to combo, false if combo is purely based on tap
   // count.
@@ -78,38 +78,38 @@ void ScoreKeeperNormal::Load(
   toasty_min_tns_.Load("Gameplay", "ToastyMinTNS");
 
   // Fill in STATSMAN->m_CurStageStats, calculate multiplier
-  int iTotalPossibleDancePoints = 0;
-  int iTotalPossibleGradePoints = 0;
-  for (unsigned i = 0; i < apSteps.size(); i++) {
-    Song* pSong = apSongs[i];
-    ASSERT(pSong != nullptr);
-    Steps* pSteps = apSteps[i];
-    ASSERT(pSteps != nullptr);
-    const AttackArray& aa = asModifiers[i];
-    NoteData ndTemp;
-    pSteps->GetNoteData(ndTemp);
+  int total_possible_dance_points = 0;
+  int total_possible_grade_points = 0;
+  for (unsigned i = 0; i < ap_steps.size(); i++) {
+    Song* song = songs[i];
+    ASSERT(song != nullptr);
+    Steps* p_steps = ap_steps[i];
+    ASSERT(p_steps != nullptr);
+    const AttackArray& aa = modifiers[i];
+    NoteData temp;
+    p_steps->GetNoteData(temp);
 
     // We might have been given lots of songs; don't keep them in memory
     // uncompressed.
-    pSteps->Compress();
+    p_steps->Compress();
 
-    const Style* pStyle =
+    const Style* style =
         GAMESTATE->GetCurrentStyle(player_state_->player_number_);
-    NoteData ndPre;
-    pStyle->GetTransformedNoteDataForStyle(
-        player_state_->player_number_, ndTemp, ndPre);
+    NoteData pre;
+    style->GetTransformedNoteDataForStyle(
+        player_state_->player_number_, temp, pre);
 
-    if (ndPre.IsComposite()) {
-      std::vector<NoteData> vParts;
+    if (pre.IsComposite()) {
+      std::vector<NoteData> parts;
 
-      NoteDataUtil::SplitCompositeNoteData(ndPre, vParts);
-      ndPre = vParts[player_state_->player_number_];
+      NoteDataUtil::SplitCompositeNoteData(pre, parts);
+      pre = parts[player_state_->player_number_];
     }
     /* Compute RadarValues before applying any user-selected mods. Apply
      * Course mods and count them in the "pre" RadarValues because they're
      * forced and not chosen by the user. */
     NoteDataUtil::TransformNoteData(
-        ndPre, *(pSteps->GetTimingData()), aa, pSteps->steps_type_, pSong);
+        pre, *(p_steps->GetTimingData()), aa, p_steps->steps_type_, song);
 
     /* Apply user transforms to find out how the notes will really look.
      *
@@ -118,24 +118,24 @@ void ScoreKeeperNormal::Load(
      * probably have eg. GAMESTATE->GetOptionsForCourse(po,so,pn) to get options
      * based on the last call to StoreSelectedOptions and the modifiers list,
      * but that'd mean moving the queues in ScreenGameplay to GameState ... */
-    NoteData ndPost = ndPre;
+    NoteData post = pre;
     NoteDataUtil::TransformNoteData(
-        ndPost, *(pSteps->GetTimingData()),
-        player_state_->player_options_.GetStage(), pSteps->steps_type_);
+        post, *(p_steps->GetTimingData()),
+        player_state_->player_options_.GetStage(), p_steps->steps_type_);
 
     GAMESTATE->SetProcessedTimingData(
-        pSteps->GetTimingData());  // XXX: Not sure why but
-                                   // NoteDataUtil::CalculateRadarValues
-                                   // segfaults without this
-    iTotalPossibleDancePoints += this->GetPossibleDancePoints(
-        &ndPre, &ndPost, pSteps->GetTimingData(), pSong->music_length_seconds_);
-    iTotalPossibleGradePoints += this->GetPossibleGradePoints(
-        &ndPre, &ndPost, pSteps->GetTimingData(), pSong->music_length_seconds_);
+        p_steps->GetTimingData());  // XXX: Not sure why but
+                                    // NoteDataUtil::CalculateRadarValues
+                                    // segfaults without this
+    total_possible_dance_points += this->GetPossibleDancePoints(
+        &pre, &post, p_steps->GetTimingData(), song->music_length_seconds_);
+    total_possible_grade_points += this->GetPossibleGradePoints(
+        &pre, &post, p_steps->GetTimingData(), song->music_length_seconds_);
     GAMESTATE->SetProcessedTimingData(nullptr);
   }
 
-  player_stage_stats_->possible_dance_points_ = iTotalPossibleDancePoints;
-  player_stage_stats_->possible_grade_points_ = iTotalPossibleGradePoints;
+  player_stage_stats_->possible_dance_points_ = total_possible_dance_points;
+  player_stage_stats_->possible_grade_points_ = total_possible_grade_points;
 
   score_remainder_ = 0;
   cur_toasty_combo_ = 0;
@@ -158,7 +158,7 @@ void ScoreKeeperNormal::Load(
 }
 
 void ScoreKeeperNormal::OnNextSong(
-    int iSongInCourseIndex, const Steps* pSteps, const NoteData* pNoteData) {
+    int song_in_course_index, const Steps* steps, const NoteData* note_data) {
   /*
     Note on NONSTOP Mode scoring
 
@@ -181,49 +181,50 @@ void ScoreKeeperNormal::OnNextSong(
   // Calculate the score multiplier
   max_possible_points_ = 0;
   if (GAMESTATE->IsCourseMode()) {
-    const int numSongsInCourse = steps_.size();
-    ASSERT(numSongsInCourse != 0);
+    const int num_songs_in_course = steps_.size();
+    ASSERT(num_songs_in_course != 0);
 
-    const int iIndex = iSongInCourseIndex % numSongsInCourse;
-    is_last_song_in_course_ = (iIndex + 1 == numSongsInCourse);
+    const int index = song_in_course_index % num_songs_in_course;
+    is_last_song_in_course_ = (index + 1 == num_songs_in_course);
 
-    if (numSongsInCourse < 10) {
-      const int courseMult = (numSongsInCourse * (numSongsInCourse + 1)) / 2;
-      ASSERT(courseMult >= 0);
+    if (num_songs_in_course < 10) {
+      const int course_mult =
+          (num_songs_in_course * (num_songs_in_course + 1)) / 2;
+      ASSERT(course_mult >= 0);
 
-      max_possible_points_ = (100000000 * (iIndex + 1)) / courseMult;
+      max_possible_points_ = (100000000 * (index + 1)) / course_mult;
     } else {
       /* When we have lots of songs, the scale above biases too much: in a
        * course with 50 songs, the first song is worth 80k, the last 4mil, which
        * is too much of a difference.
        *
        * With this, each song in a 50-song course will be worth 2mil. */
-      max_possible_points_ = 100000000 / numSongsInCourse;
+      max_possible_points_ = 100000000 / num_songs_in_course;
     }
   } else {
     // long ver and marathon ver songs have higher max possible scores
-    int iLengthMultiplier =
+    int length_multiplier =
         GameState::GetNumStagesMultiplierForSong(GAMESTATE->cur_song_);
 
     /* This is no longer just simple additive/subtractive scoring,
      * but start with capping the score at the size of the score counter. */
-    max_possible_points_ = 10 * 10000000 * iLengthMultiplier;
+    max_possible_points_ = 10 * 10000000 * length_multiplier;
   }
   ASSERT(max_possible_points_ >= 0);
   max_score_so_far_ += max_possible_points_;
 
   GAMESTATE->SetProcessedTimingData(
-      const_cast<TimingData*>(pSteps->GetTimingData()));
+      const_cast<TimingData*>(steps->GetTimingData()));
 
-  num_taps_and_holds_ = pNoteData->GetNumRowsWithTapOrHoldHead() +
-                        pNoteData->GetNumHoldNotes() + pNoteData->GetNumRolls();
+  num_taps_and_holds_ = note_data->GetNumRowsWithTapOrHoldHead() +
+                        note_data->GetNumHoldNotes() + note_data->GetNumRolls();
 
   point_bonus_ = max_possible_points_;
   player_stage_stats_->max_score_ = max_score_so_far_;
 
   /* MercifulBeginner shouldn't clamp weights in course mode, even if a beginner
    * song is in a course, since that makes PlayerStageStats::GetGrade hard. */
-  is_beginner_ = pSteps->GetDifficulty() == Difficulty_Beginner &&
+  is_beginner_ = steps->GetDifficulty() == Difficulty_Beginner &&
                  !GAMESTATE->IsCourseMode();
 
   ASSERT(point_bonus_ >= 0);
@@ -233,7 +234,7 @@ void ScoreKeeperNormal::OnNextSong(
   GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
-static int GetScore(int p, int Z, int64_t S, int n) {
+static int GetScore(int p, int z, int64_t s, int n) {
   /* There's a problem with the scoring system described below. Z/S is truncated
    * to an int. However, in some cases we can end up with very small base
    * scores. Each song in a 50-song nonstop course will be worth 2mil, which is
@@ -250,7 +251,7 @@ static int GetScore(int p, int Z, int64_t S, int n) {
 	return p * (Z / S) * n;
 #elif 1
   // This doesn't round down Z/S.
-  return int(int64_t(p) * n * Z / S);
+  return int(int64_t(p) * n * z / s);
 #else
   // This also doesn't round down Z/S. Use this if you don't have 64-bit ints.
   return int(p * n * (float(Z) / S));
@@ -269,7 +270,7 @@ void ScoreKeeperNormal::AddHoldScore(HoldNoteScore hns) {
 }
 
 void ScoreKeeperNormal::AddTapRowScore(
-    TapNoteScore score, const NoteData& nd, int iRow) {
+    TapNoteScore score, const NoteData& nd, int row) {
   AddScoreInternal(score);
 }
 
@@ -290,8 +291,8 @@ void ScoreKeeperNormal::HandleTapScoreNone() {
 
 void ScoreKeeperNormal::AddScoreInternal(TapNoteScore score) {
   if (use_internal_scoring_) {
-    unsigned int& iScore = player_stage_stats_->score_;
-    unsigned int& iCurMaxScore = player_stage_stats_->cur_max_score_;
+    unsigned int& i_score = player_stage_stats_->score_;
+    unsigned int& cur_max_score = player_stage_stats_->cur_max_score_;
 
     // See Aaron In Japan for more details about the scoring formulas.
     // Note: this assumes no custom scoring systems are in use.
@@ -314,51 +315,51 @@ void ScoreKeeperNormal::AddScoreInternal(TapNoteScore score) {
 
     tap_notes_hit_++;
 
-    const int64_t N = uint64_t(num_taps_and_holds_);
-    const int64_t sum = (N * (N + 1)) / 2;
-    const int Z = max_possible_points_ / 10;
+    const int64_t n = uint64_t(num_taps_and_holds_);
+    const int64_t sum = (n * (n + 1)) / 2;
+    const int z = max_possible_points_ / 10;
 
     // Don't use a multiplier if the player has failed
     if (player_stage_stats_->failed_) {
-      iScore += p;
+      i_score += p;
       // make score evenly divisible by 5
       // only update this on the next step, to make it less *obvious*
       /* Round to the nearest 5, instead of always rounding down, so a base
        * score of 9 will round to 10, not 5. */
       if (p > 0) {
-        iScore = ((iScore + 2) / 5) * 5;
+        i_score = ((i_score + 2) / 5) * 5;
       }
     } else {
-      iScore += GetScore(p, Z, sum, tap_notes_hit_);
-      const int& iCurrentCombo = player_stage_stats_->cur_combo_;
-      iScore += combo_bonus_factor_[score] * iCurrentCombo;
+      i_score += GetScore(p, z, sum, tap_notes_hit_);
+      const int& current_combo = player_stage_stats_->cur_combo_;
+      i_score += combo_bonus_factor_[score] * current_combo;
     }
 
     // Subtract the maximum this step could have been worth from the bonus.
-    point_bonus_ -= GetScore(10, Z, sum, tap_notes_hit_);
+    point_bonus_ -= GetScore(10, z, sum, tap_notes_hit_);
     // And add the maximum this step could have been worth to the max score up
     // to now.
-    iCurMaxScore += GetScore(10, Z, sum, tap_notes_hit_);
+    cur_max_score += GetScore(10, z, sum, tap_notes_hit_);
 
     if (tap_notes_hit_ == num_taps_and_holds_ && score >= TNS_W2) {
       if (!player_stage_stats_->failed_) {
-        iScore += point_bonus_;
+        i_score += point_bonus_;
       }
       if (is_last_song_in_course_) {
-        iScore += 100000000 - max_score_so_far_;
-        iCurMaxScore += 100000000 - max_score_so_far_;
+        i_score += 100000000 - max_score_so_far_;
+        cur_max_score += 100000000 - max_score_so_far_;
 
         /* If we're in Endless mode, we'll come around here again, so reset
          * the bonus counter. */
         max_score_so_far_ = 0;
       }
-      iCurMaxScore += point_bonus_;
+      cur_max_score += point_bonus_;
     }
 
     // Undo rounding from the last tap, and re-round.
-    iScore += score_remainder_;
-    score_remainder_ = (iScore % round_to_);
-    iScore = iScore - score_remainder_;
+    i_score += score_remainder_;
+    score_remainder_ = (i_score % round_to_);
+    i_score = i_score - score_remainder_;
 
     // LOG->Trace( "score: %i", iScore );
   }
@@ -439,12 +440,13 @@ void ScoreKeeperNormal::HandleTapScore(const TapNote& tn) {
 }
 
 void ScoreKeeperNormal::HandleHoldCheckpointScore(
-    const NoteData& nd, int iRow, int iNumHoldsHeldThisRow,
-    int iNumHoldsMissedThisRow) {
+    const NoteData& nd, int row, int num_holds_held_this_row,
+    int num_holds_missed_this_row) {
   HandleTapNoteScoreInternal(
-      iNumHoldsMissedThisRow == 0 ? TNS_CheckpointHit : TNS_CheckpointMiss,
-      TNS_CheckpointHit, iRow);
-  HandleComboInternal(iNumHoldsHeldThisRow, 0, iNumHoldsMissedThisRow, iRow);
+      num_holds_missed_this_row == 0 ? TNS_CheckpointHit : TNS_CheckpointMiss,
+      TNS_CheckpointHit, row);
+  HandleComboInternal(
+      num_holds_held_this_row, 0, num_holds_missed_this_row, row);
 }
 
 void ScoreKeeperNormal::HandleTapNoteScoreInternal(
@@ -472,63 +474,61 @@ void ScoreKeeperNormal::HandleTapNoteScoreInternal(
 }
 
 void ScoreKeeperNormal::HandleComboInternal(
-    int iNumHitContinueCombo, int iNumHitMaintainCombo, int iNumBreakCombo,
-    int iRow) {
+    int num_hit_continue_combo, int num_hit_maintain_combo, int num_break_combo,
+    int row) {
   // Regular combo
   if (combo_is_per_row_) {
-    iNumHitContinueCombo = std::min(iNumHitContinueCombo, 1);
-    iNumHitMaintainCombo = std::min(iNumHitMaintainCombo, 1);
-    iNumBreakCombo = std::min(iNumBreakCombo, 1);
+    num_hit_continue_combo = std::min(num_hit_continue_combo, 1);
+    num_hit_maintain_combo = std::min(num_hit_maintain_combo, 1);
+    num_break_combo = std::min(num_break_combo, 1);
   }
 
-  if (iNumHitContinueCombo > 0 || iNumHitMaintainCombo > 0) {
+  if (num_hit_continue_combo > 0 || num_hit_maintain_combo > 0) {
     player_stage_stats_->cur_miss_combo_ = 0;
   }
   TimingData& td =
       *GAMESTATE->cur_steps_[player_state_->player_number_]->GetTimingData();
-  if (iNumBreakCombo == 0) {
-    int multiplier =
-        (iRow == -1 ? 1 : td.GetComboSegmentAtRow(iRow)->GetCombo());
-    player_stage_stats_->cur_combo_ += iNumHitContinueCombo * multiplier;
+  if (num_break_combo == 0) {
+    int multiplier = (row == -1 ? 1 : td.GetComboSegmentAtRow(row)->GetCombo());
+    player_stage_stats_->cur_combo_ += num_hit_continue_combo * multiplier;
   } else {
     player_stage_stats_->cur_combo_ = 0;
     int multiplier =
-        (iRow == -1 ? 1 : td.GetComboSegmentAtRow(iRow)->GetMissCombo());
+        (row == -1 ? 1 : td.GetComboSegmentAtRow(row)->GetMissCombo());
     player_stage_stats_->cur_miss_combo_ +=
-        (miss_combo_is_per_row_ ? 1 : iNumBreakCombo) * multiplier;
+        (miss_combo_is_per_row_ ? 1 : num_break_combo) * multiplier;
   }
 }
 
 void ScoreKeeperNormal::HandleRowComboInternal(
-    TapNoteScore tns, int iNumTapsInRow, int iRow) {
+    TapNoteScore tns, int num_taps_in_row, int row) {
   if (combo_is_per_row_) {
-    iNumTapsInRow = std::min(iNumTapsInRow, 1);
+    num_taps_in_row = std::min(num_taps_in_row, 1);
   }
   TimingData& td =
       *GAMESTATE->cur_steps_[player_state_->player_number_]->GetTimingData();
   if (tns >= min_score_to_continue_combo_) {
     player_stage_stats_->cur_miss_combo_ = 0;
-    int multiplier =
-        (iRow == -1 ? 1 : td.GetComboSegmentAtRow(iRow)->GetCombo());
-    player_stage_stats_->cur_combo_ += iNumTapsInRow * multiplier;
+    int multiplier = (row == -1 ? 1 : td.GetComboSegmentAtRow(row)->GetCombo());
+    player_stage_stats_->cur_combo_ += num_taps_in_row * multiplier;
   } else if (tns < min_score_to_maintain_combo_) {
     player_stage_stats_->cur_combo_ = 0;
 
     if (tns <= max_score_to_increment_miss_combo_) {
       int multiplier =
-          (iRow == -1 ? 1 : td.GetComboSegmentAtRow(iRow)->GetMissCombo());
+          (row == -1 ? 1 : td.GetComboSegmentAtRow(row)->GetMissCombo());
       player_stage_stats_->cur_miss_combo_ +=
-          (miss_combo_is_per_row_ ? 1 : iNumTapsInRow) * multiplier;
+          (miss_combo_is_per_row_ ? 1 : num_taps_in_row) * multiplier;
     }
   }
 }
 
 void ScoreKeeperNormal::GetRowCounts(
-    const NoteData& nd, int iRow, int& iNumHitContinueCombo,
-    int& iNumHitMaintainCombo, int& iNumBreakCombo) {
-  iNumHitContinueCombo = iNumHitMaintainCombo = iNumBreakCombo = 0;
+    const NoteData& nd, int row, int& num_hit_continue_combo,
+    int& num_hit_maintain_combo, int& num_break_combo) {
+  num_hit_continue_combo = num_hit_maintain_combo = num_break_combo = 0;
   for (int track = 0; track < nd.GetNumTracks(); ++track) {
-    const TapNote& tn = nd.GetTapNote(track, iRow);
+    const TapNote& tn = nd.GetTapNote(track, row);
 
     if (tn.type_ != TapNoteType_Tap && tn.type_ != TapNoteType_HoldHead &&
         tn.type_ != TapNoteType_Lift) {
@@ -536,36 +536,36 @@ void ScoreKeeperNormal::GetRowCounts(
     }
     TapNoteScore tns = tn.result_.tns_;
     if (tns >= min_score_to_continue_combo_) {
-      ++iNumHitContinueCombo;
+      ++num_hit_continue_combo;
     } else if (tns >= min_score_to_maintain_combo_) {
-      ++iNumHitMaintainCombo;
+      ++num_hit_maintain_combo;
     } else {
-      ++iNumBreakCombo;
+      ++num_break_combo;
     }
   }
 }
 
-void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
-  int iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo;
+void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int row) {
+  int num_hit_continue_combo, num_hit_maintain_combo, num_break_combo;
   GetRowCounts(
-      nd, iRow, iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo);
+      nd, row, num_hit_continue_combo, num_hit_maintain_combo, num_break_combo);
 
-  int iNumTapsInRow =
-      iNumHitContinueCombo + iNumHitMaintainCombo + iNumBreakCombo;
-  if (iNumTapsInRow <= 0) {
+  int num_taps_in_row =
+      num_hit_continue_combo + num_hit_maintain_combo + num_break_combo;
+  if (num_taps_in_row <= 0) {
     return;
   }
 
-  TapNoteScore scoreOfLastTap =
-      NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result_.tns_;
-  HandleTapNoteScoreInternal(scoreOfLastTap, TNS_W1, iRow);
+  TapNoteScore score_of_last_tap =
+      NoteDataWithScoring::LastTapNoteWithResult(nd, row).result_.tns_;
+  HandleTapNoteScoreInternal(score_of_last_tap, TNS_W1, row);
 
   if (GAMESTATE->GetCurrentGame()->count_notes_separately_) {
     HandleComboInternal(
-        iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo, iRow);
+        num_hit_continue_combo, num_hit_maintain_combo, num_break_combo, row);
   } else {
     HandleRowComboInternal(
-        scoreOfLastTap, iNumTapsInRow, iRow);  // This should work?
+        score_of_last_tap, num_taps_in_row, row);  // This should work?
   }
 
   if (player_state_->player_number_ != PLAYER_INVALID) {
@@ -573,7 +573,7 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
         Message_CurrentComboChangedP1, player_state_->player_number_));
   }
 
-  AddTapRowScore(scoreOfLastTap, nd, iRow);  // only score once per row
+  AddTapRowScore(score_of_last_tap, nd, row);  // only score once per row
 
   // handle combo logic
 #ifndef DEBUG
@@ -588,8 +588,8 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
 #endif  // DEBUG
 
   // Toasty combo
-  if (scoreOfLastTap >= toasty_min_tns_) {
-    cur_toasty_combo_ += iNumTapsInRow;
+  if (score_of_last_tap >= toasty_min_tns_) {
+    cur_toasty_combo_ += num_taps_in_row;
     if (cur_toasty_combo_ > next_toasty_at_ &&
         !GAMESTATE->demonstration_or_jukebox_) {
       ++cur_toasty_level_;
@@ -619,7 +619,7 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
 
   // TODO: Remove indexing with PlayerNumber
   PlayerNumber pn = player_state_->player_number_;
-  float offset = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow)
+  float offset = NoteDataWithScoring::LastTapNoteWithResult(nd, row)
                      .result_.tap_note_offset_;
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", player_state_->player_number_);
@@ -628,19 +628,19 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
 }
 
 void ScoreKeeperNormal::HandleHoldScore(const TapNote& tn) {
-  HoldNoteScore holdScore = tn.hold_result_.hns_;
+  HoldNoteScore hold_score = tn.hold_result_.hns_;
 
   // update dance points totals
   if (!player_stage_stats_->failed_) {
     player_stage_stats_->actual_dance_points_ +=
-        HoldNoteScoreToDancePoints(holdScore);
+        HoldNoteScoreToDancePoints(hold_score);
   }
   // increment the current total possible dance score
   player_stage_stats_->cur_possible_dance_points_ +=
       HoldNoteScoreToDancePoints(HNS_Held);
-  player_stage_stats_->hold_note_scores_[holdScore]++;
+  player_stage_stats_->hold_note_scores_[hold_score]++;
 
-  AddHoldScore(holdScore);
+  AddHoldScore(hold_score);
 
   // TODO: Remove indexing with PlayerNumber
   PlayerNumber pn = player_state_->player_number_;
@@ -650,12 +650,12 @@ void ScoreKeeperNormal::HandleHoldScore(const TapNote& tn) {
 }
 
 int ScoreKeeperNormal::GetPossibleDancePoints(
-    NoteData* nd, const TimingData* td, float fSongSeconds) {
+    NoteData* nd, const TimingData* td, float song_seconds) {
   /* Note: If W1 timing is disabled or not active (not course mode),
    * W2 will be used instead. */
   // XXX: That's not actually implemented!
   RadarValues radars;
-  NoteDataUtil::CalculateRadarValues(*nd, fSongSeconds, radars);
+  NoteDataUtil::CalculateRadarValues(*nd, song_seconds, radars);
 
   int ret = 0;
 
@@ -674,23 +674,22 @@ int ScoreKeeperNormal::GetPossibleDancePoints(
 }
 
 int ScoreKeeperNormal::GetPossibleDancePoints(
-    NoteData* ndPre, NoteData* ndPost, const TimingData* td,
-    float fSongSeconds) {
+    NoteData* pre, NoteData* post, const TimingData* td, float song_seconds) {
   /* The logic here is that if you use a modifier that adds notes, you should
    * have to hit the new notes to get a high grade. However, if you use one
    * that removes notes, they should simply be counted as misses. */
   return std::max(
-      GetPossibleDancePoints(ndPre, td, fSongSeconds),
-      GetPossibleDancePoints(ndPost, td, fSongSeconds));
+      GetPossibleDancePoints(pre, td, song_seconds),
+      GetPossibleDancePoints(post, td, song_seconds));
 }
 
 int ScoreKeeperNormal::GetPossibleGradePoints(
-    NoteData* nd, const TimingData* td, float fSongSeconds) {
+    NoteData* nd, const TimingData* td, float song_seconds) {
   /* Note: if W1 timing is disabled or not active (not course mode),
    * W2 will be used instead. */
   // XXX: That's not actually implemented!
   RadarValues radars;
-  NoteDataUtil::CalculateRadarValues(*nd, fSongSeconds, radars);
+  NoteDataUtil::CalculateRadarValues(*nd, song_seconds, radars);
 
   int ret = 0;
 
@@ -709,14 +708,13 @@ int ScoreKeeperNormal::GetPossibleGradePoints(
 }
 
 int ScoreKeeperNormal::GetPossibleGradePoints(
-    NoteData* ndPre, NoteData* ndPost, const TimingData* td,
-    float fSongSeconds) {
+    NoteData* pre, NoteData* post, const TimingData* td, float song_seconds) {
   /* The logic here is that if you use a modifier that adds notes, you should
    * have to hit the new notes to get a high grade. However, if you use one
    * that removes notes, they should simply be counted as misses. */
   return std::max(
-      GetPossibleGradePoints(ndPre, td, fSongSeconds),
-      GetPossibleGradePoints(ndPost, td, fSongSeconds));
+      GetPossibleGradePoints(pre, td, song_seconds),
+      GetPossibleGradePoints(post, td, song_seconds));
 }
 
 int ScoreKeeperNormal::TapNoteScoreToDancePoints(TapNoteScore tns) const {
@@ -728,150 +726,150 @@ int ScoreKeeperNormal::HoldNoteScoreToDancePoints(HoldNoteScore hns) const {
 }
 
 int ScoreKeeperNormal::TapNoteScoreToDancePoints(
-    TapNoteScore tns, bool bBeginner) {
+    TapNoteScore tns, bool beginner) {
   if (!GAMESTATE->ShowW1() && tns == TNS_W1) {
     tns = TNS_W2;
   }
 
   /* This is used for Oni percentage displays. Grading values are currently in
    * StageStats::GetGrade. */
-  int iWeight = 0;
+  int weight = 0;
   switch (tns) {
     DEFAULT_FAIL(tns);
     case TNS_None:
-      iWeight = 0;
+      weight = 0;
       break;
     case TNS_HitMine:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_HitMine);
+      weight = g_iPercentScoreWeight.GetValue(SE_HitMine);
       break;
     case TNS_Miss:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_Miss);
+      weight = g_iPercentScoreWeight.GetValue(SE_Miss);
       break;
     case TNS_W5:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_W5);
+      weight = g_iPercentScoreWeight.GetValue(SE_W5);
       break;
     case TNS_W4:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_W4);
+      weight = g_iPercentScoreWeight.GetValue(SE_W4);
       break;
     case TNS_W3:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_W3);
+      weight = g_iPercentScoreWeight.GetValue(SE_W3);
       break;
     case TNS_W2:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_W2);
+      weight = g_iPercentScoreWeight.GetValue(SE_W2);
       break;
     case TNS_W1:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_W1);
+      weight = g_iPercentScoreWeight.GetValue(SE_W1);
       break;
     case TNS_CheckpointHit:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_CheckpointHit);
+      weight = g_iPercentScoreWeight.GetValue(SE_CheckpointHit);
       break;
     case TNS_CheckpointMiss:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_CheckpointMiss);
+      weight = g_iPercentScoreWeight.GetValue(SE_CheckpointMiss);
       break;
   }
-  if (bBeginner && PREFSMAN->merciful_beginner_) {
-    iWeight = std::max(0, iWeight);
+  if (beginner && PREFSMAN->merciful_beginner_) {
+    weight = std::max(0, weight);
   }
-  return iWeight;
+  return weight;
 }
 
 int ScoreKeeperNormal::HoldNoteScoreToDancePoints(
-    HoldNoteScore hns, bool bBeginner) {
-  int iWeight = 0;
+    HoldNoteScore hns, bool beginner) {
+  int weight = 0;
   switch (hns) {
     DEFAULT_FAIL(hns);
     case HNS_None:
-      iWeight = 0;
+      weight = 0;
       break;
     case HNS_LetGo:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_LetGo);
+      weight = g_iPercentScoreWeight.GetValue(SE_LetGo);
       break;
     case HNS_Held:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_Held);
+      weight = g_iPercentScoreWeight.GetValue(SE_Held);
       break;
     case HNS_Missed:
-      iWeight = g_iPercentScoreWeight.GetValue(SE_Missed);
+      weight = g_iPercentScoreWeight.GetValue(SE_Missed);
       break;
   }
-  if (bBeginner && PREFSMAN->merciful_beginner_) {
-    iWeight = std::max(0, iWeight);
+  if (beginner && PREFSMAN->merciful_beginner_) {
+    weight = std::max(0, weight);
   }
-  return iWeight;
+  return weight;
 }
 
 int ScoreKeeperNormal::TapNoteScoreToGradePoints(
-    TapNoteScore tns, bool bBeginner) {
+    TapNoteScore tns, bool beginner) {
   if (!GAMESTATE->ShowW1() && tns == TNS_W1) {
     tns = TNS_W2;
   }
 
   /* This is used for Oni percentage displays. Grading values are currently in
    * StageStats::GetGrade. */
-  int iWeight = 0;
+  int weight = 0;
   switch (tns) {
     DEFAULT_FAIL(tns);
     case TNS_None:
-      iWeight = 0;
+      weight = 0;
       break;
     case TNS_AvoidMine:
-      iWeight = 0;
+      weight = 0;
       break;
     case TNS_HitMine:
-      iWeight = g_iGradeWeight.GetValue(SE_HitMine);
+      weight = g_iGradeWeight.GetValue(SE_HitMine);
       break;
     case TNS_Miss:
-      iWeight = g_iGradeWeight.GetValue(SE_Miss);
+      weight = g_iGradeWeight.GetValue(SE_Miss);
       break;
     case TNS_W5:
-      iWeight = g_iGradeWeight.GetValue(SE_W5);
+      weight = g_iGradeWeight.GetValue(SE_W5);
       break;
     case TNS_W4:
-      iWeight = g_iGradeWeight.GetValue(SE_W4);
+      weight = g_iGradeWeight.GetValue(SE_W4);
       break;
     case TNS_W3:
-      iWeight = g_iGradeWeight.GetValue(SE_W3);
+      weight = g_iGradeWeight.GetValue(SE_W3);
       break;
     case TNS_W2:
-      iWeight = g_iGradeWeight.GetValue(SE_W2);
+      weight = g_iGradeWeight.GetValue(SE_W2);
       break;
     case TNS_W1:
-      iWeight = g_iGradeWeight.GetValue(SE_W1);
+      weight = g_iGradeWeight.GetValue(SE_W1);
       break;
     case TNS_CheckpointHit:
-      iWeight = g_iGradeWeight.GetValue(SE_CheckpointHit);
+      weight = g_iGradeWeight.GetValue(SE_CheckpointHit);
       break;
     case TNS_CheckpointMiss:
-      iWeight = g_iGradeWeight.GetValue(SE_CheckpointMiss);
+      weight = g_iGradeWeight.GetValue(SE_CheckpointMiss);
       break;
   }
-  if (bBeginner && PREFSMAN->merciful_beginner_) {
-    iWeight = std::max(0, iWeight);
+  if (beginner && PREFSMAN->merciful_beginner_) {
+    weight = std::max(0, weight);
   }
-  return iWeight;
+  return weight;
 }
 
 int ScoreKeeperNormal::HoldNoteScoreToGradePoints(
-    HoldNoteScore hns, bool bBeginner) {
-  int iWeight = 0;
+    HoldNoteScore hns, bool beginner) {
+  int weight = 0;
   switch (hns) {
     DEFAULT_FAIL(hns);
     case HNS_None:
-      iWeight = 0;
+      weight = 0;
       break;
     case HNS_LetGo:
-      iWeight = g_iGradeWeight.GetValue(SE_LetGo);
+      weight = g_iGradeWeight.GetValue(SE_LetGo);
       break;
     case HNS_Held:
-      iWeight = g_iGradeWeight.GetValue(SE_Held);
+      weight = g_iGradeWeight.GetValue(SE_Held);
       break;
     case HNS_Missed:
-      iWeight = g_iGradeWeight.GetValue(SE_Missed);
+      weight = g_iGradeWeight.GetValue(SE_Missed);
       break;
   }
-  if (bBeginner && PREFSMAN->merciful_beginner_) {
-    iWeight = std::max(0, iWeight);
+  if (beginner && PREFSMAN->merciful_beginner_) {
+    weight = std::max(0, weight);
   }
-  return iWeight;
+  return weight;
 }
 
 /*

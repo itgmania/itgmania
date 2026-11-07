@@ -45,8 +45,8 @@ class LuaManager {
   // There's no harm in registering when already registered.
   void RegisterTypes();
 
-  void SetGlobal(const std::string& sName, int val);
-  void UnsetGlobal(const std::string& sName);
+  void SetGlobal(const std::string& name, int val);
+  void UnsetGlobal(const std::string& name);
 
  private:
   lua_State* lua_main_;
@@ -63,8 +63,8 @@ namespace LuaHelpers {
  * chunk will be on the stack. On error, the error is stored in sError
  * and the stack is unchanged. */
 bool LoadScript(
-    Lua* L, const std::string& sScript, const std::string& sName,
-    std::string& sError);
+    Lua* L, const std::string& script, const std::string& name,
+    std::string& error);
 
 /* Report the error three ways:  Broadcast message, Warn, and Dialog. */
 /* If UseAbort is true, reports the error through Dialog::AbortRetryIgnore
@@ -72,11 +72,11 @@ bool LoadScript(
 /* If UseAbort is false, reports the error through Dialog::OK and returns
          Dialog::ok. */
 Dialog::Result ReportScriptError(
-    const std::string& Error, std::string ErrorType = "LUA_ERROR",
-    bool UseAbort = false);
+    const std::string& error, std::string error_type = "LUA_ERROR",
+    bool use_abort = false);
 // Just the broadcast message part, for things that need to do the rest
 // differently.
-void ScriptErrorMessage(const std::string& Error);
+void ScriptErrorMessage(const std::string& error);
 // For convenience when replacing uses of LOG->Warn.
 void ReportScriptErrorFmt(const char* fmt, ...);
 
@@ -89,78 +89,78 @@ void ReportScriptErrorFmt(const char* fmt, ...);
  * SCREENMAN->SystemMessage.
  */
 bool RunScriptOnStack(
-    Lua* L, std::string& Error, int Args = 0, int ReturnValues = 0,
-    bool ReportError = false);
+    Lua* L, std::string& error, int args = 0, int return_values = 0,
+    bool report_error = false);
 
 /* LoadScript the given script, and RunScriptOnStack it.
  * iArgs arguments are at the top of the stack. */
 bool RunScript(
-    Lua* L, const std::string& Script, const std::string& Name,
-    std::string& Error, int Args = 0, int ReturnValues = 0,
-    bool ReportError = false);
+    Lua* L, const std::string& script, const std::string& name,
+    std::string& error, int args = 0, int return_values = 0,
+    bool report_error = false);
 
 /* Run the given expression, returning a single value, and leave the return
  * value on the stack.  On error, push nil. */
 bool RunExpression(
-    Lua* L, const std::string& sExpression, const std::string& sName = "");
+    Lua* L, const std::string& expression, const std::string& name = "");
 
-bool RunScriptFile(const std::string& sFile);
+bool RunScriptFile(const std::string& file);
 
 /* Create a Lua array (a table with indices starting at 1) of the given vector,
  * and push it on the stack. */
-void CreateTableFromArrayB(Lua* L, const std::vector<bool>& aIn);
+void CreateTableFromArrayB(Lua* L, const std::vector<bool>& in);
 
 // Create a Lua table with contents set from this XNode, then push it on the
 // stack.
-void CreateTableFromXNode(Lua* L, const XNode* pNode);
+void CreateTableFromXNode(Lua* L, const XNode* node);
 
 /* Recursively copy elements from the table at stack element -2 into the
  * table at stack -1. Pop both elements from the stack. */
 void DeepCopy(lua_State* L);
 
 // Read the table at the top of the stack back into a vector.
-void ReadArrayFromTableB(Lua* L, std::vector<bool>& aOut);
+void ReadArrayFromTableB(Lua* L, std::vector<bool>& out);
 
 void ParseCommandList(
-    lua_State* L, const std::string& sCommands, const std::string& sName,
-    bool bLegacy);
+    lua_State* L, const std::string& commands, const std::string& name,
+    bool legacy);
 
 XNode* GetLuaInformation();
 
 /* Pops the last iArgs arguments from the stack, and return a function that
  * returns those values. */
-void PushValueFunc(lua_State* L, int iArgs);
+void PushValueFunc(lua_State* L, int args);
 
 template <class T>
-void Push(lua_State* L, const T& Object);
+void Push(lua_State* L, const T& object);
 
 template <class T>
-bool FromStack(lua_State* L, T& Object, int iOffset);
+bool FromStack(lua_State* L, T& object, int offset);
 
 template <class T>
 bool Pop(lua_State* L, T& val) {
-  bool bRet = LuaHelpers::FromStack(L, val, -1);
+  bool ret = LuaHelpers::FromStack(L, val, -1);
   lua_pop(L, 1);
-  return bRet;
+  return ret;
 }
 
 template <class T>
-void ReadArrayFromTable(std::vector<T>& aOut, lua_State* L) {
+void ReadArrayFromTable(std::vector<T>& out, lua_State* L) {
   luaL_checktype(L, -1, LUA_TTABLE);
 
   int i = 0;
   while (lua_rawgeti(L, -1, ++i), !lua_isnil(L, -1)) {
     T value = T();
     LuaHelpers::Pop(L, value);
-    aOut.push_back(value);
+    out.push_back(value);
   }
   lua_pop(L, 1);  // pop nil
 }
 template <class T>
-void CreateTableFromArray(const std::vector<T>& aIn, lua_State* L) {
+void CreateTableFromArray(const std::vector<T>& in, lua_State* L) {
   lua_newtable(L);
-  for (unsigned i = 0; i < aIn.size(); ++i) {
-    LuaHelpers::Push(L, aIn[i]);
+  for (unsigned i = 0; i < in.size(); ++i) {
+    LuaHelpers::Push(L, in[i]);
     lua_rawseti(L, -2, i + 1);
   }
 }
@@ -176,8 +176,8 @@ inline int AbsIndex(Lua* L, int i) {
 
 class LuaThreadVariable {
  public:
-  LuaThreadVariable(const std::string& sName, const std::string& sValue);
-  LuaThreadVariable(const std::string& sName, const LuaReference& Value);
+  LuaThreadVariable(const std::string& name, const std::string& value);
+  LuaThreadVariable(const std::string& name, const LuaReference& value);
   LuaThreadVariable(lua_State* L);  // name and value are on stack
   ~LuaThreadVariable();
   static void GetThreadVariable(lua_State* L);
@@ -186,8 +186,8 @@ class LuaThreadVariable {
   LuaThreadVariable(const LuaThreadVariable& cpy);  // not defined
 
   void SetFromStack(lua_State* L);
-  int AdjustCount(lua_State* L, int iAdd);
-  static bool PushThreadTable(lua_State* L, bool bCreate);
+  int AdjustCount(lua_State* L, int add);
+  static bool PushThreadTable(lua_State* L, bool create);
   static std::string GetCurrentThreadIDString();
 
   LuaReference* name_;
@@ -235,22 +235,22 @@ struct RegisterLuaFunction {
 #define REGISTER_WITH_LUA_FUNCTION(Fn) \
   static RegisterLuaFunction register##Fn(Fn);
 
-inline bool MyLua_checkboolean(lua_State* L, int numArg) {
-  luaL_checktype(L, numArg, LUA_TBOOLEAN);
-  return !!lua_toboolean(L, numArg);
+inline bool MyLua_checkboolean(lua_State* L, int num_arg) {
+  luaL_checktype(L, num_arg, LUA_TBOOLEAN);
+  return !!lua_toboolean(L, num_arg);
 }
 
 /* BIArg is like BArg, except 1 is accepted as a true value and (as a special
  * case) 0 is accepted as a false value.  This is to help transitions where
  * "cmd,0" is used to mean "cmd,false". */
-inline bool MyLua_checkintboolean(lua_State* L, int iArg) {
-  luaL_checkany(L, iArg);
-  int iType = lua_type(L, iArg);
-  if (iType == LUA_TNUMBER) {
-    return lua_tointeger(L, iArg) != 0;
+inline bool MyLua_checkintboolean(lua_State* L, int arg) {
+  luaL_checkany(L, arg);
+  int type = lua_type(L, arg);
+  if (type == LUA_TNUMBER) {
+    return lua_tointeger(L, arg) != 0;
   }
 
-  return MyLua_checkboolean(L, iArg);
+  return MyLua_checkboolean(L, arg);
 }
 
 // Checks the table at index to verify that it contains strings.
@@ -259,8 +259,8 @@ inline bool TableContainsOnlyStrings(lua_State* L, int index) {
   lua_pushnil(L);
   while (lua_next(L, index) != 0) {
     // `key' is at index -2 and `value' at index -1
-    const char* pValue = lua_tostring(L, -1);
-    if (pValue == nullptr) {
+    const char* value = lua_tostring(L, -1);
+    if (value == nullptr) {
       // Was going to print an error to the log with the key that failed,
       // but didn't want to pull in RageLog. -Kyz
       passed = false;

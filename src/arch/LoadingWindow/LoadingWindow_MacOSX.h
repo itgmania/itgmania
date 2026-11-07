@@ -10,9 +10,9 @@ class LoadingWindow_MacOSX : public LoadingWindow {
   LoadingWindow_MacOSX();
   ~LoadingWindow_MacOSX();
   void SetText(std::string str);
-  void SetSplash(const RageSurface* pSplash);
+  void SetSplash(const RageSurface* splash);
   void SetProgress(const int progress);
-  void SetTotalWork(const int totalWork);
+  void SetTotalWork(const int total_work);
   void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_MACOSX

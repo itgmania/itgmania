@@ -84,17 +84,17 @@ void ArchHooks_MacOSX::Init() {
   CFStringRef key = CFSTR("ApplicationBundlePath");
 
   CFBundleRef bundle = CFBundleGetMainBundle();
-  CFStringRef appID = CFBundleGetIdentifier(bundle);
-  if (appID == nil) {
+  CFStringRef app_id = CFBundleGetIdentifier(bundle);
+  if (app_id == nil) {
     // We were probably launched through a symlink. Don't bother hunting down the real path.
     return;
   }
   CFStringRef version =
       CFStringRef(CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey));
-  CFPropertyListRef old = CFPreferencesCopyAppValue(key, appID);
+  CFPropertyListRef old = CFPreferencesCopyAppValue(key, app_id);
   CFURLRef path = CFBundleCopyBundleURL(bundle);
   CFPropertyListRef value = CFURLCopyFileSystemPath(path, kCFURLPOSIXPathStyle);
-  CFMutableDictionaryRef newDict = nil;
+  CFMutableDictionaryRef new_dict = nil;
 
   if (old && CFGetTypeID(old) != CFDictionaryGetTypeID()) {
     CFRelease(old);
@@ -102,27 +102,27 @@ void ArchHooks_MacOSX::Init() {
   }
 
   if (!old) {
-    newDict = CFDictionaryCreateMutable(
+    new_dict = CFDictionaryCreateMutable(
         kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    CFDictionaryAddValue(newDict, version, value);
+    CFDictionaryAddValue(new_dict, version, value);
   } else {
-    CFTypeRef oldValue;
+    CFTypeRef old_value;
     CFDictionaryRef dict = CFDictionaryRef(old);
 
-    if (!CFDictionaryGetValueIfPresent(dict, version, &oldValue) || !CFEqual(oldValue, value)) {
+    if (!CFDictionaryGetValueIfPresent(dict, version, &old_value) || !CFEqual(old_value, value)) {
       // The value is either not present or it is but it is different
-      newDict = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, dict);
-      CFDictionarySetValue(newDict, version, value);
+      new_dict = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, dict);
+      CFDictionarySetValue(new_dict, version, value);
     }
     CFRelease(old);
   }
 
-  if (newDict) {
-    CFPreferencesSetAppValue(key, newDict, appID);
-    if (!CFPreferencesAppSynchronize(appID)) {
+  if (new_dict) {
+    CFPreferencesSetAppValue(key, new_dict, app_id);
+    if (!CFPreferencesAppSynchronize(app_id)) {
       LOG->Warn("Failed to record the run path.");
     }
-    CFRelease(newDict);
+    CFRelease(new_dict);
   }
   CFRelease(value);
   CFRelease(path);
@@ -140,73 +140,73 @@ std::string ArchHooks_MacOSX::GetArchName() const {
 
 void ArchHooks_MacOSX::DumpDebugInfo() {
   // Get system version (like 10.x.x)
-  std::string SystemVersion;
+  std::string system_version;
   {
     // http://stackoverflow.com/a/891336
     NSDictionary* version = [NSDictionary
         dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"];
-    NSString* productVersion = version[@"ProductVersion"];
-    SystemVersion = ssprintf(
-        "macOS %s", [productVersion cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+    NSString* product_version = version[@"ProductVersion"];
+    system_version = ssprintf(
+        "macOS %s", [product_version cStringUsingEncoding:[NSString defaultCStringEncoding]]);
   }
 
   size_t size;
 #define GET_PARAM(name, var) (size = sizeof(var), sysctlbyname(name, &var, &size, nil, 0))
   // Get memory
-  float fRam;
-  char ramPower;
+  float f_ram;
+  char ram_power;
   {
-    uint64_t iRam = 0;
-    GET_PARAM("hw.memsize", iRam);
+    uint64_t i_ram = 0;
+    GET_PARAM("hw.memsize", i_ram);
 
-    fRam = float(double(iRam) / 1073741824.0);
-    ramPower = 'G';
+    f_ram = float(double(i_ram) / 1073741824.0);
+    ram_power = 'G';
   }
 
   // Get processor information
-  int iMaxCPUs = 0;
-  int iCPUs = 0;
-  float fFreq;
-  char freqPower;
-  std::string sModel("Unknown");
+  int max_cpus = 0;
+  int cpus = 0;
+  float f_freq;
+  char freq_power;
+  std::string s_model("Unknown");
   do {
-    char szModel[128];
-    uint64_t iFreq;
+    char sz_model[128];
+    uint64_t i_freq;
 
-    GET_PARAM("hw.logicalcpu_max", iMaxCPUs);
-    GET_PARAM("hw.logicalcpu", iCPUs);
-    GET_PARAM("hw.cpufrequency", iFreq);
+    GET_PARAM("hw.logicalcpu_max", max_cpus);
+    GET_PARAM("hw.logicalcpu", cpus);
+    GET_PARAM("hw.cpufrequency", i_freq);
 
-    fFreq = float(double(iFreq) / 1000000000.0);
-    freqPower = 'G';
+    f_freq = float(double(i_freq) / 1000000000.0);
+    freq_power = 'G';
 
-    if (GET_PARAM("hw.model", szModel) != 0) {
+    if (GET_PARAM("hw.model", sz_model) != 0) {
       break;
     }
 
-    sModel = szModel;
+    s_model = sz_model;
 
     NSURL* url =
         [NSURL fileURLWithPath:@"//System/Library/PrivateFrameworks/ServerInformation.framework/"
                                @"Versions/A/Resources/en.lproj/SIMachineAttributes.plist"];
-    NSDictionary* machineAttributes = [NSDictionary dictionaryWithContentsOfURL:url];
-    if (machineAttributes == nil) {
+    NSDictionary* machine_attributes = [NSDictionary dictionaryWithContentsOfURL:url];
+    if (machine_attributes == nil) {
       break;
     }
 
-    NSString* key = [NSString stringWithUTF8String:szModel];
-    NSString* val = machineAttributes[key][@"_LOCALIZABLE_"][@"marketingModel"];
+    NSString* key = [NSString stringWithUTF8String:sz_model];
+    NSString* val = machine_attributes[key][@"_LOCALIZABLE_"][@"marketingModel"];
     if (val != nil) {
-      sModel = [val UTF8String];
+      s_model = [val UTF8String];
     }
   } while (false);
 #undef GET_PARAM
 
   // Send all of the information to the log
-  LOG->Info("Model: %s (%d/%d)", sModel.c_str(), iCPUs, iMaxCPUs);
-  LOG->Info("Clock speed %.2f %cHz", fFreq, freqPower);
-  LOG->Info("%s", SystemVersion.c_str());
-  LOG->Info("Memory: %.2f %cB", fRam, ramPower);
+  LOG->Info("Model: %s (%d/%d)", s_model.c_str(), cpus, max_cpus);
+  LOG->Info("Clock speed %.2f %cHz", f_freq, freq_power);
+  LOG->Info("%s", system_version.c_str());
+  LOG->Info("Memory: %.2f %cB", f_ram, ram_power);
 }
 
 std::string ArchHooks::GetPreferredLanguage() {
@@ -249,18 +249,18 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   static double factor = 0.0;
 
   if (unlikely(factor == 0.0)) {
-    mach_timebase_info_data_t timeBase;
+    mach_timebase_info_data_t time_base;
 
-    mach_timebase_info(&timeBase);
-    factor = timeBase.numer / (1000.0 * timeBase.denom);
+    mach_timebase_info(&time_base);
+    factor = time_base.numer / (1000.0 * time_base.denom);
   }
   return int64_t(mach_absolute_time() * factor);
 }
 
 #include "RageFileManager.h"
 
-void MountDirectories(const std::string& baseDir) {
-  const std::vector<std::string> macDirectoryStructureITGm = {
+void MountDirectories(const std::string& base_dir) {
+  const std::vector<std::string> kMacDirectoryStructureItgm = {
       "/Announcers",
       "/BGAnimations",
       "/BackgroundEffects",
@@ -279,64 +279,66 @@ void MountDirectories(const std::string& baseDir) {
       "/RandomMovies",
       "/Themes"};
 
-  for (const std::string& dir : macDirectoryStructureITGm) {
-    FILEMAN->Mount("dir", baseDir + dir, dir);
+  for (const std::string& dir : kMacDirectoryStructureItgm) {
+    FILEMAN->Mount("dir", base_dir + dir, dir);
   }
 }
 
-void ArchHooks::MountInitialFilesystems(const std::string& sDirOfExecutable) {
-  FILEMAN->Mount("dirro", sDirOfExecutable, "/");
+void ArchHooks::MountInitialFilesystems(const std::string& dir_of_executable) {
+  FILEMAN->Mount("dirro", dir_of_executable, "/");
 
   bool portable = DoesFileExist("/Portable.ini");
 
-  NSString* resourcePath = [[NSBundle mainBundle] resourcePath];
-  if (resourcePath) {
-    const char* resourcePathUTF8String = [resourcePath UTF8String];
-    FILEMAN->Mount("dirro", ssprintf("%s/Announcers", resourcePathUTF8String), "/Announcers");
-    FILEMAN->Mount("dirro", ssprintf("%s/BGAnimations", resourcePathUTF8String), "/BGAnimations");
+  NSString* resource_path = [[NSBundle mainBundle] resourcePath];
+  if (resource_path) {
+    const char* resource_path_utf8_string = [resource_path UTF8String];
+    FILEMAN->Mount("dirro", ssprintf("%s/Announcers", resource_path_utf8_string), "/Announcers");
     FILEMAN->Mount(
-        "dirro", ssprintf("%s/BackgroundEffects", resourcePathUTF8String), "/BackgroundEffects");
+        "dirro", ssprintf("%s/BGAnimations", resource_path_utf8_string), "/BGAnimations");
     FILEMAN->Mount(
-        "dirro", ssprintf("%s/BackgroundTransitions", resourcePathUTF8String),
+        "dirro", ssprintf("%s/BackgroundEffects", resource_path_utf8_string), "/BackgroundEffects");
+    FILEMAN->Mount(
+        "dirro", ssprintf("%s/BackgroundTransitions", resource_path_utf8_string),
         "/BackgroundTransitions");
-    FILEMAN->Mount("dirro", ssprintf("%s/CDTitles", resourcePathUTF8String), "/CDTitles");
-    FILEMAN->Mount("dirro", ssprintf("%s/Characters", resourcePathUTF8String), "/Characters");
-    FILEMAN->Mount("dirro", ssprintf("%s/Courses", resourcePathUTF8String), "/Courses");
-    FILEMAN->Mount("dirro", ssprintf("%s/NoteSkins", resourcePathUTF8String), "/NoteSkins");
-    FILEMAN->Mount("dirro", ssprintf("%s/Packages", resourcePathUTF8String), "/Packages");
-    FILEMAN->Mount("dirro", ssprintf("%s/Songs", resourcePathUTF8String), "/Songs");
-    FILEMAN->Mount("dirro", ssprintf("%s/RandomMovies", resourcePathUTF8String), "/RandomMovies");
-    FILEMAN->Mount("dirro", ssprintf("%s/Themes", resourcePathUTF8String), "/Themes");
-    FILEMAN->Mount("dirro", ssprintf("%s/Data", resourcePathUTF8String), "/Data");
+    FILEMAN->Mount("dirro", ssprintf("%s/CDTitles", resource_path_utf8_string), "/CDTitles");
+    FILEMAN->Mount("dirro", ssprintf("%s/Characters", resource_path_utf8_string), "/Characters");
+    FILEMAN->Mount("dirro", ssprintf("%s/Courses", resource_path_utf8_string), "/Courses");
+    FILEMAN->Mount("dirro", ssprintf("%s/NoteSkins", resource_path_utf8_string), "/NoteSkins");
+    FILEMAN->Mount("dirro", ssprintf("%s/Packages", resource_path_utf8_string), "/Packages");
+    FILEMAN->Mount("dirro", ssprintf("%s/Songs", resource_path_utf8_string), "/Songs");
+    FILEMAN->Mount(
+        "dirro", ssprintf("%s/RandomMovies", resource_path_utf8_string), "/RandomMovies");
+    FILEMAN->Mount("dirro", ssprintf("%s/Themes", resource_path_utf8_string), "/Themes");
+    FILEMAN->Mount("dirro", ssprintf("%s/Data", resource_path_utf8_string), "/Data");
   }
 
-  CFURLRef dataUrl =
+  CFURLRef data_url =
       CFBundleCopyResourceURL(CFBundleGetMainBundle(), CFSTR("StepMania"), CFSTR("smzip"), nil);
-  if (dataUrl) {
+  if (data_url) {
     char dir[PATH_MAX];
 
-    CFStringRef dataPath = CFURLCopyFileSystemPath(dataUrl, kCFURLPOSIXPathStyle);
-    CFStringGetCString(dataPath, dir, PATH_MAX, kCFStringEncodingUTF8);
+    CFStringRef data_path = CFURLCopyFileSystemPath(data_url, kCFURLPOSIXPathStyle);
+    CFStringGetCString(data_path, dir, PATH_MAX, kCFStringEncodingUTF8);
 
-    if (strncmp(sDirOfExecutable.c_str(), dir, sDirOfExecutable.length()) == 0) {
-      FILEMAN->Mount("zip", dir + sDirOfExecutable.length(), "/");
+    if (strncmp(dir_of_executable.c_str(), dir, dir_of_executable.length()) == 0) {
+      FILEMAN->Mount("zip", dir + dir_of_executable.length(), "/");
     }
-    CFRelease(dataPath);
-    CFRelease(dataUrl);
+    CFRelease(data_path);
+    CFRelease(data_url);
   }
 
   if (portable) {
-    MountDirectories(sDirOfExecutable);
+    MountDirectories(dir_of_executable);
   }
 }
 
 static std::string PathForDirectory(NSSearchPathDirectory directory) {
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSURL* url = [fileManager URLForDirectory:directory
-                                   inDomain:NSUserDomainMask
-                          appropriateForURL:nil
-                                     create:NO
-                                      error:nil];
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  NSURL* url = [file_manager URLForDirectory:directory
+                                    inDomain:NSUserDomainMask
+                           appropriateForURL:nil
+                                      create:NO
+                                       error:nil];
   if (url == nil) {
     FAIL_M("URLForDirectory() failed.");
   }
@@ -344,119 +346,122 @@ static std::string PathForDirectory(NSSearchPathDirectory directory) {
   return [url fileSystemRepresentation];
 }
 
-static void MigrateLegacyDirectory(const std::string& oldPath, const std::string& newPath) {
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSString* source = [NSString stringWithUTF8String:oldPath.c_str()];
-  NSString* destination = [NSString stringWithUTF8String:newPath.c_str()];
+static void MigrateLegacyDirectory(const std::string& old_path, const std::string& new_path) {
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  NSString* source = [NSString stringWithUTF8String:old_path.c_str()];
+  NSString* destination = [NSString stringWithUTF8String:new_path.c_str()];
 
   if (source == nil || destination == nil) {
     return;
   }
 
-  BOOL sourceIsDirectory = NO;
-  if (![fileManager fileExistsAtPath:source isDirectory:&sourceIsDirectory] || !sourceIsDirectory) {
+  BOOL source_is_directory = NO;
+  if (![file_manager fileExistsAtPath:source isDirectory:&source_is_directory] ||
+      !source_is_directory) {
     return;
   }
 
-  NSString* destinationParent = [destination stringByDeletingLastPathComponent];
+  NSString* destination_parent = [destination stringByDeletingLastPathComponent];
   NSError* error = nil;
-  if (![fileManager createDirectoryAtPath:destinationParent
-              withIntermediateDirectories:YES
-                               attributes:nil
-                                    error:&error]) {
+  if (![file_manager createDirectoryAtPath:destination_parent
+               withIntermediateDirectories:YES
+                                attributes:nil
+                                     error:&error]) {
     return;
   }
 
-  BOOL destinationExists = [fileManager fileExistsAtPath:destination];
-  BOOL destinationIsDirectory = NO;
-  if (destinationExists && ![fileManager fileExistsAtPath:destination
-                                              isDirectory:&destinationIsDirectory]) {
+  BOOL destination_exists = [file_manager fileExistsAtPath:destination];
+  BOOL destination_is_directory = NO;
+  if (destination_exists && ![file_manager fileExistsAtPath:destination
+                                                isDirectory:&destination_is_directory]) {
     return;
   }
 
   // Fast path: if destination does not exist, a full move preserves directory contents.
-  if (!destinationExists) {
+  if (!destination_exists) {
     error = nil;
-    if ([fileManager moveItemAtPath:source toPath:destination error:&error]) {
+    if ([file_manager moveItemAtPath:source toPath:destination error:&error]) {
       return;
     }
     return;
   }
 
-  if (!destinationIsDirectory) {
+  if (!destination_is_directory) {
     return;
   }
 
   // Merge source into destination so migration still works when startup created folders already.
-  NSArray<NSString*>* sourceEntries = [fileManager contentsOfDirectoryAtPath:source error:&error];
-  if (sourceEntries == nil) {
+  NSArray<NSString*>* source_entries = [file_manager contentsOfDirectoryAtPath:source error:&error];
+  if (source_entries == nil) {
     return;
   }
 
   // Iterate through the source directory, moving each file/folder individually.
   // If the destination entry already exists, recurse if it's a directory, otherwise skip (to
   // prevent overwriting).
-  for (NSString* entry in sourceEntries) {
-    NSString* sourceEntryPath = [source stringByAppendingPathComponent:entry];
-    NSString* destinationEntryPath = [destination stringByAppendingPathComponent:entry];
+  for (NSString* entry in source_entries) {
+    NSString* source_entry_path = [source stringByAppendingPathComponent:entry];
+    NSString* destination_entry_path = [destination stringByAppendingPathComponent:entry];
 
-    BOOL destinationEntryExists = [fileManager fileExistsAtPath:destinationEntryPath];
-    if (!destinationEntryExists) {
-      [fileManager moveItemAtPath:sourceEntryPath toPath:destinationEntryPath error:nil];
+    BOOL destination_entry_exists = [file_manager fileExistsAtPath:destination_entry_path];
+    if (!destination_entry_exists) {
+      [file_manager moveItemAtPath:source_entry_path toPath:destination_entry_path error:nil];
       continue;
     }
 
-    BOOL sourceEntryIsDirectory = NO;
-    BOOL destinationEntryIsDirectory = NO;
-    BOOL sourceEntryExists = [fileManager fileExistsAtPath:sourceEntryPath
-                                               isDirectory:&sourceEntryIsDirectory];
-    [fileManager fileExistsAtPath:destinationEntryPath isDirectory:&destinationEntryIsDirectory];
+    BOOL source_entry_is_directory = NO;
+    BOOL destination_entry_is_directory = NO;
+    BOOL source_entry_exists = [file_manager fileExistsAtPath:source_entry_path
+                                                  isDirectory:&source_entry_is_directory];
+    [file_manager fileExistsAtPath:destination_entry_path
+                       isDirectory:&destination_entry_is_directory];
 
-    if (sourceEntryExists && sourceEntryIsDirectory && destinationEntryIsDirectory) {
-      std::string sourceChild = [sourceEntryPath fileSystemRepresentation];
-      std::string destinationChild = [destinationEntryPath fileSystemRepresentation];
-      MigrateLegacyDirectory(sourceChild, destinationChild);
+    if (source_entry_exists && source_entry_is_directory && destination_entry_is_directory) {
+      std::string source_child = [source_entry_path fileSystemRepresentation];
+      std::string destination_child = [destination_entry_path fileSystemRepresentation];
+      MigrateLegacyDirectory(source_child, destination_child);
     }
   }
 
   // Clean up if nothing is left after merge.
-  [fileManager removeItemAtPath:source error:nil];
+  [file_manager removeItemAtPath:source error:nil];
 }
 
-static void RemoveLegacyDirectory(const std::string& oldPath) {
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSString* source = [NSString stringWithUTF8String:oldPath.c_str()];
+static void RemoveLegacyDirectory(const std::string& old_path) {
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  NSString* source = [NSString stringWithUTF8String:old_path.c_str()];
   NSError* error = nil;
 
   if (source == nil) {
     return;
   }
 
-  BOOL sourceIsDirectory = NO;
-  if (![fileManager fileExistsAtPath:source isDirectory:&sourceIsDirectory] || !sourceIsDirectory) {
+  BOOL source_is_directory = NO;
+  if (![file_manager fileExistsAtPath:source isDirectory:&source_is_directory] ||
+      !source_is_directory) {
     return;
   }
 
-  [fileManager removeItemAtPath:source error:&error];
+  [file_manager removeItemAtPath:source error:&error];
 }
 
-void ArchHooks::MountUserFilesystems(const std::string& sDirOfExecutable) {
-  std::string libraryDir = PathForDirectory(NSLibraryDirectory);
-  std::string cachesDir = PathForDirectory(NSCachesDirectory);
-  std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
-  std::string appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
+void ArchHooks::MountUserFilesystems(const std::string& dir_of_executable) {
+  std::string library_dir = PathForDirectory(NSLibraryDirectory);
+  std::string caches_dir = PathForDirectory(NSCachesDirectory);
+  std::string app_support_dir = PathForDirectory(NSApplicationSupportDirectory);
+  std::string app_support_path = ssprintf("%s/" PRODUCT_ID, app_support_dir.c_str());
 
   // Do a best effort to migrate the save folder and screenshots.
-  MigrateLegacyDirectory(libraryDir + "/Preferences/" PRODUCT_ID, appSupportPath + "/Save");
+  MigrateLegacyDirectory(library_dir + "/Preferences/" PRODUCT_ID, app_support_path + "/Save");
   MigrateLegacyDirectory(
-      cachesDir + "/" PRODUCT_ID " Screenshots", appSupportPath + "/Screenshots");
+      caches_dir + "/" PRODUCT_ID " Screenshots", app_support_path + "/Screenshots");
   // It's fine to just delete the old Cache directory, and just let the game regenerate it on boot.
-  RemoveLegacyDirectory(cachesDir + "/" PRODUCT_ID);
+  RemoveLegacyDirectory(caches_dir + "/" PRODUCT_ID);
   // It's fine to just delete the old Logs directory, as the contents of the data will get
   // regenerated on boot. In that case, we can just avoid the complexity of migrating directories.
-  RemoveLegacyDirectory(libraryDir + "/Logs/" PRODUCT_ID);
+  RemoveLegacyDirectory(library_dir + "/Logs/" PRODUCT_ID);
 
-  MountDirectories(appSupportPath);
+  MountDirectories(app_support_path);
 }
 
 static inline int GetIntValue(CFTypeRef r) {

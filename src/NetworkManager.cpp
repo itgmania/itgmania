@@ -89,10 +89,10 @@ StringToX(WebSocketMessageType);
 LuaXType(WebSocketMessageType);
 
 HttpRequestPool::HttpRequestPool(
-    int maxThreads, bool ordered, const ix::SocketTLSOptions& tlsOptions)
-    : max_threads_(std::max(maxThreads, 1)),
+    int max_threads, bool ordered, const ix::SocketTLSOptions& tls_options)
+    : max_threads_(std::max(max_threads, 1)),
       ordered_(ordered),
-      tls_options_(tlsOptions) {}
+      tls_options_(tls_options) {}
 
 HttpRequestPool::~HttpRequestPool() { this->Stop(); }
 
@@ -196,7 +196,7 @@ void HttpRequestPool::Finish(
   // Hand on every result whose turn has come. Whichever thread finishes the
   // request that was holding them up does it, under resultMutex so that no
   // two threads ever hand results on at once and the order holds.
-  std::lock_guard<std::mutex> handingOn(this->result_mutex_);
+  std::lock_guard<std::mutex> handing_on(this->result_mutex_);
   while (true) {
     std::function<void()> next;
     {
@@ -272,13 +272,13 @@ void NetworkManager::CloseAllWebSockets() {
   }
 
   // Stop all active websocket connections without aggressively clearing.
-  std::vector<WebSocketHandlePtr> webSocketHandlesCopy;
+  std::vector<WebSocketHandlePtr> web_socket_handles_copy;
   {
     std::lock_guard<std::mutex> lock(this->web_socket_handles_mutex_);
-    webSocketHandlesCopy = this->web_socket_handles_;
+    web_socket_handles_copy = this->web_socket_handles_;
   }
 
-  for (auto& handle : webSocketHandlesCopy) {
+  for (auto& handle : web_socket_handles_copy) {
     handle->web_socket_.disableAutomaticReconnection();
     handle->web_socket_.stop();
   }
@@ -338,9 +338,9 @@ void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
 
 void NetworkManager::Update() {
   RageTimer timer;
-  int tasksProcessed = 0;
+  int tasks_processed = 0;
 
-  while (tasksProcessed < kMaxMainThreadTasksPerUpdate) {
+  while (tasks_processed < kMaxMainThreadTasksPerUpdate) {
     std::function<void()> task;
     {
       std::lock_guard<std::mutex> lock(this->main_thread_task_mutex_);
@@ -353,7 +353,7 @@ void NetworkManager::Update() {
     }
 
     task();
-    ++tasksProcessed;
+    ++tasks_processed;
 
     if (timer.Ago() >= kMaxMainThreadTaskSecondsPerUpdate) {
       break;
@@ -385,25 +385,25 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
 
   MakeLower(host);
 
-  std::string allowedHostsStr = this->http_allow_hosts_.Get();
-  MakeLower(allowedHostsStr);
+  std::string allowed_hosts_str = this->http_allow_hosts_.Get();
+  MakeLower(allowed_hosts_str);
 
-  std::vector<std::string> allowedHosts;
-  split(allowedHostsStr, ",", allowedHosts);
+  std::vector<std::string> allowed_hosts;
+  split(allowed_hosts_str, ",", allowed_hosts);
 
-  for (const auto& allowedHost : allowedHosts) {
+  for (const auto& allowed_host : allowed_hosts) {
     // subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain"
     // does
-    if (allowedHost.substr(0, 2) == "*." &&
-        host.length() >= allowedHost.length()) {
-      size_t pos = host.length() - allowedHost.length() + 1;
-      if (host.substr(pos) == allowedHost.substr(1)) {
+    if (allowed_host.substr(0, 2) == "*." &&
+        host.length() >= allowed_host.length()) {
+      size_t pos = host.length() - allowed_host.length() + 1;
+      if (host.substr(pos) == allowed_host.substr(1)) {
         return true;
       }
     }
 
     // literal match
-    if (host == allowedHost) {
+    if (host == allowed_host) {
       return true;
     }
   }
@@ -412,8 +412,8 @@ bool NetworkManager::IsUrlAllowed(const std::string& url) {
 }
 
 HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
-  auto downloadFile = std::make_shared<RageFile>();
-  std::string downloadFilename;
+  auto download_file = std::make_shared<RageFile>();
+  std::string download_filename;
 
   ix::HttpRequestArgsPtr req =
       this->helper_client_.createRequest(args.url_, args.method_);
@@ -426,18 +426,18 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
   }
 
   if (!args.download_file_.empty()) {
-    downloadFilename = std::string("/Downloads/") + args.download_file_;
-    if (!downloadFile->Open(
-            downloadFilename, RageFile::WRITE | RageFile::STREAMED)) {
+    download_filename = std::string("/Downloads/") + args.download_file_;
+    if (!download_file->Open(
+            download_filename, RageFile::WRITE | RageFile::STREAMED)) {
       req->cancel = true;
     }
 
     // A weak reference: the request owns this callback, and a strong one would
     // keep the request and its file object alive forever.
-    std::weak_ptr<ix::HttpRequestArgs> weakReq = req;
-    req->onChunkCallback = [downloadFile, weakReq](const std::string& data) {
-      if (downloadFile->Write(data.c_str(), data.size()) < 0) {
-        if (auto request = weakReq.lock()) {
+    std::weak_ptr<ix::HttpRequestArgs> weak_req = req;
+    req->onChunkCallback = [download_file, weak_req](const std::string& data) {
+      if (download_file->Write(data.c_str(), data.size()) < 0) {
+        if (auto request = weak_req.lock()) {
           request->cancel = true;
         }
       }
@@ -465,8 +465,8 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
 
   pool.Enqueue(
       req,
-      [this, req, args, downloadFile,
-       downloadFilename](ix::HttpClient& client) -> std::function<void()> {
+      [this, req, args, download_file,
+       download_filename](ix::HttpClient& client) -> std::function<void()> {
         if (this->shutdown_workers_.load()) {
           return nullptr;
         }
@@ -475,16 +475,16 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
             client.request(req->url, req->verb, req->body, req);
 
         if (!args.download_file_.empty()) {
-          std::string error = downloadFile->GetError();
-          downloadFile->Close();
+          std::string error = download_file->GetError();
+          download_file->Close();
 
           if (!error.empty()) {
-            std::string errorMessage =
-                "could not write to " + downloadFile->GetPath() + ": " + error;
-            FILEMAN->Remove(downloadFilename);
-            return [args, errorMessage]() {
+            std::string error_message =
+                "could not write to " + download_file->GetPath() + ": " + error;
+            FILEMAN->Remove(download_filename);
+            return [args, error_message]() {
               if (args.on_file_error_) {
-                args.on_file_error_(errorMessage);
+                args.on_file_error_(error_message);
               }
             };
           }
@@ -514,9 +514,9 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
   }
 
   handle->web_socket_.setOnMessageCallback(
-      [onMessage = args.on_message_](const ix::WebSocketMessagePtr& msg) {
-        if (onMessage) {
-          onMessage(*msg);
+      [on_message = args.on_message_](const ix::WebSocketMessagePtr& msg) {
+        if (on_message) {
+          on_message(*msg);
         }
       });
 
@@ -648,14 +648,14 @@ int WebSocketHandle::Send(lua_State* L) {
 #include "LuaBinding.h"
 
 static void registerHttpRequestMetatable(lua_State* L) {
-  const luaL_Reg HttpRequest_meta[] = {
+  const luaL_Reg http_request_meta[] = {
       {"__gc", HttpRequestFuture::Collect},
       {"Cancel", HttpRequestFuture::Cancel},
       {NULL, NULL},
   };
 
   luaL_newmetatable(L, "HttpRequestFuture");
-  luaL_register(L, NULL, HttpRequest_meta);
+  luaL_register(L, NULL, http_request_meta);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
@@ -664,7 +664,7 @@ static void registerHttpRequestMetatable(lua_State* L) {
 REGISTER_WITH_LUA_FUNCTION(registerHttpRequestMetatable)
 
 static void registerWebSocketMetatable(lua_State* L) {
-  const luaL_Reg WebSocket_meta[] = {
+  const luaL_Reg web_socket_meta[] = {
       {"__gc", WebSocketHandle::Collect},
       {"Close", WebSocketHandle::Close},
       {"Send", WebSocketHandle::Send},
@@ -672,7 +672,7 @@ static void registerWebSocketMetatable(lua_State* L) {
   };
 
   luaL_newmetatable(L, "WebSocketHandle");
-  luaL_register(L, NULL, WebSocket_meta);
+  luaL_register(L, NULL, web_socket_meta);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
@@ -694,8 +694,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     luaL_checktype(L, 1, LUA_TTABLE);
 
     HttpRequestArgs args;
-    int onProgressRef = LUA_NOREF;
-    int onResponseRef = LUA_NOREF;
+    int on_progress_ref = LUA_NOREF;
+    int on_response_ref = LUA_NOREF;
 
     lua_getfield(L, 1, "url");
     if (lua_isnil(L, -1)) {
@@ -811,12 +811,12 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     if (!lua_isnil(L, -1)) {
       if (lua_isfunction(L, -1)) {
         lua_pushvalue(L, -1);
-        onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
+        on_progress_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        args.on_progress_ = [p, onProgressRef](int current, int total) {
-          p->EnqueueMainThreadTask([current, total, onProgressRef]() {
+        args.on_progress_ = [p, on_progress_ref](int current, int total) {
+          p->EnqueueMainThreadTask([current, total, on_progress_ref]() {
             Lua* L = LUA->Get();
-            handleProgress(L, current, total, onProgressRef);
+            handleProgress(L, current, total, on_progress_ref);
             LUA->Release(L);
           });
 
@@ -832,38 +832,39 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     if (!lua_isnil(L, -1)) {
       if (lua_isfunction(L, -1)) {
         lua_pushvalue(L, -1);
-        onResponseRef = luaL_ref(L, LUA_REGISTRYINDEX);
+        on_response_ref = luaL_ref(L, LUA_REGISTRYINDEX);
       } else {
-        luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+        luaL_unref(L, LUA_REGISTRYINDEX, on_progress_ref);
         luaL_error(L, "onResponse must be a function");
       }
     }
     lua_pop(L, 1);
 
-    args.on_file_error_ = [p, onProgressRef,
-                           onResponseRef](const std::string& errorMessage) {
-      p->EnqueueMainThreadTask([errorMessage, onProgressRef, onResponseRef]() {
-        Lua* L = LUA->Get();
+    args.on_file_error_ = [p, on_progress_ref,
+                           on_response_ref](const std::string& error_message) {
+      p->EnqueueMainThreadTask(
+          [error_message, on_progress_ref, on_response_ref]() {
+            Lua* L = LUA->Get();
 
-        luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+            luaL_unref(L, LUA_REGISTRYINDEX, on_progress_ref);
 
-        if (onResponseRef != LUA_NOREF) {
-          handleFileError(L, errorMessage, onResponseRef);
-        }
+            if (on_response_ref != LUA_NOREF) {
+              handleFileError(L, error_message, on_response_ref);
+            }
 
-        LUA->Release(L);
-      });
+            LUA->Release(L);
+          });
     };
 
-    args.on_response_ = [p, onProgressRef,
-                         onResponseRef](const ix::HttpResponsePtr& response) {
-      p->EnqueueMainThreadTask([response, onProgressRef, onResponseRef]() {
+    args.on_response_ = [p, on_progress_ref,
+                         on_response_ref](const ix::HttpResponsePtr& response) {
+      p->EnqueueMainThreadTask([response, on_progress_ref, on_response_ref]() {
         Lua* L = LUA->Get();
 
-        luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+        luaL_unref(L, LUA_REGISTRYINDEX, on_progress_ref);
 
-        if (onResponseRef != LUA_NOREF) {
-          handleHttpResponse(L, response, onResponseRef);
+        if (on_response_ref != LUA_NOREF) {
+          handleHttpResponse(L, response, on_response_ref);
         }
 
         LUA->Release(L);
@@ -880,9 +881,9 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       return 1;
     } else {
       LOG->Warn("blocked access to %s", args.url_.c_str());
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-      if (onResponseRef != LUA_NOREF) {
-        handleUrlForbidden(L, args.url_, onResponseRef);
+      luaL_unref(L, LUA_REGISTRYINDEX, on_progress_ref);
+      if (on_response_ref != LUA_NOREF) {
+        handleUrlForbidden(L, args.url_, on_response_ref);
       }
       return 0;
     }
@@ -892,7 +893,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     luaL_checktype(L, 1, LUA_TTABLE);
 
     WebSocketArgs args;
-    int onMessageRef = LUA_NOREF;
+    int on_message_ref = LUA_NOREF;
 
     lua_getfield(L, 1, "url");
     if (lua_isnil(L, -1)) {
@@ -975,41 +976,41 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     if (!lua_isnil(L, -1)) {
       if (lua_isfunction(L, -1)) {
         lua_pushvalue(L, -1);
-        onMessageRef = luaL_ref(L, LUA_REGISTRYINDEX);
+        on_message_ref = luaL_ref(L, LUA_REGISTRYINDEX);
       } else {
         luaL_error(L, "onMessage must be a function");
       }
     }
     lua_pop(L, 1);
 
-    args.on_message_ = [p, onMessageRef](const ix::WebSocketMessage& msg) {
+    args.on_message_ = [p, on_message_ref](const ix::WebSocketMessage& msg) {
       ix::WebSocketMessageType type = msg.type;
       std::string data = msg.str;
-      ix::WebSocketErrorInfo errorInfo = msg.errorInfo;
-      ix::WebSocketOpenInfo openInfo = msg.openInfo;
-      ix::WebSocketCloseInfo closeInfo = msg.closeInfo;
+      ix::WebSocketErrorInfo error_info = msg.errorInfo;
+      ix::WebSocketOpenInfo open_info = msg.openInfo;
+      ix::WebSocketCloseInfo close_info = msg.closeInfo;
       bool binary = msg.binary;
 
-      p->EnqueueMainThreadTask(
-          [type, data, errorInfo, openInfo, closeInfo, binary, onMessageRef]() {
-            Lua* L = LUA->Get();
-
-            if (onMessageRef != LUA_NOREF) {
-              handleMessage(
-                  L, type, data, errorInfo, openInfo, closeInfo, binary,
-                  onMessageRef);
-            }
-
-            LUA->Release(L);
-          });
-    };
-
-    args.on_close_ = [p, onMessageRef]() {
-      p->EnqueueMainThreadTask([onMessageRef]() {
+      p->EnqueueMainThreadTask([type, data, error_info, open_info, close_info,
+                                binary, on_message_ref]() {
         Lua* L = LUA->Get();
 
-        if (onMessageRef != LUA_NOREF) {
-          luaL_unref(L, LUA_REGISTRYINDEX, onMessageRef);
+        if (on_message_ref != LUA_NOREF) {
+          handleMessage(
+              L, type, data, error_info, open_info, close_info, binary,
+              on_message_ref);
+        }
+
+        LUA->Release(L);
+      });
+    };
+
+    args.on_close_ = [p, on_message_ref]() {
+      p->EnqueueMainThreadTask([on_message_ref]() {
+        Lua* L = LUA->Get();
+
+        if (on_message_ref != LUA_NOREF) {
+          luaL_unref(L, LUA_REGISTRYINDEX, on_message_ref);
         }
 
         LUA->Release(L);
@@ -1026,8 +1027,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       return 1;
     } else {
       LOG->Warn("blocked access to %s", args.url_.c_str());
-      if (onMessageRef != LUA_NOREF) {
-        handleWebSocketUrlForbidden(L, args.url_, onMessageRef);
+      if (on_message_ref != LUA_NOREF) {
+        handleWebSocketUrlForbidden(L, args.url_, on_message_ref);
       }
       return 0;
     }
@@ -1082,9 +1083,10 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
  private:
-  static void handleUrlForbidden(Lua* L, std::string& url, int onResponseRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
-    luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);
+  static void handleUrlForbidden(
+      Lua* L, std::string& url, int on_response_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_response_ref);
+    luaL_unref(L, LUA_REGISTRYINDEX, on_response_ref);
 
     lua_newtable(L);
 
@@ -1099,16 +1101,16 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleFileError(
-      Lua* L, const std::string& errorMessage, int onResponseRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
-    luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);
+      Lua* L, const std::string& error_message, int on_response_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_response_ref);
+    luaL_unref(L, LUA_REGISTRYINDEX, on_response_ref);
 
     lua_newtable(L);
 
     LuaHelpers::Push(L, HttpErrorCode_FileError);
     lua_setfield(L, -2, "error");
 
-    lua_pushstring(L, errorMessage.c_str());
+    lua_pushstring(L, error_message.c_str());
     lua_setfield(L, -2, "errorMessage");
 
     std::string error = "Lua error in HTTP response handler: ";
@@ -1116,9 +1118,9 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleHttpResponse(
-      Lua* L, const ix::HttpResponsePtr& response, int onResponseRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
-    luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);
+      Lua* L, const ix::HttpResponsePtr& response, int on_response_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_response_ref);
+    luaL_unref(L, LUA_REGISTRYINDEX, on_response_ref);
 
     lua_newtable(L);
 
@@ -1208,8 +1210,8 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleProgress(
-      Lua* L, int current, int total, int onProgressRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onProgressRef);
+      Lua* L, int current, int total, int on_progress_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_progress_ref);
     lua_pushinteger(L, current);
     lua_pushinteger(L, total);
 
@@ -1218,9 +1220,9 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleWebSocketUrlForbidden(
-      Lua* L, std::string& url, int onMessageRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
-    luaL_unref(L, LUA_REGISTRYINDEX, onMessageRef);
+      Lua* L, std::string& url, int on_message_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_message_ref);
+    luaL_unref(L, LUA_REGISTRYINDEX, on_message_ref);
 
     lua_newtable(L);
 
@@ -1236,10 +1238,11 @@ class LunaNetworkManager : public Luna<NetworkManager> {
 
   static void handleMessage(
       Lua* L, ix::WebSocketMessageType type, const std::string& data,
-      const ix::WebSocketErrorInfo& errorInfo,
-      const ix::WebSocketOpenInfo& openInfo,
-      const ix::WebSocketCloseInfo& closeInfo, bool binary, int onMessageRef) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
+      const ix::WebSocketErrorInfo& error_info,
+      const ix::WebSocketOpenInfo& open_info,
+      const ix::WebSocketCloseInfo& close_info, bool binary,
+      int on_message_ref) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, on_message_ref);
 
     lua_newtable(L);
 
@@ -1258,50 +1261,50 @@ class LunaNetworkManager : public Luna<NetworkManager> {
         LuaHelpers::Push(L, WebSocketMessageType_Open);
         lua_setfield(L, -2, "type");
 
-        lua_pushstring(L, openInfo.uri.c_str());
+        lua_pushstring(L, open_info.uri.c_str());
         lua_setfield(L, -2, "uri");
 
         lua_newtable(L);
-        for (const auto& entry : openInfo.headers) {
+        for (const auto& entry : open_info.headers) {
           lua_pushstring(L, entry.second.c_str());
           lua_setfield(L, -2, entry.first.c_str());
         }
         lua_setfield(L, -2, "headers");
 
-        lua_pushstring(L, openInfo.protocol.c_str());
+        lua_pushstring(L, open_info.protocol.c_str());
         lua_setfield(L, -2, "protocol");
         break;
       case ix::WebSocketMessageType::Close:
         LuaHelpers::Push(L, WebSocketMessageType_Close);
         lua_setfield(L, -2, "type");
 
-        lua_pushstring(L, closeInfo.reason.c_str());
+        lua_pushstring(L, close_info.reason.c_str());
         lua_setfield(L, -2, "reason");
 
-        lua_pushboolean(L, closeInfo.remote);
+        lua_pushboolean(L, close_info.remote);
         lua_setfield(L, -2, "remote");
         break;
       case ix::WebSocketMessageType::Error:
         LuaHelpers::Push(L, WebSocketMessageType_Error);
         lua_setfield(L, -2, "type");
 
-        lua_pushinteger(L, errorInfo.retries);
+        lua_pushinteger(L, error_info.retries);
         lua_setfield(L, -2, "retries");
 
-        lua_pushnumber(L, errorInfo.wait_time);
+        lua_pushnumber(L, error_info.wait_time);
         lua_setfield(L, -2, "waitTime");
 
-        if (errorInfo.http_status > 0) {
-          lua_pushinteger(L, errorInfo.http_status);
+        if (error_info.http_status > 0) {
+          lua_pushinteger(L, error_info.http_status);
         } else {
           lua_pushnil(L);
         }
         lua_setfield(L, -2, "httpStatusCode");
 
-        lua_pushstring(L, errorInfo.reason.c_str());
+        lua_pushstring(L, error_info.reason.c_str());
         lua_setfield(L, -2, "reason");
 
-        lua_pushboolean(L, errorInfo.decompressionError);
+        lua_pushboolean(L, error_info.decompressionError);
         lua_setfield(L, -2, "decompressionError");
         break;
       case ix::WebSocketMessageType::Ping:

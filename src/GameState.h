@@ -58,7 +58,7 @@ class GameState {
   void ResetPlayerOptions(PlayerNumber pn);
   void ApplyCmdline();  // called by Reset
   void ApplyGameCommand(
-      const std::string& sCommand, PlayerNumber pn = PLAYER_INVALID);
+      const std::string& command, PlayerNumber pn = PLAYER_INVALID);
   /** @brief Start the game when the first player joins in. */
   void BeginGame();
   void JoinPlayer(PlayerNumber pn);
@@ -66,8 +66,8 @@ class GameState {
   bool JoinInput(PlayerNumber pn);
   bool JoinPlayers();
   bool CanAcceptProfile(PlayerNumber pn) const;
-  bool LoadProfileOverGuest(PlayerNumber pn, bool bLoadEdits = true);
-  void LoadProfiles(bool bLoadEdits = true);
+  bool LoadProfileOverGuest(PlayerNumber pn, bool load_edits = true);
+  void LoadProfiles(bool load_edits = true);
   void SavePlayerProfiles();
   void SavePlayerProfile(PlayerNumber pn);
   bool HaveProfileToLoad(PlayerNumber pn) const;
@@ -89,7 +89,7 @@ class GameState {
   void ForceSharedSidesMatch();
   void ForceOtherPlayersToCompatibleSteps(PlayerNumber main);
 
-  void Update(float fDelta);
+  void Update(float delta);
 
   // Main state info
 
@@ -99,7 +99,7 @@ class GameState {
    * Call this instead of m_pCurGame.Set to make sure that
    * PREFSMAN->m_sCurrentGame stays in sync.
    * @param pGame the game to start using. */
-  void SetCurGame(const Game* pGame);
+  void SetCurGame(const Game* game);
   BroadcastOnChangePtr<const Game> cur_game_;
 
  private:  // DO NOT access directly.  Use Get/SetCurrentStyle.
@@ -156,9 +156,9 @@ class GameState {
   void SetCurrentStyle(const Style* style, PlayerNumber pn);
   bool SetCompatibleStyle(StepsType stype, PlayerNumber pn);
 
-  void GetPlayerInfo(PlayerNumber pn, bool& bIsEnabledOut, bool& bIsHumanOut);
+  void GetPlayerInfo(PlayerNumber pn, bool& is_enabled_out, bool& is_human_out);
   bool IsPlayerEnabled(PlayerNumber pn) const;
-  bool IsPlayerEnabled(const PlayerState* pPlayerState) const;
+  bool IsPlayerEnabled(const PlayerState* player_state) const;
   int GetNumPlayersEnabled() const;
 
   /**
@@ -239,7 +239,7 @@ class GameState {
 
   std::string last_open_section_;
 
-  static int GetNumStagesMultiplierForSong(const Song* pSong);
+  static int GetNumStagesMultiplierForSong(const Song* song);
   int GetNumStagesForCurrentSongAndStepsOrCourse() const;
 
   void BeginStage();
@@ -305,7 +305,7 @@ class GameState {
                                 // Clears the values above.
   void SetPaused(bool p) { paused_ = p; }
   void UpdateSongPosition(
-      float fPositionSeconds, const TimingData& timing,
+      float position_seconds, const TimingData& timing,
       const RageTimer& timestamp = RageZeroTimer);
   float GetSongPercent(float beat) const;
 
@@ -354,14 +354,14 @@ class GameState {
   void GetDefaultPlayerOptions(PlayerOptions& po);
   void GetDefaultSongOptions(SongOptions& so);
   void ResetToDefaultSongOptions(ModsLevel l);
-  void ApplyPreferredModifiers(PlayerNumber pn, std::string sModifiers);
-  void ApplyStageModifiers(PlayerNumber pn, std::string sModifiers);
+  void ApplyPreferredModifiers(PlayerNumber pn, std::string modifiers);
+  void ApplyStageModifiers(PlayerNumber pn, std::string modifiers);
   void ClearStageModifiersIllegalForCourse();
 
   bool CurrentOptionsDisqualifyPlayer(PlayerNumber pn);
-  bool PlayerIsUsingModifier(PlayerNumber pn, const std::string& sModifier);
+  bool PlayerIsUsingModifier(PlayerNumber pn, const std::string& modifier);
 
-  FailType GetPlayerFailType(const PlayerState* pPlayerState) const;
+  FailType GetPlayerFailType(const PlayerState* player_state) const;
   FailType GetPlayerFailType(PlayerNumber pn) const {
     return GetPlayerFailType(player_state_[pn]);
   }
@@ -389,7 +389,7 @@ class GameState {
   };
 
   void GetRankingFeats(
-      PlayerNumber pn, std::vector<RankingFeat>& vFeatsOut) const;
+      PlayerNumber pn, std::vector<RankingFeat>& feats_out) const;
   bool AnyPlayerHasRankingFeats() const;
   void StoreRankingName(
       PlayerNumber pn, std::string name);  // Called by name entry screens
@@ -407,7 +407,7 @@ class GameState {
   int num_times_through_attract_;  // negative means play regardless of
                                    // m_iAttractSoundFrequency setting
   bool IsTimeToPlayAttractSounds() const;
-  void VisitAttractScreen(const std::string sScreenName);
+  void VisitAttractScreen(const std::string screen_name);
 
   // PlayerState
   /** @brief Allow access to each player's PlayerState. */

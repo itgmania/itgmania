@@ -18,20 +18,20 @@ RageMutex g_Mutex("PostBuffering");
 static float g_fMasterVolume = 1.0f;
 
 RageSoundReader_PostBuffering::RageSoundReader_PostBuffering(
-    RageSoundReader* pSource)
-    : RageSoundReader_Filter(pSource) {
+    RageSoundReader* source)
+    : RageSoundReader_Filter(source) {
   volume_ = 1.0f;
 }
 
-void RageSoundReader_PostBuffering::SetMasterVolume(float fVolume) {
+void RageSoundReader_PostBuffering::SetMasterVolume(float volume) {
   LockMut(g_Mutex);
-  g_fMasterVolume = fVolume;
+  g_fMasterVolume = volume;
 }
 
-int RageSoundReader_PostBuffering::Read(float* pBuf, int iFrames) {
-  iFrames = source_->Read(pBuf, iFrames);
-  if (iFrames < 0) {
-    return iFrames;
+int RageSoundReader_PostBuffering::Read(float* buf, int frames) {
+  frames = source_->Read(buf, frames);
+  if (frames < 0) {
+    return frames;
   }
 
   // Combine the sound's volume with master volume.
@@ -39,25 +39,25 @@ int RageSoundReader_PostBuffering::Read(float* pBuf, int iFrames) {
 
   // Square the master so lower volumes are more sensitive.
   // This lines up better with perceived volume.
-  float fVolume = volume_ * g_fMasterVolume * g_fMasterVolume;
-  fVolume = std::clamp(fVolume, 0.0f, 1.0f);
+  float volume = volume_ * g_fMasterVolume * g_fMasterVolume;
+  volume = std::clamp(volume, 0.0f, 1.0f);
   g_Mutex.Unlock();
 
-  if (fVolume != 1.0f) {
-    RageSoundUtil::Attenuate(pBuf, iFrames * this->GetNumChannels(), fVolume);
+  if (volume != 1.0f) {
+    RageSoundUtil::Attenuate(buf, frames * this->GetNumChannels(), volume);
   }
 
-  return iFrames;
+  return frames;
 }
 
 bool RageSoundReader_PostBuffering::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "Volume") {
-    volume_ = fValue;
+    const std::string& property, float value) {
+  if (property == "Volume") {
+    volume_ = value;
     return true;
   }
 
-  return RageSoundReader_Filter::SetProperty(sProperty, fValue);
+  return RageSoundReader_Filter::SetProperty(property, value);
 }
 
 /*

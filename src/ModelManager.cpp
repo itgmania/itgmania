@@ -17,32 +17,32 @@ ModelManager::~ModelManager() {
   for (std::map<std::string, RageModelGeometry*>::iterator i =
            map_file_to_geometry_.begin();
        i != map_file_to_geometry_.end(); ++i) {
-    RageModelGeometry* pGeom = i->second;
-    if (pGeom->ref_count_) {
+    RageModelGeometry* geom = i->second;
+    if (geom->ref_count_) {
       LOG->Trace(
           "MODELMAN LEAK: '%s', RefCount = %d.", i->first.c_str(),
-          pGeom->ref_count_);
+          geom->ref_count_);
     }
-    RageUtil::SafeDelete(pGeom);
+    RageUtil::SafeDelete(geom);
   }
 }
 
 RageModelGeometry* ModelManager::LoadMilkshapeAscii(
-    const std::string& sFile, bool bNeedNormals) {
+    const std::string& file, bool need_normals) {
   std::map<std::string, RageModelGeometry*>::iterator p =
-      map_file_to_geometry_.find(sFile);
+      map_file_to_geometry_.find(file);
   if (p != map_file_to_geometry_.end()) {
     /* Found the geometry.  Just increase the refcount and return it. */
-    RageModelGeometry* pGeom = p->second;
-    ++pGeom->ref_count_;
-    return pGeom;
+    RageModelGeometry* geom = p->second;
+    ++geom->ref_count_;
+    return geom;
   }
 
-  RageModelGeometry* pGeom = new RageModelGeometry;
-  pGeom->LoadMilkshapeAscii(sFile, bNeedNormals);
+  RageModelGeometry* geom = new RageModelGeometry;
+  geom->LoadMilkshapeAscii(file, need_normals);
 
-  map_file_to_geometry_[sFile] = pGeom;
-  return pGeom;
+  map_file_to_geometry_[file] = geom;
+  return geom;
 }
 
 void ModelManager::UnloadModel(RageModelGeometry* m) {

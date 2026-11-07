@@ -24,8 +24,8 @@ extern "C" {
   for (e var = (e)0; var < NUM_##e; enum_add<e>(var, +1))
 
 int CheckEnum(
-    lua_State* L, LuaReference& table, int iPos, int iInvalid,
-    const char* szType, bool bAllowInvalid, bool bAllowAnything = false);
+    lua_State* L, LuaReference& table, int pos, int invalid, const char* type,
+    bool allow_invalid, bool allow_anything = false);
 
 template <typename T>
 struct EnumTraits {
@@ -42,29 +42,29 @@ LuaReference EnumTraits<T>::enum_to_string_;
 namespace Enum {
 template <typename T>
 static T Check(
-    lua_State* L, int iPos, bool bAllowInvalid = false,
-    bool bAllowAnything = false) {
+    lua_State* L, int pos, bool allow_invalid = false,
+    bool allow_anything = false) {
   return (T)CheckEnum(
-      L, EnumTraits<T>::string_to_enum_, iPos, EnumTraits<T>::invalid_,
-      EnumTraits<T>::name_, bAllowInvalid, bAllowAnything);
+      L, EnumTraits<T>::string_to_enum_, pos, EnumTraits<T>::invalid_,
+      EnumTraits<T>::name_, allow_invalid, allow_anything);
 }
 template <typename T>
-static void Push(lua_State* L, T iVal) {
+static void Push(lua_State* L, T val) {
   /* Enum_Invalid values are nil in Lua. */
-  if (iVal == EnumTraits<T>::invalid_) {
+  if (val == EnumTraits<T>::invalid_) {
     lua_pushnil(L);
     return;
   }
 
   /* Look up the string value. */
   EnumTraits<T>::enum_to_string_.PushSelf(L);
-  lua_rawgeti(L, -1, iVal + 1);
+  lua_rawgeti(L, -1, val + 1);
   lua_remove(L, -2);
 }
 
 void SetMetatable(
-    lua_State* L, LuaReference& EnumTable, LuaReference& EnumIndexTable,
-    const char* szName);
+    lua_State* L, LuaReference& enum_table, LuaReference& enum_index_table,
+    const char* name);
 
 template <typename E>
 constexpr auto to_integral(E e) {
@@ -73,8 +73,8 @@ constexpr auto to_integral(E e) {
 };  // namespace Enum
 
 const std::string& EnumToString(
-    int iVal, int iMax, const char** szNameArray,
-    std::string* pNameCache);  // XToString helper
+    int val, int max, const char** name_array,
+    std::string* name_cache);  // XToString helper
 
 #define XToString(X)                                         \
   const std::string& X##ToString(X x);                       \

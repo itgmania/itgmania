@@ -47,30 +47,30 @@ static std::string ROW_Y_NAME(size_t i) {
 
 void EditMenu::StripLockedStepsAndDifficulty(
     std::vector<StepsAndDifficulty>& v) {
-  const Song* pSong = GetSelectedSong();
+  const Song* song = GetSelectedSong();
   for (int i = (int)v.size() - 1; i >= 0; i--) {
-    if (v[i].steps_ && UNLOCKMAN->StepsIsLocked(pSong, v[i].steps_)) {
+    if (v[i].steps_ && UNLOCKMAN->StepsIsLocked(song, v[i].steps_)) {
       v.erase(v.begin() + i);
     }
   }
 }
 
 void EditMenu::GetSongsToShowForGroup(
-    const std::string& sGroup, std::vector<Song*>& vpSongsOut) {
-  if (sGroup == "") {
-    vpSongsOut.clear();
+    const std::string& group, std::vector<Song*>& songs_out) {
+  if (group == "") {
+    songs_out.clear();
     return;
   }
-  vpSongsOut = SONGMAN->GetSongs(SHOW_GROUPS.GetValue() ? sGroup : GROUP_ALL);
+  songs_out = SONGMAN->GetSongs(SHOW_GROUPS.GetValue() ? group : GROUP_ALL);
   EditMode mode = EDIT_MODE.GetValue();
   switch (mode) {
     case EditMode_Practice:
     case EditMode_CourseMods:
     case EditMode_Home:
-      for (int i = vpSongsOut.size() - 1; i >= 0; i--) {
-        const Song* pSong = vpSongsOut[i];
-        if (!pSong->NormallyDisplayed() || pSong->IsTutorial()) {
-          vpSongsOut.erase(vpSongsOut.begin() + i);
+      for (int i = songs_out.size() - 1; i >= 0; i--) {
+        const Song* song = songs_out[i];
+        if (!song->NormallyDisplayed() || song->IsTutorial()) {
+          songs_out.erase(songs_out.begin() + i);
         }
       }
       break;
@@ -79,23 +79,23 @@ void EditMenu::GetSongsToShowForGroup(
     default:
       FAIL_M(ssprintf("Invalid edit mode: %i", mode));
   }
-  SongUtil::SortSongPointerArrayByTitle(vpSongsOut);
+  SongUtil::SortSongPointerArrayByTitle(songs_out);
 }
 
-void EditMenu::GetGroupsToShow(std::vector<std::string>& vsGroupsOut) {
-  vsGroupsOut.clear();
+void EditMenu::GetGroupsToShow(std::vector<std::string>& groups_out) {
+  groups_out.clear();
   if (!SHOW_GROUPS.GetValue()) {
     return;
   }
 
-  SONGMAN->GetSongGroupNames(vsGroupsOut);
-  for (int i = vsGroupsOut.size() - 1; i >= 0; i--) {
-    const std::string& sGroup = vsGroupsOut[i];
-    std::vector<Song*> vpSongs;
-    GetSongsToShowForGroup(sGroup, vpSongs);
+  SONGMAN->GetSongGroupNames(groups_out);
+  for (int i = groups_out.size() - 1; i >= 0; i--) {
+    const std::string& group = groups_out[i];
+    std::vector<Song*> songs;
+    GetSongsToShowForGroup(group, songs);
     // strip groups that have no unlocked songs
-    if (vpSongs.empty()) {
-      vsGroupsOut.erase(vsGroupsOut.begin() + i);
+    if (songs.empty()) {
+      groups_out.erase(groups_out.begin() + i);
     }
   }
 }
@@ -104,19 +104,19 @@ EditMenu::EditMenu() {}
 
 EditMenu::~EditMenu() { IMAGECACHE->Undemand("Banner"); }
 
-void EditMenu::Load(const std::string& sType) {
+void EditMenu::Load(const std::string& type) {
   LOG->Trace("EditMenu::Load");
 
-  SHOW_GROUPS.Load(sType, "ShowGroups");
-  ARROWS_X.Load(sType, ARROWS_X_NAME, NUM_ARROWS);
-  ARROWS_ENABLED_COMMAND.Load(sType, "ArrowsEnabledCommand");
-  ARROWS_DISABLED_COMMAND.Load(sType, "ArrowsDisabledCommand");
-  ROW_Y.Load(sType, ROW_Y_NAME, NUM_EditMenuRow);
-  EDIT_MODE.Load(sType, "EditMode");
+  SHOW_GROUPS.Load(type, "ShowGroups");
+  ARROWS_X.Load(type, ARROWS_X_NAME, NUM_ARROWS);
+  ARROWS_ENABLED_COMMAND.Load(type, "ArrowsEnabledCommand");
+  ARROWS_DISABLED_COMMAND.Load(type, "ArrowsDisabledCommand");
+  ROW_Y.Load(type, ROW_Y_NAME, NUM_EditMenuRow);
+  EDIT_MODE.Load(type, "EditMode");
   TEXT_BANNER_TYPE.Load(name_, "TextBannerType");
 
   for (int i = 0; i < 2; i++) {
-    spr_arrows_[i].Load(THEME->GetPathG(sType, i == 0 ? "left" : "right"));
+    spr_arrows_[i].Load(THEME->GetPathG(type, i == 0 ? "left" : "right"));
     spr_arrows_[i]->SetX(ARROWS_X.GetValue(i));
     this->AddChild(spr_arrows_[i]);
   }
@@ -127,16 +127,16 @@ void EditMenu::Load(const std::string& sType) {
 
   FOREACH_EditMenuRow(r) {
     text_label_[r].SetName(ssprintf("Label%i", r + 1));
-    text_label_[r].LoadFromFont(THEME->GetPathF(sType, "title"));
+    text_label_[r].LoadFromFont(THEME->GetPathF(type, "title"));
     text_label_[r].SetText(EditMenuRowToLocalizedString(r));
-    ActorUtil::LoadAllCommandsAndSetXY(text_label_[r], sType);
+    ActorUtil::LoadAllCommandsAndSetXY(text_label_[r], type);
     // m_textLabel[r].SetHorizAlign( align_left );
     this->AddChild(&text_label_[r]);
 
     text_value_[r].SetName(ssprintf("Value%i", r + 1));
-    text_value_[r].LoadFromFont(THEME->GetPathF(sType, "value"));
+    text_value_[r].LoadFromFont(THEME->GetPathF(type, "value"));
     text_value_[r].SetText("blah");
-    ActorUtil::LoadAllCommandsAndSetXY(text_value_[r], sType);
+    ActorUtil::LoadAllCommandsAndSetXY(text_value_[r], type);
     this->AddChild(&text_value_[r]);
   }
 
@@ -148,34 +148,34 @@ void EditMenu::Load(const std::string& sType) {
 
   if (SHOW_GROUPS.GetValue()) {
     group_banner_.SetName("GroupBanner");
-    ActorUtil::SetXY(group_banner_, sType);
-    ActorUtil::LoadAllCommands(group_banner_, sType);
+    ActorUtil::SetXY(group_banner_, type);
+    ActorUtil::LoadAllCommands(group_banner_, type);
     this->AddChild(&group_banner_);
   }
 
   song_banner_.SetName("SongBanner");
-  ActorUtil::SetXY(song_banner_, sType);
-  ActorUtil::LoadAllCommands(song_banner_, sType);
+  ActorUtil::SetXY(song_banner_, type);
+  ActorUtil::LoadAllCommands(song_banner_, type);
   this->AddChild(&song_banner_);
 
   song_text_banner_.SetName("SongTextBanner");
   song_text_banner_.Load(TEXT_BANNER_TYPE);
-  ActorUtil::SetXY(song_text_banner_, sType);
-  ActorUtil::LoadAllCommands(song_text_banner_, sType);
+  ActorUtil::SetXY(song_text_banner_, type);
+  ActorUtil::LoadAllCommands(song_text_banner_, type);
   this->AddChild(&song_text_banner_);
 
   steps_display_.SetName("StepsDisplay");
   steps_display_.Load("StepsDisplayEdit", nullptr);
-  ActorUtil::SetXY(steps_display_, sType);
+  ActorUtil::SetXY(steps_display_, type);
   this->AddChild(&steps_display_);
 
   steps_display_source_.SetName("StepsDisplaySource");
   steps_display_source_.Load("StepsDisplayEdit", nullptr);
-  ActorUtil::SetXY(steps_display_source_, sType);
+  ActorUtil::SetXY(steps_display_source_, type);
   this->AddChild(&steps_display_source_);
 
-  sound_change_row_.Load(THEME->GetPathS(sType, "row"), true);
-  sound_change_value_.Load(THEME->GetPathS(sType, "value"), true);
+  sound_change_row_.Load(THEME->GetPathS(type, "row"), true);
+  sound_change_value_.Load(THEME->GetPathS(type, "value"), true);
 
   // fill in data structures
   GetGroupsToShow(groups_);
@@ -222,8 +222,8 @@ void EditMenu::RefreshAll() {
       }
 
       for (unsigned i = 0; i < steps_.size(); i++) {
-        const Steps* pSteps = steps_[i].steps_;
-        if (pSteps == GAMESTATE->cur_steps_[PLAYER_1]) {
+        const Steps* steps = steps_[i].steps_;
+        if (steps == GAMESTATE->cur_steps_[PLAYER_1]) {
           selection_[ROW_STEPS] = i;
           OnRowValueChanged(ROW_STEPS);
         }
@@ -334,16 +334,16 @@ void EditMenu::Right() {
   }
 }
 
-void EditMenu::ChangeToRow(EditMenuRow newRow) {
-  text_label_[newRow].PlayCommand("GainFocus");
-  text_value_[newRow].PlayCommand("GainFocus");
+void EditMenu::ChangeToRow(EditMenuRow new_row) {
+  text_label_[new_row].PlayCommand("GainFocus");
+  text_value_[new_row].PlayCommand("GainFocus");
   text_label_[selected_row_].PlayCommand("LoseFocus");
   text_value_[selected_row_].PlayCommand("LoseFocus");
 
-  selected_row_ = newRow;
+  selected_row_ = new_row;
 
   for (int i = 0; i < 2; i++) {
-    spr_arrows_[i]->SetY(ROW_Y.GetValue(newRow));
+    spr_arrows_[i]->SetY(ROW_Y.GetValue(new_row));
   }
   UpdateArrows();
 }
@@ -385,10 +385,10 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
           group_banner_.PlayCommand("Changed");
         }
         if (mode == EditMode_Practice) {
-          std::vector<Song*> vtSongs;
-          GetSongsToShowForGroup(GetSelectedGroup(), vtSongs);
+          std::vector<Song*> songs;
+          GetSongsToShowForGroup(GetSelectedGroup(), songs);
           // Filter out songs that aren't playable.
-          for (Song* s : vtSongs) {
+          for (Song* s : songs) {
             if (SongUtil::IsSongPlayable(s)) {
               songs_.push_back(s);
             }
@@ -417,11 +417,11 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
         song_text_banner_.SetFromSong(GetSelectedSong());
 
         if (mode == EditMode_Practice) {
-          StepsType orgSel = StepsType_Invalid;
+          StepsType org_sel = StepsType_Invalid;
           if (!steps_types_.empty())  // Not first run
           {
             ASSERT((int)steps_types_.size() > selection_[ROW_STEPS_TYPE]);
-            orgSel = steps_types_[selection_[ROW_STEPS_TYPE]];
+            org_sel = steps_types_[selection_[ROW_STEPS_TYPE]];
           }
 
           // The StepsType selection may no longer be valid. Zero it for now.
@@ -429,9 +429,9 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
           steps_types_.clear();
 
           // Only show StepsTypes for which we have valid Steps.
-          std::vector<StepsType> vSts =
+          std::vector<StepsType> sts =
               CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
-          for (StepsType& st : vSts) {
+          for (StepsType& st : sts) {
             if (SongUtil::GetStepsByDifficulty(
                     GetSelectedSong(), st, Difficulty_Invalid, false) !=
                 nullptr) {
@@ -439,7 +439,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
             }
 
             // Try to preserve the user's StepsType selection.
-            if (st == orgSel) {
+            if (st == org_sel) {
               selection_[ROW_STEPS_TYPE] = steps_types_.size() - 1;
             }
           }
@@ -457,9 +457,9 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
             GAMEMAN->GetStepsTypeInfo(GetSelectedStepsType())
                 .GetLocalizedString());
 
-        Difficulty dcOld = Difficulty_Invalid;
+        Difficulty old = Difficulty_Invalid;
         if (!steps_.empty()) {
-          dcOld = GetSelectedDifficulty();
+          old = GetSelectedDifficulty();
         }
 
         steps_.clear();
@@ -499,10 +499,10 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                 FAIL_M(ssprintf("Invalid edit mode: %i", mode));
             }
           } else {
-            Steps* pSteps = SongUtil::GetStepsByDifficulty(
+            Steps* steps = SongUtil::GetStepsByDifficulty(
                 GetSelectedSong(), GetSelectedStepsType(), dc);
-            if (pSteps && UNLOCKMAN->StepsIsLocked(GetSelectedSong(), pSteps)) {
-              pSteps = nullptr;
+            if (steps && UNLOCKMAN->StepsIsLocked(GetSelectedSong(), steps)) {
+              steps = nullptr;
             }
 
             switch (mode) {
@@ -512,13 +512,13 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
               case EditMode_Practice:
               case EditMode_CourseMods:
                 // only show this difficulty if steps exist
-                if (pSteps) {
-                  steps_.push_back(StepsAndDifficulty(pSteps, dc));
+                if (steps) {
+                  steps_.push_back(StepsAndDifficulty(steps, dc));
                 }
                 break;
               case EditMode_Full:
                 // show this difficulty whether or not steps exist.
-                steps_.push_back(StepsAndDifficulty(pSteps, dc));
+                steps_.push_back(StepsAndDifficulty(steps, dc));
                 break;
               default:
                 FAIL_M(ssprintf("Invalid edit mode: %i", mode));
@@ -529,7 +529,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
 
         int i = 0;
         for (const StepsAndDifficulty& s : steps_) {
-          if (s.dc_ == dcOld) {
+          if (s.dc_ == old) {
             selection_[ROW_STEPS] = i;
             break;
           }
@@ -577,18 +577,18 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
         FOREACH_ENUM(Difficulty, dc) {
           // fill in m_vpSourceSteps
           if (dc != Difficulty_Edit) {
-            Steps* pSteps = SongUtil::GetStepsByDifficulty(
+            Steps* steps = SongUtil::GetStepsByDifficulty(
                 GetSelectedSong(), GetSelectedSourceStepsType(), dc);
-            if (pSteps != nullptr) {
-              source_steps_.push_back(StepsAndDifficulty(pSteps, dc));
+            if (steps != nullptr) {
+              source_steps_.push_back(StepsAndDifficulty(steps, dc));
             }
           } else {
             std::vector<Steps*> v;
             SongUtil::GetSteps(
                 GetSelectedSong(), v, GetSelectedSourceStepsType(), dc);
             StepsUtil::SortStepsByDescription(v);
-            for (Steps* pSteps : v) {
-              source_steps_.push_back(StepsAndDifficulty(pSteps, dc));
+            for (Steps* steps : v) {
+              source_steps_.push_back(StepsAndDifficulty(steps, dc));
             }
           }
         }
@@ -618,9 +618,9 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
           }
           text_value_[ROW_SOURCE_STEPS].SetText(s);
         }
-        bool bHideMeter = false;
+        bool hide_meter = false;
         if (GetSelectedSourceDifficulty() == Difficulty_Invalid) {
-          bHideMeter = true;
+          hide_meter = true;
         } else if (GetSelectedSourceSteps()) {
           steps_display_source_.SetFromSteps(GetSelectedSourceSteps());
         } else {
@@ -629,7 +629,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
                   GetSelectedSourceStepsType(), 0,
                   GetSelectedSourceDifficulty(), CourseType_Invalid);
         }
-        steps_display_source_.SetVisible(!(bHideMeter || GetSelectedSteps()));
+        steps_display_source_.SetVisible(!(hide_meter || GetSelectedSteps()));
 
         actions_.clear();
         // Stick autosave in the list first so that people will see it. -Kyz

@@ -6,9 +6,9 @@
 #include "RageSurface_Save_STB.h"
 
 bool RageSurfaceUtils::SaveBMP(
-    RageSurface* surface, RageFile& f, std::string& sError) {
+    RageSurface* surface, RageFile& f, std::string& error) {
   return RageSurface_Save_STB(
-      surface, f, sError, RageSurfaceSTBWriteFormat::BMP);
+      surface, f, error, RageSurfaceSTBWriteFormat::BMP);
 }
 
 bool RageSurfaceUtils::SaveBMP(RageSurface* surface, RageFile& f) {

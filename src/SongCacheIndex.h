@@ -9,13 +9,13 @@
 class SongCacheIndex {
   IniFile cache_index_;
   mutable RageMutex mutex_;
-  static std::string MangleName(const std::string& Name);
+  static std::string MangleName(const std::string& name);
 
  public:
   SongCacheIndex();
   ~SongCacheIndex();
   static std::string GetCacheFilePath(
-      const std::string& sGroup, const std::string& sPath);
+      const std::string& group, const std::string& path);
 
   void ReadCacheIndex();
   void SaveCacheIndex();

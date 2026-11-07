@@ -12,19 +12,19 @@ class RollingNumbers : public BitmapText {
  public:
   RollingNumbers();
 
-  void Load(const std::string& sMetricsGroup);
+  void Load(const std::string& metrics_group);
   virtual RollingNumbers* Copy() const;
 
   void DrawPart(
       const RageColor* diffuse, const RageColor& stroke, float crop_left,
       float crop_right);
   virtual void DrawPrimitives() noexcept;
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   /**
    * @brief Set the new target number to be reached.
    * @param fTargetNumber the new target number. */
-  void SetTargetNumber(float fTargetNumber);
+  void SetTargetNumber(float target_number);
 
   void UpdateText();
 

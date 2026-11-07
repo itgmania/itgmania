@@ -14,46 +14,46 @@
 #include "global.h"
 
 void Attack::GetAttackBeats(
-    const Song* pSong, float& fStartBeat, float& fEndBeat) const {
-  ASSERT(pSong != nullptr);
+    const Song* song, float& start_beat, float& end_beat) const {
+  ASSERT(song != nullptr);
   ASSERT_M(start_second_ >= 0, ssprintf("StartSecond: %f", start_second_));
 
-  const TimingData& timing = pSong->song_timing_;
-  fStartBeat = timing.GetBeatFromElapsedTime(start_second_);
-  fEndBeat = timing.GetBeatFromElapsedTime(start_second_ + secs_remaining_);
+  const TimingData& timing = song->song_timing_;
+  start_beat = timing.GetBeatFromElapsedTime(start_second_);
+  end_beat = timing.GetBeatFromElapsedTime(start_second_ + secs_remaining_);
 }
 
 /* Get the range for an attack that's being applied in realtime, eg. during
  * battle mode.  We need a PlayerState for this, so we can push the region
  * off-screen to prevent popping when the attack has note modifers. */
 void Attack::GetRealtimeAttackBeats(
-    const Song* pSong, const PlayerState* pPlayerState, float& fStartBeat,
-    float& fEndBeat) const {
-  ASSERT(pSong != nullptr);
+    const Song* song, const PlayerState* player_state, float& start_beat,
+    float& end_beat) const {
+  ASSERT(song != nullptr);
 
   if (start_second_ >= 0) {
-    GetAttackBeats(pSong, fStartBeat, fEndBeat);
+    GetAttackBeats(song, start_beat, end_beat);
     return;
   }
 
-  ASSERT(pPlayerState != nullptr);
+  ASSERT(player_state != nullptr);
 
   /* If reasonable, push the attack forward 8 beats so that notes on screen
    * don't change suddenly. */
-  fStartBeat = std::min(
-      GAMESTATE->position_.song_beat_ + 8, pPlayerState->last_drawn_beat_);
-  fStartBeat = std::trunc(fStartBeat) + 1;
+  start_beat = std::min(
+      GAMESTATE->position_.song_beat_ + 8, player_state->last_drawn_beat_);
+  start_beat = std::trunc(start_beat) + 1;
 
-  const TimingData& timing = pSong->song_timing_;
-  const float lStartSecond = timing.GetElapsedTimeFromBeat(fStartBeat);
-  const float fEndSecond = lStartSecond + secs_remaining_;
-  fEndBeat = timing.GetBeatFromElapsedTime(fEndSecond);
-  fEndBeat = std::trunc(fEndBeat) + 1;
+  const TimingData& timing = song->song_timing_;
+  const float start_second = timing.GetElapsedTimeFromBeat(start_beat);
+  const float end_second = start_second + secs_remaining_;
+  end_beat = timing.GetBeatFromElapsedTime(end_second);
+  end_beat = std::trunc(end_beat) + 1;
 
   // loading the course should have caught this.
   ASSERT_M(
-      fEndBeat >= fStartBeat,
-      ssprintf("EndBeat %f >= StartBeat %f", fEndBeat, fStartBeat));
+      end_beat >= start_beat,
+      ssprintf("EndBeat %f >= StartBeat %f", end_beat, start_beat));
 }
 
 bool Attack::ContainsTransformOrTurn() const {
@@ -62,12 +62,12 @@ bool Attack::ContainsTransformOrTurn() const {
   return po.ContainsTransformOrTurn();
 }
 
-Attack Attack::FromGlobalCourseModifier(const std::string& sModifiers) {
+Attack Attack::FromGlobalCourseModifier(const std::string& modifiers) {
   Attack a;
   a.start_second_ = 0;
   a.secs_remaining_ = 10000; /* whole song */
   a.level_ = ATTACK_LEVEL_1;
-  a.modifiers_ = sModifiers;
+  a.modifiers_ = modifiers;
   a.global_ = true;
   return a;
 }

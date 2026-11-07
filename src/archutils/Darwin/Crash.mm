@@ -15,21 +15,21 @@
 #import <Foundation/Foundation.h>
 
 std::string CrashHandler::GetLogsDirectory() {
-  NSFileManager* fileManager = [NSFileManager defaultManager];
+  NSFileManager* file_manager = [NSFileManager defaultManager];
 
-  NSString* bundleParent = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
-  NSString* portablePath = [bundleParent stringByAppendingPathComponent:@"Portable.ini"];
+  NSString* bundle_parent = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
+  NSString* portable_path = [bundle_parent stringByAppendingPathComponent:@"Portable.ini"];
 
-  BOOL isPortable = [fileManager fileExistsAtPath:portablePath];
-  if (isPortable) {
-    return std::string([bundleParent UTF8String]) + "/Logs";
+  BOOL is_portable = [file_manager fileExistsAtPath:portable_path];
+  if (is_portable) {
+    return std::string([bundle_parent UTF8String]) + "/Logs";
   }
 
-  NSURL* url = [fileManager URLForDirectory:NSApplicationSupportDirectory
-                                   inDomain:NSUserDomainMask
-                          appropriateForURL:nil
-                                     create:NO
-                                      error:nil];
+  NSURL* url = [file_manager URLForDirectory:NSApplicationSupportDirectory
+                                    inDomain:NSUserDomainMask
+                           appropriateForURL:nil
+                                      create:NO
+                                       error:nil];
   if (url == nil) {
     return "/tmp";
   }
@@ -40,29 +40,29 @@ std::string CrashHandler::GetLogsDirectory() {
 // XXX Can we use LocalizedString here instead?
 #define LSTRING(b, x) CFBundleCopyLocalizedString((b), CFSTR(x), nullptr, CFSTR("Localizable"))
 
-void CrashHandler::InformUserOfCrash(const std::string& sPath) {
+void CrashHandler::InformUserOfCrash(const std::string& path) {
   CFBundleRef bundle = CFBundleGetMainBundle();
-  CFStringRef sAlternate = LSTRING(bundle, "Quit " PRODUCT_FAMILY);
+  CFStringRef alternate = LSTRING(bundle, "Quit " PRODUCT_FAMILY);
   /* XXX Translate these and remove the redefine of LSTRING. Another way to do this
    * would be to pass bundle's URL to CFUserNotificationDisplayAlert's localizationURL
-   * parameter and let it do it. This wouldn't work for sBody though. */
+   * parameter and let it do it. This wouldn't work for body though. */
 #undef LSTRING
 #define LSTRING(b, x) CFSTR(x)
-  CFStringRef sDefault = LSTRING(bundle, "File Bug Report");
-  CFStringRef sOther = LSTRING(bundle, "Open crashinfo.txt");
-  CFStringRef sTitle = LSTRING(bundle, PRODUCT_FAMILY " has crashed");
-  CFStringRef sFormat = LSTRING(
+  CFStringRef default_str = LSTRING(bundle, "File Bug Report");
+  CFStringRef other = LSTRING(bundle, "Open crashinfo.txt");
+  CFStringRef title = LSTRING(bundle, PRODUCT_FAMILY " has crashed");
+  CFStringRef format = LSTRING(
       bundle, PRODUCT_FAMILY " has crashed. "
                              "Debugging information has been output to\n\n%s\n\n"
                              "Please file a bug report at\n\n%s");
-  CFStringRef sBody = CFStringCreateWithFormat(
-      kCFAllocatorDefault, nullptr, sFormat, sPath.c_str(), REPORT_BUG_URL);
+  CFStringRef body =
+      CFStringCreateWithFormat(kCFAllocatorDefault, nullptr, format, path.c_str(), REPORT_BUG_URL);
   CFOptionFlags response = kCFUserNotificationCancelResponse;
   CFTimeInterval timeout = 0.0;  // Should we ever time out?
 
   CFUserNotificationDisplayAlert(
-      timeout, kCFUserNotificationStopAlertLevel, nullptr, nullptr, nullptr, sTitle, sBody,
-      sDefault, sAlternate, sOther, &response);
+      timeout, kCFUserNotificationStopAlertLevel, nullptr, nullptr, nullptr, title, body,
+      default_str, alternate, other, &response);
 
   switch (response) {
     case kCFUserNotificationDefaultResponse:
@@ -71,12 +71,12 @@ void CrashHandler::InformUserOfCrash(const std::string& sPath) {
       // Open the file with the default application (probably TextEdit). [unimplemented]
       break;
   }
-  CFRelease(sBody);
-  CFRelease(sFormat);
-  CFRelease(sTitle);
-  CFRelease(sOther);
-  CFRelease(sDefault);
-  CFRelease(sAlternate);
+  CFRelease(body);
+  CFRelease(format);
+  CFRelease(title);
+  CFRelease(other);
+  CFRelease(default_str);
+  CFRelease(alternate);
 }
 
 /* IMPORTANT: Because the definition of the kinfo_proc structure (in <sys/sysctl.h>)

@@ -11,13 +11,13 @@
 
 class RageWorkerThread {
  public:
-  RageWorkerThread(const std::string& sName);
+  RageWorkerThread(const std::string& name);
   virtual ~RageWorkerThread();
 
   /* Call SetTimeout(10) to start a timeout period of 10 seconds.  This is not a
    * per-request timeout; you have 10 seconds to do your work, at which point
    * all requests time out until SetTimeout is called again. */
-  void SetTimeout(float fSeconds);
+  void SetTimeout(float seconds);
   bool TimeoutEnabled() const { return !timeout_.IsZero(); }
 
   /* Return true if the last operation has timed out and has not yet recovered.
@@ -37,10 +37,10 @@ class RageWorkerThread {
   /* Run the given request.  Return true if the operation completed, false on
    * timeout. Always call IsTimedOut() first; if true is returned, the thread is
    * currently timed out and DoRequest() must not be called. */
-  bool DoRequest(int iRequest);
+  bool DoRequest(int request);
 
   /* Overload this in the derived class to handle requests. */
-  virtual void HandleRequest(int iRequest) = 0;
+  virtual void HandleRequest(int request) = 0;
 
   /* If DoRequest times out, this will be called in the thread after completion.
    * Clean up.  No new requests will be allowed until this completes. */
@@ -49,15 +49,15 @@ class RageWorkerThread {
   /* Enable a heartbeat.  DoHeartbeat will be called every fSeconds while idle.
    * DoHeartbeat may safely time out; if DoRequest tries to start a request in
    * the main thread, it'll simply time out. */
-  void SetHeartbeat(float fSeconds) {
-    heartbeat_ = fSeconds;
+  void SetHeartbeat(float seconds) {
+    heartbeat_ = seconds;
     next_heartbeat_.Touch();
   }
   virtual void DoHeartbeat() {}
 
  private:
-  static int StartWorkerMain(void* pThis) {
-    ((RageWorkerThread*)(pThis))->WorkerMain();
+  static int StartWorkerMain(void* p_this) {
+    ((RageWorkerThread*)(p_this))->WorkerMain();
     return 0;
   }
   void WorkerMain();

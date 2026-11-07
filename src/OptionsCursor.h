@@ -16,13 +16,13 @@ class OptionsCursor : public ActorFrame {
    * @param cpy the OptionsCursor we are copying. */
   OptionsCursor(const OptionsCursor& cpy);
 
-  void Load(const std::string& sMetricsGroup, bool bLoadCanGos);
+  void Load(const std::string& metrics_group, bool load_can_gos);
 
   void StopTweening() override;
-  void BeginTweening(float fSecs, TweenType tt = TWEEN_LINEAR) override;
-  void SetBarWidth(int iWidth);
+  void BeginTweening(float secs, TweenType tt = TWEEN_LINEAR) override;
+  void SetBarWidth(int width);
   int GetBarWidth() const;
-  void SetCanGo(bool bCanGoLeft, bool bCanGoRight);
+  void SetCanGo(bool can_go_left, bool can_go_right);
 
  protected:
   AutoActor spr_middle_;

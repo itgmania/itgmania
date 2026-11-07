@@ -14,23 +14,23 @@ class HelpDisplay : public BitmapText {
 
   virtual HelpDisplay* Copy() const;
 
-  void SetTips(const std::vector<std::string>& arrayTips) {
-    SetTips(arrayTips, arrayTips);
+  void SetTips(const std::vector<std::string>& array_tips) {
+    SetTips(array_tips, array_tips);
   }
   void SetTips(
-      const std::vector<std::string>& arrayTips,
-      const std::vector<std::string>& arrayTipsAlt);
+      const std::vector<std::string>& array_tips,
+      const std::vector<std::string>& array_tips_alt);
   void GetTips(
-      std::vector<std::string>& arrayTipsOut,
-      std::vector<std::string>& arrayTipsAltOut) const {
-    arrayTipsOut = array_tips_;
-    arrayTipsAltOut = array_tips_alt_;
+      std::vector<std::string>& array_tips_out,
+      std::vector<std::string>& array_tips_alt_out) const {
+    array_tips_out = array_tips_;
+    array_tips_alt_out = array_tips_alt_;
   }
-  void SetSecsBetweenSwitches(float fSeconds) {
-    secs_between_switches_ = secs_until_switch_ = fSeconds;
+  void SetSecsBetweenSwitches(float seconds) {
+    secs_between_switches_ = secs_until_switch_ = seconds;
   }
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   // Lua
   virtual void PushSelf(lua_State* L);

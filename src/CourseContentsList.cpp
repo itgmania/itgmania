@@ -25,25 +25,25 @@ CourseContentsList::~CourseContentsList() {
   display_.clear();
 }
 
-void CourseContentsList::LoadFromNode(const XNode* pNode) {
-  int iMaxSongs = 5;
-  pNode->GetAttrValue("MaxSongs", iMaxSongs);
+void CourseContentsList::LoadFromNode(const XNode* node) {
+  int max_songs = 5;
+  node->GetAttrValue("MaxSongs", max_songs);
 
-  const XNode* pDisplayNode = pNode->GetChild("Display");
-  if (pDisplayNode == nullptr) {
+  const XNode* display_node = node->GetChild("Display");
+  if (display_node == nullptr) {
     LuaHelpers::ReportScriptErrorFmt(
         "%s: CourseContentsList: missing the Display child",
-        ActorUtil::GetWhere(pNode).c_str());
+        ActorUtil::GetWhere(node).c_str());
     return;
   }
 
-  for (int i = 0; i < iMaxSongs; i++) {
-    Actor* pDisplay = ActorUtil::LoadFromNode(pDisplayNode, this);
-    pDisplay->SetUseZBuffer(true);
-    display_.push_back(pDisplay);
+  for (int i = 0; i < max_songs; i++) {
+    Actor* display = ActorUtil::LoadFromNode(display_node, this);
+    display->SetUseZBuffer(true);
+    display_.push_back(display);
   }
 
-  ActorScroller::LoadFromNode(pNode);
+  ActorScroller::LoadFromNode(node);
 }
 
 void CourseContentsList::SetFromGameState() {
@@ -52,48 +52,47 @@ void CourseContentsList::SetFromGameState() {
   if (GAMESTATE->GetMasterPlayerNumber() == PlayerNumber_Invalid) {
     return;
   }
-  const Trail* pMasterTrail =
+  const Trail* master_trail =
       GAMESTATE->cur_trail_[GAMESTATE->GetMasterPlayerNumber()];
-  if (pMasterTrail == nullptr) {
+  if (master_trail == nullptr) {
     return;
   }
-  unsigned uNumEntriesToShow = pMasterTrail->entries_.size();
-  rage_clamp(uNumEntriesToShow, 0, display_.size());
+  unsigned num_entries_to_show = master_trail->entries_.size();
+  rage_clamp(num_entries_to_show, 0, display_.size());
 
-  for (int i = 0; i < (int)uNumEntriesToShow; i++) {
-    Actor* pDisplay = display_[i];
-    SetItemFromGameState(pDisplay, i);
-    this->AddChild(pDisplay);
+  for (int i = 0; i < (int)num_entries_to_show; i++) {
+    Actor* display = display_[i];
+    SetItemFromGameState(display, i);
+    this->AddChild(display);
   }
 
-  bool bLoop = pMasterTrail->entries_.size() > uNumEntriesToShow;
+  bool loop = master_trail->entries_.size() > num_entries_to_show;
 
-  this->SetLoop(bLoop);
+  this->SetLoop(loop);
   this->Load2();
   this->SetTransformFromHeight(display_[0]->GetUnzoomedHeight());
   this->EnableMask(
       display_[0]->GetUnzoomedWidth(), display_[0]->GetUnzoomedHeight());
 
-  if (bLoop) {
+  if (loop) {
     SetPauseCountdownSeconds(1.5f);
     this->SetDestinationItem((float)display_.size() + 1);  // loop forever
   }
 }
 
 void CourseContentsList::SetItemFromGameState(
-    Actor* pActor, int iCourseEntryIndex) {
-  const Course* pCourse = GAMESTATE->cur_course_;
+    Actor* actor, int course_entry_index) {
+  const Course* course = GAMESTATE->cur_course_;
 
   FOREACH_HumanPlayer(pn) {
-    const Trail* pTrail = GAMESTATE->cur_trail_[pn];
-    if (pTrail == nullptr ||
-        iCourseEntryIndex >= (int)pTrail->entries_.size() ||
-        iCourseEntryIndex >= (int)pCourse->entries_.size()) {
+    const Trail* trail = GAMESTATE->cur_trail_[pn];
+    if (trail == nullptr || course_entry_index >= (int)trail->entries_.size() ||
+        course_entry_index >= (int)course->entries_.size()) {
       continue;
     }
 
-    const TrailEntry* te = &pTrail->entries_[iCourseEntryIndex];
-    const CourseEntry* ce = &pCourse->entries_[iCourseEntryIndex];
+    const TrailEntry* te = &trail->entries_[course_entry_index];
+    const CourseEntry* ce = &course->entries_[course_entry_index];
     if (te == nullptr) {
       continue;
     }
@@ -105,24 +104,24 @@ void CourseContentsList::SetItemFromGameState(
         continue;
       }
 
-      int iLow = ce->steps_criteria_.low_meter_;
-      int iHigh = ce->steps_criteria_.high_meter_;
+      int low = ce->steps_criteria_.low_meter_;
+      int high = ce->steps_criteria_.high_meter_;
 
-      bool bLowIsSet = iLow != -1;
-      bool bHighIsSet = iHigh != -1;
+      bool low_is_set = low != -1;
+      bool high_is_set = high != -1;
 
-      if (!bLowIsSet && !bHighIsSet) {
+      if (!low_is_set && !high_is_set) {
         s = "?";
       }
-      if (!bLowIsSet && bHighIsSet) {
-        s = ssprintf(">=%d", iHigh);
-      } else if (bLowIsSet && !bHighIsSet) {
-        s = ssprintf("<=%d", iLow);
-      } else if (bLowIsSet && bHighIsSet) {
-        if (iLow == iHigh) {
-          s = ssprintf("%d", iLow);
+      if (!low_is_set && high_is_set) {
+        s = ssprintf(">=%d", high);
+      } else if (low_is_set && !high_is_set) {
+        s = ssprintf("<=%d", low);
+      } else if (low_is_set && high_is_set) {
+        if (low == high) {
+          s = ssprintf("%d", low);
         } else {
-          s = ssprintf("%d-%d", iLow, iHigh);
+          s = ssprintf("%d-%d", low, high);
         }
       }
 
@@ -141,10 +140,10 @@ void CourseContentsList::SetItemFromGameState(
     msg.SetParam("Steps", te->steps_);
     msg.SetParam("Difficulty", dc);
     msg.SetParam("Meter", s);
-    msg.SetParam("Number", iCourseEntryIndex + 1);
+    msg.SetParam("Number", course_entry_index + 1);
     msg.SetParam("Modifiers", te->modifiers_);
     msg.SetParam("Secret", te->secret_);
-    pActor->HandleMessage(msg);
+    actor->HandleMessage(msg);
   }
 }
 

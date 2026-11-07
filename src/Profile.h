@@ -173,7 +173,7 @@ class Profile {
   // smart accessors
   std::string GetDisplayNameOrHighScoreName() const;
   Character* GetCharacter() const;
-  void SetCharacter(const std::string sCharacterID);
+  void SetCharacter(const std::string character_id);
   std::string GetDisplayTotalCaloriesBurned()
       const;  // remove me and use Lua instead
   int GetCalculatedWeightPounds()
@@ -192,18 +192,17 @@ class Profile {
   float GetCoursesPercentComplete(StepsType st, CourseDifficulty cd) const;
   float GetSongsAndCoursesPercentCompleteAllDifficulties(StepsType st) const;
   bool GetDefaultModifiers(
-      const Game* pGameType, std::string& sModifiersOut) const;
-  void SetDefaultModifiers(
-      const Game* pGameType, const std::string& sModifiers);
-  bool IsCodeUnlocked(std::string sUnlockEntryID) const;
+      const Game* game_type, std::string& modifiers_out) const;
+  void SetDefaultModifiers(const Game* game_type, const std::string& modifiers);
+  bool IsCodeUnlocked(std::string unlock_entry_id) const;
   Song* GetMostPopularSong() const;
   Course* GetMostPopularCourse() const;
 
   void AddStepTotals(
-      int iNumTapsAndHolds, int iNumJumps, int iNumHolds, int iNumRolls,
-      int iNumMines, int iNumHands, int iNumLifts, float fCaloriesBurned);
+      int num_taps_and_holds, int num_jumps, int num_holds, int num_rolls,
+      int num_mines, int num_hands, int num_lifts, float calories_burned);
   void AddCaloriesToDailyTotal(float cals);
-  float CalculateCaloriesFromHeartRate(float HeartRate, float Duration);
+  float CalculateCaloriesFromHeartRate(float heart_rate, float duration);
 
   bool IsMachine() const;
 
@@ -306,17 +305,17 @@ class Profile {
   std::map<SongID, HighScoresForASong> song_high_scores_;
 
   void AddStepsHighScore(
-      const Song* pSong, const Steps* pSteps, HighScore hs, int& iIndexOut);
+      const Song* song, const Steps* steps, HighScore hs, int& index_out);
   const HighScoreList& GetStepsHighScoreList(
-      const Song* pSong, const Steps* pSteps) const;
-  HighScoreList& GetStepsHighScoreList(const Song* pSong, const Steps* pSteps);
-  void IncrementStepsPlayCount(const Song* pSong, const Steps* pSteps);
-  void GetGrades(const Song* pSong, StepsType st, int iCounts[NUM_Grade]) const;
-  int GetSongNumTimesPlayed(const Song* pSong) const;
-  int GetSongNumTimesPlayed(const SongID& songID) const;
-  DateTime GetSongLastPlayedDateTime(const Song* pSong) const;
-  bool HasPassedSteps(const Song* pSong, const Steps* pSteps) const;
-  bool HasPassedAnyStepsInSong(const Song* pSong) const;
+      const Song* song, const Steps* steps) const;
+  HighScoreList& GetStepsHighScoreList(const Song* song, const Steps* steps);
+  void IncrementStepsPlayCount(const Song* song, const Steps* steps);
+  void GetGrades(const Song* song, StepsType st, int counts[NUM_Grade]) const;
+  int GetSongNumTimesPlayed(const Song* song) const;
+  int GetSongNumTimesPlayed(const SongID& song_id) const;
+  DateTime GetSongLastPlayedDateTime(const Song* song) const;
+  bool HasPassedSteps(const Song* song, const Steps* steps) const;
+  bool HasPassedAnyStepsInSong(const Song* song) const;
 
   // Course high scores
   // struct was a typedef'd array of HighScores, but VC6 freaks out
@@ -333,15 +332,15 @@ class Profile {
   std::map<CourseID, HighScoresForACourse> course_high_scores_;
 
   void AddCourseHighScore(
-      const Course* pCourse, const Trail* pTrail, HighScore hs, int& iIndexOut);
+      const Course* course, const Trail* trail, HighScore hs, int& index_out);
   HighScoreList& GetCourseHighScoreList(
-      const Course* pCourse, const Trail* pTrail);
+      const Course* course, const Trail* trail);
   const HighScoreList& GetCourseHighScoreList(
-      const Course* pCourse, const Trail* pTrail) const;
-  int GetCourseNumTimesPlayed(const Course* pCourse) const;
-  int GetCourseNumTimesPlayed(const CourseID& courseID) const;
-  DateTime GetCourseLastPlayedDateTime(const Course* pCourse) const;
-  void IncrementCoursePlayCount(const Course* pCourse, const Trail* pTrail);
+      const Course* course, const Trail* trail) const;
+  int GetCourseNumTimesPlayed(const Course* course) const;
+  int GetCourseNumTimesPlayed(const CourseID& course_id) const;
+  DateTime GetCourseLastPlayedDateTime(const Course* course) const;
+  void IncrementCoursePlayCount(const Course* course, const Trail* trail);
 
   void GetAllUsedHighScoreNames(std::set<std::string>& names);
 
@@ -353,7 +352,7 @@ class Profile {
   HighScoreList category_high_scores_[NUM_StepsType][NUM_RankingCategory];
 
   void AddCategoryHighScore(
-      StepsType st, RankingCategory rc, HighScore hs, int& iIndexOut);
+      StepsType st, RankingCategory rc, HighScore hs, int& index_out);
   HighScoreList& GetCategoryHighScoreList(StepsType st, RankingCategory rc);
   const HighScoreList& GetCategoryHighScoreList(
       StepsType st, RankingCategory rc) const;
@@ -436,27 +435,28 @@ class Profile {
 
   // Loading and saving
   bool HandleStatsPrefixChange(std::string dir, bool require_signature);
-  ProfileLoadResult LoadAllFromDir(std::string sDir, bool bRequireSignature);
+  ProfileLoadResult LoadAllFromDir(std::string dir, bool require_signature);
   ProfileLoadResult LoadStatsFromDir(std::string dir, bool require_signature);
   void LoadSongsFromDir(
-      const std::string& dir, ProfileSlot prof_slot, bool isMemoryCard = true);
+      const std::string& dir, ProfileSlot prof_slot,
+      bool is_memory_card = true);
   void LoadTypeFromDir(std::string dir);
-  void LoadCustomFunction(std::string sDir, PlayerNumber pn);
-  bool SaveAllToDir(std::string sDir, bool bSignData) const;
+  void LoadCustomFunction(std::string dir, PlayerNumber pn);
+  bool SaveAllToDir(std::string dir, bool sign_data) const;
 
-  ProfileLoadResult LoadEditableDataFromDir(std::string sDir);
+  ProfileLoadResult LoadEditableDataFromDir(std::string dir);
   ProfileLoadResult LoadStatsXmlFromNode(
-      const XNode* pNode, bool bIgnoreEditable = true);
-  void LoadGeneralDataFromNode(const XNode* pNode);
-  void LoadSongScoresFromNode(const XNode* pNode);
-  void LoadCourseScoresFromNode(const XNode* pNode);
-  void LoadCategoryScoresFromNode(const XNode* pNode);
-  void LoadScreenshotDataFromNode(const XNode* pNode);
-  void LoadCalorieDataFromNode(const XNode* pNode);
+      const XNode* node, bool ignore_editable = true);
+  void LoadGeneralDataFromNode(const XNode* node);
+  void LoadSongScoresFromNode(const XNode* node);
+  void LoadCourseScoresFromNode(const XNode* node);
+  void LoadCategoryScoresFromNode(const XNode* node);
+  void LoadScreenshotDataFromNode(const XNode* node);
+  void LoadCalorieDataFromNode(const XNode* node);
 
   void SaveTypeToDir(std::string dir) const;
-  void SaveEditableDataToDir(std::string sDir) const;
-  bool SaveStatsXmlToDir(std::string sDir, bool bSignData) const;
+  void SaveEditableDataToDir(std::string dir) const;
+  bool SaveStatsXmlToDir(std::string dir, bool sign_data) const;
   XNode* SaveStatsXmlCreateNode() const;
   XNode* SaveGeneralDataCreateNode() const;
   XNode* SaveSongScoresCreateNode() const;
@@ -467,23 +467,23 @@ class Profile {
 
   XNode* SaveCoinDataCreateNode() const;
 
-  void SaveStatsWebPageToDir(std::string sDir) const;
+  void SaveStatsWebPageToDir(std::string dir) const;
 
-  static void MoveBackupToDir(std::string sFromDir, std::string sToDir);
+  static void MoveBackupToDir(std::string from_dir, std::string to_dir);
   static std::string MakeUniqueFileNameNoExtension(
-      std::string sDir, std::string sFileNameBeginning);
+      std::string dir, std::string file_name_beginning);
   static std::string MakeFileNameNoExtension(
-      std::string sFileNameBeginning, int iIndex);
+      std::string file_name_beginning, int index);
 
   std::string GetCustomSongsGroupNamePrefix() const;
-  bool IsCustomSongGroup(std::string sSongGroup) const;
+  bool IsCustomSongGroup(std::string song_group) const;
   // Lua
   void PushSelf(lua_State* L);
 
  private:
-  const HighScoresForASong* GetHighScoresForASong(const SongID& songID) const;
+  const HighScoresForASong* GetHighScoresForASong(const SongID& song_id) const;
   const HighScoresForACourse* GetHighScoresForACourse(
-      const CourseID& courseID) const;
+      const CourseID& course_id) const;
 };
 
 #endif

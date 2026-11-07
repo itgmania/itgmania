@@ -8,18 +8,18 @@
 class ScoreKeeperRave : public ScoreKeeper {
  public:
   ScoreKeeperRave(
-      PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+      PlayerState* player_state, PlayerStageStats* player_stage_stats);
   void OnNextSong(int /* iSongInCourseIndex */, const Steps*, const NoteData*) {
   }
   void HandleTapScore(const TapNote& tn);
-  void HandleTapRowScore(const NoteData& nd, int iRow);
+  void HandleTapRowScore(const NoteData& nd, int row);
   void HandleHoldScore(const TapNote& tn);
   void HandleHoldActiveSeconds(float /* fMusicSecondsHeld */) {}
   void HandleTapScoreNone();
 
  protected:
   void LaunchAttack(AttackLevel al);
-  void AddSuperMeterDelta(float fUnscaledPercentChange);
+  void AddSuperMeterDelta(float unscaled_percent_change);
 };
 
 #endif

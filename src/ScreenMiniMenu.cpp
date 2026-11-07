@@ -25,15 +25,15 @@ ScreenMessage g_SendOnCancel;
 };  // namespace
 
 void ScreenMiniMenu::MiniMenu(
-    const MenuDef* pDef, ScreenMessage SM_SendOnOK,
-    ScreenMessage SM_SendOnCancel, float fX, float fY) {
-  g_pMenuDef = pDef;
-  g_SendOnOK = SM_SendOnOK;
-  g_SendOnCancel = SM_SendOnCancel;
+    const MenuDef* def, ScreenMessage sm_send_on_ok,
+    ScreenMessage sm_send_on_cancel, float x, float y) {
+  g_pMenuDef = def;
+  g_SendOnOK = sm_send_on_ok;
+  g_SendOnCancel = sm_send_on_cancel;
 
-  SCREENMAN->AddNewScreenToTop(pDef->class_name_);
-  Screen* pNewScreen = SCREENMAN->GetTopScreen();
-  pNewScreen->SetXY(fX, fY);
+  SCREENMAN->AddNewScreenToTop(def->class_name_);
+  Screen* new_screen = SCREENMAN->GetTopScreen();
+  new_screen->SetXY(x, y);
 }
 
 REGISTER_SCREEN_CLASS(ScreenMiniMenu);
@@ -62,19 +62,19 @@ void ScreenMiniMenu::BeginScreen() {
   next_screen_ = "xxx";
 }
 
-void ScreenMiniMenu::LoadMenu(const MenuDef* pDef) {
-  menu_rows_ = pDef->rows_;
+void ScreenMiniMenu::LoadMenu(const MenuDef* def) {
+  menu_rows_ = def->rows_;
 
   last_answers_.resize(menu_rows_.size());
   // Convert from m_vMenuRows to std::vector<OptionRowDefinition>
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
   for (unsigned r = 0; r < menu_rows_.size(); r++) {
     const MenuRowDef& mr = menu_rows_[r];
-    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeSimple(mr);
-    vHands.push_back(pHand);
+    OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mr);
+    hands.push_back(hand);
   }
 
-  ScreenOptions::InitMenu(vHands);
+  ScreenOptions::InitMenu(hands);
 }
 
 void ScreenMiniMenu::AfterChangeValueOrRow(PlayerNumber pn) {
@@ -120,18 +120,18 @@ void ScreenMiniMenu::ExportOptions(
   last_answers_[r] = rows_[r]->GetOneSharedSelection(true);
 }
 
-void ScreenMiniMenu::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_GoToNextScreen) {
+void ScreenMiniMenu::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_GoToNextScreen) {
     cancelled_ = false;
     SCREENMAN->PopTopScreen(send_on_ok_);
     return;
-  } else if (SM == SM_GoToPrevScreen) {
+  } else if (sm == SM_GoToPrevScreen) {
     cancelled_ = true;
     SCREENMAN->PopTopScreen(send_on_cancel_);
     return;
   }
 
-  ScreenOptions::HandleScreenMessage(SM);
+  ScreenOptions::HandleScreenMessage(sm);
 }
 
 bool ScreenMiniMenu::FocusedItemEndsScreen(PlayerNumber pn) const {

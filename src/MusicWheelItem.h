@@ -42,14 +42,13 @@ const std::string& MusicWheelItemTypeToString(MusicWheelItemType i);
 /** @brief An item on the MusicWheel. */
 class MusicWheelItem : public WheelItemBase {
  public:
-  MusicWheelItem(std::string sType = "MusicWheelItem");
+  MusicWheelItem(std::string type = "MusicWheelItem");
   MusicWheelItem(const MusicWheelItem& cpy);
   virtual ~MusicWheelItem();
   virtual MusicWheelItem* Copy() const { return new MusicWheelItem(*this); }
 
   virtual void LoadFromWheelItemData(
-      const WheelItemBaseData* pWID, int iIndex, bool bHasFocus,
-      int iDrawIndex);
+      const WheelItemBaseData* wid, int index, bool has_focus, int draw_index);
   virtual void HandleMessage(const Message& msg);
   void RefreshGrades();
 
@@ -79,9 +78,9 @@ struct MusicWheelItemData : public WheelItemBaseData {
         label_(""),
         action_() {}
   MusicWheelItemData(
-      WheelItemDataType type, Song* pSong, std::string sSectionName,
-      Course* pCourse, Group* pGroup, RageColor color, int iSectionCount,
-      std::string sParentSection = "");
+      WheelItemDataType type, Song* song, std::string section_name,
+      Course* course, Group* group, RageColor color, int section_count,
+      std::string parent_section = "");
 
   Course* course_;
   Song* song_;

@@ -31,14 +31,14 @@ class RageCompiledGeometry {
  public:
   virtual ~RageCompiledGeometry();
 
-  void Set(const std::vector<msMesh>& vMeshes);
+  void Set(const std::vector<msMesh>& meshes);
 
   virtual void Allocate(
-      const std::vector<msMesh>& vMeshes) = 0;  // allocate space
+      const std::vector<msMesh>& meshes) = 0;  // allocate space
   virtual void Change(
-      const std::vector<msMesh>& vMeshes) = 0;  // new data must be the same
-                                                // size as was passed to Set()
-  virtual void Draw(int iMeshIndex) const = 0;
+      const std::vector<msMesh>& meshes) = 0;  // new data must be the same
+                                               // size as was passed to Set()
+  virtual void Draw(int mesh_index) const = 0;
 
  protected:
   size_t GetTotalVertices() const {
@@ -91,27 +91,27 @@ class VideoModeParams {
   // Initialize with a constructor so to guarantee all paramters
   // are filled (in case new params are added).
   VideoModeParams(
-      bool windowed_, std::string sDisplayId_, int width_, int height_,
-      int bpp_, int rate_, bool vsync_, bool interlaced_, bool bSmoothLines_,
-      bool bTrilinearFiltering_, bool bAnisotropicFiltering_,
-      bool bWindowIsFullscreenBorderless_, std::string sWindowTitle_,
-      std::string sIconFile_, bool PAL_, float fDisplayAspectRatio_)
-      : windowed_(windowed_),
-        display_id_(sDisplayId_),
-        width_(width_),
-        height_(height_),
-        bpp_(bpp_),
-        rate_(rate_),
-        vsync_(vsync_),
-        interlaced_(interlaced_),
-        smooth_lines_(bSmoothLines_),
-        trilinear_filtering_(bTrilinearFiltering_),
-        anisotropic_filtering_(bAnisotropicFiltering_),
-        window_is_fullscreen_borderless_(bWindowIsFullscreenBorderless_),
-        window_title_(sWindowTitle_),
-        icon_file_(sIconFile_),
-        pal_(PAL_),
-        display_aspect_ratio_(fDisplayAspectRatio_) {}
+      bool windowed, std::string display_id, int width, int height, int bpp,
+      int rate, bool vsync, bool interlaced, bool smooth_lines,
+      bool trilinear_filtering, bool anisotropic_filtering,
+      bool window_is_fullscreen_borderless, std::string window_title,
+      std::string icon_file, bool pal, float display_aspect_ratio)
+      : windowed_(windowed),
+        display_id_(display_id),
+        width_(width),
+        height_(height),
+        bpp_(bpp),
+        rate_(rate),
+        vsync_(vsync),
+        interlaced_(interlaced),
+        smooth_lines_(smooth_lines),
+        trilinear_filtering_(trilinear_filtering),
+        anisotropic_filtering_(anisotropic_filtering),
+        window_is_fullscreen_borderless_(window_is_fullscreen_borderless),
+        window_title_(window_title),
+        icon_file_(icon_file),
+        pal_(pal),
+        display_aspect_ratio_(display_aspect_ratio) {}
 
   VideoModeParams(const VideoModeParams& other) = default;
 
@@ -173,12 +173,12 @@ class ActualVideoModeParams : public VideoModeParams {
         window_height_(params.height_),
         render_offscreen_(false) {}
   ActualVideoModeParams(
-      const VideoModeParams& params, int windowWidth, int windowHeight,
-      bool renderOffscreen)
+      const VideoModeParams& params, int window_width, int window_height,
+      bool render_offscreen)
       : VideoModeParams(params),
-        window_width_(windowWidth),
-        window_height_(windowHeight),
-        render_offscreen_(renderOffscreen) {}
+        window_width_(window_width),
+        window_height_(window_height),
+        render_offscreen_(render_offscreen) {}
   ActualVideoModeParams(const ActualVideoModeParams& other) = default;
   ActualVideoModeParams& operator=(const ActualVideoModeParams& other) =
       default;
@@ -212,11 +212,11 @@ struct RageTextureLock {
 
   /* Given a surface with a format and no pixel data, lock the texture into the
    * surface. The data is write-only. */
-  virtual void Lock(uintptr_t iTexHandle, RageSurface* pSurface) = 0;
+  virtual void Lock(uintptr_t tex_handle, RageSurface* surface) = 0;
 
   /* Unlock and update the texture. If bChanged is false, the texture update
    * may be omitted. */
-  virtual void Unlock(RageSurface* pSurface, bool bChanged = true) = 0;
+  virtual void Unlock(RageSurface* surface, bool changed = true) = 0;
 };
 
 class RageDisplay {
@@ -235,7 +235,7 @@ class RageDisplay {
   virtual ~RageDisplay();
 
   virtual std::string Init(
-      const VideoModeParams& p, bool bAllowUnacceleratedRenderer) = 0;
+      const VideoModeParams& p, bool allow_unaccelerated_renderer) = 0;
 
   virtual std::string GetApiDescription() const = 0;
   virtual void GetDisplaySpecs(DisplaySpecs& out) const = 0;
@@ -243,7 +243,7 @@ class RageDisplay {
   // Don't override this.  Override TryVideoMode() instead.
   // This will set the video mode to be as close as possible to params.
   // Return true if device was re-created and we need to reload textures.
-  std::string SetVideoMode(VideoModeParams p, bool& bNeedReloadTextures);
+  std::string SetVideoMode(VideoModeParams p, bool& need_reload_textures);
 
   // Call this when the resolution has been changed externally:
   virtual void ResolutionChanged();
@@ -263,11 +263,11 @@ class RageDisplay {
   virtual uintptr_t CreateTexture(
       RagePixelFormat pixfmt,  // format of img and of texture in video mem
       RageSurface* img,        // must be in pixfmt
-      bool bGenerateMipMaps) = 0;
+      bool generate_mip_maps) = 0;
   virtual void UpdateTexture(
-      uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset,
+      uintptr_t tex_handle, RageSurface* img, int xoffset, int yoffset,
       int width, int height) = 0;
-  virtual void DeleteTexture(uintptr_t iTexHandle) = 0;
+  virtual void DeleteTexture(uintptr_t tex_handle) = 0;
   /* Return an object to lock pixels for streaming. If not supported, returns
    * nullptr. Delete the object normally. */
   virtual RageTextureLock* CreateTextureLock() { return nullptr; }
@@ -334,17 +334,17 @@ class RageDisplay {
   virtual RageCompiledGeometry* CreateCompiledGeometry() = 0;
   virtual void DeleteCompiledGeometry(RageCompiledGeometry* p) = 0;
 
-  void DrawQuads(const RageSpriteVertex v[], int iNumVerts);
-  void DrawQuadStrip(const RageSpriteVertex v[], int iNumVerts);
-  void DrawFan(const RageSpriteVertex v[], int iNumVerts);
-  void DrawStrip(const RageSpriteVertex v[], int iNumVerts);
-  void DrawTriangles(const RageSpriteVertex v[], int iNumVerts);
+  void DrawQuads(const RageSpriteVertex v[], int num_verts);
+  void DrawQuadStrip(const RageSpriteVertex v[], int num_verts);
+  void DrawFan(const RageSpriteVertex v[], int num_verts);
+  void DrawStrip(const RageSpriteVertex v[], int num_verts);
+  void DrawTriangles(const RageSpriteVertex v[], int num_verts);
   void DrawCompiledGeometry(
-      const RageCompiledGeometry* p, int iMeshIndex,
-      const std::vector<msMesh>& vMeshes);
+      const RageCompiledGeometry* p, int mesh_index,
+      const std::vector<msMesh>& meshes);
   void DrawLineStrip(
-      const RageSpriteVertex v[], int iNumVerts, float LineWidth);
-  void DrawSymmetricQuadStrip(const RageSpriteVertex v[], int iNumVerts);
+      const RageSpriteVertex v[], int num_verts, float line_width);
+  void DrawSymmetricQuadStrip(const RageSpriteVertex v[], int num_verts);
   void DrawCircle(const RageSpriteVertex& v, float radius);
 
   void DrawQuad(const RageSpriteVertex v[]) {
@@ -360,7 +360,7 @@ class RageDisplay {
     SAVE_LOSSY_LOW_QUAL,     // jpg
     SAVE_LOSSY_HIGH_QUAL     // jpg
   };
-  bool SaveScreenshot(const std::string& sPath, GraphicsFileFormat format);
+  bool SaveScreenshot(const std::string& path, GraphicsFileFormat format);
 
   virtual RageSurface*
   CreateScreenshot() = 0;  // allocates a surface.  Caller must delete it.
@@ -369,29 +369,29 @@ class RageDisplay {
   }  // allocates a surface.  Caller must delete it.
 
  protected:
-  virtual void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts) = 0;
+  virtual void DrawQuadsInternal(const RageSpriteVertex v[], int num_verts) = 0;
   virtual void DrawQuadStripInternal(
-      const RageSpriteVertex v[], int iNumVerts) = 0;
-  virtual void DrawFanInternal(const RageSpriteVertex v[], int iNumVerts) = 0;
-  virtual void DrawStripInternal(const RageSpriteVertex v[], int iNumVerts) = 0;
+      const RageSpriteVertex v[], int num_verts) = 0;
+  virtual void DrawFanInternal(const RageSpriteVertex v[], int num_verts) = 0;
+  virtual void DrawStripInternal(const RageSpriteVertex v[], int num_verts) = 0;
   virtual void DrawTrianglesInternal(
-      const RageSpriteVertex v[], int iNumVerts) = 0;
+      const RageSpriteVertex v[], int num_verts) = 0;
   virtual void DrawCompiledGeometryInternal(
-      const RageCompiledGeometry* p, int iMeshIndex) = 0;
+      const RageCompiledGeometry* p, int mesh_index) = 0;
   virtual void DrawLineStripInternal(
-      const RageSpriteVertex v[], int iNumVerts, float LineWidth);
+      const RageSpriteVertex v[], int num_verts, float line_width);
   virtual void DrawSymmetricQuadStripInternal(
-      const RageSpriteVertex v[], int iNumVerts) = 0;
+      const RageSpriteVertex v[], int num_verts) = 0;
   virtual void DrawCircleInternal(const RageSpriteVertex& v, float radius);
 
   // return std::string() if mode change was successful, an error message
   // otherwise. bNewDeviceOut is set true if a new device was created and
   // textures need to be reloaded.
   virtual std::string TryVideoMode(
-      const VideoModeParams& p, bool& bNewDeviceOut) = 0;
+      const VideoModeParams& p, bool& new_device_out) = 0;
 
   void DrawPolyLine(
-      const RageSpriteVertex& p1, const RageSpriteVertex& p2, float LineWidth);
+      const RageSpriteVertex& p1, const RageSpriteVertex& p2, float line_width);
 
   // Stuff in RageDisplay.cpp
   void SetDefaultRenderStates();
@@ -404,15 +404,15 @@ class RageDisplay {
   virtual void ResetStats();
   virtual void ProcessStatsOnFlip();
   virtual std::string GetStats() const;
-  void StatsAddVerts(int iNumVertsRendered);
+  void StatsAddVerts(int num_verts_rendered);
 
   // World matrix stack functions.
   void PushMatrix();
   void PopMatrix();
   void TranslateWorld(float x, float y, float z);
   void Scale(float x, float y, float z);
-  void SkewX(float fAmount);
-  void SkewY(float fAmount);
+  void SkewX(float amount);
+  void SkewY(float amount);
   void MultMatrix(const RageMatrix& f) { this->PostMultMatrix(f); } /* alias */
   void PostMultMatrix(const RageMatrix& f);
   void PreMultMatrix(const RageMatrix& f);
@@ -430,11 +430,11 @@ class RageDisplay {
   void CameraPushMatrix();
   void CameraPopMatrix();
   void LoadMenuPerspective(
-      float fFOVDegrees, float fWidth, float fHeight, float fVanishPointX,
-      float fVanishPointY);
+      float fov_degrees, float width, float height, float vanish_point_x,
+      float vanish_point_y);
   void LoadLookAt(
-      float fov, const RageVector3& Eye, const RageVector3& At,
-      const RageVector3& Up);
+      float fov, const RageVector3& eye, const RageVector3& at,
+      const RageVector3& up);
 
   // Centering matrix
   void CenteringPushMatrix();
@@ -444,7 +444,7 @@ class RageDisplay {
   RageSurface* CreateSurfaceFromPixfmt(
       RagePixelFormat pixfmt, void* pixels, int width, int height, int pitch);
   RagePixelFormat FindPixelFormat(
-      int bpp, unsigned Rmask, unsigned Gmask, unsigned Bmask, unsigned Amask,
+      int bpp, unsigned rmask, unsigned gmask, unsigned bmask, unsigned amask,
       bool realtime = false);
 
   // Lua
@@ -452,7 +452,7 @@ class RageDisplay {
 
  protected:
   RageMatrix GetPerspectiveMatrix(
-      float fovy, float aspect, float zNear, float zFar);
+      float fovy, float aspect, float z_near, float z_far);
 
   // Different for D3D and OpenGL. Not sure why they're not compatible. -Chris
   virtual RageMatrix GetOrthoMatrix(
@@ -462,8 +462,8 @@ class RageDisplay {
 
   // Matrix that adjusts position and scale of image on the screen
   RageMatrix GetCenteringMatrix(
-      float fTranslateX, float fTranslateY, float fAddWidth,
-      float fAddHeight) const;
+      float translate_x, float translate_y, float add_width,
+      float add_height) const;
   void UpdateCentering();
 
   // Called by the RageDisplay derivitives

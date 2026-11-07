@@ -26,13 +26,13 @@ class AutoActor {
    * @brief Determine if this actor is presently loaded.
    * @return true if it is loaded, or false otherwise. */
   bool IsLoaded() const { return actor_ != nullptr; }
-  void Load(Actor* pActor);  // transfer pointer
-  void Load(const std::string& sPath);
+  void Load(Actor* actor);  // transfer pointer
+  void Load(const std::string& path);
   void LoadB(
-      const std::string& sMetricsGroup,
-      const std::string& sElement);  // load a background and set up
-                                     // LuaThreadVariables for recursive loading
-  void LoadActorFromNode(const XNode* pNode, Actor* pParent);
+      const std::string& metrics_group,
+      const std::string& element);  // load a background and set up
+                                    // LuaThreadVariables for recursive loading
+  void LoadActorFromNode(const XNode* node, Actor* parent);
 
  protected:
   /** @brief the Actor for which there is a smart pointer to. */

@@ -4,7 +4,7 @@
 /* Helper for ConvertValue(). */
 template <typename TO, typename FROM>
 struct ConvertValueHelper {
-  explicit ConvertValueHelper(FROM* pVal) : from_value_(pVal) {
+  explicit ConvertValueHelper(FROM* val) : from_value_(val) {
     to_value_ = static_cast<TO>(*from_value_);
   }
 
@@ -24,8 +24,8 @@ struct ConvertValueHelper {
  * *ConvertValue<int>(&f) = 12;
  */
 template <typename TO, typename FROM>
-ConvertValueHelper<TO, FROM> ConvertValue(FROM* pValue) {
-  return ConvertValueHelper<TO, FROM>(pValue);
+ConvertValueHelper<TO, FROM> ConvertValue(FROM* value) {
+  return ConvertValueHelper<TO, FROM>(value);
 }
 
 #endif

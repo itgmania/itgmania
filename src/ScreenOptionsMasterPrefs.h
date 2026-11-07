@@ -95,7 +95,7 @@ struct ConfOption {
     PUSH(c18);
     PUSH(c19);
   }
-  void AddOption(const std::string& sName) { PUSH(sName.c_str()); }
+  void AddOption(const std::string& name) { PUSH(name.c_str()); }
 #undef PUSH
 
   ConfOption(

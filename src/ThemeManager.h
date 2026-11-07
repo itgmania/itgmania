@@ -34,19 +34,19 @@ class ThemeManager {
   ThemeManager();
   ~ThemeManager();
 
-  void GetThemeNames(std::vector<std::string>& AddTo);
-  void GetSelectableThemeNames(std::vector<std::string>& AddTo);
+  void GetThemeNames(std::vector<std::string>& add_to);
+  void GetSelectableThemeNames(std::vector<std::string>& add_to);
   int GetNumSelectableThemes();
-  bool DoesThemeExist(const std::string& sThemeName);
+  bool DoesThemeExist(const std::string& theme_name);
   bool IsThemeSelectable(const std::string& name);
   bool IsThemeNameValid(const std::string& name);
-  std::string GetThemeDisplayName(const std::string& sThemeName);
-  std::string GetThemeAuthor(const std::string& sThemeName);
-  void GetLanguages(std::vector<std::string>& AddTo);
-  bool DoesLanguageExist(const std::string& sLanguage);
+  std::string GetThemeDisplayName(const std::string& theme_name);
+  std::string GetThemeAuthor(const std::string& theme_name);
+  void GetLanguages(std::vector<std::string>& add_to);
+  bool DoesLanguageExist(const std::string& language);
   void SwitchThemeAndLanguage(
-      const std::string& sThemeName, const std::string& sLanguage,
-      bool bPseudoLocalize, bool bForceThemeReload = false);
+      const std::string& theme_name, const std::string& language,
+      bool pseudo_localize, bool force_theme_reload = false);
   void UpdateLuaGlobals();
   std::string GetCurThemeName() const { return cur_theme_name_; };
   bool IsThemeLoaded() const { return !cur_theme_name_.empty(); };
@@ -58,7 +58,7 @@ class ThemeManager {
   void ReloadMetrics();
   void ReloadSubscribers();
 
-  static void EvaluateString(std::string& sText);
+  static void EvaluateString(std::string& text);
 
   struct PathInfo {
     std::string resolved_path_;
@@ -67,83 +67,83 @@ class ThemeManager {
   };
 
   bool GetPathInfo(
-      PathInfo& out, ElementCategory category, const std::string& sMetricsGroup,
-      const std::string& sElement, bool bOptional = false);
+      PathInfo& out, ElementCategory category, const std::string& metrics_group,
+      const std::string& element, bool optional = false);
   std::string GetPath(
-      ElementCategory category, const std::string& sMetricsGroup,
-      const std::string& sElement, bool bOptional = false);
+      ElementCategory category, const std::string& metrics_group,
+      const std::string& element, bool optional = false);
   std::string GetPathB(
-      const std::string& sMetricsGroup, const std::string& sElement,
-      bool bOptional = false) {
-    return GetPath(EC_BGANIMATIONS, sMetricsGroup, sElement, bOptional);
+      const std::string& metrics_group, const std::string& element,
+      bool optional = false) {
+    return GetPath(EC_BGANIMATIONS, metrics_group, element, optional);
   };
   std::string GetPathF(
-      const std::string& sMetricsGroup, const std::string& sElement,
-      bool bOptional = false) {
-    return GetPath(EC_FONTS, sMetricsGroup, sElement, bOptional);
+      const std::string& metrics_group, const std::string& element,
+      bool optional = false) {
+    return GetPath(EC_FONTS, metrics_group, element, optional);
   };
   std::string GetPathG(
-      const std::string& sMetricsGroup, const std::string& sElement,
-      bool bOptional = false) {
-    return GetPath(EC_GRAPHICS, sMetricsGroup, sElement, bOptional);
+      const std::string& metrics_group, const std::string& element,
+      bool optional = false) {
+    return GetPath(EC_GRAPHICS, metrics_group, element, optional);
   };
   std::string GetPathS(
-      const std::string& sMetricsGroup, const std::string& sElement,
-      bool bOptional = false) {
-    return GetPath(EC_SOUNDS, sMetricsGroup, sElement, bOptional);
+      const std::string& metrics_group, const std::string& element,
+      bool optional = false) {
+    return GetPath(EC_SOUNDS, metrics_group, element, optional);
   };
   std::string GetPathO(
-      const std::string& sMetricsGroup, const std::string& sElement,
-      bool bOptional = false) {
-    return GetPath(EC_OTHER, sMetricsGroup, sElement, bOptional);
+      const std::string& metrics_group, const std::string& element,
+      bool optional = false) {
+    return GetPath(EC_OTHER, metrics_group, element, optional);
   };
   void ClearThemePathCache();
 
   bool HasMetric(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   void PushMetric(
-      Lua* L, const std::string& sMetricsGroup, const std::string& sValueName);
+      Lua* L, const std::string& metrics_group, const std::string& value_name);
   std::string GetMetric(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   int GetMetricI(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   float GetMetricF(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   bool GetMetricB(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   RageColor GetMetricC(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   LuaReference GetMetricR(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   apActorCommands GetMetricA(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
 
   void GetMetric(
-      const std::string& sMetricsGroup, const std::string& sValueName,
-      LuaReference& valueOut);
+      const std::string& metrics_group, const std::string& value_name,
+      LuaReference& value_out);
 
   // Languages
   bool HasString(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   std::string GetString(
-      const std::string& sMetricsGroup, const std::string& sValueName);
+      const std::string& metrics_group, const std::string& value_name);
   void GetString(
-      const std::string& sMetricsGroup, const std::string& sValueName,
-      std::string& valueOut) {
-    valueOut = GetString(sMetricsGroup, sValueName);
+      const std::string& metrics_group, const std::string& value_name,
+      std::string& value_out) {
+    value_out = GetString(metrics_group, value_name);
   }
-  void FilterFileLanguages(std::vector<std::string>& asElementPaths);
+  void FilterFileLanguages(std::vector<std::string>& element_paths);
 
   void GetMetricsThatBeginWith(
-      const std::string& sMetricsGroup, const std::string& sValueName,
-      std::set<std::string>& vsValueNamesOut);
+      const std::string& metrics_group, const std::string& value_name,
+      std::set<std::string>& value_names_out);
 
-  std::string GetMetricsGroupFallback(const std::string& sMetricsGroup);
+  std::string GetMetricsGroupFallback(const std::string& metrics_group);
 
   static std::string GetBlankGraphicPath();
 
   // needs to be public for its binding to work
-  void RunLuaScripts(const std::string& sMask, bool bUseThemeDir = false);
+  void RunLuaScripts(const std::string& mask, bool use_theme_dir = false);
 
   // For self-registering metrics
   static void Subscribe(IThemeMetric* p);
@@ -154,29 +154,29 @@ class ThemeManager {
 
  protected:
   void LoadThemeMetrics(
-      const std::string& sThemeName, const std::string& sLanguage_);
+      const std::string& theme_name, const std::string& language);
   std::string GetMetricRaw(
-      const IniFile& ini, const std::string& sMetricsGroup,
-      const std::string& sValueName);
+      const IniFile& ini, const std::string& metrics_group,
+      const std::string& value_name);
   bool GetMetricRawRecursive(
-      const IniFile& ini, const std::string& sMetricsGroup,
-      const std::string& sValueName, std::string& sRet);
+      const IniFile& ini, const std::string& metrics_group,
+      const std::string& value_name, std::string& ret);
 
   bool GetPathInfoToAndFallback(
-      PathInfo& out, ElementCategory category, const std::string& sMetricsGroup,
-      const std::string& sFile);
+      PathInfo& out, ElementCategory category, const std::string& metrics_group,
+      const std::string& file);
   bool GetPathInfoToRaw(
-      PathInfo& out, const std::string& sThemeName, ElementCategory category,
-      const std::string& sMetricsGroup, const std::string& sFile);
-  static std::string GetThemeDirFromName(const std::string& sThemeName);
-  static std::string GetMetricsIniPath(const std::string& sThemeName);
+      PathInfo& out, const std::string& theme_name, ElementCategory category,
+      const std::string& metrics_group, const std::string& file);
+  static std::string GetThemeDirFromName(const std::string& theme_name);
+  static std::string GetMetricsIniPath(const std::string& theme_name);
   static void GetLanguagesForTheme(
-      const std::string& sThemeName, std::vector<std::string>& asLanguagesOut);
+      const std::string& theme_name, std::vector<std::string>& languages_out);
   static std::string GetLanguageIniPath(
-      const std::string& sThemeName, const std::string& sLanguage);
+      const std::string& theme_name, const std::string& language);
   void GetOptionalLanguageIniPaths(
-      std::vector<std::string>& vsPathsOut, const std::string& sThemeName,
-      const std::string& sLanguage);
+      std::vector<std::string>& paths_out, const std::string& theme_name,
+      const std::string& language);
   std::string GetDefaultLanguage();
 
   std::string cur_theme_name_;

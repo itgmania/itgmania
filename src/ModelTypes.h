@@ -38,16 +38,16 @@ class AnimatedTexture {
   RageVector3 RadianToDegree(RageVector3 radian);
 
   void LoadBlank();
-  void Load(const std::string& sTexOrIniFile);
+  void Load(const std::string& tex_or_ini_file);
   void Unload();
-  void Update(float fDelta);
+  void Update(float delta);
 
   RageTexture* GetCurrentTexture();
 
   int GetNumStates() const;
-  void SetState(int iNewState);
+  void SetState(int new_state);
   float GetAnimationLengthSeconds() const;
-  void SetSecondsIntoAnimation(float fSeconds);
+  void SetSecondsIntoAnimation(float seconds);
   float GetSecondsIntoAnimation() const;
   RageVector2 GetTextureTranslate();
 
@@ -64,10 +64,8 @@ class AnimatedTexture {
   float secs_into_frame_;
   struct AnimatedTextureState {
     AnimatedTextureState(
-        RageTexture* pTexture_, float fDelaySecs_, RageVector2 vTranslate_)
-        : texture_(pTexture_),
-          delay_secs_(fDelaySecs_),
-          translate_(vTranslate_) {}
+        RageTexture* texture, float delay_secs, RageVector2 translate)
+        : texture_(texture), delay_secs_(delay_secs), translate_(translate) {}
 
     RageTexture* texture_;
     float delay_secs_;
@@ -122,16 +120,16 @@ struct msBone {
 };
 
 struct msAnimation {
-  int FindBoneByName(const std::string& sName) const {
+  int FindBoneByName(const std::string& name) const {
     for (unsigned i = 0; i < bones_.size(); i++) {
-      if (bones_[i].name_ == sName) {
+      if (bones_[i].name_ == name) {
         return i;
       }
     }
     return -1;
   }
 
-  bool LoadMilkshapeAsciiBones(std::string sAniName, std::string sPath);
+  bool LoadMilkshapeAsciiBones(std::string ani_name, std::string path);
 
   std::vector<msBone> bones_;
   int total_frames_ = 0;

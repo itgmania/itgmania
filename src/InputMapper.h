@@ -148,13 +148,13 @@ class InputScheme {
   GameButtonInfo game_button_info_[NUM_GameButton];
   const AutoMappings* auto_mappings_;
 
-  GameButton ButtonNameToIndex(const std::string& sButtonName) const;
+  GameButton ButtonNameToIndex(const std::string& button_name) const;
   GameButton GameButtonToMenuButton(GameButton gb) const;
   void MenuButtonToGameInputs(
-      GameButton MenuI, PlayerNumber pn,
-      std::vector<GameInput>& GameIout) const;
+      GameButton menu_i, PlayerNumber pn,
+      std::vector<GameInput>& game_iout) const;
   void MenuButtonToGameButtons(
-      GameButton MenuI, std::vector<GameButton>& aGameButtons) const;
+      GameButton menu_i, std::vector<GameButton>& game_buttons) const;
   const GameButtonInfo* GetGameButtonInfo(GameButton gb) const;
   const char* GetGameButtonName(GameButton gb) const;
 };
@@ -175,15 +175,15 @@ class InputMappings {
 
   void Clear();
   void Unmap(InputDevice id);
-  void WriteMappings(const InputScheme* pInputScheme, std::string sFilePath);
+  void WriteMappings(const InputScheme* input_scheme, std::string file_path);
   void ReadMappings(
-      const InputScheme* pInputScheme, std::string sFilePath,
-      bool bIsAutoMapping);
+      const InputScheme* input_scheme, std::string file_path,
+      bool is_auto_mapping);
   void SetInputMap(
-      const DeviceInput& DeviceI, const GameInput& GameI, int iSlotIndex);
+      const DeviceInput& device_i, const GameInput& game_i, int slot_index);
 
-  void ClearFromInputMap(const DeviceInput& DeviceI);
-  bool ClearFromInputMap(const GameInput& GameI, int iSlotIndex);
+  void ClearFromInputMap(const DeviceInput& device_i);
+  bool ClearFromInputMap(const GameInput& game_i, int slot_index);
 };
 /** @brief Holds user-chosen input preferences and saves it between sessions. */
 class InputMapper {
@@ -191,7 +191,7 @@ class InputMapper {
   InputMapper();
   ~InputMapper();
 
-  void SetInputScheme(const InputScheme* pInputScheme);
+  void SetInputScheme(const InputScheme* input_scheme);
   const InputScheme* GetInputScheme() const;
   void SetJoinControllers(PlayerNumber pn);
 
@@ -204,49 +204,50 @@ class InputMapper {
   void SanityCheckMappings(std::vector<std::string>& reason);
 
   void SetInputMap(
-      const DeviceInput& DeviceI, const GameInput& GameI, int iSlotIndex);
-  void ClearFromInputMap(const DeviceInput& DeviceI);
-  bool ClearFromInputMap(const GameInput& GameI, int iSlotIndex);
+      const DeviceInput& device_i, const GameInput& game_i, int slot_index);
+  void ClearFromInputMap(const DeviceInput& device_i);
+  bool ClearFromInputMap(const GameInput& game_i, int slot_index);
 
   void AddDefaultMappingsForCurrentGameIfUnmapped();
   void AutoMapJoysticksForCurrentGame();
-  bool CheckForChangedInputDevicesAndRemap(std::string& sMessageOut);
+  bool CheckForChangedInputDevicesAndRemap(std::string& message_out);
 
-  bool IsMapped(const DeviceInput& DeviceI) const;
+  bool IsMapped(const DeviceInput& device_i) const;
 
-  bool DeviceToGame(const DeviceInput& DeviceI, GameInput& GameI)
+  bool DeviceToGame(const DeviceInput& device_i, GameInput& game_i)
       const;  // return true if there is a mapping from device to pad
-  bool GameToDevice(const GameInput& GameI, int iSlotNum, DeviceInput& DeviceI)
+  bool GameToDevice(
+      const GameInput& game_i, int slot_num, DeviceInput& device_i)
       const;  // return true if there is a mapping from pad to device
 
   GameButton GameButtonToMenuButton(GameButton gb) const;
   void MenuToGame(
-      GameButton MenuI, PlayerNumber pn,
-      std::vector<GameInput>& GameIout) const;
+      GameButton menu_i, PlayerNumber pn,
+      std::vector<GameInput>& game_iout) const;
   PlayerNumber ControllerToPlayerNumber(GameController controller) const;
 
-  float GetSecsHeld(const GameInput& GameI) const;
+  float GetSecsHeld(const GameInput& game_i) const;
 
   bool IsBeingPressed(
-      const GameInput& GameI,
-      const DeviceInputList* pButtonState = nullptr) const;
-  bool IsBeingPressed(GameButton MenuI, PlayerNumber pn) const;
+      const GameInput& game_i,
+      const DeviceInputList* button_state = nullptr) const;
+  bool IsBeingPressed(GameButton menu_i, PlayerNumber pn) const;
   bool IsBeingPressed(
-      const std::vector<GameInput>& GameI,
-      const DeviceInputList* pButtonState = nullptr) const;
+      const std::vector<GameInput>& game_i,
+      const DeviceInputList* button_state = nullptr) const;
 
-  void ResetKeyRepeat(const GameInput& GameI);
-  void ResetKeyRepeat(GameButton MenuI, PlayerNumber pn);
+  void ResetKeyRepeat(const GameInput& game_i);
+  void ResetKeyRepeat(GameButton menu_i, PlayerNumber pn);
 
-  void RepeatStopKey(const GameInput& GameI);
-  void RepeatStopKey(GameButton MenuI, PlayerNumber pn);
+  void RepeatStopKey(const GameInput& game_i);
+  void RepeatStopKey(GameButton menu_i, PlayerNumber pn);
 
-  float GetLevel(const GameInput& GameI) const;
-  float GetLevel(GameButton MenuI, PlayerNumber pn) const;
+  float GetLevel(const GameInput& game_i) const;
+  float GetLevel(GameButton menu_i, PlayerNumber pn) const;
 
   void Unmap(InputDevice device);
   void ApplyMapping(
-      const std::vector<AutoMappingEntry>& vMmaps, GameController gc,
+      const std::vector<AutoMappingEntry>& mmaps, GameController gc,
       InputDevice id);
 
  protected:

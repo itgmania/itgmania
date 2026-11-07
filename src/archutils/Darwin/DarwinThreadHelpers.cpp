@@ -11,25 +11,25 @@
 #include "Backtrace.h"
 #include "global.h"
 
-bool SuspendThread(uint64_t threadHandle) {
-  return !thread_suspend(thread_act_t(threadHandle));
+bool SuspendThread(uint64_t thread_handle) {
+  return !thread_suspend(thread_act_t(thread_handle));
 }
 
-bool ResumeThread(uint64_t threadHandle) {
-  return !thread_resume(thread_act_t(threadHandle));
+bool ResumeThread(uint64_t thread_handle) {
+  return !thread_resume(thread_act_t(thread_handle));
 }
 
 uint64_t GetCurrentThreadId() { return mach_thread_self(); }
 
-bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
+bool GetThreadBacktraceContext(uint64_t id, BacktraceContext* ctx) {
   /* Can't GetThreadBacktraceContext the current thread. */
-  ASSERT(iID != GetCurrentThreadId());
-  bool suspendSuccess = SuspendThread(iID);
-  if (!suspendSuccess) {
+  ASSERT(id != GetCurrentThreadId());
+  bool suspend_success = SuspendThread(id);
+  if (!suspend_success) {
     return false;
   }
 
-  thread_act_t thread = thread_act_t(iID);
+  thread_act_t thread = thread_act_t(id);
 
 #if defined(__i386__)
   i386_thread_state_t state;
@@ -37,7 +37,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
 
   if (thread_get_state(
           thread, i386_THREAD_STATE, thread_state_t(&state), &count)) {
-    ResumeThread(iID);
+    ResumeThread(id);
     return false;
   }
   ctx->ip_ = (void*)state.__eip;
@@ -50,7 +50,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
 
   if (thread_get_state(
           thread, x86_THREAD_STATE64, thread_state_t(&state), &count)) {
-    ResumeThread(iID);
+    ResumeThread(id);
     return false;
   }
 
@@ -63,7 +63,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
   if (thread_get_state(
           thread, ARM_THREAD_STATE64, thread_state_t(&state), &count)) {
-    ResumeThread(iID);
+    ResumeThread(id);
     return false;
   }
 
@@ -72,7 +72,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   ctx->sp_ = (void*)arm_thread_state64_get_sp(state);
   return true;
 #else
-  ResumeThread(iID);
+  ResumeThread(id);
   return false;
 #endif
 }

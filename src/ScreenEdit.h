@@ -231,15 +231,15 @@ class ScreenEdit : public ScreenWithMenuElements {
   virtual void EndScreen();
 
   virtual ~ScreenEdit();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void DrawPrimitives();
   virtual bool Input(const InputEventPlus& input);
-  bool InputEdit(const InputEventPlus& input, EditButton EditB);
-  bool InputRecord(const InputEventPlus& input, EditButton EditB);
-  bool InputRecordPaused(const InputEventPlus& input, EditButton EditB);
-  bool InputPlay(const InputEventPlus& input, EditButton EditB);
+  bool InputEdit(const InputEventPlus& input, EditButton edit_b);
+  bool InputRecord(const InputEventPlus& input, EditButton edit_b);
+  bool InputRecordPaused(const InputEventPlus& input, EditButton edit_b);
+  bool InputPlay(const InputEventPlus& input, EditButton edit_b);
   virtual void HandleMessage(const Message& msg);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   void SetDirty(bool dirty);
   bool IsDirty() const { return dirty_; }
@@ -262,12 +262,12 @@ class ScreenEdit : public ScreenWithMenuElements {
   }
 
   void TransitionEditState(EditState em);
-  void ScrollTo(float fDestinationBeat);
+  void ScrollTo(float destination_beat);
   void PlayTicks();
   void PlayPreviewMusic();
 
   // Call this before modifying m_NoteDataEdit.
-  void SaveUndo(const std::string& sDescription = "Edit");
+  void SaveUndo(const std::string& description = "Edit");
   /** @brief Revert the last change made to m_NoteDataEdit. */
   void Undo();
   /** @brief Reapply the last change that was undone. */
@@ -278,11 +278,11 @@ class ScreenEdit : public ScreenWithMenuElements {
   /** @brief Cut/copy the current area selection to the clipboard, or report
    * failure via a system message if there is no selection. When bIncludeTiming
    * is set, the timing segments in the selection travel with the notes. */
-  void CutSelectionToClipboard(bool bIncludeTiming);
-  void CopySelectionToClipboard(bool bIncludeTiming);
+  void CutSelectionToClipboard(bool include_timing);
+  void CopySelectionToClipboard(bool include_timing);
   /** @brief Paste the clipboard at the current beat, reporting the result via
    * a system message. */
-  void PasteClipboardAtCurrentBeat(bool bIncludeTiming);
+  void PasteClipboardAtCurrentBeat(bool include_timing);
   /** @brief Show/hide the song waveform, reporting the new state via a
    * system message. */
   void ToggleWaveform();
@@ -311,7 +311,7 @@ class ScreenEdit : public ScreenWithMenuElements {
   void DisplayTimingMenu();
 
   /** @brief Convert a screen y coordinate to the beat drawn at that point. */
-  float MouseYToBeat(float fScreenY);
+  float MouseYToBeat(float screen_y);
   /** @brief Turn the area the mouse was dragged over into an area selection. */
   void FinishMouseDragSelection();
 
@@ -506,7 +506,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     MAIN_MENU_CHOICE_INVALID
   };
   int GetSongOrNotesEnd();
-  void HandleMainMenuChoice(MainMenuChoice c, const std::vector<int>& iAnswers);
+  void HandleMainMenuChoice(MainMenuChoice c, const std::vector<int>& answers);
   void HandleMainMenuChoice(MainMenuChoice c) {
     const std::vector<int> v;
     HandleMainMenuChoice(c, v);
@@ -565,11 +565,11 @@ class ScreenEdit : public ScreenWithMenuElements {
   }
 
   void HandleAreaMenuChoice(
-      AreaMenuChoice c, const std::vector<int>& iAnswers,
-      bool bAllowUndo = true);
-  void HandleAreaMenuChoice(AreaMenuChoice c, bool bAllowUndo = true) {
+      AreaMenuChoice c, const std::vector<int>& answers,
+      bool allow_undo = true);
+  void HandleAreaMenuChoice(AreaMenuChoice c, bool allow_undo = true) {
     const std::vector<int> v;
-    HandleAreaMenuChoice(c, v, bAllowUndo);
+    HandleAreaMenuChoice(c, v, allow_undo);
   }
   /** @brief How should the selected notes be transformed? */
   enum TurnType {
@@ -647,7 +647,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     NUM_STEPS_INFORMATION_CHOICES
   };
   void HandleStepsInformationChoice(
-      StepsInformationChoice c, const std::vector<int>& iAnswers);
+      StepsInformationChoice c, const std::vector<int>& answers);
 
   enum StepsDataChoice {
     tap_notes,
@@ -688,7 +688,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     NUM_SONG_INFORMATION_CHOICES
   };
   void HandleSongInformationChoice(
-      SongInformationChoice c, const std::vector<int>& iAnswers);
+      SongInformationChoice c, const std::vector<int>& answers);
 
   enum TimingDataInformationChoice {
     beat_0_offset,
@@ -717,7 +717,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     NUM_TIMING_DATA_INFORMATION_CHOICES
   };
   void HandleTimingDataInformationChoice(
-      TimingDataInformationChoice c, const std::vector<int>& iAnswers);
+      TimingDataInformationChoice c, const std::vector<int>& answers);
 
   enum TimingDataChangeChoice {
     timing_all,
@@ -747,7 +747,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     adjust_sync_readonly,
     adjust_sync_apply
   };
-  void HandleAdjustSyncMenuChoice(int iRowCode);
+  void HandleAdjustSyncMenuChoice(int row_code);
 
   enum BGChangeChoice {
     layer,
@@ -784,7 +784,7 @@ class ScreenEdit : public ScreenWithMenuElements {
    * It is important that this is only called in Song Timing mode.
    * @param c the Background Change style requested.
    * @param iAnswers the other settings involving the change. */
-  void HandleBGChangeChoice(BGChangeChoice c, const std::vector<int>& iAnswers);
+  void HandleBGChangeChoice(BGChangeChoice c, const std::vector<int>& answers);
 
   enum CourseAttackChoice {
     duration,
@@ -794,11 +794,11 @@ class ScreenEdit : public ScreenWithMenuElements {
   };
 
   void InitEditMappings();
-  EditButton DeviceToEdit(const DeviceInput& DeviceI) const;
-  EditButton MenuButtonToEditButton(GameButton MenuI) const;
+  EditButton DeviceToEdit(const DeviceInput& device_i) const;
+  EditButton MenuButtonToEditButton(GameButton menu_i) const;
   bool EditToDevice(
-      EditButton button, int iSlotNum, DeviceInput& DeviceI) const;
-  bool EditPressed(EditButton button, const DeviceInput& DeviceI);
+      EditButton button, int slot_num, DeviceInput& device_i) const;
+  bool EditPressed(EditButton button, const DeviceInput& device_i);
   bool EditIsBeingPressed(EditButton button) const;
   const MapEditToDI* GetCurrentDeviceInputMap() const;
   const MapEditButtonToMenuButton* GetCurrentMenuButtonMap() const;
@@ -813,10 +813,10 @@ class ScreenEdit : public ScreenWithMenuElements {
   MapEditButtonToMenuButton record_mappings_menu_button_;
   MapEditButtonToMenuButton record_paused_mappings_menu_button_;
 
-  void MakeFilteredMenuDef(const MenuDef* pDef, MenuDef& menu);
+  void MakeFilteredMenuDef(const MenuDef* def, MenuDef& menu);
   void EditMiniMenu(
-      const MenuDef* pDef, ScreenMessage SM_SendOnOK = SM_None,
-      ScreenMessage SM_SendOnCancel = SM_None);
+      const MenuDef* def, ScreenMessage sm_send_on_ok = SM_None,
+      ScreenMessage sm_send_on_cancel = SM_None);
 
  private:
   int mod_in_process_;
@@ -832,7 +832,7 @@ class ScreenEdit : public ScreenWithMenuElements {
   AttackArray& GetAttackArray(AttackSource source);
   AttackArray& GetSelectedAttackArray();
   Attack& GetSelectedAttack();
-  SelectedAttack ResolveAttackIndex(int combinedIndex) const;
+  SelectedAttack ResolveAttackIndex(int combined_index) const;
   /**
    * @brief Retrieve the appropriate TimingData based on GAMESTATE.
    * @return the proper TimingData. */
@@ -844,7 +844,7 @@ class ScreenEdit : public ScreenWithMenuElements {
    * @brief Retrieve the appropriate SongPosition data based on GAMESTATE.
    * @return the proper SongPosition. */
   SongPosition& GetAppropriatePosition() const;
-  void SetBeat(float fBeat);
+  void SetBeat(float beat);
   float GetBeat();
   int GetRow();
 };

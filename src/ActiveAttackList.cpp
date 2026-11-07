@@ -12,19 +12,19 @@
 
 ActiveAttackList::ActiveAttackList() {}
 
-void ActiveAttackList::Init(const PlayerState* pPlayerState) {
-  player_state_ = pPlayerState;
+void ActiveAttackList::Init(const PlayerState* player_state) {
+  player_state_ = player_state;
 }
 
-void ActiveAttackList::Update(float fDelta) {
-  bool bTimeToRefresh =
+void ActiveAttackList::Update(float delta) {
+  bool time_to_refresh =
       IsFirstUpdate() ||  // check this before running Actor::Update()
       player_state_->attack_began_this_update_ ||
       player_state_->attack_ended_this_update_;
 
-  BitmapText::Update(fDelta);
+  BitmapText::Update(delta);
 
-  if (bTimeToRefresh) {
+  if (time_to_refresh) {
     Refresh();
   }
 }
@@ -32,7 +32,7 @@ void ActiveAttackList::Update(float fDelta) {
 void ActiveAttackList::Refresh() {
   const AttackArray& attacks = player_state_->active_attacks_;
 
-  std::vector<std::string> vsThemedMods;
+  std::vector<std::string> themed_mods;
   for (unsigned i = 0; i < attacks.size(); i++) {
     const Attack& attack = attacks[i];
 
@@ -45,10 +45,10 @@ void ActiveAttackList::Refresh() {
 
     PlayerOptions po;
     po.FromString(attack.modifiers_);
-    po.GetLocalizedMods(vsThemedMods);
+    po.GetLocalizedMods(themed_mods);
   }
 
-  std::string s = join("\n", vsThemedMods);
+  std::string s = join("\n", themed_mods);
 
   this->SetText(s);  // BitmapText will not rebuild vertices if these strings
                      // are the same.

@@ -18,9 +18,9 @@ StringToX(WheelItemDataType);
 LuaXType(WheelItemDataType);
 
 WheelItemBaseData::WheelItemBaseData(
-    WheelItemDataType type, std::string sText, RageColor color) {
+    WheelItemDataType type, std::string text, RageColor color) {
   type_ = type;
-  text_ = sText;
+  text_ = text;
   color_ = color;
 }
 
@@ -32,21 +32,21 @@ WheelItemBase::WheelItemBase(const WheelItemBase& cpy)
   //	m_pGrayBar = m_sprBar;
 }
 
-WheelItemBase::WheelItemBase(std::string sType) {
-  SetName(sType);
+WheelItemBase::WheelItemBase(std::string type) {
+  SetName(type);
   data_ = nullptr;
   gray_bar_ = nullptr;
-  Load(sType);
+  Load(type);
 }
 
-void WheelItemBase::Load(std::string sType) {
+void WheelItemBase::Load(std::string type) {
   color_locked_ = RageColor(0, 0, 0, 0.25f);
 }
 
 void WheelItemBase::LoadFromWheelItemData(
-    const WheelItemBaseData* pWID, int iIndex, bool bHasFocus, int iDrawIndex) {
-  ASSERT(pWID != nullptr);
-  data_ = pWID;
+    const WheelItemBaseData* wid, int index, bool has_focus, int draw_index) {
+  ASSERT(wid != nullptr);
+  data_ = wid;
 }
 
 void WheelItemBase::DrawGrayBar(Actor& bar) {

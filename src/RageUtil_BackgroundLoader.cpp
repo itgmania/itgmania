@@ -35,15 +35,15 @@ BackgroundLoader::BackgroundLoader()
   load_thread_.Create(LoadThread_Start, this);
 }
 
-static void DeleteEmptyDirectories(std::string sDir) {
-  std::vector<std::string> asNewDirs;
-  GetDirListing(sDir + "/*", asNewDirs, false, true);
-  for (unsigned i = 0; i < asNewDirs.size(); ++i) {
-    ASSERT_M(IsADirectory(asNewDirs[i]), asNewDirs[i]);
-    DeleteEmptyDirectories(asNewDirs[i]);
+static void DeleteEmptyDirectories(std::string dir) {
+  std::vector<std::string> new_dirs;
+  GetDirListing(dir + "/*", new_dirs, false, true);
+  for (unsigned i = 0; i < new_dirs.size(); ++i) {
+    ASSERT_M(IsADirectory(new_dirs[i]), new_dirs[i]);
+    DeleteEmptyDirectories(new_dirs[i]);
   }
 
-  FILEMAN->Remove(sDir);
+  FILEMAN->Remove(dir);
 }
 
 BackgroundLoader::~BackgroundLoader() {
@@ -85,8 +85,8 @@ std::string BackgroundLoader::GetRequest() {
   return ret;
 }
 
-std::string BackgroundLoader::GetCachePath(std::string sPath) const {
-  return cache_path_prefix_ + sPath;
+std::string BackgroundLoader::GetCachePath(std::string path) const {
+  return cache_path_prefix_ + path;
 }
 
 void BackgroundLoader::LoadThread() {
@@ -95,8 +95,8 @@ void BackgroundLoader::LoadThread() {
      * fail on timeout. */
     start_sem_.Wait(false);
 
-    std::string sFile = GetRequest();
-    if (sFile.empty()) {
+    std::string file = GetRequest();
+    if (file.empty()) {
       continue;
     }
 
@@ -104,42 +104,42 @@ void BackgroundLoader::LoadThread() {
       /* If the file already exists, short circuit. */
       LockMut(mutex_);
       std::map<std::string, int>::iterator it;
-      it = finished_requests_.find(sFile);
+      it = finished_requests_.find(file);
       if (it != finished_requests_.end()) {
         ++it->second;
         LOG->Trace(
             "XXX: request %s done loading (already done), cnt now %i",
-            sFile.c_str(), finished_requests_[sFile]);
+            file.c_str(), finished_requests_[file]);
         continue;
       }
     }
 
     thread_is_active_ = true;
 
-    LOG->Trace("XXX: reading %s", sFile.c_str());
+    LOG->Trace("XXX: reading %s", file.c_str());
 
-    std::string sCachePath = GetCachePath(sFile);
+    std::string cache_path = GetCachePath(file);
 
     /* Open the file and read it. */
     RageFile src;
-    if (src.Open(sFile)) {
+    if (src.Open(file)) {
       /* If we're writing to a file cache ... */
       RageFile dst;
 
-      bool bWriteToCache = g_bWriteToCache;
-      if (bWriteToCache) {
-        bWriteToCache = dst.Open(sCachePath, RageFile::WRITE);
+      bool write_to_cache = g_bWriteToCache;
+      if (write_to_cache) {
+        write_to_cache = dst.Open(cache_path, RageFile::WRITE);
       }
-      LOG->Trace("XXX: go on '%s' to '%s'", sFile.c_str(), sCachePath.c_str());
+      LOG->Trace("XXX: go on '%s' to '%s'", file.c_str(), cache_path.c_str());
 
       char buf[1024 * 4];
       while (!thread_should_abort_ && !src.AtEOF()) {
         int got = src.Read(buf, sizeof(buf));
-        if (got > 0 && bWriteToCache) {
+        if (got > 0 && write_to_cache) {
           dst.Write(buf, got);
         }
       }
-      if (bWriteToCache) {
+      if (write_to_cache) {
         dst.Close();
       }
 
@@ -149,14 +149,14 @@ void BackgroundLoader::LoadThread() {
 
     LockMut(mutex_);
     if (!thread_should_abort_) {
-      ++finished_requests_[sFile];
+      ++finished_requests_[file];
       LOG->Trace(
-          "XXX: request %s done loading, cnt now %i", sFile.c_str(),
-          finished_requests_[sFile]);
+          "XXX: request %s done loading, cnt now %i", file.c_str(),
+          finished_requests_[file]);
     } else {
-      FILEMAN->Remove(sCachePath);
+      FILEMAN->Remove(cache_path);
 
-      LOG->Trace("XXX: request %s aborted", sFile.c_str());
+      LOG->Trace("XXX: request %s aborted", file.c_str());
     }
 
     thread_should_abort_ = false;
@@ -164,68 +164,68 @@ void BackgroundLoader::LoadThread() {
   }
 }
 
-void BackgroundLoader::CacheFile(const std::string& sFile) {
+void BackgroundLoader::CacheFile(const std::string& file) {
   if (!g_bEnableBackgroundLoading) {
     return;
   }
 
-  if (sFile == "") {
+  if (file == "") {
     return;
   }
 
   LockMut(mutex_);
-  cache_requests_.push_back(sFile);
+  cache_requests_.push_back(file);
   start_sem_.Post();
 }
 
 bool BackgroundLoader::IsCacheFileFinished(
-    const std::string& sFile, std::string& sActualPath) {
+    const std::string& file, std::string& actual_path) {
   if (!g_bEnableBackgroundLoading) {
-    sActualPath = sFile;
+    actual_path = file;
     return true;
   }
 
   LockMut(mutex_);
 
-  if (sFile == "") {
-    sActualPath = "";
+  if (file == "") {
+    actual_path = "";
     return true;
   }
 
   std::map<std::string, int>::iterator it;
-  it = finished_requests_.find(sFile);
+  it = finished_requests_.find(file);
   if (it == finished_requests_.end()) {
     return false;
   }
 
-  LOG->Trace("XXX: %s finished (%i)", sFile.c_str(), it->second);
+  LOG->Trace("XXX: %s finished (%i)", file.c_str(), it->second);
   if (g_bWriteToCache) {
-    sActualPath = GetCachePath(sFile);
+    actual_path = GetCachePath(file);
   } else {
-    sActualPath = sFile;
+    actual_path = file;
   }
 
   return true;
 }
 
-void BackgroundLoader::FinishedWithCachedFile(std::string sFile) {
+void BackgroundLoader::FinishedWithCachedFile(std::string file) {
   if (!g_bEnableBackgroundLoading) {
     return;
   }
 
-  if (sFile == "") {
+  if (file == "") {
     return;
   }
 
   std::map<std::string, int>::iterator it;
-  it = finished_requests_.find(sFile);
-  ASSERT_M(it != finished_requests_.end(), sFile);
+  it = finished_requests_.find(file);
+  ASSERT_M(it != finished_requests_.end(), file);
 
   --it->second;
   ASSERT_M(it->second >= 0, ssprintf("%i", it->second));
   if (!it->second) {
     finished_requests_.erase(it);
-    FILEMAN->Remove(GetCachePath(sFile));
+    FILEMAN->Remove(GetCachePath(file));
   }
 }
 

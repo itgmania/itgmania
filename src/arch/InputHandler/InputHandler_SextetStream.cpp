@@ -96,14 +96,14 @@ class LineReader {
   // true (line = next line from stream) if a whole line is available,
   // true (line = "") if no error but still waiting for next line.
   bool ReadLine(std::string& line) {
-    bool afterFirst = false;
+    bool after_first = false;
     size_t len;
 
     line = "";
 
     if (file_ != nullptr) {
       while (fgets(buffer_, kBufferSize, file_) != nullptr) {
-        afterFirst = true;
+        after_first = true;
         line += buffer_;
         len = line.length();
         if (len > 0 && line[len - 1] == 0xA) {
@@ -112,7 +112,7 @@ class LineReader {
       }
     }
 
-    return afterFirst;
+    return after_first;
   }
 };
 }  // namespace
@@ -150,7 +150,7 @@ class InputHandler_SextetStream::Impl {
   }
 
  public:
-  Impl(InputHandler_SextetStream* _this, const std::string& filename) {
+  Impl(InputHandler_SextetStream* handler, const std::string& filename) {
     LOG->Info(
         "Number of button states supported by current "
         "InputHandler_SextetStream: %u",
@@ -159,7 +159,7 @@ class InputHandler_SextetStream::Impl {
     timeout_ms_ = DEFAULT_TIMEOUT_MS;
 
     this->filename_ = filename;
-    handler_ = _this;
+    handler_ = handler;
     clearStateBuffer();
     createThread();
   }
@@ -171,8 +171,8 @@ class InputHandler_SextetStream::Impl {
     }
   }
 
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut) {
-    vDevicesOut.push_back(InputDeviceInfo(FIRST_DEVICE, "SextetStream"));
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out) {
+    devices_out.push_back(InputDeviceInfo(FIRST_DEVICE, "SextetStream"));
   }
 
   static int StartInputThread(void* p) {
@@ -181,7 +181,7 @@ class InputHandler_SextetStream::Impl {
   }
 
   inline void GetNewState(uint8_t* buffer, std::string& line) {
-    size_t lineLen = line.length();
+    size_t line_len = line.length();
     size_t i, cursor;
     cursor = 0;
     memset(buffer, 0, STATE_BUFFER_SIZE);
@@ -190,7 +190,7 @@ class InputHandler_SextetStream::Impl {
     // of characters. Characters outside the sextet code range
     // (0x30..0x6F) are skipped; the remaining characters have their two
     // high bits cleared.
-    for (i = 0; i < lineLen; ++i) {
+    for (i = 0; i < line_len; ++i) {
       char b = line[i];
       if ((b >= 0x30) && (b <= 0x6F)) {
         buffer[cursor] = b & 0x3F;
@@ -212,14 +212,14 @@ class InputHandler_SextetStream::Impl {
     }
   }
 
-  inline void ReactToChanges(const uint8_t* newStateBuffer) {
+  inline void ReactToChanges(const uint8_t* new_state_buffer) {
     InputDevice id = InputDevice(FIRST_DEVICE);
     uint8_t changes[STATE_BUFFER_SIZE];
     RageTimer now;
 
     // XOR to find differences
     for (size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
-      changes[i] = state_buffer_[i] ^ newStateBuffer[i];
+      changes[i] = state_buffer_[i] ^ new_state_buffer[i];
     }
 
     // Report on changes
@@ -228,7 +228,7 @@ class InputHandler_SextetStream::Impl {
         size_t bi = (m * 6) + n;
         if (bi < BUTTON_COUNT) {
           if (changes[m] & (1 << n)) {
-            bool value = newStateBuffer[m] & (1 << n);
+            bool value = new_state_buffer[m] & (1 << n);
             LOG->Trace(
                 "SS button index %zu %s", bi, value ? "pressed" : "released");
             DeviceInput di = DeviceInput(id, ButtonAtIndex(bi), value, now);
@@ -239,7 +239,7 @@ class InputHandler_SextetStream::Impl {
     }
 
     // Update current state
-    memcpy(state_buffer_, newStateBuffer, STATE_BUFFER_SIZE);
+    memcpy(state_buffer_, new_state_buffer, STATE_BUFFER_SIZE);
   }
 
   void RunInputThread() {
@@ -258,9 +258,9 @@ class InputHandler_SextetStream::Impl {
         if (linereader->ReadLine(line)) {
           LOG->Trace("Got line: '%s'", line.c_str());
           if (line.length() > 0) {
-            uint8_t newStateBuffer[STATE_BUFFER_SIZE];
-            GetNewState(newStateBuffer, line);
-            ReactToChanges(newStateBuffer);
+            uint8_t new_state_buffer[STATE_BUFFER_SIZE];
+            GetNewState(new_state_buffer, line);
+            ReactToChanges(new_state_buffer);
           }
         } else {
           // Error or EOF condition.
@@ -275,9 +275,9 @@ class InputHandler_SextetStream::Impl {
 };
 
 void InputHandler_SextetStream::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   if (impl_ != nullptr) {
-    impl_->GetDevicesAndDescriptions(vDevicesOut);
+    impl_->GetDevicesAndDescriptions(devices_out);
   }
 }
 

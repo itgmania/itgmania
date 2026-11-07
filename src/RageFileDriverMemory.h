@@ -14,7 +14,7 @@
 struct RageFileObjMemFile;
 class RageFileObjMem : public RageFileObj {
  public:
-  RageFileObjMem(RageFileObjMemFile* pFile = nullptr);
+  RageFileObjMem(RageFileObjMemFile* file = nullptr);
   RageFileObjMem(const RageFileObjMem& cpy);
   ~RageFileObjMem();
 
@@ -26,7 +26,7 @@ class RageFileObjMem : public RageFileObj {
 
   /* Retrieve the contents of this file. */
   const std::string& GetString() const;
-  void PutString(const std::string& sBuf);
+  void PutString(const std::string& buf);
 
  private:
   RageFileObjMemFile* file_;
@@ -38,10 +38,10 @@ class RageFileDriverMem : public RageFileDriver {
   RageFileDriverMem();
   ~RageFileDriverMem();
 
-  RageFileBasic* Open(const std::string& sPath, int mode, int& err);
+  RageFileBasic* Open(const std::string& path, int mode, int& err);
   void FlushDirCache(const std::string& /* sPath */) {}
 
-  bool Remove(const std::string& sPath);
+  bool Remove(const std::string& path);
 
  private:
   RageMutex mutex_;

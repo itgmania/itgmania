@@ -21,8 +21,8 @@ class StepsID;
 struct lua_State;
 struct BackgroundChange;
 
-void FixupPath(std::string& path, const std::string& sSongPath);
-std::string GetSongAssetPath(std::string sPath, const std::string& sSongPath);
+void FixupPath(std::string& path, const std::string& song_path);
+std::string GetSongAssetPath(std::string path, const std::string& song_path);
 
 /** @brief The version of the .ssc file format. */
 const static float STEPFILE_VERSION_NUMBER = 0.83f;
@@ -59,7 +59,7 @@ class Song {
   std::string pre_customify_song_dir_;
 
  public:
-  void SetSongDir(const std::string sDir) { song_dir_ = sDir; }
+  void SetSongDir(const std::string dir) { song_dir_ = dir; }
   std::string GetSongDir() { return song_dir_; }
   std::string GetPreCustomifyDir() { return pre_customify_song_dir_; }
 
@@ -84,10 +84,10 @@ class Song {
    * TODO: make this a static factory method.
    */
   bool LoadFromSongDir(
-      std::string sDir, bool load_autosave = false,
+      std::string dir, bool load_autosave = false,
       ProfileSlot from_profile = ProfileSlot_Invalid);
   // This one takes the effort to reuse Steps pointers as best as it can
-  bool ReloadFromSongDir(std::string sDir);
+  bool ReloadFromSongDir(std::string dir);
   bool ReloadFromSongDir() { return ReloadFromSongDir(GetSongDir()); }
   void LoadEditsFromSongDir(std::string dir);
 
@@ -97,7 +97,7 @@ class Song {
   /**
    * @brief Call this after loading a song to clean up invalid data.
    * @param fromCache was this data loaded from the cache file? */
-  void TidyUpData(bool fromCache = false);
+  void TidyUpData(bool from_cache = false);
 
   /**
    * @brief Normalize background changes parsed from an SM/SSC simfile.
@@ -109,7 +109,7 @@ class Song {
    * time. This is called by TidyUpData, after saving the Song.
    * @param wipeNoteData release each chart's decompressed NoteData after
    * computing its stats. */
-  void ReCalculateStepStatsAndLastSecond(bool wipeNoteData);
+  void ReCalculateStepStatsAndLastSecond(bool wipe_note_data);
   /**
    * @brief Translate any titles that aren't in english.
    * This is called by TidyUpData. */
@@ -120,7 +120,7 @@ class Song {
    * @param sPath the path where we're saving the file.
    * @param autosave a flag to determine if we're saving an autosave file.
    */
-  bool SaveToSSCFile(std::string sPath, bool autosave = false);
+  bool SaveToSSCFile(std::string path, bool autosave = false);
   /** @brief Save to the SSC and SM files no matter what. */
   void Save(bool autosave = false);
   /**
@@ -144,7 +144,7 @@ class Song {
    * @param ntTo the StepsType we're making.
    * @param ntFrom the StepsType we're generating from.
    */
-  void AutoGen(StepsType ntTo, StepsType ntFrom);
+  void AutoGen(StepsType to, StepsType from);
   void RemoveAutoGenNotes();
 
   // Directory this song data came from:
@@ -252,7 +252,7 @@ class Song {
   std::vector<std::string> attack_string_;
 
   static std::string GetSongAssetPath(
-      std::string sPath, const std::string& sSongPath);
+      std::string path, const std::string& song_path);
   std::string GetMusicPath() const;
   std::string GetBannerPath() const;
   std::string GetJacketPath() const;
@@ -265,7 +265,7 @@ class Song {
   std::string GetPreviewMusicPath() const;
   float GetPreviewStartSeconds() const;
 
-  std::string GetCacheFile(std::string sPath);
+  std::string GetCacheFile(std::string path);
 
   // For loading only:
   bool has_music_, has_banner_, has_background_;
@@ -289,7 +289,7 @@ class Song {
   bool HasAttacks() const;
   bool HasPreviewVid() const;
 
-  bool Matches(std::string sGroup, std::string sSong) const;
+  bool Matches(std::string group, std::string song) const;
 
   /** @brief The Song's TimingData. */
   TimingData song_timing_;
@@ -332,12 +332,12 @@ class Song {
   AutoPtrCopyOnWrite<VBackgroundChange> foreground_changes_;
 
   void TidyUpData(
-      bool fromCache, const std::set<std::string>& blacklistedImages);
+      bool from_cache, const std::set<std::string>& blacklisted_images);
 
   /**
    * @brief Derive the song directory, name, group, and source profile from a
    * directory. sDir must end in a slash. */
-  void SetSongDirAndGroup(const std::string& sDir, ProfileSlot from_profile);
+  void SetSongDirAndGroup(const std::string& dir, ProfileSlot from_profile);
 
  public:
   const std::vector<BackgroundChange>& GetBackgroundChanges(
@@ -357,11 +357,11 @@ class Song {
      m_Timing.AddStopSegment( seg ); } void AddWarpSegment( const WarpSegment
      &seg ) { m_Timing.AddWarpSegment( seg ); }
   */
-  void AddBackgroundChange(BackgroundLayer blLayer, BackgroundChange seg);
+  void AddBackgroundChange(BackgroundLayer layer, BackgroundChange seg);
   void AddForegroundChange(BackgroundChange seg);
   void AddLyricSegment(LyricSegment seg);
 
-  void GetDisplayBpms(DisplayBpms& AddTo) const;
+  void GetDisplayBpms(DisplayBpms& add_to) const;
   /* [splittiming]
           float GetBPMAtBeat( float fBeat ) const { return
      m_Timing.GetBPMAtBeat( fBeat ); } void SetBPMAtBeat( float fBeat, float
@@ -371,7 +371,7 @@ class Song {
   */
 
   Steps* CreateSteps();
-  void InitSteps(Steps* pSteps);
+  void InitSteps(Steps* steps);
 
   /* [splittiming]
   float SongGetBeatFromElapsedTime( float fElapsedTime ) const
@@ -436,21 +436,21 @@ class Song {
    * @brief Add the chosen Steps to the Song.
    * We are responsible for deleting the memory pointed to by pSteps!
    * @param pSteps the new steps. */
-  void AddSteps(Steps* pSteps);
-  void DeleteSteps(const Steps* pSteps, bool bReAutoGen = true);
+  void AddSteps(Steps* steps);
+  void DeleteSteps(const Steps* steps, bool re_auto_gen = true);
 
   void FreeAllLoadedFromProfile(
       ProfileSlot slot = ProfileSlot_Invalid,
-      const std::set<Steps*>* setInUse = nullptr);
+      const std::set<Steps*>* set_in_use = nullptr);
   bool WasLoadedFromProfile() const {
     return loaded_from_profile_ != ProfileSlot_Invalid;
   }
   void GetStepsLoadedFromProfile(
-      ProfileSlot slot, std::vector<Steps*>& vpStepsOut) const;
+      ProfileSlot slot, std::vector<Steps*>& steps_out) const;
   int GetNumStepsLoadedFromProfile(ProfileSlot slot) const;
-  bool IsEditAlreadyLoaded(Steps* pSteps) const;
+  bool IsEditAlreadyLoaded(Steps* steps) const;
 
-  bool IsStepsUsingDifferentTiming(Steps* pSteps) const;
+  bool IsStepsUsingDifferentTiming(Steps* steps) const;
   bool AnyChartUsesSplitTiming() const;
 
   /**

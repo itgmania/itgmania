@@ -16,8 +16,8 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-std::string GetAttackPieceName(const std::string& sAttack) {
-  std::string ret = ssprintf("attack %s", sAttack.c_str());
+std::string GetAttackPieceName(const std::string& attack) {
+  std::string ret = ssprintf("attack %s", attack.c_str());
 
   /* 1.5x -> 1_5x.  If we pass a period to THEME->GetPathTo, it'll think
    * we're looking for a specific file and not search. */
@@ -36,8 +36,8 @@ AttackDisplay::AttackDisplay() {
   this->AddChild(&spr_attack_);
 }
 
-void AttackDisplay::Init(const PlayerState* pPlayerState) {
-  player_state_ = pPlayerState;
+void AttackDisplay::Init(const PlayerState* player_state) {
+  player_state_ = player_state;
 
   // TODO: Remove use of PlayerNumber.
   PlayerNumber pn = player_state_->player_number_;
@@ -52,9 +52,9 @@ void AttackDisplay::Init(const PlayerState* pPlayerState) {
   for (int al = 0; al < NUM_ATTACK_LEVELS; al++) {
     const Character* ch = GAMESTATE->cur_characters_[pn];
     ASSERT(ch != nullptr);
-    const std::string* asAttacks = ch->attacks_[al];
+    const std::string* as_attacks = ch->attacks_[al];
     for (int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att) {
-      attacks.insert(asAttacks[att]);
+      attacks.insert(as_attacks[att]);
     }
   }
 
@@ -71,8 +71,8 @@ void AttackDisplay::Init(const PlayerState* pPlayerState) {
   }
 }
 
-void AttackDisplay::Update(float fDelta) {
-  ActorFrame::Update(fDelta);
+void AttackDisplay::Update(float delta) {
+  ActorFrame::Update(delta);
 
   if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
       GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
@@ -104,9 +104,9 @@ void AttackDisplay::Update(float fDelta) {
   }
 }
 
-void AttackDisplay::SetAttack(const std::string& sText) {
+void AttackDisplay::SetAttack(const std::string& text) {
   const std::string path =
-      THEME->GetPathG("AttackDisplay", GetAttackPieceName(sText), true);
+      THEME->GetPathG("AttackDisplay", GetAttackPieceName(text), true);
   if (path == "") {
     return;
   }
@@ -117,9 +117,9 @@ void AttackDisplay::SetAttack(const std::string& sText) {
   // TODO: Remove use of PlayerNumber.
   PlayerNumber pn = player_state_->player_number_;
 
-  const std::string sName = ssprintf("%sP%i", sText.c_str(), pn + 1);
+  const std::string name = ssprintf("%sP%i", text.c_str(), pn + 1);
   spr_attack_.RunCommands(
-      THEME->GetMetricA("AttackDisplay", sName + "OnCommand"));
+      THEME->GetMetricA("AttackDisplay", name + "OnCommand"));
 }
 
 /*

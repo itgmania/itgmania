@@ -39,9 +39,9 @@ void RageTextureRenderTarget::Create() {
 
 void RageTextureRenderTarget::Destroy() { DISPLAY->DeleteTexture(tex_handle_); }
 
-void RageTextureRenderTarget::BeginRenderingTo(bool bPreserveTexture) {
+void RageTextureRenderTarget::BeginRenderingTo(bool preserve_texture) {
   previous_render_target_ = DISPLAY->GetRenderTarget();
-  DISPLAY->SetRenderTarget(tex_handle_, bPreserveTexture);
+  DISPLAY->SetRenderTarget(tex_handle_, preserve_texture);
 
   /* We're rendering to a texture, not the framebuffer.
    * Stash away the centering matrix, and set it to identity. */
@@ -74,8 +74,8 @@ void RageTextureRenderTarget::FinishRenderingTo() {
 class LunaRageTextureRenderTarget : public Luna<RageTextureRenderTarget> {
  public:
   static int BeginRenderingTo(T* p, lua_State* L) {
-    bool bPreserveTexture = !!luaL_opt(L, lua_toboolean, 1, false);
-    p->BeginRenderingTo(bPreserveTexture);
+    bool preserve_texture = !!luaL_opt(L, lua_toboolean, 1, false);
+    p->BeginRenderingTo(preserve_texture);
     COMMON_RETURN_SELF;
   }
   static int FinishRenderingTo(T* p, lua_State* L) {

@@ -133,10 +133,10 @@ class UnlockManager {
   void Reload();
 
   float PointsUntilNextUnlock(UnlockRequirement t) const;
-  int SongIsLocked(const Song* pSong) const;
-  bool StepsIsLocked(const Song* pSong, const Steps* pSteps) const;
+  int SongIsLocked(const Song* song) const;
+  bool StepsIsLocked(const Song* song, const Steps* steps) const;
   int CourseIsLocked(const Course* course) const;
-  bool ModifierIsLocked(const std::string& sOneMod) const;
+  bool ModifierIsLocked(const std::string& one_mod) const;
 
   // Gets number of unlocks for title screen
   int GetNumUnlocks() const;
@@ -145,40 +145,39 @@ class UnlockManager {
   bool AnyUnlocksToCelebrate() const;
 
   void GetPoints(
-      const Profile* pProfile, float fScores[NUM_UnlockRequirement]) const;
+      const Profile* profile, float scores[NUM_UnlockRequirement]) const;
 
   // Unlock an entry by code.
-  void UnlockEntryID(std::string sEntryID);
-  void UnlockEntryIndex(int iEntryIndex);
+  void UnlockEntryID(std::string entry_id);
+  void UnlockEntryIndex(int entry_index);
 
   // Lock an entry by code.
-  void LockEntryID(std::string entryID);
-  void LockEntryIndex(int entryIndex);
+  void LockEntryID(std::string entry_id);
+  void LockEntryIndex(int entry_index);
 
   /*
    * If a code is associated with at least one song or course, set the preferred
    * song and/or course in GAMESTATE to them.
    */
-  void PreferUnlockEntryID(std::string sEntryID);
+  void PreferUnlockEntryID(std::string entry_id);
 
   // Return the associated EntryID.
-  std::string FindEntryID(const std::string& sName) const;
+  std::string FindEntryID(const std::string& name) const;
 
   // All locked songs are stored here
   std::vector<UnlockEntry> unlock_entries_;
 
-  void GetUnlocksByType(
-      UnlockRewardType t, std::vector<UnlockEntry*>& apEntries);
+  void GetUnlocksByType(UnlockRewardType t, std::vector<UnlockEntry*>& entries);
   void GetSongsUnlockedByEntryID(
-      std::vector<Song*>& apSongsOut, std::string sEntryID);
+      std::vector<Song*>& songs_out, std::string entry_id);
   void GetStepsUnlockedByEntryID(
-      std::vector<Song*>& apSongsOut, std::vector<Difficulty>& apStepsOut,
-      std::string sEntryID);
+      std::vector<Song*>& songs_out, std::vector<Difficulty>& steps_out,
+      std::string entry_id);
 
-  const UnlockEntry* FindSong(const Song* pSong) const;
-  const UnlockEntry* FindSteps(const Song* pSong, const Steps* pSteps) const;
-  const UnlockEntry* FindCourse(const Course* pCourse) const;
-  const UnlockEntry* FindModifier(const std::string& sOneMod) const;
+  const UnlockEntry* FindSong(const Song* song) const;
+  const UnlockEntry* FindSteps(const Song* song, const Steps* steps) const;
+  const UnlockEntry* FindCourse(const Course* course) const;
+  const UnlockEntry* FindModifier(const std::string& one_mod) const;
 
   // Lua
   void PushSelf(lua_State* L);

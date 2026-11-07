@@ -19,74 +19,73 @@ MemoryCardDriverThreaded_Windows::MemoryCardDriverThreaded_Windows() {
 
 MemoryCardDriverThreaded_Windows::~MemoryCardDriverThreaded_Windows() {}
 
-static bool TestReady(const std::string& sDrive, std::string& sVolumeLabelOut) {
-  TCHAR szVolumeNameBuffer[MAX_PATH];
-  DWORD dwVolumeSerialNumber;
-  DWORD dwMaximumComponentLength;
-  DWORD lpFileSystemFlags;
-  TCHAR szFileSystemNameBuffer[MAX_PATH];
+static bool TestReady(const std::string& drive, std::string& volume_label_out) {
+  TCHAR volume_name_buffer[MAX_PATH];
+  DWORD volume_serial_number;
+  DWORD maximum_component_length;
+  DWORD file_system_flags;
+  TCHAR file_system_name_buffer[MAX_PATH];
 
   if (!GetVolumeInformation(
-          sDrive.c_str(), szVolumeNameBuffer, sizeof(szVolumeNameBuffer),
-          &dwVolumeSerialNumber, &dwMaximumComponentLength, &lpFileSystemFlags,
-          szFileSystemNameBuffer, sizeof(szFileSystemNameBuffer))) {
+          drive.c_str(), volume_name_buffer, sizeof(volume_name_buffer),
+          &volume_serial_number, &maximum_component_length, &file_system_flags,
+          file_system_name_buffer, sizeof(file_system_name_buffer))) {
     return false;
   }
 
-  sVolumeLabelOut = szVolumeNameBuffer;
+  volume_label_out = volume_name_buffer;
   return true;
 }
 
-bool MemoryCardDriverThreaded_Windows::TestWrite(UsbStorageDevice* pDevice) {
+bool MemoryCardDriverThreaded_Windows::TestWrite(UsbStorageDevice* device) {
   /* Try to write a file, to check if the device is writable and that we have
    * write permission. Use FILE_ATTRIBUTE_TEMPORARY to try to avoid actually
    * writing to the device.  This reduces the chance of corruption if the user
    * removes the device immediately, without doing anything. */
   for (int i = 0; i < 10; ++i) {
-    HANDLE hFile = CreateFile(
-        ssprintf("%stmp%i", pDevice->os_mount_dir_.c_str(), RandomInt(100000))
+    HANDLE file = CreateFile(
+        ssprintf("%stmp%i", device->os_mount_dir_.c_str(), RandomInt(100000))
             .c_str(),
         GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, CREATE_NEW,
         FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
 
-    if (hFile == INVALID_HANDLE_VALUE) {
-      DWORD iError = GetLastError();
+    if (file == INVALID_HANDLE_VALUE) {
+      DWORD error = GetLastError();
       LOG->Warn(
           werr_ssprintf(
-              iError, "Couldn't write to %s", pDevice->os_mount_dir_.c_str())
+              error, "Couldn't write to %s", device->os_mount_dir_.c_str())
               .c_str());
 
-      if (iError == ERROR_FILE_EXISTS) {
+      if (error == ERROR_FILE_EXISTS) {
         continue;
       }
       break;
     }
 
-    CloseHandle(hFile);
+    CloseHandle(file);
     return true;
   }
 
-  pDevice->SetError("TestFailed");
+  device->SetError("TestFailed");
   return false;
 }
 
-static bool IsFloppyDrive(const std::string& sDrive) {
-  char szBuf[1024];
+static bool IsFloppyDrive(const std::string& drive) {
+  char buf[1024];
 
-  int iRet = QueryDosDevice(sDrive.c_str(), szBuf, 1024);
-  if (iRet == 0) {
-    LOG->Warn(
-        werr_ssprintf(GetLastError(), "QueryDosDevice(%s)", sDrive.c_str())
-            .c_str());
+  int ret = QueryDosDevice(drive.c_str(), buf, 1024);
+  if (ret == 0) {
+    LOG->Warn(werr_ssprintf(GetLastError(), "QueryDosDevice(%s)", drive.c_str())
+                  .c_str());
     return false;
   }
 
-  // Make sure szBuf is terminated with two nulls.  This only may be needed if
+  // Make sure buf is terminated with two nulls.  This only may be needed if
   // the buffer filled.
-  szBuf[iRet - 2] = 0;
-  szBuf[iRet - 1] = 0;
+  buf[ret - 2] = 0;
+  buf[ret - 1] = 0;
 
-  const char* p = szBuf;
+  const char* p = buf;
   while (*p) {
     if (BeginsWith(p, "\\Device\\Floppy")) {
       return true;
@@ -98,25 +97,25 @@ static bool IsFloppyDrive(const std::string& sDrive) {
 }
 
 void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices(
-    std::vector<UsbStorageDevice>& vDevicesOut) {
+    std::vector<UsbStorageDevice>& devices_out) {
   LOG->Trace("MemoryCardDriverThreaded_Windows::GetUSBStorageDevices");
 
-  DWORD dwLogicalDrives = ::GetLogicalDrives();
-  last_logical_drives_ = dwLogicalDrives;
+  DWORD logical_drives = ::GetLogicalDrives();
+  last_logical_drives_ = logical_drives;
 
-  const int MAX_DRIVES = 26;
-  for (int i = 0; i < MAX_DRIVES; ++i) {
+  const int kMaxDrives = 26;
+  for (int i = 0; i < kMaxDrives; ++i) {
     DWORD mask = (1 << i);
     if (!(last_logical_drives_ & mask)) {
       continue;  // drive letter is invalid
     }
 
-    std::string sDrive = ssprintf("%c:", 'A' + i % 26);
+    std::string drive = ssprintf("%c:", 'A' + i % 26);
 
-    LOG->Trace(sDrive.c_str());
+    LOG->Trace(drive.c_str());
 
     // we definitely don't need this lol
-    if (IsFloppyDrive(sDrive.c_str())) {
+    if (IsFloppyDrive(drive.c_str())) {
       LOG->Trace("IsFloppyDrive");
       continue;
     }
@@ -124,53 +123,53 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices(
     // Testing hack:  Allow non-removable drive letters to be used if that
     // driver letter is specified as a memory_card_os_mount_point_.
 
-    bool bIsSpecifiedMountPoint = false;
+    bool is_specified_mount_point = false;
     FOREACH_ENUM(PlayerNumber, p)
-    bIsSpecifiedMountPoint |= EqualsNoCase(
-        MEMCARDMAN->memory_card_os_mount_point_[p].Get(), sDrive.c_str());
+    is_specified_mount_point |= EqualsNoCase(
+        MEMCARDMAN->memory_card_os_mount_point_[p].Get(), drive.c_str());
 
-    std::string sDrivePath = sDrive + "\\";
+    std::string drive_path = drive + "\\";
 
-    if (bIsSpecifiedMountPoint) {
+    if (is_specified_mount_point) {
       LOG->Trace(
-          "'%s' is a specified mount point.  Allowing...", sDrive.c_str());
+          "'%s' is a specified mount point.  Allowing...", drive.c_str());
     } else {
-      if (GetDriveType(sDrivePath.c_str()) != DRIVE_REMOVABLE) {
+      if (GetDriveType(drive_path.c_str()) != DRIVE_REMOVABLE) {
         LOG->Trace("not DRIVE_REMOVABLE");
         continue;
       }
     }
 
-    std::string sVolumeLabel;
-    if (!TestReady(sDrivePath.c_str(), sVolumeLabel)) {
+    std::string volume_label;
+    if (!TestReady(drive_path.c_str(), volume_label)) {
       LOG->Trace("not TestReady");
       continue;
     }
 
-    vDevicesOut.push_back(UsbStorageDevice());
-    UsbStorageDevice& usbd = vDevicesOut.back();
-    usbd.SetOsMountDir(sDrive.c_str());
-    usbd.device_ = std::string("\\\\.\\") + sDrive.c_str();
-    usbd.volume_label_ = sVolumeLabel;
+    devices_out.push_back(UsbStorageDevice());
+    UsbStorageDevice& usbd = devices_out.back();
+    usbd.SetOsMountDir(drive.c_str());
+    usbd.device_ = std::string("\\\\.\\") + drive.c_str();
+    usbd.volume_label_ = volume_label;
   }
 
-  for (size_t i = 0; i < vDevicesOut.size(); ++i) {
-    UsbStorageDevice& usbd = vDevicesOut[i];
+  for (size_t i = 0; i < devices_out.size(); ++i) {
+    UsbStorageDevice& usbd = devices_out[i];
 
     // TODO: fill in bus/level/port with this:
     // http://www.codeproject.com/system/EnumDeviceProperties.asp
 
     // find volume size
-    DWORD dwSectorsPerCluster;
-    DWORD dwBytesPerSector;
-    DWORD dwNumberOfFreeClusters;
-    DWORD dwTotalNumberOfClusters;
+    DWORD sectors_per_cluster;
+    DWORD bytes_per_sector;
+    DWORD number_of_free_clusters;
+    DWORD total_number_of_clusters;
     if (GetDiskFreeSpace(
-            usbd.os_mount_dir_.c_str(), &dwSectorsPerCluster, &dwBytesPerSector,
-            &dwNumberOfFreeClusters, &dwTotalNumberOfClusters)) {
+            usbd.os_mount_dir_.c_str(), &sectors_per_cluster, &bytes_per_sector,
+            &number_of_free_clusters, &total_number_of_clusters)) {
       usbd.volume_size_mb_ = std::round(
-          dwTotalNumberOfClusters * (float)dwSectorsPerCluster *
-          dwBytesPerSector / (1024 * 1024));
+          total_number_of_clusters * (float)sectors_per_cluster *
+          bytes_per_sector / (1024 * 1024));
     }
   }
 }
@@ -179,36 +178,36 @@ bool MemoryCardDriverThreaded_Windows::USBStorageDevicesChanged() {
   return ::GetLogicalDrives() != last_logical_drives_;
 }
 
-bool MemoryCardDriverThreaded_Windows::Mount(UsbStorageDevice* pDevice) {
+bool MemoryCardDriverThreaded_Windows::Mount(UsbStorageDevice* device) {
   // nothing to do here...
   return true;
 }
 
-void MemoryCardDriverThreaded_Windows::Unmount(UsbStorageDevice* pDevice) {
+void MemoryCardDriverThreaded_Windows::Unmount(UsbStorageDevice* device) {
   /* Try to flush the device before returning.  This requires administrator
    * priviliges. */
-  HANDLE hDevice = CreateFile(
-      pDevice->device_.c_str(), GENERIC_WRITE,
+  HANDLE h_device = CreateFile(
+      device->device_.c_str(), GENERIC_WRITE,
       FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL, nullptr);
 
-  if (hDevice == INVALID_HANDLE_VALUE) {
+  if (h_device == INVALID_HANDLE_VALUE) {
     LOG->Warn(werr_ssprintf(
                   GetLastError(),
                   "Couldn't open memory card device to flush (%s): CreateFile",
-                  pDevice->device_.c_str())
+                  device->device_.c_str())
                   .c_str());
     return;
   }
 
-  if (!FlushFileBuffers(hDevice)) {
+  if (!FlushFileBuffers(h_device)) {
     LOG->Warn(werr_ssprintf(
                   GetLastError(),
                   "Couldn't flush memory card device (%s): FlushFileBuffers",
-                  pDevice->device_.c_str())
+                  device->device_.c_str())
                   .c_str());
   }
-  CloseHandle(hDevice);
+  CloseHandle(h_device);
 }
 
 /*

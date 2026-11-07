@@ -86,27 +86,27 @@
 
 void ShutdownGame();
 bool HandleGlobalInputs(const InputEventPlus& input);
-void HandleInputEvents(float fDeltaTime);
+void HandleInputEvents(float delta_time);
 
 static Preference<bool> g_bAllowMultipleInstances(
     "AllowMultipleInstances", false);
 
-void StepMania::GetPreferredVideoModeParams(VideoModeParams& paramsOut) {
+void StepMania::GetPreferredVideoModeParams(VideoModeParams& params_out) {
   // resolution handling code that probably needs fixing
-  int iWidth = PREFSMAN->display_width_;
+  int width = PREFSMAN->display_width_;
   if (PREFSMAN->windowed_) {
     // float fRatio = PREFSMAN->m_iDisplayHeight;
     // iWidth = PREFSMAN->m_iDisplayHeight * fRatio;
-    iWidth =
+    width =
         std::ceil(PREFSMAN->display_height_ * PREFSMAN->display_aspect_ratio_);
     // ceil causes the width to come out odd when it shouldn't.
     // 576 * 1.7778 = 1024.0128, which is rounded to 1025. -Kyz
-    iWidth -= iWidth % 2;
+    width -= width % 2;
   }
 
-  paramsOut = VideoModeParams(
+  params_out = VideoModeParams(
       PREFSMAN->windowed_ || PREFSMAN->fullscreen_is_borderless_window_,
-      PREFSMAN->display_id_, iWidth, PREFSMAN->display_height_,
+      PREFSMAN->display_id_, width, PREFSMAN->display_height_,
       PREFSMAN->display_color_depth_, PREFSMAN->refresh_rate_, PREFSMAN->vsync_,
       PREFSMAN->interlaced_, PREFSMAN->smooth_lines_,
       PREFSMAN->trilinear_filtering_, PREFSMAN->anisotropic_filtering_,
@@ -127,10 +127,10 @@ static LocalizedString NO_SMOOTH_LINES("StepMania", "NoSmoothLines");
 
 static std::string GetActualGraphicOptionsString() {
   const VideoModeParams& params = DISPLAY->GetActualVideoModeParams();
-  std::string sFormat = "%s %s %dx%d %d " + COLOR.GetValue() + " %d " +
-                        TEXTURE.GetValue() + " %dHz %s %s";
-  std::string sLog = ssprintf(
-      sFormat.c_str(), DISPLAY->GetApiDescription().c_str(),
+  std::string format = "%s %s %dx%d %d " + COLOR.GetValue() + " %d " +
+                       TEXTURE.GetValue() + " %dHz %s %s";
+  std::string log = ssprintf(
+      format.c_str(), DISPLAY->GetApiDescription().c_str(),
       (params.windowed_ ? WINDOWED : FULLSCREEN).GetValue().c_str(),
       (int)params.width_, (int)params.height_, (int)params.bpp_,
       (int)PREFSMAN->texture_color_depth_, (int)params.rate_,
@@ -138,7 +138,7 @@ static std::string GetActualGraphicOptionsString() {
       (PREFSMAN->smooth_lines_ ? SMOOTH_LINES : NO_SMOOTH_LINES)
           .GetValue()
           .c_str());
-  return sLog;
+  return log;
 }
 
 static void StoreActualGraphicOptions() {
@@ -212,26 +212,26 @@ static void StartDisplay() {
 }
 
 void StepMania::ApplyGraphicOptions() {
-  bool bNeedReload = false;
+  bool need_reload = false;
 
   VideoModeParams params;
   GetPreferredVideoModeParams(params);
-  std::string sError = DISPLAY->SetVideoMode(params, bNeedReload);
-  if (sError != "") {
-    RageException::Throw("%s", sError.c_str());
+  std::string error = DISPLAY->SetVideoMode(params, need_reload);
+  if (error != "") {
+    RageException::Throw("%s", error.c_str());
   }
 
   update_centering();
 
-  bNeedReload |= TEXTUREMAN->SetPrefs(RageTextureManagerPrefs(
+  need_reload |= TEXTUREMAN->SetPrefs(RageTextureManagerPrefs(
       PREFSMAN->texture_color_depth_, PREFSMAN->movie_color_depth_,
       PREFSMAN->delayed_texture_delete_, PREFSMAN->max_texture_resolution_,
       StepMania::GetHighResolutionTextures(), PREFSMAN->force_mip_maps_));
 
-  bNeedReload |=
+  need_reload |=
       MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->delayed_model_delete_));
 
-  if (bNeedReload) {
+  if (need_reload) {
     TEXTUREMAN->ReloadAll();
   }
 
@@ -312,7 +312,7 @@ void ShutdownGame() {
   RageUtil::SafeDelete(HOOKS);
 }
 
-static void HandleException(const std::string& sError) {
+static void HandleException(const std::string& error) {
   if (g_bAutoRestart) {
     HOOKS->RestartProgram();
   }
@@ -321,7 +321,7 @@ static void HandleException(const std::string& sError) {
   ShutdownGame();
 
   // Throw up a pretty error dialog.
-  Dialog::Error(sError);
+  Dialog::Error(error);
   Dialog::Shutdown();  // Shut it back down.
 }
 
@@ -329,12 +329,12 @@ void StepMania::ResetGame() {
   GAMESTATE->Reset();
 
   if (!THEME->DoesThemeExist(THEME->GetCurThemeName())) {
-    std::string sGameName = GAMESTATE->GetCurrentGame()->name_;
-    if (!THEME->DoesThemeExist(sGameName)) {
-      sGameName = PREFSMAN->default_theme_;  // was previously "default" -aj
+    std::string game_name = GAMESTATE->GetCurrentGame()->name_;
+    if (!THEME->DoesThemeExist(game_name)) {
+      game_name = PREFSMAN->default_theme_;  // was previously "default" -aj
     }
     THEME->SwitchThemeAndLanguage(
-        sGameName, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
+        game_name, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
     TEXTUREMAN->DoDelayedDelete();
   }
 
@@ -382,18 +382,18 @@ struct VideoCardDefaults {
 
   VideoCardDefaults() {}
   VideoCardDefaults(
-      std::string sDriverRegex_, std::string sVideoRenderers_, int iWidth_,
-      int iHeight_, int iDisplayColor_, int iTextureColor_, int iMovieColor_,
-      int iTextureSize_, bool bSmoothLines_) {
-    driver_regex_ = sDriverRegex_;
-    video_renderers_ = sVideoRenderers_;
-    width_ = iWidth_;
-    height_ = iHeight_;
-    display_color_ = iDisplayColor_;
-    texture_color_ = iTextureColor_;
-    movie_color_ = iMovieColor_;
-    texture_size_ = iTextureSize_;
-    smooth_lines_ = bSmoothLines_;
+      std::string driver_regex, std::string video_renderers, int width,
+      int height, int display_color, int texture_color, int movie_color,
+      int texture_size, bool smooth_lines) {
+    driver_regex_ = driver_regex;
+    video_renderers_ = video_renderers;
+    width_ = width;
+    height_ = height;
+    display_color_ = display_color;
+    texture_color_ = texture_color;
+    movie_color_ = movie_color;
+    texture_size_ = texture_size;
+    smooth_lines_ = smooth_lines;
   }
 } const g_VideoCardDefaults[] = {
     // These lines correspond to the struct defined above.
@@ -429,7 +429,7 @@ static std::string GetVideoDriverName() {
 
 bool CheckVideoDefaultSettings() {
   // Video card changed since last run
-  std::string sVideoDriver = GetVideoDriverName();
+  std::string video_driver = GetVideoDriverName();
 
   LOG->Trace(
       "Last seen video driver: %s",
@@ -441,12 +441,12 @@ bool CheckVideoDefaultSettings() {
   for (i = 0; i < ARRAYLEN(g_VideoCardDefaults); i++) {
     defaults = g_VideoCardDefaults[i];
 
-    std::string sDriverRegex = defaults.driver_regex_;
-    Regex regex(sDriverRegex);
-    if (regex.Compare(sVideoDriver)) {
+    std::string driver_regex = defaults.driver_regex_;
+    Regex regex(driver_regex);
+    if (regex.Compare(video_driver)) {
       LOG->Trace(
           "Card matches '%s'.",
-          sDriverRegex.size() ? sDriverRegex.c_str() : "(unknown card)");
+          driver_regex.size() ? driver_regex.c_str() : "(unknown card)");
       break;
     }
   }
@@ -454,18 +454,18 @@ bool CheckVideoDefaultSettings() {
     FAIL_M("Failed to match video driver");
   }
 
-  bool bSetDefaultVideoParams = false;
+  bool set_default_video_params = false;
   if (PREFSMAN->video_renderers_.Get() == "") {
-    bSetDefaultVideoParams = true;
-    LOG->Trace("Applying defaults for %s.", sVideoDriver.c_str());
-  } else if (PREFSMAN->last_seen_video_driver_.Get() != sVideoDriver) {
-    bSetDefaultVideoParams = true;
+    set_default_video_params = true;
+    LOG->Trace("Applying defaults for %s.", video_driver.c_str());
+  } else if (PREFSMAN->last_seen_video_driver_.Get() != video_driver) {
+    set_default_video_params = true;
     LOG->Trace(
         "Video card has changed from %s to %s.  Applying new defaults.",
-        PREFSMAN->last_seen_video_driver_.Get().c_str(), sVideoDriver.c_str());
+        PREFSMAN->last_seen_video_driver_.Get().c_str(), video_driver.c_str());
   }
 
-  if (bSetDefaultVideoParams) {
+  if (set_default_video_params) {
     PREFSMAN->video_renderers_.Set(defaults.video_renderers_);
     PREFSMAN->display_width_.Set(defaults.width_);
     PREFSMAN->display_height_.Set(defaults.height_);
@@ -490,7 +490,7 @@ bool CheckVideoDefaultSettings() {
   }
 
   LOG->Info("Video renderers: '%s'", PREFSMAN->video_renderers_.Get().c_str());
-  return bSetDefaultVideoParams;
+  return set_default_video_params;
 }
 
 static LocalizedString ERROR_INITIALIZING_CARD(
@@ -545,44 +545,44 @@ RageDisplay* CreateDisplay() {
           ERROR_VIDEO_DRIVER.GetValue().c_str(), GetVideoDriverName().c_str()) +
       "\n\n";
 
-  std::vector<std::string> asRenderers;
-  split(PREFSMAN->video_renderers_, ",", asRenderers, true);
+  std::vector<std::string> renderers;
+  split(PREFSMAN->video_renderers_, ",", renderers, true);
 
-  if (asRenderers.empty()) {
+  if (renderers.empty()) {
     RageException::Throw("%s", ERROR_NO_VIDEO_RENDERERS.GetValue().c_str());
   }
 
-  RageDisplay* pRet = nullptr;
-  for (unsigned i = 0; i < asRenderers.size(); i++) {
-    std::string sRenderer = asRenderers[i];
+  RageDisplay* ret = nullptr;
+  for (unsigned i = 0; i < renderers.size(); i++) {
+    std::string renderer = renderers[i];
 
-    if (CompareNoCase(sRenderer, "opengl") == 0) {
+    if (CompareNoCase(renderer, "opengl") == 0) {
 #if defined(SUPPORT_OPENGL)
-      pRet = new RageDisplay_Legacy;
+      ret = new RageDisplay_Legacy;
 #endif
-    } else if (CompareNoCase(sRenderer, "d3d") == 0) {
+    } else if (CompareNoCase(renderer, "d3d") == 0) {
 // TODO: ANGLE/RageDisplay_Modern
 #if defined(SUPPORT_D3D)
-      pRet = new RageDisplay_D3D;
+      ret = new RageDisplay_D3D;
 #endif
-    } else if (CompareNoCase(sRenderer, "null") == 0) {
+    } else if (CompareNoCase(renderer, "null") == 0) {
       return new RageDisplay_Null;
     } else {
       RageException::Throw(
-          ERROR_UNKNOWN_VIDEO_RENDERER.GetValue().c_str(), sRenderer.c_str());
+          ERROR_UNKNOWN_VIDEO_RENDERER.GetValue().c_str(), renderer.c_str());
     }
 
-    if (pRet == nullptr) {
+    if (ret == nullptr) {
       continue;
     }
 
-    std::string sError =
-        pRet->Init(params, PREFSMAN->allow_unaccelerated_renderer_);
-    if (!sError.empty()) {
+    std::string s_error =
+        ret->Init(params, PREFSMAN->allow_unaccelerated_renderer_);
+    if (!s_error.empty()) {
       error +=
-          ssprintf(ERROR_INITIALIZING.GetValue().c_str(), sRenderer.c_str()) +
-          "\n" + sError;
-      RageUtil::SafeDelete(pRet);
+          ssprintf(ERROR_INITIALIZING.GetValue().c_str(), renderer.c_str()) +
+          "\n" + s_error;
+      RageUtil::SafeDelete(ret);
       error += "\n\n\n";
       continue;
     }
@@ -590,31 +590,31 @@ RageDisplay* CreateDisplay() {
     break;  // the display is ready to go
   }
 
-  if (pRet == nullptr) {
+  if (ret == nullptr) {
     RageException::Throw("%s", error.c_str());
   }
 
-  return pRet;
+  return ret;
 }
 
 static void SwitchToLastPlayedGame() {
-  const Game* pGame = GAMEMAN->StringToGame(PREFSMAN->GetCurrentGame());
+  const Game* game = GAMEMAN->StringToGame(PREFSMAN->GetCurrentGame());
 
   // If the active game type isn't actually available, revert to the default.
-  if (pGame == nullptr) {
-    pGame = GAMEMAN->GetDefaultGame();
+  if (game == nullptr) {
+    game = GAMEMAN->GetDefaultGame();
   }
 
-  if (!GAMEMAN->IsGameEnabled(pGame) && pGame != GAMEMAN->GetDefaultGame()) {
-    pGame = GAMEMAN->GetDefaultGame();
+  if (!GAMEMAN->IsGameEnabled(game) && game != GAMEMAN->GetDefaultGame()) {
+    game = GAMEMAN->GetDefaultGame();
     LOG->Warn(
-        "Default NoteSkin for \"%s\" missing, reverting to \"%s\"",
-        pGame->name_, GAMEMAN->GetDefaultGame()->name_);
+        "Default NoteSkin for \"%s\" missing, reverting to \"%s\"", game->name_,
+        GAMEMAN->GetDefaultGame()->name_);
   }
 
-  ASSERT(GAMEMAN->IsGameEnabled(pGame));
+  ASSERT(GAMEMAN->IsGameEnabled(game));
 
-  StepMania::InitializeCurrentGame(pGame);
+  StepMania::InitializeCurrentGame(game);
 }
 
 // This function is meant to only be called during start up.
@@ -626,21 +626,22 @@ void StepMania::InitializeCurrentGame(const Game* g) {
 
   GAMESTATE->SetCurGame(g);
 
-  std::string sAnnouncer = PREFSMAN->announcer_;
-  std::string sTheme = PREFSMAN->theme_;
-  std::string sGametype = GAMESTATE->GetCurrentGame()->name_;
-  std::string sLanguage = PREFSMAN->language_;
+  std::string announcer = PREFSMAN->announcer_;
+  std::string theme = PREFSMAN->theme_;
+  std::string gametype = GAMESTATE->GetCurrentGame()->name_;
+  std::string language = PREFSMAN->language_;
 
-  if (sAnnouncer.empty()) {
-    sAnnouncer = GAMESTATE->GetCurrentGame()->name_;
+  if (announcer.empty()) {
+    announcer = GAMESTATE->GetCurrentGame()->name_;
   }
-  std::string argCurGame;
-  if (GetCommandlineArgument("game", &argCurGame) && argCurGame != sGametype) {
-    const Game* new_game = GAMEMAN->StringToGame(argCurGame);
+  std::string arg_cur_game;
+  if (GetCommandlineArgument("game", &arg_cur_game) &&
+      arg_cur_game != gametype) {
+    const Game* new_game = GAMEMAN->StringToGame(arg_cur_game);
     if (new_game == nullptr) {
-      LOG->Warn("%s is not a known game type, ignoring.", argCurGame.c_str());
+      LOG->Warn("%s is not a known game type, ignoring.", arg_cur_game.c_str());
     } else {
-      PREFSMAN->SetCurrentGame(sGametype);
+      PREFSMAN->SetCurrentGame(gametype);
       GAMESTATE->SetCurGame(new_game);
     }
   }
@@ -650,23 +651,23 @@ void StepMania::InitializeCurrentGame(const Game* g) {
 
   // process gametype, theme and language command line arguments;
   // these change the preferences in order for transparent loading -aj
-  std::string argTheme;
-  if (GetCommandlineArgument("theme", &argTheme) && argTheme != sTheme) {
-    sTheme = argTheme;
+  std::string arg_theme;
+  if (GetCommandlineArgument("theme", &arg_theme) && arg_theme != theme) {
+    theme = arg_theme;
     // set theme in preferences too for correct behavior  -aj
-    PREFSMAN->theme_.Set(sTheme);
+    PREFSMAN->theme_.Set(theme);
   }
 
-  std::string argLanguage;
-  if (GetCommandlineArgument("language", &argLanguage)) {
-    sLanguage = argLanguage;
+  std::string arg_language;
+  if (GetCommandlineArgument("language", &arg_language)) {
+    language = arg_language;
     // set language in preferences too for correct behavior -aj
-    PREFSMAN->language_.Set(sLanguage);
+    PREFSMAN->language_.Set(language);
   }
 
   // it's OK to call these functions with names that don't exist.
-  ANNOUNCER->SwitchAnnouncer(sAnnouncer);
-  THEME->SwitchThemeAndLanguage(sTheme, sLanguage, PREFSMAN->pseudo_localize_);
+  ANNOUNCER->SwitchAnnouncer(announcer);
+  THEME->SwitchThemeAndLanguage(theme, language, PREFSMAN->pseudo_localize_);
 
   // Set the input scheme for the new game, and load keymaps.
   if (INPUTMAPPER) {
@@ -705,13 +706,13 @@ static void MountTreeOfZips(const std::string& dir) {
 }
 
 static void MountFolders(
-    const std::string& type, const std::string& realPathList,
-    const std::string& mountPoint) {
-  if (!realPathList.empty()) {
+    const std::string& type, const std::string& real_path_list,
+    const std::string& mount_point) {
+  if (!real_path_list.empty()) {
     std::vector<std::string> dirs;
-    split(realPathList, ",", dirs, true);
+    split(real_path_list, ",", dirs, true);
     for (const auto& dir : dirs) {
-      FILEMAN->Mount(type, dir, mountPoint);
+      FILEMAN->Mount(type, dir, mount_point);
     }
   }
 }
@@ -784,8 +785,8 @@ int sm_main(int argc, char* argv[]) {
   FILEMAN->ProtectPath(SpecialFiles::PREFERENCES_INI_PATH);
   FILEMAN->MountInitialFilesystems();
 
-  bool bPortable = DoesFileExist("/Portable.ini");
-  if (!bPortable) {
+  bool portable = DoesFileExist("/Portable.ini");
+  if (!portable) {
     FILEMAN->MountUserFilesystems();
   }
 
@@ -844,8 +845,8 @@ int sm_main(int argc, char* argv[]) {
   GAMESTATE = new GameState;
 
   // This requires PREFSMAN, for PREFSMAN->m_bShowLoadingWindow.
-  LoadingWindow* pLoadingWindow = LoadingWindow::Create();
-  if (pLoadingWindow == nullptr) {
+  LoadingWindow* loading_window = LoadingWindow::Create();
+  if (loading_window == nullptr) {
     RageException::Throw("%s", COULDNT_OPEN_LOADING_WINDOW.GetValue().c_str());
   }
 
@@ -857,11 +858,12 @@ int sm_main(int argc, char* argv[]) {
    * that to appear delayed. */
   HOOKS->DumpDebugInfo();
 
-  std::string luaDebugServerAddress;
-  if (GetCommandlineArgument("lua-debugger", &luaDebugServerAddress)) {
+  std::string lua_debug_server_address;
+  if (GetCommandlineArgument("lua-debugger", &lua_debug_server_address)) {
     LUADEBUG = new LuaDebugManager();
     LUADEBUG->Start(
-        luaDebugServerAddress, GetCommandlineArgument("lua-debugger-paused"));
+        lua_debug_server_address,
+        GetCommandlineArgument("lua-debugger-paused"));
   }
 
   GAMEMAN = new GameManager;
@@ -872,7 +874,7 @@ int sm_main(int argc, char* argv[]) {
   // Switch to the last used game type, and set up the theme and announcer.
   SwitchToLastPlayedGame();
 
-  CommandLineActions::Handle(pLoadingWindow);
+  CommandLineActions::Handle(loading_window);
 
   if (GetCommandlineArgument("dopefish")) {
     GAMESTATE->dopefish_ = true;
@@ -881,19 +883,19 @@ int sm_main(int argc, char* argv[]) {
   {
     /* Now that THEME is loaded, load the icon and splash for the current
      * theme into the loading window. */
-    std::string sError;
-    RageSurface* pSurface = RageSurfaceUtils::LoadFile(
-        THEME->GetPathG("Common", "window icon"), sError);
-    if (pSurface != nullptr) {
-      pLoadingWindow->SetIcon(pSurface);
+    std::string error;
+    RageSurface* surface = RageSurfaceUtils::LoadFile(
+        THEME->GetPathG("Common", "window icon"), error);
+    if (surface != nullptr) {
+      loading_window->SetIcon(surface);
     }
-    delete pSurface;
-    pSurface =
-        RageSurfaceUtils::LoadFile(THEME->GetPathG("Common", "splash"), sError);
-    if (pSurface != nullptr) {
-      pLoadingWindow->SetSplash(pSurface);
+    delete surface;
+    surface =
+        RageSurfaceUtils::LoadFile(THEME->GetPathG("Common", "splash"), error);
+    if (surface != nullptr) {
+      loading_window->SetSplash(surface);
     }
-    delete pSurface;
+    delete surface;
   }
 
   if (PREFSMAN->sound_write_ahead_) {
@@ -920,7 +922,7 @@ int sm_main(int argc, char* argv[]) {
   // depends on SONGINDEX:
   SONGMAN = new SongManager;
   SONGMAN->InitAll(
-      pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
+      loading_window, /*onlyAdditions=*/false);  // this takes a long time
   CRYPTMAN = new CryptManager;  // need to do this before ProfileMan
   if (PREFSMAN->sign_profile_data_) {
     CRYPTMAN->GenerateGlobalKeys();
@@ -938,7 +940,7 @@ int sm_main(int argc, char* argv[]) {
   // Initialize which courses are ranking courses here.
   SONGMAN->UpdateRankingCourses();
 
-  RageUtil::SafeDelete(pLoadingWindow);  // destroy this before init'ing Display
+  RageUtil::SafeDelete(loading_window);  // destroy this before init'ing Display
 
   /* If the user has tried to quit during the loading, do it before creating
    * the main window. This prevents going to full screen just to quit. */
@@ -970,9 +972,9 @@ int sm_main(int argc, char* argv[]) {
   SCREENMAN->SetNewScreen(StepMania::GetInitialScreen());
 
   // Do this after ThemeChanged so that we can show a system message
-  std::string sMessage;
-  if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage)) {
-    SCREENMAN->SystemMessage(sMessage);
+  std::string message;
+  if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(message)) {
+    SCREENMAN->SystemMessage(message);
   }
 
   CodeDetector::RefreshCacheItems();
@@ -988,61 +990,61 @@ int sm_main(int argc, char* argv[]) {
 }
 
 std::string StepMania::SaveScreenshot(
-    std::string Dir, bool SaveCompressed, bool MakeSignature,
-    std::string NamePrefix, std::string NameSuffix) {
+    std::string dir, bool save_compressed, bool make_signature,
+    std::string name_prefix, std::string name_suffix) {
   /* As of sm-ssc v1.0 rc2, screenshots are no longer named by an arbitrary
    * index. This was causing naming issues for some unknown reason, so we have
    * changed the screenshot names to a non-blocking format: date and time.
    * As before, we ignore the extension. -aj */
-  std::string FileNameNoExtension =
-      NamePrefix + DateTime::GetNowDateTime().GetString() + NameSuffix;
+  std::string file_name_no_extension =
+      name_prefix + DateTime::GetNowDateTime().GetString() + name_suffix;
   // replace space with underscore.
-  Replace(FileNameNoExtension, " ", "_");
+  Replace(file_name_no_extension, " ", "_");
   // colons are illegal in filenames.
-  Replace(FileNameNoExtension, ":", "");
+  Replace(file_name_no_extension, ":", "");
 
   // Save the screenshot. If writing lossy to a memcard, use
   // SAVE_LOSSY_LOW_QUAL, so we don't eat up lots of space.
   RageDisplay::GraphicsFileFormat fmt;
-  if (SaveCompressed) {
+  if (save_compressed) {
     fmt = RageDisplay::SAVE_LOSSY_HIGH_QUAL;
   } else {
     fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;
   }
 
-  std::string FileName =
-      FileNameNoExtension + "." + (SaveCompressed ? "jpg" : "png");
-  std::string Path = Dir + FileName;
+  std::string file_name =
+      file_name_no_extension + "." + (save_compressed ? "jpg" : "png");
+  std::string path = dir + file_name;
 
-  if (!DISPLAY->SaveScreenshot(Path, fmt)) {
+  if (!DISPLAY->SaveScreenshot(path, fmt)) {
     SCREENMAN->PlayInvalidSound();
     return std::string();
   }
 
   SCREENMAN->PlayScreenshotSound();
 
-  if (PREFSMAN->sign_profile_data_ && MakeSignature) {
-    CryptManager::SignFileToFile(Path);
+  if (PREFSMAN->sign_profile_data_ && make_signature) {
+    CryptManager::SignFileToFile(path);
   }
 
-  return FileName;
+  return file_name;
 }
 
-void StepMania::InsertCoin(int iNum, bool bCountInBookkeeping) {
-  if (bCountInBookkeeping) {
+void StepMania::InsertCoin(int num, bool count_in_bookkeeping) {
+  if (count_in_bookkeeping) {
     LIGHTSMAN->PulseCoinCounter();
     BOOKKEEPER->CoinInserted();
   }
-  int iNumCoinsOld = GAMESTATE->coins_;
+  int num_coins_old = GAMESTATE->coins_;
 
   // Don't allow GAMESTATE's coin count to become negative.
-  if (GAMESTATE->coins_ + iNum >= 0) {
-    GAMESTATE->coins_.Set(GAMESTATE->coins_ + iNum);
+  if (GAMESTATE->coins_ + num >= 0) {
+    GAMESTATE->coins_.Set(GAMESTATE->coins_ + num);
   }
 
-  int iCredits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
-  bool bMaxCredits = iCredits >= PREFSMAN->max_num_credits_;
-  if (bMaxCredits) {
+  int credits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
+  bool max_credits = credits >= PREFSMAN->max_num_credits_;
+  if (max_credits) {
     GAMESTATE->coins_.Set(
         PREFSMAN->max_num_credits_ * PREFSMAN->coins_per_credit_);
   }
@@ -1056,8 +1058,8 @@ void StepMania::InsertCoin(int iNum, bool bCountInBookkeeping) {
 
   // If inserting coins, play an appropriate sound; if deducting coins, don't
   // play anything.
-  if (iNum > 0) {
-    if (iNumCoinsOld != GAMESTATE->coins_) {
+  if (num > 0) {
+    if (num_coins_old != GAMESTATE->coins_) {
       SCREENMAN->PlayCoinSound();
     } else {
       SCREENMAN->PlayInvalidSound();
@@ -1147,31 +1149,31 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
   /* Re-added for StepMania 3.9 theming veterans, plus it's just faster than
    * the debug menu. The Shift button only reloads the metrics, unlike in 3.9
    * (where it saved bookkeeping and machine profile). -aj */
-  bool bIsShiftHeld =
+  bool is_shift_held =
       INPUTFILTER->IsBeingPressed(
           DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.input_list_) ||
       INPUTFILTER->IsBeingPressed(
           DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.input_list_);
-  bool bIsCtrlHeld =
+  bool is_ctrl_held =
       INPUTFILTER->IsBeingPressed(
           DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.input_list_) ||
       INPUTFILTER->IsBeingPressed(
           DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.input_list_);
   if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_F2)) {
-    if (bIsShiftHeld && !bIsCtrlHeld) {
+    if (is_shift_held && !is_ctrl_held) {
       // Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
       THEME->ReloadMetrics();
       NOTESKIN->RefreshNoteSkinData(GAMESTATE->cur_game_);
       CodeDetector::RefreshCacheItems();
       SCREENMAN->SystemMessage(RELOADED_METRICS);
-    } else if (bIsCtrlHeld && !bIsShiftHeld) {
+    } else if (is_ctrl_held && !is_shift_held) {
       // Ctrl+F2: reload scripts only
       if (NETWORK != nullptr) {
         NETWORK->CloseAllWebSockets();
       }
       THEME->UpdateLuaGlobals();
       SCREENMAN->SystemMessage(RELOADED_SCRIPTS);
-    } else if (bIsCtrlHeld && bIsShiftHeld) {
+    } else if (is_ctrl_held && is_shift_held) {
       // Shift+Ctrl+F2: reload overlay screens (and metrics, since themers
       // are likely going to do this after changing metrics.)
       THEME->ReloadMetrics();
@@ -1219,7 +1221,7 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
   }
 #endif
 
-  bool bDoScreenshot =
+  bool do_screenshot =
 #if defined(MACOSX)
       // Notebooks don't have F13. Use cmd-F12 as well.
       input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) ||
@@ -1241,15 +1243,15 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
       !INPUTFILTER->IsBeingPressed(
           DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_);
 #endif
-  if (bDoScreenshot) {
+  if (do_screenshot) {
     // If holding Shift save uncompressed, else save compressed
-    bool bHoldingShift =
+    bool holding_shift =
         (INPUTFILTER->IsBeingPressed(
              DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
          INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT)));
-    bool bSaveCompressed = !bHoldingShift;
+    bool save_compressed = !holding_shift;
     RageTimer timer;
-    StepMania::SaveScreenshot("Screenshots/", bSaveCompressed, false, "", "");
+    StepMania::SaveScreenshot("Screenshots/", save_compressed, false, "", "");
     LOG->Trace("Screenshot took %f seconds.", timer.GetDeltaTime());
     return true;  // handled
   }
@@ -1274,8 +1276,8 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
   return false;
 }
 
-void HandleInputEvents(float fDeltaTime) {
-  INPUTFILTER->Update(fDeltaTime);
+void HandleInputEvents(float delta_time) {
+  INPUTFILTER->Update(delta_time);
 
   /* Hack: If the topmost screen hasn't been updated yet, don't process input,
    * since we must not send inputs to a screen that hasn't at least had one
@@ -1286,23 +1288,23 @@ void HandleInputEvents(float fDeltaTime) {
     return;
   }
 
-  std::vector<InputEvent> ieArray;
-  INPUTFILTER->GetInputEvents(ieArray);
+  std::vector<InputEvent> array;
+  INPUTFILTER->GetInputEvents(array);
 
   // If we don't have focus, discard input.
   if (!HOOKS->AppHasFocus()) {
     return;
   }
 
-  if (!ieArray.empty()) {
+  if (!array.empty()) {
     GameLoop::ResetInputIdleTimer();
   }
 
-  for (unsigned i = 0; i < ieArray.size(); i++) {
+  for (unsigned i = 0; i < array.size(); i++) {
     InputEventPlus input;
-    input.device_i_ = ieArray[i].di_;
-    input.type_ = ieArray[i].type_;
-    swap(input.input_list_, ieArray[i].button_state_);
+    input.device_i_ = array[i].di_;
+    input.type_ = array[i].type_;
+    swap(input.input_list_, array[i].button_state_);
 
     INPUTMAPPER->DeviceToGame(input.device_i_, input.game_i_);
 

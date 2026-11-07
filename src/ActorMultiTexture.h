@@ -16,17 +16,17 @@ class ActorMultiTexture : public Actor {
   ActorMultiTexture(const ActorMultiTexture& cpy);
   virtual ~ActorMultiTexture();
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual ActorMultiTexture* Copy() const;
 
   virtual bool EarlyAbortDraw() const;
   virtual void DrawPrimitives();
 
   void ClearTextures();
-  int AddTexture(RageTexture* pTexture);
-  void SetTextureMode(int iIndex, TextureMode tm);
+  int AddTexture(RageTexture* texture);
+  void SetTextureMode(int index, TextureMode tm);
 
-  void SetSizeFromTexture(RageTexture* pTexture);
+  void SetSizeFromTexture(RageTexture* texture);
   void SetTextureCoords(const RectF& r);
   void SetEffectMode(EffectMode em) { effect_mode_ = em; }
 

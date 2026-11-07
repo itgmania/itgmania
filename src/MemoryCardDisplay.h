@@ -11,9 +11,9 @@ class MemoryCardDisplay : public ActorFrame {
  public:
   MemoryCardDisplay();
   void Load(PlayerNumber pn);
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual MemoryCardDisplay* Copy() const;
-  void Update(float fDelta);
+  void Update(float delta);
 
  protected:
   PlayerNumber player_number_;

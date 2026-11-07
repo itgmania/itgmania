@@ -11,10 +11,10 @@ class DualScrollBar : public ActorFrame {
  public:
   DualScrollBar();
 
-  void Load(const std::string& sType);
-  void SetBarHeight(float fHeight) { bar_height_ = fHeight; }
-  void SetBarTime(float fTime) { bar_time_ = fTime; }
-  void SetPercentage(PlayerNumber pn, float fPercent);
+  void Load(const std::string& type);
+  void SetBarHeight(float height) { bar_height_ = height; }
+  void SetBarTime(float time) { bar_time_ = time; }
+  void SetPercentage(PlayerNumber pn, float percent);
   void EnablePlayer(PlayerNumber pn, bool on);
 
  private:

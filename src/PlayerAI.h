@@ -12,7 +12,7 @@ const int NUM_SKILL_LEVELS = 6;  // 0-5
 class PlayerAI {
  public:
   static void InitFromDisk();
-  static TapNoteScore GetTapNoteScore(const PlayerState* pPlayerState);
+  static TapNoteScore GetTapNoteScore(const PlayerState* player_state);
 };
 
 #endif

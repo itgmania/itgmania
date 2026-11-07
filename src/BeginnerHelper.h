@@ -17,17 +17,17 @@ class BeginnerHelper : public ActorFrame {
   BeginnerHelper();
   ~BeginnerHelper();
 
-  bool Init(int iDancePadType);
+  bool Init(int dance_pad_type);
   static bool CanUse(PlayerNumber pn);
   void AddPlayer(PlayerNumber pn, const NoteData& nd);
-  void ShowStepCircle(PlayerNumber pn, int CSTEP);
+  void ShowStepCircle(PlayerNumber pn, int cstep);
   bool show_background_;
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
   virtual void DrawPrimitives();
 
  protected:
-  void Step(PlayerNumber pn, int CSTEP);
+  void Step(PlayerNumber pn, int cstep);
 
   std::array<NoteData, NUM_PLAYERS> note_data_;
   std::array<bool, NUM_PLAYERS> player_enabled_;

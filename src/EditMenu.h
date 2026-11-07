@@ -78,7 +78,7 @@ class EditMenu : public ActorFrame {
   EditMenu();
   /** @brief Destroy the EditMenu. */
   ~EditMenu();
-  void Load(const std::string& sType);
+  void Load(const std::string& type);
 
   /** @brief Determine if we can move up.
    * @return true if we can, false otherwise. */
@@ -203,8 +203,8 @@ class EditMenu : public ActorFrame {
 
   void StripLockedStepsAndDifficulty(std::vector<StepsAndDifficulty>& v);
   void GetSongsToShowForGroup(
-      const std::string& sGroup, std::vector<Song*>& vpSongsOut);
-  void GetGroupsToShow(std::vector<std::string>& vsGroupsOut);
+      const std::string& group, std::vector<Song*>& songs_out);
+  void GetGroupsToShow(std::vector<std::string>& groups_out);
 
   void UpdateArrows();
   AutoActor spr_arrows_[NUM_ARROWS];
@@ -245,7 +245,7 @@ class EditMenu : public ActorFrame {
   std::vector<EditMenuAction> actions_;
 
   void OnRowValueChanged(EditMenuRow row);
-  void ChangeToRow(EditMenuRow newRow);
+  void ChangeToRow(EditMenuRow new_row);
 
   RageSound sound_change_row_;
   RageSound sound_change_value_;

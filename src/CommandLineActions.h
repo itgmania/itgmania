@@ -11,7 +11,7 @@ namespace CommandLineActions {
 /**
  * @brief Perform a utility function, then exit.
  * @param pLW the LoadingWindow that is presently not used? */
-void Handle(LoadingWindow* pLW);
+void Handle(LoadingWindow* lw);
 
 /** @brief The housing for the command line arguments. */
 class CommandLineArgs {

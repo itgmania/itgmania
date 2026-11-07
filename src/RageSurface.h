@@ -11,8 +11,8 @@
 struct RageSurfaceColor {
   uint8_t r_, g_, b_, a_;
   RageSurfaceColor() : r_(0), g_(0), b_(0), a_(0) {}
-  RageSurfaceColor(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_)
-      : r_(r_), g_(g_), b_(b_), a_(a_) {}
+  RageSurfaceColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+      : r_(r), g_(g), b_(b), a_(a) {}
 };
 
 inline bool operator==(
@@ -74,11 +74,11 @@ struct RageSurface {
 };
 
 RageSurface* CreateSurface(
-    int width, int height, int bpp, uint32_t Rmask, uint32_t Gmask,
-    uint32_t Bmask, uint32_t Amask);
+    int width, int height, int bpp, uint32_t rmask, uint32_t gmask,
+    uint32_t bmask, uint32_t amask);
 RageSurface* CreateSurfaceFrom(
-    int width, int height, int bpp, uint32_t Rmask, uint32_t Gmask,
-    uint32_t Bmask, uint32_t Amask, uint8_t* pPixels, uint32_t pitch);
+    int width, int height, int bpp, uint32_t rmask, uint32_t gmask,
+    uint32_t bmask, uint32_t amask, uint8_t* pixels, uint32_t pitch);
 
 #endif
 

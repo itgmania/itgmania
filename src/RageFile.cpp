@@ -40,9 +40,9 @@ std::string RageFile::GetPath() const {
     return std::string();
   }
 
-  std::string sRet = file_->GetDisplayPath();
-  if (sRet != "") {
-    return sRet;
+  std::string ret = file_->GetDisplayPath();
+  if (ret != "") {
+    return ret;
   }
 
   return GetRealPath();
@@ -82,12 +82,12 @@ void RageFile::Close() {
   if (file_ == nullptr) {
     return;
   }
-  RageFileBasic* pFile = file_;
+  RageFileBasic* file = file_;
   file_ = nullptr;
   if (mode_ & WRITE) {
-    FILEMAN->CacheFile(pFile, path_);
+    FILEMAN->CacheFile(file, path_);
   }
-  delete pFile;
+  delete file;
 }
 
 void RageFile::AssertOpen() const {
@@ -125,9 +125,9 @@ void RageFile::EnableCRC32(bool on) {
   file_->EnableCRC32(on);
 }
 
-bool RageFile::GetCRC32(uint32_t* iRet) {
+bool RageFile::GetCRC32(uint32_t* ret) {
   AssertOpen();
-  return file_->GetCRC32(iRet);
+  return file_->GetCRC32(ret);
 }
 
 bool RageFile::AtEOF() const {
@@ -156,9 +156,9 @@ void RageFile::SetError(const std::string& err) {
   error_ = err;
 }
 
-int RageFile::Read(void* pBuffer, size_t iBytes) {
+int RageFile::Read(void* buffer, size_t bytes) {
   AssertRead();
-  return file_->Read(pBuffer, iBytes);
+  return file_->Read(buffer, bytes);
 }
 
 int RageFile::Seek(int offset) {
@@ -216,104 +216,104 @@ int RageFile::Seek(int offset, int whence) {
 }
 
 void FileReading::ReadBytes(
-    RageFileBasic& f, void* buf, int size, std::string& sError) {
-  if (sError.size() != 0) {
+    RageFileBasic& f, void* buf, int size, std::string& error) {
+  if (error.size() != 0) {
     return;
   }
 
   int ret = f.Read(buf, size);
   if (ret == -1) {
-    sError = f.GetError();
+    error = f.GetError();
   } else if (ret < size) {
-    sError = "Unexpected end of file";
+    error = "Unexpected end of file";
   }
 }
 
 std::string FileReading::ReadString(
-    RageFileBasic& f, int size, std::string& sError) {
-  if (sError.size() != 0) {
+    RageFileBasic& f, int size, std::string& error) {
+  if (error.size() != 0) {
     return std::string();
   }
 
-  std::string sBuf;
-  int ret = f.Read(sBuf, size);
+  std::string buf;
+  int ret = f.Read(buf, size);
   if (ret == -1) {
-    sError = f.GetError();
+    error = f.GetError();
   } else if (ret < size) {
-    sError = "Unexpected end of file";
+    error = "Unexpected end of file";
   }
-  return sBuf;
+  return buf;
 }
 
-void FileReading::SkipBytes(RageFileBasic& f, int iBytes, std::string& sError) {
-  if (sError.size() != 0) {
+void FileReading::SkipBytes(RageFileBasic& f, int bytes, std::string& error) {
+  if (error.size() != 0) {
     return;
   }
 
-  iBytes += f.Tell();
-  FileReading::Seek(f, iBytes, sError);
+  bytes += f.Tell();
+  FileReading::Seek(f, bytes, error);
 }
 
-void FileReading::Seek(RageFileBasic& f, int iOffset, std::string& sError) {
-  if (sError.size() != 0) {
+void FileReading::Seek(RageFileBasic& f, int offset, std::string& error) {
+  if (error.size() != 0) {
     return;
   }
 
-  int iGot = f.Seek(iOffset);
-  if (iGot == iOffset) {
+  int got = f.Seek(offset);
+  if (got == offset) {
     return;
   }
-  if (iGot == -1) {
-    sError = f.GetError();
-  } else if (iGot < iOffset) {
-    sError = "Unexpected end of file";
+  if (got == -1) {
+    error = f.GetError();
+  } else if (got < offset) {
+    error = "Unexpected end of file";
   }
 }
 
-uint8_t FileReading::read_8(RageFileBasic& f, std::string& sError) {
+uint8_t FileReading::read_8(RageFileBasic& f, std::string& error) {
   uint8_t val;
-  ReadBytes(f, &val, sizeof(uint8_t), sError);
-  if (sError.size() == 0) {
+  ReadBytes(f, &val, sizeof(uint8_t), error);
+  if (error.size() == 0) {
     return val;
   } else {
     return 0;
   }
 }
 
-uint16_t FileReading::read_u16_le(RageFileBasic& f, std::string& sError) {
+uint16_t FileReading::read_u16_le(RageFileBasic& f, std::string& error) {
   uint16_t val;
-  ReadBytes(f, &val, sizeof(uint16_t), sError);
-  if (sError.size() == 0) {
+  ReadBytes(f, &val, sizeof(uint16_t), error);
+  if (error.size() == 0) {
     return Swap16LE(val);
   } else {
     return 0;
   }
 }
 
-int16_t FileReading::read_16_le(RageFileBasic& f, std::string& sError) {
+int16_t FileReading::read_16_le(RageFileBasic& f, std::string& error) {
   int16_t val;
-  ReadBytes(f, &val, sizeof(int16_t), sError);
-  if (sError.size() == 0) {
+  ReadBytes(f, &val, sizeof(int16_t), error);
+  if (error.size() == 0) {
     return Swap16LE(val);
   } else {
     return 0;
   }
 }
 
-uint32_t FileReading::read_u32_le(RageFileBasic& f, std::string& sError) {
+uint32_t FileReading::read_u32_le(RageFileBasic& f, std::string& error) {
   uint32_t val;
-  ReadBytes(f, &val, sizeof(uint32_t), sError);
-  if (sError.size() == 0) {
+  ReadBytes(f, &val, sizeof(uint32_t), error);
+  if (error.size() == 0) {
     return Swap32LE(val);
   } else {
     return 0;
   }
 }
 
-int32_t FileReading::read_32_le(RageFileBasic& f, std::string& sError) {
+int32_t FileReading::read_32_le(RageFileBasic& f, std::string& error) {
   int32_t val;
-  ReadBytes(f, &val, sizeof(int32_t), sError);
-  if (sError.size() == 0) {
+  ReadBytes(f, &val, sizeof(int32_t), error);
+  if (error.size() == 0) {
     return Swap32LE(val);
   } else {
     return 0;
@@ -460,8 +460,8 @@ LUA_REGISTER_CLASS(RageFile)
 /** @brief Utilities for working with RageFiles. */
 namespace RageFileUtil {
 int CreateRageFile(lua_State* L) {
-  RageFile* pFile = new RageFile;
-  pFile->PushSelf(L);
+  RageFile* file = new RageFile;
+  file->PushSelf(L);
   return 1;
 }
 const luaL_Reg RageFileUtilTable[] = {

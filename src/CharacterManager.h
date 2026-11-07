@@ -15,14 +15,14 @@ class CharacterManager {
   /** @brief Destroy the character manager. */
   ~CharacterManager();
 
-  void GetCharacters(std::vector<Character*>& vpCharactersOut);
+  void GetCharacters(std::vector<Character*>& characters_out);
   /** @brief Get one installed character at random.
    * @return The random character. */
   Character* GetRandomCharacter();
   /** @brief Get the character assigned as the default.
    * @return The default character. */
   Character* GetDefaultCharacter();
-  Character* GetCharacterFromID(std::string sCharacterID);
+  Character* GetCharacterFromID(std::string character_id);
 
   // Lua
   void PushSelf(lua_State* L);

@@ -20,9 +20,9 @@ class ScreenSelect : public ScreenWithMenuElements {
   virtual void BeginScreen();
   virtual ~ScreenSelect();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual void HandleMessage(const Message& msg);
 
   virtual bool MenuBack(const InputEventPlus& input);

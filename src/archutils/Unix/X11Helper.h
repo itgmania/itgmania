@@ -29,8 +29,8 @@ extern bool FatalError;
 
 // (Re)create the Window win.
 bool MakeWindow(
-    Window& win, int screenNum, int depth, Visual* visual, int width,
-    int height, bool overrideRedirect);
+    Window& win, int screen_num, int depth, Visual* visual, int width,
+    int height, bool override_redirect);
 
 void SetWMState(
     const Window& root, const Window& win, const long action, const Atom atom);

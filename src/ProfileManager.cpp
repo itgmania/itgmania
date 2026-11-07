@@ -43,10 +43,10 @@ ProfileManager* PROFILEMAN =
 #define MAX_ID 99999999
 
 static void DefaultLocalProfileIDInit(
-    size_t /*PlayerNumber*/ i, std::string& sNameOut,
-    std::string& defaultValueOut) {
-  sNameOut = ssprintf("DefaultLocalProfileIDP%d", int(i + 1));
-  defaultValueOut = "";
+    size_t /*PlayerNumber*/ i, std::string& name_out,
+    std::string& default_value_out) {
+  name_out = ssprintf("DefaultLocalProfileIDP%d", int(i + 1));
+  default_value_out = "";
 }
 
 Preference<bool> ProfileManager::profile_step_edits_("ProfileStepEdits", true);
@@ -65,8 +65,8 @@ static Preference<std::string> g_sMemoryCardProfileImportSubdirs(
     "MemoryCardProfileImportSubdirs",
     "StepMania 5.1;StepMania 5;In The Groove 2");
 
-static std::string LocalProfileIDToDir(const std::string& sProfileID) {
-  return USER_PROFILES_DIR + sProfileID + "/";
+static std::string LocalProfileIDToDir(const std::string& profile_id) {
+  return USER_PROFILES_DIR + profile_id + "/";
 }
 
 // Sanitize a display name so it is safe to embed in a directory name.
@@ -95,8 +95,8 @@ static std::string SanitizeForDirName(const std::string& name) {
   return result;
 }
 
-static std::string LocalProfileDirToID(const std::string& sDir) {
-  return Basename(sDir);
+static std::string LocalProfileDirToID(const std::string& dir) {
+  return Basename(dir);
 }
 
 struct DirAndProfile {
@@ -160,16 +160,16 @@ void ProfileManager::Init() {
     }
 
     for (int i = g_vLocalProfile.size(); i < NUM_FIXED_PROFILES; i++) {
-      std::string sCharacterID = FIXED_PROFILE_CHARACTER_ID(i);
-      Character* pCharacter = CHARMAN->GetCharacterFromID(sCharacterID);
-      ASSERT_M(pCharacter != nullptr, sCharacterID);
-      std::string sProfileID;
-      bool b = CreateLocalProfile(pCharacter->GetDisplayName(), sProfileID);
+      std::string character_id = FIXED_PROFILE_CHARACTER_ID(i);
+      Character* character = CHARMAN->GetCharacterFromID(character_id);
+      ASSERT_M(character != nullptr, character_id);
+      std::string profile_id;
+      bool b = CreateLocalProfile(character->GetDisplayName(), profile_id);
       ASSERT(b);
-      Profile* pProfile = GetLocalProfile(sProfileID);
-      ASSERT_M(pProfile != nullptr, sProfileID);
-      pProfile->character_id_ = sCharacterID;
-      SaveLocalProfile(sProfileID);
+      Profile* profile = GetLocalProfile(profile_id);
+      ASSERT_M(profile != nullptr, profile_id);
+      profile->character_id_ = character_id;
+      SaveLocalProfile(profile_id);
     }
 
     ASSERT((int)g_vLocalProfile.size() == NUM_FIXED_PROFILES);
@@ -179,15 +179,15 @@ void ProfileManager::Init() {
 bool ProfileManager::FixedProfiles() const { return FIXED_PROFILES; }
 
 ProfileLoadResult ProfileManager::LoadProfile(
-    PlayerNumber pn, std::string sProfileDir, bool bIsMemCard) {
+    PlayerNumber pn, std::string profile_dir, bool is_mem_card) {
   LOG->Trace(
-      "LoadingProfile P%d, %s, %d", pn + 1, sProfileDir.c_str(), bIsMemCard);
+      "LoadingProfile P%d, %s, %d", pn + 1, profile_dir.c_str(), is_mem_card);
 
-  ASSERT(!sProfileDir.empty());
-  ASSERT(Right(sProfileDir, 1) == "/");
+  ASSERT(!profile_dir.empty());
+  ASSERT(Right(profile_dir, 1) == "/");
 
-  profile_dir_[pn] = sProfileDir;
-  was_loaded_from_memory_card_[pn] = bIsMemCard;
+  profile_dir_[pn] = profile_dir;
+  was_loaded_from_memory_card_[pn] = is_mem_card;
   last_load_was_from_last_good_[pn] = false;
   need_to_back_up_last_load_[pn] = false;
   stats_prefix_change_failed_[pn] = false;
@@ -196,7 +196,7 @@ ProfileLoadResult ProfileManager::LoadProfile(
   ProfileLoadResult lr = GetProfile(pn)->LoadAllFromDir(
       profile_dir_[pn], PREFSMAN->sign_profile_data_);
 
-  std::string sBackupDir = profile_dir_[pn] + LAST_GOOD_SUBDIR;
+  std::string backup_dir = profile_dir_[pn] + LAST_GOOD_SUBDIR;
 
   if (lr == ProfileLoadResult_Success) {
     /* Next time the profile is written, move this good profile into LastGood.
@@ -219,12 +219,12 @@ ProfileLoadResult ProfileManager::LoadProfile(
       // overwrite useful non-stats data loaded from the primary directory.
       Profile backup_profile;
       lr = backup_profile.LoadStatsFromDir(
-          sBackupDir, PREFSMAN->sign_profile_data_);
+          backup_dir, PREFSMAN->sign_profile_data_);
     }
     if (primary_lr == ProfileLoadResult_FailedTampered ||
         lr == ProfileLoadResult_Success) {
       lr = GetProfile(pn)->LoadAllFromDir(
-          sBackupDir, PREFSMAN->sign_profile_data_);
+          backup_dir, PREFSMAN->sign_profile_data_);
     }
     last_load_was_from_last_good_[pn] = lr == ProfileLoadResult_Success;
 
@@ -240,14 +240,14 @@ ProfileLoadResult ProfileManager::LoadProfile(
     if (prof->display_name_.empty()) {
       prof->display_name_ = PlayerNumberToLocalizedString(pn);
     }
-    prof->LoadCustomFunction(sProfileDir, pn);
+    prof->LoadCustomFunction(profile_dir, pn);
 
     // LoadSongsFromDir stops starting songs after this limit. Allow time to
     // finish the last one.
-    const float fLastSongSeconds = 3;
+    const float last_song_seconds = 3;
     MEMCARDMAN->SetCardAccessTimeLimit(
-        pn, PREFSMAN->custom_songs_load_timeout_ + fLastSongSeconds);
-    prof->LoadSongsFromDir(sProfileDir, ProfileSlot(pn));
+        pn, PREFSMAN->custom_songs_load_timeout_ + last_song_seconds);
+    prof->LoadSongsFromDir(profile_dir, ProfileSlot(pn));
 
     // Give the rest of the access, such as loading edits, a fresh limit.
     MEMCARDMAN->SetCardAccessTimeLimit(pn, 15);
@@ -259,8 +259,8 @@ ProfileLoadResult ProfileManager::LoadProfile(
 }
 
 bool ProfileManager::LoadLocalProfileFromMachine(PlayerNumber pn) {
-  std::string sProfileID = default_local_profile_id_[pn];
-  if (sProfileID.empty()) {
+  std::string profile_id = default_local_profile_id_[pn];
+  if (profile_id.empty()) {
     profile_dir_[pn] = "";
     return false;
   }
@@ -268,18 +268,18 @@ bool ProfileManager::LoadLocalProfileFromMachine(PlayerNumber pn) {
   // Make sure the profile is currently not in use by another player
   FOREACH_HumanPlayer(pl) {
     if (PROFILEMAN->IsPersistentProfile(pl) &&
-        PROFILEMAN->GetProfile(pl) == PROFILEMAN->GetLocalProfile(sProfileID)) {
+        PROFILEMAN->GetProfile(pl) == PROFILEMAN->GetLocalProfile(profile_id)) {
       profile_dir_[pn] = "";
       return false;
     }
   }
 
-  profile_dir_[pn] = LocalProfileIDToDir(sProfileID);
+  profile_dir_[pn] = LocalProfileIDToDir(profile_id);
   was_loaded_from_memory_card_[pn] = false;
   last_load_was_from_last_good_[pn] = false;
   stats_prefix_change_failed_[pn] = false;
 
-  if (GetLocalProfile(sProfileID) == nullptr) {
+  if (GetLocalProfile(profile_id) == nullptr) {
     profile_dir_[pn] = "";
     return false;
   }
@@ -290,16 +290,16 @@ bool ProfileManager::LoadLocalProfileFromMachine(PlayerNumber pn) {
 }
 
 void ProfileManager::GetMemoryCardProfileDirectoriesToTry(
-    std::vector<std::string>& asDirsToTry) {
+    std::vector<std::string>& dirs_to_try) {
   /* Try to load the preferred profile. */
-  asDirsToTry.push_back(PREFSMAN->memory_card_profile_subdir_.Get());
+  dirs_to_try.push_back(PREFSMAN->memory_card_profile_subdir_.Get());
 
   /* If that failed, try loading from all fallback directories. */
-  split(g_sMemoryCardProfileImportSubdirs, ";", asDirsToTry, true);
+  split(g_sMemoryCardProfileImportSubdirs, ";", dirs_to_try, true);
 }
 
 bool ProfileManager::LoadProfileFromMemoryCard(
-    PlayerNumber pn, bool bLoadEdits) {
+    PlayerNumber pn, bool load_edits) {
   // The card must be ready and mounted to determine if a profile already
   // exists on the card.
   if (MEMCARDMAN->GetCardState(pn) != MemoryCardState_Ready ||
@@ -309,13 +309,13 @@ bool ProfileManager::LoadProfileFromMemoryCard(
 
   UnloadProfile(pn);
 
-  std::vector<std::string> asDirsToTry;
-  GetMemoryCardProfileDirectoriesToTry(asDirsToTry);
+  std::vector<std::string> dirs_to_try;
+  GetMemoryCardProfileDirectoriesToTry(dirs_to_try);
   new_profile_[pn] = true;
 
-  for (unsigned i = 0; i < asDirsToTry.size(); ++i) {
-    const std::string& sSubdir = asDirsToTry[i];
-    std::string sDir = MEM_CARD_MOUNT_POINT[pn] + sSubdir + "/";
+  for (unsigned i = 0; i < dirs_to_try.size(); ++i) {
+    const std::string& subdir = dirs_to_try[i];
+    std::string dir = MEM_CARD_MOUNT_POINT[pn] + subdir + "/";
 
     /* If the load fails with ProfileLoadResult_FailedNoProfile, keep searching.
      * However, if it fails with failed_tampered, data existed but couldn't be
@@ -325,7 +325,7 @@ bool ProfileManager::LoadProfileFromMemoryCard(
      * but we also want to import scores in the case where the player created
      * a directory for edits before playing, so keep searching if the directory
      * exists with exists with no scores. */
-    ProfileLoadResult res = LoadProfile(pn, sDir, true);
+    ProfileLoadResult res = LoadProfile(pn, dir, true);
     if (res == ProfileLoadResult_Success) {
       new_profile_[pn] = false;
       break;
@@ -344,16 +344,16 @@ bool ProfileManager::LoadProfileFromMemoryCard(
                      (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
 
   /* Load edits from all fallback directories, newest first. */
-  if (bLoadEdits) {
-    for (unsigned i = 0; i < asDirsToTry.size(); ++i) {
-      const std::string& sSubdir = asDirsToTry[i];
-      std::string sDir = MEM_CARD_MOUNT_POINT[pn] + sSubdir + "/";
+  if (load_edits) {
+    for (unsigned i = 0; i < dirs_to_try.size(); ++i) {
+      const std::string& subdir = dirs_to_try[i];
+      std::string dir = MEM_CARD_MOUNT_POINT[pn] + subdir + "/";
 
       if (profile_step_edits_) {
-        SONGMAN->LoadStepEditsFromProfileDir(sDir, (ProfileSlot)pn);
+        SONGMAN->LoadStepEditsFromProfileDir(dir, (ProfileSlot)pn);
       }
       if (profile_course_edits_) {
-        SONGMAN->LoadCourseEditsFromProfileDir(sDir, (ProfileSlot)pn);
+        SONGMAN->LoadCourseEditsFromProfileDir(dir, (ProfileSlot)pn);
       }
     }
   }
@@ -363,8 +363,8 @@ bool ProfileManager::LoadProfileFromMemoryCard(
 }
 
 bool ProfileManager::LoadFirstAvailableProfile(
-    PlayerNumber pn, bool bLoadEdits) {
-  if (LoadProfileFromMemoryCard(pn, bLoadEdits)) {
+    PlayerNumber pn, bool load_edits) {
+  if (LoadProfileFromMemoryCard(pn, load_edits)) {
     return true;
   }
 
@@ -376,18 +376,18 @@ bool ProfileManager::LoadFirstAvailableProfile(
 }
 
 bool ProfileManager::FastLoadProfileNameFromMemoryCard(
-    std::string sRootDir, std::string& sName) const {
-  std::vector<std::string> asDirsToTry;
-  GetMemoryCardProfileDirectoriesToTry(asDirsToTry);
+    std::string root_dir, std::string& name) const {
+  std::vector<std::string> dirs_to_try;
+  GetMemoryCardProfileDirectoriesToTry(dirs_to_try);
 
-  for (unsigned i = 0; i < asDirsToTry.size(); ++i) {
-    const std::string& sSubdir = asDirsToTry[i];
-    std::string sDir = sRootDir + sSubdir + "/";
+  for (unsigned i = 0; i < dirs_to_try.size(); ++i) {
+    const std::string& subdir = dirs_to_try[i];
+    std::string dir = root_dir + subdir + "/";
 
     Profile profile;
-    ProfileLoadResult res = profile.LoadEditableDataFromDir(sDir);
+    ProfileLoadResult res = profile.LoadEditableDataFromDir(dir);
     if (res == ProfileLoadResult_Success) {
-      sName = profile.GetDisplayNameOrHighScoreName();
+      name = profile.GetDisplayNameOrHighScoreName();
       return true;
     } else if (res != ProfileLoadResult_FailedNoProfile) {
       break;
@@ -414,8 +414,8 @@ bool ProfileManager::SaveProfile(PlayerNumber pn) const {
    */
   if (need_to_back_up_last_load_[pn]) {
     need_to_back_up_last_load_[pn] = false;
-    std::string sBackupDir = profile_dir_[pn] + LAST_GOOD_SUBDIR;
-    Profile::MoveBackupToDir(profile_dir_[pn], sBackupDir);
+    std::string backup_dir = profile_dir_[pn] + LAST_GOOD_SUBDIR;
+    Profile::MoveBackupToDir(profile_dir_[pn], backup_dir);
   }
 
   bool b = GetProfile(pn)->SaveAllToDir(
@@ -424,11 +424,11 @@ bool ProfileManager::SaveProfile(PlayerNumber pn) const {
   return b;
 }
 
-bool ProfileManager::SaveLocalProfile(std::string sProfileID) {
-  const Profile* pProfile = GetLocalProfile(sProfileID);
-  ASSERT(pProfile != nullptr);
-  std::string sDir = LocalProfileIDToDir(sProfileID);
-  bool b = pProfile->SaveAllToDir(sDir, PREFSMAN->sign_profile_data_);
+bool ProfileManager::SaveLocalProfile(std::string profile_id) {
+  const Profile* profile = GetLocalProfile(profile_id);
+  ASSERT(profile != nullptr);
+  std::string dir = LocalProfileIDToDir(profile_id);
+  bool b = profile->SaveAllToDir(dir, PREFSMAN->sign_profile_data_);
   return b;
 }
 
@@ -457,8 +457,8 @@ const Profile* ProfileManager::GetProfile(PlayerNumber pn) const {
   } else if (ProfileWasLoadedFromMemoryCard(pn)) {
     return memory_card_profile_[pn];
   } else {
-    std::string sProfileID = LocalProfileDirToID(profile_dir_[pn]);
-    return GetLocalProfile(sProfileID);
+    std::string profile_id = LocalProfileDirToID(profile_dir_[pn]);
+    return GetLocalProfile(profile_id);
   }
 }
 
@@ -499,7 +499,7 @@ static void add_category_to_global_list(std::vector<DirAndProfile>& cat) {
 }
 
 template <typename CompareAscending>
-static void LoadLocalProfiles(CompareAscending compareAscending) {
+static void LoadLocalProfiles(CompareAscending compare_ascending) {
   const bool ascending = PREFSMAN->profile_sort_order_ascending_;
 
   std::vector<std::string> profile_ids;
@@ -514,9 +514,9 @@ static void LoadLocalProfiles(CompareAscending compareAscending) {
     categorized_profiles[derp.profile_.type_].push_back(derp);
   }
 
-  auto compare = [ascending, compareAscending](
+  auto compare = [ascending, compare_ascending](
                      const DirAndProfile& a, const DirAndProfile& b) {
-    return ascending ? compareAscending(a, b) : compareAscending(b, a);
+    return ascending ? compare_ascending(a, b) : compare_ascending(b, a);
   };
   for (std::vector<DirAndProfile>& bucket : categorized_profiles) {
     std::stable_sort(bucket.begin(), bucket.end(), compare);
@@ -580,11 +580,11 @@ void ProfileManager::LoadLocalProfilesByCreationTime() {
 }
 
 const Profile* ProfileManager::GetLocalProfile(
-    const std::string& sProfileID) const {
-  std::string sDir = LocalProfileIDToDir(sProfileID);
+    const std::string& profile_id) const {
+  std::string dir = LocalProfileIDToDir(profile_id);
   for (const DirAndProfile& dap : g_vLocalProfile) {
-    const std::string& sOther = dap.dir_;
-    if (sOther == sDir) {
+    const std::string& other = dap.dir_;
+    if (other == dir) {
       return &dap.profile_;
     }
   }
@@ -593,13 +593,13 @@ const Profile* ProfileManager::GetLocalProfile(
 }
 
 bool ProfileManager::CreateLocalProfile(
-    std::string sName, std::string& sProfileIDOut) {
-  ASSERT(!sName.empty());
+    std::string name, std::string& profile_id_out) {
+  ASSERT(!name.empty());
 
   std::vector<std::string> profile_ids;
   GetLocalProfileIDs(profile_ids);
 
-  std::string base = SanitizeForDirName(sName);
+  std::string base = SanitizeForDirName(name);
   if (base.empty()) {
     base = "Profile";
   }
@@ -637,7 +637,7 @@ bool ProfileManager::CreateLocalProfile(
 
       // Bail before overflow
       if (suffix < 0 || suffix == std::numeric_limits<int16_t>::max()) {
-        sProfileIDOut = "";
+        profile_id_out = "";
         return false;
       }
       ++suffix;
@@ -652,22 +652,22 @@ bool ProfileManager::CreateLocalProfile(
           profile_id.c_str()));
 
   // Create the new profile.
-  Profile* pProfile = new Profile;
-  pProfile->display_name_ = sName;
-  pProfile->character_id_ = CHARMAN->GetRandomCharacter()->character_id_;
-  pProfile->creation_time_ = DateTime::GetNowDateTime();
+  Profile* profile = new Profile;
+  profile->display_name_ = name;
+  profile->character_id_ = CHARMAN->GetRandomCharacter()->character_id_;
+  profile->creation_time_ = DateTime::GetNowDateTime();
 
   // Save it to disk.
-  std::string sProfileDir = LocalProfileIDToDir(profile_id);
-  if (!pProfile->SaveAllToDir(sProfileDir, PREFSMAN->sign_profile_data_)) {
-    delete pProfile;
-    sProfileIDOut = "";
+  std::string profile_dir = LocalProfileIDToDir(profile_id);
+  if (!profile->SaveAllToDir(profile_dir, PREFSMAN->sign_profile_data_)) {
+    delete profile;
+    profile_id_out = "";
     return false;
   }
 
-  AddLocalProfileByID(pProfile, profile_id);
+  AddLocalProfileByID(profile, profile_id);
 
-  sProfileIDOut = profile_id;
+  profile_id_out = profile_id;
   return true;
 }
 
@@ -711,49 +711,49 @@ static void InsertProfileIntoList(DirAndProfile& derp) {
 }
 
 void ProfileManager::AddLocalProfileByID(
-    Profile* pProfile, std::string sProfileID) {
+    Profile* profile, std::string profile_id) {
   // make sure this id doesn't already exist
   ASSERT_M(
-      GetLocalProfile(sProfileID) == nullptr,
+      GetLocalProfile(profile_id) == nullptr,
       ssprintf(
           "creating \"%s\" \"%s\" that already exists",
-          pProfile->display_name_.c_str(), sProfileID.c_str()));
+          profile->display_name_.c_str(), profile_id.c_str()));
 
   DirAndProfile derp;
-  derp.dir_ = LocalProfileIDToDir(sProfileID);
-  derp.profile_ = *pProfile;
+  derp.dir_ = LocalProfileIDToDir(profile_id);
+  derp.profile_ = *profile;
   InsertProfileIntoList(derp);
 }
 
 bool ProfileManager::RenameLocalProfile(
-    std::string sProfileID, std::string sNewName) {
-  ASSERT(!sProfileID.empty());
+    std::string profile_id, std::string new_name) {
+  ASSERT(!profile_id.empty());
 
-  Profile* pProfile = ProfileManager::GetLocalProfile(sProfileID);
-  ASSERT(pProfile != nullptr);
-  pProfile->display_name_ = sNewName;
+  Profile* profile = ProfileManager::GetLocalProfile(profile_id);
+  ASSERT(profile != nullptr);
+  profile->display_name_ = new_name;
 
-  std::string sProfileDir = LocalProfileIDToDir(sProfileID);
-  return pProfile->SaveAllToDir(sProfileDir, PREFSMAN->sign_profile_data_);
+  std::string profile_dir = LocalProfileIDToDir(profile_id);
+  return profile->SaveAllToDir(profile_dir, PREFSMAN->sign_profile_data_);
 }
 
-bool ProfileManager::DeleteLocalProfile(std::string sProfileID) {
-  Profile* pProfile = ProfileManager::GetLocalProfile(sProfileID);
-  ASSERT(pProfile != nullptr);
-  std::string sProfileDir = LocalProfileIDToDir(sProfileID);
+bool ProfileManager::DeleteLocalProfile(std::string profile_id) {
+  Profile* profile = ProfileManager::GetLocalProfile(profile_id);
+  ASSERT(profile != nullptr);
+  std::string profile_dir = LocalProfileIDToDir(profile_id);
 
   // flush directory cache in an attempt to get this working
-  FILEMAN->FlushDirCache(sProfileDir);
+  FILEMAN->FlushDirCache(profile_dir);
 
   for (std::vector<DirAndProfile>::iterator i = g_vLocalProfile.begin();
        i != g_vLocalProfile.end(); ++i) {
-    if (i->dir_ == sProfileDir) {
-      if (DeleteRecursive(sProfileDir)) {
+    if (i->dir_ == profile_dir) {
+      if (DeleteRecursive(profile_dir)) {
         g_vLocalProfile.erase(i);
 
         // Delete all references to this profileID
         for (Preference<std::string>* j : default_local_profile_id_.v_) {
-          if (j->Get() == sProfileID) {
+          if (j->Get() == profile_id) {
             j->Set("");
           }
         }
@@ -761,14 +761,14 @@ bool ProfileManager::DeleteLocalProfile(std::string sProfileID) {
       } else {
         LOG->Warn(
             "[ProfileManager::DeleteLocalProfile] DeleteRecursive(%s) failed",
-            sProfileID.c_str());
+            profile_id.c_str());
         return false;
       }
     }
   }
 
   LOG->Warn(
-      "DeleteLocalProfile: ProfileID '%s' doesn't exist", sProfileID.c_str());
+      "DeleteLocalProfile: ProfileID '%s' doesn't exist", profile_id.c_str());
   return false;
 }
 
@@ -914,7 +914,7 @@ void ProfileManager::MoveProfileTopBottom(int index, bool top) {
   g_vLocalProfile.insert(g_vLocalProfile.begin() + swindex, profile);
 }
 
-void ProfileManager::MoveProfileSorted(int index, bool bAscending) {
+void ProfileManager::MoveProfileSorted(int index, bool ascending) {
   if (index < 0 || static_cast<size_t>(index) >= g_vLocalProfile.size()) {
     return;
   }
@@ -943,8 +943,8 @@ void ProfileManager::MoveProfileSorted(int index, bool bAscending) {
   // Find the correct location to insert the profile
   auto it = std::lower_bound(
       g_vLocalProfile.begin() + swindex, g_vLocalProfile.end(), temp,
-      [bAscending](const DirAndProfile& a, const DirAndProfile& b) {
-        if (bAscending) {
+      [ascending](const DirAndProfile& a, const DirAndProfile& b) {
+        if (ascending) {
           return a.profile_.display_name_ < b.profile_.display_name_;
         } else {
           return a.profile_.display_name_ > b.profile_.display_name_;
@@ -998,36 +998,36 @@ void ProfileManager::IncrementToastiesCount(PlayerNumber pn) {
 }
 
 void ProfileManager::AddStepTotals(
-    PlayerNumber pn, int iNumTapsAndHolds, int iNumJumps, int iNumHolds,
-    int iNumRolls, int iNumMines, int iNumHands, int iNumLifts,
-    float fCaloriesBurned) {
+    PlayerNumber pn, int num_taps_and_holds, int num_jumps, int num_holds,
+    int num_rolls, int num_mines, int num_hands, int num_lifts,
+    float calories_burned) {
   if (IsPersistentProfile(pn)) {
     GetProfile(pn)->AddStepTotals(
-        iNumTapsAndHolds, iNumJumps, iNumHolds, iNumRolls, iNumMines, iNumHands,
-        iNumLifts, fCaloriesBurned);
+        num_taps_and_holds, num_jumps, num_holds, num_rolls, num_mines,
+        num_hands, num_lifts, calories_burned);
   }
   GetMachineProfile()->AddStepTotals(
-      iNumTapsAndHolds, iNumJumps, iNumHolds, iNumRolls, iNumMines, iNumHands,
-      iNumLifts, fCaloriesBurned);
+      num_taps_and_holds, num_jumps, num_holds, num_rolls, num_mines, num_hands,
+      num_lifts, calories_burned);
 }
 
 //
 // Song stats
 //
 int ProfileManager::GetSongNumTimesPlayed(
-    const Song* pSong, ProfileSlot slot) const {
-  return GetProfile(slot)->GetSongNumTimesPlayed(pSong);
+    const Song* song, ProfileSlot slot) const {
+  return GetProfile(slot)->GetSongNumTimesPlayed(song);
 }
 
 void ProfileManager::AddStepsScore(
-    const Song* pSong, const Steps* pSteps, PlayerNumber pn,
-    const HighScore& hs_, int& iPersonalIndexOut, int& iMachineIndexOut) {
-  HighScore hs = hs_;
+    const Song* song, const Steps* steps, PlayerNumber pn,
+    const HighScore& in_hs, int& personal_index_out, int& machine_index_out) {
+  HighScore hs = in_hs;
   hs.SetPercentDP(
       std::max(0.0f, hs.GetPercentDP()));  // bump up negative scores
 
-  iPersonalIndexOut = -1;
-  iMachineIndexOut = -1;
+  personal_index_out = -1;
+  machine_index_out = -1;
 
   // In event mode, set the score's name immediately to the Profile's last
   // used name.  If no profile last used name exists, use "EVNT".
@@ -1035,9 +1035,9 @@ void ProfileManager::AddStepsScore(
   // behalf of the team after the song, so keep the per-player marker here
   // and let GameState::StoreRankingName replace it with the typed name.
   if (GAMESTATE->IsEventMode() && !hs.IsRoutine()) {
-    Profile* pProfile = GetProfile(pn);
-    if (pProfile && !pProfile->last_used_high_score_name_.empty()) {
-      hs.SetName(pProfile->last_used_high_score_name_);
+    Profile* profile = GetProfile(pn);
+    if (profile && !profile->last_used_high_score_name_.empty()) {
+      hs.SetName(profile->last_used_high_score_name_);
     } else {
       hs.SetName("EVNT");
     }
@@ -1049,7 +1049,7 @@ void ProfileManager::AddStepsScore(
   // save high score
   //
   if (IsPersistentProfile(pn)) {
-    GetProfile(pn)->AddStepsHighScore(pSong, pSteps, hs, iPersonalIndexOut);
+    GetProfile(pn)->AddStepsHighScore(song, steps, hs, personal_index_out);
   }
 
   // don't save machine scores for a failed song
@@ -1057,9 +1057,9 @@ void ProfileManager::AddStepsScore(
           PREFSMAN->min_percentage_for_machine_song_high_score_ &&
       hs.GetGrade() != Grade_Failed) {
     // don't leave machine high scores for edits loaded from the player's card
-    if (!pSteps->IsAPlayerEdit()) {
+    if (!steps->IsAPlayerEdit()) {
       GetMachineProfile()->AddStepsHighScore(
-          pSong, pSteps, hs, iMachineIndexOut);
+          song, steps, hs, machine_index_out);
     }
   }
 
@@ -1072,30 +1072,30 @@ void ProfileManager::AddStepsScore(
 }
 
 void ProfileManager::IncrementStepsPlayCount(
-    const Song* pSong, const Steps* pSteps, PlayerNumber pn) {
+    const Song* song, const Steps* steps, PlayerNumber pn) {
   if (IsPersistentProfile(pn)) {
-    GetProfile(pn)->IncrementStepsPlayCount(pSong, pSteps);
+    GetProfile(pn)->IncrementStepsPlayCount(song, steps);
   }
-  GetMachineProfile()->IncrementStepsPlayCount(pSong, pSteps);
+  GetMachineProfile()->IncrementStepsPlayCount(song, steps);
 }
 
 // Course stats
 void ProfileManager::AddCourseScore(
-    const Course* pCourse, const Trail* pTrail, PlayerNumber pn,
-    const HighScore& hs_, int& iPersonalIndexOut, int& iMachineIndexOut) {
-  HighScore hs = hs_;
+    const Course* course, const Trail* trail, PlayerNumber pn,
+    const HighScore& in_hs, int& personal_index_out, int& machine_index_out) {
+  HighScore hs = in_hs;
   hs.SetPercentDP(
       std::max(0.0f, hs.GetPercentDP()));  // bump up negative scores
 
-  iPersonalIndexOut = -1;
-  iMachineIndexOut = -1;
+  personal_index_out = -1;
+  machine_index_out = -1;
 
   // In event mode, set the score's name immediately to the Profile's last
   // used name. If no profile last used name exists, use "EVNT".
   if (GAMESTATE->IsEventMode()) {
-    Profile* pProfile = GetProfile(pn);
-    if (pProfile && !pProfile->last_used_high_score_name_.empty()) {
-      hs.SetName(pProfile->last_used_high_score_name_);
+    Profile* profile = GetProfile(pn);
+    if (profile && !profile->last_used_high_score_name_.empty()) {
+      hs.SetName(profile->last_used_high_score_name_);
     } else {
       hs.SetName("EVNT");
     }
@@ -1105,12 +1105,12 @@ void ProfileManager::AddCourseScore(
 
   // save high score
   if (IsPersistentProfile(pn)) {
-    GetProfile(pn)->AddCourseHighScore(pCourse, pTrail, hs, iPersonalIndexOut);
+    GetProfile(pn)->AddCourseHighScore(course, trail, hs, personal_index_out);
   }
   if (hs.GetPercentDP() >=
       PREFSMAN->min_percentage_for_machine_course_high_score_) {
     GetMachineProfile()->AddCourseHighScore(
-        pCourse, pTrail, hs, iMachineIndexOut);
+        course, trail, hs, machine_index_out);
   }
 
   /*
@@ -1122,25 +1122,25 @@ void ProfileManager::AddCourseScore(
 }
 
 void ProfileManager::IncrementCoursePlayCount(
-    const Course* pCourse, const Trail* pTrail, PlayerNumber pn) {
+    const Course* course, const Trail* trail, PlayerNumber pn) {
   if (IsPersistentProfile(pn)) {
-    GetProfile(pn)->IncrementCoursePlayCount(pCourse, pTrail);
+    GetProfile(pn)->IncrementCoursePlayCount(course, trail);
   }
-  GetMachineProfile()->IncrementCoursePlayCount(pCourse, pTrail);
+  GetMachineProfile()->IncrementCoursePlayCount(course, trail);
 }
 
 // Category stats
 void ProfileManager::AddCategoryScore(
-    StepsType st, RankingCategory rc, PlayerNumber pn, const HighScore& hs_,
-    int& iPersonalIndexOut, int& iMachineIndexOut) {
-  HighScore hs = hs_;
+    StepsType st, RankingCategory rc, PlayerNumber pn, const HighScore& in_hs,
+    int& personal_index_out, int& machine_index_out) {
+  HighScore hs = in_hs;
   hs.SetName(RANKING_TO_FILL_IN_MARKER[pn]);
   if (IsPersistentProfile(pn)) {
-    GetProfile(pn)->AddCategoryHighScore(st, rc, hs, iPersonalIndexOut);
+    GetProfile(pn)->AddCategoryHighScore(st, rc, hs, personal_index_out);
   }
   if (hs.GetPercentDP() >
       PREFSMAN->min_percentage_for_machine_song_high_score_) {
-    GetMachineProfile()->AddCategoryHighScore(st, rc, hs, iMachineIndexOut);
+    GetMachineProfile()->AddCategoryHighScore(st, rc, hs, machine_index_out);
   }
 }
 
@@ -1166,27 +1166,27 @@ bool ProfileManager::IsPersistentProfile(ProfileSlot slot) const {
 }
 
 void ProfileManager::GetLocalProfileIDs(
-    std::vector<std::string>& vsProfileIDsOut) const {
-  vsProfileIDsOut.clear();
+    std::vector<std::string>& profile_ids_out) const {
+  profile_ids_out.clear();
   for (const DirAndProfile& i : g_vLocalProfile) {
-    std::string sID = LocalProfileDirToID(i.dir_);
-    vsProfileIDsOut.push_back(sID);
+    std::string id = LocalProfileDirToID(i.dir_);
+    profile_ids_out.push_back(id);
   }
 }
 
 void ProfileManager::GetLocalProfileDisplayNames(
-    std::vector<std::string>& vsProfileDisplayNamesOut) const {
-  vsProfileDisplayNamesOut.clear();
+    std::vector<std::string>& profile_display_names_out) const {
+  profile_display_names_out.clear();
   for (const DirAndProfile& i : g_vLocalProfile) {
-    vsProfileDisplayNamesOut.push_back(i.profile_.display_name_);
+    profile_display_names_out.push_back(i.profile_.display_name_);
   }
 }
 
-int ProfileManager::GetLocalProfileIndexFromID(std::string sProfileID) const {
-  std::string sDir = LocalProfileIDToDir(sProfileID);
+int ProfileManager::GetLocalProfileIndexFromID(std::string profile_id) const {
+  std::string dir = LocalProfileIDToDir(profile_id);
   int j = 0;
   for (const DirAndProfile& i : g_vLocalProfile) {
-    if (i.dir_ == sDir) {
+    if (i.dir_ == dir) {
       return j;
     }
     ++j;
@@ -1194,13 +1194,13 @@ int ProfileManager::GetLocalProfileIndexFromID(std::string sProfileID) const {
   return -1;
 }
 
-std::string ProfileManager::GetLocalProfileIDFromIndex(int iIndex) {
-  std::string sID = LocalProfileDirToID(g_vLocalProfile[iIndex].dir_);
-  return sID;
+std::string ProfileManager::GetLocalProfileIDFromIndex(int index) {
+  std::string id = LocalProfileDirToID(g_vLocalProfile[index].dir_);
+  return id;
 }
 
-Profile* ProfileManager::GetLocalProfileFromIndex(int iIndex) {
-  return &g_vLocalProfile[iIndex].profile_;
+Profile* ProfileManager::GetLocalProfileFromIndex(int index) {
+  return &g_vLocalProfile[index].profile_;
 }
 
 int ProfileManager::GetNumLocalProfiles() const {
@@ -1254,9 +1254,9 @@ class LunaProfileManager : public Luna<ProfileManager> {
   }
   static int GetProfile(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    Profile* pP = p->GetProfile(pn);
-    ASSERT(pP != nullptr);
-    pP->PushSelf(L);
+    Profile* p_p = p->GetProfile(pn);
+    ASSERT(p_p != nullptr);
+    p_p->PushSelf(L);
     return 1;
   }
   static int GetMachineProfile(T* p, lua_State* L) {
@@ -1268,9 +1268,9 @@ class LunaProfileManager : public Luna<ProfileManager> {
     return 0;
   }
   static int GetLocalProfile(T* p, lua_State* L) {
-    Profile* pProfile = p->GetLocalProfile(SArg(1));
-    if (pProfile) {
-      pProfile->PushSelf(L);
+    Profile* profile = p->GetLocalProfile(SArg(1));
+    if (profile) {
+      profile->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -1281,11 +1281,11 @@ class LunaProfileManager : public Luna<ProfileManager> {
     if (index >= p->GetNumLocalProfiles()) {
       luaL_error(L, "Profile index %d out of range.", index);
     }
-    Profile* pProfile = p->GetLocalProfileFromIndex(index);
-    if (pProfile == nullptr) {
+    Profile* profile = p->GetLocalProfileFromIndex(index);
+    if (profile == nullptr) {
       luaL_error(L, "No profile at index %d.", index);
     }
-    pProfile->PushSelf(L);
+    profile->PushSelf(L);
     return 1;
   }
   static int GetLocalProfileIDFromIndex(T* p, lua_State* L) {
@@ -1362,15 +1362,15 @@ class LunaProfileManager : public Luna<ProfileManager> {
     return 1;
   }
   static int GetLocalProfileIDs(T* p, lua_State* L) {
-    std::vector<std::string> vsProfileIDs;
-    p->GetLocalProfileIDs(vsProfileIDs);
-    LuaHelpers::CreateTableFromArray<std::string>(vsProfileIDs, L);
+    std::vector<std::string> profile_ids;
+    p->GetLocalProfileIDs(profile_ids);
+    LuaHelpers::CreateTableFromArray<std::string>(profile_ids, L);
     return 1;
   }
   static int GetLocalProfileDisplayNames(T* p, lua_State* L) {
-    std::vector<std::string> vsProfileNames;
-    p->GetLocalProfileDisplayNames(vsProfileNames);
-    LuaHelpers::CreateTableFromArray<std::string>(vsProfileNames, L);
+    std::vector<std::string> profile_names;
+    p->GetLocalProfileDisplayNames(profile_names);
+    LuaHelpers::CreateTableFromArray<std::string>(profile_names, L);
     return 1;
   }
 

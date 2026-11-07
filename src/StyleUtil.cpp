@@ -17,23 +17,23 @@ void StyleID::FromStyle(const Style* p) {
 }
 
 XNode* StyleID::CreateNode() const {
-  XNode* pNode = new XNode("Style");
+  XNode* node = new XNode("Style");
 
-  pNode->AppendAttr("Game", game_);
-  pNode->AppendAttr("Style", style_);
+  node->AppendAttr("Game", game_);
+  node->AppendAttr("Style", style_);
 
-  return pNode;
+  return node;
 }
 
-void StyleID::LoadFromNode(const XNode* pNode) {
+void StyleID::LoadFromNode(const XNode* node) {
   Unset();
-  ASSERT(pNode->GetName() == "Style");
+  ASSERT(node->GetName() == "Style");
 
   game_ = "";
-  pNode->GetAttrValue("Game", game_);
+  node->GetAttrValue("Game", game_);
 
   style_ = "";
-  pNode->GetAttrValue("Style", style_);
+  node->GetAttrValue("Style", style_);
 }
 
 bool StyleID::IsValid() const { return !game_.empty() && !style_.empty(); }

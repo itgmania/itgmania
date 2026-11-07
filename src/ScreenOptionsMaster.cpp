@@ -34,9 +34,9 @@
 REGISTER_SCREEN_CLASS(ScreenOptionsMaster);
 
 void ScreenOptionsMaster::Init() {
-  std::vector<std::string> asLineNames;
-  split(LINE_NAMES, ",", asLineNames);
-  if (asLineNames.empty()) {
+  std::vector<std::string> line_names;
+  split(LINE_NAMES, ",", line_names);
+  if (line_names.empty()) {
     LuaHelpers::ReportScriptErrorFmt(
         "\"%s:LineNames\" is empty.", name_.c_str());
   }
@@ -58,25 +58,25 @@ void ScreenOptionsMaster::Init() {
   // Call this after enabling players, if any.
   ScreenOptions::Init();
 
-  std::vector<OptionRowHandler*> OptionRowHandlers;
-  for (unsigned i = 0; i < asLineNames.size(); ++i) {
-    std::string sLineName = asLineNames[i];
-    std::string sRowCommands = LINE(sLineName);
+  std::vector<OptionRowHandler*> option_row_handlers;
+  for (unsigned i = 0; i < line_names.size(); ++i) {
+    std::string line_name = line_names[i];
+    std::string row_commands = LINE(line_name);
 
     Commands cmds;
-    ParseCommands(sRowCommands, cmds, false);
+    ParseCommands(row_commands, cmds, false);
 
-    OptionRowHandler* pHand = OptionRowHandlerUtil::Make(cmds);
-    if (pHand == nullptr) {
+    OptionRowHandler* hand = OptionRowHandlerUtil::Make(cmds);
+    if (hand == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
           "Invalid OptionRowHandler \"%s\" in \"%s:Line:%s\".",
           cmds.GetOriginalCommandString().c_str(), name_.c_str(),
-          sLineName.c_str());
+          line_name.c_str());
     } else {
-      OptionRowHandlers.push_back(pHand);
+      option_row_handlers.push_back(hand);
     }
   }
-  InitMenu(OptionRowHandlers);
+  InitMenu(option_row_handlers);
 }
 
 void ScreenOptionsMaster::ImportOptions(
@@ -93,17 +93,17 @@ void ScreenOptionsMaster::ExportOptions(
   CHECKPOINT_M(ssprintf("%i/%i", r, int(rows_.size())));
 
   OptionRow& row = *rows_[r];
-  bool bRowHasFocus[NUM_PLAYERS];
-  ZERO(bRowHasFocus);
+  bool row_has_focus[NUM_PLAYERS];
+  ZERO(row_has_focus);
   for (const PlayerNumber& p : vpns) {
-    int iCurRow = current_row_[p];
-    bRowHasFocus[p] = iCurRow == r;
+    int cur_row = current_row_[p];
+    row_has_focus[p] = cur_row == r;
   }
-  change_mask_ |= row.ExportOptions(vpns, bRowHasFocus);
+  change_mask_ |= row.ExportOptions(vpns, row_has_focus);
 }
 
-void ScreenOptionsMaster::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_ExportOptions) {
+void ScreenOptionsMaster::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_ExportOptions) {
     // Override ScreenOptions's calling of ExportOptions
     change_mask_ = 0;
 
@@ -138,8 +138,8 @@ void ScreenOptionsMaster::HandleScreenMessage(const ScreenMessage SM) {
         (change_mask_ & OPT_APPLY_ASPECT_RATIO)) {
       /* If the resolution or aspect ratio changes, always reload the theme.
        * Otherwise, only reload it if it changed. */
-      std::string sNewTheme = PREFSMAN->theme_.Get();
-      GameLoop::ChangeTheme(sNewTheme);
+      std::string new_theme = PREFSMAN->theme_.Get();
+      GameLoop::ChangeTheme(new_theme);
     }
 
     if (change_mask_ & OPT_SAVE_PREFERENCES) {
@@ -169,7 +169,7 @@ void ScreenOptionsMaster::HandleScreenMessage(const ScreenMessage SM) {
     this->HandleScreenMessage(SM_GoToNextScreen);
     return;
   } else {
-    ScreenOptions::HandleScreenMessage(SM);
+    ScreenOptions::HandleScreenMessage(sm);
   }
 }
 

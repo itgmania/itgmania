@@ -20,13 +20,13 @@
 class OptionsList;
 class OptionListRow : public ActorFrame {
  public:
-  void Load(OptionsList* pOptions, const std::string& sType);
-  void SetFromHandler(const OptionRowHandler* pHandler);
-  void SetTextFromHandler(const OptionRowHandler* pHandler);
+  void Load(OptionsList* options, const std::string& type);
+  void SetFromHandler(const OptionRowHandler* handler);
+  void SetTextFromHandler(const OptionRowHandler* handler);
   void SetUnderlines(
-      const std::vector<bool>& aSelections, const OptionRowHandler* pHandler);
+      const std::vector<bool>& selections, const OptionRowHandler* handler);
 
-  void PositionCursor(Actor* pCursor, int iSelection);
+  void PositionCursor(Actor* cursor, int selection);
 
   void Start();
 
@@ -49,10 +49,10 @@ class OptionsList : public ActorFrame {
   OptionsList();
   ~OptionsList();
 
-  void Load(std::string sType, PlayerNumber pn);
+  void Load(std::string type, PlayerNumber pn);
   void Reset();
 
-  void Link(OptionsList* pLink) { linked_ = pLink; }
+  void Link(OptionsList* link) { linked_ = link; }
 
   /** @brief Show the top-level menu. */
   void Open();
@@ -69,23 +69,23 @@ class OptionsList : public ActorFrame {
  private:
   ThemeMetric<std::string> TOP_MENU;
 
-  void SelectItem(const std::string& sRowName, int iMenuItem);
-  void SwitchMenu(int iDir);
+  void SelectItem(const std::string& row_name, int menu_item);
+  void SwitchMenu(int dir);
   void PositionCursor();
-  void SelectionsChanged(const std::string& sRowName);
+  void SelectionsChanged(const std::string& row_name);
   void UpdateMenuFromSelections();
   std::string GetCurrentRow() const;
   OptionRowHandler* GetCurrentHandler();
-  int GetOneSelection(std::string sRow, bool bAllowFail = false) const;
+  int GetOneSelection(std::string row, bool allow_fail = false) const;
   void SwitchToCurrentRow();
-  void TweenOnCurrentRow(bool bForward);
+  void TweenOnCurrentRow(bool forward);
   void SetDefaultCurrentRow();
-  void Push(std::string sDest);
+  void Push(std::string dest);
   void Pop();
-  void ImportRow(std::string sRow);
-  void ExportRow(std::string sRow);
+  void ImportRow(std::string row);
+  void ExportRow(std::string row);
   static int FindScreenInHandler(
-      const OptionRowHandler* pHandler, std::string sScreen);
+      const OptionRowHandler* handler, std::string screen);
 
   InputQueueCodeSet codes_;
 

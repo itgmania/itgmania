@@ -14,15 +14,15 @@ class PlayerState;
 class GhostArrowRow : public ActorFrame {
  public:
   virtual ~GhostArrowRow();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void DrawPrimitives();
 
-  void Load(const PlayerState* pPlayerState, float fYReverseOffset);
+  void Load(const PlayerState* player_state, float y_reverse_offset);
   void SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers);
 
-  void DidTapNote(int iCol, TapNoteScore tns, bool bBright);
-  void DidHoldNote(int iCol, HoldNoteScore hns, bool bBright);
-  void SetHoldShowing(int iCol, const TapNote& tn);
+  void DidTapNote(int col, TapNoteScore tns, bool bright);
+  void DidHoldNote(int col, HoldNoteScore hns, bool bright);
+  void SetHoldShowing(int col, const TapNote& tn);
 
  protected:
   float y_reverse_offset_pixels_;

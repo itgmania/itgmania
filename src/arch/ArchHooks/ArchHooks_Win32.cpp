@@ -25,8 +25,8 @@ static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
 
 void InvalidParameterHandler(
-    const wchar_t* szExpression, const wchar_t* szFunction,
-    const wchar_t* szFile, unsigned int iLine, uintptr_t pReserved) {
+    const wchar_t* expression, const wchar_t* function, const wchar_t* file,
+    unsigned int line, uintptr_t reserved) {
   FAIL_M("Invalid parameter");  // TODO: Make this more informative
 }
 
@@ -68,19 +68,19 @@ struct CallbackData {
 };
 
 // Like GW_ENABLEDPOPUP:
-static BOOL CALLBACK GetEnabledPopup(HWND hWnd, LPARAM lParam) {
-  CallbackData* pData = (CallbackData*)lParam;
-  if (GetParent(hWnd) != pData->parent_) {
+static BOOL CALLBACK GetEnabledPopup(HWND hwnd, LPARAM lparam) {
+  CallbackData* data = (CallbackData*)lparam;
+  if (GetParent(hwnd) != data->parent_) {
     return TRUE;
   }
-  if ((GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP) != WS_POPUP) {
+  if ((GetWindowLong(hwnd, GWL_STYLE) & WS_POPUP) != WS_POPUP) {
     return TRUE;
   }
-  if (!IsWindowEnabled(hWnd)) {
+  if (!IsWindowEnabled(hwnd)) {
     return TRUE;
   }
 
-  pData->result_ = hWnd;
+  data->result_ = hwnd;
   return FALSE;
 }
 
@@ -92,37 +92,37 @@ bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[]) {
   /* Search for the existing window.  Prefer to use the class name, which is
    * less likely to have a false match, and will match the gameplay window.  If
    * that fails, try the window name, which should match the loading window. */
-  HWND hWnd = FindWindow(PRODUCT_ID, nullptr);
-  if (hWnd == nullptr) {
-    hWnd = FindWindow(nullptr, PRODUCT_ID);
+  HWND hwnd = FindWindow(PRODUCT_ID, nullptr);
+  if (hwnd == nullptr) {
+    hwnd = FindWindow(nullptr, PRODUCT_ID);
   }
 
-  if (hWnd != nullptr) {
+  if (hwnd != nullptr) {
     /* If the application has a model dialog box open, we want to be sure to
      * give focus to it, not the main window. */
     CallbackData data;
-    data.parent_ = hWnd;
+    data.parent_ = hwnd;
     data.result_ = nullptr;
     EnumWindows(GetEnabledPopup, (LPARAM)&data);
 
     if (data.result_ != nullptr) {
       SetForegroundWindow(data.result_);
     } else {
-      SetForegroundWindow(hWnd);
+      SetForegroundWindow(hwnd);
     }
 
     // Send the command line to the existing window.
-    std::vector<std::string> vsArgs;
+    std::vector<std::string> args;
     for (int i = 0; i < argc; i++) {
-      vsArgs.push_back(argv[i]);
+      args.push_back(argv[i]);
     }
-    std::string sAllArgs = join("|", vsArgs);
+    std::string all_args = join("|", args);
     COPYDATASTRUCT cds;
     cds.dwData = 0;
-    cds.cbData = sAllArgs.size();
-    cds.lpData = (void*)sAllArgs.data();
+    cds.cbData = all_args.size();
+    cds.lpData = (void*)all_args.data();
     SendMessage(
-        (HWND)hWnd,  // HWND hWnd = handle of destination window
+        (HWND)hwnd,  // HWND hWnd = handle of destination window
         WM_COPYDATA,
         (WPARAM) nullptr,  // HANDLE OF SENDING WINDOW
         (LPARAM)&cds);     // 2nd msg parameter = pointer to COPYDATASTRUCT

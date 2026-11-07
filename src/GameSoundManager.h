@@ -16,7 +16,7 @@ class GameSoundManager {
  public:
   GameSoundManager();
   ~GameSoundManager();
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
   struct PlayMusicParams {
     PlayMusicParams() {
@@ -42,20 +42,20 @@ class GameSoundManager {
   };
   void PlayMusic(
       PlayMusicParams params,
-      PlayMusicParams FallbackMusicParams = PlayMusicParams());
+      PlayMusicParams fallback_music_params = PlayMusicParams());
   void PlayMusic(
-      std::string sFile, const TimingData* pTiming = nullptr,
+      std::string file, const TimingData* timing = nullptr,
       bool force_loop = false, float start_sec = 0, float length_sec = -1,
-      float fFadeInLengthSeconds = 0, float fade_len = 0,
-      bool align_beat = true, bool bApplyMusicRate = false);
+      float fade_in_length_seconds = 0, float fade_len = 0,
+      bool align_beat = true, bool apply_music_rate = false);
   void StopMusic() { PlayMusic(""); }
-  void DimMusic(float fVolume, float fDurationSeconds);
+  void DimMusic(float volume, float duration_seconds);
   std::string GetMusicPath() const;
   void Flush();
 
-  void PlayOnce(std::string sPath);
-  void PlayOnceFromDir(std::string sDir);
-  void PlayOnceFromAnnouncer(std::string sFolderName);
+  void PlayOnce(std::string path);
+  void PlayOnceFromDir(std::string dir);
+  void PlayOnceFromAnnouncer(std::string folder_name);
 
   void HandleSongTimer(bool on = true);
 

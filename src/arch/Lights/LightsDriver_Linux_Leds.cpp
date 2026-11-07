@@ -66,20 +66,20 @@ void LightsDriver_Linux_Leds::SetLight(
 }
 
 void LightsDriver_Linux_Leds::SetCabinetLights(
-    const int intArray[], const LightsState* ls) {
-  const char* baseFileLocation = GetGameControllerLightFile();
+    const int int_array[], const LightsState* ls) {
+  const char* base_file_location = GetGameControllerLightFile();
 
-  if (baseFileLocation != nullptr) {
-    char fileName[kLinuxLedMaxDirectoryLength];
+  if (base_file_location != nullptr) {
+    char file_name[kLinuxLedMaxDirectoryLength];
 
     FOREACH_CabinetLight(light) {
       // valid lights are zero and positive.
-      if (intArray[light] >= 0) {
+      if (int_array[light] >= 0) {
         // don't waste sprintf time if we don't need to change the light
         if (previous_ls_.cabinet_lights_[light] != ls->cabinet_lights_[light]) {
-          sprintf(fileName, baseFileLocation, intArray[light]);
+          sprintf(file_name, base_file_location, int_array[light]);
           SetLight(
-              fileName, previous_ls_.cabinet_lights_[light],
+              file_name, previous_ls_.cabinet_lights_[light],
               ls->cabinet_lights_[light]);
         }
       }
@@ -88,35 +88,35 @@ void LightsDriver_Linux_Leds::SetCabinetLights(
 }
 
 void LightsDriver_Linux_Leds::SetCoinCounter(int index, const LightsState* ls) {
-  const char* baseFileLocation = GetGameControllerLightFile();
+  const char* base_file_location = GetGameControllerLightFile();
 
-  if (baseFileLocation != nullptr && index >= 0) {
-    char fileName[kLinuxLedMaxDirectoryLength];
+  if (base_file_location != nullptr && index >= 0) {
+    char file_name[kLinuxLedMaxDirectoryLength];
 
     if (previous_ls_.coin_counter_ != ls->coin_counter_) {
-      sprintf(fileName, baseFileLocation, index);
-      SetLight(fileName, previous_ls_.coin_counter_, ls->coin_counter_);
+      sprintf(file_name, base_file_location, index);
+      SetLight(file_name, previous_ls_.coin_counter_, ls->coin_counter_);
     }
   }
 }
 
 void LightsDriver_Linux_Leds::SetGameControllerLights(
-    GameController gc, const int intArray[], const LightsState* ls) {
-  const char* baseFileLocation = GetGameControllerLightFile();
+    GameController gc, const int int_array[], const LightsState* ls) {
+  const char* base_file_location = GetGameControllerLightFile();
 
-  if (baseFileLocation != nullptr) {
-    char fileName[kLinuxLedMaxDirectoryLength];
+  if (base_file_location != nullptr) {
+    char file_name[kLinuxLedMaxDirectoryLength];
 
     // iterate over all gamebuttons, including the menu/start/etc buttons.
     FOREACH_ENUM(GameButton, gb) {
       // valid lights are zero and positive.
-      if (intArray[gb] >= 0) {
+      if (int_array[gb] >= 0) {
         // don't waste sprintf time if we don't need to change the light
         if (previous_ls_.game_button_lights_[gc][gb] !=
             ls->game_button_lights_[gc][gb]) {
-          sprintf(fileName, baseFileLocation, intArray[gb]);
+          sprintf(file_name, base_file_location, int_array[gb]);
           SetLight(
-              fileName, previous_ls_.game_button_lights_[gc][gb],
+              file_name, previous_ls_.game_button_lights_[gc][gb],
               ls->game_button_lights_[gc][gb]);
         }
       }

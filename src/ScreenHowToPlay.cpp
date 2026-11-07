@@ -101,22 +101,22 @@ void ScreenHowToPlay::Init() {
   }
 
   // Display a character
-  std::vector<Character*> vpCharacters;
-  CHARMAN->GetCharacters(vpCharacters);
-  if ((bool)USE_CHARACTER && vpCharacters.size() && HaveAllCharAnimations()) {
-    Character* displayChar;
+  std::vector<Character*> characters;
+  CHARMAN->GetCharacters(characters);
+  if ((bool)USE_CHARACTER && characters.size() && HaveAllCharAnimations()) {
+    Character* display_char;
     if (!CHARACTER_NAME.GetValue().empty() &&
         CHARMAN->GetCharacterFromID(CHARACTER_NAME.GetValue())) {
-      displayChar = CHARMAN->GetCharacterFromID(CHARACTER_NAME.GetValue());
+      display_char = CHARMAN->GetCharacterFromID(CHARACTER_NAME.GetValue());
     } else {
-      displayChar = CHARMAN->GetRandomCharacter();
+      display_char = CHARMAN->GetRandomCharacter();
     }
 
-    std::string sModelPath = displayChar->GetModelPath();
-    if (sModelPath != "") {
+    std::string model_path = display_char->GetModelPath();
+    if (model_path != "") {
       character_ = new Model;
       character_->SetName("Character");
-      character_->LoadMilkshapeAscii(displayChar->GetModelPath());
+      character_->LoadMilkshapeAscii(display_char->GetModelPath());
       character_->LoadMilkshapeAsciiBones("Step-LEFT", GetAnimPath(ANIM_LEFT));
       character_->LoadMilkshapeAsciiBones("Step-DOWN", GetAnimPath(ANIM_DOWN));
       character_->LoadMilkshapeAsciiBones("Step-UP", GetAnimPath(ANIM_UP));
@@ -124,10 +124,10 @@ void ScreenHowToPlay::Init() {
           "Step-RIGHT", GetAnimPath(ANIM_RIGHT));
       character_->LoadMilkshapeAsciiBones(
           "Step-JUMPLR", GetAnimPath(ANIM_JUMPLR));
-      std::string sRestFile = displayChar->GetRestAnimationPath();
-      ASSERT(!sRestFile.empty());
+      std::string rest_file = display_char->GetRestAnimationPath();
+      ASSERT(!rest_file.empty());
       character_->LoadMilkshapeAsciiBones(
-          "rest", displayChar->GetRestAnimationPath());
+          "rest", display_char->GetRestAnimationPath());
       character_->SetDefaultAnimation("rest");
       character_->PlayAnimation(
           "rest");  // Stay bouncing after a step has finished animating.
@@ -136,7 +136,8 @@ void ScreenHowToPlay::Init() {
       character_->SetRotationX(40);
       character_->SetCullMode(CULL_NONE);  // many of the models floating around
                                            // have the vertex order flipped
-      character_->RunCommands(displayChar->init_);  // run InitCommand from file
+      character_->RunCommands(
+          display_char->init_);  // run InitCommand from file
       ActorUtil::LoadAllCommandsAndSetXY(character_, name_);
     }
   }
@@ -156,35 +157,35 @@ void ScreenHowToPlay::Init() {
     life_meter_bar_->FillForHowToPlay(NUM_W2S, NUM_MISSES);
 
     // Allow themers to use either a .ssc or .sm file for this. -aj
-    std::string sStepsPath = THEME->GetPathO(name_, "steps");
-    SSCLoader loaderSSC;
-    SMLoader loaderSM;
-    if (Right(sStepsPath, 4) == ".ssc") {
-      loaderSSC.LoadFromSimfile(sStepsPath, song_);
+    std::string steps_path = THEME->GetPathO(name_, "steps");
+    SSCLoader loader_ssc;
+    SMLoader loader_sm;
+    if (Right(steps_path, 4) == ".ssc") {
+      loader_ssc.LoadFromSimfile(steps_path, song_);
     } else {
-      loaderSM.LoadFromSimfile(sStepsPath, song_);
+      loader_sm.LoadFromSimfile(steps_path, song_);
     }
     song_.AddAutoGenNotes();
 
-    const Style* pStyle = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
+    const Style* style = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
 
-    Steps* pSteps = SongUtil::GetClosestNotes(
-        &song_, pStyle->steps_type_, Difficulty_Beginner);
-    if (pSteps == nullptr) {
+    Steps* steps = SongUtil::GetClosestNotes(
+        &song_, style->steps_type_, Difficulty_Beginner);
+    if (steps == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
           "No playable steps of StepsType '%s' for ScreenHowToPlay in file %s",
-          StringConversion::ToString(pStyle->steps_type_).c_str(),
-          sStepsPath.c_str());
+          StringConversion::ToString(style->steps_type_).c_str(),
+          steps_path.c_str());
     } else {
       song_.song_timing_.TidyUpData(false);
-      pSteps->timing_.TidyUpData(true);
-      NoteData tempNoteData;
-      pSteps->GetNoteData(tempNoteData);
-      pStyle->GetTransformedNoteDataForStyle(
-          PLAYER_1, tempNoteData, note_data_);
+      steps->timing_.TidyUpData(true);
+      NoteData temp_note_data;
+      steps->GetNoteData(temp_note_data);
+      style->GetTransformedNoteDataForStyle(
+          PLAYER_1, temp_note_data, note_data_);
 
       GAMESTATE->cur_song_.Set(&song_);
-      GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+      GAMESTATE->cur_steps_[PLAYER_1].Set(steps);
       GAMESTATE->gameplay_lead_in_.Set(false);
       GAMESTATE->player_state_[PLAYER_1]->player_controller_ = PC_AUTOPLAY;
 
@@ -236,19 +237,19 @@ void ScreenHowToPlay::Step() {
 #define ST_JUMPLR (ST_LEFT | ST_RIGHT)
 #define ST_JUMPUD (ST_UP | ST_DOWN)
 
-  int iStep = 0;
-  const int iNoteRow =
+  int step = 0;
+  const int note_row =
       BeatToNoteRowNotRounded(GAMESTATE->position_.song_beat_ + 0.6f);
   // if we want to miss from here on out, don't process steps.
-  if (w2s_ < num_w2s_ && note_data_.IsThereATapAtRow(iNoteRow)) {
-    const int iNumTracks = note_data_.GetNumTracks();
-    for (int k = 0; k < iNumTracks; k++) {
-      if (note_data_.GetTapNote(k, iNoteRow).type_ == TapNoteType_Tap) {
-        iStep |= 1 << k;
+  if (w2s_ < num_w2s_ && note_data_.IsThereATapAtRow(note_row)) {
+    const int num_tracks = note_data_.GetNumTracks();
+    for (int k = 0; k < num_tracks; k++) {
+      if (note_data_.GetTapNote(k, note_row).type_ == TapNoteType_Tap) {
+        step |= 1 << k;
       }
     }
 
-    switch (iStep) {
+    switch (step) {
       case ST_LEFT:
         character_->PlayAnimation("Step-LEFT", 1.8f);
         break;
@@ -283,18 +284,18 @@ void ScreenHowToPlay::Step() {
   }
 }
 
-void ScreenHowToPlay::Update(float fDelta) {
+void ScreenHowToPlay::Update(float delta) {
   if (GAMESTATE->cur_song_ != nullptr) {
     RageTimer tm;
     GAMESTATE->UpdateSongPosition(
         fake_seconds_into_song_, GAMESTATE->cur_song_->song_timing_, tm);
-    fake_seconds_into_song_ += fDelta;
+    fake_seconds_into_song_ += delta;
 
-    static int iLastNoteRowCounted = 0;
-    int iCurNoteRow = BeatToNoteRowNotRounded(GAMESTATE->position_.song_beat_);
+    static int last_note_row_counted = 0;
+    int cur_note_row = BeatToNoteRowNotRounded(GAMESTATE->position_.song_beat_);
 
-    if (iCurNoteRow != iLastNoteRowCounted &&
-        note_data_.IsThereATapAtRow(iCurNoteRow)) {
+    if (cur_note_row != last_note_row_counted &&
+        note_data_.IsThereATapAtRow(cur_note_row)) {
       if (life_meter_bar_ && !player_) {
         if (w2s_ < num_w2s_) {
           life_meter_bar_->ChangeLife(TNS_W2);
@@ -303,7 +304,7 @@ void ScreenHowToPlay::Update(float fDelta) {
         }
       }
       w2s_++;
-      iLastNoteRowCounted = iCurNoteRow;
+      last_note_row_counted = cur_note_row;
     }
 
     // Once we hit the number of perfects we want, we want to fail. Switch
@@ -323,19 +324,19 @@ void ScreenHowToPlay::Update(float fDelta) {
     }
   }
 
-  ScreenAttract::Update(fDelta);
+  ScreenAttract::Update(delta);
 }
 
-void ScreenHowToPlay::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_GainFocus) {
+void ScreenHowToPlay::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_GainFocus) {
     // We do this ourself.
     SOUND->HandleSongTimer(false);
-  } else if (SM == SM_LoseFocus) {
+  } else if (sm == SM_LoseFocus) {
     SOUND->HandleSongTimer(true);
-  } else if (SM == SM_GoToNextScreen) {
+  } else if (sm == SM_GoToNextScreen) {
     GAMESTATE->Reset();
   }
-  ScreenAttract::HandleScreenMessage(SM);
+  ScreenAttract::HandleScreenMessage(sm);
 }
 
 // lua start

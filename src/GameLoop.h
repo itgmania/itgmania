@@ -6,9 +6,9 @@
 namespace GameLoop {
 void RunGameLoop();
 void UpdateAllButDraw();
-void SetUpdateRate(float fUpdateRate);
+void SetUpdateRate(float update_rate);
 float GetUpdateRate();
-void ChangeTheme(const std::string& sNewTheme);
+void ChangeTheme(const std::string& new_theme);
 void ChangeGame(const std::string& new_game, const std::string& new_theme = "");
 void ResetInputIdleTimer();
 

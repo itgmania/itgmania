@@ -41,9 +41,9 @@ StatsManager* STATSMAN =
     nullptr;  // global object accessible from anywhere in the program
 
 void AddPlayerStatsToProfile(
-    Profile* pProfile, const StageStats& ss, PlayerNumber pn);
+    Profile* profile, const StageStats& ss, PlayerNumber pn);
 XNode* MakeRecentScoreNode(
-    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss);
+    const StageStats& ss, Trail* trail, const PlayerStageStats& pss);
 Preference<bool> g_PadmissEnabled("MemoryCardPadmissEnabled", false);
 
 StatsManager::StatsManager() {
@@ -81,9 +81,9 @@ static StageStats AccumPlayedStageStats(const std::vector<StageStats>& vss) {
     ssreturn.AddStats(ss);
   }
 
-  unsigned uNumSongs = ssreturn.played_songs_.size();
+  unsigned num_songs = ssreturn.played_songs_.size();
 
-  if (uNumSongs == 0) {
+  if (num_songs == 0) {
     return ssreturn;  // don't divide by 0 below
   }
 
@@ -93,20 +93,20 @@ static StageStats AccumPlayedStageStats(const std::vector<StageStats>& vss) {
   // long, marathon.
   FOREACH_EnabledPlayer(p) {
     for (int r = 0; r < RadarCategory_TapsAndHolds; r++) {
-      ssreturn.player_[p].radar_possible_[r] /= uNumSongs;
-      ssreturn.player_[p].radar_actual_[r] /= uNumSongs;
+      ssreturn.player_[p].radar_possible_[r] /= num_songs;
+      ssreturn.player_[p].radar_actual_[r] /= num_songs;
     }
   }
   return ssreturn;
 }
 
-void StatsManager::GetFinalEvalStageStats(StageStats& statsOut) const {
-  statsOut.Init();
-  std::vector<StageStats> vssToCount;
+void StatsManager::GetFinalEvalStageStats(StageStats& stats_out) const {
+  stats_out.Init();
+  std::vector<StageStats> to_count;
   for (size_t i = 0; i < played_stage_stats_.size(); ++i) {
-    vssToCount.push_back(played_stage_stats_[i]);
+    to_count.push_back(played_stage_stats_[i]);
   }
-  statsOut = AccumPlayedStageStats(vssToCount);
+  stats_out = AccumPlayedStageStats(to_count);
 }
 
 void StatsManager::CalcAccumPlayedStageStats() {
@@ -116,31 +116,31 @@ void StatsManager::CalcAccumPlayedStageStats() {
 /* This data is added to each player profile, and to the machine profile
  * per-player. */
 void AddPlayerStatsToProfile(
-    Profile* pProfile, const StageStats& ss, PlayerNumber pn) {
+    Profile* profile, const StageStats& ss, PlayerNumber pn) {
   ss.AssertValid(pn);
 
-  StyleID sID;
-  sID.FromStyle(ss.player_[pn].style_);
+  StyleID id;
+  id.FromStyle(ss.player_[pn].style_);
 
   ASSERT((int)ss.played_songs_.size() == ss.player_[pn].steps_played_);
   for (int i = 0; i < ss.player_[pn].steps_played_; i++) {
-    Steps* pSteps = ss.player_[pn].possible_steps_[i];
+    Steps* steps = ss.player_[pn].possible_steps_[i];
 
-    pProfile->num_songs_played_by_play_mode_[ss.play_mode_]++;
-    pProfile->num_songs_played_by_style_[sID]++;
-    pProfile->num_songs_played_by_difficulty_[pSteps->GetDifficulty()]++;
+    profile->num_songs_played_by_play_mode_[ss.play_mode_]++;
+    profile->num_songs_played_by_style_[id]++;
+    profile->num_songs_played_by_difficulty_[steps->GetDifficulty()]++;
 
-    int iMeter = std::clamp(pSteps->GetMeter(), 0, MAX_METER);
-    pProfile->num_songs_played_by_meter_[iMeter]++;
+    int meter = std::clamp(steps->GetMeter(), 0, MAX_METER);
+    profile->num_songs_played_by_meter_[meter]++;
   }
 
-  pProfile->total_dance_points_ += ss.player_[pn].actual_dance_points_;
+  profile->total_dance_points_ += ss.player_[pn].actual_dance_points_;
 
   if (ss.stage_ == Stage_Extra1 || ss.stage_ == Stage_Extra2) {
     if (ss.player_[pn].failed_) {
-      ++pProfile->num_extra_stages_failed_;
+      ++profile->num_extra_stages_failed_;
     } else {
-      ++pProfile->num_extra_stages_passed_;
+      ++profile->num_extra_stages_passed_;
     }
   }
 
@@ -148,91 +148,91 @@ void AddPlayerStatsToProfile(
   // FIXME: Not true.  If playing with 2 players, one player could have failed
   // earlier.
   if (!ss.player_[pn].failed_) {
-    pProfile->num_stages_passed_by_play_mode_[ss.play_mode_]++;
-    pProfile->num_stages_passed_by_grade_[ss.player_[pn].GetGrade()]++;
+    profile->num_stages_passed_by_play_mode_[ss.play_mode_]++;
+    profile->num_stages_passed_by_grade_[ss.player_[pn].GetGrade()]++;
   }
 }
 
 XNode* MakeRecentScoreNode(
-    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss) {
-  XNode* pNode = nullptr;
+    const StageStats& ss, Trail* trail, const PlayerStageStats& pss) {
+  XNode* node = nullptr;
   if (GAMESTATE->IsCourseMode()) {
-    pNode = new XNode("HighScoreForACourseAndTrail");
+    node = new XNode("HighScoreForACourseAndTrail");
 
-    CourseID courseID;
-    courseID.FromCourse(GAMESTATE->cur_course_);
-    pNode->AppendChild(courseID.CreateNode());
+    CourseID course_id;
+    course_id.FromCourse(GAMESTATE->cur_course_);
+    node->AppendChild(course_id.CreateNode());
 
-    TrailID trailID;
-    trailID.FromTrail(pTrail);
-    pNode->AppendChild(trailID.CreateNode());
+    TrailID trail_id;
+    trail_id.FromTrail(trail);
+    node->AppendChild(trail_id.CreateNode());
 
   } else {
-    pNode = new XNode("HighScoreForASongAndSteps");
+    node = new XNode("HighScoreForASongAndSteps");
 
-    SongID songID;
-    songID.FromSong(ss.possible_songs_[0]);
-    pNode->AppendChild(songID.CreateNode());
+    SongID song_id;
+    song_id.FromSong(ss.possible_songs_[0]);
+    node->AppendChild(song_id.CreateNode());
 
-    StepsID stepsID;
-    stepsID.FromSteps(pss.possible_steps_[0]);
-    pNode->AppendChild(stepsID.CreateNode());
+    StepsID steps_id;
+    steps_id.FromSteps(pss.possible_steps_[0]);
+    node->AppendChild(steps_id.CreateNode());
   }
 
-  XNode* pHighScore = pss.high_score_.CreateNode();
-  pHighScore->AppendChild("StageGuid", GAMESTATE->stage_guid_);
-  pHighScore->AppendChild("Guid", CryptManager::GenerateRandomUUID());
+  XNode* high_score = pss.high_score_.CreateNode();
+  high_score->AppendChild("StageGuid", GAMESTATE->stage_guid_);
+  high_score->AppendChild("Guid", CryptManager::GenerateRandomUUID());
 
-  pNode->AppendChild(pHighScore);
+  node->AppendChild(high_score);
 
-  return pNode;
+  return node;
 }
 
-void StatsManager::CommitStatsToProfiles(const StageStats* pSS) {
+void StatsManager::CommitStatsToProfiles(const StageStats* ss) {
   // Add step totals.  Use radarActual, since the player might have failed part
   // way through the song, in which case we don't want to give credit for the
   // rest of the song.
   FOREACH_HumanPlayer(pn) {
-    int iNumTapsAndHolds =
-        (int)pSS->player_[pn].radar_actual_[RadarCategory_TapsAndHolds];
-    int iNumJumps = (int)pSS->player_[pn].radar_actual_[RadarCategory_Jumps];
-    int iNumHolds = (int)pSS->player_[pn].radar_actual_[RadarCategory_Holds];
-    int iNumRolls = (int)pSS->player_[pn].radar_actual_[RadarCategory_Rolls];
-    int iNumMines = (int)pSS->player_[pn].radar_actual_[RadarCategory_Mines];
-    int iNumHands = (int)pSS->player_[pn].radar_actual_[RadarCategory_Hands];
-    int iNumLifts = (int)pSS->player_[pn].radar_actual_[RadarCategory_Lifts];
-    float fCaloriesBurned = pSS->player_[pn].calories_burned_;
+    int num_taps_and_holds =
+        (int)ss->player_[pn].radar_actual_[RadarCategory_TapsAndHolds];
+    int num_jumps = (int)ss->player_[pn].radar_actual_[RadarCategory_Jumps];
+    int num_holds = (int)ss->player_[pn].radar_actual_[RadarCategory_Holds];
+    int num_rolls = (int)ss->player_[pn].radar_actual_[RadarCategory_Rolls];
+    int num_mines = (int)ss->player_[pn].radar_actual_[RadarCategory_Mines];
+    int num_hands = (int)ss->player_[pn].radar_actual_[RadarCategory_Hands];
+    int num_lifts = (int)ss->player_[pn].radar_actual_[RadarCategory_Lifts];
+    float calories_burned = ss->player_[pn].calories_burned_;
     PROFILEMAN->AddStepTotals(
-        pn, iNumTapsAndHolds, iNumJumps, iNumHolds, iNumRolls, iNumMines,
-        iNumHands, iNumLifts, fCaloriesBurned);
+        pn, num_taps_and_holds, num_jumps, num_holds, num_rolls, num_mines,
+        num_hands, num_lifts, calories_burned);
   }
 
   // Update profile stats
-  Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
+  Profile* machine_profile = PROFILEMAN->GetMachineProfile();
 
-  int iGameplaySeconds = std::trunc(pSS->gameplay_seconds_);
+  int gameplay_seconds = std::trunc(ss->gameplay_seconds_);
 
-  pMachineProfile->total_gameplay_seconds_ += iGameplaySeconds;
-  pMachineProfile->num_total_songs_played_ += pSS->played_songs_.size();
+  machine_profile->total_gameplay_seconds_ += gameplay_seconds;
+  machine_profile->num_total_songs_played_ += ss->played_songs_.size();
 
   FOREACH_HumanPlayer(pn) {
-    Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
-    if (pPlayerProfile) {
-      pPlayerProfile->total_gameplay_seconds_ += iGameplaySeconds;
-      pPlayerProfile->num_total_songs_played_ += pSS->played_songs_.size();
+    Profile* player_profile = PROFILEMAN->GetProfile(pn);
+    if (player_profile) {
+      player_profile->total_gameplay_seconds_ += gameplay_seconds;
+      player_profile->num_total_songs_played_ += ss->played_songs_.size();
     }
 
     LOG->Trace("Adding stats to machine profile...");
-    AddPlayerStatsToProfile(pMachineProfile, *pSS, pn);
+    AddPlayerStatsToProfile(machine_profile, *ss, pn);
 
-    if (pPlayerProfile) {
+    if (player_profile) {
       LOG->Trace("Adding stats to player profile...");
-      AddPlayerStatsToProfile(pPlayerProfile, *pSS, pn);
+      AddPlayerStatsToProfile(player_profile, *ss, pn);
     }
 
     // No marathons etc for now...
-    if (g_PadmissEnabled.Get() && pSS->play_mode_ == PLAY_MODE_REGULAR) {
-      SavePadmissScore(pSS, pn);
+    if (g_PadmissEnabled.Get() && ss->play_mode_ == PLAY_MODE_REGULAR) {
+      SavePadmissScore(ss, pn);
     }
   }
 
@@ -240,13 +240,13 @@ void StatsManager::CommitStatsToProfiles(const StageStats* pSS) {
   // in it just accumulate uselessly, wasting several seconds when finishing
   // a song.  So this pref disables it. -Kyz
   if (!PREFSMAN->disable_upload_dir_) {
-    SaveUploadFile(pSS);
+    SaveUploadFile(ss);
   }
 
   // FileCopy( "Data/TempTestGroups.xml", "Save/Upload/data.xml" );
 }
 
-void StatsManager::SaveUploadFile(const StageStats* pSS) {
+void StatsManager::SaveUploadFile(const StageStats* ss) {
   // Save recent scores
   std::unique_ptr<XNode> xml(new XNode("Stats"));
   xml->AppendChild("MachineGuid", PROFILEMAN->GetMachineProfile()->guid_);
@@ -259,58 +259,59 @@ void StatsManager::SaveUploadFile(const StageStats* pSS) {
   }
 
   FOREACH_HumanPlayer(p) {
-    if (pSS->player_[p].high_score_.IsEmpty()) {
+    if (ss->player_[p].high_score_.IsEmpty()) {
       continue;
     }
     recent->AppendChild(
-        MakeRecentScoreNode(*pSS, GAMESTATE->cur_trail_[p], pSS->player_[p]));
+        MakeRecentScoreNode(*ss, GAMESTATE->cur_trail_[p], ss->player_[p]));
   }
 
-  std::string sDate = DateTime::GetNowDate().GetString();
-  Replace(sDate, ":", "-");
+  std::string date = DateTime::GetNowDate().GetString();
+  Replace(date, ":", "-");
 
-  const std::string UPLOAD_DIR = "/Save/Upload/";
-  std::string sFileNameNoExtension =
-      Profile::MakeUniqueFileNameNoExtension(UPLOAD_DIR, sDate + " ");
-  std::string fn = UPLOAD_DIR + sFileNameNoExtension + ".xml";
+  const std::string kUploadDir = "/Save/Upload/";
+  std::string file_name_no_extension =
+      Profile::MakeUniqueFileNameNoExtension(kUploadDir, date + " ");
+  std::string fn = kUploadDir + file_name_no_extension + ".xml";
 
-  bool bSaved = XmlFileUtil::SaveToFile(xml.get(), fn, "", false);
+  bool saved = XmlFileUtil::SaveToFile(xml.get(), fn, "", false);
 
-  if (bSaved) {
-    std::string sStatsXmlSigFile = fn + SIGNATURE_APPEND;
-    CryptManager::SignFileToFile(fn, sStatsXmlSigFile);
+  if (saved) {
+    std::string stats_xml_sig_file = fn + SIGNATURE_APPEND;
+    CryptManager::SignFileToFile(fn, stats_xml_sig_file);
   }
 }
 
-void StatsManager::SavePadmissScore(const StageStats* pSS, PlayerNumber pn) {
-  const PlayerStageStats* playerStats = &pSS->player_[pn];
+void StatsManager::SavePadmissScore(const StageStats* ss, PlayerNumber pn) {
+  const PlayerStageStats* player_stats = &ss->player_[pn];
 
   std::unique_ptr<XNode> xml(new XNode("SongScore"));
 
-  std::string sDate = DateTime::GetNowDate().GetString();
-  Replace(sDate, ":", "-");
+  std::string date = DateTime::GetNowDate().GetString();
+  Replace(date, ":", "-");
 
   XNode* taps = xml->AppendChild("TapNoteScores");
   FOREACH_ENUM(TapNoteScore, tns)
   if (tns != TNS_None) {
     taps->AppendChild(
-        TapNoteScoreToString(tns), playerStats->tap_note_scores_[tns]);
+        TapNoteScoreToString(tns), player_stats->tap_note_scores_[tns]);
   }
 
   XNode* radar_actual = xml->AppendChild("RadarActual");
-  radar_actual->AppendChild(playerStats->radar_actual_.CreateNode(true, false));
+  radar_actual->AppendChild(
+      player_stats->radar_actual_.CreateNode(true, false));
 
   XNode* radar_possible = xml->AppendChild("RadarPossible");
   radar_possible->AppendChild(
-      playerStats->radar_possible_.CreateNode(true, false));
+      player_stats->radar_possible_.CreateNode(true, false));
 
-  Profile* pp = PROFILEMAN->GetProfile(playerStats->player_number_);
-  xml->AppendChild("ScoreValue", playerStats->GetPercentDancePoints());
-  xml->AppendChild("PlayerNumber", playerStats->player_number_);
+  Profile* pp = PROFILEMAN->GetProfile(player_stats->player_number_);
+  xml->AppendChild("ScoreValue", player_stats->GetPercentDancePoints());
+  xml->AppendChild("PlayerNumber", player_stats->player_number_);
   xml->AppendChild("PlayerName", pp->display_name_);
   xml->AppendChild("PlayerGuid", pp->guid_);
 
-  Steps* steps = playerStats->possible_steps_[0];  // XXX Courses and such
+  Steps* steps = player_stats->possible_steps_[0];  // XXX Courses and such
   Song* song = steps->song_;
   steps->Decompress();  // Hashing won't work unless the steps are decompressed
   XNode* stepdata = xml->AppendChild("Steps");
@@ -336,7 +337,7 @@ void StatsManager::SavePadmissScore(const StageStats* pSS, PlayerNumber pn) {
   const PlayerOptions& opts =
       GAMESTATE->player_state_[pn]->player_options_.Get(ModsLevel_Preferred);
   XNode* mods = xml->AppendChild("Mods");
-  mods->AppendChild("MusicRate", pSS->music_rate_);
+  mods->AppendChild("MusicRate", ss->music_rate_);
 #define ADD_BOOLEAN_OPTION(parent, name, opts) \
   if (opts[PlayerOptions::name]) parent->AppendChild(#name)
 
@@ -427,29 +428,29 @@ void StatsManager::SavePadmissScore(const StageStats* pSS, PlayerNumber pn) {
   perspectives->AppendChild("Tilt", opts.perspective_tilt_);
   perspectives->AppendChild("Skew", opts.skew_);
 
-  std::string speedModType;
-  float speedModValue;
+  std::string speed_mod_type;
+  float speed_mod_value;
   if (opts.time_spacing_) {
-    speedModType = "ConstantBPM";
-    speedModValue = opts.scroll_bpm_;
+    speed_mod_type = "ConstantBPM";
+    speed_mod_value = opts.scroll_bpm_;
   } else if (opts.max_scroll_bpm_) {
-    speedModType = "MaxBPM";
-    speedModValue = opts.max_scroll_bpm_;
+    speed_mod_type = "MaxBPM";
+    speed_mod_value = opts.max_scroll_bpm_;
   } else {
-    speedModType = "Multiplier";
-    speedModValue = opts.scroll_speed_;
+    speed_mod_type = "Multiplier";
+    speed_mod_value = opts.scroll_speed_;
   }
-  mods->AppendChild("ScrollSpeed", speedModValue)
-      ->AppendAttr("Type", speedModType);
+  mods->AppendChild("ScrollSpeed", speed_mod_value)
+      ->AppendAttr("Type", speed_mod_type);
 
-  XNode* timingWindows = xml->AppendChild("TimingWindows");
+  XNode* timing_windows = xml->AppendChild("TimingWindows");
   FOREACH_ENUM(TimingWindow, tw)
-  timingWindows->AppendChild(
+  timing_windows->AppendChild(
       TimingWindowToString(tw), Player::GetWindowSeconds(tw));
 
   std::string dir = "/Save/Padmiss/";
   std::string fn =
-      dir + Profile::MakeUniqueFileNameNoExtension(dir, sDate + " ") + ".xml";
+      dir + Profile::MakeUniqueFileNameNoExtension(dir, date + " ") + ".xml";
   XmlFileUtil::SaveToFile(xml.get(), fn, "", true);
 }
 
@@ -463,9 +464,9 @@ void StatsManager::UnjoinPlayer(PlayerNumber pn) {
 
   for (int i = 0; i < (int)played_stage_stats_.size(); ++i) {
     StageStats& ss = played_stage_stats_[i];
-    bool bIsActive = false;
-    FOREACH_PlayerNumber(p) if (ss.player_[p].joined_) bIsActive = true;
-    if (bIsActive) {
+    bool is_active = false;
+    FOREACH_PlayerNumber(p) if (ss.player_[p].joined_) is_active = true;
+    if (is_active) {
       continue;
     }
 
@@ -474,11 +475,11 @@ void StatsManager::UnjoinPlayer(PlayerNumber pn) {
   }
 }
 
-void StatsManager::GetStepsInUse(std::set<Steps*>& apInUseOut) const {
+void StatsManager::GetStepsInUse(std::set<Steps*>& in_use_out) const {
   for (int i = 0; i < (int)played_stage_stats_.size(); ++i) {
     FOREACH_PlayerNumber(pn) {
       const PlayerStageStats& pss = played_stage_stats_[i].player_[pn];
-      apInUseOut.insert(pss.possible_steps_.begin(), pss.possible_steps_.end());
+      in_use_out.insert(pss.possible_steps_.begin(), pss.possible_steps_.end());
     }
   }
 }
@@ -494,13 +495,13 @@ class LunaStatsManager : public Luna<StatsManager> {
     return 1;
   }
   static int GetPlayedStageStats(T* p, lua_State* L) {
-    int iAgo = IArg(1);
-    int iIndex = p->played_stage_stats_.size() - iAgo;
-    if (iIndex < 0 || iIndex >= (int)p->played_stage_stats_.size()) {
+    int ago = IArg(1);
+    int index = p->played_stage_stats_.size() - ago;
+    if (index < 0 || index >= (int)p->played_stage_stats_.size()) {
       return 0;
     }
 
-    p->played_stage_stats_[iIndex].PushSelf(L);
+    p->played_stage_stats_[index].PushSelf(L);
     return 1;
   }
   static int Reset(T* p, lua_State* L) {

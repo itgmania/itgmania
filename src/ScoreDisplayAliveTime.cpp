@@ -20,21 +20,21 @@ ScoreDisplayAliveTime::ScoreDisplayAliveTime() {
 
 ScoreDisplayAliveTime::~ScoreDisplayAliveTime() {}
 
-void ScoreDisplayAliveTime::LoadFromNode(const XNode* pNode) {
-  BitmapText::LoadFromNode(pNode);
+void ScoreDisplayAliveTime::LoadFromNode(const XNode* node) {
+  BitmapText::LoadFromNode(node);
 
   {
     Lua* L = LUA->Get();
-    bool b = pNode->PushAttrValue(L, "PlayerNumber");
+    bool b = node->PushAttrValue(L, "PlayerNumber");
     LuaHelpers::Pop(L, player_number_);
     ASSERT(b);
     LUA->Release(L);
   }
 }
 
-void ScoreDisplayAliveTime::Update(float fDelta) {
+void ScoreDisplayAliveTime::Update(float delta) {
   UpdateNumber();
-  BitmapText::Update(fDelta);
+  BitmapText::Update(delta);
 }
 
 void ScoreDisplayAliveTime::HandleMessage(const Message& msg) {
@@ -43,18 +43,18 @@ void ScoreDisplayAliveTime::HandleMessage(const Message& msg) {
 }
 
 void ScoreDisplayAliveTime::UpdateNumber() {
-  float fSecsIntoPlay = 0;
+  float secs_into_play = 0;
   ASSERT(player_number_ != PLAYER_INVALID);
   if (player_number_ != PLAYER_INVALID &&
       GAMESTATE->IsPlayerEnabled(player_number_)) {
-    fSecsIntoPlay =
+    secs_into_play =
         STATSMAN->GetAccumPlayedStageStats()
             .player_[player_number_]
             .alive_seconds_ +
         STATSMAN->cur_stage_stats_.player_[player_number_].alive_seconds_;
   }
 
-  SetText(SecondsToMMSSMsMs(fSecsIntoPlay));
+  SetText(SecondsToMMSSMsMs(secs_into_play));
 }
 
 // lua start

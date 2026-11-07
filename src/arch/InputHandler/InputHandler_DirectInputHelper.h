@@ -25,7 +25,7 @@ struct input_t {
   // containers.
   class Compare {
    public:
-    Compare(DWORD _ofs) : ofs_(_ofs) {}
+    Compare(DWORD ofs) : ofs_(ofs) {}
 
     bool operator()(const input_t& input) const { return input.ofs_ == ofs_; }
 

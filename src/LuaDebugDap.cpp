@@ -8,34 +8,34 @@ bool LuaDebug::Header::TryParse(const char* buffer, size_t length) {
     return false;
   }
 
-  std::string_view bufferView(buffer, length);
-  size_t headerEnd = bufferView.find("\r\n\r\n");
-  if (headerEnd == std::string::npos) {
+  std::string_view buffer_view(buffer, length);
+  size_t header_end = buffer_view.find("\r\n\r\n");
+  if (header_end == std::string::npos) {
     return false;
   }
   // Include one trailing "\r\n" in the view.
-  std::string_view headerView(buffer, headerEnd + 2);
+  std::string_view header_view(buffer, header_end + 2);
 
-  int contentLength = 0;
+  int content_length = 0;
   for (size_t offset = 0, end = 0;
-       (end = headerView.find("\r\n", offset)) != std::string_view::npos;
+       (end = header_view.find("\r\n", offset)) != std::string_view::npos;
        offset = end + 2) {
-    std::string_view fieldView = headerView.substr(offset, end - offset);
-    size_t nameEnd = fieldView.find(": ");
-    if (nameEnd == std::string_view::npos) {
+    std::string_view field_view = header_view.substr(offset, end - offset);
+    size_t name_end = field_view.find(": ");
+    if (name_end == std::string_view::npos) {
       return false;
     }
-    if (fieldView.substr(0, nameEnd) == "Content-Length") {
-      std::string valueString = std::string(fieldView.substr(nameEnd + 2));
-      contentLength = std::atoi(valueString.c_str());
+    if (field_view.substr(0, name_end) == "Content-Length") {
+      std::string value_string = std::string(field_view.substr(name_end + 2));
+      content_length = std::atoi(value_string.c_str());
     }
   }
-  if (contentLength <= 0) {
+  if (content_length <= 0) {
     return false;
   }
 
-  header_length_ = headerEnd + 4;
-  content_length_ = contentLength;
+  header_length_ = header_end + 4;
+  content_length_ = content_length;
   return true;
 }
 
@@ -52,21 +52,21 @@ Request CreateDapRequest(const std::string& command) {
   return request;
 }
 
-Request CreatePauseRequest(ThreadId threadId) {
+Request CreatePauseRequest(ThreadId thread_id) {
   Request request = CreateDapRequest("pause");
-  request["arguments"]["threadId"] = threadId;
+  request["arguments"]["threadId"] = thread_id;
   return request;
 }
 
-Request CreateContinueRequest(ThreadId threadId) {
+Request CreateContinueRequest(ThreadId thread_id) {
   Request request = CreateDapRequest("continue");
-  request["body"]["threadId"] = threadId;
+  request["body"]["threadId"] = thread_id;
   return request;
 }
 
-Request CreateDisconnectRequest(bool suspendDebuggee) {
+Request CreateDisconnectRequest(bool suspend_debuggee) {
   Request request = CreateDapRequest("disconnect");
-  request["arguments"]["suspendDebuggee"] = suspendDebuggee;
+  request["arguments"]["suspendDebuggee"] = suspend_debuggee;
   return request;
 }
 
@@ -101,15 +101,15 @@ Event CreateDapEvent(const std::string& name) {
 }
 
 Event CreateStoppedEvent(
-    ThreadId threadId, const std::string& reason,
-    const std::vector<BreakpointId>& hitBreakpoints) {
+    ThreadId thread_id, const std::string& reason,
+    const std::vector<BreakpointId>& hit_breakpoints) {
   Event event = CreateDapEvent("stopped");
   event["body"]["reason"] = reason;
-  event["body"]["threadId"] = threadId;
+  event["body"]["threadId"] = thread_id;
   event["body"]["allThreadsStopped"] = true;
-  if (!hitBreakpoints.empty()) {
+  if (!hit_breakpoints.empty()) {
     event["body"]["hitBreakpointIds"] = Json::Value(Json::arrayValue);
-    for (BreakpointId id : hitBreakpoints) {
+    for (BreakpointId id : hit_breakpoints) {
       if (id != 0) {
         event["body"]["hitBreakpointIds"].append(id);
       }
@@ -119,16 +119,16 @@ Event CreateStoppedEvent(
 }
 
 Event CreateBreakpointEvaluationErrorEvent(
-    ThreadId threadId, const std::string& errors,
-    const std::vector<BreakpointId>& hitBreakpoints) {
+    ThreadId thread_id, const std::string& errors,
+    const std::vector<BreakpointId>& hit_breakpoints) {
   Event event = CreateDapEvent("stopped");
   event["body"]["reason"] = "exception";
   event["body"]["description"] = "Error evaluating breakpoint";
   event["body"]["text"] = errors;
-  event["body"]["threadId"] = threadId;
+  event["body"]["threadId"] = thread_id;
   event["body"]["allThreadsStopped"] = true;
   event["body"]["hitBreakpointIds"] = Json::Value(Json::arrayValue);
-  for (BreakpointId id : hitBreakpoints) {
+  for (BreakpointId id : hit_breakpoints) {
     if (id != 0) {
       event["body"]["hitBreakpointIds"].append(id);
     }
@@ -136,34 +136,34 @@ Event CreateBreakpointEvaluationErrorEvent(
   return event;
 }
 
-Event CreateContinuedEvent(ThreadId threadId) {
+Event CreateContinuedEvent(ThreadId thread_id) {
   Event event = CreateDapEvent("continued");
-  event["body"]["threadId"] = threadId;
+  event["body"]["threadId"] = thread_id;
   event["body"]["allThreadsContinued"] = true;
   return event;
 }
 
 Event CreateOutputEvent(
-    const std::string& output, const std::string& sourceName,
-    const std::string& source, int lineNumber) {
+    const std::string& output, const std::string& source_name,
+    const std::string& source, int line_number) {
   Event event = CreateDapEvent("output");
   event["body"]["output"] = output;
-  if (!sourceName.empty()) {
-    event["body"]["source"]["name"] = sourceName;
+  if (!source_name.empty()) {
+    event["body"]["source"]["name"] = source_name;
   }
   if (!source.empty()) {
     event["body"]["source"]["path"] = source;
   }
-  if (lineNumber >= 0) {
-    event["body"]["line"] = lineNumber;
+  if (line_number >= 0) {
+    event["body"]["line"] = line_number;
   }
   return event;
 }
 
-Event CreateThreadStartedEvent(ThreadId threadId) {
+Event CreateThreadStartedEvent(ThreadId thread_id) {
   Event event = CreateDapEvent("thread");
   event["body"]["reason"] = "started";
-  event["body"]["threadId"] = threadId;
+  event["body"]["threadId"] = thread_id;
   return event;
 }
 

@@ -20,12 +20,12 @@ struct TitleTrans {
   bool translit_;
   TitleTrans() { translit_ = true; }
 
-  TitleTrans(const TitleFields& tf, bool translit_)
-      : replacement_(tf), translit_(translit_) {}
+  TitleTrans(const TitleFields& tf, bool translit)
+      : replacement_(tf), translit_(translit) {}
 
   bool Matches(const TitleFields& tf, TitleFields& to);
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
 };
 
 bool TitleTrans::Matches(const TitleFields& from, TitleFields& to) {
@@ -43,37 +43,37 @@ bool TitleTrans::Matches(const TitleFields& from, TitleFields& to) {
   return true;
 }
 
-void TitleTrans::LoadFromNode(const XNode* pNode) {
-  ASSERT(pNode->GetName() == "Translation");
+void TitleTrans::LoadFromNode(const XNode* node) {
+  ASSERT(node->GetName() == "Translation");
 
-  FOREACH_CONST_Attr(pNode, attr) {
+  FOREACH_CONST_Attr(node, attr) {
     /* Surround each regex with ^(...)$, to force all comparisons to default
      * to being a full-line match.  (Add ".*" manually if this isn't wanted.) */
-    const std::string& sKeyName = attr->first;
-    const std::string sValue = attr->second->GetValue<std::string>();
-    if (sKeyName == "DontTransliterate") {
+    const std::string& key_name = attr->first;
+    const std::string value = attr->second->GetValue<std::string>();
+    if (key_name == "DontTransliterate") {
       translit_ = false;
-    } else if (sKeyName == "TitleFrom") {
-      title_from_ = "^(" + sValue + ")$";
-    } else if (sKeyName == "ArtistFrom") {
-      artist_from_ = "^(" + sValue + ")$";
-    } else if (sKeyName == "SubtitleFrom") {
-      sub_from_ = "^(" + sValue + ")$";
-    } else if (sKeyName == "TitleTo") {
-      replacement_.title_ = sValue;
-    } else if (sKeyName == "ArtistTo") {
-      replacement_.artist_ = sValue;
-    } else if (sKeyName == "SubtitleTo") {
-      replacement_.subtitle_ = sValue;
-    } else if (sKeyName == "TitleTransTo") {
-      replacement_.title_translit_ = sValue;
-    } else if (sKeyName == "ArtistTransTo") {
-      replacement_.artist_translit_ = sValue;
-    } else if (sKeyName == "SubtitleTransTo") {
-      replacement_.subtitle_translit_ = sValue;
+    } else if (key_name == "TitleFrom") {
+      title_from_ = "^(" + value + ")$";
+    } else if (key_name == "ArtistFrom") {
+      artist_from_ = "^(" + value + ")$";
+    } else if (key_name == "SubtitleFrom") {
+      sub_from_ = "^(" + value + ")$";
+    } else if (key_name == "TitleTo") {
+      replacement_.title_ = value;
+    } else if (key_name == "ArtistTo") {
+      replacement_.artist_ = value;
+    } else if (key_name == "SubtitleTo") {
+      replacement_.subtitle_ = value;
+    } else if (key_name == "TitleTransTo") {
+      replacement_.title_translit_ = value;
+    } else if (key_name == "ArtistTransTo") {
+      replacement_.artist_translit_ = value;
+    } else if (key_name == "SubtitleTransTo") {
+      replacement_.subtitle_translit_ = value;
     } else {
       LuaHelpers::ReportScriptErrorFmt(
-          "Unknown TitleSubst tag: \"%s\"", sKeyName.c_str());
+          "Unknown TitleSubst tag: \"%s\"", key_name.c_str());
     }
   }
 }
@@ -163,11 +163,11 @@ void TitleSubst::Load(const std::string& filename, const std::string& section) {
     return;
   }
 
-  XNode* pGroup = xml.GetChild(section);
-  if (pGroup == nullptr) {
+  XNode* group = xml.GetChild(section);
+  if (group == nullptr) {
     return;
   }
-  FOREACH_CONST_Child(pGroup, child) {
+  FOREACH_CONST_Child(group, child) {
     if (child->GetName() != "Translation") {
       continue;
     }

@@ -20,19 +20,19 @@ class MenuTimer : public ActorFrame {
  public:
   MenuTimer();
   virtual ~MenuTimer();
-  void Load(std::string sMetricsGroup);
+  void Load(std::string metrics_group);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
-  void SetSeconds(float fSeconds);
+  void SetSeconds(float seconds);
   float GetSeconds() const { return seconds_left_; }
   void Start();    // resume countdown from paused
   void Pause();    // don't count down
   void Stop();     // set to "00" and pause
   void Disable();  // set to "99" and pause
   void Stall();    // pause countdown for a sec
-  void EnableSilent(bool bSilent) { silent_ = bSilent; }  // make timer silent
-  void EnableStealth(bool bStealth);  // make timer invisible and silent
+  void EnableSilent(bool silent) { silent_ = silent; }  // make timer silent
+  void EnableStealth(bool stealth);  // make timer invisible and silent
 
   // Lua
   virtual void PushSelf(lua_State* L);
@@ -42,7 +42,7 @@ class MenuTimer : public ActorFrame {
   float stall_seconds_, stall_seconds_left_;
   bool paused_;
 
-  void SetText(float fSeconds);
+  void SetText(float seconds);
 
 #define NUM_MENU_TIMER_TEXTS 2
 

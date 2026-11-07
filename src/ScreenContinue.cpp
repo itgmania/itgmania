@@ -36,8 +36,8 @@ void ScreenContinue::BeginScreen() {
   // edit Steps.
   FOREACH_ENUM(PlayerNumber, p) {
     if (GAMESTATE->IsHumanPlayer(p)) {
-      bool bPlayerDone = GAMESTATE->player_stage_tokens_[p] <= 0;
-      if (bPlayerDone) {
+      bool player_done = GAMESTATE->player_stage_tokens_[p] <= 0;
+      if (player_done) {
         GAMESTATE->UnjoinPlayer(p);
         MEMCARDMAN->UnlockCard(p);
       }
@@ -71,9 +71,9 @@ bool ScreenContinue::Input(const InputEventPlus& input) {
       case GAME_BUTTON_DOWN:
       case GAME_BUTTON_LEFT:
       case GAME_BUTTON_RIGHT: {
-        float fSeconds = std::floor(menu_timer_->GetSeconds()) - 0.0001f;
-        fSeconds = std::max(fSeconds, 0.0001f);  // don't set to 0
-        menu_timer_->SetSeconds(fSeconds);
+        float seconds = std::floor(menu_timer_->GetSeconds()) - 0.0001f;
+        seconds = std::max(seconds, 0.0001f);  // don't set to 0
+        menu_timer_->SetSeconds(seconds);
         Message msg("HurryTimer");
         msg.SetParam("PlayerNumber", input.pn_);
         this->HandleMessage(msg);
@@ -87,29 +87,29 @@ bool ScreenContinue::Input(const InputEventPlus& input) {
   return ScreenWithMenuElementsSimple::Input(input);
 }
 
-void ScreenContinue::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_MenuTimer) {
+void ScreenContinue::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_MenuTimer) {
     if (!IsTransitioning()) {
       StartTransitioningScreen(SM_GoToNextScreen);
     }
     return;
   }
 
-  ScreenWithMenuElementsSimple::HandleScreenMessage(SM);
+  ScreenWithMenuElementsSimple::HandleScreenMessage(sm);
 }
 
 void ScreenContinue::HandleMessage(const Message& msg) {
   if (msg == Message_PlayerJoined) {
     ResetTimer();
 
-    bool bAllPlayersAreEnabled = true;
+    bool all_players_are_enabled = true;
     FOREACH_ENUM(PlayerNumber, p) {
       if (!GAMESTATE->IsPlayerEnabled(p)) {
-        bAllPlayersAreEnabled = false;
+        all_players_are_enabled = false;
       }
     }
 
-    if (bAllPlayersAreEnabled) {
+    if (all_players_are_enabled) {
       menu_timer_->Stop();
       if (!IsTransitioning()) {
         StartTransitioningScreen(SM_GoToNextScreen);

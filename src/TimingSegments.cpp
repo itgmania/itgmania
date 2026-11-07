@@ -12,8 +12,8 @@ static const char* TimingSegmentTypeNames[] = {
     "Tickcount", "Combo", "Speed", "Scroll",   "Fake"};
 XToString(TimingSegmentType);
 
-void TimingSegment::Scale(int start, int length, int newLength) {
-  SetRow(ScalePosition(start, length, newLength, this->GetRow()));
+void TimingSegment::Scale(int start, int length, int new_length) {
+  SetRow(ScalePosition(start, length, new_length, this->GetRow()));
 }
 
 std::string FakeSegment::ToString(int dec) const {
@@ -22,17 +22,17 @@ std::string FakeSegment::ToString(int dec) const {
   return ssprintf(str.c_str(), GetBeat(), GetLength());
 }
 
-void FakeSegment::Scale(int start, int length, int newLength) {
-  float startBeat = GetBeat();
-  float endBeat = startBeat + GetLength();
-  float newStartBeat = ScalePosition(
-      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(newLength),
-      startBeat);
-  float newEndBeat = ScalePosition(
-      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(newLength),
-      endBeat);
-  SetLength(newEndBeat - newStartBeat);
-  TimingSegment::Scale(start, length, newLength);
+void FakeSegment::Scale(int start, int length, int new_length) {
+  float start_beat = GetBeat();
+  float end_beat = start_beat + GetLength();
+  float new_start_beat = ScalePosition(
+      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(new_length),
+      start_beat);
+  float new_end_beat = ScalePosition(
+      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(new_length),
+      end_beat);
+  SetLength(new_end_beat - new_start_beat);
+  TimingSegment::Scale(start, length, new_length);
 }
 
 std::string WarpSegment::ToString(int dec) const {
@@ -41,18 +41,18 @@ std::string WarpSegment::ToString(int dec) const {
   return ssprintf(str.c_str(), GetBeat(), GetLength());
 }
 
-void WarpSegment::Scale(int start, int length, int newLength) {
+void WarpSegment::Scale(int start, int length, int new_length) {
   // XXX: this function is duplicated, there should be a better way
-  float startBeat = GetBeat();
-  float endBeat = startBeat + GetLength();
-  float newStartBeat = ScalePosition(
-      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(newLength),
-      startBeat);
-  float newEndBeat = ScalePosition(
-      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(newLength),
-      endBeat);
-  SetLength(newEndBeat - newStartBeat);
-  TimingSegment::Scale(start, length, newLength);
+  float start_beat = GetBeat();
+  float end_beat = start_beat + GetLength();
+  float new_start_beat = ScalePosition(
+      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(new_length),
+      start_beat);
+  float new_end_beat = ScalePosition(
+      NoteRowToBeat(start), NoteRowToBeat(length), NoteRowToBeat(new_length),
+      end_beat);
+  SetLength(new_end_beat - new_start_beat);
+  TimingSegment::Scale(start, length, new_length);
 }
 
 std::string TickcountSegment::ToString(int dec) const {
@@ -115,20 +115,20 @@ std::vector<float> SpeedSegment::GetValues() const {
   return ret;
 }
 
-void SpeedSegment::Scale(int start, int oldLength, int newLength) {
+void SpeedSegment::Scale(int start, int old_length, int new_length) {
   if (GetUnit() == 0) {
     // XXX: this function is duplicated, there should be a better way
-    float startBeat = GetBeat();
-    float endBeat = startBeat + GetDelay();
-    float newStartBeat = ScalePosition(
-        NoteRowToBeat(start), NoteRowToBeat(oldLength),
-        NoteRowToBeat(newLength), startBeat);
-    float newEndBeat = ScalePosition(
-        NoteRowToBeat(start), NoteRowToBeat(oldLength),
-        NoteRowToBeat(newLength), endBeat);
-    SetDelay(newEndBeat - newStartBeat);
+    float start_beat = GetBeat();
+    float end_beat = start_beat + GetDelay();
+    float new_start_beat = ScalePosition(
+        NoteRowToBeat(start), NoteRowToBeat(old_length),
+        NoteRowToBeat(new_length), start_beat);
+    float new_end_beat = ScalePosition(
+        NoteRowToBeat(start), NoteRowToBeat(old_length),
+        NoteRowToBeat(new_length), end_beat);
+    SetDelay(new_end_beat - new_start_beat);
   }
-  TimingSegment::Scale(start, oldLength, newLength);
+  TimingSegment::Scale(start, old_length, new_length);
 }
 
 std::string ScrollSegment::ToString(int dec) const {

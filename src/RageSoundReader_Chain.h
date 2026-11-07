@@ -18,16 +18,16 @@ class RageSoundReader_Chain : public RageSoundReader {
 
   /* Set the preferred sample rate.  This will only be used if the source sounds
    * use different sample rates. */
-  void SetPreferredSampleRate(int iSampleRate) {
-    preferred_sample_rate_ = iSampleRate;
+  void SetPreferredSampleRate(int sample_rate) {
+    preferred_sample_rate_ = sample_rate;
   }
 
-  int LoadSound(std::string sPath);
-  int LoadSound(RageSoundReader* pSound);
+  int LoadSound(std::string path);
+  int LoadSound(RageSoundReader* sound);
 
   /* Add the given sound to play after fOffsetSecs seconds.  Takes ownership
    * of pSound. */
-  void AddSound(int iIndex, float fOffsetSecs, float fPan);
+  void AddSound(int index, float offset_secs, float pan);
 
   /* Finish adding sounds. */
   void Finish();
@@ -37,11 +37,11 @@ class RageSoundReader_Chain : public RageSoundReader {
 
   int GetLength() const;
   int GetLength_Fast() const;
-  int SetPosition(int iFrame);
-  int Read(float* pBuf, int iFrames);
+  int SetPosition(int frame);
+  int Read(float* buf, int frames);
   int GetSampleRate() const;
   unsigned GetNumChannels() const { return channels_; }
-  bool SetProperty(const std::string& sProperty, float fValue);
+  bool SetProperty(const std::string& property, float value);
   int GetNextSourceFrame() const;
   float GetStreamToSourceRatio() const;
   std::string GetError() const { return ""; }
@@ -62,8 +62,8 @@ class RageSoundReader_Chain : public RageSoundReader {
     float pan_;
     RageSoundReader* sound_;  // nullptr if not activated
 
-    int GetOffsetFrame(int iSampleRate) const {
-      return int(int64_t(offset_ms_) * iSampleRate / 1000);
+    int GetOffsetFrame(int sample_rate) const {
+      return int(int64_t(offset_ms_) * sample_rate / 1000);
     }
     bool operator<(const Sound& rhs) const {
       return offset_ms_ < rhs.offset_ms_;

@@ -27,11 +27,11 @@ class InputHandler_MacOSX_HID : public InputHandler {
   bool changed_;
 
   static int Run(void* data);
-  static void DeviceAdded(void* refCon, io_iterator_t iter);
+  static void DeviceAdded(void* ref_con, io_iterator_t iter);
   static void DeviceChanged(
-      void* refCon, io_service_t service, natural_t messageType, void* arg);
+      void* ref_con, io_service_t service, natural_t message_type, void* arg);
   void StartDevices();
-  void AddDevices(int usagePage, int usage, InputDevice& id);
+  void AddDevices(int usage_page, int usage, InputDevice& id);
 
  public:
   InputHandler_MacOSX_HID();
@@ -41,9 +41,10 @@ class InputHandler_MacOSX_HID : public InputHandler {
     LockMut(change_lock_);
     return changed_;
   }
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
-  wchar_t DeviceButtonToChar(DeviceButton button, bool bUseCurrentKeyModifiers);
+  wchar_t DeviceButtonToChar(
+      DeviceButton button, bool use_current_key_modifiers);
   static void QueueCallback(
       void* target, int result, void* refcon, void* sender);
 };

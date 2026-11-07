@@ -16,7 +16,7 @@ class GrooveRadar : public ActorFrame {
  public:
   GrooveRadar();
   virtual GrooveRadar* Copy() const;
-  virtual void LoadFromNode(const XNode* pNode);
+  virtual void LoadFromNode(const XNode* node);
 
   /**
    * @brief Give the Player an empty GrooveRadar.
@@ -28,7 +28,7 @@ class GrooveRadar : public ActorFrame {
    * @param pn the Player to give a GrooveRadar.
    * @param pSteps the Steps to use to make the radar. If nullptr, there are no
    * Steps. */
-  void SetFromSteps(PlayerNumber pn, Steps* pSteps);
+  void SetFromSteps(PlayerNumber pn, Steps* steps);
   void SetFromValues(PlayerNumber pn, std::vector<float> vals);
 
   // Lua
@@ -44,7 +44,7 @@ class GrooveRadar : public ActorFrame {
    public:
     GrooveRadarValueMap();
 
-    virtual void Update(float fDeltaTime);
+    virtual void Update(float delta_time);
     virtual void DrawPrimitives();
 
     void SetEmpty();

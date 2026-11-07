@@ -22,17 +22,17 @@ using CrashHandler::IsDebuggerPresent;
 static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
 static void (*g_CleanupHandler)(const std::string& sError) = nullptr;
 void RageException::SetCleanupHandler(
-    void (*pHandler)(const std::string& sError)) {
+    void (*handler)(const std::string& error)) {
   g_HandlerThreadID = RageThread::GetCurrentThreadID();
-  g_CleanupHandler = pHandler;
+  g_CleanupHandler = handler;
 }
 
 /* This is no longer actually implemented by throwing an exception, but it acts
  * the same way to code in practice. */
-void RageException::Throw(const char* sFmt, ...) {
+void RageException::Throw(const char* fmt, ...) {
   va_list va;
-  va_start(va, sFmt);
-  std::string error = vssprintf(sFmt, va);
+  va_start(va, fmt);
+  std::string error = vssprintf(fmt, va);
   va_end(va);
 
   std::string msg = ssprintf(

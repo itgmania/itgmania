@@ -7,10 +7,10 @@
 #include "global.h"
 
 RageFileDriverSlice::RageFileDriverSlice(
-    RageFileBasic* pFile, int iOffset, int iFileSize) {
-  file_ = pFile;
-  offset_ = iOffset;
-  file_size_ = iFileSize;
+    RageFileBasic* file, int offset, int file_size) {
+  file_ = file;
+  offset_ = offset;
+  file_size_ = file_size;
   file_pos_ = 0;
   file_owned_ = false;
 }
@@ -31,8 +31,8 @@ RageFileDriverSlice::~RageFileDriverSlice() {
 }
 
 RageFileDriverSlice* RageFileDriverSlice::Copy() const {
-  RageFileDriverSlice* pRet = new RageFileDriverSlice(*this);
-  return pRet;
+  RageFileDriverSlice* ret = new RageFileDriverSlice(*this);
+  return ret;
 }
 
 int RageFileDriverSlice::ReadInternal(void* buf, size_t bytes) {

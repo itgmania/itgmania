@@ -28,8 +28,8 @@ class RenderTarget {
  public:
   virtual ~RenderTarget() {}
   virtual void Create(
-      const RenderTargetParam& param, int& iTextureWidthOut,
-      int& iTextureHeightOut) = 0;
+      const RenderTargetParam& param, int& texture_width_out,
+      int& texture_height_out) = 0;
 
   virtual uintptr_t GetTexture() const = 0;
 

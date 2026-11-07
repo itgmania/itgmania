@@ -13,16 +13,14 @@ bool ActorProxy::EarlyAbortDraw() const {
 
 void ActorProxy::DrawPrimitives() {
   if (actor_target_ != nullptr) {
-    bool bVisible = actor_target_->GetVisible();
+    bool visible = actor_target_->GetVisible();
     actor_target_->SetVisible(true);
     actor_target_->Draw();
-    actor_target_->SetVisible(bVisible);
+    actor_target_->SetVisible(visible);
   }
 }
 
-void ActorProxy::LoadFromNode(const XNode* pNode) {
-  Actor::LoadFromNode(pNode);
-}
+void ActorProxy::LoadFromNode(const XNode* node) { Actor::LoadFromNode(node); }
 
 // lua start
 #include "LuaBinding.h"
@@ -31,15 +29,15 @@ void ActorProxy::LoadFromNode(const XNode* pNode) {
 class LunaActorProxy : public Luna<ActorProxy> {
  public:
   static int SetTarget(T* p, lua_State* L) {
-    Actor* pTarget = Luna<Actor>::check(L, 1);
-    p->SetTarget(pTarget);
+    Actor* target = Luna<Actor>::check(L, 1);
+    p->SetTarget(target);
     COMMON_RETURN_SELF;
   }
 
   static int GetTarget(T* p, lua_State* L) {
-    Actor* pTarget = p->GetTarget();
-    if (pTarget != nullptr) {
-      pTarget->PushSelf(L);
+    Actor* target = p->GetTarget();
+    if (target != nullptr) {
+      target->PushSelf(L);
     } else {
       lua_pushnil(L);
     }

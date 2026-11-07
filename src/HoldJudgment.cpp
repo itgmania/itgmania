@@ -13,8 +13,8 @@ REGISTER_ACTOR_CLASS(HoldJudgment);
 
 HoldJudgment::HoldJudgment() {}
 
-void HoldJudgment::Load(const std::string& sPath) {
-  spr_judgment_.Load(sPath);
+void HoldJudgment::Load(const std::string& path) {
+  spr_judgment_.Load(path);
   spr_judgment_->StopAnimating();
   spr_judgment_->SetName("HoldJudgment");
   ActorUtil::LoadAllCommands(*spr_judgment_, "HoldJudgment");
@@ -22,19 +22,19 @@ void HoldJudgment::Load(const std::string& sPath) {
   this->AddChild(spr_judgment_);
 }
 
-void HoldJudgment::LoadFromNode(const XNode* pNode) {
-  std::string sFile;
-  if (!ActorUtil::GetAttrPath(pNode, "File", sFile)) {
+void HoldJudgment::LoadFromNode(const XNode* node) {
+  std::string file;
+  if (!ActorUtil::GetAttrPath(node, "File", file)) {
     LuaHelpers::ReportScriptErrorFmt(
         "%s: HoldJudgment: missing the attribute \"File\"",
-        ActorUtil::GetWhere(pNode).c_str());
+        ActorUtil::GetWhere(node).c_str());
   }
 
-  CollapsePath(sFile);
+  CollapsePath(file);
 
-  Load(sFile);
+  Load(file);
 
-  ActorFrame::LoadFromNode(pNode);
+  ActorFrame::LoadFromNode(node);
 }
 
 void HoldJudgment::ResetAnimation() {

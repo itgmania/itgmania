@@ -109,7 +109,7 @@ class LightsDriver_snek : public LightsDriver {
   bool state_changed_ = false;
   uint8_t output_buffer_[SNEK_HIDREPORT_SIZE];
 
-  void SetBuffer(int index, bool lightState);
+  void SetBuffer(int index, bool light_state);
 
  public:
   LightsDriver_snek();

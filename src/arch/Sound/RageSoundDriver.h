@@ -20,7 +20,7 @@ static const int samples_per_block = 512;
 class RageSoundDriver : public RageDriver {
  public:
   /* Pass an empty string to get the default sound driver list. */
-  static RageSoundDriver* Create(const std::string& sDrivers);
+  static RageSoundDriver* Create(const std::string& drivers);
   static DriverList driver_list_;
   static std::vector<std::string> GetSoundDriverList();
 
@@ -35,27 +35,27 @@ class RageSoundDriver : public RageDriver {
   /* A RageSound calls this to request to be played.
    * XXX: define what we should do when it can't be played (eg. out of
    * channels) */
-  void StartMixing(RageSoundBase* pSound);
+  void StartMixing(RageSoundBase* sound);
 
   /* A RageSound calls this to request it not be played.  When this function
    * returns, snd is no longer valid; ensure no running threads are still
    * accessing it before returning.  This must handle gracefully the case where
    * snd was not actually being played, though it may print a warning. */
-  void StopMixing(RageSoundBase* pSound);
+  void StopMixing(RageSoundBase* sound);
 
   /* Pause or unpause the given sound.  If the sound was stopped (not paused),
    * return false and do nothing; otherwise return true and pause or unpause
    * the sound.  Unlike StopMixing, pausing and unpause a sound will not lose
    * any buffered sound (but will not release any resources associated with
    * playing the sound, either). */
-  bool PauseMixing(RageSoundBase* pSound, bool bStop);
+  bool PauseMixing(RageSoundBase* sound, bool stop);
 
   /* Return the current source frame that is audible for the given sound. */
   bool GetPlayingPosition(
-      const RageSoundBase* pSound, int& iSourceFrame,
-      RageTimer* pTimer = nullptr);
+      const RageSoundBase* sound, int& source_frame,
+      RageTimer* timer = nullptr);
 
-  int64_t GetHardwareFrame(RageTimer* pTimer) const;
+  int64_t GetHardwareFrame(RageTimer* timer) const;
   virtual int64_t GetPosition() const = 0;
 
   /* When a sound is finished playing (GetDataToPlay returns 0) and the sound
@@ -101,13 +101,12 @@ class RageSoundDriver : public RageDriver {
    * access, and is safe to call from a realtime thread.
    */
   void Mix(
-      int16_t* pBuf, int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame);
-  void Mix(
-      float* pBuf, int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame);
+      int16_t* buf, int frames, int64_t frame_number, int64_t current_frame);
+  void Mix(float* buf, int frames, int64_t frame_number, int64_t current_frame);
 
   void MixDeinterlaced(
-      float** pBufs, int iChannels, int iFrames, int64_t iFrameNumber,
-      int64_t iCurrentFrame);
+      float** bufs, int num_channels, int frames, int64_t frame_number,
+      int64_t current_frame);
 
  private:
   struct MixingPositionInfo {
@@ -194,7 +193,7 @@ class RageSoundDriver : public RageDriver {
 
   struct Sound {
     Sound();
-    void Allocate(int iFrames);
+    void Allocate(int frames);
     void Deallocate();
 
     RageSoundBase* sound_;
@@ -231,7 +230,7 @@ class RageSoundDriver : public RageDriver {
   /* List of currently playing sounds: XXX no vector */
   Sound sounds_[32];
 
-  int64_t ClampHardwareFrame(int64_t iHardwareFrame) const;
+  int64_t ClampHardwareFrame(int64_t hardware_frame) const;
   mutable int64_t max_hardware_frame_;
 
   bool shutdown_decode_thread_;
@@ -239,13 +238,13 @@ class RageSoundDriver : public RageDriver {
   static int DecodeThread_start(void* p);
   void DecodeThread();
   RageSoundMixBuffer& MixIntoBuffer(
-      int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame);
+      int frames, int64_t frame_number, int64_t current_frame);
   RageThread decode_thread_;
 
   void PlaybackQueueDrain(Sound& s);
-  void PlaybackHistoryCleanup(Sound& s, int64_t iCurrentHardwareFrame);
+  void PlaybackHistoryCleanup(Sound& s, int64_t current_hardware_frame);
   bool GetSourceFrameForHardwareFrame(
-      const Sound& s, int64_t iHardwareFrame, int& iSourceFrame) const;
+      const Sound& s, int64_t hardware_frame, int& source_frame) const;
   int GetDataForSound(Sound& s);
 };
 

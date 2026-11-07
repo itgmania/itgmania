@@ -72,23 +72,23 @@ static void GetVDIPath(char* buf, int bufsiz) {
 
 bool VDDebugInfoInitFromMemory(Context* pctx) {
   if (pctx->raw_block_[0] == '\x1f' && pctx->raw_block_[1] == '\x8b') {
-    std::string sBufOut;
-    std::string sError;
-    if (!GunzipString(pctx->raw_block_, sBufOut, sError)) {
+    std::string buf_out;
+    std::string error;
+    if (!GunzipString(pctx->raw_block_, buf_out, error)) {
       pctx->error_ =
-          werr_ssprintf(GetLastError(), "VDI error: %s", sError.c_str());
+          werr_ssprintf(GetLastError(), "VDI error: %s", error.c_str());
       return false;
     }
 
-    pctx->raw_block_ = sBufOut;
+    pctx->raw_block_ = buf_out;
   }
 
   const unsigned char* src = (const unsigned char*)pctx->raw_block_.data();
 
   pctx->rva_heap_ = nullptr;
 
-  static const char* header = "symbolic debug information";
-  if (memcmp(src, header, strlen(header))) {
+  static const char* kHeader = "symbolic debug information";
+  if (memcmp(src, kHeader, strlen(kHeader))) {
     pctx->error_ = "header doesn't match";
     return false;
   }
@@ -96,20 +96,20 @@ bool VDDebugInfoInitFromMemory(Context* pctx) {
   // Extract fields
 
   src += 64;
-  const size_t* pRVASize = reinterpret_cast<const size_t*>(src + sizeof(int));
-  const size_t* pFNamSize =
+  const size_t* rva_size = reinterpret_cast<const size_t*>(src + sizeof(int));
+  const size_t* f_nam_size =
       reinterpret_cast<const size_t*>(src + sizeof(int) + sizeof(size_t));
-  const int* pSegCnt =
+  const int* seg_cnt =
       reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
   src += 2 * (sizeof(int) + sizeof(size_t));
 
   pctx->rva_heap_ =
       reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
   pctx->first_rva_ = *reinterpret_cast<const uintptr_t*>(src);
-  pctx->func_name_heap_ = reinterpret_cast<const char*>(src + *pRVASize);
+  pctx->func_name_heap_ = reinterpret_cast<const char*>(src + *rva_size);
   pctx->p_segments_ =
-      reinterpret_cast<const uintptr_t (*)[2]>(src + *pRVASize + *pFNamSize);
-  pctx->n_segments_ = *pSegCnt;
+      reinterpret_cast<const uintptr_t (*)[2]>(src + *rva_size + *f_nam_size);
+  pctx->n_segments_ = *seg_cnt;
 
   return true;
 }
@@ -139,21 +139,21 @@ bool VDDebugInfoInitFromFile(Context* pctx) {
   }
 
   do {
-    DWORD dwFileSize = GetFileSize(h, nullptr);
-    if (dwFileSize == INVALID_FILE_SIZE) {
+    DWORD file_size = GetFileSize(h, nullptr);
+    if (file_size == INVALID_FILE_SIZE) {
       break;
     }
 
-    char* buffer = new char[static_cast<size_t>(dwFileSize) + 1];
-    std::fill(buffer, buffer + dwFileSize + 1, '\0');
+    char* buffer = new char[static_cast<size_t>(file_size) + 1];
+    std::fill(buffer, buffer + file_size + 1, '\0');
 
-    DWORD dwActual;
-    int iRet = ReadFile(h, buffer, dwFileSize, &dwActual, nullptr);
+    DWORD actual;
+    int ret = ReadFile(h, buffer, file_size, &actual, nullptr);
     CloseHandle(h);
     pctx->raw_block_ = buffer;
     delete[] buffer;
 
-    if (!iRet || dwActual != dwFileSize) {
+    if (!ret || actual != file_size) {
       break;
     }
 
@@ -265,18 +265,18 @@ bool ReadFromParent(int fd, void* p, int size) {
   return true;
 }
 
-static bool ReadStringFromParent(int fd, std::string& outString) {
-  int iSize;
-  if (!ReadFromParent(fd, &iSize, sizeof(iSize)) || iSize < 0) {
+static bool ReadStringFromParent(int fd, std::string& out_string) {
+  int size;
+  if (!ReadFromParent(fd, &size, sizeof(size)) || size < 0) {
     return false;
   }
 
-  std::string tmp(static_cast<size_t>(iSize), '\0');
-  if (!ReadFromParent(fd, tmp.data(), iSize)) {
+  std::string tmp(static_cast<size_t>(size), '\0');
+  if (!ReadFromParent(fd, tmp.data(), size)) {
     return false;
   }
 
-  outString = std::move(tmp);
+  out_string = std::move(tmp);
   return true;
 }
 
@@ -286,15 +286,15 @@ namespace SymbolLookup {
 HANDLE g_hParent;
 
 bool InitDbghelp() {
-  static bool bInitted = false;
-  if (!bInitted) {
+  static bool initted = false;
+  if (!initted) {
     SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
 
     if (!SymInitialize(g_hParent, nullptr, TRUE)) {
       return false;
     }
 
-    bInitted = true;
+    initted = true;
   }
 
   return true;
@@ -304,16 +304,16 @@ SYMBOL_INFO* GetSym(uintptr_t ptr, DWORD64& disp) {
   InitDbghelp();
 
   static BYTE buffer[1024];
-  SYMBOL_INFO* pSymbol = (PSYMBOL_INFO)buffer;
+  SYMBOL_INFO* symbol = (PSYMBOL_INFO)buffer;
 
-  pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-  pSymbol->MaxNameLen = sizeof(buffer) - sizeof(SYMBOL_INFO) + 1;
+  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+  symbol->MaxNameLen = sizeof(buffer) - sizeof(SYMBOL_INFO) + 1;
 
-  if (!SymFromAddr(g_hParent, ptr, &disp, pSymbol)) {
+  if (!SymFromAddr(g_hParent, ptr, &disp, symbol)) {
     return nullptr;
   }
 
-  return pSymbol;
+  return symbol;
 }
 
 const char* Demangle(const char* buf) {
@@ -341,24 +341,24 @@ const char* Demangle(const char* buf) {
   return obuf;
 }
 
-std::string CrashChildGetModuleBaseName(HMODULE hMod) {
-  _write(_fileno(stdout), &hMod, sizeof(hMod));
+std::string CrashChildGetModuleBaseName(HMODULE mod) {
+  _write(_fileno(stdout), &mod, sizeof(mod));
 
-  int iFD = _fileno(stdin);
-  int iSize;
-  if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+  int fd = _fileno(stdin);
+  int size;
+  if (!ReadFromParent(fd, &size, sizeof(size))) {
     return "???";
   }
-  std::string sName;
-  char* buffer = new char[static_cast<size_t>(iSize) + 1];
-  std::fill(buffer, buffer + iSize + 1, '\0');
-  if (!ReadFromParent(iFD, buffer, iSize)) {
-    sName = "???";
+  std::string name;
+  char* buffer = new char[static_cast<size_t>(size) + 1];
+  std::fill(buffer, buffer + size + 1, '\0');
+  if (!ReadFromParent(fd, buffer, size)) {
+    name = "???";
   } else {
-    sName = buffer;
+    name = buffer;
   }
   delete[] buffer;
-  return sName;
+  return name;
 }
 
 void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
@@ -371,29 +371,28 @@ void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
   VirtualQueryEx(g_hParent, ptr, &meminfo, sizeof meminfo);
 
   char tmp[512];
-  intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(
+  intptr_t address = VDDebugInfo::VDDebugInfoLookupRVA(
       pctx, reinterpret_cast<uintptr_t>(ptr), tmp, sizeof(tmp));
-  if (iAddress >= 0) {
+  if (address >= 0) {
     wsprintf(
         buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]",
         reinterpret_cast<uintptr_t>(ptr), Demangle(tmp), pctx->first_rva_,
-        reinterpret_cast<uintptr_t>(ptr) - pctx->first_rva_ - iAddress,
-        iAddress);
+        reinterpret_cast<uintptr_t>(ptr) - pctx->first_rva_ - address, address);
     return;
   }
 
-  std::string sName =
+  std::string name =
       CrashChildGetModuleBaseName((HMODULE)meminfo.AllocationBase);
 
   DWORD64 disp;
-  SYMBOL_INFO* pSymbol = GetSym(reinterpret_cast<uintptr_t>(ptr), disp);
+  SYMBOL_INFO* symbol = GetSym(reinterpret_cast<uintptr_t>(ptr), disp);
 
-  if (pSymbol) {
+  if (symbol) {
     wsprintf(
         buf, "%" ADDRESS_ZEROS "Ix: %s!%s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]",
-        reinterpret_cast<uintptr_t>(ptr), sName.c_str(), pSymbol->Name,
+        reinterpret_cast<uintptr_t>(ptr), name.c_str(), symbol->Name,
         reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
-        static_cast<uintptr_t>(pSymbol->Address) -
+        static_cast<uintptr_t>(symbol->Address) -
             reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
         static_cast<ULONG_PTR>(disp));
     return;
@@ -401,7 +400,7 @@ void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
 
   wsprintf(
       buf, "%" ADDRESS_ZEROS "Ix: %s!%" ADDRESS_ZEROS "Ix",
-      reinterpret_cast<uintptr_t>(ptr), sName.c_str(),
+      reinterpret_cast<uintptr_t>(ptr), name.c_str(),
       reinterpret_cast<uintptr_t>(meminfo.AllocationBase));
 }
 }  // namespace SymbolLookup
@@ -409,21 +408,21 @@ void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
 namespace {
 
 std::string SpliceProgramPath(std::string fn) {
-  char szBuf[MAX_PATH];
-  GetModuleFileName(nullptr, szBuf, sizeof(szBuf));
+  char buf[MAX_PATH];
+  GetModuleFileName(nullptr, buf, sizeof(buf));
 
-  char szModName[MAX_PATH];
-  char* pszFile;
-  GetFullPathName(szBuf, sizeof(szModName), szModName, &pszFile);
-  strcpy(pszFile, fn.c_str());
+  char mod_name[MAX_PATH];
+  char* file;
+  GetFullPathName(buf, sizeof(mod_name), mod_name, &file);
+  strcpy(file, fn.c_str());
 
-  return szModName;
+  return mod_name;
 }
 
 namespace {
 VDDebugInfo::Context g_debugInfo;
 
-std::string ReportCallStack(const void* const* Backtrace) {
+std::string ReportCallStack(const void* const* backtrace) {
   if (!g_debugInfo.Loaded()) {
     return ssprintf(
         "debug resource file '%s': %s.\n", g_debugInfo.filename_,
@@ -438,14 +437,14 @@ std::string ReportCallStack(const void* const* Backtrace) {
   int(version_num) );
   }
   */
-  std::string sRet;
-  for (int i = 0; Backtrace[i]; ++i) {
+  std::string ret;
+  for (int i = 0; backtrace[i]; ++i) {
     char buf[10240];
-    SymbolLookup::SymLookup(&g_debugInfo, Backtrace[i], buf);
-    sRet += ssprintf("%s\n", buf);
+    SymbolLookup::SymLookup(&g_debugInfo, backtrace[i], buf);
+    ret += ssprintf("%s\n", buf);
   }
 
-  return sRet;
+  return ret;
 }
 }  // namespace
 
@@ -458,113 +457,113 @@ struct CompleteCrashData {
   std::vector<std::string> checkpoints_;
 };
 
-static void MakeCrashReport(const CompleteCrashData& Data, std::string& sOut) {
-  sOut += ssprintf(
+static void MakeCrashReport(const CompleteCrashData& data, std::string& out) {
+  out += ssprintf(
       "%s crash report (build %s, %s @ %s)\n"
       "--------------------------------------\n\n",
       (std::string(PRODUCT_FAMILY) + product_version).c_str(),
       ::sm_version_git_hash, version_date, version_time);
 
-  sOut += ssprintf("Crash reason: %s\n", Data.crash_info_.crash_reason_);
-  sOut += ssprintf("\n");
+  out += ssprintf("Crash reason: %s\n", data.crash_info_.crash_reason_);
+  out += ssprintf("\n");
 
   // Dump thread stacks
   static char buf[1024 * 32];
-  sOut += ssprintf("%s\n", join("\n", Data.checkpoints_).c_str());
+  out += ssprintf("%s\n", join("\n", data.checkpoints_).c_str());
 
-  sOut += ReportCallStack(Data.crash_info_.backtrace_pointers_);
-  sOut += ssprintf("\n");
+  out += ReportCallStack(data.crash_info_.backtrace_pointers_);
+  out += ssprintf("\n");
 
-  if (Data.crash_info_.alternate_thread_backtrace_[0]) {
+  if (data.crash_info_.alternate_thread_backtrace_[0]) {
     for (int i = 0; i < CrashInfo::kMaxBacktraceThreads; ++i) {
-      if (!Data.crash_info_.alternate_thread_backtrace_[i][0]) {
+      if (!data.crash_info_.alternate_thread_backtrace_[i][0]) {
         continue;
       }
 
-      sOut +=
-          ssprintf("Thread %s:\n", Data.crash_info_.alternate_thread_name_[i]);
-      sOut += ssprintf("\n");
-      sOut += ReportCallStack(Data.crash_info_.alternate_thread_backtrace_[i]);
-      sOut += ssprintf("");
+      out +=
+          ssprintf("Thread %s:\n", data.crash_info_.alternate_thread_name_[i]);
+      out += ssprintf("\n");
+      out += ReportCallStack(data.crash_info_.alternate_thread_backtrace_[i]);
+      out += ssprintf("");
     }
   }
 
-  sOut += ssprintf("Static log:\n");
-  sOut += ssprintf("%s", Data.info_.c_str());
-  sOut += ssprintf("%s", Data.additional_log_.c_str());
-  sOut += ssprintf("\n");
+  out += ssprintf("Static log:\n");
+  out += ssprintf("%s", data.info_.c_str());
+  out += ssprintf("%s", data.additional_log_.c_str());
+  out += ssprintf("\n");
 
-  sOut += ssprintf("Partial log:\n");
-  for (size_t i = 0; i < Data.recent_.size(); ++i) {
-    sOut += ssprintf("%s\n", Data.recent_[i].c_str());
+  out += ssprintf("Partial log:\n");
+  for (size_t i = 0; i < data.recent_.size(); ++i) {
+    out += ssprintf("%s\n", data.recent_[i].c_str());
   }
-  sOut += ssprintf("\n");
+  out += ssprintf("\n");
 
-  sOut += ssprintf("-- End of report\n");
+  out += ssprintf("-- End of report\n");
 }
 
-static void DoSave(const std::string& sReport) {
-  std::string sName = SpliceProgramPath("../crashinfo.txt");
+static void DoSave(const std::string& report) {
+  std::string name = SpliceProgramPath("../crashinfo.txt");
 
-  SetFileAttributes(sName.c_str(), FILE_ATTRIBUTE_NORMAL);
-  FILE* pFile = fopen(sName.c_str(), "w+");
-  if (pFile == nullptr) {
+  SetFileAttributes(name.c_str(), FILE_ATTRIBUTE_NORMAL);
+  FILE* file = fopen(name.c_str(), "w+");
+  if (file == nullptr) {
     return;
   }
-  fprintf(pFile, "%s", sReport.c_str());
+  fprintf(file, "%s", report.c_str());
 
-  fclose(pFile);
+  fclose(file);
 
   // Discourage changing crashinfo.txt.
-  SetFileAttributes(sName.c_str(), FILE_ATTRIBUTE_READONLY);
+  SetFileAttributes(name.c_str(), FILE_ATTRIBUTE_READONLY);
 }
 
-bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
+bool ReadCrashDataFromParent(int fd, CompleteCrashData& data) {
   _setmode(_fileno(stdin), O_BINARY);
 
   // 0. Read the parent handle.
   if (!ReadFromParent(
-          iFD, &SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent))) {
+          fd, &SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent))) {
     return false;
   }
 
   // 1. Read the CrashData.
-  if (!ReadFromParent(iFD, &Data.crash_info_, sizeof(Data.crash_info_))) {
+  if (!ReadFromParent(fd, &data.crash_info_, sizeof(data.crash_info_))) {
     return false;
   }
 
   // 2. Read info.
-  if (!ReadStringFromParent(iFD, Data.info_)) {
+  if (!ReadStringFromParent(fd, data.info_)) {
     return false;
   }
 
   // 3. Read AdditionalLog.
-  if (!ReadStringFromParent(iFD, Data.additional_log_)) {
+  if (!ReadStringFromParent(fd, data.additional_log_)) {
     return false;
   }
 
   // 4. Read RecentLogs.
-  int iCnt = 0;
-  if (!ReadFromParent(iFD, &iCnt, sizeof(iCnt))) {
+  int cnt = 0;
+  if (!ReadFromParent(fd, &cnt, sizeof(cnt))) {
     return false;
   }
-  for (int i = 0; i < iCnt; ++i) {
-    std::string recentLog;
-    if (!ReadStringFromParent(iFD, recentLog)) {
+  for (int i = 0; i < cnt; ++i) {
+    std::string recent_log;
+    if (!ReadStringFromParent(fd, recent_log)) {
       return false;
     }
-    Data.recent_.push_back(recentLog);
+    data.recent_.push_back(recent_log);
   }
 
   // 5. Read CHECKPOINTs.
   std::string checkpoints;
-  if (!ReadStringFromParent(iFD, checkpoints)) {
+  if (!ReadStringFromParent(fd, checkpoints)) {
     return false;
   }
-  split(checkpoints, "$$", Data.checkpoints_);
+  split(checkpoints, "$$", data.checkpoints_);
 
   // 6. Read the crashed thread's name.
-  if (!ReadStringFromParent(iFD, Data.crashed_thread_)) {
+  if (!ReadStringFromParent(fd, data.crashed_thread_)) {
     return false;
   }
 
@@ -593,7 +592,7 @@ class CrashDialog : public WindowsDialogBox {
   ~CrashDialog() = default;
 
  protected:
-  virtual INT_PTR HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+  virtual INT_PTR HandleMessage(UINT msg, WPARAM w_param, LPARAM l_param);
 
  private:
   void SetDialogInitial();
@@ -602,31 +601,31 @@ class CrashDialog : public WindowsDialogBox {
 CrashDialog::CrashDialog() { LoadLocalizedStrings(); }
 
 void CrashDialog::SetDialogInitial() {
-  HWND hDlg = GetHwnd();
+  HWND dlg = GetHwnd();
 
   SetWindowText(
-      GetDlgItem(hDlg, IDC_MAIN_TEXT), A_CRASH_HAS_OCCURRED.GetValue().c_str());
-  SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_CLOSE), CLOSE.GetValue().c_str());
-  ShowWindow(GetDlgItem(hDlg, IDC_PROGRESS), false);
-  ShowWindow(GetDlgItem(hDlg, IDC_BUTTON_AUTO_REPORT), true);
+      GetDlgItem(dlg, IDC_MAIN_TEXT), A_CRASH_HAS_OCCURRED.GetValue().c_str());
+  SetWindowText(GetDlgItem(dlg, IDC_BUTTON_CLOSE), CLOSE.GetValue().c_str());
+  ShowWindow(GetDlgItem(dlg, IDC_PROGRESS), false);
+  ShowWindow(GetDlgItem(dlg, IDC_BUTTON_AUTO_REPORT), true);
 }
 
-INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
-  HWND hDlg = GetHwnd();
+INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM w_param, LPARAM l_param) {
+  HWND dlg = GetHwnd();
 
   switch (msg) {
     case WM_INITDIALOG:
       SetDialogInitial();
-      DialogUtil::SetHeaderFont(hDlg, IDC_STATIC_HEADER_TEXT);
+      DialogUtil::SetHeaderFont(dlg, IDC_STATIC_HEADER_TEXT);
       return TRUE;
 
     case WM_CTLCOLORSTATIC: {
-      HDC hdc = (HDC)wParam;
-      HWND hwndStatic = (HWND)lParam;
+      HDC hdc = (HDC)w_param;
+      HWND hwnd_static = (HWND)l_param;
       HBRUSH hbr = nullptr;
 
       // TODO: Change any attributes of the DC here
-      switch (GetDlgCtrlID(hwndStatic)) {
+      switch (GetDlgCtrlID(hwnd_static)) {
         case IDC_STATIC_HEADER_TEXT:
         case IDC_STATIC_ICON:
           hbr = (HBRUSH)::GetStockObject(WHITE_BRUSH);
@@ -640,28 +639,27 @@ INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     }
 
     case WM_COMMAND:
-      switch (LOWORD(wParam)) {
+      switch (LOWORD(w_param)) {
         case IDC_BUTTON_CLOSE:
           // Close the dialog.
-          EndDialog(hDlg, FALSE);
+          EndDialog(dlg, FALSE);
           return TRUE;
         case IDOK:
-          // EndDialog(hDlg, TRUE); // don't always exit on ENTER
+          // EndDialog(dlg, TRUE); // don't always exit on ENTER
           return TRUE;
         case IDC_VIEW_LOG: {
-          std::string sLogPath;
-          FILE* pFile =
-              fopen(SpliceProgramPath("../Portable.ini").c_str(), "r");
-          if (pFile != nullptr) {
-            sLogPath = SpliceProgramPath("../Logs/log.txt");
-            fclose(pFile);
+          std::string log_path;
+          FILE* file = fopen(SpliceProgramPath("../Portable.ini").c_str(), "r");
+          if (file != nullptr) {
+            log_path = SpliceProgramPath("../Logs/log.txt");
+            fclose(file);
           } else {
-            sLogPath =
+            log_path =
                 SpecialDirs::GetAppDataDir() + PRODUCT_ID + "/Logs/log.txt";
           }
 
           ShellExecute(
-              nullptr, "open", sLogPath.c_str(), "", "", SW_SHOWNORMAL);
+              nullptr, "open", log_path.c_str(), "", "", SW_SHOWNORMAL);
         } break;
         case IDC_CRASH_SAVE:
           ShellExecute(
@@ -670,7 +668,7 @@ INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           return TRUE;
         case IDC_BUTTON_RESTART:
           Win32RestartProgram();
-          EndDialog(hDlg, FALSE);
+          EndDialog(dlg, FALSE);
           break;
         case IDC_BUTTON_REPORT:
           // safe to remove button?
@@ -687,15 +685,15 @@ INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void ChildProcess() {
   // Read the crash data from the crashed parent.
-  CompleteCrashData Data;
-  ReadCrashDataFromParent(_fileno(stdin), Data);
+  CompleteCrashData data;
+  ReadCrashDataFromParent(_fileno(stdin), data);
 
-  std::string sCrashReport;
+  std::string crash_report;
   VDDebugInfo::VDDebugInfoInitFromFile(&g_debugInfo);
-  MakeCrashReport(Data, sCrashReport);
+  MakeCrashReport(data, crash_report);
   VDDebugInfo::VDDebugInfoDeinit(&g_debugInfo);
 
-  DoSave(sCrashReport);
+  DoSave(crash_report);
 
   // Tell the crashing process that it can exit. Be sure to write crashinfo.txt
   // first.

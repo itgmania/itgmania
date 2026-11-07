@@ -21,13 +21,13 @@ class StreamDisplay : public ActorFrame {
  public:
   StreamDisplay();
 
-  virtual void Update(float fDeltaSecs);
+  virtual void Update(float delta_secs);
 
-  void Load(const std::string& sMetricsGroup);
+  void Load(const std::string& metrics_group);
 
-  void SetPercent(float fPercent);
-  void SetPassingAlpha(float fPassingAlpha) { passing_alpha_ = fPassingAlpha; }
-  void SetHotAlpha(float fHotAlpha) { hot_alpha_ = fHotAlpha; }
+  void SetPercent(float percent);
+  void SetPassingAlpha(float passing_alpha) { passing_alpha_ = passing_alpha; }
+  void SetHotAlpha(float hot_alpha) { hot_alpha_ = hot_alpha; }
 
   float GetPercent() { return percent_; }
 

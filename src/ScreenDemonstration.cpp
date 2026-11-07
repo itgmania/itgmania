@@ -35,29 +35,29 @@ void ScreenDemonstration::Init() {
   {
     std::vector<std::string> v;
     split(ALLOW_STYLE_TYPES, ",", v);
-    std::vector<StyleType> vStyleTypeAllow;
+    std::vector<StyleType> style_type_allow;
     for (const std::string& s : v) {
       StyleType st = StringToStyleType(s);
       ASSERT(st != StyleType_Invalid);
-      vStyleTypeAllow.push_back(st);
+      style_type_allow.push_back(st);
     }
 
-    std::vector<const Style*> vStylePossible;
+    std::vector<const Style*> style_possible;
     GAMEMAN->GetDemonstrationStylesForGame(
-        GAMESTATE->cur_game_, vStylePossible);
-    for (int i = (int)(vStylePossible.size()) - 1; i >= 0; i--) {
-      bool bAllowThis =
+        GAMESTATE->cur_game_, style_possible);
+    for (int i = (int)(style_possible.size()) - 1; i >= 0; i--) {
+      bool allow_this =
           find(
-              vStyleTypeAllow.begin(), vStyleTypeAllow.end(),
-              vStylePossible[i]->style_type_) != vStyleTypeAllow.end();
-      if (!bAllowThis) {
-        vStylePossible.erase(vStylePossible.begin() + i);
+              style_type_allow.begin(), style_type_allow.end(),
+              style_possible[i]->style_type_) != style_type_allow.end();
+      if (!allow_this) {
+        style_possible.erase(style_possible.begin() + i);
       }
     }
 
-    ASSERT(vStylePossible.size() > 0);
-    const Style* pStyle = vStylePossible[RandomInt(vStylePossible.size())];
-    GAMESTATE->SetCurrentStyle(pStyle, PLAYER_INVALID);
+    ASSERT(style_possible.size() > 0);
+    const Style* style = style_possible[RandomInt(style_possible.size())];
+    GAMESTATE->SetCurrentStyle(style, PLAYER_INVALID);
   }
 
   GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
@@ -80,21 +80,21 @@ void ScreenDemonstration::Init() {
       SM_BeginFadingOut, SECONDS_TO_SHOW);  // TODO: Use MenuTimer instead?
 }
 
-void ScreenDemonstration::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_NotesEnded || SM == SM_BeginFadingOut) {
+void ScreenDemonstration::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_NotesEnded || sm == SM_BeginFadingOut) {
     if (!out_.IsTransitioning()) {
       out_.StartTransitioning(SM_GoToNextScreen);
     }
     return;
-  } else if (SM == SM_LoseFocus) {
+  } else if (sm == SM_LoseFocus) {
     ScreenAttract::SetAttractVolume(false);
   }
-  ScreenJukebox::HandleScreenMessage(SM);
+  ScreenJukebox::HandleScreenMessage(sm);
 }
 
-void ScreenDemonstration::Cancel(ScreenMessage smSendWhenDone) {
+void ScreenDemonstration::Cancel(ScreenMessage send_when_done) {
   ScreenAttract::SetAttractVolume(false);  // unmute attract sounds
-  ScreenJukebox::Cancel(smSendWhenDone);
+  ScreenJukebox::Cancel(send_when_done);
 }
 
 /*

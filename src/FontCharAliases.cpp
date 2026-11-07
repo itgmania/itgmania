@@ -12,13 +12,13 @@ char sstolower(char ch) noexcept {
   return (ch >= 'A' && ch <= 'Z') ? char(ch + 'a' - 'A') : ch;
 }
 
-int ssicmp(const char* pA1, const char* pA2) {
+int ssicmp(const char* a1, const char* a2) {
   char f;
   char l;
 
   do {
-    f = sstolower(*(pA1++));
-    l = sstolower(*(pA2++));
+    f = sstolower(*(a1++));
+    l = sstolower(*(a2++));
   } while ((f) && (f == l));
 
   return (int)(f - l);
@@ -26,8 +26,8 @@ int ssicmp(const char* pA1, const char* pA2) {
 
 struct StdStringLessNoCase {
   inline bool operator()(
-      const std::string& sLeft, const std::string& sRight) const {
-    return ssicmp(sLeft.c_str(), sRight.c_str()) < 0;
+      const std::string& left, const std::string& right) const {
+    return ssicmp(left.c_str(), right.c_str()) < 0;
   }
 };
 }  // namespace
@@ -377,14 +377,14 @@ static void InitCharAliases() {
 
       {nullptr, 0}};
 
-  int iNextInternalUseCodepoint = 0xE000;
+  int next_internal_use_codepoint = 0xE000;
   for (unsigned n = 0; aliases[n].str_; ++n) {
-    int iCodepoint = aliases[n].chr_;
-    if (iCodepoint == INTERNAL) {
-      iCodepoint = iNextInternalUseCodepoint++;
+    int codepoint = aliases[n].chr_;
+    if (codepoint == INTERNAL) {
+      codepoint = next_internal_use_codepoint++;
     }
 
-    CharAliases[aliases[n].str_] = iCodepoint;
+    CharAliases[aliases[n].str_] = codepoint;
   }
 
   for (aliasmap::const_iterator i = CharAliases.begin(); i != CharAliases.end();
@@ -397,10 +397,10 @@ static void InitCharAliases() {
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.
-void FontCharAliases::ReplaceMarkers(std::string& sText) {
+void FontCharAliases::ReplaceMarkers(std::string& text) {
   InitCharAliases();
-  ReplaceEntityText(sText, CharAliasRepl);
-  Replace_Unicode_Markers(sText);
+  ReplaceEntityText(text, CharAliasRepl);
+  Replace_Unicode_Markers(text);
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.

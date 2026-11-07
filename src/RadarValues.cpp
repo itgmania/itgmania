@@ -27,45 +27,45 @@ void RadarValues::Zero() {
 }
 
 XNode* RadarValues::CreateNode(
-    bool bIncludeSimpleValues, bool bIncludeComplexValues) const {
-  XNode* pNode = new XNode("RadarValues");
+    bool include_simple_values, bool include_complex_values) const {
+  XNode* node = new XNode("RadarValues");
 
   // TRICKY: Don't print a remainder for the integer values.
   FOREACH_ENUM(RadarCategory, rc) {
     if (rc >= RadarCategory_TapsAndHolds) {
-      if (bIncludeSimpleValues) {
-        pNode->AppendChild(RadarCategoryToString(rc), (int)((*this)[rc]));
+      if (include_simple_values) {
+        node->AppendChild(RadarCategoryToString(rc), (int)((*this)[rc]));
       }
     } else {
-      if (bIncludeComplexValues) {
-        pNode->AppendChild(RadarCategoryToString(rc), (*this)[rc]);
+      if (include_complex_values) {
+        node->AppendChild(RadarCategoryToString(rc), (*this)[rc]);
       }
     }
   }
 
-  return pNode;
+  return node;
 }
 
-void RadarValues::LoadFromNode(const XNode* pNode) {
-  ASSERT(pNode->GetName() == "RadarValues");
+void RadarValues::LoadFromNode(const XNode* node) {
+  ASSERT(node->GetName() == "RadarValues");
 
   Zero();
 
   FOREACH_ENUM(RadarCategory, rc) {
-    pNode->GetChildValue(RadarCategoryToString(rc), (*this)[rc]);
+    node->GetChildValue(RadarCategoryToString(rc), (*this)[rc]);
   }
 }
 
-void RadarValues::FromString(std::string sRadarValues) {
-  std::vector<std::string> saValues;
-  split(sRadarValues, ",", saValues, true);
+void RadarValues::FromString(std::string radar_values) {
+  std::vector<std::string> values;
+  split(radar_values, ",", values, true);
 
-  if (saValues.size() != NUM_RadarCategory) {
+  if (values.size() != NUM_RadarCategory) {
     MakeUnknown();
     return;
   }
 
-  FOREACH_ENUM(RadarCategory, rc) { (*this)[rc] = StringToFloat(saValues[rc]); }
+  FOREACH_ENUM(RadarCategory, rc) { (*this)[rc] = StringToFloat(values[rc]); }
 }
 
 // lua start

@@ -18,7 +18,7 @@ class RageTextureRenderTarget : public RageTexture {
   virtual void Reload();
   virtual uintptr_t GetTexHandle() const { return tex_handle_; }
 
-  void BeginRenderingTo(bool bPreserveTexture = true);
+  void BeginRenderingTo(bool preserve_texture = true);
   void FinishRenderingTo();
 
   virtual void PushSelf(lua_State* L);

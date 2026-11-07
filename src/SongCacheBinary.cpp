@@ -260,8 +260,8 @@ void ReadTiming(Reader& r, TimingData& timing) {
           break;
         case SEGMENT_COMBO: {
           const int combo = r.I32();
-          const int missCombo = r.I32();
-          segs.push_back(new ComboSegment(row, combo, missCombo));
+          const int miss_combo = r.I32();
+          segs.push_back(new ComboSegment(row, combo, miss_combo));
           break;
         }
         case SEGMENT_SPEED: {
@@ -342,14 +342,14 @@ void ReadAttacks(
     Reader& r, std::vector<std::string>& strings, AttackArray& attacks) {
   strings.clear();
   attacks.clear();
-  const uint32_t stringCount = r.Count();
-  strings.reserve(stringCount);
-  for (uint32_t i = 0; i < stringCount && r.Ok(); ++i) {
+  const uint32_t string_count = r.Count();
+  strings.reserve(string_count);
+  for (uint32_t i = 0; i < string_count && r.Ok(); ++i) {
     strings.push_back(r.Str());
   }
-  const uint32_t attackCount = r.Count();
-  attacks.reserve(attackCount);
-  for (uint32_t i = 0; i < attackCount && r.Ok(); ++i) {
+  const uint32_t attack_count = r.Count();
+  attacks.reserve(attack_count);
+  for (uint32_t i = 0; i < attack_count && r.Ok(); ++i) {
     Attack a;
     a.level_ = CheckRange<AttackLevel>(r, r.U8(), NUM_ATTACK_LEVELS);
     a.start_second_ = r.F32();
@@ -369,9 +369,9 @@ void WriteHeader(Writer& w) {
 
 bool ReadHeader(Reader& r) {
   const std::string magic = r.Str();
-  const uint32_t cacheVersion = r.U32();
+  const uint32_t cache_version = r.U32();
   return r.Ok() && magic == MAGIC &&
-         cacheVersion == static_cast<uint32_t>(FILE_CACHE_VERSION);
+         cache_version == static_cast<uint32_t>(FILE_CACHE_VERSION);
 }
 
 void WriteSong(Writer& w, const Song& song) {
@@ -437,9 +437,9 @@ void ReadSong(Reader& r, Song& song) {
   song.SetLastSecondNoOffset(r.F32());
   song.SetSpecifiedLastSecond(r.F32());
 
-  const uint32_t keysoundCount = r.Count();
-  song.keysound_file_.reserve(keysoundCount);
-  for (uint32_t i = 0; i < keysoundCount && r.Ok(); ++i) {
+  const uint32_t keysound_count = r.Count();
+  song.keysound_file_.reserve(keysound_count);
+  for (uint32_t i = 0; i < keysound_count && r.Ok(); ++i) {
     song.keysound_file_.push_back(r.Str());
   }
 
@@ -450,8 +450,8 @@ void ReadSong(Reader& r, Song& song) {
   }
   ReadBackgroundChanges(r, song.GetForegroundChanges());
 
-  const uint32_t stepCount = r.Count();
-  for (uint32_t i = 0; i < stepCount && r.Ok(); ++i) {
+  const uint32_t step_count = r.Count();
+  for (uint32_t i = 0; i < step_count && r.Ok(); ++i) {
     ReadSteps(r, song);
   }
 }
@@ -479,23 +479,23 @@ void WriteSteps(Writer& w, const Steps& steps) {
 
   const std::vector<std::vector<float>>& nps = steps.GetAllNpsPerMeasures();
   w.U32(static_cast<uint32_t>(nps.size()));
-  for (const std::vector<float>& playerNps : nps) {
-    w.U32(static_cast<uint32_t>(playerNps.size()));
-    for (float v : playerNps) {
+  for (const std::vector<float>& player_nps : nps) {
+    w.U32(static_cast<uint32_t>(player_nps.size()));
+    for (float v : player_nps) {
       w.F32(v);
     }
   }
   const std::vector<std::vector<int>>& notes = steps.GetAllNotesPerMeasures();
   w.U32(static_cast<uint32_t>(notes.size()));
-  for (const std::vector<int>& playerNotes : notes) {
-    w.U32(static_cast<uint32_t>(playerNotes.size()));
-    for (int v : playerNotes) {
+  for (const std::vector<int>& player_notes : notes) {
+    w.U32(static_cast<uint32_t>(player_notes.size()));
+    for (int v : player_notes) {
       w.I32(v);
     }
   }
-  const std::vector<float>& peakNps = steps.GetAllPeakNps();
-  w.U32(static_cast<uint32_t>(peakNps.size()));
-  for (float v : peakNps) {
+  const std::vector<float>& peak_nps = steps.GetAllPeakNps();
+  w.U32(static_cast<uint32_t>(peak_nps.size()));
+  for (float v : peak_nps) {
     w.F32(v);
   }
 
@@ -558,38 +558,38 @@ void ReadSteps(Reader& r, Song& song) {
   steps->SetTechCounts(tech);
 
   std::vector<std::vector<float>> nps;
-  const uint32_t npsPlayers = r.Count();
-  nps.reserve(npsPlayers);
-  for (uint32_t i = 0; i < npsPlayers && r.Ok(); ++i) {
+  const uint32_t nps_players = r.Count();
+  nps.reserve(nps_players);
+  for (uint32_t i = 0; i < nps_players && r.Ok(); ++i) {
     const uint32_t measures = r.Count();
-    std::vector<float> playerNps(measures);
+    std::vector<float> player_nps(measures);
     for (uint32_t j = 0; j < measures && r.Ok(); ++j) {
-      playerNps[j] = r.F32();
+      player_nps[j] = r.F32();
     }
-    nps.push_back(playerNps);
+    nps.push_back(player_nps);
   }
   steps->SetNpsPerMeasure(nps);
 
   std::vector<std::vector<int>> notes;
-  const uint32_t notesPlayers = r.Count();
-  notes.reserve(notesPlayers);
-  for (uint32_t i = 0; i < notesPlayers && r.Ok(); ++i) {
+  const uint32_t notes_players = r.Count();
+  notes.reserve(notes_players);
+  for (uint32_t i = 0; i < notes_players && r.Ok(); ++i) {
     const uint32_t measures = r.Count();
-    std::vector<int> playerNotes(measures);
+    std::vector<int> player_notes(measures);
     for (uint32_t j = 0; j < measures && r.Ok(); ++j) {
-      playerNotes[j] = r.I32();
+      player_notes[j] = r.I32();
     }
-    notes.push_back(playerNotes);
+    notes.push_back(player_notes);
   }
   steps->SetNotesPerMeasure(notes);
 
-  std::vector<float> peakNps;
-  const uint32_t peakCount = r.Count();
-  peakNps.reserve(peakCount);
-  for (uint32_t i = 0; i < peakCount && r.Ok(); ++i) {
-    peakNps.push_back(r.F32());
+  std::vector<float> peak_nps;
+  const uint32_t peak_count = r.Count();
+  peak_nps.reserve(peak_count);
+  for (uint32_t i = 0; i < peak_count && r.Ok(); ++i) {
+    peak_nps.push_back(r.F32());
   }
-  steps->SetPeakNps(peakNps);
+  steps->SetPeakNps(peak_nps);
 
   std::vector<StreamBreakdown> breakdowns(notes.size());
   for (size_t i = 0; i < notes.size() && r.Ok(); ++i) {
@@ -602,10 +602,10 @@ void ReadSteps(Reader& r, Song& song) {
   }
   steps->SetStreamBreakdown(breakdowns);
 
-  const uint32_t annotationCount = r.Count();
+  const uint32_t annotation_count = r.Count();
   std::vector<NoteAnnotationCache> annotations;
-  annotations.reserve(annotationCount);
-  for (uint32_t i = 0; i < annotationCount && r.Ok(); ++i) {
+  annotations.reserve(annotation_count);
+  for (uint32_t i = 0; i < annotation_count && r.Ok(); ++i) {
     NoteAnnotationCache cache;
     cache.compressed_ = r.Str();
     annotations.push_back(cache);

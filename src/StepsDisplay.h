@@ -22,15 +22,15 @@ class StepsDisplay : public ActorFrame {
  public:
   StepsDisplay();
 
-  void Load(const std::string& sMetricsGroup, const PlayerState* pPlayerState);
+  void Load(const std::string& metrics_group, const PlayerState* player_state);
 
   virtual StepsDisplay* Copy() const;
 
   void SetFromGameState(PlayerNumber pn);
   void SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
-      StepsType st, int iMeter, Difficulty dc, CourseType ct);
-  void SetFromSteps(const Steps* pSteps);
-  void SetFromTrail(const Trail* pTrail);
+      StepsType st, int meter, Difficulty dc, CourseType ct);
+  void SetFromSteps(const Steps* steps);
+  void SetFromTrail(const Trail* trail);
   void Unset();
 
   // Lua

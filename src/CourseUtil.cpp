@@ -32,209 +32,208 @@
 
 // Sorting stuff
 static bool CompareCoursePointersByName(
-    const Course* pCourse1, const Course* pCourse2) {
-  std::string sName1 = pCourse1->GetDisplayFullTitle();
-  std::string sName2 = pCourse2->GetDisplayFullTitle();
-  return CompareNoCase(sName1, sName2) < 0;
+    const Course* course1, const Course* course2) {
+  std::string name1 = course1->GetDisplayFullTitle();
+  std::string name2 = course2->GetDisplayFullTitle();
+  return CompareNoCase(name1, name2) < 0;
 }
 
 static bool CompareCoursePointersByAutogen(
-    const Course* pCourse1, const Course* pCourse2) {
-  int b1 = pCourse1->is_autogen_;
-  int b2 = pCourse2->is_autogen_;
+    const Course* course1, const Course* course2) {
+  int b1 = course1->is_autogen_;
+  int b2 = course2->is_autogen_;
   if (b1 < b2) {
     return true;
   } else if (b1 > b2) {
     return false;
   } else {
-    return CompareCoursePointersByName(pCourse1, pCourse2);
+    return CompareCoursePointersByName(course1, course2);
   }
 }
 
 static bool CompareCoursePointersByDifficulty(
-    const Course* pCourse1, const Course* pCourse2) {
-  int iNum1 = pCourse1->GetEstimatedNumStages();
-  int iNum2 = pCourse2->GetEstimatedNumStages();
-  if (iNum1 < iNum2) {
+    const Course* course1, const Course* course2) {
+  int num1 = course1->GetEstimatedNumStages();
+  int num2 = course2->GetEstimatedNumStages();
+  if (num1 < num2) {
     return true;
-  } else if (iNum1 > iNum2) {
+  } else if (num1 > num2) {
     return false;
   } else {  // iNum1 == iNum2
-    return CompareCoursePointersByAutogen(pCourse1, pCourse2);
+    return CompareCoursePointersByAutogen(course1, course2);
   }
 }
 
 static bool CompareCoursePointersByTotalDifficulty(
-    const Course* pCourse1, const Course* pCourse2) {
-  int iNum1 = pCourse1->sort_order_total_difficulty_;
-  int iNum2 = pCourse2->sort_order_total_difficulty_;
+    const Course* course1, const Course* course2) {
+  int num1 = course1->sort_order_total_difficulty_;
+  int num2 = course2->sort_order_total_difficulty_;
 
-  if (iNum1 == iNum2) {
-    return CompareCoursePointersByAutogen(pCourse1, pCourse2);
+  if (num1 == num2) {
+    return CompareCoursePointersByAutogen(course1, course2);
   }
-  return iNum1 < iNum2;
+  return num1 < num2;
 }
 
-static bool MovePlayersBestToEnd(
-    const Course* pCourse1, const Course* pCourse2) {
-  bool C1HasBest = pCourse1->CourseHasBestOrWorst();
-  bool C2HasBest = pCourse2->CourseHasBestOrWorst();
-  if (!C1HasBest && !C2HasBest) {
+static bool MovePlayersBestToEnd(const Course* course1, const Course* course2) {
+  bool c1_has_best = course1->CourseHasBestOrWorst();
+  bool c2_has_best = course2->CourseHasBestOrWorst();
+  if (!c1_has_best && !c2_has_best) {
     return false;
   }
-  if (C1HasBest && !C2HasBest) {
+  if (c1_has_best && !c2_has_best) {
     return false;
   }
-  if (!C1HasBest && C2HasBest) {
+  if (!c1_has_best && c2_has_best) {
     return true;
   }
 
-  return CompareCoursePointersByName(pCourse1, pCourse2);
+  return CompareCoursePointersByName(course1, course2);
 }
 
-static bool CompareRandom(const Course* pCourse1, const Course* pCourse2) {
-  return (pCourse1->AllSongsAreFixed() && !pCourse2->AllSongsAreFixed());
+static bool CompareRandom(const Course* course1, const Course* course2) {
+  return (course1->AllSongsAreFixed() && !course2->AllSongsAreFixed());
 }
 
 static bool CompareCoursePointersByRanking(
-    const Course* pCourse1, const Course* pCourse2) {
-  int iNum1 = pCourse1->sort_order_ranking_;
-  int iNum2 = pCourse2->sort_order_ranking_;
+    const Course* course1, const Course* course2) {
+  int num1 = course1->sort_order_ranking_;
+  int num2 = course2->sort_order_ranking_;
 
-  if (iNum1 == iNum2) {
-    return CompareCoursePointersByAutogen(pCourse1, pCourse2);
+  if (num1 == num2) {
+    return CompareCoursePointersByAutogen(course1, course2);
   }
-  return iNum1 < iNum2;
+  return num1 < num2;
 }
 
 void CourseUtil::SortCoursePointerArrayByDifficulty(
-    std::vector<Course*>& vpCoursesInOut) {
+    std::vector<Course*>& courses_in_out) {
   sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByDifficulty);
 }
 
 void CourseUtil::SortCoursePointerArrayByRanking(
-    std::vector<Course*>& vpCoursesInOut) {
-  for (unsigned i = 0; i < vpCoursesInOut.size(); i++) {
-    vpCoursesInOut[i]->UpdateCourseStats(
+    std::vector<Course*>& courses_in_out) {
+  for (unsigned i = 0; i < courses_in_out.size(); i++) {
+    courses_in_out[i]->UpdateCourseStats(
         GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
   }
   sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByRanking);
 }
 
 void CourseUtil::SortCoursePointerArrayByTotalDifficulty(
-    std::vector<Course*>& vpCoursesInOut) {
-  for (unsigned i = 0; i < vpCoursesInOut.size(); i++) {
-    vpCoursesInOut[i]->UpdateCourseStats(
+    std::vector<Course*>& courses_in_out) {
+  for (unsigned i = 0; i < courses_in_out.size(); i++) {
+    courses_in_out[i]->UpdateCourseStats(
         GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
   }
   sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByTotalDifficulty);
 }
 
 static bool CompareCoursePointersByType(
-    const Course* pCourse1, const Course* pCourse2) {
-  return pCourse1->GetPlayMode() < pCourse2->GetPlayMode();
+    const Course* course1, const Course* course2) {
+  return course1->GetPlayMode() < course2->GetPlayMode();
 }
 
 void CourseUtil::SortCoursePointerArrayByType(
-    std::vector<Course*>& vpCoursesInOut) {
+    std::vector<Course*>& courses_in_out) {
   stable_sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByType);
 }
 
-void CourseUtil::MoveRandomToEnd(std::vector<Course*>& vpCoursesInOut) {
-  stable_sort(vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareRandom);
+void CourseUtil::MoveRandomToEnd(std::vector<Course*>& courses_in_out) {
+  stable_sort(courses_in_out.begin(), courses_in_out.end(), CompareRandom);
 }
 
 static std::map<const Course*, std::string> course_sort_val;
 
 bool CompareCoursePointersBySortValueAscending(
-    const Course* pSong1, const Course* pSong2) {
-  return course_sort_val[pSong1] < course_sort_val[pSong2];
+    const Course* song1, const Course* song2) {
+  return course_sort_val[song1] < course_sort_val[song2];
 }
 
 bool CompareCoursePointersBySortValueDescending(
-    const Course* pSong1, const Course* pSong2) {
-  return course_sort_val[pSong1] > course_sort_val[pSong2];
+    const Course* song1, const Course* song2) {
+  return course_sort_val[song1] > course_sort_val[song2];
 }
 
 bool CompareCoursePointersByTitle(
-    const Course* pCourse1, const Course* pCourse2) {
-  return CompareCoursePointersByName(pCourse1, pCourse2);
+    const Course* course1, const Course* course2) {
+  return CompareCoursePointersByName(course1, course2);
 }
 
 void CourseUtil::SortCoursePointerArrayByTitle(
-    std::vector<Course*>& vpCoursesInOut) {
+    std::vector<Course*>& courses_in_out) {
   sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByTitle);
 }
 
 void CourseUtil::SortCoursePointerArrayByAvgDifficulty(
-    std::vector<Course*>& vpCoursesInOut) {
+    std::vector<Course*>& courses_in_out) {
   RageTimer foo;
   course_sort_val.clear();
-  for (unsigned i = 0; i < vpCoursesInOut.size(); ++i) {
-    int iMeter = vpCoursesInOut[i]->GetMeter(
+  for (unsigned i = 0; i < courses_in_out.size(); ++i) {
+    int meter = courses_in_out[i]->GetMeter(
         GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_,
         Difficulty_Medium);
-    course_sort_val[vpCoursesInOut[i]] = ssprintf("%06i", iMeter);
+    course_sort_val[courses_in_out[i]] = ssprintf("%06i", meter);
   }
   sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersByTitle);
   stable_sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersBySortValueAscending);
 
   stable_sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(), MovePlayersBestToEnd);
+      courses_in_out.begin(), courses_in_out.end(), MovePlayersBestToEnd);
 }
 
 void CourseUtil::SortCoursePointerArrayByNumPlays(
-    std::vector<Course*>& vpCoursesInOut, ProfileSlot slot, bool bDescending) {
+    std::vector<Course*>& courses_in_out, ProfileSlot slot, bool descending) {
   if (!PROFILEMAN->IsPersistentProfile(slot)) {
     return;  // nothing to do since we don't have data
   }
-  Profile* pProfile = PROFILEMAN->GetProfile(slot);
-  SortCoursePointerArrayByNumPlays(vpCoursesInOut, pProfile, bDescending);
+  Profile* profile = PROFILEMAN->GetProfile(slot);
+  SortCoursePointerArrayByNumPlays(courses_in_out, profile, descending);
 }
 
 void CourseUtil::SortCoursePointerArrayByNumPlays(
-    std::vector<Course*>& vpCoursesInOut, const Profile* pProfile,
-    bool bDescending) {
-  ASSERT(pProfile != nullptr);
-  for (unsigned i = 0; i < vpCoursesInOut.size(); ++i) {
-    course_sort_val[vpCoursesInOut[i]] =
-        ssprintf("%09i", pProfile->GetCourseNumTimesPlayed(vpCoursesInOut[i]));
+    std::vector<Course*>& courses_in_out, const Profile* profile,
+    bool descending) {
+  ASSERT(profile != nullptr);
+  for (unsigned i = 0; i < courses_in_out.size(); ++i) {
+    course_sort_val[courses_in_out[i]] =
+        ssprintf("%09i", profile->GetCourseNumTimesPlayed(courses_in_out[i]));
   }
   stable_sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
-      bDescending ? CompareCoursePointersBySortValueDescending
-                  : CompareCoursePointersBySortValueAscending);
+      courses_in_out.begin(), courses_in_out.end(),
+      descending ? CompareCoursePointersBySortValueDescending
+                 : CompareCoursePointersBySortValueAscending);
   course_sort_val.clear();
 }
 
 void CourseUtil::SortByMostRecentlyPlayedForMachine(
-    std::vector<Course*>& vpCoursesInOut) {
-  Profile* pProfile = PROFILEMAN->GetMachineProfile();
+    std::vector<Course*>& courses_in_out) {
+  Profile* profile = PROFILEMAN->GetMachineProfile();
 
-  for (const Course* c : vpCoursesInOut) {
-    int iNumTimesPlayed = pProfile->GetCourseNumTimesPlayed(c);
-    std::string val = iNumTimesPlayed
-                          ? pProfile->GetCourseLastPlayedDateTime(c).GetString()
+  for (const Course* c : courses_in_out) {
+    int num_times_played = profile->GetCourseNumTimesPlayed(c);
+    std::string val = num_times_played
+                          ? profile->GetCourseLastPlayedDateTime(c).GetString()
                           : std::string("9999999999999");
     course_sort_val[c] = val;
   }
 
   stable_sort(
-      vpCoursesInOut.begin(), vpCoursesInOut.end(),
+      courses_in_out.begin(), courses_in_out.end(),
       CompareCoursePointersBySortValueAscending);
   course_sort_val.clear();
 }
@@ -244,7 +243,7 @@ void CourseUtil::SortByMostRecentlyPlayedForMachine(
 //////////////////////////////////
 
 void CourseUtil::AutogenEndlessFromGroup(
-    const std::string& sGroupName, Difficulty diff, Course& out) {
+    const std::string& group_name, Difficulty diff, Course& out) {
   out.is_autogen_ = true;
   out.repeat_ = true;
   out.shuffle_ = true;
@@ -252,31 +251,31 @@ void CourseUtil::AutogenEndlessFromGroup(
   FOREACH_ENUM(Difficulty, dc)
   out.custom_meter_[dc] = -1;
 
-  if (sGroupName == "") {
+  if (group_name == "") {
     out.main_title_ = "All Songs";
     // this sounds reasonable... -aj
     out.banner_path_ = THEME->GetPathG("Banner", "all music");
   } else {
-    out.main_title_ = SONGMAN->ShortenGroupName(sGroupName);
-    out.banner_path_ = SONGMAN->GetSongGroupBannerPath(sGroupName);
+    out.main_title_ = SONGMAN->ShortenGroupName(group_name);
+    out.banner_path_ = SONGMAN->GetSongGroupBannerPath(group_name);
   }
 
   // We want multiple songs, so we can try to prevent repeats during
   // gameplay. (We might still get a repeat at the repeat boundary,
   // but that'd be rare.) -glenn
   CourseEntry e;
-  e.song_criteria_.group_names_.push_back(sGroupName);
+  e.song_criteria_.group_names_.push_back(group_name);
   e.steps_criteria_.difficulty_ = diff;
   e.secret_ = true;
 
   // Insert a copy of e for each song in the group.
   out.entries_.insert(
-      out.entries_.end(), SONGMAN->GetSongs(sGroupName).size(), e);
+      out.entries_.end(), SONGMAN->GetSongs(group_name).size(), e);
 }
 
 void CourseUtil::AutogenNonstopFromGroup(
-    const std::string& sGroupName, Difficulty diff, Course& out) {
-  AutogenEndlessFromGroup(sGroupName, diff, out);
+    const std::string& group_name, Difficulty diff, Course& out) {
+  AutogenEndlessFromGroup(group_name, diff, out);
 
   out.repeat_ = false;
 
@@ -292,8 +291,8 @@ void CourseUtil::AutogenNonstopFromGroup(
 }
 
 void CourseUtil::AutogenOniFromArtist(
-    const std::string& sArtistName, std::string sArtistNameTranslit,
-    std::vector<Song*> aSongs, Difficulty dc, Course& out) {
+    const std::string& artist_name, std::string artist_name_translit,
+    std::vector<Song*> songs, Difficulty dc, Course& out) {
   out.is_autogen_ = true;
   out.repeat_ = false;
   out.shuffle_ = true;
@@ -303,15 +302,15 @@ void CourseUtil::AutogenOniFromArtist(
   FOREACH_ENUM(Difficulty, cd)
   out.custom_meter_[cd] = -1;
 
-  ASSERT(sArtistName != "");
-  ASSERT(aSongs.size() > 0);
+  ASSERT(artist_name != "");
+  ASSERT(songs.size() > 0);
 
   /* "Artist Oni" is a little repetitive; "by Artist" stands out less, and
    * lowercasing "by" puts more emphasis on the artist's name. It also sorts
    * them together. */
-  out.main_title_ = "by " + sArtistName;
-  if (sArtistNameTranslit != sArtistName) {
-    out.main_title_translit_ = "by " + sArtistNameTranslit;
+  out.main_title_ = "by " + artist_name;
+  if (artist_name_translit != artist_name) {
+    out.main_title_translit_ = "by " + artist_name_translit;
   }
 
   // How would we handle Artist Oni course banners, anyways? -aj
@@ -321,34 +320,34 @@ void CourseUtil::AutogenOniFromArtist(
    * deterministically, so we always get the same set of songs unless the
    * song set changes. */
   {
-    RandomGen rng(GetHashForString(sArtistName) + aSongs.size());
-    std::shuffle(aSongs.begin(), aSongs.end(), rng);
+    RandomGen rng(GetHashForString(artist_name) + songs.size());
+    std::shuffle(songs.begin(), songs.end(), rng);
   }
 
   // Only use up to four songs.
-  if (aSongs.size() > 4) {
-    aSongs.erase(aSongs.begin() + 4, aSongs.end());
+  if (songs.size() > 4) {
+    songs.erase(songs.begin() + 4, songs.end());
   }
 
   CourseEntry e;
   e.steps_criteria_.difficulty_ = dc;
 
-  for (unsigned i = 0; i < aSongs.size(); ++i) {
-    e.song_id_.FromSong(aSongs[i]);
+  for (unsigned i = 0; i < songs.size(); ++i) {
+    e.song_id_.FromSong(songs[i]);
     out.entries_.push_back(e);
   }
 }
 
-void CourseUtil::WarnOnInvalidMods(std::string sMods) {
+void CourseUtil::WarnOnInvalidMods(std::string mods) {
   PlayerOptions po;
   SongOptions so;
   std::vector<std::string> vs;
-  split(sMods, ",", vs, true);
+  split(mods, ",", vs, true);
   for (const std::string& s : vs) {
-    bool bValid = false;
-    std::string sErrorDetail;
-    bValid |= po.FromOneModString(s, sErrorDetail);
-    bValid |= so.FromOneModString(s, sErrorDetail);
+    bool valid = false;
+    std::string error_detail;
+    valid |= po.FromOneModString(s, error_detail);
+    valid |= so.FromOneModString(s, error_detail);
     /* ==Invalid options that used to be valid==
      * all noteskins (solo, note, foon, &c.)
      * protiming (done in Lua now)
@@ -360,14 +359,14 @@ void CourseUtil::WarnOnInvalidMods(std::string sMods) {
      * 50% PROTIMING (HOW THE HELL DOES 50% PROTIMING EVEN WORK)
      * BREAK
      */
-    if (!bValid) {
-      std::string sFullError =
-          ssprintf("Error processing '%s' in '%s'", s.c_str(), sMods.c_str());
-      if (!sErrorDetail.empty()) {
-        sFullError += ": " + sErrorDetail;
+    if (!valid) {
+      std::string full_error =
+          ssprintf("Error processing '%s' in '%s'", s.c_str(), mods.c_str());
+      if (!error_detail.empty()) {
+        full_error += ": " + error_detail;
       }
-      LOG->UserLog("", "", "%s", sFullError.c_str());
-      Dialog::OK(sFullError, "INVALID_PLAYER_OPTION_WARNING");
+      LOG->UserLog("", "", "%s", full_error.c_str());
+      Dialog::OK(full_error, "INVALID_PLAYER_OPTION_WARNING");
     }
   }
 }
@@ -378,45 +377,45 @@ int EditCourseUtil::MIN_WORKOUT_MINUTES = 4;
 int EditCourseUtil::MAX_WORKOUT_MINUTES = 90;
 bool EditCourseUtil::s_bNewCourseNeedsName = false;
 
-bool EditCourseUtil::Save(Course* pCourse) {
-  return EditCourseUtil::RenameAndSave(pCourse, pCourse->GetDisplayFullTitle());
+bool EditCourseUtil::Save(Course* course) {
+  return EditCourseUtil::RenameAndSave(course, course->GetDisplayFullTitle());
 }
 
-bool EditCourseUtil::RenameAndSave(Course* pCourse, std::string sNewName) {
-  ASSERT(!sNewName.empty());
+bool EditCourseUtil::RenameAndSave(Course* course, std::string new_name) {
+  ASSERT(!new_name.empty());
 
   EditCourseUtil::s_bNewCourseNeedsName = false;
 
-  std::string sNewFilePath;
-  if (pCourse->IsAnEdit()) {
-    sNewFilePath = PROFILEMAN->GetProfileDir(ProfileSlot_Machine) +
-                   EDIT_COURSES_SUBDIR + sNewName + ".crs";
+  std::string new_file_path;
+  if (course->IsAnEdit()) {
+    new_file_path = PROFILEMAN->GetProfileDir(ProfileSlot_Machine) +
+                    EDIT_COURSES_SUBDIR + new_name + ".crs";
   } else {
-    std::string sDir, sName, sExt;
-    splitpath(pCourse->path_, sDir, sName, sExt);
-    sNewFilePath = sDir + sNewName + sExt;
+    std::string dir, name, ext;
+    splitpath(course->path_, dir, name, ext);
+    new_file_path = dir + new_name + ext;
   }
 
   // remove the old file if the name is changing
-  if (!pCourse->path_.empty() && sNewFilePath != pCourse->path_) {
-    FILEMAN->Remove(pCourse->path_);  // not fatal if this fails
+  if (!course->path_.empty() && new_file_path != course->path_) {
+    FILEMAN->Remove(course->path_);  // not fatal if this fails
   }
 
-  pCourse->main_title_ = sNewName;
-  pCourse->path_ = sNewFilePath;
-  return CourseWriterCRS::Write(*pCourse, pCourse->path_, false);
+  course->main_title_ = new_name;
+  course->path_ = new_file_path;
+  return CourseWriterCRS::Write(*course, course->path_, false);
 }
 
-bool EditCourseUtil::RemoveAndDeleteFile(Course* pCourse) {
-  if (!FILEMAN->Remove(pCourse->path_)) {
+bool EditCourseUtil::RemoveAndDeleteFile(Course* course) {
+  if (!FILEMAN->Remove(course->path_)) {
     return false;
   }
-  FILEMAN->Remove(pCourse->GetCacheFilePath());
-  if (pCourse->IsAnEdit()) {
+  FILEMAN->Remove(course->GetCacheFilePath());
+  if (course->IsAnEdit()) {
     PROFILEMAN->LoadMachineProfile();
   } else {
-    SONGMAN->DeleteCourse(pCourse);
-    delete pCourse;
+    SONGMAN->DeleteCourse(course);
+    delete course;
   }
   return true;
 }
@@ -431,29 +430,29 @@ static LocalizedString EDIT_NAME_CANNOT_CONTAIN(
     "CourseUtil",
     "The course name cannot contain any of the following characters: %s");
 bool EditCourseUtil::ValidateEditCourseName(
-    const std::string& sAnswer, std::string& sErrorOut) {
-  if (sAnswer.empty()) {
-    sErrorOut = YOU_MUST_SUPPLY_NAME;
+    const std::string& answer, std::string& error_out) {
+  if (answer.empty()) {
+    error_out = YOU_MUST_SUPPLY_NAME;
     return false;
   }
 
-  static const std::string sInvalidChars = "\\/:*?\"<>|";
-  if (strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr) {
-    sErrorOut = ssprintf(
-        EDIT_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str());
+  static const std::string kInvalidChars = "\\/:*?\"<>|";
+  if (strpbrk(answer.c_str(), kInvalidChars.c_str()) != nullptr) {
+    error_out = ssprintf(
+        EDIT_NAME_CANNOT_CONTAIN.GetValue().c_str(), kInvalidChars.c_str());
     return false;
   }
 
   // Check for name conflicts
-  std::vector<Course*> vpCourses;
-  EditCourseUtil::GetAllEditCourses(vpCourses);
-  for (const Course* p : vpCourses) {
+  std::vector<Course*> courses;
+  EditCourseUtil::GetAllEditCourses(courses);
+  for (const Course* p : courses) {
     if (GAMESTATE->cur_course_ == p) {
       continue;  // don't comepare name against ourself
     }
 
-    if (p->GetDisplayFullTitle() == sAnswer) {
-      sErrorOut = EDIT_NAME_CONFLICTS;
+    if (p->GetDisplayFullTitle() == answer) {
+      error_out = EDIT_NAME_CONFLICTS;
       return false;
     }
   }
@@ -464,11 +463,11 @@ bool EditCourseUtil::ValidateEditCourseName(
 void EditCourseUtil::UpdateAndSetTrail() {
   ASSERT(GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr);
   StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_;
-  Trail* pTrail = nullptr;
+  Trail* trail = nullptr;
   if (GAMESTATE->cur_course_) {
-    pTrail = GAMESTATE->cur_course_->GetTrailForceRegenCache(st);
+    trail = GAMESTATE->cur_course_->GetTrailForceRegenCache(st);
   }
-  GAMESTATE->cur_trail_[PLAYER_1].Set(pTrail);
+  GAMESTATE->cur_trail_[PLAYER_1].Set(trail);
 }
 
 void EditCourseUtil::PrepareForPlay() {
@@ -479,17 +478,17 @@ void EditCourseUtil::PrepareForPlay() {
   GAMESTATE->side_is_joined_[0] = true;
 
   PROFILEMAN->GetProfile(ProfileSlot_Player1)->goal_type_ = GoalType_Time;
-  Course* pCourse = GAMESTATE->cur_course_;
+  Course* course = GAMESTATE->cur_course_;
   PROFILEMAN->GetProfile(ProfileSlot_Player1)->goal_seconds_ =
-      static_cast<int>(pCourse->goal_seconds_);
+      static_cast<int>(course->goal_seconds_);
 }
 
-void EditCourseUtil::GetAllEditCourses(std::vector<Course*>& vpCoursesOut) {
-  std::vector<Course*> vpCoursesTemp;
-  SONGMAN->GetAllCourses(vpCoursesTemp, false);
-  for (Course* c : vpCoursesTemp) {
+void EditCourseUtil::GetAllEditCourses(std::vector<Course*>& courses_out) {
+  std::vector<Course*> courses_temp;
+  SONGMAN->GetAllCourses(courses_temp, false);
+  for (Course* c : courses_temp) {
     if (c->GetLoadedFromProfileSlot() != ProfileSlot_Invalid) {
-      vpCoursesOut.push_back(c);
+      courses_out.push_back(c);
     }
   }
 }
@@ -504,21 +503,21 @@ void EditCourseUtil::LoadDefaults(Course& out) {
   for (int i = 0; i < 10000; i++) {
     out.main_title_ = ssprintf("Workout %d", i + 1);
 
-    std::vector<Course*> vpCourses;
-    EditCourseUtil::GetAllEditCourses(vpCourses);
+    std::vector<Course*> courses;
+    EditCourseUtil::GetAllEditCourses(courses);
 
-    if (std::any_of(vpCourses.begin(), vpCourses.end(), [&](const Course* p) {
+    if (std::any_of(courses.begin(), courses.end(), [&](const Course* p) {
           return out.main_title_ == p->main_title_;
         })) {
       break;
     }
   }
 
-  std::vector<Song*> vpSongs;
-  SONGMAN->GetPreferredSortSongs(vpSongs);
-  for (int i = 0; i < (int)vpSongs.size() && i < 6; i++) {
+  std::vector<Song*> songs;
+  SONGMAN->GetPreferredSortSongs(songs);
+  for (int i = 0; i < (int)songs.size() && i < 6; i++) {
     CourseEntry ce;
-    ce.song_id_.FromSong(vpSongs[i]);
+    ce.song_id_.FromSong(songs[i]);
     ce.steps_criteria_.difficulty_ = Difficulty_Easy;
     out.entries_.push_back(ce);
   }
@@ -551,7 +550,7 @@ void CourseID::FromCourse(const Course* p) {
 }
 
 Course* CourseID::ToCourse() const {
-  Course* pCourse = nullptr;
+  Course* course = nullptr;
   if (!path_.empty()) {
     // HACK for backwards compatibility:
     // Re-add the leading "/".  2005/05/21 file layer changes added a leading
@@ -561,36 +560,36 @@ Course* CourseID::ToCourse() const {
       slash_path = "/" + slash_path;
     }
 
-    pCourse = SONGMAN->GetCourseFromPath(slash_path);
+    course = SONGMAN->GetCourseFromPath(slash_path);
   }
 
-  if (pCourse == nullptr && !full_title_.empty()) {
-    pCourse = SONGMAN->GetCourseFromName(full_title_);
+  if (course == nullptr && !full_title_.empty()) {
+    course = SONGMAN->GetCourseFromName(full_title_);
   }
 
-  return pCourse;
+  return course;
 }
 
 XNode* CourseID::CreateNode() const {
-  XNode* pNode = new XNode("Course");
+  XNode* node = new XNode("Course");
   ;
 
   if (!path_.empty()) {
-    pNode->AppendAttr("Path", path_);
+    node->AppendAttr("Path", path_);
   }
   if (!full_title_.empty()) {
-    pNode->AppendAttr("FullTitle", full_title_);
+    node->AppendAttr("FullTitle", full_title_);
   }
 
-  return pNode;
+  return node;
 }
 
-void CourseID::LoadFromNode(const XNode* pNode) {
-  ASSERT(pNode->GetName() == "Course");
+void CourseID::LoadFromNode(const XNode* node) {
+  ASSERT(node->GetName() == "Course");
   full_title_ = std::string();
   path_ = std::string();
-  if (!pNode->GetAttrValue("Path", path_)) {
-    pNode->GetAttrValue("FullTitle", full_title_);
+  if (!node->GetAttrValue("Path", path_)) {
+    node->GetAttrValue("FullTitle", full_title_);
   }
 
   // HACK for backwards compatibility: /AdditionalCourses has been merged into

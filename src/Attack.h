@@ -45,29 +45,29 @@ struct Attack {
         show_in_attack_list_(true) {
   }  // MakeBlank() is effectively called here.
   Attack(
-      AttackLevel level_, float fStartSecond_, float fSecsRemaining_,
-      std::string sModifiers_, bool bOn_, bool bGlobal_,
-      bool bShowInAttackList_ = true)
-      : level_(level_),
-        start_second_(fStartSecond_),
-        secs_remaining_(fSecsRemaining_),
-        modifiers_(sModifiers_),
-        on_(bOn_),
-        global_(bGlobal_),
-        show_in_attack_list_(bShowInAttackList_) {}
+      AttackLevel level, float start_second, float secs_remaining,
+      std::string modifiers, bool on, bool global,
+      bool show_in_attack_list = true)
+      : level_(level),
+        start_second_(start_second),
+        secs_remaining_(secs_remaining),
+        modifiers_(modifiers),
+        on_(on),
+        global_(global),
+        show_in_attack_list_(show_in_attack_list) {}
 
   void GetAttackBeats(
-      const Song* pSong, float& fStartBeat, float& fEndBeat) const;
+      const Song* song, float& start_beat, float& end_beat) const;
   void GetRealtimeAttackBeats(
-      const Song* pSong, const PlayerState* pPlayerState, float& fStartBeat,
-      float& fEndBeat) const;
+      const Song* song, const PlayerState* player_state, float& start_beat,
+      float& end_beat) const;
   /**
    * @brief Determine if this attack has no modifiers, and is thus blank or
    * empty.
    * @return true if it is blank/empty, or false otherwise. */
   bool IsBlank() const { return modifiers_.empty(); }
   bool ContainsTransformOrTurn() const;
-  static Attack FromGlobalCourseModifier(const std::string& sModifiers);
+  static Attack FromGlobalCourseModifier(const std::string& modifiers);
   std::string GetTextDescription() const;
 
   int GetNumAttacks() const;

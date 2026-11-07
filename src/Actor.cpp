@@ -67,26 +67,26 @@ XToString(VertAlign);
 LuaXType(VertAlign);
 
 void Actor::SetBGMTime(
-    float fTime, float fBeat, float fTimeNoOffset, float fBeatNoOffset) {
-  current_bgm_time_ = fTime;
-  current_bgm_beat_ = fBeat;
+    float time, float beat, float time_no_offset, float beat_no_offset) {
+  current_bgm_time_ = time;
+  current_bgm_beat_ = beat;
 
   /* This timer is generally only used for effects tied to the background music
    * when GameSoundManager is aligning music beats.  Alignment doesn't handle
    * g_fVisualDelaySeconds. */
-  current_bgm_time_no_offset_ = fTimeNoOffset;
-  current_bgm_beat_no_offset_ = fBeatNoOffset;
+  current_bgm_time_no_offset_ = time_no_offset;
+  current_bgm_beat_no_offset_ = beat_no_offset;
 }
 
 void Actor::SetPlayerBGMBeat(
-    PlayerNumber pn, float fBeat, float fBeatNoOffset) {
-  current_bgm_beat_player_[pn] = fBeat;
-  current_bgm_beat_player_no_offset_[pn] = fBeatNoOffset;
+    PlayerNumber pn, float beat, float beat_no_offset) {
+  current_bgm_beat_player_[pn] = beat;
+  current_bgm_beat_player_no_offset_[pn] = beat_no_offset;
 }
 
-void Actor::SetBGMLight(int iLightNumber, float fCabinetLights) {
-  ASSERT(iLightNumber < NUM_CabinetLight);
-  g_fCabinetLights[iLightNumber] = fCabinetLights;
+void Actor::SetBGMLight(int light_number, float cabinet_lights) {
+  ASSERT(light_number < NUM_CabinetLight);
+  g_fCabinetLights[light_number] = cabinet_lights;
 }
 
 void Actor::InitState() {
@@ -136,9 +136,9 @@ void Actor::InitState() {
 }
 
 static bool GetMessageNameFromCommandName(
-    const std::string& sCommandName, std::string& sMessageNameOut) {
-  if (Right(sCommandName, 7) == "Message") {
-    sMessageNameOut = Left(sCommandName, sCommandName.size() - 7);
+    const std::string& command_name, std::string& message_name_out) {
+  if (Right(command_name, 7) == "Message") {
+    message_name_out = Left(command_name, command_name.size() - 7);
     return true;
   } else {
     return false;
@@ -332,32 +332,32 @@ bool Actor::IsAlias(const std::string& name) {
  * initialization (eg. ActorFrame loading children).  However, it
  * also loads input variables, which should happen first.  The
  * former is more important. */
-void Actor::LoadFromNode(const XNode* pNode) {
+void Actor::LoadFromNode(const XNode* node) {
   Lua* L = LUA->Get();
-  FOREACH_CONST_Attr(pNode, pAttr) {
+  FOREACH_CONST_Attr(node, attr) {
     // Load Name, if any.
-    const std::string& sKeyName = pAttr->first;
-    const XNodeValue* pValue = pAttr->second;
-    if (EndsWith(sKeyName, "Command")) {
-      LuaReference* pRef = new LuaReference;
-      pValue->PushValue(L);
-      pRef->SetFromStack(L);
-      std::string sCmdName = Left(sKeyName, sKeyName.size() - 7);
-      AddCommand(sCmdName, apActorCommands(pRef));
-    } else if (sKeyName == "Name") {
-      SetName(pValue->GetValue<std::string>());
-    } else if (sKeyName == "BaseRotationX") {
-      SetBaseRotationX(pValue->GetValue<float>());
-    } else if (sKeyName == "BaseRotationY") {
-      SetBaseRotationY(pValue->GetValue<float>());
-    } else if (sKeyName == "BaseRotationZ") {
-      SetBaseRotationZ(pValue->GetValue<float>());
-    } else if (sKeyName == "BaseZoomX") {
-      SetBaseZoomX(pValue->GetValue<float>());
-    } else if (sKeyName == "BaseZoomY") {
-      SetBaseZoomY(pValue->GetValue<float>());
-    } else if (sKeyName == "BaseZoomZ") {
-      SetBaseZoomZ(pValue->GetValue<float>());
+    const std::string& key_name = attr->first;
+    const XNodeValue* value = attr->second;
+    if (EndsWith(key_name, "Command")) {
+      LuaReference* ref = new LuaReference;
+      value->PushValue(L);
+      ref->SetFromStack(L);
+      std::string cmd_name = Left(key_name, key_name.size() - 7);
+      AddCommand(cmd_name, apActorCommands(ref));
+    } else if (key_name == "Name") {
+      SetName(value->GetValue<std::string>());
+    } else if (key_name == "BaseRotationX") {
+      SetBaseRotationX(value->GetValue<float>());
+    } else if (key_name == "BaseRotationY") {
+      SetBaseRotationY(value->GetValue<float>());
+    } else if (key_name == "BaseRotationZ") {
+      SetBaseRotationZ(value->GetValue<float>());
+    } else if (key_name == "BaseZoomX") {
+      SetBaseZoomX(value->GetValue<float>());
+    } else if (key_name == "BaseZoomY") {
+      SetBaseZoomY(value->GetValue<float>());
+    } else if (key_name == "BaseZoomZ") {
+      SetBaseZoomZ(value->GetValue<float>());
     }
   }
 
@@ -481,41 +481,41 @@ void Actor::PreDraw()  // calculate actor properties
     temp_state_ = &current_with_effects_;
     current_with_effects_ = current_;
 
-    const float fTotalPeriod = GetEffectPeriod();
-    ASSERT(fTotalPeriod > 0);
-    const float fTimeIntoEffect =
-        fmodfp(secs_into_effect_ + effect_offset_, fTotalPeriod);
+    const float total_period = GetEffectPeriod();
+    ASSERT(total_period > 0);
+    const float time_into_effect =
+        fmodfp(secs_into_effect_ + effect_offset_, total_period);
 
-    float fPercentThroughEffect;
+    float percent_through_effect;
     const float rup_plus_ath = effect_ramp_to_half_ + effect_hold_at_half_;
     const float rupath_plus_rdown = rup_plus_ath + effect_ramp_to_full_;
     const float rupathrdown_plus_atf = rupath_plus_rdown + effect_hold_at_full_;
-    if (fTimeIntoEffect < effect_ramp_to_half_) {
-      fPercentThroughEffect =
-          SCALE(fTimeIntoEffect, 0, effect_ramp_to_half_, 0.0f, 0.5f);
-    } else if (fTimeIntoEffect < rup_plus_ath) {
-      fPercentThroughEffect = 0.5f;
-    } else if (fTimeIntoEffect < rupath_plus_rdown) {
-      fPercentThroughEffect =
-          SCALE(fTimeIntoEffect, rup_plus_ath, rupath_plus_rdown, 0.5f, 1.0f);
-    } else if (fTimeIntoEffect < rupathrdown_plus_atf) {
-      fPercentThroughEffect = 1.0f;
+    if (time_into_effect < effect_ramp_to_half_) {
+      percent_through_effect =
+          SCALE(time_into_effect, 0, effect_ramp_to_half_, 0.0f, 0.5f);
+    } else if (time_into_effect < rup_plus_ath) {
+      percent_through_effect = 0.5f;
+    } else if (time_into_effect < rupath_plus_rdown) {
+      percent_through_effect =
+          SCALE(time_into_effect, rup_plus_ath, rupath_plus_rdown, 0.5f, 1.0f);
+    } else if (time_into_effect < rupathrdown_plus_atf) {
+      percent_through_effect = 1.0f;
     } else {
-      fPercentThroughEffect = 0;
+      percent_through_effect = 0;
     }
     ASSERT_M(
-        fPercentThroughEffect >= 0 && fPercentThroughEffect <= 1,
-        ssprintf("PercentThroughEffect: %f", fPercentThroughEffect));
+        percent_through_effect >= 0 && percent_through_effect <= 1,
+        ssprintf("PercentThroughEffect: %f", percent_through_effect));
 
-    bool bBlinkOn = fPercentThroughEffect > 0.5f;
-    float fPercentBetweenColors =
-        std::sin((fPercentThroughEffect + 0.25f) * 2 * PI) / 2 + 0.5f;
+    bool blink_on = percent_through_effect > 0.5f;
+    float percent_between_colors =
+        std::sin((percent_through_effect + 0.25f) * 2 * PI) / 2 + 0.5f;
     ASSERT_M(
-        fPercentBetweenColors >= 0 && fPercentBetweenColors <= 1,
+        percent_between_colors >= 0 && percent_between_colors <= 1,
         ssprintf(
             "PercentBetweenColors: %f, PercentThroughEffect: %f",
-            fPercentBetweenColors, fPercentThroughEffect));
-    float fOriginalAlpha = current_with_effects_.diffuse_[0].a_;
+            percent_between_colors, percent_through_effect));
+    float original_alpha = current_with_effects_.diffuse_[0].a_;
 
     // todo: account for SSC_FUTURES -aj
     switch (effect_) {
@@ -526,67 +526,69 @@ void Actor::PreDraw()  // calculate actor properties
          */
         for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
           current_with_effects_.diffuse_[i] =
-              bBlinkOn ? effect_color1_ : effect_color2_;
+              blink_on ? effect_color1_ : effect_color2_;
           current_with_effects_.diffuse_[i].a_ *=
-              fOriginalAlpha;  // multiply the alphas so we can fade even while
+              original_alpha;  // multiply the alphas so we can fade even while
                                // an effect is playing
         }
         break;
       case diffuse_shift:
         for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
           current_with_effects_.diffuse_[i] =
-              effect_color1_ * fPercentBetweenColors +
-              effect_color2_ * (1.0f - fPercentBetweenColors);
+              effect_color1_ * percent_between_colors +
+              effect_color2_ * (1.0f - percent_between_colors);
           current_with_effects_.diffuse_[i].a_ *=
-              fOriginalAlpha;  // multiply the alphas so we can fade even while
+              original_alpha;  // multiply the alphas so we can fade even while
                                // an effect is playing
         }
         break;
       case diffuse_ramp:
         for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
           current_with_effects_.diffuse_[i] =
-              effect_color1_ * fPercentThroughEffect +
-              effect_color2_ * (1.0f - fPercentThroughEffect);
+              effect_color1_ * percent_through_effect +
+              effect_color2_ * (1.0f - percent_through_effect);
           current_with_effects_.diffuse_[i].a_ *=
-              fOriginalAlpha;  // multiply the alphas so we can fade even while
+              original_alpha;  // multiply the alphas so we can fade even while
                                // an effect is playing
         }
         break;
       case glow_blink:
         current_with_effects_.glow_ =
-            bBlinkOn ? effect_color1_ : effect_color2_;
+            blink_on ? effect_color1_ : effect_color2_;
         current_with_effects_.glow_.a_ *=
-            fOriginalAlpha;  // don't glow if the Actor is transparent!
+            original_alpha;  // don't glow if the Actor is transparent!
         break;
       case glow_shift:
         current_with_effects_.glow_ =
-            effect_color1_ * fPercentBetweenColors +
-            effect_color2_ * (1.0f - fPercentBetweenColors);
+            effect_color1_ * percent_between_colors +
+            effect_color2_ * (1.0f - percent_between_colors);
         current_with_effects_.glow_.a_ *=
-            fOriginalAlpha;  // don't glow if the Actor is transparent!
+            original_alpha;  // don't glow if the Actor is transparent!
         break;
       case glow_ramp:
         current_with_effects_.glow_ =
-            effect_color1_ * fPercentThroughEffect +
-            effect_color2_ * (1.0f - fPercentThroughEffect);
+            effect_color1_ * percent_through_effect +
+            effect_color2_ * (1.0f - percent_through_effect);
         current_with_effects_.glow_.a_ *=
-            fOriginalAlpha;  // don't glow if the Actor is transparent!
+            original_alpha;  // don't glow if the Actor is transparent!
         break;
       case rainbow:
         current_with_effects_.diffuse_[0] = RageColor(
-            std::cos(fPercentBetweenColors * 2 * PI) * 0.5f + 0.5f,
-            std::cos(fPercentBetweenColors * 2 * PI + PI * 2.0f / 3.0f) * 0.5f +
+            std::cos(percent_between_colors * 2 * PI) * 0.5f + 0.5f,
+            std::cos(percent_between_colors * 2 * PI + PI * 2.0f / 3.0f) *
+                    0.5f +
                 0.5f,
-            std::cos(fPercentBetweenColors * 2 * PI + PI * 4.0f / 3.0f) * 0.5f +
+            std::cos(percent_between_colors * 2 * PI + PI * 4.0f / 3.0f) *
+                    0.5f +
                 0.5f,
-            fOriginalAlpha);
+            original_alpha);
         for (int i = 1; i < NUM_DIFFUSE_COLORS; i++) {
           current_with_effects_.diffuse_[i] = current_with_effects_.diffuse_[0];
         }
         break;
       case wag:
         current_with_effects_.rotation_ +=
-            effect_magnitude_ * std::sin(fPercentThroughEffect * 2.0f * PI);
+            effect_magnitude_ * std::sin(percent_through_effect * 2.0f * PI);
         break;
       case spin:
         // nothing needs to be here
@@ -600,23 +602,23 @@ void Actor::PreDraw()  // calculate actor properties
             effect_magnitude_.z_ * randomf(-1.0f, 1.0f) * GetZoom();
         break;
       case bounce: {
-        float fPercentOffset = std::sin(fPercentThroughEffect * PI);
-        current_with_effects_.pos_ += effect_magnitude_ * fPercentOffset;
+        float percent_offset = std::sin(percent_through_effect * PI);
+        current_with_effects_.pos_ += effect_magnitude_ * percent_offset;
       } break;
       case bob: {
-        float fPercentOffset = std::sin(fPercentThroughEffect * PI * 2);
-        current_with_effects_.pos_ += effect_magnitude_ * fPercentOffset;
+        float percent_offset = std::sin(percent_through_effect * PI * 2);
+        current_with_effects_.pos_ += effect_magnitude_ * percent_offset;
       } break;
       case pulse: {
-        float fMinZoom = effect_magnitude_[0];
-        float fMaxZoom = effect_magnitude_[1];
-        float fPercentOffset = std::sin(fPercentThroughEffect * PI);
-        float fZoom = SCALE(fPercentOffset, 0.f, 1.f, fMinZoom, fMaxZoom);
-        current_with_effects_.scale_ *= fZoom;
+        float min_zoom = effect_magnitude_[0];
+        float max_zoom = effect_magnitude_[1];
+        float percent_offset = std::sin(percent_through_effect * PI);
+        float zoom = SCALE(percent_offset, 0.f, 1.f, min_zoom, max_zoom);
+        current_with_effects_.scale_ *= zoom;
 
         // Use the color as a Vector3 to scale the effect for added control
         RageColor c =
-            SCALE(fPercentOffset, 0.f, 1.f, effect_color1_, effect_color2_);
+            SCALE(percent_offset, 0.f, 1.f, effect_color1_, effect_color2_);
         current_with_effects_.scale_.x_ *= c.r_;
         current_with_effects_.scale_.y_ *= c.g_;
         current_with_effects_.scale_.z_ *= c.b_;
@@ -657,75 +659,75 @@ void Actor::BeginDraw() {
   DISPLAY->PushMatrix();  // Save the current transformation matrix
 
   // Get the position of the actor
-  const float posX = temp_state_->pos_.x_;
-  const float posY = temp_state_->pos_.y_;
-  const float posZ = temp_state_->pos_.z_;
+  const float pos_x = temp_state_->pos_.x_;
+  const float pos_y = temp_state_->pos_.y_;
+  const float pos_z = temp_state_->pos_.z_;
 
-  if (posX != 0 || posY != 0 || posZ != 0) {
+  if (pos_x != 0 || pos_y != 0 || pos_z != 0) {
     RageMatrix m;
-    RageMatrixTranslate(&m, posX, posY, posZ);
+    RageMatrixTranslate(&m, pos_x, pos_y, pos_z);
     DISPLAY->PreMultMatrix(m);
   }
 
   // Get the rotation of the actor
   {
-    const float rotationX = temp_state_->rotation_.x_ + base_rotation_.x_;
-    const float rotationY = temp_state_->rotation_.y_ + base_rotation_.y_;
-    const float rotationZ = temp_state_->rotation_.z_ + base_rotation_.z_;
+    const float rotation_x = temp_state_->rotation_.x_ + base_rotation_.x_;
+    const float rotation_y = temp_state_->rotation_.y_ + base_rotation_.y_;
+    const float rotation_z = temp_state_->rotation_.z_ + base_rotation_.z_;
 
-    if (rotationX != 0 || rotationY != 0 || rotationZ != 0) {
+    if (rotation_x != 0 || rotation_y != 0 || rotation_z != 0) {
       RageMatrix m;
-      RageMatrixRotationXYZ(&m, rotationX, rotationY, rotationZ);
+      RageMatrixRotationXYZ(&m, rotation_x, rotation_y, rotation_z);
       DISPLAY->PreMultMatrix(m);
     }
   }
 
   // Get the scale of the actor
   {
-    const float scaleX = temp_state_->scale_.x_ * base_scale_.x_;
-    const float scaleY = temp_state_->scale_.y_ * base_scale_.y_;
-    const float scaleZ = temp_state_->scale_.z_ * base_scale_.z_;
+    const float scale_x = temp_state_->scale_.x_ * base_scale_.x_;
+    const float scale_y = temp_state_->scale_.y_ * base_scale_.y_;
+    const float scale_z = temp_state_->scale_.z_ * base_scale_.z_;
 
-    if (scaleX != 1 || scaleY != 1 || scaleZ != 1) {
+    if (scale_x != 1 || scale_y != 1 || scale_z != 1) {
       RageMatrix m;
-      RageMatrixScale(&m, scaleX, scaleY, scaleZ);
+      RageMatrixScale(&m, scale_x, scale_y, scale_z);
       DISPLAY->PreMultMatrix(m);
     }
   }
 
   // Adjust the alignment of the actor
   if (unlikely(horiz_align_ != 0.5f || vert_align_ != 0.5f)) {
-    float fX =
+    float x =
         SCALE(horiz_align_, 0.0f, 1.0f, +size_.x_ / 2.0f, -size_.x_ / 2.0f);
-    float fY =
+    float y =
         SCALE(vert_align_, 0.0f, 1.0f, +size_.y_ / 2.0f, -size_.y_ / 2.0f);
     RageMatrix m;
-    RageMatrixTranslate(&m, fX, fY, 0);
+    RageMatrixTranslate(&m, x, y, 0);
     DISPLAY->PreMultMatrix(m);
   }
 
   // Get the quaternion of the actor
-  const float quatX = temp_state_->quat_.x_;
-  const float quatY = temp_state_->quat_.y_;
-  const float quatZ = temp_state_->quat_.z_;
-  const float quatW = temp_state_->quat_.w_;
+  const float quat_x = temp_state_->quat_.x_;
+  const float quat_y = temp_state_->quat_.y_;
+  const float quat_z = temp_state_->quat_.z_;
+  const float quat_w = temp_state_->quat_.w_;
 
-  if (quatX != 0 || quatY != 0 || quatZ != 0 || quatW != 1) {
+  if (quat_x != 0 || quat_y != 0 || quat_z != 0 || quat_w != 1) {
     RageMatrix mat;
     RageMatrixFromQuat(&mat, temp_state_->quat_);
     DISPLAY->MultMatrix(mat);
   }
 
   // Get the skew of the actor along the X-axis
-  const float skewX = temp_state_->skew_x_;
-  if (skewX != 0) {
-    DISPLAY->SkewX(skewX);
+  const float skew_x = temp_state_->skew_x_;
+  if (skew_x != 0) {
+    DISPLAY->SkewX(skew_x);
   }
 
   // Get the skew of the actor along the Y-axis
-  const float skewY = temp_state_->skew_y_;
-  if (skewY != 0) {
-    DISPLAY->SkewY(skewY);
+  const float skew_y = temp_state_->skew_y_;
+  if (skew_y != 0) {
+    DISPLAY->SkewY(skew_y);
   }
 
   // If the texture is not at the origin, translate the texture
@@ -771,49 +773,49 @@ void Actor::EndDraw() {
 }
 
 void Actor::CalcPercentThroughTween() {
-  TweenState& TS = tweens_[0]->state_;
-  TweenInfo& TI = tweens_[0]->info_;
-  const float percent_through = 1 - (TI.time_left_in_tween_ / TI.tween_time_);
+  TweenState& ts = tweens_[0]->state_;
+  TweenInfo& ti = tweens_[0]->info_;
+  const float percent_through = 1 - (ti.time_left_in_tween_ / ti.tween_time_);
   // distort the percentage if appropriate
-  float percent_along = TI.tween_->Tween(percent_through);
-  TweenState::MakeWeightedAverage(current_, start_, TS, percent_along);
+  float percent_along = ti.tween_->Tween(percent_through);
+  TweenState::MakeWeightedAverage(current_, start_, ts, percent_along);
   UpdatePercentThroughTween(percent_along);
 }
 
-void Actor::UpdateTweening(float fDeltaTime) {
-  if (fDeltaTime < 0.0 && !tweens_.empty()) {
-    tweens_[0]->info_.time_left_in_tween_ -= fDeltaTime;
+void Actor::UpdateTweening(float delta_time) {
+  if (delta_time < 0.0 && !tweens_.empty()) {
+    tweens_[0]->info_.time_left_in_tween_ -= delta_time;
     CalcPercentThroughTween();
     return;
   }
   while (!tweens_.empty()    // something to do
-         && fDeltaTime > 0)  // something will change
+         && delta_time > 0)  // something will change
   {
     // update current tween state
     // earliest tween
-    auto& firstTween = tweens_[0];
-    TweenState& TS = firstTween->state_;
-    TweenInfo& TI = firstTween->info_;
+    auto& first_tween = tweens_[0];
+    TweenState& ts = first_tween->state_;
+    TweenInfo& ti = first_tween->info_;
 
-    bool bBeginning = TI.time_left_in_tween_ == TI.tween_time_;
+    bool beginning = ti.time_left_in_tween_ == ti.tween_time_;
 
-    float fSecsToSubtract = std::min(TI.time_left_in_tween_, fDeltaTime);
-    TI.time_left_in_tween_ -= fSecsToSubtract;
-    fDeltaTime -= fSecsToSubtract;
+    float secs_to_subtract = std::min(ti.time_left_in_tween_, delta_time);
+    ti.time_left_in_tween_ -= secs_to_subtract;
+    delta_time -= secs_to_subtract;
 
-    std::string sCommand = TI.command_name_;
-    if (bBeginning)  // we are just beginning this tween
+    std::string command = ti.command_name_;
+    if (beginning)  // we are just beginning this tween
     {
       start_ = current_;  // set the start position
       SetCurrentTweenStart();
     }
 
-    if (TI.time_left_in_tween_ == 0)  // Current tween is over.  Stop.
+    if (ti.time_left_in_tween_ == 0)  // Current tween is over.  Stop.
     {
-      current_ = TS;
+      current_ = ts;
 
       // delete the head tween
-      delete firstTween;
+      delete first_tween;
       tweens_.erase(tweens_.begin());
       EraseHeadTween();
     } else  // in the middle of tweening. Recalcute the current position.
@@ -821,14 +823,14 @@ void Actor::UpdateTweening(float fDeltaTime) {
       CalcPercentThroughTween();
     }
 
-    if (bBeginning) {
+    if (beginning) {
       // Execute the command in this tween (if any). Do this last, and don't
       // access TI or TS after, since this may modify the tweening queue.
-      if (!sCommand.empty()) {
-        if (Left(sCommand, 1) == "!") {
-          MESSAGEMAN->Broadcast(sCommand.substr(1));
+      if (!command.empty()) {
+        if (Left(command, 1) == "!") {
+          MESSAGEMAN->Broadcast(command.substr(1));
         } else {
-          this->PlayCommand(sCommand);
+          this->PlayCommand(command);
         }
       }
     }
@@ -837,34 +839,34 @@ void Actor::UpdateTweening(float fDeltaTime) {
 
 bool Actor::IsFirstUpdate() const { return first_update_; }
 
-void Actor::Update(float fDeltaTime) {
+void Actor::Update(float delta_time) {
   //	LOG->Trace( "Actor::Update( %f )", fDeltaTime );
 
   float rate = GameLoop::GetUpdateRate();
   if (rate != 1 && !rate_scaling_enabled_) {
     // Prevent divide by 0 when tab + tilde are both pressed.
     if (rate != 0) {
-      fDeltaTime *= (1 / rate);
+      delta_time *= (1 / rate);
     }
   }
 
-  ASSERT_M(fDeltaTime >= 0, ssprintf("DeltaTime: %f", fDeltaTime));
+  ASSERT_M(delta_time >= 0, ssprintf("DeltaTime: %f", delta_time));
 
   if (hibernate_seconds_left_ > 0) {
-    hibernate_seconds_left_ -= fDeltaTime;
+    hibernate_seconds_left_ -= delta_time;
     if (hibernate_seconds_left_ > 0) {
       return;
     }
 
     // Grab the leftover time.
-    fDeltaTime = -hibernate_seconds_left_;
+    delta_time = -hibernate_seconds_left_;
     hibernate_seconds_left_ = 0;
   }
   for (size_t i = 0; i < wrapper_states_.size(); ++i) {
-    wrapper_states_[i]->Update(fDeltaTime);
+    wrapper_states_[i]->Update(delta_time);
   }
 
-  this->UpdateInternal(fDeltaTime);
+  this->UpdateInternal(delta_time);
 }
 
 static void generic_global_timer_update(
@@ -878,15 +880,15 @@ void Actor::UpdateInternal(float delta_time) {
     first_update_ = false;
   }
 
-  const float effectPeriod = GetEffectPeriod();
+  const float effect_period = GetEffectPeriod();
   switch (effect_clock_) {
     case CLOCK_TIMER:
       secs_into_effect_ += delta_time;
       effect_delta_ = delta_time;
       // Wrap the counter, so it doesn't increase indefinitely (causing loss
       // of precision if a screen is left to sit for a day).
-      if (secs_into_effect_ > effectPeriod) {
-        secs_into_effect_ -= effectPeriod;
+      if (secs_into_effect_ > effect_period) {
+        secs_into_effect_ -= effect_period;
       }
       break;
     case CLOCK_TIMER_GLOBAL:
@@ -920,9 +922,9 @@ void Actor::UpdateInternal(float delta_time) {
       break;
     default:
       if (effect_clock_ >= CLOCK_LIGHT_1 && effect_clock_ <= CLOCK_LIGHT_LAST) {
-        int lightIndex = effect_clock_ - CLOCK_LIGHT_1;
+        int light_index = effect_clock_ - CLOCK_LIGHT_1;
         generic_global_timer_update(
-            g_fCabinetLights[lightIndex], effect_delta_, secs_into_effect_);
+            g_fCabinetLights[light_index], effect_delta_, secs_into_effect_);
       }
       break;
   }
@@ -946,13 +948,13 @@ void Actor::UpdateInternal(float delta_time) {
 }
 
 std::string Actor::GetLineage() const {
-  std::string sPath;
+  std::string path;
 
   if (parent_) {
-    sPath = parent_->GetLineage() + '/';
+    path = parent_->GetLineage() + '/';
   }
-  sPath += ssprintf("<type %s> %s", typeid(*this).name(), name_.c_str());
-  return sPath;
+  path += ssprintf("<type %s> %s", typeid(*this).name(), name_.c_str());
+  return path;
 }
 
 void Actor::AddWrapperState() {
@@ -972,7 +974,7 @@ Actor* Actor::GetWrapperState(size_t i) {
   return wrapper_states_[i];
 }
 
-void Actor::BeginTweening(float time, ITween* pTween) {
+void Actor::BeginTweening(float time, ITween* tween) {
   ASSERT(time >= 0);
 
   // If the number of tweens to ever gets this large, there's probably an
@@ -988,29 +990,29 @@ void Actor::BeginTweening(float time, ITween* pTween) {
   tweens_.push_back(new TweenStateAndInfo);
 
   // latest
-  TweenState& TS = tweens_.back()->state_;
-  TweenInfo& TI = tweens_.back()->info_;
+  TweenState& ts = tweens_.back()->state_;
+  TweenInfo& ti = tweens_.back()->info_;
 
   if (tweens_.size() >= 2)  // if there was already a TS on the stack
   {
     // initialize the new TS from the last TS in the list
-    TS = tweens_[tweens_.size() - 2]->state_;
+    ts = tweens_[tweens_.size() - 2]->state_;
   } else {
     // This new TS is the only TS.
     // Set our tween starting and ending values to the current position.
-    TS = current_;
+    ts = current_;
   }
 
-  TI.tween_ = pTween;
-  TI.tween_time_ = time;
-  TI.time_left_in_tween_ = time;
+  ti.tween_ = tween;
+  ti.tween_time_ = time;
+  ti.time_left_in_tween_ = time;
 }
 
 void Actor::BeginTweening(float time, TweenType tt) {
   ASSERT(time >= 0);
 
-  ITween* pTween = ITween::CreateFromType(tt);
-  this->BeginTweening(time, pTween);
+  ITween* tween = ITween::CreateFromType(tt);
+  this->BeginTweening(time, tween);
 }
 
 void Actor::StopTweening() {
@@ -1047,26 +1049,26 @@ void Actor::ScaleTo(const RectF& rect, StretchType st) {
   }
 
   // zoom fActor needed to scale the Actor to fill the rectangle
-  float fNewZoomX = std::abs(rect_width / size_.x_);
-  float fNewZoomY = std::abs(rect_height / size_.y_);
+  float new_zoom_x = std::abs(rect_width / size_.x_);
+  float new_zoom_y = std::abs(rect_height / size_.y_);
 
-  float fNewZoom = 0.f;
+  float new_zoom = 0.f;
 
   switch (st) {
     case StretchType::kCover:
-      fNewZoom =
-          fNewZoomX > fNewZoomY ? fNewZoomX : fNewZoomY;  // use larger zoom
+      new_zoom =
+          new_zoom_x > new_zoom_y ? new_zoom_x : new_zoom_y;  // use larger zoom
       break;
     case StretchType::kFitInside:
-      fNewZoom =
-          fNewZoomX > fNewZoomY ? fNewZoomY : fNewZoomX;  // use smaller zoom
+      new_zoom = new_zoom_x > new_zoom_y ? new_zoom_y
+                                         : new_zoom_x;  // use smaller zoom
       break;
   }
 
   SetX(rect.left_ + rect_width * horiz_align_);
   SetY(rect.top_ + rect_height * vert_align_);
 
-  SetZoom(fNewZoom);
+  SetZoom(new_zoom);
 }
 
 void Actor::SetEffectClockString(const std::string& s) {
@@ -1108,12 +1110,12 @@ void Actor::StretchTo(const RectF& r) {
   float cy = r.top_ + height / 2.0f;
 
   // zoom fActor needed to scale the Actor to fill the rectangle
-  float fNewZoomX = width / size_.x_;
-  float fNewZoomY = height / size_.y_;
+  float new_zoom_x = width / size_.x_;
+  float new_zoom_y = height / size_.y_;
 
   SetXY(cx, cy);
-  SetZoomX(fNewZoomX);
-  SetZoomY(fNewZoomY);
+  SetZoomX(new_zoom_x);
+  SetZoomY(new_zoom_y);
 }
 
 void Actor::RecalcEffectPeriod() {
@@ -1174,85 +1176,85 @@ void Actor::ResetEffectTimeIfDifferent(Effect new_effect) {
 }
 
 void Actor::SetEffectDiffuseBlink(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(diffuse_blink);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
 void Actor::SetEffectDiffuseShift(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(diffuse_shift);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
 void Actor::SetEffectDiffuseRamp(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(diffuse_ramp);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
 void Actor::SetEffectGlowBlink(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(glow_blink);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
 void Actor::SetEffectGlowShift(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(glow_shift);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
 void Actor::SetEffectGlowRamp(
-    float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
-  ASSERT(fEffectPeriodSeconds > 0);
+    float effect_period_seconds, RageColor c1, RageColor c2) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(glow_ramp);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
   effect_color1_ = c1;
   effect_color2_ = c2;
 }
 
-void Actor::SetEffectRainbow(float fEffectPeriodSeconds) {
-  ASSERT(fEffectPeriodSeconds > 0);
+void Actor::SetEffectRainbow(float effect_period_seconds) {
+  ASSERT(effect_period_seconds > 0);
   ResetEffectTimeIfDifferent(rainbow);
-  SetEffectPeriod(fEffectPeriodSeconds);
+  SetEffectPeriod(effect_period_seconds);
 }
 
-void Actor::SetEffectWag(float fPeriod, RageVector3 vect) {
-  ASSERT(fPeriod > 0);
+void Actor::SetEffectWag(float period, RageVector3 vect) {
+  ASSERT(period > 0);
   ResetEffectTimeIfDifferent(wag);
-  SetEffectPeriod(fPeriod);
+  SetEffectPeriod(period);
   effect_magnitude_ = vect;
 }
 
-void Actor::SetEffectBounce(float fPeriod, RageVector3 vect) {
-  ASSERT(fPeriod > 0);
+void Actor::SetEffectBounce(float period, RageVector3 vect) {
+  ASSERT(period > 0);
   effect_ = bounce;
-  SetEffectPeriod(fPeriod);
+  SetEffectPeriod(period);
   effect_magnitude_ = vect;
   secs_into_effect_ = 0;
 }
 
-void Actor::SetEffectBob(float fPeriod, RageVector3 vect) {
-  ASSERT(fPeriod > 0);
-  if (effect_ != bob || GetEffectPeriod() != fPeriod) {
+void Actor::SetEffectBob(float period, RageVector3 vect) {
+  ASSERT(period > 0);
+  if (effect_ != bob || GetEffectPeriod() != period) {
     effect_ = bob;
-    SetEffectPeriod(fPeriod);
+    SetEffectPeriod(period);
     secs_into_effect_ = 0;
   }
   effect_magnitude_ = vect;
@@ -1268,12 +1270,12 @@ void Actor::SetEffectVibrate(RageVector3 vect) {
   effect_magnitude_ = vect;
 }
 
-void Actor::SetEffectPulse(float fPeriod, float fMinZoom, float fMaxZoom) {
-  ASSERT(fPeriod > 0);
+void Actor::SetEffectPulse(float period, float min_zoom, float max_zoom) {
+  ASSERT(period > 0);
   effect_ = pulse;
-  SetEffectPeriod(fPeriod);
-  effect_magnitude_[0] = fMinZoom;
-  effect_magnitude_[1] = fMaxZoom;
+  SetEffectPeriod(period);
+  effect_magnitude_[0] = min_zoom;
+  effect_magnitude_[1] = max_zoom;
 }
 
 void Actor::AddRotationH(float rot) {
@@ -1292,7 +1294,7 @@ void Actor::AddRotationR(float rot) {
 }
 
 void Actor::RunCommands(
-    const LuaReference& cmds, const LuaReference* pParamTable) {
+    const LuaReference& cmds, const LuaReference* param_table) {
   if (!cmds.IsSet() || cmds.IsNil()) {
     LuaHelpers::ReportScriptErrorFmt(
         "RunCommands: commands for %s are unset or nil", GetLineage().c_str());
@@ -1314,15 +1316,15 @@ void Actor::RunCommands(
   this->PushSelf(L);
 
   // 2nd parameter
-  if (pParamTable == nullptr) {
+  if (param_table == nullptr) {
     lua_pushnil(L);
   } else {
-    pParamTable->PushSelf(L);
+    param_table->PushSelf(L);
   }
 
   // call function with 2 arguments and 0 results
-  std::string Error = "Error playing command:";
-  LuaHelpers::RunScriptOnStack(L, Error, 2, 0, true);
+  std::string error = "Error playing command:";
+  LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);
 
   LUA->Release(L);
 }
@@ -1429,39 +1431,39 @@ bool Actor::TweenState::operator==(const TweenState& other) const {
 
 void Actor::TweenState::MakeWeightedAverage(
     TweenState& average_out, const TweenState& ts1, const TweenState& ts2,
-    float fPercentBetween) {
-  average_out.pos_ = lerp(fPercentBetween, ts1.pos_, ts2.pos_);
-  average_out.scale_ = lerp(fPercentBetween, ts1.scale_, ts2.scale_);
-  average_out.rotation_ = lerp(fPercentBetween, ts1.rotation_, ts2.rotation_);
-  RageQuatSlerp(&average_out.quat_, ts1.quat_, ts2.quat_, fPercentBetween);
-  average_out.skew_x_ = lerp(fPercentBetween, ts1.skew_x_, ts2.skew_x_);
-  average_out.skew_y_ = lerp(fPercentBetween, ts1.skew_y_, ts2.skew_y_);
+    float percent_between) {
+  average_out.pos_ = lerp(percent_between, ts1.pos_, ts2.pos_);
+  average_out.scale_ = lerp(percent_between, ts1.scale_, ts2.scale_);
+  average_out.rotation_ = lerp(percent_between, ts1.rotation_, ts2.rotation_);
+  RageQuatSlerp(&average_out.quat_, ts1.quat_, ts2.quat_, percent_between);
+  average_out.skew_x_ = lerp(percent_between, ts1.skew_x_, ts2.skew_x_);
+  average_out.skew_y_ = lerp(percent_between, ts1.skew_y_, ts2.skew_y_);
 
   average_out.crop_.left_ =
-      lerp(fPercentBetween, ts1.crop_.left_, ts2.crop_.left_);
+      lerp(percent_between, ts1.crop_.left_, ts2.crop_.left_);
   average_out.crop_.top_ =
-      lerp(fPercentBetween, ts1.crop_.top_, ts2.crop_.top_);
+      lerp(percent_between, ts1.crop_.top_, ts2.crop_.top_);
   average_out.crop_.right_ =
-      lerp(fPercentBetween, ts1.crop_.right_, ts2.crop_.right_);
+      lerp(percent_between, ts1.crop_.right_, ts2.crop_.right_);
   average_out.crop_.bottom_ =
-      lerp(fPercentBetween, ts1.crop_.bottom_, ts2.crop_.bottom_);
+      lerp(percent_between, ts1.crop_.bottom_, ts2.crop_.bottom_);
 
   average_out.fade_.left_ =
-      lerp(fPercentBetween, ts1.fade_.left_, ts2.fade_.left_);
+      lerp(percent_between, ts1.fade_.left_, ts2.fade_.left_);
   average_out.fade_.top_ =
-      lerp(fPercentBetween, ts1.fade_.top_, ts2.fade_.top_);
+      lerp(percent_between, ts1.fade_.top_, ts2.fade_.top_);
   average_out.fade_.right_ =
-      lerp(fPercentBetween, ts1.fade_.right_, ts2.fade_.right_);
+      lerp(percent_between, ts1.fade_.right_, ts2.fade_.right_);
   average_out.fade_.bottom_ =
-      lerp(fPercentBetween, ts1.fade_.bottom_, ts2.fade_.bottom_);
+      lerp(percent_between, ts1.fade_.bottom_, ts2.fade_.bottom_);
 
   for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
     average_out.diffuse_[i] =
-        lerp(fPercentBetween, ts1.diffuse_[i], ts2.diffuse_[i]);
+        lerp(percent_between, ts1.diffuse_[i], ts2.diffuse_[i]);
   }
 
-  average_out.glow_ = lerp(fPercentBetween, ts1.glow_, ts2.glow_);
-  average_out.aux_ = lerp(fPercentBetween, ts1.aux_, ts2.aux_);
+  average_out.glow_ = lerp(percent_between, ts1.glow_, ts2.glow_);
+  average_out.aux_ = lerp(percent_between, ts1.aux_, ts2.aux_);
 }
 
 void Actor::Sleep(float time) {
@@ -1471,47 +1473,46 @@ void Actor::Sleep(float time) {
   BeginTweening(0, TWEEN_LINEAR);
 }
 
-void Actor::QueueCommand(const std::string& sCommandName) {
+void Actor::QueueCommand(const std::string& command_name) {
   BeginTweening(0, TWEEN_LINEAR);
-  TweenInfo& TI = tweens_.back()->info_;
-  TI.command_name_ = sCommandName;
+  TweenInfo& ti = tweens_.back()->info_;
+  ti.command_name_ = command_name;
 }
 
-void Actor::QueueMessage(const std::string& sMessageName) {
+void Actor::QueueMessage(const std::string& message_name) {
   // Hack: use "!" as a marker to broadcast a command, instead of playing a
   // command, so we don't have to add yet another element to every tween
   // state for this rarely-used command.
   BeginTweening(0, TWEEN_LINEAR);
-  TweenInfo& TI = tweens_.back()->info_;
-  TI.command_name_ = "!" + sMessageName;
+  TweenInfo& ti = tweens_.back()->info_;
+  ti.command_name_ = "!" + message_name;
 }
 
 void Actor::AddCommand(
-    const std::string& sCmdName, apActorCommands apac, bool warn) {
-  if (HasCommand(sCmdName) && warn) {
-    std::string sWarning =
-        GetLineage() + "'s command '" + sCmdName + "' defined twice";
-    LuaHelpers::ReportScriptError(sWarning, "COMMAND_DEFINED_TWICE");
+    const std::string& cmd_name, apActorCommands apac, bool warn) {
+  if (HasCommand(cmd_name) && warn) {
+    std::string warning =
+        GetLineage() + "'s command '" + cmd_name + "' defined twice";
+    LuaHelpers::ReportScriptError(warning, "COMMAND_DEFINED_TWICE");
   }
 
-  std::string sMessage;
-  if (GetMessageNameFromCommandName(sCmdName, sMessage)) {
-    SubscribeToMessage(sMessage);
-    map_name_to_commands_[sMessage] =
-        apac;  // sCmdName w/o "Message" at the end
+  std::string message;
+  if (GetMessageNameFromCommandName(cmd_name, message)) {
+    SubscribeToMessage(message);
+    map_name_to_commands_[message] = apac;  // sCmdName w/o "Message" at the end
   } else {
-    map_name_to_commands_[sCmdName] = apac;
+    map_name_to_commands_[cmd_name] = apac;
   }
 }
 
-bool Actor::HasCommand(const std::string& sCmdName) const {
-  return GetCommand(sCmdName) != nullptr;
+bool Actor::HasCommand(const std::string& cmd_name) const {
+  return GetCommand(cmd_name) != nullptr;
 }
 
 const apActorCommands* Actor::GetCommand(
-    const std::string& sCommandName) const {
+    const std::string& command_name) const {
   std::map<std::string, apActorCommands>::const_iterator it =
-      map_name_to_commands_.find(sCommandName);
+      map_name_to_commands_.find(command_name);
   if (it == map_name_to_commands_.end()) {
     return nullptr;
   }
@@ -1521,9 +1522,9 @@ const apActorCommands* Actor::GetCommand(
 void Actor::HandleMessage(const Message& msg) { PlayCommandNoRecurse(msg); }
 
 void Actor::PlayCommandNoRecurse(const Message& msg) {
-  const apActorCommands* pCmd = GetCommand(msg.GetName());
-  if (pCmd != nullptr && (*pCmd)->IsSet() && !(*pCmd)->IsNil()) {
-    RunCommands(*pCmd, &msg.GetParamTable());
+  const apActorCommands* cmd = GetCommand(msg.GetName());
+  if (cmd != nullptr && (*cmd)->IsSet() && !(*cmd)->IsNil()) {
+    RunCommands(*cmd, &msg.GetParamTable());
   }
 }
 
@@ -1534,18 +1535,18 @@ void Actor::PushContext(lua_State* L) {
   lua_remove(L, -2);
 }
 
-void Actor::SetParent(Actor* pParent) {
-  parent_ = pParent;
+void Actor::SetParent(Actor* parent) {
+  parent_ = parent;
 
   Lua* L = LUA->Get();
-  int iTop = lua_gettop(L);
+  int top = lua_gettop(L);
 
   this->PushContext(L);
   lua_pushstring(L, "__index");
-  pParent->PushContext(L);
+  parent->PushContext(L);
   lua_settable(L, -3);
 
-  lua_settop(L, iTop);
+  lua_settop(L, top);
   LUA->Release(L);
 }
 
@@ -1578,65 +1579,65 @@ class LunaActor : public Luna<Actor> {
     COMMON_RETURN_SELF;
   }
   static int sleep(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: sleep(%f): time must not be negative", fTime);
+          "Lua: sleep(%f): time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    p->Sleep(fTime);
+    p->Sleep(time);
     COMMON_RETURN_SELF;
   }
   static int linear(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: linear(%f): tween time must not be negative", fTime);
+          "Lua: linear(%f): tween time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    p->BeginTweening(fTime, TWEEN_LINEAR);
+    p->BeginTweening(time, TWEEN_LINEAR);
     COMMON_RETURN_SELF;
   }
   static int accelerate(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: accelerate(%f): tween time must not be negative", fTime);
+          "Lua: accelerate(%f): tween time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    p->BeginTweening(fTime, TWEEN_ACCELERATE);
+    p->BeginTweening(time, TWEEN_ACCELERATE);
     COMMON_RETURN_SELF;
   }
   static int decelerate(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: decelerate(%f): tween time must not be negative", fTime);
+          "Lua: decelerate(%f): tween time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    p->BeginTweening(fTime, TWEEN_DECELERATE);
+    p->BeginTweening(time, TWEEN_DECELERATE);
     COMMON_RETURN_SELF;
   }
   static int spring(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: spring(%f): tween time must not be negative", fTime);
+          "Lua: spring(%f): tween time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    p->BeginTweening(fTime, TWEEN_SPRING);
+    p->BeginTweening(time, TWEEN_SPRING);
     COMMON_RETURN_SELF;
   }
   static int tween(T* p, lua_State* L) {
-    float fTime = FArg(1);
-    if (fTime < 0) {
+    float time = FArg(1);
+    if (time < 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Lua: tween(%f): tween time must not be negative", fTime);
+          "Lua: tween(%f): tween time must not be negative", time);
       COMMON_RETURN_SELF;
     }
-    ITween* pTween = ITween::CreateFromStack(L, 2);
-    if (pTween != nullptr) {
-      p->BeginTweening(fTime, pTween);
+    ITween* p_tween = ITween::CreateFromStack(L, 2);
+    if (p_tween != nullptr) {
+      p->BeginTweening(time, p_tween);
     }
     COMMON_RETURN_SELF;
   }
@@ -2033,10 +2034,10 @@ class LunaActor : public Luna<Actor> {
     COMMON_RETURN_SELF;
   }
   static int effectperiod(T* p, lua_State* L) {
-    float fPeriod = FArg(1);
-    if (fPeriod <= 0) {
+    float period = FArg(1);
+    if (period <= 0) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Effect period (%f) must be positive; ignoring", fPeriod);
+          "Effect period (%f) must be positive; ignoring", period);
       COMMON_RETURN_SELF;
     }
     p->SetEffectPeriod(FArg(1));
@@ -2178,11 +2179,11 @@ class LunaActor : public Luna<Actor> {
       luaL_typerror(L, 2, "table or nil");
     }
 
-    LuaReference ParamTable;
+    LuaReference param_table;
     lua_pushvalue(L, 2);
-    ParamTable.SetFromStack(L);
+    param_table.SetFromStack(L);
 
-    Message msg(SArg(1), ParamTable);
+    Message msg(SArg(1), param_table);
     p->HandleMessage(msg);
 
     COMMON_RETURN_SELF;
@@ -2196,17 +2197,17 @@ class LunaActor : public Luna<Actor> {
     COMMON_RETURN_SELF;
   }
   static int addcommand(T* p, lua_State* L) {
-    LuaReference* pRef = new LuaReference;
-    pRef->SetFromStack(L);
-    p->AddCommand(SArg(1), apActorCommands(pRef));
+    LuaReference* ref = new LuaReference;
+    ref->SetFromStack(L);
+    p->AddCommand(SArg(1), apActorCommands(ref));
     COMMON_RETURN_SELF;
   }
   static int GetCommand(T* p, lua_State* L) {
-    const apActorCommands* pCommand = p->GetCommand(SArg(1));
-    if (pCommand == nullptr) {
+    const apActorCommands* command = p->GetCommand(SArg(1));
+    if (command == nullptr) {
       lua_pushnil(L);
     } else {
-      (*pCommand)->PushSelf(L);
+      (*command)->PushSelf(L);
     }
 
     return 1;
@@ -2221,11 +2222,11 @@ class LunaActor : public Luna<Actor> {
     lua_pushvalue(L, 1);
     ref.SetFromStack(L);
 
-    LuaReference ParamTable;
+    LuaReference param_table;
     lua_pushvalue(L, 2);
-    ParamTable.SetFromStack(L);
+    param_table.SetFromStack(L);
 
-    p->RunCommandsRecursively(ref, &ParamTable);
+    p->RunCommandsRecursively(ref, &param_table);
     COMMON_RETURN_SELF;
   }
 
@@ -2341,11 +2342,11 @@ class LunaActor : public Luna<Actor> {
     return 1;
   }
   static int GetParent(T* p, lua_State* L) {
-    Actor* pParent = p->GetParent();
-    if (pParent == nullptr) {
+    Actor* parent = p->GetParent();
+    if (parent == nullptr) {
       lua_pushnil(L);
     } else {
-      pParent->PushSelf(L);
+      parent->PushSelf(L);
     }
     return 1;
   }

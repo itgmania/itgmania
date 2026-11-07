@@ -229,10 +229,10 @@ std::string GetLoadError(
 }  // namespace
 
 RageSurfaceUtils::OpenResult RageSurface_Load_STB(
-    const std::string& sPath, RageSurface*& ret, bool bHeaderOnly,
+    const std::string& path, RageSurface*& ret, bool header_only,
     std::string& error, RageSurfaceSTBFormat format) {
   RageFile file;
-  if (!file.Open(sPath)) {
+  if (!file.Open(path)) {
     error = file.GetError();
     return RageSurfaceUtils::OPEN_FATAL_ERROR;
   }
@@ -252,7 +252,7 @@ RageSurfaceUtils::OpenResult RageSurface_Load_STB(
   int height = 0;
   int channels = 0;
 
-  if (bHeaderOnly) {
+  if (header_only) {
     if (!stbi_info_from_callbacks(
             &kStbCallbacks, &state, &width, &height, &channels)) {
       error = GetLoadError(state, file, format);

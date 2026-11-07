@@ -20,12 +20,12 @@ RollingNumbers::RollingNumbers() {
   metrics_loaded_ = false;
 }
 
-void RollingNumbers::Load(const std::string& sMetricsGroup) {
+void RollingNumbers::Load(const std::string& metrics_group) {
   metrics_loaded_ = true;
-  TEXT_FORMAT.Load(sMetricsGroup, "TextFormat");
-  APPROACH_SECONDS.Load(sMetricsGroup, "ApproachSeconds");
-  COMMIFY.Load(sMetricsGroup, "Commify");
-  LEADING_ZERO_MULTIPLY_COLOR.Load(sMetricsGroup, "LeadingZeroMultiplyColor");
+  TEXT_FORMAT.Load(metrics_group, "TextFormat");
+  APPROACH_SECONDS.Load(metrics_group, "ApproachSeconds");
+  COMMIFY.Load(metrics_group, "Commify");
+  LEADING_ZERO_MULTIPLY_COLOR.Load(metrics_group, "LeadingZeroMultiplyColor");
 
   UpdateText();
 }
@@ -88,28 +88,28 @@ void RollingNumbers::DrawPrimitives() noexcept {
   temp_state_->crop_.right_ = original_crop_right;
 }
 
-void RollingNumbers::Update(float fDeltaTime) {
+void RollingNumbers::Update(float delta_time) {
   if (current_number_ != target_number_) {
     fapproach(
         current_number_, target_number_,
-        std::abs(score_velocity_) * fDeltaTime);
+        std::abs(score_velocity_) * delta_time);
     UpdateText();
   }
 
-  BitmapText::Update(fDeltaTime);
+  BitmapText::Update(delta_time);
 }
 
-void RollingNumbers::SetTargetNumber(float fTargetNumber) {
+void RollingNumbers::SetTargetNumber(float target_number) {
   if (!metrics_loaded_) {
     LuaHelpers::ReportScriptError(
         "You must use Load to load the metrics for a RollingNumbers actor "
         "before doing anything else.");
     return;
   }
-  if (fTargetNumber == target_number_) {  // no change
+  if (target_number == target_number_) {  // no change
     return;
   }
-  target_number_ = fTargetNumber;
+  target_number_ = target_number;
   float approach_secs = APPROACH_SECONDS.GetValue();
   if (approach_secs > 0) {
     score_velocity_ = (target_number_ - current_number_) / approach_secs;

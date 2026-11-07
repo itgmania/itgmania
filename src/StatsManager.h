@@ -24,24 +24,24 @@ class StatsManager {
   std::vector<StageStats> played_stage_stats_;
 
   // Only the latest 3 normal songs + passed extra stages.
-  void GetFinalEvalStageStats(StageStats& statsOut) const;
+  void GetFinalEvalStageStats(StageStats& stats_out) const;
 
   // All stages played.  Returns a ref to the private member so that
   // the object will remain alive while Lua is operating on it.
   void CalcAccumPlayedStageStats();
   StageStats& GetAccumPlayedStageStats() { return accum_played_stage_stats_; }
 
-  static void CommitStatsToProfiles(const StageStats* pSS);
+  static void CommitStatsToProfiles(const StageStats* ss);
 
   void UnjoinPlayer(PlayerNumber pn);
-  void GetStepsInUse(std::set<Steps*>& apInUseOut) const;
+  void GetStepsInUse(std::set<Steps*>& in_use_out) const;
 
   // Lua
   void PushSelf(lua_State* L);
 
  protected:
-  static void SaveUploadFile(const StageStats* pSS);
-  static void SavePadmissScore(const StageStats* pSS, PlayerNumber pn);
+  static void SaveUploadFile(const StageStats* ss);
+  static void SavePadmissScore(const StageStats* ss, PlayerNumber pn);
 
  private:
   StageStats accum_played_stage_stats_;

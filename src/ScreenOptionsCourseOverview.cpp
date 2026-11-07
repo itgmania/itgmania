@@ -41,11 +41,11 @@ enum CourseOverviewRow {
 };
 
 static bool CurrentCourseIsSaved() {
-  Course* pCourse = GAMESTATE->cur_course_;
-  if (pCourse == nullptr) {
+  Course* course = GAMESTATE->cur_course_;
+  if (course == nullptr) {
     return false;
   }
-  return !pCourse->path_.empty();
+  return !course->path_.empty();
 }
 
 static const MenuRowDef g_MenuRows[] = {
@@ -96,14 +96,14 @@ void ScreenOptionsCourseOverview::Init() {
 }
 
 void ScreenOptionsCourseOverview::BeginScreen() {
-  std::vector<OptionRowHandler*> vHands;
-  FOREACH_ENUM(CourseOverviewRow, rowIndex) {
-    const MenuRowDef& mr = g_MenuRows[rowIndex];
-    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeSimple(mr);
-    vHands.push_back(pHand);
+  std::vector<OptionRowHandler*> hands;
+  FOREACH_ENUM(CourseOverviewRow, row_index) {
+    const MenuRowDef& mr = g_MenuRows[row_index];
+    OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mr);
+    hands.push_back(hand);
   }
 
-  ScreenOptions::InitMenu(vHands);
+  ScreenOptions::InitMenu(hands);
 
   ScreenOptions::BeginScreen();
 
@@ -114,28 +114,28 @@ void ScreenOptionsCourseOverview::BeginScreen() {
 ScreenOptionsCourseOverview::~ScreenOptionsCourseOverview() {}
 
 void ScreenOptionsCourseOverview::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
+    int row, const std::vector<PlayerNumber>& vpns) {
   // OptionRow &row = *m_pRows[iRow];
 }
 
 void ScreenOptionsCourseOverview::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  OptionRow& row = *rows_[iRow];
-  int iIndex = row.GetOneSharedSelection(true);
-  std::string sValue;
-  if (iIndex >= 0) {
-    sValue = row.GetRowDef().choices_[iIndex];
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  OptionRow& row = *rows_[i_row];
+  int index = row.GetOneSharedSelection(true);
+  std::string value;
+  if (index >= 0) {
+    value = row.GetRowDef().choices_[index];
   }
 }
 
-void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_GoToPrevScreen) {
+void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_GoToPrevScreen) {
     // If we're pointing to an unsaved course, it will be inaccessible once
     // we're back on ScreenOptionsManageCourses.
     GAMESTATE->cur_course_.Set(nullptr);
-  } else if (SM == SM_GoToNextScreen) {
-    int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
-    switch (iRow) {
+  } else if (sm == SM_GoToNextScreen) {
+    int row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+    switch (row) {
       case CourseOverviewRow_Play:
         EditCourseUtil::PrepareForPlay();
         SCREENMAN->SetNewScreen(PLAY_SCREEN);
@@ -144,7 +144,7 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
         SCREENMAN->SetNewScreen(EDIT_SCREEN);
         return;  // handled
     }
-  } else if (SM == SM_BackFromEnterName) {
+  } else if (sm == SM_BackFromEnterName) {
     if (!ScreenTextEntry::cancelled_last_) {
       ASSERT(
           ScreenTextEntry::last_answer_ !=
@@ -156,7 +156,7 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
         SCREENMAN->SystemMessage(COURSE_SAVED);
       }
     }
-  } else if (SM == SM_BackFromRename) {
+  } else if (sm == SM_BackFromRename) {
     if (!ScreenTextEntry::cancelled_last_) {
       ASSERT(
           ScreenTextEntry::last_answer_ !=
@@ -170,7 +170,7 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
 
       SCREENMAN->SetNewScreen(this->name_);  // reload
     }
-  } else if (SM == SM_BackFromDelete) {
+  } else if (sm == SM_BackFromDelete) {
     if (ScreenPrompt::last_answer_ == ANSWER_YES) {
       if (!EditCourseUtil::RemoveAndDeleteFile(GAMESTATE->cur_course_)) {
         ScreenPrompt::Prompt(
@@ -188,12 +188,12 @@ void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
     }
   }
 
-  ScreenOptions::HandleScreenMessage(SM);
+  ScreenOptions::HandleScreenMessage(sm);
 }
 
 void ScreenOptionsCourseOverview::AfterChangeValueInRow(
-    int iRow, PlayerNumber pn) {
-  ScreenOptions::AfterChangeValueInRow(iRow, pn);
+    int row, PlayerNumber pn) {
+  ScreenOptions::AfterChangeValueInRow(row, pn);
 }
 
 void ScreenOptionsCourseOverview::ProcessMenuStart(
@@ -202,21 +202,21 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
     return;
   }
 
-  int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
-  switch (iRow) {
+  int row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+  switch (row) {
     case CourseOverviewRow_Play:
     case CourseOverviewRow_Edit:
       SCREENMAN->PlayStartSound();
       this->BeginFadingOut();
       return;  // handled
     case CourseOverviewRow_Shuffle: {
-      Course* pCourse = GAMESTATE->cur_course_;
+      Course* course = GAMESTATE->cur_course_;
       std::shuffle(
-          pCourse->entries_.begin(), pCourse->entries_.end(),
+          course->entries_.begin(), course->entries_.end(),
           g_RandomNumberGenerator);
-      Trail* pTrail = pCourse->GetTrailForceRegenCache(
+      Trail* trail = course->GetTrailForceRegenCache(
           GAMESTATE->GetCurrentStyle(input.pn_)->steps_type_);
-      GAMESTATE->cur_trail_[PLAYER_1].Set(pTrail);
+      GAMESTATE->cur_trail_[PLAYER_1].Set(trail);
       SCREENMAN->PlayStartSound();
       MESSAGEMAN->Broadcast("CurrentCourseChanged");
     }
@@ -236,8 +236,8 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
           PROMPT_YES_NO, ANSWER_NO);
       break;
     case CourseOverviewRow_Save: {
-      bool bPromptForName = EditCourseUtil::s_bNewCourseNeedsName;
-      if (bPromptForName) {
+      bool prompt_for_name = EditCourseUtil::s_bNewCourseNeedsName;
+      if (prompt_for_name) {
         ScreenTextEntry::TextEntry(
             SM_BackFromEnterName, ENTER_COURSE_NAME,
             GAMESTATE->cur_course_->GetDisplayFullTitle(),

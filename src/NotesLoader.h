@@ -14,8 +14,8 @@ namespace NotesLoader {
  * @param sMainTitleOut the eventual main title.
  * @param sSubTitleOut the ventual sub title. */
 void GetMainAndSubTitlesFromFullTitle(
-    const std::string& sFullTitle, std::string& sMainTitleOut,
-    std::string& sSubTitleOut);
+    const std::string& full_title, std::string& main_title_out,
+    std::string& sub_title_out);
 /**
  * @brief Attempt to load a Song from the given directory.
  * @param sPath the path to the file.
@@ -23,8 +23,8 @@ void GetMainAndSubTitlesFromFullTitle(
  * @param BlacklistedImages images to exclude (DWI files only for some reason).
  * @return its success or failure. */
 bool LoadFromDir(
-    const std::string& sPath, Song& out,
-    std::set<std::string>& BlacklistedImages, bool load_autosave = false);
+    const std::string& path, Song& out,
+    std::set<std::string>& blacklisted_images, bool load_autosave = false);
 }  // namespace NotesLoader
 
 #endif

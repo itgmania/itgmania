@@ -67,7 +67,7 @@ class InputHandler_SnekConfig : public InputHandler {
   ~InputHandler_SnekConfig();
 
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
   bool IsConnected() { return dev_.IsConnected(); }
 
@@ -89,7 +89,7 @@ class InputHandler_SnekConfig : public InputHandler {
   void InputThreadMain();
 
   void BroadcastFullSensorStateHelper(
-      SnekBitMapping mapping, uint8_t sensor_index, bool isPressed);
+      SnekBitMapping mapping, uint8_t sensor_index, bool is_pressed);
   void SendSafeDisconnect();
 
   bool SendCommand(

@@ -96,24 +96,24 @@ bool EditModePlayerManager::HandleGameplayInput(
     if (GAMESTATE->player_state_[pn]->player_controller_ == PC_AUTOPLAY) {
       return false;
     }
-    const int iCol =
+    const int col =
         GAMESTATE->GetCurrentStyle(pn)->GameInputToColumn(input.game_i_);
-    if (iCol != -1) {
+    if (col != -1) {
       // Pass inputs for both players to Player 1 in routine style.
       if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
               ->style_type_ == StyleType_TwoPlayersSharedSides) {
         (*players_[PLAYER_1])
             ->Step(
-                iCol, -1, input.device_i_.ts_, false,
+                col, -1, input.device_i_.ts_, false,
                 input.type_ == IET_RELEASE);
         (*players_[PLAYER_2])
             ->Step(
-                iCol, -1, input.device_i_.ts_, false,
+                col, -1, input.device_i_.ts_, false,
                 input.type_ == IET_RELEASE);
       } else {
         (*players_[pn])
             ->Step(
-                iCol, -1, input.device_i_.ts_, false,
+                col, -1, input.device_i_.ts_, false,
                 input.type_ == IET_RELEASE);
       }
     }

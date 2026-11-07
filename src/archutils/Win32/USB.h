@@ -12,7 +12,7 @@ class WindowsFileIO {
  public:
   WindowsFileIO();
   ~WindowsFileIO();
-  bool Open(std::string sPath, int iBlockSize);
+  bool Open(std::string path, int block_size);
   bool IsOpen() const;
 
   /* Nonblocking read.  size must always be the same.  Returns the number of
@@ -37,7 +37,7 @@ class USBDevice {
  public:
   int GetPadEvent();
   bool Open(
-      int iVID, int iPID, int iBlockSize, int iNum, void (*pfnInit)(HANDLE));
+      int vid, int pid, int block_size, int num, void (*pfn_init)(HANDLE));
   bool IsOpen() const;
 
   WindowsFileIO io_;

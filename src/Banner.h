@@ -20,23 +20,23 @@ class Banner : public Sprite {
   virtual ~Banner() {}
   virtual Banner* Copy() const;
 
-  void Load(RageTextureID ID, bool bIsBanner);
-  virtual void Load(RageTextureID ID) { Load(ID, true); }
-  void LoadFromCachedBanner(const std::string& sPath);
+  void Load(RageTextureID id, bool is_banner);
+  virtual void Load(RageTextureID id) { Load(id, true); }
+  void LoadFromCachedBanner(const std::string& path);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   /**
    * @brief Attempt to load the banner from a song.
    * @param pSong the song in question. If nullptr, there is no song.
    */
-  void LoadFromSong(Song* pSong);
+  void LoadFromSong(Song* song);
   void LoadMode();
-  void LoadFromSongGroup(std::string sSongGroup);
-  void LoadFromCourse(const Course* pCourse);
-  void LoadIconFromCharacter(const Character* pCharacter);
-  void LoadBannerFromUnlockEntry(const UnlockEntry* pUE);
-  void LoadBackgroundFromUnlockEntry(const UnlockEntry* pUE);
+  void LoadFromSongGroup(std::string song_group);
+  void LoadFromCourse(const Course* course);
+  void LoadIconFromCharacter(const Character* character);
+  void LoadBannerFromUnlockEntry(const UnlockEntry* ue);
+  void LoadBackgroundFromUnlockEntry(const UnlockEntry* ue);
   void LoadRoulette();
   void LoadRandom();
   void LoadFromSortOrder(SortOrder so);
@@ -45,7 +45,7 @@ class Banner : public Sprite {
   void LoadCourseFallback();
   void LoadFallbackCharacterIcon();
 
-  void SetScrolling(bool bScroll, float Percent = 0);
+  void SetScrolling(bool scroll, float percent = 0);
   bool GetScrolling() const { return scrolling_; }
   float ScrollingPercent() const { return percent_scrolling_; }
 

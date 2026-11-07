@@ -12,10 +12,10 @@
 
 /* Use CommandLineToArgvW to parse the command line arguments. */
 int GetWin32CmdLine(char**& argv) {
-  LPWSTR* argvW = nullptr;
+  LPWSTR* argv_w = nullptr;
   int argc = 0;
-  argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
-  if (argvW == nullptr) {
+  argv_w = CommandLineToArgvW(GetCommandLineW(), &argc);
+  if (argv_w == nullptr) {
     argv = nullptr;
     return -1;
   }
@@ -23,14 +23,14 @@ int GetWin32CmdLine(char**& argv) {
   std::vector<std::string> args;
   for (int i = 0; i < argc; ++i) {
     int size_needed = WideCharToMultiByte(
-        CP_UTF8, 0, argvW[i], -1, nullptr, 0, nullptr, nullptr);
+        CP_UTF8, 0, argv_w[i], -1, nullptr, 0, nullptr, nullptr);
     std::string arg(size_needed, 0);
     WideCharToMultiByte(
-        CP_UTF8, 0, argvW[i], -1, &arg[0], size_needed, nullptr, nullptr);
+        CP_UTF8, 0, argv_w[i], -1, &arg[0], size_needed, nullptr, nullptr);
     args.push_back(arg);
   }
 
-  LocalFree(argvW);
+  LocalFree(argv_w);
 
   argv = new char*[args.size()];
   for (size_t i = 0; i < args.size(); ++i) {

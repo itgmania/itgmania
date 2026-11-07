@@ -20,7 +20,7 @@ class ScreenStatsOverlay : public Screen {
  public:
   virtual void Init();
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
  private:
   void AddTimestampLine(const std::string& txt, const RageColor& color);

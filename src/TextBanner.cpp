@@ -13,34 +13,34 @@
 
 REGISTER_ACTOR_CLASS(TextBanner);
 
-void TextBanner::LoadFromNode(const XNode* pNode) {
+void TextBanner::LoadFromNode(const XNode* node) {
   initted_ = true;
 
-  ActorFrame::LoadFromNode(pNode);
+  ActorFrame::LoadFromNode(node);
 }
 
-void TextBanner::Load(std::string sMetricsGroup) {
+void TextBanner::Load(std::string metrics_group) {
   initted_ = true;
 
   text_title_.SetName("Title");
-  text_title_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  text_title_.LoadFromFont(THEME->GetPathF(metrics_group, "text"));
   this->AddChild(&text_title_);
 
   text_sub_title_.SetName("Subtitle");
-  text_sub_title_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  text_sub_title_.LoadFromFont(THEME->GetPathF(metrics_group, "text"));
   this->AddChild(&text_sub_title_);
 
   text_artist_.SetName("Artist");
-  text_artist_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "text"));
+  text_artist_.LoadFromFont(THEME->GetPathF(metrics_group, "text"));
   this->AddChild(&text_artist_);
 
-  AddCommand("AfterSet", THEME->GetMetricA(sMetricsGroup, "AfterSetCommand"));
+  AddCommand("AfterSet", THEME->GetMetricA(metrics_group, "AfterSetCommand"));
   artist_prepend_string_ =
-      THEME->GetMetric(sMetricsGroup, "ArtistPrependString");
+      THEME->GetMetric(metrics_group, "ArtistPrependString");
 
-  ActorUtil::LoadAllCommandsAndOnCommand(text_title_, sMetricsGroup);
-  ActorUtil::LoadAllCommandsAndOnCommand(text_sub_title_, sMetricsGroup);
-  ActorUtil::LoadAllCommandsAndOnCommand(text_artist_, sMetricsGroup);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_title_, metrics_group);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_sub_title_, metrics_group);
+  ActorUtil::LoadAllCommandsAndOnCommand(text_artist_, metrics_group);
 }
 
 TextBanner::TextBanner() { initted_ = false; }
@@ -58,29 +58,29 @@ TextBanner::TextBanner(const TextBanner& cpy)
 }
 
 void TextBanner::SetFromString(
-    const std::string& sDisplayTitle, const std::string& sTranslitTitle,
-    const std::string& sDisplaySubTitle, const std::string& sTranslitSubTitle,
-    const std::string& sDisplayArtist, const std::string& sTranslitArtist) {
+    const std::string& display_title, const std::string& translit_title,
+    const std::string& display_sub_title, const std::string& translit_sub_title,
+    const std::string& display_artist, const std::string& translit_artist) {
   ASSERT(initted_);
 
-  text_title_.SetText(sDisplayTitle, sTranslitTitle);
-  text_sub_title_.SetText(sDisplaySubTitle, sTranslitSubTitle);
-  text_artist_.SetText(sDisplayArtist, sTranslitArtist);
+  text_title_.SetText(display_title, translit_title);
+  text_sub_title_.SetText(display_sub_title, translit_sub_title);
+  text_artist_.SetText(display_artist, translit_artist);
 
   Message msg("AfterSet");
   this->PlayCommandNoRecurse(msg);
 }
 
-void TextBanner::SetFromSong(const Song* pSong) {
-  if (pSong == nullptr) {
+void TextBanner::SetFromSong(const Song* song) {
+  if (song == nullptr) {
     SetFromString("", "", "", "", "", "");
     return;
   }
   SetFromString(
-      pSong->GetDisplayMainTitle(), pSong->GetTranslitMainTitle(),
-      pSong->GetDisplaySubTitle(), pSong->GetTranslitSubTitle(),
-      artist_prepend_string_ + pSong->GetDisplayArtist(),
-      artist_prepend_string_ + pSong->GetTranslitArtist());
+      song->GetDisplayMainTitle(), song->GetTranslitMainTitle(),
+      song->GetDisplaySubTitle(), song->GetTranslitSubTitle(),
+      artist_prepend_string_ + song->GetDisplayArtist(),
+      artist_prepend_string_ + song->GetTranslitArtist());
 }
 
 // lua start
@@ -94,20 +94,20 @@ class LunaTextBanner : public Luna<TextBanner> {
     COMMON_RETURN_SELF;
   }
   static int SetFromSong(T* p, lua_State* L) {
-    Song* pSong = Luna<Song>::check(L, 1);
-    p->SetFromSong(pSong);
+    Song* song = Luna<Song>::check(L, 1);
+    p->SetFromSong(song);
     COMMON_RETURN_SELF;
   }
   static int SetFromString(T* p, lua_State* L) {
-    std::string sDisplayTitle = SArg(1);
-    std::string sTranslitTitle = SArg(2);
-    std::string sDisplaySubTitle = SArg(3);
-    std::string sTranslitSubTitle = SArg(4);
-    std::string sDisplayArtist = SArg(5);
-    std::string sTranslitArtist = SArg(6);
+    std::string display_title = SArg(1);
+    std::string translit_title = SArg(2);
+    std::string display_sub_title = SArg(3);
+    std::string translit_sub_title = SArg(4);
+    std::string display_artist = SArg(5);
+    std::string translit_artist = SArg(6);
     p->SetFromString(
-        sDisplayTitle, sTranslitTitle, sDisplaySubTitle, sTranslitSubTitle,
-        sDisplayArtist, sTranslitArtist);
+        display_title, translit_title, display_sub_title, translit_sub_title,
+        display_artist, translit_artist);
     COMMON_RETURN_SELF;
   }
 

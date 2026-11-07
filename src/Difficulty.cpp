@@ -76,8 +76,8 @@ struct OldStyleStringToDifficultyMapHolder {
   }
 };
 OldStyleStringToDifficultyMapHolder OldStyleStringToDifficulty_converter;
-Difficulty OldStyleStringToDifficulty(const std::string& sDC) {
-  std::string s2 = sDC;
+Difficulty OldStyleStringToDifficulty(const std::string& dc) {
+  std::string s2 = dc;
   MakeLower(s2);
   std::map<std::string, Difficulty>::iterator diff =
       OldStyleStringToDifficulty_converter.conversion_map_.find(s2);
@@ -111,21 +111,21 @@ std::string GetCustomDifficulty(StepsType st, Difficulty dc, CourseType ct) {
     return "Edit";
   }
   // OPTIMIZATION OPPORTUNITY: cache these metrics and cache the splitting
-  std::vector<std::string> vsNames;
-  split(NAMES, ",", vsNames);
-  for (const std::string& sName : vsNames) {
-    ThemeMetric<StepsType> STEPS_TYPE("CustomDifficulty", sName + "StepsType");
+  std::vector<std::string> names;
+  split(NAMES, ",", names);
+  for (const std::string& name : names) {
+    ThemeMetric<StepsType> STEPS_TYPE("CustomDifficulty", name + "StepsType");
     if (STEPS_TYPE == StepsType_Invalid || st == STEPS_TYPE)  // match
     {
       ThemeMetric<Difficulty> DIFFICULTY(
-          "CustomDifficulty", sName + "Difficulty");
+          "CustomDifficulty", name + "Difficulty");
       if (DIFFICULTY == Difficulty_Invalid || dc == DIFFICULTY)  // match
       {
         ThemeMetric<CourseType> COURSE_TYPE(
-            "CustomDifficulty", sName + "CourseType");
+            "CustomDifficulty", name + "CourseType");
         if (COURSE_TYPE == CourseType_Invalid || ct == COURSE_TYPE)  // match
         {
-          ThemeMetric<std::string> STRING("CustomDifficulty", sName + "String");
+          ThemeMetric<std::string> STRING("CustomDifficulty", name + "String");
           return STRING.GetValue();
         }
       }
@@ -145,22 +145,22 @@ LuaFunction(
         Enum::Check<CourseType>(L, 3, true)));
 
 std::string CustomDifficultyToLocalizedString(
-    const std::string& sCustomDifficulty) {
-  return THEME->GetString("CustomDifficulty", sCustomDifficulty);
+    const std::string& custom_difficulty) {
+  return THEME->GetString("CustomDifficulty", custom_difficulty);
 }
 
 LuaFunction(
     CustomDifficultyToLocalizedString,
     CustomDifficultyToLocalizedString(SArg(1)));
 
-std::string StepsToCustomDifficulty(const Steps* pSteps) {
+std::string StepsToCustomDifficulty(const Steps* steps) {
   return GetCustomDifficulty(
-      pSteps->steps_type_, pSteps->GetDifficulty(), CourseType_Invalid);
+      steps->steps_type_, steps->GetDifficulty(), CourseType_Invalid);
 }
 
-std::string TrailToCustomDifficulty(const Trail* pTrail) {
+std::string TrailToCustomDifficulty(const Trail* trail) {
   return GetCustomDifficulty(
-      pTrail->steps_type_, pTrail->course_difficulty_, pTrail->course_type_);
+      trail->steps_type_, trail->course_difficulty_, trail->course_type_);
 }
 
 #include "LuaBinding.h"

@@ -23,43 +23,43 @@ FontManager::~FontManager() {
   for (std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();
        i != g_mapPathToFont.end(); ++i) {
     const FontName& fn = i->first;
-    Font* pFont = i->second;
-    if (pFont->ref_count_ > 0) {
+    Font* font = i->second;
+    if (font->ref_count_ > 0) {
       LOG->Trace(
           "FONT LEAK: '%s', RefCount = %d.", fn.first.c_str(),
-          pFont->ref_count_);
+          font->ref_count_);
     }
-    delete pFont;
+    delete font;
   }
 }
 
 Font* FontManager::LoadFont(
-    const std::string& sFontOrTextureFilePath, std::string sChars) {
-  Font* pFont;
+    const std::string& font_or_texture_file_path, std::string chars) {
+  Font* font;
   /* Convert the path to lowercase so that we don't load duplicates. Really,
    * this does not solve the duplicate problem. We could have two copies of
    * the same bitmap if there are equivalent but different paths
    * (e.g. "graphics\blah.png" and "..\stepmania\graphics\blah.png" ). */
 
-  CHECKPOINT_M(
-      ssprintf("FontManager::LoadFont(%s).", sFontOrTextureFilePath.c_str()));
-  const FontName NewName(sFontOrTextureFilePath, sChars);
-  std::map<FontName, Font*>::iterator p = g_mapPathToFont.find(NewName);
+  CHECKPOINT_M(ssprintf(
+      "FontManager::LoadFont(%s).", font_or_texture_file_path.c_str()));
+  const FontName new_name(font_or_texture_file_path, chars);
+  std::map<FontName, Font*>::iterator p = g_mapPathToFont.find(new_name);
   if (p != g_mapPathToFont.end()) {
-    pFont = p->second;
-    pFont->ref_count_++;
-    return pFont;
+    font = p->second;
+    font->ref_count_++;
+    return font;
   }
 
   Font* f = new Font;
-  f->Load(sFontOrTextureFilePath, sChars);
-  g_mapPathToFont[NewName] = f;
+  f->Load(font_or_texture_file_path, chars);
+  g_mapPathToFont[new_name] = f;
   return f;
 }
 
-Font* FontManager::CopyFont(Font* pFont) {
-  ++pFont->ref_count_;
-  return pFont;
+Font* FontManager::CopyFont(Font* font) {
+  ++font->ref_count_;
+  return font;
 }
 
 void FontManager::UnloadFont(Font* fp) {

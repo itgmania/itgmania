@@ -33,16 +33,16 @@ LuaDeclareType(HighScoresType);
 class ScoreScroller : public DynamicActorScroller {
  public:
   ScoreScroller();
-  void LoadSongs(int iNumRecentScores);
-  void LoadCourses(CourseType ct, int iNumRecentScores);
-  void Load(std::string sClassName);
+  void LoadSongs(int num_recent_scores);
+  void LoadCourses(CourseType ct, int num_recent_scores);
+  void Load(std::string class_name);
   void SetDisplay(
-      const std::vector<DifficultyAndStepsType>& DifficultiesToShow);
-  bool Scroll(int iDir);
+      const std::vector<DifficultyAndStepsType>& difficulties_to_show);
+  bool Scroll(int dir);
   void ScrollTop();
 
  protected:
-  virtual void ConfigureActor(Actor* pActor, int iItem);
+  virtual void ConfigureActor(Actor* actor, int item);
   std::vector<DifficultyAndStepsType> difficulties_to_show_;
 
   struct ScoreRowItemData  // for all_steps and all_courses
@@ -66,7 +66,7 @@ class ScreenHighScores : public ScreenAttract {
   virtual void Init();
   virtual void BeginScreen();
 
-  void HandleScreenMessage(const ScreenMessage SM);
+  void HandleScreenMessage(const ScreenMessage sm);
   virtual bool Input(const InputEventPlus& input);
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuBack(const InputEventPlus& input);
@@ -88,7 +88,7 @@ class ScreenHighScores : public ScreenAttract {
   }
 
  private:
-  void DoScroll(int iDir);
+  void DoScroll(int dir);
 
   ThemeMetric<bool> MANUAL_SCROLLING;
   ThemeMetric<HighScoresType> HIGH_SCORES_TYPE;

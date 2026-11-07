@@ -13,20 +13,20 @@ class KeyboardDevice : public HIDDevice {
   std::unordered_map<IOHIDElementCookie, DeviceButton> mapping_;
 
  protected:
-  bool AddLogicalDevice(int usagePage, int usage);
+  bool AddLogicalDevice(int usage_page, int usage);
   void AddElement(
-      int usagePage, int usage, IOHIDElementCookie cookie,
+      int usage_page, int usage, IOHIDElementCookie cookie,
       const CFDictionaryRef properties);
   void Open();
 
  public:
   void GetButtonPresses(
-      std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+      std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
       const RageTimer& now) const;
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices) const;
 
   static bool DeviceButtonToMacVirtualKey(
-      DeviceButton button, UInt8& iMacVKOut);
+      DeviceButton button, UInt8& mac_vk_out);
 };
 
 #endif

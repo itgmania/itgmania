@@ -151,10 +151,10 @@ void ScreenEvaluation::Init() {
       GAMESTATE->JoinPlayer(p);
       GAMESTATE->cur_steps_[p].Set(GAMESTATE->cur_song_->GetAllSteps()[0]);
       if (GAMESTATE->cur_course_) {
-        std::vector<Trail*> apTrails;
-        GAMESTATE->cur_course_->GetAllTrails(apTrails);
-        if (apTrails.size()) {
-          GAMESTATE->cur_trail_[p].Set(apTrails[0]);
+        std::vector<Trail*> trails;
+        GAMESTATE->cur_course_->GetAllTrails(trails);
+        if (trails.size()) {
+          GAMESTATE->cur_trail_[p].Set(trails[0]);
         }
       }
       ss.player_[p].possible_steps_.push_back(GAMESTATE->cur_steps_[PLAYER_1]);
@@ -169,13 +169,13 @@ void ScreenEvaluation::Init() {
     }
 
     for (float f = 0; f < 100.0f; f += 1.0f) {
-      float fP1 = std::fmod(f / 100 * 4 + .3f, 1);
-      ss.player_[PLAYER_1].SetLifeRecordAt(fP1, f);
-      ss.player_[PLAYER_2].SetLifeRecordAt(1 - fP1, f);
+      float p1 = std::fmod(f / 100 * 4 + .3f, 1);
+      ss.player_[PLAYER_1].SetLifeRecordAt(p1, f);
+      ss.player_[PLAYER_2].SetLifeRecordAt(1 - p1, f);
     }
 
     FOREACH_PlayerNumber(p) {
-      float fSeconds = GAMESTATE->cur_song_->GetStepsSeconds();
+      float seconds = GAMESTATE->cur_song_->GetStepsSeconds();
       ss.player_[p].actual_dance_points_ = RandomInt(3);
       ss.player_[p].possible_dance_points_ = 2;
       if (RandomInt(2)) {
@@ -186,20 +186,20 @@ void ScreenEvaluation::Init() {
       ss.player_[p].UpdateComboList(0, true);
 
       ss.player_[p].cur_combo_ += 50;
-      ss.player_[p].UpdateComboList(0.10f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.10f * seconds, false);
 
       ss.player_[p].cur_combo_ = 0;
-      ss.player_[p].UpdateComboList(0.15f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.15f * seconds, false);
       ss.player_[p].cur_combo_ = 1;
-      ss.player_[p].UpdateComboList(0.25f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.25f * seconds, false);
       ss.player_[p].cur_combo_ = 50;
-      ss.player_[p].UpdateComboList(0.35f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.35f * seconds, false);
       ss.player_[p].cur_combo_ = 0;
-      ss.player_[p].UpdateComboList(0.45f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.45f * seconds, false);
       ss.player_[p].cur_combo_ = 1;
-      ss.player_[p].UpdateComboList(0.50f * fSeconds, false);
+      ss.player_[p].UpdateComboList(0.50f * seconds, false);
       ss.player_[p].cur_combo_ = 100;
-      ss.player_[p].UpdateComboList(1.00f * fSeconds, false);
+      ss.player_[p].UpdateComboList(1.00f * seconds, false);
       if (RandomInt(5) == 0) {
         ss.player_[p].failed_ = true;
       }
@@ -294,9 +294,9 @@ void ScreenEvaluation::Init() {
       for (size_t i = 0;
            i < stage_stats_->played_songs_.size() && i < MAX_SONGS_TO_SHOW;
            i++) {
-        Song* pSong = stage_stats_->played_songs_[i];
+        Song* song = stage_stats_->played_songs_[i];
 
-        small_banner_[i].LoadFromSong(pSong);
+        small_banner_[i].LoadFromSong(song);
         small_banner_[i].ScaleToClipped(BANNER_WIDTH, BANNER_HEIGHT);
         small_banner_[i].SetName(ssprintf("SmallBanner%u", (unsigned)i + 1));
         ActorUtil::LoadAllCommands(small_banner_[i], name_);
@@ -346,8 +346,8 @@ void ScreenEvaluation::Init() {
                                         // won't show in the mods list
         }
         po.GetLocalizedMods(v);
-        std::string sPO = join(PLAYER_OPTIONS_SEPARATOR, v);
-        text_player_options_[p].SetText(sPO);
+        std::string s_po = join(PLAYER_OPTIONS_SEPARATOR, v);
+        text_player_options_[p].SetText(s_po);
         this->AddChild(&text_player_options_[p]);
       }
 
@@ -417,9 +417,9 @@ void ScreenEvaluation::Init() {
   // init bonus area
   if (SHOW_BONUS_AREA) {
     // In course mode, we need to make sure the bar doesn't overflow. -aj
-    float fDivider = 1.0f;
+    float divider = 1.0f;
     if (GAMESTATE->IsCourseMode()) {
-      fDivider = fDivider / GAMESTATE->cur_course_->entries_.size();
+      divider = divider / GAMESTATE->cur_course_->entries_.size();
     }
 
     FOREACH_EnabledPlayer(p) {
@@ -442,7 +442,7 @@ void ScreenEvaluation::Init() {
         spr_possible_bar_[p][r].Load(
             THEME->GetPathG(name_, ssprintf("BarPossible p%d", p + 1)));
         spr_possible_bar_[p][r].SetWidth(
-            spr_possible_bar_[p][r].GetUnzoomedWidth() * possible * fDivider);
+            spr_possible_bar_[p][r].GetUnzoomedWidth() * possible * divider);
         spr_possible_bar_[p][r].SetName(
             ssprintf("BarPossible%dP%d", r + 1, p + 1));
         ActorUtil::LoadAllCommands(spr_possible_bar_[p][r], name_);
@@ -454,7 +454,7 @@ void ScreenEvaluation::Init() {
         // should be out of the possible bar, not actual (whatever value that is
         // at)
         spr_actual_bar_[p][r].SetWidth(
-            spr_possible_bar_[p][r].GetUnzoomedWidth() * actual * fDivider);
+            spr_possible_bar_[p][r].GetUnzoomedWidth() * actual * divider);
 
         float value = (float)100 * spr_actual_bar_[p][r].GetUnzoomedWidth() /
                       spr_possible_bar_[p][r].GetUnzoomedWidth();
@@ -510,8 +510,8 @@ void ScreenEvaluation::Init() {
 
       spr_win_[p].Load(THEME->GetPathG(name_, ssprintf("win p%d 1x3", p + 1)));
       spr_win_[p].StopAnimating();
-      int iFrame = GAMESTATE->GetStageResult(p);
-      spr_win_[p].SetState(iFrame);
+      int frame = GAMESTATE->GetStageResult(p);
+      spr_win_[p].SetState(frame);
       spr_win_[p].SetName(ssprintf("WinP%d", p + 1));
       ActorUtil::LoadAllCommands(spr_win_[p], name_);
       SET_XY(spr_win_[p]);
@@ -554,51 +554,51 @@ void ScreenEvaluation::Init() {
         SET_XY(text_judgment_line_number_[l][p]);
         this->AddChild(&text_judgment_line_number_[l][p]);
 
-        int iValue;
+        int i_value;
         switch (l) {
           /* xxx: This doesn't seem to handle checkpoints correctly.
            * Something about checkpoints needing to be tied into
            * the correct judgments instead of just W1/W2. Misses are ok. */
           case JudgmentLine_W1:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W1];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_W1];
             if (CHECKPOINTS_WITH_JUDGMENTS && GAMESTATE->ShowW1()) {
-              iValue +=
+              i_value +=
                   stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointHit];
             }
             break;
           case JudgmentLine_W2:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W2];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_W2];
             if (CHECKPOINTS_WITH_JUDGMENTS && !GAMESTATE->ShowW1()) {
-              iValue +=
+              i_value +=
                   stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointHit];
             }
             break;
           case JudgmentLine_W3:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W3];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_W3];
             break;
           case JudgmentLine_W4:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W4];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_W4];
             break;
           case JudgmentLine_W5:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_W5];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_W5];
             break;
           case JudgmentLine_Miss:
-            iValue = stage_stats_->player_[p].tap_note_scores_[TNS_Miss];
+            i_value = stage_stats_->player_[p].tap_note_scores_[TNS_Miss];
             if (CHECKPOINTS_WITH_JUDGMENTS) {
-              iValue +=
+              i_value +=
                   stage_stats_->player_[p].tap_note_scores_[TNS_CheckpointMiss];
             }
             break;
           case JudgmentLine_Held:
-            iValue = stage_stats_->player_[p].hold_note_scores_[HNS_Held];
+            i_value = stage_stats_->player_[p].hold_note_scores_[HNS_Held];
             break;
           case JudgmentLine_MaxCombo:
-            iValue = stage_stats_->player_[p].GetMaxCombo().cnt_;
+            i_value = stage_stats_->player_[p].GetMaxCombo().cnt_;
             break;
             DEFAULT_FAIL(l);
         }
 
-        text_judgment_line_number_[l][p].SetTargetNumber(float(iValue));
+        text_judgment_line_number_[l][p].SetTargetNumber(float(i_value));
       }
     }
   }
@@ -624,21 +624,21 @@ void ScreenEvaluation::Init() {
         SET_XY(text_detail_text_[l][p]);
         this->AddChild(&text_detail_text_[l][p]);
 
-        static const int indices[NUM_DetailLine] = {
+        static const int kIndices[NUM_DetailLine] = {
             RadarCategory_TapsAndHolds, RadarCategory_Jumps,
             RadarCategory_Holds,        RadarCategory_Mines,
             RadarCategory_Hands,        RadarCategory_Rolls,
             RadarCategory_Lifts,        RadarCategory_Fakes};
-        const int ind = indices[l];
-        const int iActual =
+        const int ind = kIndices[l];
+        const int i_actual =
             std::lrint(stage_stats_->player_[p].radar_actual_[ind]);
-        const int iPossible =
+        const int i_possible =
             std::lrint(stage_stats_->player_[p].radar_possible_[ind]);
 
         // todo: check if format string is valid
         // (two integer values in DETAILLINE_FORMAT) -aj
         text_detail_text_[l][p].SetText(
-            ssprintf(DETAILLINE_FORMAT.c_str(), iActual, iPossible));
+            ssprintf(DETAILLINE_FORMAT.c_str(), i_actual, i_possible));
       }
     }
   }
@@ -683,33 +683,33 @@ void ScreenEvaluation::Init() {
   }
 
   // init records area
-  bool bOneHasNewTopRecord = false;
-  bool bOneHasFullW1Combo = false;
-  bool bOneHasFullW2Combo = false;
-  bool bOneHasFullW3Combo = false;
-  bool bOneHasFullW4Combo = false;
+  bool one_has_new_top_record = false;
+  bool one_has_full_w1_combo = false;
+  bool one_has_full_w2_combo = false;
+  bool one_has_full_w3_combo = false;
+  bool one_has_full_w4_combo = false;
 
   FOREACH_PlayerNumber(p) {
     if (GAMESTATE->IsPlayerEnabled(p)) {
       if ((stage_stats_->player_[p].machine_high_score_index_ == 0 ||
            stage_stats_->player_[p].personal_high_score_index_ == 0)) {
-        bOneHasNewTopRecord = true;
+        one_has_new_top_record = true;
       }
 
       if (stage_stats_->player_[p].FullComboOfScore(TNS_W4)) {
-        bOneHasFullW4Combo = true;
+        one_has_full_w4_combo = true;
       }
 
       if (stage_stats_->player_[p].FullComboOfScore(TNS_W3)) {
-        bOneHasFullW3Combo = true;
+        one_has_full_w3_combo = true;
       }
 
       if (stage_stats_->player_[p].FullComboOfScore(TNS_W2)) {
-        bOneHasFullW2Combo = true;
+        one_has_full_w2_combo = true;
       }
 
       if (stage_stats_->player_[p].FullComboOfScore(TNS_W1)) {
-        bOneHasFullW1Combo = true;
+        one_has_full_w1_combo = true;
       }
     }
   }
@@ -722,15 +722,17 @@ void ScreenEvaluation::Init() {
         name_,
         "try " + EarnedExtraStageToString(stage_stats_->earned_extra_stage_)));
   } else if (
-      bOneHasNewTopRecord && ANNOUNCER->HasSoundsFor("evaluation new record")) {
+      one_has_new_top_record &&
+      ANNOUNCER->HasSoundsFor("evaluation new record")) {
     SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation new record"));
-  } else if (bOneHasFullW4Combo && g_MinScoreToMaintainCombo == TNS_W4) {
+  } else if (one_has_full_w4_combo && g_MinScoreToMaintainCombo == TNS_W4) {
     SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation full combo W4"));
-  } else if ((bOneHasFullW1Combo || bOneHasFullW2Combo || bOneHasFullW3Combo)) {
-    std::string sComboType =
-        bOneHasFullW1Combo ? "W1" : (bOneHasFullW2Combo ? "W2" : "W3");
+  } else if ((one_has_full_w1_combo || one_has_full_w2_combo ||
+              one_has_full_w3_combo)) {
+    std::string combo_type =
+        one_has_full_w1_combo ? "W1" : (one_has_full_w2_combo ? "W2" : "W3");
     SOUND->PlayOnceFromDir(
-        ANNOUNCER->GetPathTo("evaluation full combo " + sComboType));
+        ANNOUNCER->GetPathTo("evaluation full combo " + combo_type));
   } else {
     if (SUMMARY || GAMESTATE->IsCourseMode()) {
       SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo(
@@ -738,10 +740,10 @@ void ScreenEvaluation::Init() {
     } else {
       switch (GAMESTATE->play_mode_) {
         case PLAY_MODE_BATTLE: {
-          bool bWon = GAMESTATE->GetStageResult(
-                          GAMESTATE->GetMasterPlayerNumber()) == RESULT_WIN;
-          std::string sResult = bWon ? "win" : "lose";
-          SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation " + sResult));
+          bool won = GAMESTATE->GetStageResult(
+                         GAMESTATE->GetMasterPlayerNumber()) == RESULT_WIN;
+          std::string result = won ? "win" : "lose";
+          SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation " + result));
         } break;
         default:
           SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo(
@@ -783,21 +785,21 @@ bool ScreenEvaluation::Input(const InputEventPlus& input) {
           MEMCARDMAN->MountCard(pn);
         }
 
-        Profile* pProfile = PROFILEMAN->GetProfile(pn);
-        std::string sDir =
+        Profile* profile = PROFILEMAN->GetProfile(pn);
+        std::string dir =
             PROFILEMAN->GetProfileDir((ProfileSlot)pn) + "Screenshots/";
-        std::string sFileName =
-            StepMania::SaveScreenshot(sDir, true, true, "", "");
+        std::string file_name =
+            StepMania::SaveScreenshot(dir, true, true, "", "");
 
-        if (!sFileName.empty()) {
-          std::string sPath = sDir + sFileName;
+        if (!file_name.empty()) {
+          std::string path = dir + file_name;
 
           const HighScore& hs = stage_stats_->player_[pn].high_score_;
           Screenshot screenshot;
-          screenshot.file_name_ = sFileName;
-          screenshot.md5_ = BinaryToHex(CRYPTMAN->GetMD5ForFile(sPath));
+          screenshot.file_name_ = file_name;
+          screenshot.md5_ = BinaryToHex(CRYPTMAN->GetMD5ForFile(path));
           screenshot.high_score_ = hs;
-          pProfile->AddScreenshot(screenshot);
+          profile->AddScreenshot(screenshot);
         }
 
         if (PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn)) {
@@ -813,12 +815,12 @@ bool ScreenEvaluation::Input(const InputEventPlus& input) {
   return ScreenWithMenuElements::Input(input);
 }
 
-void ScreenEvaluation::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_PlayCheer) {
+void ScreenEvaluation::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_PlayCheer) {
     SOUND->PlayOnceFromDir(ANNOUNCER->GetPathTo("evaluation cheer"));
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 bool ScreenEvaluation::MenuBack(const InputEventPlus& input) {

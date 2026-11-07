@@ -52,7 +52,7 @@ bool ScreenTitleMenu::Input(const InputEventPlus& input) {
     return false;
   }
 
-  bool bHandled = false;
+  bool handled = false;
   if (input.type_ == IET_FIRST_PRESS) {
     // detect codes
     if (CodeDetector::EnteredCode(
@@ -66,24 +66,24 @@ bool ScreenTitleMenu::Input(const InputEventPlus& input) {
         CodeDetector::EnteredCode(
             input.game_i_.controller_, CODE_NEXT_THEME2)) {
       GameLoop::ChangeTheme(THEME->GetNextSelectableTheme());
-      bHandled = true;
+      handled = true;
     }
     if (CodeDetector::EnteredCode(
             input.game_i_.controller_, CODE_NEXT_ANNOUNCER) ||
         CodeDetector::EnteredCode(
             input.game_i_.controller_, CODE_NEXT_ANNOUNCER2)) {
       ANNOUNCER->NextAnnouncer();
-      std::string sName = ANNOUNCER->GetCurAnnouncerName();
-      if (sName == "") {
-        sName = "(none)";
+      std::string name = ANNOUNCER->GetCurAnnouncerName();
+      if (name == "") {
+        name = "(none)";
       }
-      SCREENMAN->SystemMessage(ANNOUNCER_.GetValue() + ": " + sName);
+      SCREENMAN->SystemMessage(ANNOUNCER_.GetValue() + ": " + name);
       SCREENMAN->SetNewScreen(name_);
-      bHandled = true;
+      handled = true;
     }
   }
 
-  return ScreenSelectMaster::Input(input) || bHandled;
+  return ScreenSelectMaster::Input(input) || handled;
 }
 
 void ScreenTitleMenu::HandleMessage(const Message& msg) {

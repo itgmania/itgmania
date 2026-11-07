@@ -14,9 +14,9 @@ class ScoreDisplayCalories : public RollingNumbers {
   ScoreDisplayCalories();
   ~ScoreDisplayCalories();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual ScoreDisplayCalories* Copy() const;
 
   virtual void HandleMessage(const Message& msg);

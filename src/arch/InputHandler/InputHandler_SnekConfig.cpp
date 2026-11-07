@@ -77,7 +77,7 @@ std::string InputHandler_SnekConfig::GetDeviceSpecificInputString(
 }
 
 void InputHandler_SnekConfig::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   // input data is not used in this class, it is routed through the system.
 }
 
@@ -87,21 +87,21 @@ int InputHandler_SnekConfig::InputThread_Start(void* p) {
 }
 
 void InputHandler_SnekConfig::BroadcastFullSensorStateHelper(
-    SnekBitMapping mapping, uint8_t sensor_index, bool isPressed) {
-  PadSensor currSensor = PadSensor_TopCenter;
+    SnekBitMapping mapping, uint8_t sensor_index, bool is_pressed) {
+  PadSensor curr_sensor = PadSensor_TopCenter;
 
   switch (sensor_index) {
     case 0:
-      currSensor = PadSensor_TopCenter;
+      curr_sensor = PadSensor_TopCenter;
       break;
     case 1:
-      currSensor = PadSensor_BottomCenter;
+      curr_sensor = PadSensor_BottomCenter;
       break;
     case 2:
-      currSensor = PadSensor_LeftCenter;
+      curr_sensor = PadSensor_LeftCenter;
       break;
     case 3:
-      currSensor = PadSensor_RightCenter;
+      curr_sensor = PadSensor_RightCenter;
       break;
     default:
       LOG->Warn("Invalid sensor position %d", sensor_index);
@@ -109,7 +109,7 @@ void InputHandler_SnekConfig::BroadcastFullSensorStateHelper(
   }
 
   INPUTFILTER->setFullSensorStateBinary(
-      mapping.pn_, mapping.panel_, currSensor, isPressed);
+      mapping.pn_, mapping.panel_, curr_sensor, is_pressed);
 }
 
 void InputHandler_SnekConfig::StartSensorDebugging() {
@@ -136,22 +136,22 @@ void InputHandler_SnekConfig::StopSensorDebugging() {
 
 void InputHandler_SnekConfig::InputThreadMain() {
   std::array<uint8_t, SNEK_CONFIG_PACKETSIZE> res;
-  uint8_t sensorNumber = 0;
+  uint8_t sensor_number = 0;
 
   while (!shutdown_) {
     // extio sensor cmds are 1,2,3,4, so add one to zero index.
     if (!SendCommand(
-            SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, (sensorNumber + 1), res)) {
+            SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, (sensor_number + 1), res)) {
       // bad response, try again
       continue;
     }
 
-    uint32_t newState = 0;
-    std::memcpy(&newState, &res[2], sizeof(newState));
+    uint32_t new_state = 0;
+    std::memcpy(&new_state, &res[2], sizeof(new_state));
 
-    if (newState != sensor_state_[sensorNumber]) {
+    if (new_state != sensor_state_[sensor_number]) {
       // use xor to fire events only on the bits that have changed.
-      uint32_t changed = newState ^ sensor_state_[sensorNumber];
+      uint32_t changed = new_state ^ sensor_state_[sensor_number];
 
       // walk through only the bits are are interested in (via the sensor
       // mapping)
@@ -163,10 +163,10 @@ void InputHandler_SnekConfig::InputThreadMain() {
           continue;
         }
 
-        const bool pressed = (newState & mask) != 0;
+        const bool pressed = (new_state & mask) != 0;
 
         // Only send an event for this changed sensor.
-        BroadcastFullSensorStateHelper(mapping, sensorNumber, pressed);
+        BroadcastFullSensorStateHelper(mapping, sensor_number, pressed);
       }
 
       // inform listeners of a new state, as during this debug state the snek
@@ -174,12 +174,12 @@ void InputHandler_SnekConfig::InputThreadMain() {
       // as the response is sent via the config end point.
       MESSAGEMAN->Broadcast("TestSensorRedrawEvent");
 
-      sensor_state_[sensorNumber] = newState;
+      sensor_state_[sensor_number] = new_state;
     }
 
-    sensorNumber++;
-    if (sensorNumber >= SNEK_CONFIG_NUM_SENSORS) {
-      sensorNumber = 0;
+    sensor_number++;
+    if (sensor_number >= SNEK_CONFIG_NUM_SENSORS) {
+      sensor_number = 0;
     }
   }
 
@@ -210,10 +210,10 @@ bool InputHandler_SnekConfig::SendCommand(
     return false;
   }
 
-  int rtnSize = dev_.Read(response.data(), response.size());
+  int rtn_size = dev_.Read(response.data(), response.size());
 
   // Read response, always a full payload size.
-  if (rtnSize != SNEK_CONFIG_PACKETSIZE) {
+  if (rtn_size != SNEK_CONFIG_PACKETSIZE) {
     LOG->Warn("could not read snek command back");
     return false;
   }
@@ -223,14 +223,14 @@ bool InputHandler_SnekConfig::SendCommand(
     return false;
   }
 
-  uint8_t opencodeRtn = response[1];
+  uint8_t opencode_rtn = response[1];
 
-  if (opencodeRtn == SNEK_CONFIG_ERROR) {
+  if (opencode_rtn == SNEK_CONFIG_ERROR) {
     LOG->Warn("snek invalid opcode: %02x", opcode);
     return false;
-  } else if (opencodeRtn != opcode) {
+  } else if (opencode_rtn != opcode) {
     LOG->Warn(
-        "snek recv mismatching opcode: %02x != %02x", opencodeRtn, opcode);
+        "snek recv mismatching opcode: %02x != %02x", opencode_rtn, opcode);
     return false;
   }
 

@@ -38,25 +38,25 @@ void TechCounts::CalculateTechCountsFromRows(
     std::vector<NoteAnnotation>& annotations_out) {
   for (unsigned long i = 0; i < rows.size(); i++) {
     NoteAnnotation annotation;
-    const StepParity::Row& currentRow = rows[i];
-    annotation.beat_ = currentRow.beat_;
+    const StepParity::Row& current_row = rows[i];
+    annotation.beat_ = current_row.beat_;
     annotation.where_the_feet_are_.assign(
-        currentRow.where_the_feet_are_.begin(),
-        currentRow.where_the_feet_are_.end());
+        current_row.where_the_feet_are_.begin(),
+        current_row.where_the_feet_are_.end());
 
     // Check for brackets
-    if (currentRow.note_count_ >= 2) {
-      if (currentRow.where_the_feet_are_[StepParity::Foot_LeftHeel] !=
+    if (current_row.note_count_ >= 2) {
+      if (current_row.where_the_feet_are_[StepParity::Foot_LeftHeel] !=
               StepParity::INVALID_COLUMN &&
-          currentRow.where_the_feet_are_[StepParity::Foot_LeftToe] !=
+          current_row.where_the_feet_are_[StepParity::Foot_LeftToe] !=
               StepParity::INVALID_COLUMN) {
         out[TechCountsCategory_Brackets] += 1;
         annotation.tech_.push_back(TechCountsCategory_Brackets);
       }
 
-      if (currentRow.where_the_feet_are_[StepParity::Foot_RightHeel] !=
+      if (current_row.where_the_feet_are_[StepParity::Foot_RightHeel] !=
               StepParity::INVALID_COLUMN &&
-          currentRow.where_the_feet_are_[StepParity::Foot_RightToe] !=
+          current_row.where_the_feet_are_[StepParity::Foot_RightToe] !=
               StepParity::INVALID_COLUMN) {
         out[TechCountsCategory_Brackets] += 1;
         annotation.tech_.push_back(TechCountsCategory_Brackets);
@@ -69,9 +69,9 @@ void TechCounts::CalculateTechCountsFromRows(
       continue;
     }
 
-    const StepParity::Row& previousRow = rows[i - 1];
+    const StepParity::Row& previous_row = rows[i - 1];
 
-    float elapsedTime = currentRow.second_ - previousRow.second_;
+    float elapsed_time = current_row.second_ - previous_row.second_;
 
     // Jacks are same arrow same foot
     // Doublestep is same foot on successive arrows
@@ -82,23 +82,23 @@ void TechCounts::CalculateTechCountsFromRows(
     // Crossovers are left foot on right arrow or vice versa
 
     // Check for jacks and doublesteps
-    if (currentRow.note_count_ == 1 && previousRow.note_count_ == 1) {
+    if (current_row.note_count_ == 1 && previous_row.note_count_ == 1) {
       for (StepParity::Foot foot : StepParity::FEET) {
-        if (currentRow.where_the_feet_are_[foot] ==
+        if (current_row.where_the_feet_are_[foot] ==
                 StepParity::INVALID_COLUMN ||
-            previousRow.where_the_feet_are_[foot] ==
+            previous_row.where_the_feet_are_[foot] ==
                 StepParity::INVALID_COLUMN) {
           continue;
         }
 
-        if (previousRow.where_the_feet_are_[foot] ==
-            currentRow.where_the_feet_are_[foot]) {
-          if (elapsedTime < JACK_CUTOFF) {
+        if (previous_row.where_the_feet_are_[foot] ==
+            current_row.where_the_feet_are_[foot]) {
+          if (elapsed_time < JACK_CUTOFF) {
             out[TechCountsCategory_Jacks] += 1;
             annotation.tech_.push_back(TechCountsCategory_Jacks);
           }
         } else {
-          if (elapsedTime < DOUBLESTEP_CUTOFF) {
+          if (elapsed_time < DOUBLESTEP_CUTOFF) {
             out[TechCountsCategory_Doublesteps] += 1;
             annotation.tech_.push_back(TechCountsCategory_Doublesteps);
           }
@@ -108,7 +108,7 @@ void TechCounts::CalculateTechCountsFromRows(
 
     // Check for up footswitches
     for (int c : layout->up_arrows_) {
-      if (isFootswitch(c, currentRow, previousRow, elapsedTime)) {
+      if (isFootswitch(c, current_row, previous_row, elapsed_time)) {
         out[TechCountsCategory_UpFootswitches] += 1;
         out[TechCountsCategory_Footswitches] += 1;
         annotation.tech_.push_back(TechCountsCategory_UpFootswitches);
@@ -117,7 +117,7 @@ void TechCounts::CalculateTechCountsFromRows(
     }
     // Check for down footswitches
     for (int c : layout->down_arrows_) {
-      if (isFootswitch(c, currentRow, previousRow, elapsedTime)) {
+      if (isFootswitch(c, current_row, previous_row, elapsed_time)) {
         out[TechCountsCategory_DownFootswitches] += 1;
         out[TechCountsCategory_Footswitches] += 1;
         annotation.tech_.push_back(TechCountsCategory_DownFootswitches);
@@ -127,26 +127,27 @@ void TechCounts::CalculateTechCountsFromRows(
 
     // Check for sideswitches
     for (int c : layout->side_arrows_) {
-      if (isFootswitch(c, currentRow, previousRow, elapsedTime)) {
+      if (isFootswitch(c, current_row, previous_row, elapsed_time)) {
         out[TechCountsCategory_Sideswitches] += 1;
         annotation.tech_.push_back(TechCountsCategory_Sideswitches);
       }
     }
 
     // Check for crossovers
-    int leftHeel = currentRow.where_the_feet_are_[StepParity::Foot_LeftHeel];
-    int leftToe = currentRow.where_the_feet_are_[StepParity::Foot_LeftToe];
-    int rightHeel = currentRow.where_the_feet_are_[StepParity::Foot_RightHeel];
-    int rightToe = currentRow.where_the_feet_are_[StepParity::Foot_RightToe];
+    int left_heel = current_row.where_the_feet_are_[StepParity::Foot_LeftHeel];
+    int left_toe = current_row.where_the_feet_are_[StepParity::Foot_LeftToe];
+    int right_heel =
+        current_row.where_the_feet_are_[StepParity::Foot_RightHeel];
+    int right_toe = current_row.where_the_feet_are_[StepParity::Foot_RightToe];
 
-    int previousLeftHeel =
-        previousRow.where_the_feet_are_[StepParity::Foot_LeftHeel];
-    int previousLeftToe =
-        previousRow.where_the_feet_are_[StepParity::Foot_LeftToe];
-    int previousRightHeel =
-        previousRow.where_the_feet_are_[StepParity::Foot_RightHeel];
-    int previousRightToe =
-        previousRow.where_the_feet_are_[StepParity::Foot_RightToe];
+    int previous_left_heel =
+        previous_row.where_the_feet_are_[StepParity::Foot_LeftHeel];
+    int previous_left_toe =
+        previous_row.where_the_feet_are_[StepParity::Foot_LeftToe];
+    int previous_right_heel =
+        previous_row.where_the_feet_are_[StepParity::Foot_RightHeel];
+    int previous_right_toe =
+        previous_row.where_the_feet_are_[StepParity::Foot_RightToe];
 
     // Check for the following:
     // - We moved the right foot on this row,
@@ -160,26 +161,26 @@ void TechCounts::CalculateTechCountsFromRows(
     //     foot)
     //     - otherwise, then this was probably a half crossover (like UDL,
     //     starting on right foot)
-    if (rightHeel != StepParity::INVALID_COLUMN &&
-        previousLeftHeel != StepParity::INVALID_COLUMN &&
-        previousRightHeel == StepParity::INVALID_COLUMN) {
-      StepParity::StagePoint leftPos =
-          layout->averagePoint(previousLeftHeel, previousLeftToe);
-      StepParity::StagePoint rightPos =
-          layout->averagePoint(rightHeel, rightToe);
+    if (right_heel != StepParity::INVALID_COLUMN &&
+        previous_left_heel != StepParity::INVALID_COLUMN &&
+        previous_right_heel == StepParity::INVALID_COLUMN) {
+      StepParity::StagePoint left_pos =
+          layout->averagePoint(previous_left_heel, previous_left_toe);
+      StepParity::StagePoint right_pos =
+          layout->averagePoint(right_heel, right_toe);
 
-      if (rightPos.x_ < leftPos.x_) {
+      if (right_pos.x_ < left_pos.x_) {
         if (i > 1) {
-          const StepParity::Row& previousPreviousRow = rows[i - 2];
-          int previousPreviousRightHeel =
-              previousPreviousRow
+          const StepParity::Row& previous_previous_row = rows[i - 2];
+          int previous_previous_right_heel =
+              previous_previous_row
                   .where_the_feet_are_[StepParity::Foot_RightHeel];
 
-          if (previousPreviousRightHeel != StepParity::INVALID_COLUMN &&
-              previousPreviousRightHeel != rightHeel) {
-            StepParity::StagePoint previousPreviousRightPos =
-                layout->columns_[previousPreviousRightHeel];
-            if (previousPreviousRightPos.x_ > leftPos.x_) {
+          if (previous_previous_right_heel != StepParity::INVALID_COLUMN &&
+              previous_previous_right_heel != right_heel) {
+            StepParity::StagePoint previous_previous_right_pos =
+                layout->columns_[previous_previous_right_heel];
+            if (previous_previous_right_pos.x_ > left_pos.x_) {
               out[TechCountsCategory_FullCrossovers] += 1;
               annotation.tech_.push_back(TechCountsCategory_FullCrossovers);
             } else {
@@ -199,24 +200,25 @@ void TechCounts::CalculateTechCountsFromRows(
     }
     // And check the same thing, starting with left foot
     else if (
-        leftHeel != StepParity::INVALID_COLUMN &&
-        previousRightHeel != StepParity::INVALID_COLUMN &&
-        previousLeftHeel == StepParity::INVALID_COLUMN) {
-      StepParity::StagePoint leftPos = layout->averagePoint(leftHeel, leftToe);
-      StepParity::StagePoint rightPos =
-          layout->averagePoint(previousRightHeel, previousRightToe);
+        left_heel != StepParity::INVALID_COLUMN &&
+        previous_right_heel != StepParity::INVALID_COLUMN &&
+        previous_left_heel == StepParity::INVALID_COLUMN) {
+      StepParity::StagePoint left_pos =
+          layout->averagePoint(left_heel, left_toe);
+      StepParity::StagePoint right_pos =
+          layout->averagePoint(previous_right_heel, previous_right_toe);
 
-      if (rightPos.x_ < leftPos.x_) {
+      if (right_pos.x_ < left_pos.x_) {
         if (i > 1) {
-          const StepParity::Row& previousPreviousRow = rows[i - 2];
-          int previousPreviousLeftHeel =
-              previousPreviousRow
+          const StepParity::Row& previous_previous_row = rows[i - 2];
+          int previous_previous_left_heel =
+              previous_previous_row
                   .where_the_feet_are_[StepParity::Foot_LeftHeel];
-          if (previousPreviousLeftHeel != StepParity::INVALID_COLUMN &&
-              previousPreviousLeftHeel != leftHeel) {
-            StepParity::StagePoint previousPreviousLeftPos =
-                layout->columns_[previousPreviousLeftHeel];
-            if (rightPos.x_ > previousPreviousLeftPos.x_) {
+          if (previous_previous_left_heel != StepParity::INVALID_COLUMN &&
+              previous_previous_left_heel != left_heel) {
+            StepParity::StagePoint previous_previous_left_pos =
+                layout->columns_[previous_previous_left_heel];
+            if (right_pos.x_ > previous_previous_left_pos.x_) {
               out[TechCountsCategory_FullCrossovers] += 1;
               annotation.tech_.push_back(TechCountsCategory_FullCrossovers);
             } else {
@@ -239,17 +241,17 @@ void TechCounts::CalculateTechCountsFromRows(
 }
 
 bool TechCounts::isFootswitch(
-    int c, const StepParity::Row& currentRow,
-    const StepParity::Row& previousRow, float elapsedTime) {
-  if (currentRow.columns_[c] == StepParity::Foot_None ||
-      previousRow.columns_[c] == StepParity::Foot_None) {
+    int c, const StepParity::Row& current_row,
+    const StepParity::Row& previous_row, float elapsed_time) {
+  if (current_row.columns_[c] == StepParity::Foot_None ||
+      previous_row.columns_[c] == StepParity::Foot_None) {
     return false;
   }
 
-  if (previousRow.columns_[c] != currentRow.columns_[c] &&
-      StepParity::OTHER_PART_OF_FOOT[previousRow.columns_[c]] !=
-          currentRow.columns_[c] &&
-      elapsedTime < FOOTSWITCH_CUTOFF) {
+  if (previous_row.columns_[c] != current_row.columns_[c] &&
+      StepParity::OTHER_PART_OF_FOOT[previous_row.columns_[c]] !=
+          current_row.columns_[c] &&
+      elapsed_time < FOOTSWITCH_CUTOFF) {
     return true;
   }
   return false;

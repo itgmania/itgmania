@@ -40,35 +40,35 @@ static Preference<int> g_iQuitAfterIdleSeconds("QuitAfterIdleSeconds", 0);
 static Preference<float> g_fConstantUpdateDeltaSeconds(
     "ConstantUpdateDeltaSeconds", 0);
 
-void HandleInputEvents(float fDeltaTime);
+void HandleInputEvents(float delta_time);
 
 static float g_fUpdateRate = 1;
-void GameLoop::SetUpdateRate(float fUpdateRate) { g_fUpdateRate = fUpdateRate; }
+void GameLoop::SetUpdateRate(float update_rate) { g_fUpdateRate = update_rate; }
 
 float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
 
 void GameLoop::ResetInputIdleTimer() { g_LastInputTimer.Touch(); }
 
-static void CheckGameLoopTimerSkips(float fDeltaTime) {
-  static int iLastFPS = 0;
-  int iThisFPS = DISPLAY->GetFPS();
+static void CheckGameLoopTimerSkips(float delta_time) {
+  static int last_fps = 0;
+  int this_fps = DISPLAY->GetFPS();
 
   /* If vsync is on, and we have a solid framerate (vsync == refresh and we've
    * sustained this for at least one second), we expect the amount of time for
    * the last frame to be 1/FPS. */
-  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate_ ||
-      iThisFPS != iLastFPS) {
-    iLastFPS = iThisFPS;
+  if (this_fps != DISPLAY->GetActualVideoModeParams().rate_ ||
+      this_fps != last_fps) {
+    last_fps = this_fps;
     return;
   }
 
-  const float fExpectedTime = 1.0f / iThisFPS;
-  const float fDifference = fDeltaTime - fExpectedTime;
-  if (std::abs(fDifference) > 0.002f && std::abs(fDifference) < 0.100f) {
+  const float expected_time = 1.0f / this_fps;
+  const float difference = delta_time - expected_time;
+  if (std::abs(difference) > 0.002f && std::abs(difference) < 0.100f) {
     LOG->Trace(
         "GameLoop timer skip: %i FPS, expected %.3f, got %.3f (%.3f "
         "difference)",
-        iThisFPS, fExpectedTime, fDeltaTime, fDifference);
+        this_fps, expected_time, delta_time, difference);
   }
 }
 
@@ -98,9 +98,9 @@ static void CheckInputDevices() {
   if (INPUTMAN->DevicesChanged()) {
     INPUTFILTER->Reset();  // fix "buttons stuck" if button held while unplugged
     INPUTMAN->LoadDrivers();
-    std::string sMessage;
-    if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage)) {
-      SCREENMAN->SystemMessage(sMessage);
+    std::string message;
+    if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(message)) {
+      SCREENMAN->SystemMessage(message);
     }
   }
 }
@@ -108,8 +108,8 @@ static void CheckInputDevices() {
 // On the next update, change themes, and load sNewScreen.
 static std::string g_NewTheme;
 static std::string g_NewGame;
-void GameLoop::ChangeTheme(const std::string& sNewTheme) {
-  g_NewTheme = sNewTheme;
+void GameLoop::ChangeTheme(const std::string& new_theme) {
+  g_NewTheme = new_theme;
 }
 
 void GameLoop::ChangeGame(
@@ -166,8 +166,8 @@ void DoChangeTheme() {
   // So now the correct thing to do is for a theme to specify its entry
   // point after a theme change, ensuring that we are going to a valid
   // screen and not crashing. -Kyz
-  std::string newScreenName = GetNewScreenName();
-  SCREENMAN->SetNewScreen(newScreenName);
+  std::string new_screen_name = GetNewScreenName();
+  SCREENMAN->SetNewScreen(new_screen_name);
 
   // Indicate no further theme change is needed
   g_NewTheme = std::string();
@@ -239,18 +239,18 @@ void DoChangeGame() {
 void GameLoop::UpdateAllButDraw() {
   // If the constant update delta is set, use that value. Otherwise, use the
   // delta time from the gameplay timer.
-  float fDeltaTime = (g_fConstantUpdateDeltaSeconds > 0)
+  float delta_time = (g_fConstantUpdateDeltaSeconds > 0)
                          ? g_fConstantUpdateDeltaSeconds
                          : g_GameplayTimer.GetDeltaTime();
 
   // Use a static boolean to check the preference once per game launch.
   // This is a rarely used debug feature, so we try to skip it if possible.
-  static bool bLogSkips = PREFSMAN->log_skips_;
-  if (bLogSkips) {
-    CheckGameLoopTimerSkips(fDeltaTime);
+  static bool log_skips = PREFSMAN->log_skips_;
+  if (log_skips) {
+    CheckGameLoopTimerSkips(delta_time);
   }
 
-  fDeltaTime *= g_fUpdateRate;
+  delta_time *= g_fUpdateRate;
 
   // Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush
   // position data.
@@ -260,19 +260,19 @@ void GameLoop::UpdateAllButDraw() {
    * that depend on it. If you don't do this first, the classes are all acting
    * on old information and will lag. (but no longer fatally, due to
    * timestamping -glenn) */
-  SOUND->Update(fDeltaTime);
-  TEXTUREMAN->Update(fDeltaTime);
-  GAMESTATE->Update(fDeltaTime);
+  SOUND->Update(delta_time);
+  TEXTUREMAN->Update(delta_time);
+  GAMESTATE->Update(delta_time);
   NETWORK->Update();
-  SCREENMAN->Update(fDeltaTime);
+  SCREENMAN->Update(delta_time);
   MEMCARDMAN->Update();
 
   /* Important: Process input AFTER updating game logic, or input will be
    * acting on song beat from last frame */
-  HandleInputEvents(fDeltaTime);
+  HandleInputEvents(delta_time);
 
   // Update the lights
-  LIGHTSMAN->Update(fDeltaTime);
+  LIGHTSMAN->Update(delta_time);
 }
 
 void GameLoop::RunGameLoop() {

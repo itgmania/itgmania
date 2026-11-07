@@ -57,10 +57,10 @@ struct RadarValues {
   bool operator!=(const RadarValues& other) const { return !operator==(other); }
 
   XNode* CreateNode(
-      bool bIncludeSimpleValues, bool bIncludeComplexValues) const;
-  void LoadFromNode(const XNode* pNode);
+      bool include_simple_values, bool include_complex_values) const;
+  void LoadFromNode(const XNode* node);
 
-  void FromString(std::string sValues);
+  void FromString(std::string values);
 
   static ThemeMetric<bool> WRITE_SIMPLE_VALIES;
   static ThemeMetric<bool> WRITE_COMPLEX_VALIES;

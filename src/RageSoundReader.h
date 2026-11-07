@@ -9,8 +9,8 @@ class RageSoundReader {
  public:
   virtual int GetLength() const = 0;                         /* ms */
   virtual int GetLength_Fast() const { return GetLength(); } /* ms */
-  virtual int SetPosition(int iFrame) = 0;
-  virtual int Read(float* pBuf, int iFrames) = 0;
+  virtual int SetPosition(int frame) = 0;
+  virtual int Read(float* buf, int frames) = 0;
   virtual ~RageSoundReader() {}
   virtual RageSoundReader* Copy() const = 0;
   virtual int GetSampleRate() const = 0;
@@ -46,8 +46,8 @@ class RageSoundReader {
 
   virtual std::string GetError() const = 0;
   int RetriedRead(
-      float* pBuffer, int iFrames, int* iSourceFrame = nullptr,
-      float* fRate = nullptr);
+      float* buffer, int frames, int* source_frame = nullptr,
+      float* rate = nullptr);
 };
 
 #endif

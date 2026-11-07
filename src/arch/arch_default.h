@@ -12,20 +12,20 @@
 #include "MemoryCard/MemoryCardDriverThreaded_Windows.h"
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> inputDriverList = {
+  static const std::vector<std::string> kInputDriverList = {
       "DirectInput", "Pump", "Para"};
-  return inputDriverList;
+  return kInputDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
-  return movieDriverList;
+  static const std::vector<std::string> kMovieDriverList = {"FFMpeg", "Null"};
+  return kMovieDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-  static const std::vector<std::string> soundDriverList = {
+  static const std::vector<std::string> kSoundDriverList = {
       "WASAPI", "DirectSound-sw", "WaveOut", "Null"};
-  return soundDriverList;
+  return kSoundDriverList;
 }
 
 #elif defined(MACOSX)
@@ -35,18 +35,19 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 #include "MemoryCard/MemoryCardDriverThreaded_MacOSX.h"
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> inputDriverList = {"HID", "NSEvent"};
-  return inputDriverList;
+  static const std::vector<std::string> kInputDriverList = {"HID", "NSEvent"};
+  return kInputDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
-  return movieDriverList;
+  static const std::vector<std::string> kMovieDriverList = {"FFMpeg", "Null"};
+  return kMovieDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-  static const std::vector<std::string> soundDriverList = {"AudioUnit", "Null"};
-  return soundDriverList;
+  static const std::vector<std::string> kSoundDriverList = {
+      "AudioUnit", "Null"};
+  return kSoundDriverList;
 }
 
 #elif defined(UNIX)
@@ -63,19 +64,19 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 
 #if defined(LINUX)
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> inputDriverList = {
+  static const std::vector<std::string> kInputDriverList = {
       "X11", "LinuxEvent", "LinuxJoystick"};
-  return inputDriverList;
+  return kInputDriverList;
 }
 #else
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> inputDriverList = {"X11"};
-  return inputDriverList;
+  static const std::vector<std::string> kInputDriverList = {"X11"};
+  return kInputDriverList;
 }
 #endif
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
-  return movieDriverList;
+  static const std::vector<std::string> kMovieDriverList = {"FFMpeg", "Null"};
+  return kMovieDriverList;
 }
 // PulseAudio is the preferred Unix driver since it allows the gives non
 // exclusive access to the audio device, unlike ALSA.
@@ -84,9 +85,9 @@ inline const std::vector<std::string>& GetDefaultMovieDriverList() {
 // as PulseAudio will successfully Init() but not actually work if the
 // PulseAudio daemon has been suspended by/for jackd.
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-  static const std::vector<std::string> soundDriverList = {
+  static const std::vector<std::string> kSoundDriverList = {
       "Pulse", "ALSA-sw", "JACK", "Null"};
-  return soundDriverList;
+  return kSoundDriverList;
 }
 #else
 #error Which arch?

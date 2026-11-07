@@ -46,11 +46,11 @@ class ScreenOptions : public ScreenWithMenuElements {
   ScreenOptions();
   virtual void Init();
   virtual void BeginScreen();
-  void InitMenu(const std::vector<OptionRowHandler*>& vHands);
+  void InitMenu(const std::vector<OptionRowHandler*>& hands);
   virtual ~ScreenOptions();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   virtual void TweenOnScreen();
   virtual void TweenOffScreen();
@@ -61,21 +61,21 @@ class ScreenOptions : public ScreenWithMenuElements {
 
  protected:
   virtual void ImportOptions(
-      int iRow, const std::vector<PlayerNumber>& vpns) = 0;
+      int row, const std::vector<PlayerNumber>& vpns) = 0;
   virtual void ExportOptions(
-      int iRow, const std::vector<PlayerNumber>& vpns) = 0;
+      int row, const std::vector<PlayerNumber>& vpns) = 0;
 
   void RestartOptions();
   void GetWidthXY(
-      PlayerNumber pn, int iRow, int iChoiceOnRow, int& iWidthOut, int& iXOut,
-      int& iYOut) const;
-  std::string GetExplanationText(int iRow) const;
-  void RefreshIcons(int iRow, PlayerNumber pn);
+      PlayerNumber pn, int row, int choice_on_row, int& width_out, int& x_out,
+      int& y_out) const;
+  std::string GetExplanationText(int row) const;
+  void RefreshIcons(int row, PlayerNumber pn);
   void PositionCursor(PlayerNumber pn);
-  void PositionRows(bool bTween);
+  void PositionRows(bool tween);
   void TweenCursor(PlayerNumber pn);
   void StoreFocus(PlayerNumber pn);
-  void SetOptionRowVisible(int iRow, bool bVisible, bool bRedraw = true);
+  void SetOptionRowVisible(int row, bool visible, bool redraw = true);
   void RedrawOptions();
 
   void BeginFadingOut();
@@ -83,16 +83,16 @@ class ScreenOptions : public ScreenWithMenuElements {
   std::string GetNextScreenForFocusedItem(PlayerNumber pn) const;
 
   void ChangeValueInRowRelative(
-      int iRow, PlayerNumber pn, int iDelta, bool bRepeat);
+      int row, PlayerNumber pn, int delta, bool repeat);
   void ChangeValueInRowAbsolute(
-      int iRow, PlayerNumber pn, int iChoiceIndex, bool bRepeat);
+      int row, PlayerNumber pn, int choice_index, bool repeat);
   /**
    * @brief Perform an action after a row has changed its value.
    *
    * Override this to detect when the value in a row has changed. */
-  virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
-  bool MoveRowRelative(PlayerNumber pn, int iDir, bool bRepeat);
-  bool MoveRowAbsolute(PlayerNumber pn, int iRow);
+  virtual void AfterChangeValueInRow(int row, PlayerNumber pn);
+  bool MoveRowRelative(PlayerNumber pn, int dir, bool repeat);
+  bool MoveRowAbsolute(PlayerNumber pn, int row);
   /**
    * @brief Perform an action after moving to a new row.
    *
@@ -109,13 +109,13 @@ class ScreenOptions : public ScreenWithMenuElements {
   virtual bool MenuDown(const InputEventPlus& input);
   virtual bool MenuSelect(const InputEventPlus& input);
   virtual void MenuUpDown(
-      const InputEventPlus& input, int iDir);  // iDir == -1 or iDir == +1
+      const InputEventPlus& input, int dir);  // iDir == -1 or iDir == +1
 
   int GetCurrentRow(PlayerNumber pn = PLAYER_1) const {
     return current_row_[pn];
   }
   bool AllAreOnLastRow() const;
-  OptionRow* GetRow(int iRow) const { return rows_[iRow]; }
+  OptionRow* GetRow(int row) const { return rows_[row]; }
   // void SetOptionRowFromName( const std::string& nombre );
   int GetNumRows() const { return static_cast<int>(rows_.size()); }
 

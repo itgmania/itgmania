@@ -78,19 +78,19 @@ GameState* GAMESTATE =
 class GameStateMessageHandler : public MessageSubscriber {
   void HandleMessage(const Message& msg) {
     if (msg.GetName() == "RefreshCreditText") {
-      std::string sJoined;
+      std::string joined;
       FOREACH_HumanPlayer(pn) {
-        if (sJoined != "") {
-          sJoined += ", ";
+        if (joined != "") {
+          joined += ", ";
         }
-        sJoined += ssprintf("P%i", pn + 1);
+        joined += ssprintf("P%i", pn + 1);
       }
 
-      if (sJoined == "") {
-        sJoined = "none";
+      if (joined == "") {
+        joined = "none";
       }
 
-      LOG->MapLog("JOINED", "Players joined: %s", sJoined.c_str());
+      LOG->MapLog("JOINED", "Players joined: %s", joined.c_str());
     }
   }
 };
@@ -236,14 +236,14 @@ void GameState::SetProcessedTimingData(TimingData* t) {
   this->processed_timing_ = t;
 }
 
-void GameState::ApplyGameCommand(const std::string& sCommand, PlayerNumber pn) {
+void GameState::ApplyGameCommand(const std::string& command, PlayerNumber pn) {
   GameCommand m;
-  m.Load(0, ParseCommands(sCommand));
+  m.Load(0, ParseCommands(command));
 
-  std::string sWhy;
-  if (!m.IsPlayable(&sWhy)) {
+  std::string why;
+  if (!m.IsPlayable(&why)) {
     LuaHelpers::ReportScriptErrorFmt(
-        "Can't apply GameCommand \"%s\": %s", sCommand.c_str(), sWhy.c_str());
+        "Can't apply GameCommand \"%s\": %s", command.c_str(), why.c_str());
     return;
   }
 
@@ -256,20 +256,19 @@ void GameState::ApplyGameCommand(const std::string& sCommand, PlayerNumber pn) {
 
 void GameState::ApplyCmdline() {
   // We need to join players before we can set the style.
-  std::string sPlayer;
-  for (int i = 0; GetCommandlineArgument("player", &sPlayer, i); ++i) {
-    int pn = StringToInt(sPlayer) - 1;
-    if (!IsAnInt(sPlayer) || pn < 0 || pn >= NUM_PLAYERS) {
-      RageException::Throw(
-          "Invalid argument \"--player=%s\".", sPlayer.c_str());
+  std::string player;
+  for (int i = 0; GetCommandlineArgument("player", &player, i); ++i) {
+    int pn = StringToInt(player) - 1;
+    if (!IsAnInt(player) || pn < 0 || pn >= NUM_PLAYERS) {
+      RageException::Throw("Invalid argument \"--player=%s\".", player.c_str());
     }
 
     JoinPlayer((PlayerNumber)pn);
   }
 
-  std::string sMode;
-  for (int i = 0; GetCommandlineArgument("mode", &sMode, i); ++i) {
-    ApplyGameCommand(sMode);
+  std::string mode;
+  for (int i = 0; GetCommandlineArgument("mode", &mode, i); ++i) {
+    ApplyGameCommand(mode);
   }
 }
 
@@ -420,8 +419,8 @@ void GameState::JoinPlayer(PlayerNumber pn) {
 
   // Count each player join as a play.
   {
-    Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
-    pMachineProfile->total_sessions_++;
+    Profile* machine_profile = PROFILEMAN->GetMachineProfile();
+    machine_profile->total_sessions_++;
   }
 
   // Set the current style to something appropriate for the new number of joined
@@ -436,7 +435,7 @@ void GameState::JoinPlayer(PlayerNumber pn) {
       !(pn == PLAYER_1 &&
         (cur_style->style_type_ == StyleType_TwoPlayersTwoSides ||
          cur_style->style_type_ == StyleType_TwoPlayersSharedSides))) {
-    const Style* pStyle;
+    const Style* style;
     // Only use one player for StyleType_OnePlayerTwoSides and StepsTypes
     // that can only be played by one player (e.g. dance-solo,
     // dance-threepanel, popn-nine). -aj
@@ -445,15 +444,15 @@ void GameState::JoinPlayer(PlayerNumber pn) {
     if (cur_style->style_type_ == StyleType_OnePlayerTwoSides ||
         cur_style->steps_type_ == StepsType_dance_solo ||
         cur_style->steps_type_ == StepsType_dance_threepanel) {
-      pStyle = GAMEMAN->GetFirstCompatibleStyle(
+      style = GAMEMAN->GetFirstCompatibleStyle(
           cur_game_, 1, cur_style->steps_type_);
     } else {
-      pStyle = GAMEMAN->GetFirstCompatibleStyle(
+      style = GAMEMAN->GetFirstCompatibleStyle(
           cur_game_, GetNumSidesJoined(), cur_style->steps_type_);
     }
 
     // use SetCurrentStyle in case of StyleType_OnePlayerTwoSides
-    SetCurrentStyle(pStyle, pn);
+    SetCurrentStyle(style, pn);
   }
 
   Message msg(MessageIDToString(Message_PlayerJoined));
@@ -509,13 +508,13 @@ bool JoinInputInternal(PlayerNumber pn) {
   }
 
   // subtract coins
-  int iCoinsNeededToJoin = GAMESTATE->GetCoinsNeededToJoin();
+  int coins_needed_to_join = GAMESTATE->GetCoinsNeededToJoin();
 
-  if (GAMESTATE->coins_ < iCoinsNeededToJoin) {
+  if (GAMESTATE->coins_ < coins_needed_to_join) {
     return false;  // not enough coins
   }
 
-  GAMESTATE->coins_.Set(GAMESTATE->coins_ - iCoinsNeededToJoin);
+  GAMESTATE->coins_.Set(GAMESTATE->coins_ - coins_needed_to_join);
 
   GAMESTATE->JoinPlayer(pn);
 
@@ -538,28 +537,28 @@ bool GameState::JoinInput(PlayerNumber pn) {
 
 // Attempt to join all players, as if each player pressed Start.
 bool GameState::JoinPlayers() {
-  bool bJoined = false;
+  bool joined = false;
   FOREACH_PlayerNumber(pn) {
     if (JoinInputInternal(pn)) {
-      bJoined = true;
+      joined = true;
     }
   }
-  return bJoined;
+  return joined;
 }
 
 int GameState::GetCoinsNeededToJoin() const {
-  int iCoinsToCharge = 0;
+  int coins_to_charge = 0;
 
   if (GetCoinMode() == CoinMode_Pay) {
-    iCoinsToCharge = PREFSMAN->coins_per_credit_;
+    coins_to_charge = PREFSMAN->coins_per_credit_;
   }
 
   // If joint premium, don't take away a credit for the second join.
   if (GetPremium() == Premium_2PlayersFor1Credit && GetNumSidesJoined() == 1) {
-    iCoinsToCharge = 0;
+    coins_to_charge = 0;
   }
 
-  return iCoinsToCharge;
+  return coins_to_charge;
 }
 
 /* Game flow:
@@ -598,17 +597,17 @@ bool GameState::CanAcceptProfile(PlayerNumber pn) const {
          !player_has_committed_gameplay_[pn];
 }
 
-bool GameState::LoadProfileOverGuest(PlayerNumber pn, bool bLoadEdits) {
+bool GameState::LoadProfileOverGuest(PlayerNumber pn, bool load_edits) {
   if (!CanAcceptProfile(pn)) {
     return false;
   }
 
   MEMCARDMAN->MountCard(pn);
-  const bool bSuccess = PROFILEMAN->LoadFirstAvailableProfile(
-      pn, bLoadEdits);  // load full profile
+  const bool success = PROFILEMAN->LoadFirstAvailableProfile(
+      pn, load_edits);  // load full profile
   MEMCARDMAN->UnmountCard(pn);
 
-  if (!bSuccess) {
+  if (!success) {
     return false;
   }
 
@@ -617,22 +616,22 @@ bool GameState::LoadProfileOverGuest(PlayerNumber pn, bool bLoadEdits) {
 
   LoadCurrentSettingsFromProfile(pn);
 
-  Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
-  if (pPlayerProfile) {
-    pPlayerProfile->total_sessions_++;
+  Profile* player_profile = PROFILEMAN->GetProfile(pn);
+  if (player_profile) {
+    player_profile->total_sessions_++;
   }
 
   return true;
 }
 
-void GameState::LoadProfiles(bool bLoadEdits) {
+void GameState::LoadProfiles(bool load_edits) {
   // Unlock any cards that we might want to load.
   FOREACH_HumanPlayer(pn) if (!PROFILEMAN->IsPersistentProfile(pn))
       MEMCARDMAN->UnlockCard(pn);
 
   MEMCARDMAN->WaitForCheckingToComplete();
 
-  FOREACH_HumanPlayer(pn) { LoadProfileOverGuest(pn, bLoadEdits); }
+  FOREACH_HumanPlayer(pn) { LoadProfileOverGuest(pn, load_edits); }
 }
 
 void GameState::SavePlayerProfiles() {
@@ -649,15 +648,15 @@ void GameState::SavePlayerProfile(PlayerNumber pn) {
     return;
   }
 
-  bool bWasMemoryCard = PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn);
-  if (bWasMemoryCard && !MEMCARDMAN->MountCard(pn)) {
+  bool was_memory_card = PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn);
+  if (was_memory_card && !MEMCARDMAN->MountCard(pn)) {
     LOG->Warn(
         "Couldn't mount P%d memory card, profile '%s' won't be saved", pn + 1,
         PROFILEMAN->GetPlayerName(pn).c_str());
     return;
   }
   PROFILEMAN->SaveProfile(pn);
-  if (bWasMemoryCard) {
+  if (was_memory_card) {
     MEMCARDMAN->UnmountCard(pn);
   }
 }
@@ -686,40 +685,40 @@ void GameState::SaveLocalData() {
   PROFILEMAN->SaveMachineProfile();
 }
 
-int GameState::GetNumStagesMultiplierForSong(const Song* pSong) {
-  int iNumStages = 1;
+int GameState::GetNumStagesMultiplierForSong(const Song* song) {
+  int num_stages = 1;
 
-  ASSERT(pSong != nullptr);
-  if (pSong->IsMarathon()) {
-    iNumStages *= 3;
+  ASSERT(song != nullptr);
+  if (song->IsMarathon()) {
+    num_stages *= 3;
   }
-  if (pSong->IsLong()) {
-    iNumStages *= 2;
+  if (song->IsLong()) {
+    num_stages *= 2;
   }
 
-  return iNumStages;
+  return num_stages;
 }
 
 int GameState::GetNumStagesForCurrentSongAndStepsOrCourse() const {
-  int iNumStagesOfThisSong = 1;
+  int num_stages_of_this_song = 1;
   if (cur_song_) {
     /* Extra stages need to only count as one stage in case a multi-stage
      * song is chosen. */
     if (IsAnExtraStage()) {
-      iNumStagesOfThisSong = 1;
+      num_stages_of_this_song = 1;
     } else {
-      iNumStagesOfThisSong =
+      num_stages_of_this_song =
           GameState::GetNumStagesMultiplierForSong(cur_song_);
     }
   } else if (cur_course_) {
-    iNumStagesOfThisSong = PREFSMAN->songs_per_play_;
+    num_stages_of_this_song = PREFSMAN->songs_per_play_;
   } else {
     return -1;
   }
 
-  iNumStagesOfThisSong = std::max(iNumStagesOfThisSong, 1);
+  num_stages_of_this_song = std::max(num_stages_of_this_song, 1);
 
-  return iNumStagesOfThisSong;
+  return num_stages_of_this_song;
 }
 
 // Called by ScreenGameplay. Set the length of the current song.
@@ -794,15 +793,15 @@ void GameState::CommitStageStats() {
   FOREACH_HumanPlayer(p) player_has_committed_gameplay_[p] = true;
 
   // Update TotalPlaySeconds.
-  int iPlaySeconds = std::max(0, (int)time_game_started_.GetDeltaTime());
+  int play_seconds = std::max(0, (int)time_game_started_.GetDeltaTime());
 
-  Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
-  pMachineProfile->total_session_seconds_ += iPlaySeconds;
+  Profile* machine_profile = PROFILEMAN->GetMachineProfile();
+  machine_profile->total_session_seconds_ += play_seconds;
 
   FOREACH_HumanPlayer(p) {
-    Profile* pPlayerProfile = PROFILEMAN->GetProfile(p);
-    if (pPlayerProfile) {
-      pPlayerProfile->total_session_seconds_ += iPlaySeconds;
+    Profile* player_profile = PROFILEMAN->GetProfile(p);
+    if (player_profile) {
+      player_profile->total_session_seconds_ += play_seconds;
     }
   }
 }
@@ -811,7 +810,7 @@ void GameState::CommitStageStats() {
  * played a song. Might be called more than once. */
 void GameState::FinishStage() {
   // Increment the stage counter.
-  const int iOldStageIndex = current_stage_index_;
+  const int old_stage_index = current_stage_index_;
   ++current_stage_index_;
 
   num_stages_of_this_song_ = 0;
@@ -833,15 +832,16 @@ void GameState::FinishStage() {
   // Save the current combo to the profiles so it can be used for
   // ComboContinuesBetweenSongs.
   FOREACH_HumanPlayer(p) {
-    Profile* pProfile = PROFILEMAN->GetProfile(p);
-    pProfile->current_combo_ = STATSMAN->cur_stage_stats_.player_[p].cur_combo_;
+    Profile* p_profile = PROFILEMAN->GetProfile(p);
+    p_profile->current_combo_ =
+        STATSMAN->cur_stage_stats_.player_[p].cur_combo_;
     // If the sort order is Recent, move the profile to the top of the list.
     if (PREFSMAN->profile_sort_order_ == ProfileSortOrder_Recent &&
         PROFILEMAN->IsPersistentProfile(p)) {
-      int numLocalProfiles = PROFILEMAN->GetNumLocalProfiles();
-      for (int i = 0; i < numLocalProfiles; i++) {
+      int num_local_profiles = PROFILEMAN->GetNumLocalProfiles();
+      for (int i = 0; i < num_local_profiles; i++) {
         Profile* profile = PROFILEMAN->GetLocalProfileFromIndex(i);
-        if (profile->guid_ == pProfile->guid_) {
+        if (profile->guid_ == p_profile->guid_) {
           PROFILEMAN->MoveProfileTopBottom(
               i, PREFSMAN->profile_sort_order_ascending_);
           break;
@@ -857,10 +857,10 @@ void GameState::FinishStage() {
   // todo: simplify. profile saving is accomplished in ScreenProfileSave
   // now; all this code does differently is save machine profile as well. -aj
   if (IsEventMode()) {
-    const int iSaveProfileEvery = 3;
-    if (iOldStageIndex / iSaveProfileEvery <
-        current_stage_index_ / iSaveProfileEvery) {
-      LOG->Trace("Played %i stages; saving profiles ...", iSaveProfileEvery);
+    const int save_profile_every = 3;
+    if (old_stage_index / save_profile_every <
+        current_stage_index_ / save_profile_every) {
+      LOG->Trace("Played %i stages; saving profiles ...", save_profile_every);
       PROFILEMAN->SaveMachineProfile();
       this->SavePlayerProfiles();
     }
@@ -872,11 +872,11 @@ void GameState::LoadCurrentSettingsFromProfile(PlayerNumber pn) {
     return;
   }
 
-  const Profile* pProfile = PROFILEMAN->GetProfile(pn);
+  const Profile* profile = PROFILEMAN->GetProfile(pn);
 
   // apply saved default modifiers if any
-  std::string sModifiers;
-  if (pProfile->GetDefaultModifiers(cur_game_, sModifiers)) {
+  std::string modifiers;
+  if (profile->GetDefaultModifiers(cur_game_, modifiers)) {
     /* We don't save negative preferences (eg. "no reverse"). If the theme
      * sets a default of "reverse", and the player turns it off, we should
      * set it off. However, don't reset modifiers that aren't saved by the
@@ -885,31 +885,31 @@ void GameState::LoadCurrentSettingsFromProfile(PlayerNumber pn) {
     PO_GROUP_CALL(
         player_state_[pn]->player_options_, ModsLevel_Preferred,
         ResetSavedPrefs);
-    ApplyPreferredModifiers(pn, sModifiers);
+    ApplyPreferredModifiers(pn, modifiers);
   }
   // Only set the sort order if it wasn't already set by a GameCommand (or by an
   // earlier profile)
   if (preferred_sort_order_ == SortOrder_Invalid &&
-      pProfile->sort_order_ != SortOrder_Invalid) {
-    preferred_sort_order_ = pProfile->sort_order_;
+      profile->sort_order_ != SortOrder_Invalid) {
+    preferred_sort_order_ = profile->sort_order_;
   }
-  if (pProfile->last_difficulty_ != Difficulty_Invalid) {
-    preferred_difficulty_[pn].Set(pProfile->last_difficulty_);
+  if (profile->last_difficulty_ != Difficulty_Invalid) {
+    preferred_difficulty_[pn].Set(profile->last_difficulty_);
   }
-  if (pProfile->last_course_difficulty_ != Difficulty_Invalid) {
-    preferred_course_difficulty_[pn].Set(pProfile->last_course_difficulty_);
+  if (profile->last_course_difficulty_ != Difficulty_Invalid) {
+    preferred_course_difficulty_[pn].Set(profile->last_course_difficulty_);
   }
   // Only set the PreferredStepsType if it wasn't already set by a GameCommand
   // (or by an earlier profile)
   if (preferred_steps_type_ == StepsType_Invalid &&
-      pProfile->last_steps_type_ != StepsType_Invalid) {
-    preferred_steps_type_.Set(pProfile->last_steps_type_);
+      profile->last_steps_type_ != StepsType_Invalid) {
+    preferred_steps_type_.Set(profile->last_steps_type_);
   }
   if (preferred_song_ == nullptr) {
-    preferred_song_ = pProfile->last_song_.ToSong();
+    preferred_song_ = profile->last_song_.ToSong();
   }
   if (preferred_course_ == nullptr) {
-    preferred_course_ = pProfile->last_course_.ToCourse();
+    preferred_course_ = profile->last_course_.ToCourse();
   }
 }
 
@@ -921,28 +921,28 @@ void GameState::SaveCurrentSettingsToProfile(PlayerNumber pn) {
     return;
   }
 
-  Profile* pProfile = PROFILEMAN->GetProfile(pn);
+  Profile* profile = PROFILEMAN->GetProfile(pn);
 
-  pProfile->SetDefaultModifiers(
+  profile->SetDefaultModifiers(
       cur_game_,
       player_state_[pn]->player_options_.GetPreferred().GetSavedPrefsString());
   if (IsSongSort(preferred_sort_order_)) {
-    pProfile->sort_order_ = preferred_sort_order_;
+    profile->sort_order_ = preferred_sort_order_;
   }
   if (preferred_difficulty_[pn] != Difficulty_Invalid) {
-    pProfile->last_difficulty_ = preferred_difficulty_[pn];
+    profile->last_difficulty_ = preferred_difficulty_[pn];
   }
   if (preferred_course_difficulty_[pn] != Difficulty_Invalid) {
-    pProfile->last_course_difficulty_ = preferred_course_difficulty_[pn];
+    profile->last_course_difficulty_ = preferred_course_difficulty_[pn];
   }
   if (preferred_steps_type_ != StepsType_Invalid) {
-    pProfile->last_steps_type_ = preferred_steps_type_;
+    profile->last_steps_type_ = preferred_steps_type_;
   }
   if (preferred_song_) {
-    pProfile->last_song_.FromSong(preferred_song_);
+    profile->last_song_.FromSong(preferred_song_);
   }
   if (preferred_course_) {
-    pProfile->last_course_.FromCourse(preferred_course_);
+    profile->last_course_.FromCourse(preferred_course_);
   }
 }
 
@@ -1149,11 +1149,11 @@ void GameState::ForceOtherPlayersToCompatibleSteps(PlayerNumber main) {
   }
 }
 
-void GameState::Update(float fDelta) {
-  song_options_.Update(fDelta);
+void GameState::Update(float delta) {
+  song_options_.Update(delta);
 
   FOREACH_PlayerNumber(p) {
-    player_state_[p]->Update(fDelta);
+    player_state_[p]->Update(delta);
 
     if (!goal_complete_[p] && IsGoalComplete(p)) {
       goal_complete_[p] = true;
@@ -1164,10 +1164,10 @@ void GameState::Update(float fDelta) {
 
   if (GAMESTATE->cur_course_) {
     if (GAMESTATE->cur_course_->goal_seconds_ > 0 && !workout_goal_complete_) {
-      const StageStats& ssCurrent = STATSMAN->cur_stage_stats_;
-      bool bGoalComplete =
-          ssCurrent.gameplay_seconds_ > GAMESTATE->cur_course_->goal_seconds_;
-      if (bGoalComplete) {
+      const StageStats& current = STATSMAN->cur_stage_stats_;
+      bool goal_complete =
+          current.gameplay_seconds_ > GAMESTATE->cur_course_->goal_seconds_;
+      if (goal_complete) {
         MESSAGEMAN->Broadcast("WorkoutGoalComplete");
         workout_goal_complete_ = true;
       }
@@ -1175,10 +1175,10 @@ void GameState::Update(float fDelta) {
   }
 }
 
-void GameState::SetCurGame(const Game* pGame) {
-  cur_game_.Set(pGame);
-  std::string sGame = pGame ? std::string(pGame->name_) : std::string();
-  PREFSMAN->SetCurrentGame(sGame);
+void GameState::SetCurGame(const Game* p_game) {
+  cur_game_.Set(p_game);
+  std::string s_game = p_game ? std::string(p_game->name_) : std::string();
+  PREFSMAN->SetCurrentGame(s_game);
 }
 
 const float GameState::kMusicSecondsInvalid = -5000.0f;
@@ -1194,18 +1194,18 @@ void GameState::ResetMusicStatistics() {
 }
 
 void GameState::ResetStageStatistics() {
-  StageStats OldStats = STATSMAN->cur_stage_stats_;
+  StageStats old_stats = STATSMAN->cur_stage_stats_;
   STATSMAN->cur_stage_stats_ = StageStats();
   if (PREFSMAN->combo_continues_between_songs_) {
     FOREACH_PlayerNumber(p) {
-      bool FirstSong = current_stage_index_ == 0;
-      if (FirstSong) {
-        Profile* pProfile = PROFILEMAN->GetProfile(p);
+      bool first_song = current_stage_index_ == 0;
+      if (first_song) {
+        Profile* profile = PROFILEMAN->GetProfile(p);
         STATSMAN->cur_stage_stats_.player_[p].cur_combo_ =
-            pProfile->current_combo_;
+            profile->current_combo_;
       } else {
         STATSMAN->cur_stage_stats_.player_[p].cur_combo_ =
-            OldStats.player_[p].cur_combo_;
+            old_stats.player_[p].cur_combo_;
       }
     }
   }
@@ -1239,31 +1239,31 @@ void GameState::ResetStageStatistics() {
 }
 
 void GameState::UpdateSongPosition(
-    float fPositionSeconds, const TimingData& timing,
+    float position_seconds, const TimingData& timing,
     const RageTimer& timestamp) {
   /* It's not uncommon to get a lot of duplicated positions from the sound
    * driver, like so: 13.120953,13.130975,13.130975,13.130975,13.140998,...
    * This causes visual stuttering of the arrows. To compensate, keep a
    * RageTimer since the last change. */
-  if (fPositionSeconds == last_position_seconds_ && !paused_) {
-    fPositionSeconds += last_position_timer_.Ago();
+  if (position_seconds == last_position_seconds_ && !paused_) {
+    position_seconds += last_position_timer_.Ago();
   } else {
     // LOG->Info("Time difference: %+f",
     //	m_LastPositionTimer.Ago() - (fPositionSeconds - m_LastPositionSeconds)
     //);
     last_position_timer_.Touch();
-    last_position_seconds_ = fPositionSeconds;
+    last_position_seconds_ = position_seconds;
   }
 
-  position_.UpdateSongPosition(fPositionSeconds, timing, timestamp);
+  position_.UpdateSongPosition(position_seconds, timing, timestamp);
 
   FOREACH_EnabledPlayer(pn) {
     if (cur_steps_[pn]) {
-      float fAdditionalVisualDelay =
+      float additional_visual_delay =
           player_state_[pn]->player_options_.GetPreferred().visual_delay_;
       player_state_[pn]->position_.UpdateSongPosition(
-          fPositionSeconds, *cur_steps_[pn]->GetTimingData(), timestamp,
-          fAdditionalVisualDelay);
+          position_seconds, *cur_steps_[pn]->GetTimingData(), timestamp,
+          additional_visual_delay);
       Actor::SetPlayerBGMBeat(
           pn, player_state_[pn]->position_.song_beat_visible_,
           player_state_[pn]->position_.song_beat_no_offset_);
@@ -1271,7 +1271,7 @@ void GameState::UpdateSongPosition(
   }
   Actor::SetBGMTime(
       GAMESTATE->position_.music_seconds_visible_,
-      GAMESTATE->position_.song_beat_visible_, fPositionSeconds,
+      GAMESTATE->position_.song_beat_visible_, position_seconds,
       GAMESTATE->position_.song_beat_no_offset_);
   //	LOG->Trace( "m_fMusicSeconds = %f, m_fSongBeat = %f, m_fCurBPS = %f,
   // m_bFreeze = %f", m_fMusicSeconds, m_fSongBeat, m_fCurBPS, m_bFreeze );
@@ -1283,8 +1283,8 @@ update player position code goes here
 
 float GameState::GetSongPercent(float beat) const {
   // 0 = first step; 1 = last step
-  float curTime = this->cur_song_->song_timing_.GetElapsedTimeFromBeat(beat);
-  return (curTime - cur_song_->GetFirstSecond()) / cur_song_->GetLastSecond();
+  float cur_time = this->cur_song_->song_timing_.GetElapsedTimeFromBeat(beat);
+  return (cur_time - cur_song_->GetFirstSecond()) / cur_song_->GetLastSecond();
 }
 
 int GameState::GetNumStagesLeft(PlayerNumber pn) const {
@@ -1295,10 +1295,9 @@ int GameState::GetSmallestNumStagesLeftForAnyHumanPlayer() const {
   if (IsEventMode() || premium_free_active_) {
     return 999;
   }
-  int iSmallest = INT_MAX;
-  FOREACH_HumanPlayer(p) iSmallest =
-      std::min(iSmallest, player_stage_tokens_[p]);
-  return iSmallest;
+  int smallest = INT_MAX;
+  FOREACH_HumanPlayer(p) smallest = std::min(smallest, player_stage_tokens_[p]);
+  return smallest;
 }
 
 bool GameState::IsFinalStageForEveryHumanPlayer() const {
@@ -1408,11 +1407,11 @@ int GameState::GetCourseSongIndex() const {
 /* Hack: when we're loading a new course song, we want to display the new song
  * number, even though we haven't started that song yet. */
 int GameState::GetLoadingCourseSongIndex() const {
-  int iIndex = GetCourseSongIndex();
+  int index = GetCourseSongIndex();
   if (loading_next_song_) {
-    ++iIndex;
+    ++index;
   }
-  return iIndex;
+  return index;
 }
 
 void GameState::ActivatePremiumFree() {
@@ -1549,9 +1548,9 @@ bool GameState::PlayersCanJoin() const {
   // wants to allow joining after the style is set anyway. Either way, we can't
   // use the existence of a style to decide. -Kyz
   if (ALLOW_LATE_JOIN.IsLoaded() && ALLOW_LATE_JOIN) {
-    Screen* pScreen = SCREENMAN->GetTopScreen();
-    if (pScreen) {
-      if (!pScreen->AllowLateJoin()) {
+    Screen* screen = SCREENMAN->GetTopScreen();
+    if (screen) {
+      if (!screen->AllowLateJoin()) {
         return false;
       }
     }
@@ -1573,10 +1572,10 @@ bool GameState::PlayersCanJoin() const {
 }
 
 int GameState::GetNumSidesJoined() const {
-  int iNumSidesJoined = 0;
+  int num_sides_joined = 0;
   FOREACH_PlayerNumber(p) if (side_is_joined_[p])
-      iNumSidesJoined++;  // left side, and right side
-  return iNumSidesJoined;
+      num_sides_joined++;  // left side, and right side
+  return num_sides_joined;
 }
 
 const Game* GameState::GetCurrentGame() const {
@@ -1655,9 +1654,9 @@ bool GameState::IsPlayerEnabled(PlayerNumber pn) const {
   }
 }
 
-bool GameState::IsPlayerEnabled(const PlayerState* pPlayerState) const {
-  if (pPlayerState->player_number_ != PLAYER_INVALID) {
-    return IsPlayerEnabled(pPlayerState->player_number_);
+bool GameState::IsPlayerEnabled(const PlayerState* player_state) const {
+  if (player_state->player_number_ != PLAYER_INVALID) {
+    return IsPlayerEnabled(player_state->player_number_);
   }
   return false;
 }
@@ -1867,15 +1866,14 @@ void GameState::ResetToDefaultSongOptions(ModsLevel l) {
 }
 
 void GameState::ApplyPreferredModifiers(
-    PlayerNumber pn, std::string sModifiers) {
-  player_state_[pn]->player_options_.FromString(
-      ModsLevel_Preferred, sModifiers);
-  song_options_.FromString(ModsLevel_Preferred, sModifiers);
+    PlayerNumber pn, std::string modifiers) {
+  player_state_[pn]->player_options_.FromString(ModsLevel_Preferred, modifiers);
+  song_options_.FromString(ModsLevel_Preferred, modifiers);
 }
 
-void GameState::ApplyStageModifiers(PlayerNumber pn, std::string sModifiers) {
-  player_state_[pn]->player_options_.FromString(ModsLevel_Stage, sModifiers);
-  song_options_.FromString(ModsLevel_Stage, sModifiers);
+void GameState::ApplyStageModifiers(PlayerNumber pn, std::string modifiers) {
+  player_state_[pn]->player_options_.FromString(ModsLevel_Stage, modifiers);
+  song_options_.FromString(ModsLevel_Stage, modifiers);
 }
 
 void GameState::ClearStageModifiersIllegalForCourse() {
@@ -1923,10 +1921,10 @@ void GameState::GetAllUsedNoteSkins(std::vector<std::string>& out) const {
 
     // Add noteskins that are used in courses.
     if (IsCourseMode()) {
-      const Trail* pTrail = cur_trail_[pn];
-      ASSERT(pTrail != nullptr);
+      const Trail* trail = cur_trail_[pn];
+      ASSERT(trail != nullptr);
 
-      for (const TrailEntry& e : pTrail->entries_) {
+      for (const TrailEntry& e : trail->entries_) {
         PlayerOptions po;
         po.FromString(e.modifiers_);
         if (!po.note_skin_.empty()) {
@@ -1956,9 +1954,9 @@ void setmax(T& a, const T& b) {
   a = std::max(a, b);
 }
 
-FailType GameState::GetPlayerFailType(const PlayerState* pPlayerState) const {
-  PlayerNumber pn = pPlayerState->player_number_;
-  FailType ft = pPlayerState->player_options_.GetCurrent().fail_type_;
+FailType GameState::GetPlayerFailType(const PlayerState* player_state) const {
+  PlayerNumber pn = player_state->player_number_;
+  FailType ft = player_state->player_options_.GetCurrent().fail_type_;
 
   // If the player changed the fail mode explicitly, leave it alone.
   if (fail_type_was_explicitly_set_) {
@@ -1976,9 +1974,9 @@ FailType GameState::GetPlayerFailType(const PlayerState* pPlayerState) const {
       dc = cur_steps_[pn]->GetDifficulty();
     }
 
-    bool bFirstStage = false;
+    bool first_stage = false;
     if (!IsEventMode()) {
-      bFirstStage |= player_stage_tokens_[pPlayerState->player_number_] ==
+      first_stage |= player_stage_tokens_[player_state->player_number_] ==
                      PREFSMAN->songs_per_play_ -
                          1;  // HACK; -1 because this is called during gameplay
     }
@@ -1988,14 +1986,14 @@ FailType GameState::GetPlayerFailType(const PlayerState* pPlayerState) const {
       setmax(ft, FailType_ImmediateContinue);
     }
 
-    if (dc <= Difficulty_Easy && bFirstStage &&
+    if (dc <= Difficulty_Easy && first_stage &&
         PREFSMAN->fail_off_for_first_stage_easy_) {
       setmax(ft, FailType_Off);
     }
 
     /* If beginner's steps were chosen, and this is the first stage,
      * turn off failure completely. */
-    if (dc == Difficulty_Beginner && bFirstStage) {
+    if (dc == Difficulty_Beginner && first_stage) {
       setmax(ft, FailType_Off);
     }
 
@@ -2026,19 +2024,19 @@ static ThemeMetric<bool> PROFILE_RECORD_FEATS(
 static ThemeMetric<bool> CATEGORY_RECORD_FEATS(
     "GameState", "CategoryRecordFeats");
 void GameState::GetRankingFeats(
-    PlayerNumber pn, std::vector<RankingFeat>& asFeatsOut) const {
+    PlayerNumber pn, std::vector<RankingFeat>& feats_out) const {
   if (!IsHumanPlayer(pn)) {
     return;
   }
 
-  Profile* pProf = PROFILEMAN->GetProfile(pn);
+  Profile* prof = PROFILEMAN->GetProfile(pn);
 
   // Check for feats even if the PlayMode is rave or battle because the player
   // may have made high scores then switched modes.
   PlayMode mode = play_mode_.Get();
-  const char* modeStr = PlayModeToString(mode).c_str();
+  const char* mode_str = PlayModeToString(mode).c_str();
 
-  CHECKPOINT_M(ssprintf("Getting the feats for %s", modeStr));
+  CHECKPOINT_M(ssprintf("Getting the feats for %s", mode_str));
   switch (mode) {
     case PLAY_MODE_REGULAR:
     case PLAY_MODE_BATTLE:
@@ -2048,7 +2046,7 @@ void GameState::GetRankingFeats(
       // Find unique Song and Steps combinations that were played.
       // We must keep only the unique combination or else we'll double-count
       // high score markers.
-      std::vector<SongAndSteps> vSongAndSteps;
+      std::vector<SongAndSteps> song_and_steps;
 
       for (unsigned i = 0; i < STATSMAN->played_stage_stats_.size(); i++) {
         CHECKPOINT_M(
@@ -2065,26 +2063,26 @@ void GameState::GetRankingFeats(
         sas.steps_ =
             STATSMAN->played_stage_stats_[i].player_[pn].possible_steps_[0];
         ASSERT(sas.steps_ != nullptr);
-        vSongAndSteps.push_back(sas);
+        song_and_steps.push_back(sas);
       }
-      CHECKPOINT_M(ssprintf("All songs/steps from %s gathered", modeStr));
+      CHECKPOINT_M(ssprintf("All songs/steps from %s gathered", mode_str));
 
-      sort(vSongAndSteps.begin(), vSongAndSteps.end());
+      sort(song_and_steps.begin(), song_and_steps.end());
 
-      std::vector<SongAndSteps>::iterator toDelete =
-          unique(vSongAndSteps.begin(), vSongAndSteps.end());
-      vSongAndSteps.erase(toDelete, vSongAndSteps.end());
+      std::vector<SongAndSteps>::iterator to_delete =
+          unique(song_and_steps.begin(), song_and_steps.end());
+      song_and_steps.erase(to_delete, song_and_steps.end());
 
       CHECKPOINT_M("About to find records from the gathered.");
-      for (unsigned i = 0; i < vSongAndSteps.size(); i++) {
-        Song* pSong = vSongAndSteps[i].song_;
-        Steps* pSteps = vSongAndSteps[i].steps_;
+      for (unsigned i = 0; i < song_and_steps.size(); i++) {
+        Song* song = song_and_steps[i].song_;
+        Steps* steps = song_and_steps[i].steps_;
 
         // Find Machine Records
         {
           HighScoreList& hsl =
               PROFILEMAN->GetMachineProfile()->GetStepsHighScoreList(
-                  pSong, pSteps);
+                  song, steps);
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
 
@@ -2094,27 +2092,27 @@ void GameState::GetRankingFeats(
 
             RankingFeat feat;
             feat.type_ = RankingFeat::SONG;
-            feat.song_ = pSong;
-            feat.steps_ = pSteps;
+            feat.song_ = song;
+            feat.steps_ = steps;
             feat.feat_ = ssprintf(
-                "MR #%d in %s %s", j + 1, pSong->GetTranslitMainTitle().c_str(),
-                DifficultyToString(pSteps->GetDifficulty()).c_str());
+                "MR #%d in %s %s", j + 1, song->GetTranslitMainTitle().c_str(),
+                DifficultyToString(steps->GetDifficulty()).c_str());
             feat.string_to_fill_ = hs.GetNameMutable();
             feat.grade_ = hs.GetGrade();
             feat.percent_dp_ = hs.GetPercentDP();
             feat.score_ = hs.GetScore();
 
-            if (pSong->HasBanner()) {
-              feat.banner_ = pSong->GetBannerPath();
+            if (song->HasBanner()) {
+              feat.banner_ = song->GetBannerPath();
             }
 
-            asFeatsOut.push_back(feat);
+            feats_out.push_back(feat);
           }
         }
 
         // Find Personal Records
-        if (pProf && PROFILE_RECORD_FEATS) {
-          HighScoreList& hsl = pProf->GetStepsHighScoreList(pSong, pSteps);
+        if (prof && PROFILE_RECORD_FEATS) {
+          HighScoreList& hsl = prof->GetStepsHighScoreList(song, steps);
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
 
@@ -2123,12 +2121,12 @@ void GameState::GetRankingFeats(
             }
 
             RankingFeat feat;
-            feat.song_ = pSong;
-            feat.steps_ = pSteps;
+            feat.song_ = song;
+            feat.steps_ = steps;
             feat.type_ = RankingFeat::SONG;
             feat.feat_ = ssprintf(
-                "PR #%d in %s %s", j + 1, pSong->GetTranslitMainTitle().c_str(),
-                DifficultyToString(pSteps->GetDifficulty()).c_str());
+                "PR #%d in %s %s", j + 1, song->GetTranslitMainTitle().c_str(),
+                DifficultyToString(steps->GetDifficulty()).c_str());
             feat.string_to_fill_ = hs.GetNameMutable();
             feat.grade_ = hs.GetGrade();
             feat.percent_dp_ = hs.GetPercentDP();
@@ -2136,14 +2134,14 @@ void GameState::GetRankingFeats(
 
             // XXX: temporary hack
             // Why is this here? -aj
-            if (pSong->HasBackground()) {
-              feat.banner_ = pSong->GetBackgroundPath();
+            if (song->HasBackground()) {
+              feat.banner_ = song->GetBackgroundPath();
             }
             //					if( pSong->HasBanner() )
             //						feat.Banner =
             // pSong->GetBannerPath();
 
-            asFeatsOut.push_back(feat);
+            feats_out.push_back(feat);
           }
         }
       }
@@ -2174,7 +2172,7 @@ void GameState::GetRankingFeats(
           feat.grade_ = Grade_NoData;
           feat.score_ = hs.GetScore();
           feat.percent_dp_ = hs.GetPercentDP();
-          asFeatsOut.push_back(feat);
+          feats_out.push_back(feat);
         }
       }
 
@@ -2184,8 +2182,8 @@ void GameState::GetRankingFeats(
           continue;
         }
 
-        if (pProf && PROFILE_RECORD_FEATS) {
-          HighScoreList& hsl = pProf->GetCategoryHighScoreList(st, rc);
+        if (prof && PROFILE_RECORD_FEATS) {
+          HighScoreList& hsl = prof->GetCategoryHighScoreList(st, rc);
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
             if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
@@ -2201,7 +2199,7 @@ void GameState::GetRankingFeats(
             feat.grade_ = Grade_NoData;
             feat.score_ = hs.GetScore();
             feat.percent_dp_ = hs.GetPercentDP();
-            asFeatsOut.push_back(feat);
+            feats_out.push_back(feat);
           }
         }
       }
@@ -2209,16 +2207,16 @@ void GameState::GetRankingFeats(
     case PLAY_MODE_NONSTOP:
     case PLAY_MODE_ONI:
     case PLAY_MODE_ENDLESS: {
-      Course* pCourse = cur_course_;
-      ASSERT(pCourse != nullptr);
-      Trail* pTrail = cur_trail_[pn];
-      ASSERT(pTrail != nullptr);
-      CourseDifficulty cd = pTrail->course_difficulty_;
+      Course* course = cur_course_;
+      ASSERT(course != nullptr);
+      Trail* trail = cur_trail_[pn];
+      ASSERT(trail != nullptr);
+      CourseDifficulty cd = trail->course_difficulty_;
 
       // Find Machine Records
       {
-        Profile* pProfile = PROFILEMAN->GetMachineProfile();
-        HighScoreList& hsl = pProfile->GetCourseHighScoreList(pCourse, pTrail);
+        Profile* profile = PROFILEMAN->GetMachineProfile();
+        HighScoreList& hsl = profile->GetCourseHighScoreList(course, trail);
         for (unsigned i = 0; i < hsl.high_scores_.size(); i++) {
           HighScore& hs = hsl.high_scores_[i];
           if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
@@ -2227,9 +2225,9 @@ void GameState::GetRankingFeats(
 
           RankingFeat feat;
           feat.type_ = RankingFeat::COURSE;
-          feat.course_ = pCourse;
+          feat.course_ = course;
           feat.feat_ = ssprintf(
-              "MR #%d in %s", i + 1, pCourse->GetDisplayFullTitle().c_str());
+              "MR #%d in %s", i + 1, course->GetDisplayFullTitle().c_str());
           if (cd != Difficulty_Medium) {
             feat.feat_ += " " + CourseDifficultyToLocalizedString(cd);
           }
@@ -2237,16 +2235,16 @@ void GameState::GetRankingFeats(
           feat.grade_ = Grade_NoData;
           feat.score_ = hs.GetScore();
           feat.percent_dp_ = hs.GetPercentDP();
-          if (pCourse->HasBanner()) {
-            feat.banner_ = pCourse->GetBannerPath();
+          if (course->HasBanner()) {
+            feat.banner_ = course->GetBannerPath();
           }
-          asFeatsOut.push_back(feat);
+          feats_out.push_back(feat);
         }
       }
 
       // Find Personal Records
       if (PROFILE_RECORD_FEATS && PROFILEMAN->IsPersistentProfile(pn)) {
-        HighScoreList& hsl = pProf->GetCourseHighScoreList(pCourse, pTrail);
+        HighScoreList& hsl = prof->GetCourseHighScoreList(course, trail);
         for (unsigned i = 0; i < hsl.high_scores_.size(); i++) {
           HighScore& hs = hsl.high_scores_[i];
           if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
@@ -2255,17 +2253,17 @@ void GameState::GetRankingFeats(
 
           RankingFeat feat;
           feat.type_ = RankingFeat::COURSE;
-          feat.course_ = pCourse;
+          feat.course_ = course;
           feat.feat_ = ssprintf(
-              "PR #%d in %s", i + 1, pCourse->GetDisplayFullTitle().c_str());
+              "PR #%d in %s", i + 1, course->GetDisplayFullTitle().c_str());
           feat.string_to_fill_ = hs.GetNameMutable();
           feat.grade_ = Grade_NoData;
           feat.score_ = hs.GetScore();
           feat.percent_dp_ = hs.GetPercentDP();
-          if (pCourse->HasBanner()) {
-            feat.banner_ = pCourse->GetBannerPath();
+          if (course->HasBanner()) {
+            feat.banner_ = course->GetBannerPath();
           }
-          asFeatsOut.push_back(feat);
+          feats_out.push_back(feat);
         }
       }
     } break;
@@ -2275,55 +2273,55 @@ void GameState::GetRankingFeats(
 }
 
 bool GameState::AnyPlayerHasRankingFeats() const {
-  std::vector<RankingFeat> vFeats;
+  std::vector<RankingFeat> feats;
   FOREACH_PlayerNumber(p) {
-    GetRankingFeats(p, vFeats);
-    if (!vFeats.empty()) {
+    GetRankingFeats(p, feats);
+    if (!feats.empty()) {
       return true;
     }
   }
   return false;
 }
 
-void GameState::StoreRankingName(PlayerNumber pn, std::string sName) {
+void GameState::StoreRankingName(PlayerNumber pn, std::string name) {
   // The theme can upper it if desired. -Kyz
   // sName.MakeUpper();
 
   if (USE_NAME_BLACKLIST) {
     RageFile file;
     if (file.Open(NAME_BLACKLIST_FILE)) {
-      std::string sLine;
+      std::string line;
 
       while (!file.AtEOF()) {
-        if (file.GetLine(sLine) == -1) {
+        if (file.GetLine(line) == -1) {
           LuaHelpers::ReportScriptErrorFmt(
               "Error reading \"%s\": %s", NAME_BLACKLIST_FILE,
               file.GetError().c_str());
           break;
         }
 
-        MakeUpper(sLine);
-        if (!sLine.empty() &&
-            sName.find(sLine) != std::string::npos)  // name contains a bad word
+        MakeUpper(line);
+        if (!line.empty() &&
+            name.find(line) != std::string::npos)  // name contains a bad word
         {
           LOG->Trace(
-              "entered '%s' matches blacklisted item '%s'", sName.c_str(),
-              sLine.c_str());
-          sName = "";
+              "entered '%s' matches blacklisted item '%s'", name.c_str(),
+              line.c_str());
+          name = "";
           break;
         }
       }
     }
   }
 
-  std::vector<RankingFeat> aFeats;
-  GetRankingFeats(pn, aFeats);
+  std::vector<RankingFeat> feats;
+  GetRankingFeats(pn, feats);
 
-  for (unsigned i = 0; i < aFeats.size(); i++) {
-    *aFeats[i].string_to_fill_ = sName;
+  for (unsigned i = 0; i < feats.size(); i++) {
+    *feats[i].string_to_fill_ = name;
 
     // save name pointers as we fill them
-    names_that_were_filled_.push_back(aFeats[i].string_to_fill_);
+    names_that_were_filled_.push_back(feats[i].string_to_fill_);
   }
 
   players_that_were_filled_.insert(pn);
@@ -2334,14 +2332,14 @@ void GameState::StoreRankingName(PlayerNumber pn, std::string sName) {
       static_cast<int>(players_that_were_filled_.size())) {
     StepsType st = GetCurrentStyle(pn)->steps_type_;
     PlayMode mode = play_mode_.Get();
-    Profile* pProfile = PROFILEMAN->GetMachineProfile();
+    Profile* profile = PROFILEMAN->GetMachineProfile();
     switch (mode) {
       case PLAY_MODE_REGULAR:
       case PLAY_MODE_BATTLE:
       case PLAY_MODE_RAVE: {
         // Find unique Song and Steps combinations that were played.
         // Code is taken from implementation in GetRankingFeats()
-        std::vector<SongAndSteps> vSongAndSteps;
+        std::vector<SongAndSteps> song_and_steps;
 
         for (unsigned i = 0; i < STATSMAN->played_stage_stats_.size(); i++) {
           CHECKPOINT_M(
@@ -2359,16 +2357,16 @@ void GameState::StoreRankingName(PlayerNumber pn, std::string sName) {
           sas.steps_ =
               STATSMAN->played_stage_stats_[i].player_[pn].possible_steps_[0];
           ASSERT(sas.steps_ != nullptr);
-          vSongAndSteps.push_back(sas);
+          song_and_steps.push_back(sas);
         }
 
-        std::vector<SongAndSteps>::iterator toDelete =
-            std::unique(vSongAndSteps.begin(), vSongAndSteps.end());
-        vSongAndSteps.erase(toDelete, vSongAndSteps.end());
+        std::vector<SongAndSteps>::iterator to_delete =
+            std::unique(song_and_steps.begin(), song_and_steps.end());
+        song_and_steps.erase(to_delete, song_and_steps.end());
 
-        for (unsigned i = 0; i < vSongAndSteps.size(); ++i) {
-          HighScoreList& hsl = pProfile->GetStepsHighScoreList(
-              vSongAndSteps[i].song_, vSongAndSteps[i].steps_);
+        for (unsigned i = 0; i < song_and_steps.size(); ++i) {
+          HighScoreList& hsl = profile->GetStepsHighScoreList(
+              song_and_steps[i].song_, song_and_steps[i].steps_);
           if (!PREFSMAN->allow_multiple_high_score_with_same_name_) {
             // erase all but the highest score for each name
             hsl.RemoveAllButOneOfEachName();
@@ -2380,12 +2378,12 @@ void GameState::StoreRankingName(PlayerNumber pn, std::string sName) {
       case PLAY_MODE_ONI:
       case PLAY_MODE_ENDLESS: {
         // Code is taken from implementation in GetRankingFeats()
-        Course* pCourse = cur_course_;
-        ASSERT(pCourse != nullptr);
-        Trail* pTrail = cur_trail_[pn];
-        ASSERT(pTrail != nullptr);
-        CourseDifficulty cd = pTrail->course_difficulty_;
-        HighScoreList& hsl = pProfile->GetCourseHighScoreList(pCourse, pTrail);
+        Course* course = cur_course_;
+        ASSERT(course != nullptr);
+        Trail* trail = cur_trail_[pn];
+        ASSERT(trail != nullptr);
+        CourseDifficulty cd = trail->course_difficulty_;
+        HighScoreList& hsl = profile->GetCourseHighScoreList(course, trail);
         if (!PREFSMAN->allow_multiple_high_score_with_same_name_) {
           // erase all but the highest score for each name
           hsl.RemoveAllButOneOfEachName();
@@ -2432,8 +2430,8 @@ bool GameState::IsTimeToPlayAttractSounds() const {
   return false;
 }
 
-void GameState::VisitAttractScreen(const std::string sScreenName) {
-  if (sScreenName == CommonMetrics::FIRST_ATTRACT_SCREEN.GetValue()) {
+void GameState::VisitAttractScreen(const std::string screen_name) {
+  if (screen_name == CommonMetrics::FIRST_ATTRACT_SCREEN.GetValue()) {
     num_times_through_attract_++;
   }
 }
@@ -2491,21 +2489,21 @@ Difficulty GameState::GetClosestShownDifficulty(PlayerNumber pn) const {
   const std::vector<Difficulty>& v =
       CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
 
-  Difficulty iClosest = (Difficulty)0;
-  int iClosestDist = -1;
+  Difficulty closest = (Difficulty)0;
+  int closest_dist = -1;
   for (const Difficulty& dc : v) {
-    int iDist = preferred_difficulty_[pn] - dc;
-    if (iDist < 0) {
+    int dist = preferred_difficulty_[pn] - dc;
+    if (dist < 0) {
       continue;
     }
-    if (iClosestDist != -1 && iDist > iClosestDist) {
+    if (closest_dist != -1 && dist > closest_dist) {
       continue;
     }
-    iClosestDist = iDist;
-    iClosest = dc;
+    closest_dist = dist;
+    closest = dc;
   }
 
-  return iClosest;
+  return closest;
 }
 
 bool GameState::ChangePreferredCourseDifficultyAndStepsType(
@@ -2523,7 +2521,7 @@ bool GameState::ChangePreferredCourseDifficultyAndStepsType(
 bool GameState::ChangePreferredCourseDifficulty(PlayerNumber pn, int dir) {
   /* If we have a course selected, only choose among difficulties available in
    * the course. */
-  const Course* pCourse = cur_course_;
+  const Course* course = cur_course_;
 
   const std::vector<CourseDifficulty>& v =
       CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW.GetValue();
@@ -2537,7 +2535,7 @@ bool GameState::ChangePreferredCourseDifficulty(PlayerNumber pn, int dir) {
     if (find(v.begin(), v.end(), cd) == v.end()) {
       continue; /* not available */
     }
-    if (!pCourse || pCourse->GetTrail(GetCurrentStyle(pn)->steps_type_, cd)) {
+    if (!course || course->GetTrail(GetCurrentStyle(pn)->steps_type_, cd)) {
       break;
     }
   }
@@ -2600,39 +2598,39 @@ Premium GameState::GetPremium() const {
 }
 
 float GameState::GetGoalPercentComplete(PlayerNumber pn) {
-  const Profile* pProfile = PROFILEMAN->GetProfile(pn);
-  const StageStats& ssCurrent = STATSMAN->cur_stage_stats_;
-  const PlayerStageStats& pssCurrent = ssCurrent.player_[pn];
+  const Profile* profile = PROFILEMAN->GetProfile(pn);
+  const StageStats& ss_current = STATSMAN->cur_stage_stats_;
+  const PlayerStageStats& pss_current = ss_current.player_[pn];
 
-  float fActual = 0;
-  float fGoal = 0;
-  switch (pProfile->goal_type_) {
+  float actual = 0;
+  float goal = 0;
+  switch (profile->goal_type_) {
     case GoalType_Calories:
-      fActual = pssCurrent.calories_burned_;
-      fGoal = (float)pProfile->goal_calories_;
+      actual = pss_current.calories_burned_;
+      goal = (float)profile->goal_calories_;
       break;
     case GoalType_Time:
-      fActual = ssCurrent.gameplay_seconds_;
-      fGoal = (float)pProfile->goal_seconds_;
+      actual = ss_current.gameplay_seconds_;
+      goal = (float)profile->goal_seconds_;
       break;
     case GoalType_None:
       return 0;  // never complete
     default:
-      FAIL_M(ssprintf("Invalid GoalType: %i", pProfile->goal_type_));
+      FAIL_M(ssprintf("Invalid GoalType: %i", profile->goal_type_));
   }
-  if (fGoal == 0) {
+  if (goal == 0) {
     return 0;
   } else {
-    return fActual / fGoal;
+    return actual / goal;
   }
 }
 
 bool GameState::PlayerIsUsingModifier(
-    PlayerNumber pn, const std::string& sModifier) {
+    PlayerNumber pn, const std::string& modifier) {
   PlayerOptions po = player_state_[pn]->player_options_.GetCurrent();
   SongOptions so = song_options_.GetCurrent();
-  po.FromString(sModifier);
-  so.FromString(sModifier);
+  po.FromString(modifier);
+  so.FromString(modifier);
 
   return po == player_state_[pn]->player_options_.GetCurrent() &&
          so == song_options_.GetCurrent();
@@ -2730,8 +2728,8 @@ class LunaGameState : public Luna<GameState> {
     if (lua_isnil(L, 1)) {
       p->cur_song_.Set(nullptr);
     } else {
-      Song* pS = Luna<Song>::check(L, 1, true);
-      p->cur_song_.Set(pS);
+      Song* s = Luna<Song>::check(L, 1, true);
+      p->cur_song_.Set(s);
     }
     COMMON_RETURN_SELF;
   }
@@ -2754,9 +2752,9 @@ class LunaGameState : public Luna<GameState> {
   }
   static int GetCurrentSteps(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    Steps* pSteps = p->cur_steps_[pn];
-    if (pSteps) {
-      pSteps->PushSelf(L);
+    Steps* steps = p->cur_steps_[pn];
+    if (steps) {
+      steps->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -2767,9 +2765,9 @@ class LunaGameState : public Luna<GameState> {
     if (lua_isnil(L, 2)) {
       p->cur_steps_[pn].Set(nullptr);
     } else {
-      Steps* pS = Luna<Steps>::check(L, 2);
-      SetCompatibleStyleOrError(p, L, pS->steps_type_, pn);
-      p->cur_steps_[pn].Set(pS);
+      Steps* s = Luna<Steps>::check(L, 2);
+      SetCompatibleStyleOrError(p, L, s->steps_type_, pn);
+      p->cur_steps_[pn].Set(s);
       p->ForceOtherPlayersToCompatibleSteps(pn);
     }
     COMMON_RETURN_SELF;
@@ -2786,16 +2784,16 @@ class LunaGameState : public Luna<GameState> {
     if (lua_isnil(L, 1)) {
       p->cur_course_.Set(nullptr);
     } else {
-      Course* pC = Luna<Course>::check(L, 1);
-      p->cur_course_.Set(pC);
+      Course* c = Luna<Course>::check(L, 1);
+      p->cur_course_.Set(c);
     }
     COMMON_RETURN_SELF;
   }
   static int GetCurrentTrail(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    Trail* pTrail = p->cur_trail_[pn];
-    if (pTrail) {
-      pTrail->PushSelf(L);
+    Trail* trail = p->cur_trail_[pn];
+    if (trail) {
+      trail->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -2806,9 +2804,9 @@ class LunaGameState : public Luna<GameState> {
     if (lua_isnil(L, 2)) {
       p->cur_trail_[pn].Set(nullptr);
     } else {
-      Trail* pS = Luna<Trail>::check(L, 2);
-      SetCompatibleStyleOrError(p, L, pS->steps_type_, pn);
-      p->cur_trail_[pn].Set(pS);
+      Trail* s = Luna<Trail>::check(L, 2);
+      SetCompatibleStyleOrError(p, L, s->steps_type_, pn);
+      p->cur_trail_[pn].Set(s);
       p->ForceOtherPlayersToCompatibleSteps(pn);
     }
     COMMON_RETURN_SELF;
@@ -2825,8 +2823,8 @@ class LunaGameState : public Luna<GameState> {
     if (lua_isnil(L, 1)) {
       p->preferred_song_ = nullptr;
     } else {
-      Song* pS = Luna<Song>::check(L, 1);
-      p->preferred_song_ = pS;
+      Song* s = Luna<Song>::check(L, 1);
+      p->preferred_song_ = s;
     }
     COMMON_RETURN_SELF;
   }
@@ -2839,9 +2837,9 @@ class LunaGameState : public Luna<GameState> {
     return 1;
   }
   static int GetEditSourceSteps(T* p, lua_State* L) {
-    Steps* pSteps = p->edit_source_steps_;
-    if (pSteps) {
-      pSteps->PushSelf(L);
+    Steps* steps = p->edit_source_steps_;
+    if (steps) {
+      steps->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -2969,9 +2967,9 @@ class LunaGameState : public Luna<GameState> {
   DEFINE_METHOD(GetEditCourseEntryIndex, edit_course_entry_index_)
   DEFINE_METHOD(GetEditLocalProfileID, edit_local_profile_id_.Get())
   static int GetEditLocalProfile(T* p, lua_State* L) {
-    Profile* pProfile = p->GetEditLocalProfile();
-    if (pProfile) {
-      pProfile->PushSelf(L);
+    Profile* profile = p->GetEditLocalProfile();
+    if (profile) {
+      profile->PushSelf(L);
     } else {
       lua_pushnil(L);
     }
@@ -2979,38 +2977,37 @@ class LunaGameState : public Luna<GameState> {
   }
 
   static int GetCurrentStepsCredits(T* t, lua_State* L) {
-    const Song* pSong = t->cur_song_;
-    if (pSong == nullptr) {
+    const Song* song = t->cur_song_;
+    if (song == nullptr) {
       return 0;
     }
 
     // use a vector and not a set so that ordering is maintained
-    std::vector<const Steps*> vpStepsToShow;
+    std::vector<const Steps*> steps_to_show;
     FOREACH_HumanPlayer(p) {
-      const Steps* pSteps = GAMESTATE->cur_steps_[p];
-      if (pSteps == nullptr) {
+      const Steps* steps = GAMESTATE->cur_steps_[p];
+      if (steps == nullptr) {
         return 0;
       }
-      bool bAlreadyAdded =
-          find(vpStepsToShow.begin(), vpStepsToShow.end(), pSteps) !=
-          vpStepsToShow.end();
-      if (!bAlreadyAdded) {
-        vpStepsToShow.push_back(pSteps);
+      bool already_added =
+          find(steps_to_show.begin(), steps_to_show.end(), steps) !=
+          steps_to_show.end();
+      if (!already_added) {
+        steps_to_show.push_back(steps);
       }
     }
 
-    for (unsigned i = 0; i < vpStepsToShow.size(); i++) {
-      const Steps* pSteps = vpStepsToShow[i];
-      std::string sDifficulty =
+    for (unsigned i = 0; i < steps_to_show.size(); i++) {
+      const Steps* steps = steps_to_show[i];
+      std::string difficulty =
           CustomDifficultyToLocalizedString(GetCustomDifficulty(
-              pSteps->steps_type_, pSteps->GetDifficulty(),
-              CourseType_Invalid));
+              steps->steps_type_, steps->GetDifficulty(), CourseType_Invalid));
 
-      lua_pushstring(L, sDifficulty.c_str());
-      lua_pushstring(L, pSteps->GetDescription().c_str());
+      lua_pushstring(L, difficulty.c_str());
+      lua_pushstring(L, steps->GetDescription().c_str());
     }
 
-    return vpStepsToShow.size() * 2;
+    return steps_to_show.size() * 2;
   }
 
   static int SetPreferredSongGroup(T* p, lua_State* L) {
@@ -3019,31 +3016,31 @@ class LunaGameState : public Luna<GameState> {
   }
   DEFINE_METHOD(GetPreferredSongGroup, preferred_song_group_.Get());
   static int GetHumanPlayers(T* p, lua_State* L) {
-    std::vector<PlayerNumber> vHP;
-    FOREACH_HumanPlayer(pn) vHP.push_back(pn);
-    LuaHelpers::CreateTableFromArray(vHP, L);
+    std::vector<PlayerNumber> hp;
+    FOREACH_HumanPlayer(pn) hp.push_back(pn);
+    LuaHelpers::CreateTableFromArray(hp, L);
     return 1;
   }
   static int GetEnabledPlayers(T*, lua_State* L) {
-    std::vector<PlayerNumber> vEP;
-    FOREACH_EnabledPlayer(pn) vEP.push_back(pn);
-    LuaHelpers::CreateTableFromArray(vEP, L);
+    std::vector<PlayerNumber> ep;
+    FOREACH_EnabledPlayer(pn) ep.push_back(pn);
+    LuaHelpers::CreateTableFromArray(ep, L);
     return 1;
   }
   static int GetCurrentStyle(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1, true, true);
-    Style* pStyle = const_cast<Style*>(p->GetCurrentStyle(pn));
-    LuaHelpers::Push(L, pStyle);
+    Style* style = const_cast<Style*>(p->GetCurrentStyle(pn));
+    LuaHelpers::Push(L, style);
     return 1;
   }
   static int IsAnyHumanPlayerUsingMemoryCard(T*, lua_State* L) {
-    bool bUsingMemoryCard = false;
+    bool using_memory_card = false;
     FOREACH_HumanPlayer(pn) {
       if (MEMCARDMAN->GetCardState(pn) == MemoryCardState_Ready) {
-        bUsingMemoryCard = true;
+        using_memory_card = true;
       }
     }
-    lua_pushboolean(L, bUsingMemoryCard);
+    lua_pushboolean(L, using_memory_card);
     return 1;
   }
   static int GetNumStagesForCurrentSongAndStepsOrCourse(T*, lua_State* L) {
@@ -3120,9 +3117,9 @@ class LunaGameState : public Luna<GameState> {
     COMMON_RETURN_SELF;
   }
   static int InsertCoin(T* p, lua_State* L) {
-    int numCoins = IArg(1);
-    if (GAMESTATE->coins_ + numCoins >= 0) {
-      StepMania::InsertCoin(numCoins, false);
+    int num_coins = IArg(1);
+    if (GAMESTATE->coins_ + num_coins >= 0) {
+      StepMania::InsertCoin(num_coins, false);
     } else {
       // Warn themers if they attempt to set credits to a negative value.
       luaL_error(L, "Credits may not be negative.");
@@ -3155,11 +3152,11 @@ class LunaGameState : public Luna<GameState> {
   }
 
   static int LoadProfiles(T* p, lua_State* L) {
-    bool LoadEdits = true;
+    bool load_edits = true;
     if (lua_isboolean(L, 1)) {
-      LoadEdits = BArg(1);
+      load_edits = BArg(1);
     }
-    p->LoadProfiles(LoadEdits);
+    p->LoadProfiles(load_edits);
     SCREENMAN->ZeroNextUpdate();
     COMMON_RETURN_SELF;
   }
@@ -3192,9 +3189,9 @@ class LunaGameState : public Luna<GameState> {
     // Do not allow styles with StepsTypes with shared sides or that are one
     // player only with Battle or Rave.
     if (style->style_type_ != StyleType_TwoPlayersSharedSides) {
-      std::vector<const Style*> vpStyles;
-      GAMEMAN->GetCompatibleStyles(p->cur_game_, 2, vpStyles);
-      for (const Style* s : vpStyles) {
+      std::vector<const Style*> styles;
+      GAMEMAN->GetCompatibleStyles(p->cur_game_, 2, styles);
+      for (const Style* s : styles) {
         if (s->steps_type_ == style->steps_type_) {
           return true;
         }
@@ -3221,35 +3218,35 @@ class LunaGameState : public Luna<GameState> {
   }
 
   static int SetCurrentStyle(T* p, lua_State* L) {
-    const Style* pStyle = nullptr;
+    const Style* p_style = nullptr;
     if (lua_isstring(L, 1)) {
       std::string style = SArg(1);
-      pStyle = GAMEMAN->GameAndStringToStyle(GAMESTATE->cur_game_, style);
-      if (!pStyle) {
+      p_style = GAMEMAN->GameAndStringToStyle(GAMESTATE->cur_game_, style);
+      if (!p_style) {
         luaL_error(
             L, "SetCurrentStyle: %s is not a valid style.", style.c_str());
       }
     } else {
-      pStyle = Luna<Style>::check(L, 1);
+      p_style = Luna<Style>::check(L, 1);
     }
 
-    StyleType st = pStyle->style_type_;
+    StyleType st = p_style->style_type_;
     if (p->GetNumSidesJoined() == 2 && (st == StyleType_OnePlayerOneSide ||
                                         st == StyleType_OnePlayerTwoSides)) {
-      luaL_error(L, "Too many sides joined for style %s", pStyle->name_);
+      luaL_error(L, "Too many sides joined for style %s", p_style->name_);
     } else if (
         p->GetNumSidesJoined() == 1 &&
         (st == StyleType_TwoPlayersTwoSides ||
          st == StyleType_TwoPlayersSharedSides)) {
-      luaL_error(L, "Too few sides joined for style %s", pStyle->name_);
+      luaL_error(L, "Too few sides joined for style %s", p_style->name_);
     }
 
-    if (!AreStyleAndPlayModeCompatible(p, L, pStyle, p->play_mode_)) {
+    if (!AreStyleAndPlayModeCompatible(p, L, p_style, p->play_mode_)) {
       COMMON_RETURN_SELF;
     }
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 2, true, true);
 
-    p->SetCurrentStyle(pStyle, pn);
+    p->SetCurrentStyle(p_style, pn);
     ClearIncompatibleStepsAndTrails(p, L);
 
     COMMON_RETURN_SELF;

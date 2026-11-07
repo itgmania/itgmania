@@ -14,7 +14,7 @@ struct VideoDriverInfo {
 };
 
 std::string GetPrimaryVideoName();
-bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info);
+bool GetVideoDriverInfo(int cardno, VideoDriverInfo& info);
 std::string GetPrimaryVideoDriverName();
 
 #endif

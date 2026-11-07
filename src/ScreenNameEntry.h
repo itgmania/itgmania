@@ -18,9 +18,9 @@ class ScreenNameEntry : public ScreenWithMenuElements {
  public:
   ScreenNameEntry();
   virtual void Init();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   virtual bool MenuStart(const InputEventPlus& input);
 
@@ -29,13 +29,13 @@ class ScreenNameEntry : public ScreenWithMenuElements {
    public:
     ScrollingText() : done_(true) {}
     inline void SetDone() { done_ = true; }
-    void Init(const std::string& sName, const std::vector<float>& xs);
+    void Init(const std::string& name, const std::vector<float>& xs);
     virtual bool EarlyAbortDraw() const { return done_; }
     virtual void DrawPrimitives();
-    char GetClosestChar(float fFakeBeat) const;
+    char GetClosestChar(float fake_beat) const;
 
    private:
-    float GetClosestCharYOffset(float fFakeBeat) const;
+    float GetClosestCharYOffset(float fake_beat) const;
 
     std::vector<float> xs_;
     bool done_;

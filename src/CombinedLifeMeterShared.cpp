@@ -6,11 +6,11 @@
 #include "RageUtil.h"
 
 CombinedLifeMeterShared::CombinedLifeMeterShared(
-    const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats,
-    LifeType lifeType)
-    : life_meter_(LifeMeter::MakeLifeMeter(lifeType)) {
+    const PlayerState* player_state, PlayerStageStats* player_stage_stats,
+    LifeType life_type)
+    : life_meter_(LifeMeter::MakeLifeMeter(life_type)) {
   ASSERT(life_meter_ != nullptr);
-  life_meter_->Load(pPlayerState, pPlayerStageStats);
+  life_meter_->Load(player_state, player_stage_stats);
   life_meter_->SetName("CoopLifeMeterInternal");
   this->AddChild(life_meter_);
 }

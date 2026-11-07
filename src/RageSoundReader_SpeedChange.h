@@ -12,18 +12,18 @@
 
 class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
  public:
-  RageSoundReader_SpeedChange(RageSoundReader* pSource);
+  RageSoundReader_SpeedChange(RageSoundReader* source);
 
-  virtual int SetPosition(int iFrame);
-  virtual int Read(float* pBuf, int iFrames);
+  virtual int SetPosition(int frame);
+  virtual int Read(float* buf, int frames);
   virtual RageSoundReader_SpeedChange* Copy() const {
     return new RageSoundReader_SpeedChange(*this);
   }
-  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual bool SetProperty(const std::string& property, float value);
   virtual int GetNextSourceFrame() const;
   virtual float GetStreamToSourceRatio() const;
 
-  void SetSpeedRatio(float fRatio);
+  void SetSpeedRatio(float ratio);
 
   /* Return true if the next Read() will start a new block, allowing GetRatio()
    * to be updated to a new value.  Used by RageSoundReader_PitchChange. */
@@ -33,8 +33,8 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   float GetRatio() const { return speed_ratio_; }
 
  protected:
-  int FillData(int iMax);
-  void EraseData(int iToDelete);
+  int FillData(int max);
+  void EraseData(int to_delete);
   int Step();
   void Reset();
 

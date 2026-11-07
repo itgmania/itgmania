@@ -34,12 +34,12 @@ class AdjustSync {
 
   static void SaveSyncChanges();
   static void RevertSyncChanges();
-  static void HandleAutosync(float fNoteOffBySeconds, float fStepTime);
+  static void HandleAutosync(float note_off_by_seconds, float step_time);
   static void HandleSongEnd();
   static void AutosyncOffset();
   static void AutosyncTempo();
-  static void GetSyncChangeTextGlobal(std::vector<std::string>& vsAddTo);
-  static void GetSyncChangeTextSong(std::vector<std::string>& vsAddTo);
+  static void GetSyncChangeTextGlobal(std::vector<std::string>& add_to);
+  static void GetSyncChangeTextSong(std::vector<std::string>& add_to);
 
   /** @brief The minimum number of steps to hit for syncing purposes. */
   static const int kOffsetSampleCount = 24;

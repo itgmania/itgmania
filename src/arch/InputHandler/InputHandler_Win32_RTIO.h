@@ -91,7 +91,7 @@ class InputHandler_Win32_RTIO : public InputHandler {
  public:
   InputHandler_Win32_RTIO();
   ~InputHandler_Win32_RTIO();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   static int InputThread_Start(void* this_ptr);
 

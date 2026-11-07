@@ -10,11 +10,11 @@
 
 class RageSoundReader_Extend : public RageSoundReader_Filter {
  public:
-  RageSoundReader_Extend(RageSoundReader* pSource);
-  virtual int SetPosition(int iFrame);
-  virtual int Read(float* pBuffer, int iFrames);
+  RageSoundReader_Extend(RageSoundReader* source);
+  virtual int SetPosition(int frame);
+  virtual int Read(float* buffer, int frames);
   virtual int GetNextSourceFrame() const;
-  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual bool SetProperty(const std::string& property, float value);
 
   RageSoundReader_Extend* Copy() const {
     return new RageSoundReader_Extend(*this);
@@ -23,7 +23,7 @@ class RageSoundReader_Extend : public RageSoundReader_Filter {
 
  private:
   int GetEndFrame() const;
-  int GetData(float* pBuffer, int iFrames);
+  int GetData(float* buffer, int frames);
 
   int position_frames_;
 

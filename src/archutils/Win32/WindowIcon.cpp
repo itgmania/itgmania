@@ -13,71 +13,70 @@
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
 
-HICON IconFromSurface(const RageSurface* pSrcImg) {
-  RageSurface* pImg;
+HICON IconFromSurface(const RageSurface* src_img) {
+  RageSurface* img;
 
   {
     /* Round the width up to a multiple of 8, convert to 32-bit BGR, and reduce
      * to one-bit alpha. */
-    int iWidth = pSrcImg->w_;
-    iWidth = (iWidth + 7) & ~7;
+    int width = src_img->w_;
+    width = (width + 7) & ~7;
 
-    pImg = CreateSurface(
-        iWidth, pSrcImg->h_, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,
-        0xFF000000);
-    RageSurfaceUtils::Blit(pSrcImg, pImg);
+    img = CreateSurface(
+        width, src_img->h_, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    RageSurfaceUtils::Blit(src_img, img);
   }
 
-  RageSurfaceUtils::FlipVertically(pImg);
+  RageSurfaceUtils::FlipVertically(img);
 
-  int iSize = sizeof(BITMAPINFOHEADER);
-  int iSizeImage = 0;
-  iSizeImage += pImg->h_ * pImg->pitch_;   /* image */
-  iSizeImage += (pImg->h_ * pImg->w_) / 8; /* mask */
+  int size = sizeof(BITMAPINFOHEADER);
+  int size_image = 0;
+  size_image += img->h_ * img->pitch_;   /* image */
+  size_image += (img->h_ * img->w_) / 8; /* mask */
 
-  BITMAPINFOHEADER* pBitmap = (BITMAPINFOHEADER*)malloc(iSize + iSizeImage);
-  memset(pBitmap, 0, iSize + iSizeImage);
+  BITMAPINFOHEADER* bitmap = (BITMAPINFOHEADER*)malloc(size + size_image);
+  memset(bitmap, 0, size + size_image);
 
-  pBitmap->biSize = sizeof(BITMAPINFOHEADER);
-  pBitmap->biWidth = pImg->w_;
-  pBitmap->biHeight = pImg->h_ * 2;
-  pBitmap->biPlanes = 1;
-  pBitmap->biBitCount = 32;
-  pBitmap->biCompression = BI_RGB;
-  pBitmap->biSizeImage = pImg->h_ * pImg->pitch_;
+  bitmap->biSize = sizeof(BITMAPINFOHEADER);
+  bitmap->biWidth = img->w_;
+  bitmap->biHeight = img->h_ * 2;
+  bitmap->biPlanes = 1;
+  bitmap->biBitCount = 32;
+  bitmap->biCompression = BI_RGB;
+  bitmap->biSizeImage = img->h_ * img->pitch_;
 
-  uint8_t* pImage = ((uint8_t*)pBitmap) + iSize;
-  uint8_t* pMask = pImage + pImg->h_ * pImg->pitch_;
+  uint8_t* image = ((uint8_t*)bitmap) + size;
+  uint8_t* mask = image + img->h_ * img->pitch_;
 
-  memcpy(pImage, pImg->pixels_, pImg->h_ * pImg->pitch_);
+  memcpy(image, img->pixels_, img->h_ * img->pitch_);
 
-  int iMaskPitch = pImg->w_ / 8;
-  for (int y = 0; y < pImg->h_; ++y) {
+  int mask_pitch = img->w_ / 8;
+  for (int y = 0; y < img->h_; ++y) {
     int bit = 0x80;
-    uint32_t* pRow = (uint32_t*)(pImage + y * pImg->pitch_);
-    uint8_t* pMaskRow = pMask + y * iMaskPitch;
-    for (int x = 0; x < pImg->w_; ++x) {
-      if (!(pRow[x] & pImg->fmt_.mask_[3])) {
+    uint32_t* row = (uint32_t*)(image + y * img->pitch_);
+    uint8_t* mask_row = mask + y * mask_pitch;
+    for (int x = 0; x < img->w_; ++x) {
+      if (!(row[x] & img->fmt_.mask_[3])) {
         /* Transparent; set this mask bit. */
-        *pMaskRow |= bit;
-        pRow[x] = 0;
+        *mask_row |= bit;
+        row[x] = 0;
       }
 
       bit >>= 1;
       if (bit == 0) {
         bit = 0x80;
-        ++pMaskRow;
+        ++mask_row;
       }
     }
   }
 
   HICON icon = CreateIconFromResourceEx(
-      (BYTE*)pBitmap, iSize + iSizeImage, TRUE, 0x00030000, pImg->w_, pImg->h_,
+      (BYTE*)bitmap, size + size_image, TRUE, 0x00030000, img->w_, img->h_,
       LR_DEFAULTCOLOR);
 
-  delete pImg;
-  pImg = nullptr;
-  free(pBitmap);
+  delete img;
+  img = nullptr;
+  free(bitmap);
 
   if (icon == nullptr) {
     LOG->Trace(
@@ -89,17 +88,17 @@ HICON IconFromSurface(const RageSurface* pSrcImg) {
   return icon;
 }
 
-HICON IconFromFile(const std::string& sIconFile) {
-  std::string sError;
-  RageSurface* pImg = RageSurfaceUtils::LoadFile(sIconFile, sError);
-  if (pImg == nullptr) {
+HICON IconFromFile(const std::string& icon_file) {
+  std::string error;
+  RageSurface* img = RageSurfaceUtils::LoadFile(icon_file, error);
+  if (img == nullptr) {
     LOG->Warn(
-        "Couldn't open icon \"%s\": %s", sIconFile.c_str(), sError.c_str());
+        "Couldn't open icon \"%s\": %s", icon_file.c_str(), error.c_str());
     return nullptr;
   }
 
-  HICON icon = IconFromSurface(pImg);
-  delete pImg;
+  HICON icon = IconFromSurface(img);
+  delete img;
   return icon;
 }
 

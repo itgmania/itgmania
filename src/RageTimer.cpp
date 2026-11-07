@@ -67,14 +67,14 @@ void RageTimer::Touch() {
 }
 
 float RageTimer::Ago() const {
-  const RageTimer Now;
-  return Now - *this;
+  const RageTimer now;
+  return now - *this;
 }
 
 float RageTimer::GetDeltaTime() {
-  const RageTimer Now;
-  const float diff = Difference(Now, *this);
-  *this = Now;
+  const RageTimer now;
+  const float diff = Difference(now, *this);
+  *this = now;
   return diff;
 }
 
@@ -87,8 +87,8 @@ float RageTimer::GetDeltaTime() {
  * printf( "Something happened approximately %f seconds ago.\n", tm.Ago() );
  * Note this has been reverted to the original SM3.95 function. */
 RageTimer RageTimer::Half() const {
-  const float fProbableDelay = Ago() / 2;
-  return *this + fProbableDelay;
+  const float probable_delay = Ago() / 2;
+  return *this + probable_delay;
 }
 
 RageTimer RageTimer::operator+(float tm) const { return Sum(*this, tm); }

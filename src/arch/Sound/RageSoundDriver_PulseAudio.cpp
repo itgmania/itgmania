@@ -320,15 +320,15 @@ int64_t RageSoundDriver_PulseAudio::GetPosition() const {
 int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const {
   pa_usec_t usec;
   if (pa_stream_get_time(pulse_stream_, &usec) < 0) {
-    int paErrno = pa_context_errno(pulse_ctx_);
+    int pa_errno = pa_context_errno(pulse_ctx_);
 
     // We might get no data error if the stream has just been started and hasn't
     // received any timing data yet
-    if (paErrno == PA_ERR_NODATA) {
+    if (pa_errno == PA_ERR_NODATA) {
       return 0;
     } else {
       RageException::Throw(
-          "Pulse: pa_stream_get_time() failed: %s", pa_strerror(paErrno));
+          "Pulse: pa_stream_get_time() failed: %s", pa_strerror(pa_errno));
     }
   }
 
@@ -338,7 +338,7 @@ int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const {
 }
 
 void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream* s, size_t length) {
-  int64_t curPos = GetPositionUnlocked();
+  int64_t cur_pos = GetPositionUnlocked();
   while (length > 0) {
     void* buf;
     size_t bufsize = length;
@@ -352,7 +352,7 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream* s, size_t length) {
         bufsize / sizeof(int16_t); /* we use 16-bit frames */
     int64_t pos1 = last_position_;
     int64_t pos2 = pos1 + nbframes / 2; /* Mix() position in stereo frames */
-    this->Mix(reinterpret_cast<int16_t*>(buf), pos2 - pos1, pos1, curPos);
+    this->Mix(reinterpret_cast<int16_t*>(buf), pos2 - pos1, pos1, cur_pos);
 
     if (pa_stream_write(
             pulse_stream_, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0) {

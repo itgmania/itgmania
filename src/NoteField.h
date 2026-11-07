@@ -26,17 +26,17 @@ class NoteField : public ActorFrame {
  public:
   NoteField();
   ~NoteField();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void DrawPrimitives();
   void CalcPixelsBeforeAndAfterTargets();
   void DrawBoardPrimitive();
 
   virtual void Init(
-      const PlayerState* pPlayerState, float fYReverseOffsetPixels,
+      const PlayerState* player_state, float y_reverse_offset_pixels,
       bool use_states_zoom = true);
   virtual void Load(
-      const NoteData* pNoteData, int iDrawDistanceAfterTargetsPixels,
-      int iDrawDistanceBeforeTargetsPixels);
+      const NoteData* note_data, int draw_distance_after_targets_pixels,
+      int draw_distance_before_targets_pixels);
   virtual void Unload();
 
   void ensure_note_displays_have_skin();
@@ -81,7 +81,7 @@ class NoteField : public ActorFrame {
 
   /** @brief Decode the song's audio into a peak buffer for waveform display.
    * Safe to call with an empty path, which just clears any loaded data. */
-  void LoadWaveform(const std::string& sMusicPath);
+  void LoadWaveform(const std::string& music_path);
   void UnloadWaveform();
   /** @brief Only show the waveform while actively editing steps, not while
    * playtesting/recording. */
@@ -89,21 +89,21 @@ class NoteField : public ActorFrame {
   bool GetShowWaveform() const { return show_waveform_; }
 
  protected:
-  void CacheNoteSkin(const std::string& sNoteSkin);
-  void UncacheNoteSkin(const std::string& sNoteSkin);
+  void CacheNoteSkin(const std::string& note_skin);
+  void UncacheNoteSkin(const std::string& note_skin);
 
   bool IsOnScreen(
-      float fBeat, int iCol, int iDrawDistanceAfterTargetsPixels,
-      int iDrawDistanceBeforeTargetsPixels) const;
+      float beat, int col, int draw_distance_after_targets_pixels,
+      int draw_distance_before_targets_pixels) const;
 
   void DrawBoard(
-      int iDrawDistanceAfterTargetsPixels,
-      int iDrawDistanceBeforeTargetsPixels);
+      int draw_distance_after_targets_pixels,
+      int draw_distance_before_targets_pixels);
 
   enum BeatBarType { measure, beat, half_beat, quarter_beat };
-  void DrawBeatBar(const float fBeat, BeatBarType type, int iMeasureIndex);
-  void DrawMarkerBar(int fBeat);
-  void DrawAreaHighlight(int iStartBeat, int iEndBeat);
+  void DrawBeatBar(const float beat, BeatBarType type, int measure_index);
+  void DrawMarkerBar(int beat);
+  void DrawAreaHighlight(int start_beat, int end_beat);
   void DrawWaveform();
   void set_text_measure_number_for_draw(
       const float beat, const float side_sign, float x_offset,
@@ -133,7 +133,7 @@ class NoteField : public ActorFrame {
     NoteDisplay* display_;
     ReceptorArrowRow receptor_arrow_row_;
     GhostArrowRow ghost_arrow_row_;
-    NoteDisplayCols(int iNumCols) { display_ = new NoteDisplay[iNumCols]; }
+    NoteDisplayCols(int num_cols) { display_ = new NoteDisplay[num_cols]; }
     ~NoteDisplayCols() { delete[] display_; }
   };
 

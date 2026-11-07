@@ -23,45 +23,45 @@ ThemeMetric<float> ATTACK_DURATION_SECONDS(
     "ScoreKeeperRave", "AttackDurationSeconds");
 
 static void SuperMeterPercentChangeInit(
-    size_t /*ScoreEvent*/ i, std::string& sNameOut, float& defaultValueOut) {
+    size_t /*ScoreEvent*/ i, std::string& name_out, float& default_value_out) {
   ScoreEvent ci = (ScoreEvent)i;
-  sNameOut = "SuperMeterPercentChange" + ScoreEventToString(ci);
+  name_out = "SuperMeterPercentChange" + ScoreEventToString(ci);
   switch (ci) {
     case SE_CheckpointHit:
-      defaultValueOut = +0.05f;
+      default_value_out = +0.05f;
       break;
     case SE_W1:
-      defaultValueOut = +0.05f;
+      default_value_out = +0.05f;
       break;
     case SE_W2:
-      defaultValueOut = +0.04f;
+      default_value_out = +0.04f;
       break;
     case SE_W3:
-      defaultValueOut = +0.02f;
+      default_value_out = +0.02f;
       break;
     case SE_W4:
-      defaultValueOut = +0.00f;
+      default_value_out = +0.00f;
       break;
     case SE_W5:
-      defaultValueOut = +0.00f;
+      default_value_out = +0.00f;
       break;
     case SE_Miss:
-      defaultValueOut = -0.20f;
+      default_value_out = -0.20f;
       break;
     case SE_HitMine:
-      defaultValueOut = -0.40f;
+      default_value_out = -0.40f;
       break;
     case SE_CheckpointMiss:
-      defaultValueOut = -0.20f;
+      default_value_out = -0.20f;
       break;
     case SE_Held:
-      defaultValueOut = +0.04f;
+      default_value_out = +0.04f;
       break;
     case SE_LetGo:
-      defaultValueOut = -0.20f;
+      default_value_out = -0.20f;
       break;
     case SE_Missed:
-      defaultValueOut = -0.00f;
+      default_value_out = -0.00f;
       break;
       DEFAULT_FAIL(ci);
   }
@@ -71,61 +71,61 @@ static Preference1D<float> g_fSuperMeterPercentChange(
     SuperMeterPercentChangeInit, NUM_ScoreEvent);
 
 ScoreKeeperRave::ScoreKeeperRave(
-    PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats)
-    : ScoreKeeper(pPlayerState, pPlayerStageStats) {}
+    PlayerState* player_state, PlayerStageStats* player_stage_stats)
+    : ScoreKeeper(player_state, player_stage_stats) {}
 
 void ScoreKeeperRave::HandleTapScore(const TapNote& tn) {
   TapNoteScore score = tn.result_.tns_;
-  float fPercentToMove = 0;
+  float percent_to_move = 0;
 
   if (score == TNS_HitMine) {
-    fPercentToMove = g_fSuperMeterPercentChange[SE_HitMine];
+    percent_to_move = g_fSuperMeterPercentChange[SE_HitMine];
   }
 
-  AddSuperMeterDelta(fPercentToMove);
+  AddSuperMeterDelta(percent_to_move);
 }
 
 #define CROSSED(val) (fOld < val && fNew >= val)
-void ScoreKeeperRave::HandleTapRowScore(const NoteData& nd, int iRow) {
-  TapNoteScore scoreOfLastTap;
-  int iNumTapsInRow;
-  float fPercentToMove = 0.0f;
+void ScoreKeeperRave::HandleTapRowScore(const NoteData& nd, int row) {
+  TapNoteScore score_of_last_tap;
+  int num_taps_in_row;
+  float percent_to_move = 0.0f;
 
-  GetScoreOfLastTapInRow(nd, iRow, scoreOfLastTap, iNumTapsInRow);
-  if (iNumTapsInRow <= 0) {
+  GetScoreOfLastTapInRow(nd, row, score_of_last_tap, num_taps_in_row);
+  if (num_taps_in_row <= 0) {
     return;
   }
-  switch (scoreOfLastTap) {
-    DEFAULT_FAIL(scoreOfLastTap);
+  switch (score_of_last_tap) {
+    DEFAULT_FAIL(score_of_last_tap);
     case TNS_W1:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_W1];
+      percent_to_move = g_fSuperMeterPercentChange[SE_W1];
       break;
     case TNS_W2:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_W2];
+      percent_to_move = g_fSuperMeterPercentChange[SE_W2];
       break;
     case TNS_W3:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_W3];
+      percent_to_move = g_fSuperMeterPercentChange[SE_W3];
       break;
     case TNS_W4:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_W4];
+      percent_to_move = g_fSuperMeterPercentChange[SE_W4];
       break;
     case TNS_W5:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_W5];
+      percent_to_move = g_fSuperMeterPercentChange[SE_W5];
       break;
     case TNS_Miss:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_Miss];
+      percent_to_move = g_fSuperMeterPercentChange[SE_Miss];
       break;
   }
-  AddSuperMeterDelta(fPercentToMove);
+  AddSuperMeterDelta(percent_to_move);
 }
 
 void ScoreKeeperRave::HandleHoldScore(const TapNote& tn) {
   // todo: should hit mine be handled in HandleTapRow score instead? -aj
-  TapNoteScore tapScore = tn.result_.tns_;
-  float fPercentToMove = 0.0f;
-  switch (tapScore) {
+  TapNoteScore tap_score = tn.result_.tns_;
+  float percent_to_move = 0.0f;
+  switch (tap_score) {
     case TNS_HitMine:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_HitMine];
+      percent_to_move = g_fSuperMeterPercentChange[SE_HitMine];
       break;
     default:
       break;
@@ -133,98 +133,98 @@ void ScoreKeeperRave::HandleHoldScore(const TapNote& tn) {
 
   // Playing with this code enabled seems to feel "wrong", but I'm leaving it
   // in for player feedback. -aj
-  HoldNoteScore holdScore = tn.hold_result_.hns_;
-  switch (holdScore) {
+  HoldNoteScore hold_score = tn.hold_result_.hns_;
+  switch (hold_score) {
     case HNS_Held:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_Held];
+      percent_to_move = g_fSuperMeterPercentChange[SE_Held];
       break;
     case HNS_LetGo:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_LetGo];
+      percent_to_move = g_fSuperMeterPercentChange[SE_LetGo];
       break;
     case HNS_Missed:
-      fPercentToMove = g_fSuperMeterPercentChange[SE_Missed];
+      percent_to_move = g_fSuperMeterPercentChange[SE_Missed];
       break;
     default:
       break;
   }
-  AddSuperMeterDelta(fPercentToMove);
+  AddSuperMeterDelta(percent_to_move);
 }
 
 extern ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE;
 void ScoreKeeperRave::HandleTapScoreNone() {
   if (PENALIZE_TAP_SCORE_NONE) {
-    float fPercentToMove = g_fSuperMeterPercentChange[SE_Miss];
-    AddSuperMeterDelta(fPercentToMove);
+    float percent_to_move = g_fSuperMeterPercentChange[SE_Miss];
+    AddSuperMeterDelta(percent_to_move);
   }
 }
 
-void ScoreKeeperRave::AddSuperMeterDelta(float fUnscaledPercentChange) {
-  if (PREFSMAN->merciful_drain_ && fUnscaledPercentChange < 0) {
-    float fSuperPercentage =
+void ScoreKeeperRave::AddSuperMeterDelta(float unscaled_percent_change) {
+  if (PREFSMAN->merciful_drain_ && unscaled_percent_change < 0) {
+    float super_percentage =
         player_state_->super_meter_ / Enum::to_integral(NUM_ATTACK_LEVELS);
-    fUnscaledPercentChange *= SCALE(fSuperPercentage, 0.f, 1.f, 0.5f, 1.f);
+    unscaled_percent_change *= SCALE(super_percentage, 0.f, 1.f, 0.5f, 1.f);
   }
 
   // more mercy: Grow super meter slower or faster depending on life.
   if (PREFSMAN->merciful_super_meter_) {
-    float fLifePercentage = 0;
+    float life_percentage = 0;
     switch (player_state_->player_number_) {
       case PLAYER_1:
-        fLifePercentage = GAMESTATE->tug_life_percent_p1_;
+        life_percentage = GAMESTATE->tug_life_percent_p1_;
         break;
       case PLAYER_2:
-        fLifePercentage = 1 - GAMESTATE->tug_life_percent_p1_;
+        life_percentage = 1 - GAMESTATE->tug_life_percent_p1_;
         break;
       default:
         FAIL_M(ssprintf(
             "Invalid player number: %i", player_state_->player_number_));
     }
-    rage_clamp(fLifePercentage, 0.f, 1.f);
-    if (fUnscaledPercentChange > 0) {
-      fUnscaledPercentChange *= SCALE(fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+    rage_clamp(life_percentage, 0.f, 1.f);
+    if (unscaled_percent_change > 0) {
+      unscaled_percent_change *= SCALE(life_percentage, 0.f, 1.f, 1.7f, 0.3f);
     } else {  // fUnscaledPercentChange <= 0
-      fUnscaledPercentChange /= SCALE(fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+      unscaled_percent_change /= SCALE(life_percentage, 0.f, 1.f, 1.7f, 0.3f);
     }
   }
 
   // mercy: drop super meter faster if at a higher level
-  if (fUnscaledPercentChange < 0) {
-    fUnscaledPercentChange *=
+  if (unscaled_percent_change < 0) {
+    unscaled_percent_change *=
         SCALE(player_state_->super_meter_, 0.f, 1.f, 0.01f, 1.f);
   }
 
-  AttackLevel oldAL = (AttackLevel)(int)player_state_->super_meter_;
+  AttackLevel old_al = (AttackLevel)(int)player_state_->super_meter_;
 
-  float fPercentToMove = fUnscaledPercentChange;
+  float percent_to_move = unscaled_percent_change;
   player_state_->super_meter_ +=
-      fPercentToMove * player_state_->super_meter_growth_scale_;
+      percent_to_move * player_state_->super_meter_growth_scale_;
   rage_clamp(player_state_->super_meter_, 0.f, NUM_ATTACK_LEVELS);
 
-  AttackLevel newAL = (AttackLevel)(int)player_state_->super_meter_;
+  AttackLevel new_al = (AttackLevel)(int)player_state_->super_meter_;
 
-  if (newAL > oldAL) {
-    LaunchAttack(oldAL);
-    if (newAL == NUM_ATTACK_LEVELS) {  // hit upper bounds of meter
+  if (new_al > old_al) {
+    LaunchAttack(old_al);
+    if (new_al == NUM_ATTACK_LEVELS) {  // hit upper bounds of meter
       player_state_->super_meter_ -= 1.f;
     }
   }
 
   // mercy: if losing remove attacks on life drain
-  if (fUnscaledPercentChange < 0) {
-    bool bWinning;
+  if (unscaled_percent_change < 0) {
+    bool winning;
     switch (player_state_->player_number_) {
       case PLAYER_1:
-        bWinning = GAMESTATE->tug_life_percent_p1_ > 0.5f;
+        winning = GAMESTATE->tug_life_percent_p1_ > 0.5f;
         break;
       case PLAYER_2:
-        bWinning = GAMESTATE->tug_life_percent_p1_ < 0.5f;
+        winning = GAMESTATE->tug_life_percent_p1_ < 0.5f;
         break;
       default:
-        bWinning = false;
+        winning = false;
         FAIL_M(ssprintf(
             "Invalid player number: %i", player_state_->player_number_));
     }
-    if (!bWinning) {
+    if (!winning) {
       player_state_->EndActiveAttacks();
     }
   }
@@ -233,33 +233,33 @@ void ScoreKeeperRave::AddSuperMeterDelta(float fUnscaledPercentChange) {
 void ScoreKeeperRave::LaunchAttack(AttackLevel al) {
   PlayerNumber pn = player_state_->player_number_;
 
-  std::string* asAttacks =
+  std::string* attacks =
       GAMESTATE->cur_characters_[pn]->attacks_[al];  // [NUM_ATTACKS_PER_LEVEL]
-  std::string sAttackToGive;
+  std::string attack_to_give;
 
   if (GAMESTATE->cur_characters_[pn] != nullptr) {
-    sAttackToGive = asAttacks[RandomInt(NUM_ATTACKS_PER_LEVEL)];
+    attack_to_give = attacks[RandomInt(NUM_ATTACKS_PER_LEVEL)];
   } else {
     // "If you add any noteskins here, you need to make sure they're cached,
     // too." -? Noteskins probably won't work here anymore. -aj
-    std::string DefaultAttacks[8] = {"1.5x",   "2.0x",  "0.5x",  "reverse",
-                                     "sudden", "boost", "brake", "wave"};
-    sAttackToGive = DefaultAttacks[RandomInt(8)];
+    std::string default_attacks[8] = {"1.5x",   "2.0x",  "0.5x",  "reverse",
+                                      "sudden", "boost", "brake", "wave"};
+    attack_to_give = default_attacks[RandomInt(8)];
   }
 
-  PlayerNumber pnToAttack = OPPOSITE_PLAYER[pn];
-  PlayerState* pPlayerStateToAttack = GAMESTATE->player_state_[pnToAttack];
+  PlayerNumber to_attack = OPPOSITE_PLAYER[pn];
+  PlayerState* player_state_to_attack = GAMESTATE->player_state_[to_attack];
 
   Attack a;
   a.level_ = al;
   a.secs_remaining_ = ATTACK_DURATION_SECONDS;
-  a.modifiers_ = sAttackToGive;
+  a.modifiers_ = attack_to_give;
 
   // remove current attack (if any)
-  pPlayerStateToAttack->RemoveActiveAttacks();
+  player_state_to_attack->RemoveActiveAttacks();
 
   // apply new attack
-  pPlayerStateToAttack->LaunchAttack(a);
+  player_state_to_attack->LaunchAttack(a);
 
   //	SCREENMAN->SystemMessage( ssprintf( "attacking %d with %s", pnToAttack,
   // sAttackToGive.c_str() ) );

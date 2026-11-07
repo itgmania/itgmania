@@ -19,10 +19,10 @@ ArchHooks::ArchHooks() : has_focus_(true), focus_changed_(false) {}
 
 bool ArchHooks::GetAndClearToggleWindowed() {
   LockMut(g_Mutex);
-  bool bToggle = toggle_windowed_;
+  bool toggle = toggle_windowed_;
 
   toggle_windowed_ = false;
-  return bToggle;
+  return toggle;
 }
 
 void ArchHooks::SetToggleWindowed() {
@@ -30,23 +30,23 @@ void ArchHooks::SetToggleWindowed() {
   toggle_windowed_ = true;
 }
 
-void ArchHooks::SetHasFocus(bool bHasFocus) {
-  if (bHasFocus == has_focus_) {
+void ArchHooks::SetHasFocus(bool has_focus) {
+  if (has_focus == has_focus_) {
     return;
   }
-  has_focus_ = bHasFocus;
+  has_focus_ = has_focus;
 
-  LOG->Trace("App %s focus", bHasFocus ? "has" : "doesn't have");
+  LOG->Trace("App %s focus", has_focus ? "has" : "doesn't have");
   LockMut(g_Mutex);
   focus_changed_ = true;
 }
 
 bool ArchHooks::AppFocusChanged() {
   LockMut(g_Mutex);
-  bool bFocusChanged = focus_changed_;
+  bool focus_changed = focus_changed_;
 
   focus_changed_ = false;
-  return bFocusChanged;
+  return focus_changed;
 }
 
 ArchHooks* ArchHooks::Create() { return new ARCH_HOOKS; }

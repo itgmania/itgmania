@@ -13,11 +13,11 @@ class RageSoundReader_Preload : public RageSoundReader {
   RageSoundReader_Preload();
   /* Return true if the sound has been preloaded, in which case source will
    * be deleted.  Otherwise, return false. */
-  bool Open(RageSoundReader* pSource);
+  bool Open(RageSoundReader* source);
   int GetLength() const;
   int GetLength_Fast() const;
-  int SetPosition(int iFrame);
-  int Read(float* pBuffer, int iLength);
+  int SetPosition(int frame);
+  int Read(float* buffer, int length);
   int GetSampleRate() const { return sample_rate_; }
   unsigned GetNumChannels() const { return channels_; }
   int GetNextSourceFrame() const;
@@ -32,7 +32,7 @@ class RageSoundReader_Preload : public RageSoundReader {
   ~RageSoundReader_Preload() {}
 
   /* Attempt to preload a sound.  pSound must be rewound. */
-  static bool PreloadSound(RageSoundReader*& pSound);
+  static bool PreloadSound(RageSoundReader*& sound);
 
  private:
   AutoPtrCopyOnWrite<std::string> buffer_;

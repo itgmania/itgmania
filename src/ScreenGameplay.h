@@ -49,7 +49,7 @@ class PlayerInfo {
   PlayerInfo();
   ~PlayerInfo();
 
-  void Load(PlayerNumber pn, bool bShowNoteField);
+  void Load(PlayerNumber pn, bool show_note_field);
 
   /** @brief The player has lost all of their lives: show the special game over.
    */
@@ -142,11 +142,11 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual ~ScreenGameplay();
   virtual void BeginScreen();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual void HandleMessage(const Message& msg);
-  virtual void Cancel(ScreenMessage smSendWhenDone);
+  virtual void Cancel(ScreenMessage send_when_done);
 
   virtual void DrawPrimitives();
 
@@ -170,8 +170,8 @@ class ScreenGameplay : public ScreenWithMenuElements {
     return combined_life_meter_;
   }
   PlayerInfo* GetPlayerInfo(PlayerNumber pn);
-  PlayerInfo* GetDummyPlayerInfo(int iDummyIndex);
-  void Pause(bool bPause) { PauseGame(bPause); }
+  PlayerInfo* GetDummyPlayerInfo(int dummy_index);
+  void Pause(bool pause) { PauseGame(pause); }
   bool IsPaused() const { return paused_; }
   float GetHasteRate();
 
@@ -218,28 +218,28 @@ class ScreenGameplay : public ScreenWithMenuElements {
   ThemeMetric<bool> SURVIVAL_MOD_OVERRIDE;
 
   bool IsLastSong();
-  void SetupSong(int iSongIndex);
+  void SetupSong(int song_index);
   void ReloadCurrentSong();
   virtual void LoadNextSong();
-  void StartPlayingSong(float fMinTimeToNotes, float fMinTimeToMusic);
+  void StartPlayingSong(float min_time_to_notes, float min_time_to_music);
   void GetMusicEndTiming(
-      float& fSecondsToStartFadingOutMusic,
-      float& fSecondsToStartTransitioningOut);
+      float& seconds_to_start_fading_out_music,
+      float& seconds_to_start_transitioning_out);
   void LoadLights();
-  void PauseGame(bool bPause, GameController gc = GameController_Invalid);
+  void PauseGame(bool pause, GameController gc = GameController_Invalid);
   void PlayAnnouncer(
-      const std::string& type, float fSeconds, float* fDeltaSeconds);
-  void PlayAnnouncer(const std::string& type, float fSeconds) {
-    PlayAnnouncer(type, fSeconds, &time_since_last_dancing_comment_);
+      const std::string& type, float seconds, float* delta_seconds);
+  void PlayAnnouncer(const std::string& type, float seconds) {
+    PlayAnnouncer(type, seconds, &time_since_last_dancing_comment_);
   }
   void UpdateLights();
   void SendCrossedMessages();
 
   void PlayTicks();
-  void UpdateSongPosition(float fDeltaTime);
+  void UpdateSongPosition(float delta_time);
   void SongFinished();
   virtual void SaveStats();
-  virtual void StageFinished(bool bBackedOut);
+  virtual void StageFinished(bool backed_out);
   void SaveReplay();
   bool OneFailed();
 
@@ -297,7 +297,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
   bool skipped_song_;
   void AbortGiveUpText(bool show_abort_text);
   void AbortSkipSong(bool show_text);
-  void AbortGiveUp(bool bShowText);
+  void AbortGiveUp(bool show_text);
   void ResetGiveUpTimers(bool show_text);
 
   Transition ready_;
@@ -329,7 +329,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
       player_info_;  // filled by SGameplay derivatives in FillPlayerInfo
   /** @brief Shared routine scorekeeper instance for shared-sides play. */
   ScoreKeeper* routine_shared_score_keeper_;
-  virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut) = 0;
+  virtual void FillPlayerInfo(std::vector<PlayerInfo>& player_info_out) = 0;
   virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep) {
     return player_info_[iep.pn_];
   }

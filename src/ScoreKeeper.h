@@ -23,8 +23,8 @@ struct AttackArray;
 class ScoreKeeper {
  public:
   static ScoreKeeper* MakeScoreKeeper(
-      std::string sClassName, PlayerState* pPlayerState,
-      PlayerStageStats* pPlayerStageStats);
+      std::string class_name, PlayerState* player_state,
+      PlayerStageStats* player_stage_stats);
 
  protected:
   PlayerState* player_state_;
@@ -37,7 +37,7 @@ class ScoreKeeper {
   //	bool Stats_DoublesCount;
 
  public:
-  ScoreKeeper(PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+  ScoreKeeper(PlayerState* player_state, PlayerStageStats* player_stage_stats);
   virtual ~ScoreKeeper() {}
   virtual void Load(
       const std::vector<Song*>&, const std::vector<Steps*>&,
@@ -63,8 +63,7 @@ class ScoreKeeper {
 
  protected:
   void GetScoreOfLastTapInRow(
-      const NoteData& nd, int iRow, TapNoteScore& tnsOut,
-      int& iNumTapsInRowOut);
+      const NoteData& nd, int row, TapNoteScore& out, int& num_taps_in_row_out);
 };
 
 #endif

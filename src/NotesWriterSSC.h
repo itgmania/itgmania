@@ -15,8 +15,8 @@ namespace NotesWriterSSC {
  * @param vpStepsToSave the Steps to save.
  * @return its success or failure. */
 bool Write(
-    std::string sPath, const Song& out,
-    const std::vector<Steps*>& vpStepsToSave);
+    std::string path, const Song& out,
+    const std::vector<Steps*>& steps_to_save);
 }  // namespace NotesWriterSSC
 
 #endif

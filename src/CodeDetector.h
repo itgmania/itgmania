@@ -58,7 +58,7 @@ enum Code {
 class CodeDetector {
  public:
   static void RefreshCacheItems(
-      std::string sClass =
+      std::string s_class =
           "");  // call this before checking codes, but call infrequently
   static bool EnteredPrevSteps(GameController controller);
   static bool EnteredNextSteps(GameController controller);

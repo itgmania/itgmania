@@ -24,34 +24,34 @@ ModIcon::ModIcon(const ModIcon& cpy)
   this->AddChild(&text_);
 }
 
-void ModIcon::Load(std::string sMetricsGroup) {
-  spr_filled_.Load(THEME->GetPathG(sMetricsGroup, "Filled"));
+void ModIcon::Load(std::string metrics_group) {
+  spr_filled_.Load(THEME->GetPathG(metrics_group, "Filled"));
   spr_filled_->SetName("Filled");
-  ActorUtil::LoadAllCommands(spr_filled_, sMetricsGroup);
+  ActorUtil::LoadAllCommands(spr_filled_, metrics_group);
   this->AddChild(spr_filled_);
 
-  spr_empty_.Load(THEME->GetPathG(sMetricsGroup, "Empty"));
+  spr_empty_.Load(THEME->GetPathG(metrics_group, "Empty"));
   spr_empty_->SetName("Empty");
-  ActorUtil::LoadAllCommands(spr_empty_, sMetricsGroup);
+  ActorUtil::LoadAllCommands(spr_empty_, metrics_group);
   this->AddChild(spr_empty_);
 
-  text_.LoadFromFont(THEME->GetPathF(sMetricsGroup, "Text"));
+  text_.LoadFromFont(THEME->GetPathF(metrics_group, "Text"));
   text_.SetName("Text");
-  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(text_, sMetricsGroup);
+  ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(text_, metrics_group);
   this->AddChild(&text_);
 
-  CROP_TEXT_TO_WIDTH.Load(sMetricsGroup, "CropTextToWidth");
+  CROP_TEXT_TO_WIDTH.Load(metrics_group, "CropTextToWidth");
 
   // stop words
-  STOP_WORDS.Load(sMetricsGroup, "StopWords");
+  STOP_WORDS.Load(metrics_group, "StopWords");
   stop_words_.clear();
   split(STOP_WORDS, ",", stop_words_);
 
   Set("");
 }
 
-void ModIcon::Set(const std::string& _sText) {
-  std::string sText = _sText;
+void ModIcon::Set(const std::string& s_text) {
+  std::string sText = s_text;
 
   for (unsigned i = 0; i < stop_words_.size(); i++) {
     if (EqualsNoCase(sText, stop_words_[i])) {
@@ -61,9 +61,9 @@ void ModIcon::Set(const std::string& _sText) {
 
   Replace(sText, " ", "\n");
 
-  bool bVacant = (sText == "");
-  spr_filled_->SetVisible(!bVacant);
-  spr_empty_->SetVisible(bVacant);
+  bool vacant = (sText == "");
+  spr_filled_->SetVisible(!vacant);
+  spr_empty_->SetVisible(vacant);
 
   text_.SetText(sText);
   text_.CropToWidth(CROP_TEXT_TO_WIDTH);

@@ -22,7 +22,7 @@ class CocoaEventDispatcher {
   CocoaEventDispatcher(CocoaEventDispatcher&&) = delete;
 
   unsigned AddResponder(const std::function<void(EVENT_TYPE)>& resp);
-  void RemoveResponder(unsigned respID);
+  void RemoveResponder(unsigned resp_id);
   void DispatchEvent(EVENT_TYPE e);
 
  private:

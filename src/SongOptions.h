@@ -61,16 +61,16 @@ class SongOptions {
         save_score_(true),
         save_replay_(false) {};
   void Init() { *this = {}; }
-  void Approach(const SongOptions& other, float fDeltaSeconds);
-  void GetMods(std::vector<std::string>& AddTo) const;
-  void GetLocalizedMods(std::vector<std::string>& AddTo) const;
+  void Approach(const SongOptions& other, float delta_seconds);
+  void GetMods(std::vector<std::string>& add_to) const;
+  void GetLocalizedMods(std::vector<std::string>& add_to) const;
   std::string GetString() const;
   std::string GetLocalizedString() const;
-  void FromString(const std::string& sOptions);
+  void FromString(const std::string& options);
   bool FromOneModString(
-      const std::string& sOneMod,
-      std::string& sErrorDetailOut);  // On error, return false and optionally
-                                      // set sErrorDetailOut
+      const std::string& one_mod,
+      std::string& error_detail_out);  // On error, return false and optionally
+                                       // set sErrorDetailOut
 
   bool operator==(const SongOptions& other) const;
   bool operator!=(const SongOptions& other) const { return !operator==(other); }

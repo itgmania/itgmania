@@ -9,7 +9,7 @@ class RageTimer;
 class ThreadImpl {
  public:
   virtual ~ThreadImpl() {}
-  virtual void Halt(bool Kill) = 0;
+  virtual void Halt(bool kill) = 0;
   virtual void Resume() = 0;
 
   /* Get the identifier for this thread. The actual meaning of this is
@@ -48,7 +48,7 @@ class MutexImpl {
 class EventImpl {
  public:
   virtual ~EventImpl() {}
-  virtual bool Wait(RageTimer* pTimeout) = 0;
+  virtual bool Wait(RageTimer* timeout) = 0;
   virtual void Signal() = 0;
   virtual void Broadcast() = 0;
   virtual bool WaitTimeoutSupported() const = 0;
@@ -62,11 +62,11 @@ class SemaImpl {
 };
 
 // These functions must be implemented by the thread implementation.
-ThreadImpl* MakeThread(int (*fn)(void*), void* data, uint64_t* piThreadID);
+ThreadImpl* MakeThread(int (*fn)(void*), void* data, uint64_t* thread_id);
 ThreadImpl* MakeThisThread();
 MutexImpl* MakeMutex();
-EventImpl* MakeEvent(MutexImpl* pMutex);
-SemaImpl* MakeSemaphore(int iInitialValue);
+EventImpl* MakeEvent(MutexImpl* mutex);
+SemaImpl* MakeSemaphore(int initial_value);
 uint64_t GetThisThreadId();
 
 /* Since ThreadId is implementation-defined, we can't define a universal

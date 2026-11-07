@@ -60,66 +60,66 @@ LuaReference g_FormatAnswerForDisplayFunc;
 };  // namespace
 
 void ScreenTextEntry::SetTextEntrySettings(
-    std::string sQuestion, std::string sInitialAnswer, int iMaxInputLength,
-    bool (*Validate)(const std::string& sAnswer, std::string& sErrorOut),
-    void (*OnOK)(const std::string& sAnswer), void (*OnCancel)(),
-    bool bPassword,
-    bool (*ValidateAppend)(
-        const std::string& sAnswerBeforeChar, std::string& sAppend),
-    std::string (*FormatAnswerForDisplay)(const std::string& sAnswer)) {
-  g_sQuestion = sQuestion;
-  g_sInitialAnswer = sInitialAnswer;
-  g_iMaxInputLength = iMaxInputLength;
-  g_pValidate = Validate;
-  g_pOnOK = OnOK;
-  g_pOnCancel = OnCancel;
-  g_pValidateAppend = ValidateAppend;
-  g_pFormatAnswerForDisplay = FormatAnswerForDisplay;
+    std::string question, std::string initial_answer, int max_input_length,
+    bool (*validate)(const std::string& answer, std::string& error_out),
+    void (*on_ok)(const std::string& answer), void (*on_cancel)(),
+    bool password,
+    bool (*validate_append)(
+        const std::string& answer_before_char, std::string& append),
+    std::string (*format_answer_for_display)(const std::string& answer)) {
+  g_sQuestion = question;
+  g_sInitialAnswer = initial_answer;
+  g_iMaxInputLength = max_input_length;
+  g_pValidate = validate;
+  g_pOnOK = on_ok;
+  g_pOnCancel = on_cancel;
+  g_pValidateAppend = validate_append;
+  g_pFormatAnswerForDisplay = format_answer_for_display;
 }
 
 void ScreenTextEntry::TextEntry(
-    ScreenMessage smSendOnPop, std::string sQuestion,
-    std::string sInitialAnswer, int iMaxInputLength,
-    bool (*Validate)(const std::string& sAnswer, std::string& sErrorOut),
-    void (*OnOK)(const std::string& sAnswer), void (*OnCancel)(),
-    bool bPassword,
-    bool (*ValidateAppend)(
-        const std::string& sAnswerBeforeChar, std::string& sAppend),
-    std::string (*FormatAnswerForDisplay)(const std::string& sAnswer)) {
-  g_sQuestion = sQuestion;
-  g_sInitialAnswer = sInitialAnswer;
-  g_iMaxInputLength = iMaxInputLength;
-  g_pValidate = Validate;
-  g_pOnOK = OnOK;
-  g_pOnCancel = OnCancel;
-  g_bPassword = bPassword;
-  g_pValidateAppend = ValidateAppend;
-  g_pFormatAnswerForDisplay = FormatAnswerForDisplay;
+    ScreenMessage send_on_pop, std::string question, std::string initial_answer,
+    int max_input_length,
+    bool (*validate)(const std::string& answer, std::string& error_out),
+    void (*on_ok)(const std::string& answer), void (*on_cancel)(),
+    bool password,
+    bool (*validate_append)(
+        const std::string& answer_before_char, std::string& append),
+    std::string (*format_answer_for_display)(const std::string& answer)) {
+  g_sQuestion = question;
+  g_sInitialAnswer = initial_answer;
+  g_iMaxInputLength = max_input_length;
+  g_pValidate = validate;
+  g_pOnOK = on_ok;
+  g_pOnCancel = on_cancel;
+  g_bPassword = password;
+  g_pValidateAppend = validate_append;
+  g_pFormatAnswerForDisplay = format_answer_for_display;
 
-  SCREENMAN->AddNewScreenToTop("ScreenTextEntry", smSendOnPop);
+  SCREENMAN->AddNewScreenToTop("ScreenTextEntry", send_on_pop);
 }
 
 static LocalizedString INVALID_FLOAT(
     "ScreenTextEntry", "\"%s\" is an invalid floating point value.");
 bool ScreenTextEntry::FloatValidate(
-    const std::string& sAnswer, std::string& sErrorOut) {
+    const std::string& answer, std::string& error_out) {
   float f;
-  if (StringToFloat(sAnswer, f)) {
+  if (StringToFloat(answer, f)) {
     return true;
   }
-  sErrorOut = ssprintf(INVALID_FLOAT.GetValue().c_str(), sAnswer.c_str());
+  error_out = ssprintf(INVALID_FLOAT.GetValue().c_str(), answer.c_str());
   return false;
 }
 
 static LocalizedString INVALID_INT(
     "ScreenTextEntry", "\"%s\" is an invalid integer value.");
 bool ScreenTextEntry::IntValidate(
-    const std::string& sAnswer, std::string& sErrorOut) {
+    const std::string& answer, std::string& error_out) {
   int f;
-  if (sAnswer >> f) {
+  if (answer >> f) {
     return true;
   }
-  sErrorOut = ssprintf(INVALID_INT.GetValue().c_str(), sAnswer.c_str());
+  error_out = ssprintf(INVALID_INT.GetValue().c_str(), answer.c_str());
   return false;
 }
 
@@ -175,7 +175,7 @@ void ScreenTextEntry::UpdateAnswerText() {
     s = WStringToRString(answer_);
   }
 
-  bool bAnswerFull = (int)s.length() >= g_iMaxInputLength;
+  bool answer_full = (int)s.length() >= g_iMaxInputLength;
 
   if (g_pFormatAnswerForDisplay) {
     s = g_pFormatAnswerForDisplay(s);
@@ -183,7 +183,7 @@ void ScreenTextEntry::UpdateAnswerText() {
 
   // Handle caret drawing
   // m_iCaretLocation = s.length()
-  if (show_answer_caret_ && !bAnswerFull) {
+  if (show_answer_caret_ && !answer_full) {
     s += ANSWER_CARET;  // was '_'
   } else {
     s += ANSWER_BLANK;  // was "  "
@@ -193,8 +193,8 @@ void ScreenTextEntry::UpdateAnswerText() {
   text_answer_.SetText(s);
 }
 
-void ScreenTextEntry::Update(float fDelta) {
-  ScreenWithMenuElements::Update(fDelta);
+void ScreenTextEntry::Update(float delta) {
+  ScreenWithMenuElements::Update(delta);
 
   if (timer_toggle_cursor_.Ago() > 0.25f) {
     timer_toggle_cursor_.Touch();
@@ -204,7 +204,7 @@ void ScreenTextEntry::Update(float fDelta) {
 }
 
 bool ScreenTextEntry::Input(const InputEventPlus& input) {
-  static bool bLCtrl = false, bRCtrl = false;
+  static bool l_ctrl = false, r_ctrl = false;
   if (IsTransitioning()) {
     return false;
   }
@@ -214,10 +214,10 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
   if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) {
     switch (input.type_) {
       case IET_FIRST_PRESS:
-        bLCtrl = true;
+        l_ctrl = true;
         break;
       case IET_RELEASE:
-        bLCtrl = false;
+        l_ctrl = false;
         break;
       default:
         break;
@@ -227,51 +227,51 @@ bool ScreenTextEntry::Input(const InputEventPlus& input) {
   if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL)) {
     switch (input.type_) {
       case IET_FIRST_PRESS:
-        bRCtrl = true;
+        r_ctrl = true;
         break;
       case IET_RELEASE:
-        bRCtrl = false;
+        r_ctrl = false;
         break;
       default:
         break;
     }
   }
 
-  bool bHandled = false;
+  bool handled = false;
   if (input.device_i_ == DeviceInput(DEVICE_KEYBOARD, KEY_BACK)) {
     switch (input.type_) {
       case IET_FIRST_PRESS:
       case IET_REPEAT:
         BackspaceInAnswer();
-        bHandled = true;
+        handled = true;
       default:
         break;
     }
   } else if (input.type_ == IET_FIRST_PRESS) {
     wchar_t c = INPUTMAN->DeviceInputToChar(input.device_i_, true);
     // Detect Ctrl+V
-    if ((c == L'v' || c == L'V') && (bLCtrl || bRCtrl)) {
+    if ((c == L'v' || c == L'V') && (l_ctrl || r_ctrl)) {
       TryAppendToAnswer(HOOKS->GetClipboard());
 
       TextEnteredDirectly();  // XXX: This doesn't seem appropriate but there's
                               // no TextPasted()
-      bHandled = true;
+      handled = true;
     } else if (c >= L' ') {
       // todo: handle caps lock -aj
       TryAppendToAnswer(WStringToRString(std::wstring() + c));
 
       TextEnteredDirectly();
-      bHandled = true;
+      handled = true;
     }
   }
 
-  return ScreenWithMenuElements::Input(input) || bHandled;
+  return ScreenWithMenuElements::Input(input) || handled;
 }
 
 void ScreenTextEntry::TryAppendToAnswer(std::string s) {
   {
-    std::wstring sNewAnswer = answer_ + RStringToWstring(s);
-    if ((int)sNewAnswer.length() > g_iMaxInputLength) {
+    std::wstring new_answer = answer_ + RStringToWstring(s);
+    if ((int)new_answer.length() > g_iMaxInputLength) {
       SCREENMAN->PlayInvalidSound();
       return;
     }
@@ -282,8 +282,8 @@ void ScreenTextEntry::TryAppendToAnswer(std::string s) {
     return;
   }
 
-  std::wstring sNewAnswer = answer_ + RStringToWstring(s);
-  answer_ = sNewAnswer;
+  std::wstring new_answer = answer_ + RStringToWstring(s);
+  answer_ = new_answer;
   snd_type_.Play(true);
   UpdateAnswerText();
 }
@@ -308,8 +308,8 @@ bool ScreenTextEntry::MenuStart(const InputEventPlus& input) {
   return false;
 }
 
-void ScreenTextEntry::End(bool bCancelled) {
-  if (bCancelled) {
+void ScreenTextEntry::End(bool cancelled) {
+  if (cancelled) {
     if (g_pOnCancel) {
       g_pOnCancel();
     }
@@ -317,12 +317,12 @@ void ScreenTextEntry::End(bool bCancelled) {
     Cancel(SM_GoToNextScreen);
     // TweenOffScreen();
   } else {
-    std::string sAnswer = WStringToRString(answer_);
-    std::string sError;
+    std::string answer = WStringToRString(answer_);
+    std::string error;
     if (g_pValidate != nullptr) {
-      bool bValidAnswer = g_pValidate(sAnswer, sError);
-      if (!bValidAnswer) {
-        ScreenPrompt::Prompt(SM_None, sError);
+      bool valid_answer = g_pValidate(answer, error);
+      if (!valid_answer) {
+        ScreenPrompt::Prompt(SM_None, error);
         return;  // don't end this screen.
       }
     }
@@ -337,8 +337,8 @@ void ScreenTextEntry::End(bool bCancelled) {
     SCREENMAN->PlayStartSound();
   }
 
-  cancelled_last_ = bCancelled;
-  last_answer_ = bCancelled ? std::string("") : WStringToRString(answer_);
+  cancelled_last_ = cancelled;
+  last_answer_ = cancelled ? std::string("") : WStringToRString(answer_);
 }
 
 bool ScreenTextEntry::MenuBack(const InputEventPlus& input) {
@@ -360,32 +360,32 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
 
   // Get ScreenMessage
   lua_getfield(L, iTab, "SendOnPop");
-  const char* pStr = lua_tostring(L, -1);
-  if (pStr == nullptr) {
+  const char* str = lua_tostring(L, -1);
+  if (str == nullptr) {
     send_on_pop_ = SM_None;
   } else {
-    send_on_pop_ = ScreenMessageHelpers::ToScreenMessage(pStr);
+    send_on_pop_ = ScreenMessageHelpers::ToScreenMessage(str);
   }
   lua_settop(L, iTab);
 
   // Get Question
   lua_getfield(L, iTab, "Question");
-  pStr = lua_tostring(L, -1);
-  if (pStr == nullptr) {
+  str = lua_tostring(L, -1);
+  if (str == nullptr) {
     LuaHelpers::ReportScriptError(
         "ScreenTextEntry \"Question\" entry is not a string.");
-    pStr = "";
+    str = "";
   }
-  question_ = pStr;
+  question_ = str;
   lua_settop(L, iTab);
 
   // Get Initial Answer
   lua_getfield(L, iTab, "InitialAnswer");
-  pStr = lua_tostring(L, -1);
-  if (pStr == nullptr) {
-    pStr = "";
+  str = lua_tostring(L, -1);
+  if (str == nullptr) {
+    str = "";
   }
-  initial_answer_ = pStr;
+  initial_answer_ = str;
   lua_settop(L, iTab);
 
   // Get Max Input Length
@@ -417,8 +417,7 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
 }
 
 // Lua bridges
-static bool ValidateFromLua(
-    const std::string& sAnswer, std::string& sErrorOut) {
+static bool ValidateFromLua(const std::string& answer, std::string& error_out) {
   if (g_ValidateFunc.IsNil() || !g_ValidateFunc.IsSet()) {
     return true;
   }
@@ -427,10 +426,10 @@ static bool ValidateFromLua(
   g_ValidateFunc.PushSelf(L);
 
   // Argument 1 (answer):
-  lua_pushstring(L, sAnswer.c_str());
+  lua_pushstring(L, answer.c_str());
 
   // Argument 2 (error out):
-  lua_pushstring(L, sErrorOut.c_str());
+  lua_pushstring(L, error_out.c_str());
 
   bool valid = false;
 
@@ -440,10 +439,10 @@ static bool ValidateFromLua(
       LuaHelpers::ReportScriptError(
           "Lua error: ScreenTextEntry Validate did not return 'bool, string'.");
     } else {
-      std::string ErrorFromLua;
-      LuaHelpers::Pop(L, ErrorFromLua);
-      if (!ErrorFromLua.empty()) {
-        sErrorOut = ErrorFromLua;
+      std::string error_from_lua;
+      LuaHelpers::Pop(L, error_from_lua);
+      if (!error_from_lua.empty()) {
+        error_out = error_from_lua;
       }
       LuaHelpers::Pop(L, valid);
     }
@@ -453,7 +452,7 @@ static bool ValidateFromLua(
   return valid;
 }
 
-static void OnOKFromLua(const std::string& sAnswer) {
+static void OnOKFromLua(const std::string& answer) {
   if (g_OnOKFunc.IsNil() || !g_OnOKFunc.IsSet()) {
     return;
   }
@@ -461,7 +460,7 @@ static void OnOKFromLua(const std::string& sAnswer) {
 
   g_OnOKFunc.PushSelf(L);
   // Argument 1 (answer):
-  lua_pushstring(L, sAnswer.c_str());
+  lua_pushstring(L, answer.c_str());
   std::string error = "Lua error in ScreenTextEntry OnOK: ";
   LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 
@@ -482,7 +481,7 @@ static void OnCancelFromLua() {
 }
 
 static bool ValidateAppendFromLua(
-    const std::string& sAnswerBeforeChar, std::string& sAppend) {
+    const std::string& answer_before_char, std::string& s_append) {
   if (g_ValidateAppendFunc.IsNil() || !g_ValidateAppendFunc.IsSet()) {
     return true;
   }
@@ -491,10 +490,10 @@ static bool ValidateAppendFromLua(
   g_ValidateAppendFunc.PushSelf(L);
 
   // Argument 1 (AnswerBeforeChar):
-  lua_pushstring(L, sAnswerBeforeChar.c_str());
+  lua_pushstring(L, answer_before_char.c_str());
 
   // Argument 2 (Append):
-  lua_pushstring(L, sAppend.c_str());
+  lua_pushstring(L, s_append.c_str());
 
   bool append = false;
 
@@ -512,16 +511,16 @@ static bool ValidateAppendFromLua(
   return append;
 }
 
-static std::string FormatAnswerForDisplayFromLua(const std::string& sAnswer) {
+static std::string FormatAnswerForDisplayFromLua(const std::string& s_answer) {
   if (g_FormatAnswerForDisplayFunc.IsNil() ||
       !g_FormatAnswerForDisplayFunc.IsSet()) {
-    return sAnswer;
+    return s_answer;
   }
   Lua* L = LUA->Get();
 
   g_FormatAnswerForDisplayFunc.PushSelf(L);
   // Argument 1 (Answer):
-  lua_pushstring(L, sAnswer.c_str());
+  lua_pushstring(L, s_answer.c_str());
 
   std::string answer;
   std::string error = "Lua error in ScreenTextEntry FormatAnswerForDisplay: ";
@@ -630,11 +629,11 @@ void ScreenTextEntryVisual::BeginScreen() {
   FOREACH_KeyboardRow(r) {
     for (int x = 0; x < KEYS_PER_ROW; ++x) {
       BitmapText& bt = *text_keys_[r][x];
-      float fX =
+      float f_x =
           std::round(SCALE(x, 0, KEYS_PER_ROW - 1, ROW_START_X, ROW_END_X));
-      float fY =
+      float y =
           std::round(SCALE(r, 0, NUM_KeyboardRow - 1, ROW_START_Y, ROW_END_Y));
-      bt.SetXY(fX, fY);
+      bt.SetXY(f_x, y);
     }
   }
 
@@ -657,31 +656,31 @@ void ScreenTextEntryVisual::TextEnteredDirectly() {
   PositionCursor();
 }
 
-void ScreenTextEntryVisual::MoveX(int iDir) {
-  std::string sKey;
+void ScreenTextEntryVisual::MoveX(int dir) {
+  std::string key;
   do {
-    focus_x_ += iDir;
+    focus_x_ += dir;
     wrap(focus_x_, KEYS_PER_ROW);
 
-    sKey = g_szKeys[focus_y_][focus_x_];
-  } while (sKey == "");
+    key = g_szKeys[focus_y_][focus_x_];
+  } while (key == "");
 
   snd_change_.Play(true);
   PositionCursor();
 }
 
-void ScreenTextEntryVisual::MoveY(int iDir) {
-  std::string sKey;
+void ScreenTextEntryVisual::MoveY(int dir) {
+  std::string key;
   do {
-    focus_y_ = enum_add2(focus_y_, +iDir);
+    focus_y_ = enum_add2(focus_y_, +dir);
     wrap(*ConvertValue<int>(&focus_y_), NUM_KeyboardRow);
 
     // HACK: Round to nearest option so that we always stop
     // on KEYBOARD_ROW_SPECIAL.
     if (focus_y_ == KEYBOARD_ROW_SPECIAL) {
       for (int i = 0; true; i++) {
-        sKey = g_szKeys[focus_y_][focus_x_];
-        if (sKey != "") {
+        key = g_szKeys[focus_y_][focus_x_];
+        if (key != "") {
           break;
         }
 
@@ -691,8 +690,8 @@ void ScreenTextEntryVisual::MoveY(int iDir) {
       }
     }
 
-    sKey = g_szKeys[focus_y_][focus_x_];
-  } while (sKey == "");
+    key = g_szKeys[focus_y_][focus_x_];
+  } while (key == "");
 
   snd_change_.Play(true);
   PositionCursor();

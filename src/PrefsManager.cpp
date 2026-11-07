@@ -382,8 +382,8 @@ PrefsManager::~PrefsManager() {
   LUA->UnsetGlobal("PREFSMAN");
 }
 
-void PrefsManager::SetCurrentGame(const std::string& sGame) {
-  if (current_game_.Get() == sGame) {
+void PrefsManager::SetCurrentGame(const std::string& game) {
+  if (current_game_.Get() == game) {
     return;  // redundant
   }
 
@@ -391,7 +391,7 @@ void PrefsManager::SetCurrentGame(const std::string& sGame) {
     StoreGamePrefs();
   }
 
-  current_game_.Set(sGame);
+  current_game_.Set(game);
 
   RestoreGamePrefs();
 }
@@ -461,28 +461,28 @@ void PrefsManager::ResetToFactoryDefaults() {
 }
 
 void PrefsManager::ReadPrefsFromFile(
-    const std::string& sIni, const std::string& sSection, bool bIsStatic) {
+    const std::string& s_ini, const std::string& section, bool is_static) {
   IniFile ini;
-  if (!ini.ReadFile(sIni)) {
+  if (!ini.ReadFile(s_ini)) {
     return;
   }
 
-  ReadPrefsFromIni(ini, sSection, bIsStatic);
+  ReadPrefsFromIni(ini, section, is_static);
 }
 
 static const std::string GAME_SECTION_PREFIX = "Game-";
 
 void PrefsManager::ReadPrefsFromIni(
-    const IniFile& ini, const std::string& sSection, bool bIsStatic) {
+    const IniFile& ini, const std::string& section, bool is_static) {
   // Apply our fallback recursively (if any) before applying ourself.
-  static int s_iDepth = 0;
-  s_iDepth++;
-  ASSERT(s_iDepth < 100);
-  std::string sFallback;
-  if (ini.GetValue(sSection, "Fallback", sFallback)) {
-    ReadPrefsFromIni(ini, sFallback, bIsStatic);
+  static int depth = 0;
+  depth++;
+  ASSERT(depth < 100);
+  std::string fallback;
+  if (ini.GetValue(section, "Fallback", fallback)) {
+    ReadPrefsFromIni(ini, fallback, is_static);
   }
-  s_iDepth--;
+  depth--;
 
   /*
   IPreference *pPref = PREFSMAN->GetPreferenceByName( *sName );
@@ -494,15 +494,15 @@ void PrefsManager::ReadPrefsFromIni(
   pPref->FromString( sVal );
   */
 
-  const XNode* pChild = ini.GetChild(sSection);
-  if (pChild) {
-    IPreference::ReadAllPrefsFromNode(pChild, bIsStatic);
+  const XNode* child = ini.GetChild(section);
+  if (child) {
+    IPreference::ReadAllPrefsFromNode(child, is_static);
   }
 }
 
-void PrefsManager::ReadGamePrefsFromIni(const std::string& sIni) {
+void PrefsManager::ReadGamePrefsFromIni(const std::string& s_ini) {
   IniFile ini;
-  if (!ini.ReadFile(sIni)) {
+  if (!ini.ReadFile(s_ini)) {
     return;
   }
 
@@ -512,9 +512,9 @@ void PrefsManager::ReadGamePrefsFromIni(const std::string& sIni) {
       continue;
     }
 
-    std::string sGame = Right(
+    std::string game = Right(
         section_name, section_name.length() - GAME_SECTION_PREFIX.length());
-    GamePrefs& gp = map_game_name_to_game_prefs_[sGame];
+    GamePrefs& gp = map_game_name_to_game_prefs_[game];
 
     // todo: read more prefs here? -aj
     ini.GetValue(section_name, "Announcer", gp.announcer_);
@@ -524,25 +524,25 @@ void PrefsManager::ReadGamePrefsFromIni(const std::string& sIni) {
 }
 
 void PrefsManager::ReadDefaultsFromFile(
-    const std::string& sIni, const std::string& sSection) {
+    const std::string& s_ini, const std::string& section) {
   IniFile ini;
-  if (!ini.ReadFile(sIni)) {
+  if (!ini.ReadFile(s_ini)) {
     return;
   }
 
-  ReadDefaultsFromIni(ini, sSection);
+  ReadDefaultsFromIni(ini, section);
 }
 
 void PrefsManager::ReadDefaultsFromIni(
-    const IniFile& ini, const std::string& sSection) {
+    const IniFile& ini, const std::string& section) {
   // Apply our fallback recursively (if any) before applying ourself.
   // TODO: detect circular?
-  std::string sFallback;
-  if (ini.GetValue(sSection, "Fallback", sFallback)) {
-    ReadDefaultsFromIni(ini, sFallback);
+  std::string fallback;
+  if (ini.GetValue(section, "Fallback", fallback)) {
+    ReadDefaultsFromIni(ini, fallback);
   }
 
-  IPreference::ReadAllDefaultsFromNode(ini.GetChild(sSection));
+  IPreference::ReadAllDefaultsFromNode(ini.GetChild(section));
 }
 
 void PrefsManager::TranslateDeprecatedFlags() {
@@ -568,32 +568,32 @@ void PrefsManager::SavePrefsToIni(IniFile& ini) {
     StoreGamePrefs();
   }
 
-  XNode* pNode = ini.GetChild("Options");
-  if (pNode == nullptr) {
-    pNode = ini.AppendChild("Options");
+  XNode* node = ini.GetChild("Options");
+  if (node == nullptr) {
+    node = ini.AppendChild("Options");
   }
-  IPreference::SavePrefsToNode(pNode);
+  IPreference::SavePrefsToNode(node);
 
   for (const auto& iter : map_game_name_to_game_prefs_) {
-    std::string sSection = "Game-" + std::string(iter.first);
+    std::string section = "Game-" + std::string(iter.first);
 
     // todo: write more values here? -aj
-    ini.SetValue(sSection, "Announcer", iter.second.announcer_);
-    ini.SetValue(sSection, "Theme", iter.second.theme_);
-    ini.SetValue(sSection, "DefaultModifiers", iter.second.default_modifiers_);
+    ini.SetValue(section, "Announcer", iter.second.announcer_);
+    ini.SetValue(section, "Theme", iter.second.theme_);
+    ini.SetValue(section, "DefaultModifiers", iter.second.default_modifiers_);
   }
 }
 
 std::string PrefsManager::GetPreferencesSection() const {
-  std::string sSection = "Options";
+  std::string section = "Options";
 
   // OK if this fails
-  GetFileContents(SpecialFiles::TYPE_TXT_FILE, sSection, true);
+  GetFileContents(SpecialFiles::TYPE_TXT_FILE, section, true);
 
   // OK if this fails
-  GetCommandlineArgument("Type", &sSection);
+  GetCommandlineArgument("Type", &section);
 
-  return sSection;
+  return section;
 }
 
 // lua start
@@ -603,61 +603,61 @@ std::string PrefsManager::GetPreferencesSection() const {
 class LunaPrefsManager : public Luna<PrefsManager> {
  public:
   static int GetPreference(T* p, lua_State* L) {
-    std::string sName = SArg(1);
-    IPreference* pPref = IPreference::GetPreferenceByName(sName);
-    if (pPref == nullptr) {
+    std::string name = SArg(1);
+    IPreference* pref = IPreference::GetPreferenceByName(name);
+    if (pref == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
-          "GetPreference: unknown preference \"%s\"", sName.c_str());
+          "GetPreference: unknown preference \"%s\"", name.c_str());
       lua_pushnil(L);
       return 1;
     }
 
-    pPref->PushValue(L);
+    pref->PushValue(L);
     return 1;
   }
   static int SetPreference(T* p, lua_State* L) {
-    std::string sName = SArg(1);
+    std::string name = SArg(1);
 
-    IPreference* pPref = IPreference::GetPreferenceByName(sName);
-    if (pPref == nullptr) {
+    IPreference* pref = IPreference::GetPreferenceByName(name);
+    if (pref == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
-          "SetPreference: unknown preference \"%s\"", sName.c_str());
+          "SetPreference: unknown preference \"%s\"", name.c_str());
       COMMON_RETURN_SELF;
-    } else if (pPref->IsImmutable()) {
+    } else if (pref->IsImmutable()) {
       LuaHelpers::ReportScriptErrorFmt(
-          "SetPreference: preference \"%s\" is immutable", sName.c_str());
+          "SetPreference: preference \"%s\" is immutable", name.c_str());
       COMMON_RETURN_SELF;
     }
 
     lua_pushvalue(L, 2);
-    pPref->SetFromStack(L);
+    pref->SetFromStack(L);
     COMMON_RETURN_SELF;
   }
   static int SetPreferenceToDefault(T* p, lua_State* L) {
-    std::string sName = SArg(1);
+    std::string name = SArg(1);
 
-    IPreference* pPref = IPreference::GetPreferenceByName(sName);
-    if (pPref == nullptr) {
+    IPreference* pref = IPreference::GetPreferenceByName(name);
+    if (pref == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
-          "SetPreferenceToDefault: unknown preference \"%s\"", sName.c_str());
+          "SetPreferenceToDefault: unknown preference \"%s\"", name.c_str());
       COMMON_RETURN_SELF;
-    } else if (pPref->IsImmutable()) {
+    } else if (pref->IsImmutable()) {
       LuaHelpers::ReportScriptErrorFmt(
-          "SetPreference: preference \"%s\" is immutable", sName.c_str());
+          "SetPreference: preference \"%s\" is immutable", name.c_str());
       COMMON_RETURN_SELF;
     }
 
-    pPref->LoadDefault();
+    pref->LoadDefault();
     LOG->Trace(
-        "Restored preference \"%s\" to default \"%s\"", sName.c_str(),
-        pPref->ToString().c_str());
+        "Restored preference \"%s\" to default \"%s\"", name.c_str(),
+        pref->ToString().c_str());
     COMMON_RETURN_SELF;
   }
   static int PreferenceExists(T* p, lua_State* L) {
-    std::string sName = SArg(1);
+    std::string name = SArg(1);
 
-    IPreference* pPref = IPreference::GetPreferenceByName(sName);
-    if (pPref == nullptr) {
+    IPreference* pref = IPreference::GetPreferenceByName(name);
+    if (pref == nullptr) {
       lua_pushboolean(L, false);
       return 1;
     }

@@ -21,87 +21,87 @@ SoundEffectControl::SoundEffectControl() {
 }
 
 void SoundEffectControl::Load(
-    const std::string& sType, PlayerState* pPlayerState,
-    const NoteData* pNoteData) {
-  SOUND_PROPERTY.Load(sType, "SoundProperty");
-  LOCK_TO_HOLD.Load(sType, "LockToHold");
-  PROPERTY_MIN.Load(sType, "PropertyMin");
-  PROPERTY_CENTER.Load(sType, "PropertyCenter");
-  PROPERTY_MAX.Load(sType, "PropertyMax");
+    const std::string& type, PlayerState* player_state,
+    const NoteData* note_data) {
+  SOUND_PROPERTY.Load(type, "SoundProperty");
+  LOCK_TO_HOLD.Load(type, "LockToHold");
+  PROPERTY_MIN.Load(type, "PropertyMin");
+  PROPERTY_CENTER.Load(type, "PropertyCenter");
+  PROPERTY_MAX.Load(type, "PropertyMax");
 
-  player_state_ = pPlayerState;
-  note_data_ = pNoteData;
+  player_state_ = player_state;
+  note_data_ = note_data;
 }
 
-void SoundEffectControl::SetSoundReader(RageSoundReader* pPlayer) {
-  sound_reader_ = pPlayer;
+void SoundEffectControl::SetSoundReader(RageSoundReader* player) {
+  sound_reader_ = player;
 }
 
-void SoundEffectControl::Update(float fDeltaTime) {
+void SoundEffectControl::Update(float delta_time) {
   if (SOUND_PROPERTY == "") {
     return;
   }
 
-  float fLevel = INPUTMAPPER->GetLevel(
+  float level = INPUTMAPPER->GetLevel(
       GAME_BUTTON_EFFECT_UP, player_state_->player_number_);
-  fLevel -= INPUTMAPPER->GetLevel(
+  level -= INPUTMAPPER->GetLevel(
       GAME_BUTTON_EFFECT_DOWN, player_state_->player_number_);
-  rage_clamp(fLevel, -1.0f, +1.0f);
+  rage_clamp(level, -1.0f, +1.0f);
 
   if (LOCK_TO_HOLD) {
-    int iRow = BeatToNoteRow(GAMESTATE->position_.song_beat_);
-    int iHoldsHeld, iHoldsLetGo;
-    HoldsBeingHeld(iRow, iHoldsHeld, iHoldsLetGo);
+    int row = BeatToNoteRow(GAMESTATE->position_.song_beat_);
+    int holds_held, holds_let_go;
+    HoldsBeingHeld(row, holds_held, holds_let_go);
 
     /* If no holds are being held, or any have been missed, lock the effect off
      * until the button has been released. */
-    if (iHoldsLetGo > 0 || iHoldsHeld == 0) {
+    if (holds_let_go > 0 || holds_held == 0) {
       locked_ = true;
     }
 
     /* If the button is released, unlock it when the level crosses or reaches 0.
      */
     if (locked_) {
-      if ((fLevel <= 0.0f && last_level_ >= 0.0f) ||
-          (fLevel >= 0.0f && last_level_ <= 0.0f)) {
+      if ((level <= 0.0f && last_level_ >= 0.0f) ||
+          (level >= 0.0f && last_level_ <= 0.0f)) {
         locked_ = false;
       }
     }
   }
 
-  last_level_ = fLevel;
+  last_level_ = level;
 
   if (locked_) {
-    fLevel = 0.0f;
+    level = 0.0f;
   }
 
-  sample_ = fLevel;
-  player_state_->effect_history_.AddSample(sample_, fDeltaTime);
+  sample_ = level;
+  player_state_->effect_history_.AddSample(sample_, delta_time);
 
-  float fPropertyMin = PROPERTY_MIN;
-  float fPropertyCenter = PROPERTY_CENTER;
-  float fPropertyMax = PROPERTY_MAX;
+  float property_min = PROPERTY_MIN;
+  float property_center = PROPERTY_CENTER;
+  float property_max = PROPERTY_MAX;
 
-  float fCurrent;
+  float current;
   if (sample_ < 0) {
-    fCurrent = SCALE(sample_, 0.0f, -1.0f, fPropertyCenter, fPropertyMin);
+    current = SCALE(sample_, 0.0f, -1.0f, property_center, property_min);
   } else {
-    fCurrent = SCALE(sample_, 0.0f, +1.0f, fPropertyCenter, fPropertyMax);
+    current = SCALE(sample_, 0.0f, +1.0f, property_center, property_max);
   }
 
   if (sound_reader_) {
-    sound_reader_->SetProperty(SOUND_PROPERTY, fCurrent);
+    sound_reader_->SetProperty(SOUND_PROPERTY, current);
   }
 }
 
 /* Return false if any holds have been LetGo.  Otherwise, return true if at
  * least one hold is active. */
 void SoundEffectControl::HoldsBeingHeld(
-    int iRow, int& iHoldsHeld, int& iHoldsLetGo) const {
-  iHoldsHeld = iHoldsLetGo = 0;
+    int row, int& holds_held, int& holds_let_go) const {
+  holds_held = holds_let_go = 0;
   for (int c = 0; c < note_data_->GetNumTracks(); ++c) {
     NoteData::TrackMap::const_iterator begin, end;
-    note_data_->GetTapNoteRangeInclusive(c, iRow, iRow + 1, begin, end);
+    note_data_->GetTapNoteRangeInclusive(c, row, row + 1, begin, end);
     if (begin == end) {
       continue;
     }
@@ -111,9 +111,9 @@ void SoundEffectControl::HoldsBeingHeld(
       continue;
     }
     if (tn.hold_result_.active_) {
-      ++iHoldsHeld;
+      ++holds_held;
     } else if (tn.hold_result_.hns_ == HNS_LetGo) {
-      ++iHoldsLetGo;
+      ++holds_let_go;
     }
   }
 }

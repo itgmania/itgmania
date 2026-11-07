@@ -29,12 +29,12 @@ static ThemeMetric<TapNoteScore> MIN_SCORE_TO_MAINTAIN_COMBO(
 /* Return the last tap score of a row: the grade of the tap that completed
  * the row.  If the row has no tap notes, return -1.  If any tap notes aren't
  * graded (any tap is TNS_None) or are missed (TNS_Miss), return it. */
-int LastTapNoteScoreTrack(const NoteData& in, unsigned iRow, PlayerNumber pn) {
+int LastTapNoteScoreTrack(const NoteData& in, unsigned row, PlayerNumber pn) {
   float scoretime = -9999;
   int best_track = -1;
   for (int t = 0; t < in.GetNumTracks(); t++) {
     /* Skip empty tracks and mines */
-    const TapNote& tn = in.GetTapNote(t, iRow);
+    const TapNote& tn = in.GetTapNote(t, row);
     if (tn.type_ == TapNoteType_Empty || tn.type_ == TapNoteType_Mine ||
         tn.type_ == TapNoteType_Fake || tn.type_ == TapNoteType_AutoKeysound) {
       continue;
@@ -64,7 +64,7 @@ int LastTapNoteScoreTrack(const NoteData& in, unsigned iRow, PlayerNumber pn) {
 }  // namespace
 
 const TapNote& NoteDataWithScoring::LastTapNoteWithResult(
-    const NoteData& in, unsigned iRow, PlayerNumber plnum) {
+    const NoteData& in, unsigned row, PlayerNumber plnum) {
   // Allow this to be configurable between LastTapNoteScoreTrack and
   // MinTapNoteScore; this change inspired by PumpMania (Zmey, et al) -aj
   /*
@@ -80,14 +80,14 @@ const TapNote& NoteDataWithScoring::LastTapNoteWithResult(
   iRow, pn ); break;
   }
   */
-  int iTrack = LastTapNoteScoreTrack(in, iRow, plnum);
-  if (iTrack == -1) {
+  int track = LastTapNoteScoreTrack(in, row, plnum);
+  if (track == -1) {
     return TAP_EMPTY;
   }
 
   // LOG->Trace( ssprintf("returning in.GetTapNote(iTrack=%i, iRow=%i)", iTrack,
   // iRow) );
-  return in.GetTapNote(iTrack, iRow);
+  return in.GetTapNote(track, row);
 }
 
 /* Return the minimum tap score of a row.  If the row isn't complete (not all
@@ -120,28 +120,28 @@ bool NoteDataWithScoring::IsRowCompletelyJudged(
 namespace {
 // Return the ratio of actual combo to max combo.
 float GetActualVoltageRadarValue(
-    const NoteData& in, float fSongSeconds, const PlayerStageStats& pss) {
+    const NoteData& in, float song_seconds, const PlayerStageStats& pss) {
   /* STATSMAN->m_CurStageStats.iMaxCombo is unrelated to GetNumTapNotes:
    * m_bComboContinuesBetweenSongs might be on, and the way combo is counted
    * varies depending on the mode and score keeper. Instead, let's use the
    * length of the longest recorded combo. This is only subtly different:
    * it's the percent of the song the longest combo took to get. */
-  const PlayerStageStats::Combo_t MaxCombo = pss.GetMaxCombo();
-  float fComboPercent =
-      SCALE(MaxCombo.size_seconds_, 0, fSongSeconds, 0.0f, 1.0f);
-  return std::clamp(fComboPercent, 0.0f, 1.0f);
+  const PlayerStageStats::Combo_t max_combo = pss.GetMaxCombo();
+  float combo_percent =
+      SCALE(max_combo.size_seconds_, 0, song_seconds, 0.0f, 1.0f);
+  return std::clamp(combo_percent, 0.0f, 1.0f);
 }
 
 // Return the ratio of actual to possible dance points.
 float GetActualChaosRadarValue(
-    const NoteData& in, float fSongSeconds, const PlayerStageStats& pss) {
-  const int iPossibleDP = pss.possible_dance_points_;
-  if (iPossibleDP == 0) {
+    const NoteData& in, float song_seconds, const PlayerStageStats& pss) {
+  const int possible_dp = pss.possible_dance_points_;
+  if (possible_dp == 0) {
     return 1;
   }
 
-  const int ActualDP = pss.actual_dance_points_;
-  return std::clamp(float(ActualDP) / iPossibleDP, 0.0f, 1.0f);
+  const int actual_dp = pss.actual_dance_points_;
+  return std::clamp(float(actual_dp) / possible_dp, 0.0f, 1.0f);
 }
 }  // namespace
 

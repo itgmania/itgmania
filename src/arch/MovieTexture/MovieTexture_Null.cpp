@@ -15,7 +15,7 @@
 
 class MovieTexture_Null : public RageMovieTexture {
  public:
-  MovieTexture_Null(RageTextureID ID);
+  MovieTexture_Null(RageTextureID id);
   virtual ~MovieTexture_Null();
   void Invalidate() { tex_handle_ = 0; }
   uintptr_t GetTexHandle() const { return tex_handle_; }
@@ -28,13 +28,13 @@ class MovieTexture_Null : public RageMovieTexture {
   uintptr_t tex_handle_;
 };
 
-MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID) {
+MovieTexture_Null::MovieTexture_Null(RageTextureID id) : RageMovieTexture(id) {
   LOG->Trace("MovieTexture_Null::MovieTexture_Null(ID)");
   tex_handle_ = 0;
 
-  RageTextureID actualID = GetID();
+  RageTextureID actual_id = GetID();
 
-  actualID.alpha_bits_ = 0;
+  actual_id.alpha_bits_ = 0;
   int size = 64;
   source_width_ = size;
   source_height_ = size;
@@ -70,8 +70,8 @@ MovieTexture_Null::~MovieTexture_Null() { DISPLAY->DeleteTexture(tex_handle_); }
 REGISTER_MOVIE_TEXTURE_CLASS(Null);
 
 RageMovieTexture* RageMovieTextureDriver_Null::Create(
-    RageTextureID ID, std::string& sError) {
-  return new MovieTexture_Null(ID);
+    RageTextureID id, std::string& error) {
+  return new MovieTexture_Null(id);
 }
 
 /*

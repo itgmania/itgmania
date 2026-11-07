@@ -61,27 +61,27 @@ void Bookkeeper::Date::Set(time_t t) {
   Set(ltime);
 }
 
-void Bookkeeper::Date::Set(tm pTime) {
-  hour_ = pTime.tm_hour;
-  day_of_year_ = pTime.tm_yday;
-  year_ = pTime.tm_year + 1900;
+void Bookkeeper::Date::Set(tm time) {
+  hour_ = time.tm_hour;
+  day_of_year_ = time.tm_yday;
+  year_ = time.tm_year + 1900;
 }
 
-void Bookkeeper::LoadFromNode(const XNode* pNode) {
-  if (pNode->GetName() != "Bookkeeping") {
+void Bookkeeper::LoadFromNode(const XNode* node) {
+  if (node->GetName() != "Bookkeeping") {
     LOG->Warn(
         "Error loading bookkeeping: unexpected \"%s\"",
-        pNode->GetName().c_str());
+        node->GetName().c_str());
     return;
   }
 
-  const XNode* pData = pNode->GetChild("Data");
-  if (pData == nullptr) {
+  const XNode* data = node->GetChild("Data");
+  if (data == nullptr) {
     LOG->Warn("Error loading bookkeeping: Data node missing");
     return;
   }
 
-  FOREACH_CONST_Child(pData, day) {
+  FOREACH_CONST_Child(data, day) {
     Date d;
     if (!day->GetAttrValue("Hour", d.hour_) ||
         !day->GetAttrValue("Day", d.day_of_year_) ||
@@ -90,10 +90,10 @@ void Bookkeeper::LoadFromNode(const XNode* pNode) {
       continue;
     }
 
-    int iCoins;
-    day->GetTextValue(iCoins);
+    int coins;
+    day->GetTextValue(coins);
 
-    map_coins_for_hour_[d] = iCoins;
+    map_coins_for_hour_[d] = coins;
   }
 }
 
@@ -101,17 +101,17 @@ XNode* Bookkeeper::CreateNode() const {
   XNode* xml = new XNode("Bookkeeping");
 
   {
-    XNode* pData = xml->AppendChild("Data");
+    XNode* data = xml->AppendChild("Data");
 
     for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
          it != map_coins_for_hour_.end(); ++it) {
-      int iCoins = it->second;
-      XNode* pDay = pData->AppendChild("Coins", iCoins);
+      int coins = it->second;
+      XNode* day = data->AppendChild("Coins", coins);
 
       const Date& d = it->first;
-      pDay->AppendAttr("Hour", d.hour_);
-      pDay->AppendAttr("Day", d.day_of_year_);
-      pDay->AppendAttr("Year", d.year_);
+      day->AppendAttr("Hour", d.hour_);
+      day->AppendAttr("Day", d.day_of_year_);
+      day->AppendAttr("Year", d.year_);
     }
   }
 
@@ -128,18 +128,18 @@ void Bookkeeper::ReadFromDisk() {
     return;
   }
 
-  int numCoins = 0;
-  ReadCoinsFile(numCoins);
+  int num_coins = 0;
+  ReadCoinsFile(num_coins);
 
-  if (numCoins < 0) {
-    numCoins = 0;
+  if (num_coins < 0) {
+    num_coins = 0;
   } else if (
-      numCoins / PREFSMAN->coins_per_credit_ > PREFSMAN->max_num_credits_) {
-    numCoins = 0;
+      num_coins / PREFSMAN->coins_per_credit_ > PREFSMAN->max_num_credits_) {
+    num_coins = 0;
   }
 
-  LOG->Trace("Number of Coins to Load on boot: %i", numCoins);
-  GAMESTATE->coins_.Set(numCoins);
+  LOG->Trace("Number of Coins to Load on boot: %i", num_coins);
+  GAMESTATE->coins_.Set(num_coins);
 
   LoadFromNode(&xml);
 }
@@ -181,14 +181,14 @@ void Bookkeeper::ReadCoinsFile(int& coins) {
 int Bookkeeper::GetNumCoinsInRange(
     std::map<Date, int>::const_iterator begin,
     std::map<Date, int>::const_iterator end) const {
-  int iCoins = 0;
+  int coins = 0;
 
   while (begin != end) {
-    iCoins += begin->second;
+    coins += begin->second;
     ++begin;
   }
 
-  return iCoins;
+  return coins;
 }
 
 int Bookkeeper::GetNumCoins(Date beginning, Date ending) const {
@@ -203,31 +203,31 @@ int Bookkeeper::GetCoinsTotal() const {
 }
 
 void Bookkeeper::GetCoinsLastDays(int coins[NUM_LAST_DAYS]) const {
-  time_t lOldTime = time(nullptr);
+  time_t old_time = time(nullptr);
   tm time;
-  localtime_r(&lOldTime, &time);
+  localtime_r(&old_time, &time);
 
   time.tm_hour = 0;
 
   for (int i = 0; i < NUM_LAST_DAYS; i++) {
-    tm EndTime = AddDays(time, +1);
-    coins[i] = GetNumCoins(time, EndTime);
+    tm end_time = AddDays(time, +1);
+    coins[i] = GetNumCoins(time, end_time);
     time = GetYesterday(time);
   }
 }
 
 void Bookkeeper::GetCoinsLastWeeks(int coins[NUM_LAST_WEEKS]) const {
-  time_t lOldTime = time(nullptr);
+  time_t old_time = time(nullptr);
   tm time;
-  localtime_r(&lOldTime, &time);
+  localtime_r(&old_time, &time);
 
   time = GetNextSunday(time);
   time = GetYesterday(time);
 
   for (int w = 0; w < NUM_LAST_WEEKS; w++) {
-    tm StartTime = AddDays(time, -DAYS_IN_WEEK);
-    coins[w] = GetNumCoins(StartTime, time);
-    time = StartTime;
+    tm start_time = AddDays(time, -DAYS_IN_WEEK);
+    coins[w] = GetNumCoins(start_time, time);
+    time = start_time;
   }
 }
 
@@ -241,8 +241,8 @@ void Bookkeeper::GetCoinsByDayOfWeek(int coins[DAYS_IN_WEEK]) const {
   for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
        it != map_coins_for_hour_.end(); ++it) {
     const Date& d = it->first;
-    int iDayOfWeek = GetDayInYearAndYear(d.day_of_year_, d.year_).tm_wday;
-    coins[iDayOfWeek] += it->second;
+    int day_of_week = GetDayInYearAndYear(d.day_of_year_, d.year_).tm_wday;
+    coins[day_of_week] += it->second;
   }
 }
 

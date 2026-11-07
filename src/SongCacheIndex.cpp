@@ -39,17 +39,17 @@ SongCacheIndex*
     SONGINDEX;  // global and accessible from anywhere in our program
 
 std::string SongCacheIndex::GetCacheFilePath(
-    const std::string& sGroup, const std::string& sPath) {
+    const std::string& group, const std::string& path) {
   /* Don't use GetHashForFile, since we don't want to spend time
    * checking the file size and date. */
   std::string s;
 
-  if (sPath.size() > 2 && sPath[0] == '/' && sPath[sPath.size() - 1] == '/') {
-    s.assign(sPath, 1, sPath.size() - 2);
-  } else if (sPath.size() > 1 && sPath[0] == '/') {
-    s.assign(sPath, 1, sPath.size() - 1);
+  if (path.size() > 2 && path[0] == '/' && path[path.size() - 1] == '/') {
+    s.assign(path, 1, path.size() - 2);
+  } else if (path.size() > 1 && path[0] == '/') {
+    s.assign(path, 1, path.size() - 1);
   } else {
-    s = sPath;
+    s = path;
   }
   /* Change slashes and invalid utf-8 characters to _.
    * http://en.wikipedia.org/wiki/UTF-8
@@ -63,7 +63,7 @@ std::string SongCacheIndex::GetCacheFilePath(
   }
   // CACHE_DIR ends with a /.
   return ssprintf(
-      "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str());
+      "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), group.c_str(), s.c_str());
 }
 
 SongCacheIndex::SongCacheIndex() : mutex_("SongCacheIndex") {
@@ -75,23 +75,23 @@ SongCacheIndex::~SongCacheIndex() {}
 static void EmptyDir(std::string dir) {
   ASSERT(dir[dir.size() - 1] == '/');
 
-  std::vector<std::string> asCacheFileNames;
-  GetDirListing(dir, asCacheFileNames);
-  for (unsigned i = 0; i < asCacheFileNames.size(); i++) {
-    if (!IsADirectory(dir + asCacheFileNames[i])) {
-      FILEMAN->Remove(dir + asCacheFileNames[i]);
+  std::vector<std::string> cache_file_names;
+  GetDirListing(dir, cache_file_names);
+  for (unsigned i = 0; i < cache_file_names.size(); i++) {
+    if (!IsADirectory(dir + cache_file_names[i])) {
+      FILEMAN->Remove(dir + cache_file_names[i]);
     }
   }
 }
 
 void SongCacheIndex::ReadCacheIndex() {
-  LockMutex L(mutex_);
+  LockMutex l(mutex_);
 
   cache_index_.ReadFile(CACHE_INDEX);  // don't care if this fails
 
-  int iCacheVersion = -1;
-  cache_index_.GetValue("Cache", "CacheVersion", iCacheVersion);
-  if (iCacheVersion == FILE_CACHE_VERSION) {
+  int cache_version = -1;
+  cache_index_.GetValue("Cache", "CacheVersion", cache_version);
+  if (cache_version == FILE_CACHE_VERSION) {
     return;  // OK
   }
 
@@ -100,10 +100,10 @@ void SongCacheIndex::ReadCacheIndex() {
   EmptyDir(SpecialFiles::CACHE_DIR + "Songs/");
   EmptyDir(SpecialFiles::CACHE_DIR + "Courses/");
 
-  std::vector<std::string> ImageDir;
-  split(CommonMetrics::IMAGES_TO_CACHE, ",", ImageDir);
-  for (unsigned c = 0; c < ImageDir.size(); c++) {
-    EmptyDir(SpecialFiles::CACHE_DIR + ImageDir[c] + "/");
+  std::vector<std::string> image_dir;
+  split(CommonMetrics::IMAGES_TO_CACHE, ",", image_dir);
+  for (unsigned c = 0; c < image_dir.size(); c++) {
+    EmptyDir(SpecialFiles::CACHE_DIR + image_dir[c] + "/");
   }
 
   cache_index_.Clear();
@@ -117,12 +117,12 @@ void SongCacheIndex::ReadCacheIndex() {
 }
 
 void SongCacheIndex::SaveCacheIndex() {
-  LockMutex L(mutex_);
+  LockMutex l(mutex_);
   cache_index_.WriteFile(CACHE_INDEX);
 }
 
 void SongCacheIndex::AddCacheIndex(const std::string& path, unsigned hash) {
-  LockMutex L(mutex_);
+  LockMutex l(mutex_);
   if (hash == 0) {
     ++hash; /* no 0 hash values */
   }
@@ -134,20 +134,20 @@ void SongCacheIndex::AddCacheIndex(const std::string& path, unsigned hash) {
 }
 
 unsigned SongCacheIndex::GetCacheHash(const std::string& path) const {
-  LockMutex L(mutex_);
-  unsigned iDirHash = 0;
-  if (!cache_index_.GetValue("Cache", MangleName(path), iDirHash)) {
+  LockMutex l(mutex_);
+  unsigned dir_hash = 0;
+  if (!cache_index_.GetValue("Cache", MangleName(path), dir_hash)) {
     return 0;
   }
-  if (iDirHash == 0) {
-    ++iDirHash; /* no 0 hash values */
+  if (dir_hash == 0) {
+    ++dir_hash; /* no 0 hash values */
   }
-  return iDirHash;
+  return dir_hash;
 }
 
-std::string SongCacheIndex::MangleName(const std::string& Name) {
+std::string SongCacheIndex::MangleName(const std::string& name) {
   /* We store paths in an INI.  We can't store '='. */
-  std::string ret = Name;
+  std::string ret = name;
   Replace(ret, "=", "");
   return ret;
 }

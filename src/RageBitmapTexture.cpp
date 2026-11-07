@@ -23,7 +23,7 @@
 #include "global.h"
 
 static void GetResolutionFromFileName(
-    std::string sPath, int& iWidth, int& iHeight) {
+    std::string path, int& width, int& height) {
   /* Match:
    *  Foo (res 512x128).png
    * Also allow, eg:
@@ -31,19 +31,19 @@ static void GetResolutionFromFileName(
    * Be careful that this doesn't get mixed up with frame dimensions. */
   static Regex re("\\([^\\)]*res ([0-9]+)x([0-9]+).*\\)");
 
-  std::vector<std::string> asMatches;
-  if (!re.Compare(sPath, asMatches)) {
+  std::vector<std::string> matches;
+  if (!re.Compare(path, matches)) {
     return;
   }
 
   // Check for nonsense values.  Some people might not intend the hint. -Kyz
-  int maybe_width = StringToInt(asMatches[0]);
-  int maybe_height = StringToInt(asMatches[1]);
+  int maybe_width = StringToInt(matches[0]);
+  int maybe_height = StringToInt(matches[1]);
   if (maybe_width <= 0 || maybe_height <= 0) {
     return;
   }
-  iWidth = maybe_width;
-  iHeight = maybe_height;
+  width = maybe_width;
+  height = maybe_height;
 }
 
 RageBitmapTexture::RageBitmapTexture(RageTextureID name)
@@ -70,88 +70,88 @@ void RageBitmapTexture::Reload() {
  * Stretch forces the loaded image to fill the texture completely.
  */
 void RageBitmapTexture::Create() {
-  RageTextureID actualID = GetID();
+  RageTextureID actual_id = GetID();
 
-  ASSERT(actualID.filename_ != "");
+  ASSERT(actual_id.filename_ != "");
 
   /* Load the image into a RageSurface. */
   std::string error;
-  RageSurface* pImg = nullptr;
-  if (actualID.filename_ == TEXTUREMAN->GetScreenTextureID().filename_) {
-    pImg = TEXTUREMAN->GetScreenSurface();
+  RageSurface* img = nullptr;
+  if (actual_id.filename_ == TEXTUREMAN->GetScreenTextureID().filename_) {
+    img = TEXTUREMAN->GetScreenSurface();
   } else {
-    pImg = RageSurfaceUtils::LoadFile(actualID.filename_, error);
+    img = RageSurfaceUtils::LoadFile(actual_id.filename_, error);
   }
 
   /* Tolerate corrupt/unknown images. */
-  if (pImg == nullptr) {
+  if (img == nullptr) {
     std::string warning = ssprintf(
-        "RageBitmapTexture: Couldn't load %s: %s", actualID.filename_.c_str(),
+        "RageBitmapTexture: Couldn't load %s: %s", actual_id.filename_.c_str(),
         error.c_str());
     LOG->Warn("%s", warning.c_str());
     Dialog::OK(warning, "missing_texture");
-    pImg = RageSurfaceUtils::MakeDummySurface(64, 64);
-    ASSERT(pImg != nullptr);
+    img = RageSurfaceUtils::MakeDummySurface(64, 64);
+    ASSERT(img != nullptr);
   }
 
-  if (actualID.hot_pink_color_key_) {
-    RageSurfaceUtils::ApplyHotPinkColorKey(pImg);
+  if (actual_id.hot_pink_color_key_) {
+    RageSurfaceUtils::ApplyHotPinkColorKey(img);
   }
 
   {
     /* Do this after setting the color key for paletted images; it'll also
      * return TRAIT_NO_TRANSPARENCY if the color key is never used. */
-    int iTraits = RageSurfaceUtils::FindSurfaceTraits(pImg);
-    if (iTraits & RageSurfaceUtils::TRAIT_NO_TRANSPARENCY) {
-      actualID.alpha_bits_ = 0;
-    } else if (iTraits & RageSurfaceUtils::TRAIT_BOOL_TRANSPARENCY) {
-      actualID.alpha_bits_ = 1;
+    int traits = RageSurfaceUtils::FindSurfaceTraits(img);
+    if (traits & RageSurfaceUtils::TRAIT_NO_TRANSPARENCY) {
+      actual_id.alpha_bits_ = 0;
+    } else if (traits & RageSurfaceUtils::TRAIT_BOOL_TRANSPARENCY) {
+      actual_id.alpha_bits_ = 1;
     }
   }
 
   // look in the file name for a format hints
-  std::string sHintString =
-      GetID().filename_ + actualID.additional_texture_hints_;
-  MakeLower(sHintString);
+  std::string hint_string =
+      GetID().filename_ + actual_id.additional_texture_hints_;
+  MakeLower(hint_string);
 
-  if (sHintString.find("32bpp") != std::string::npos) {
-    actualID.color_depth_ = 32;
-  } else if (sHintString.find("16bpp") != std::string::npos) {
-    actualID.color_depth_ = 16;
+  if (hint_string.find("32bpp") != std::string::npos) {
+    actual_id.color_depth_ = 32;
+  } else if (hint_string.find("16bpp") != std::string::npos) {
+    actual_id.color_depth_ = 16;
   }
-  if (sHintString.find("dither") != std::string::npos) {
-    actualID.dither_ = true;
+  if (hint_string.find("dither") != std::string::npos) {
+    actual_id.dither_ = true;
   }
-  if (sHintString.find("stretch") != std::string::npos) {
-    actualID.stretch_ = true;
+  if (hint_string.find("stretch") != std::string::npos) {
+    actual_id.stretch_ = true;
   }
-  if (sHintString.find("mipmaps") != std::string::npos) {
-    actualID.mip_maps_ = true;
+  if (hint_string.find("mipmaps") != std::string::npos) {
+    actual_id.mip_maps_ = true;
   }
-  if (sHintString.find("nomipmaps") != std::string::npos) {
-    actualID.mip_maps_ = false;  // check for "nomipmaps" after "mipmaps"
+  if (hint_string.find("nomipmaps") != std::string::npos) {
+    actual_id.mip_maps_ = false;  // check for "nomipmaps" after "mipmaps"
   }
 
   /* If the image is marked grayscale, then use all bits not used for alpha
    * for the intensity.  This way, if an image has no alpha, you get an 8-bit
    * grayscale; if it only has boolean transparency, you get a 7-bit grayscale.
    */
-  if (sHintString.find("grayscale") != std::string::npos) {
-    actualID.grayscale_bits_ = 8 - actualID.alpha_bits_;
+  if (hint_string.find("grayscale") != std::string::npos) {
+    actual_id.grayscale_bits_ = 8 - actual_id.alpha_bits_;
   }
 
   /* This indicates that the only component in the texture is alpha; assume all
    * color is white. */
-  if (sHintString.find("alphamap") != std::string::npos) {
-    actualID.grayscale_bits_ = 0;
+  if (hint_string.find("alphamap") != std::string::npos) {
+    actual_id.grayscale_bits_ = 0;
   }
 
   /* No iGrayscaleBits for images that are already paletted.  We don't support
    * that; and that hint is intended for use on images that are already
    * grayscale, it's not intended to change a color image into a grayscale
    * image. */
-  if (actualID.grayscale_bits_ != -1 && pImg->format_->bits_per_pixel_ == 8) {
-    actualID.grayscale_bits_ = -1;
+  if (actual_id.grayscale_bits_ != -1 && img->format_->bits_per_pixel_ == 8) {
+    actual_id.grayscale_bits_ = -1;
   }
 
   // To avoid the overhead of querying the hardware's maximum texture size
@@ -159,14 +159,14 @@ void RageBitmapTexture::Create() {
   // DISPLAY->GetMaxTextureSize() in RageBitmapTexture::Create(). This value
   // remains consistent throughout runtime. For example, when using OpenGL,
   // this is the value of GL_MAX_TEXTURE_SIZE. --sukibaby
-  static const int iMaxTextureSize = DISPLAY->GetMaxTextureSize();
+  static const int kMaxTextureSize = DISPLAY->GetMaxTextureSize();
 
   /* Cap the max texture size to the hardware max. */
-  actualID.max_size_ = std::min(actualID.max_size_, iMaxTextureSize);
+  actual_id.max_size_ = std::min(actual_id.max_size_, kMaxTextureSize);
 
   /* Save information about the source. */
-  source_width_ = pImg->w_;
-  source_height_ = pImg->h_;
+  source_width_ = img->w_;
+  source_height_ = img->h_;
 
   /* in-game image dimensions are the same as the source graphic */
   image_width_ = source_width_;
@@ -174,7 +174,7 @@ void RageBitmapTexture::Create() {
 
   /* if "doubleres" (high resolution) and we're not allowing high res textures,
    * then image dimensions are half of the source */
-  if (sHintString.find("doubleres") != std::string::npos) {
+  if (hint_string.find("doubleres") != std::string::npos) {
     if (!StepMania::GetHighResolutionTextures()) {
       image_width_ = image_width_ / 2;
       image_height_ = image_height_ / 2;
@@ -182,8 +182,8 @@ void RageBitmapTexture::Create() {
   }
 
   /* image size cannot exceed max size */
-  image_width_ = std::min(image_width_, actualID.max_size_);
-  image_height_ = std::min(image_height_, actualID.max_size_);
+  image_width_ = std::min(image_width_, actual_id.max_size_);
+  image_height_ = std::min(image_height_, actual_id.max_size_);
 
   /* Texture dimensions need to be a power of two; jump to the next. */
   texture_width_ = power_of_two(image_width_);
@@ -192,56 +192,56 @@ void RageBitmapTexture::Create() {
   /* If we're under 8x8, increase it, to avoid filtering problems on odd
    * hardware. */
   if (texture_width_ < 8 || texture_height_ < 8) {
-    actualID.stretch_ = true;
+    actual_id.stretch_ = true;
     texture_width_ = std::max(8, texture_width_);
     texture_height_ = std::max(8, texture_height_);
   }
 
   ASSERT_M(
-      texture_width_ <= actualID.max_size_,
-      ssprintf("w %i, %i", texture_width_, actualID.max_size_));
+      texture_width_ <= actual_id.max_size_,
+      ssprintf("w %i, %i", texture_width_, actual_id.max_size_));
   ASSERT_M(
-      texture_height_ <= actualID.max_size_,
-      ssprintf("h %i, %i", texture_height_, actualID.max_size_));
+      texture_height_ <= actual_id.max_size_,
+      ssprintf("h %i, %i", texture_height_, actual_id.max_size_));
 
-  if (actualID.stretch_) {
+  if (actual_id.stretch_) {
     /* The hints asked for the image to be stretched to the texture size,
      * probably for tiling. */
     image_width_ = texture_width_;
     image_height_ = texture_height_;
   }
 
-  if (pImg->w_ != image_width_ || pImg->h_ != image_height_) {
-    RageSurfaceUtils::Zoom(pImg, image_width_, image_height_);
+  if (img->w_ != image_width_ || img->h_ != image_height_) {
+    RageSurfaceUtils::Zoom(img, image_width_, image_height_);
   }
 
-  if (actualID.grayscale_bits_ != -1 &&
+  if (actual_id.grayscale_bits_ != -1 &&
       DISPLAY->SupportsTextureFormat(RagePixelFormat_PAL)) {
-    RageSurface* pGrayscale = RageSurfaceUtils::PalettizeToGrayscale(
-        pImg, actualID.grayscale_bits_, actualID.alpha_bits_);
+    RageSurface* grayscale = RageSurfaceUtils::PalettizeToGrayscale(
+        img, actual_id.grayscale_bits_, actual_id.alpha_bits_);
 
-    delete pImg;
-    pImg = pGrayscale;
+    delete img;
+    img = grayscale;
   }
 
   // Figure out which texture format we want the renderer to use.
   RagePixelFormat pixfmt;
 
   // If the source is palleted, always load as paletted if supported.
-  if (pImg->format_->bits_per_pixel_ == 8 &&
+  if (img->format_->bits_per_pixel_ == 8 &&
       DISPLAY->SupportsTextureFormat(RagePixelFormat_PAL)) {
     pixfmt = RagePixelFormat_PAL;
   } else {
     // not paletted
-    switch (actualID.color_depth_) {
+    switch (actual_id.color_depth_) {
       case 16: {
         // Bits of alpha in the source:
-        int iSourceAlphaBits = 8 - pImg->format_->loss_[3];
+        int source_alpha_bits = 8 - img->format_->loss_[3];
 
         // Don't use more than we were hinted to.
-        iSourceAlphaBits = std::min(actualID.alpha_bits_, iSourceAlphaBits);
+        source_alpha_bits = std::min(actual_id.alpha_bits_, source_alpha_bits);
 
-        switch (iSourceAlphaBits) {
+        switch (source_alpha_bits) {
           case 0:
           case 1:
             pixfmt = RagePixelFormat_RGB5A1;
@@ -255,7 +255,7 @@ void RageBitmapTexture::Create() {
         pixfmt = RagePixelFormat_RGBA8;
         break;
       default:
-        FAIL_M(ssprintf("%i", actualID.color_depth_));
+        FAIL_M(ssprintf("%i", actual_id.color_depth_));
     }
   }
 
@@ -274,64 +274,64 @@ void RageBitmapTexture::Create() {
    * on at least one color channel than the source. For example, it doesn't
    * make sense to do this when pixfmt is RGBA5551 if the image is only RGBA555.
    */
-  if (actualID.dither_ &&
+  if (actual_id.dither_ &&
       (pixfmt == RagePixelFormat_RGBA4 || pixfmt == RagePixelFormat_RGB5A1)) {
     // Dither down to the destination format.
     const RageDisplay::RagePixelFormatDesc* pfd =
         DISPLAY->GetPixelFormatDesc(pixfmt);
     RageSurface* dst = CreateSurface(
-        pImg->w_, pImg->h_, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
+        img->w_, img->h_, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
         pfd->masks_[2], pfd->masks_[3]);
 
-    RageSurfaceUtils::ErrorDiffusionDither(pImg, dst);
-    delete pImg;
-    pImg = dst;
+    RageSurfaceUtils::ErrorDiffusionDither(img, dst);
+    delete img;
+    img = dst;
   }
 
   /* This needs to be done *after* the final resize, since that resize
    * may introduce new alpha bits that need to be set.  It needs to be
    * done *before* we set up the palette, since it might change it. */
-  RageSurfaceUtils::FixHiddenAlpha(pImg);
+  RageSurfaceUtils::FixHiddenAlpha(img);
 
   /* Scale up to the texture size, if needed. */
   RageSurfaceUtils::ConvertSurface(
-      pImg, texture_width_, texture_height_, pImg->fmt_.bits_per_pixel_,
-      pImg->fmt_.mask_[0], pImg->fmt_.mask_[1], pImg->fmt_.mask_[2],
-      pImg->fmt_.mask_[3]);
+      img, texture_width_, texture_height_, img->fmt_.bits_per_pixel_,
+      img->fmt_.mask_[0], img->fmt_.mask_[1], img->fmt_.mask_[2],
+      img->fmt_.mask_[3]);
 
-  tex_handle_ = DISPLAY->CreateTexture(pixfmt, pImg, actualID.mip_maps_);
+  tex_handle_ = DISPLAY->CreateTexture(pixfmt, img, actual_id.mip_maps_);
 
   CreateFrameRects();
 
-  delete pImg;
+  delete img;
 
   // Check for hints that override the apparent "size".
-  GetResolutionFromFileName(actualID.filename_, source_width_, source_height_);
+  GetResolutionFromFileName(actual_id.filename_, source_width_, source_height_);
 
   /* if "doubleres" (high resolution) then we want the image to appear in-game
    * with dimensions 1/2 of the source. So, cut down the source dimension here
    * after everything above is finished operating with the real image
    * source dimensions. */
-  if (sHintString.find("doubleres") != std::string::npos) {
+  if (hint_string.find("doubleres") != std::string::npos) {
     source_width_ = source_width_ / 2;
     source_height_ = source_height_ / 2;
   }
 
-  std::string sProperties;
-  sProperties += RagePixelFormatToString(pixfmt) + " ";
-  if (actualID.alpha_bits_ == 0) {
-    sProperties += "opaque ";
+  std::string properties;
+  properties += RagePixelFormatToString(pixfmt) + " ";
+  if (actual_id.alpha_bits_ == 0) {
+    properties += "opaque ";
   }
-  if (actualID.alpha_bits_ == 1) {
-    sProperties += "matte ";
+  if (actual_id.alpha_bits_ == 1) {
+    properties += "matte ";
   }
-  if (actualID.stretch_) {
-    sProperties += "stretch ";
+  if (actual_id.stretch_) {
+    properties += "stretch ";
   }
-  if (actualID.dither_) {
-    sProperties += "dither ";
+  if (actual_id.dither_) {
+    properties += "dither ";
   }
-  sProperties.erase(sProperties.size() - 1);
+  properties.erase(properties.size() - 1);
   // LOG->Trace( "RageBitmapTexture: Loaded '%s' (%ux%u); %s, source %d,%d;
   // image %d,%d.", 	actualID.filename.c_str(), GetTextureWidth(),
   // GetTextureHeight(), 	sProperties.c_str(), m_iSourceWidth,

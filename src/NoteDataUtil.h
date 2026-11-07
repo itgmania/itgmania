@@ -15,10 +15,10 @@ class Song;
 struct AttackArray;
 class TimingData;
 
-void PlaceAutoKeysound(NoteData& out, int row, TapNote akTap);
-int FindLongestOverlappingHoldNoteForAnyTrack(const NoteData& in, int iRow);
+void PlaceAutoKeysound(NoteData& out, int row, TapNote tap);
+int FindLongestOverlappingHoldNoteForAnyTrack(const NoteData& in, int row);
 void LightTransformHelper(
-    const NoteData& in, NoteData& out, const std::vector<int>& aiTracks);
+    const NoteData& in, NoteData& out, const std::vector<int>& tracks);
 
 /**
  * @brief Utility functions that deal with NoteData.
@@ -27,13 +27,13 @@ void LightTransformHelper(
  * implemented using only NoteData's primitives; this improves abstraction
  * and makes it much easier to change NoteData internally in the future. */
 namespace NoteDataUtil {
-NoteType GetSmallestNoteTypeForMeasure(const NoteData& nd, int iMeasureIndex);
+NoteType GetSmallestNoteTypeForMeasure(const NoteData& nd, int measure_index);
 NoteType GetSmallestNoteTypeInRange(
-    const NoteData& nd, int iStartIndex, int iEndIndex);
+    const NoteData& nd, int start_index, int end_index);
 void LoadFromSMNoteDataString(
-    NoteData& out, const std::string& sSMNoteData, bool bComposite);
+    NoteData& out, const std::string& sm_note_data, bool composite);
 void GetSMNoteDataString(
-    const NoteData& in, std::string& notes_out, bool bIncludeMeasureComments);
+    const NoteData& in, std::string& notes_out, bool include_measure_comments);
 void SplitCompositeNoteData(const NoteData& in, std::vector<NoteData>& out);
 /**
  * @brief Similar to SplitCompositeNoteData, but will also separate couple note
@@ -42,7 +42,7 @@ void SplitCompositeNoteData(const NoteData& in, std::vector<NoteData>& out);
  * @return true if the NoteData was split, otherwise false.
  */
 bool SplitCompositeOrStackedNoteData(
-    const NoteData& in, std::vector<NoteData>& out, StepsType stepsType);
+    const NoteData& in, std::vector<NoteData>& out, StepsType steps_type);
 void CombineCompositeNoteData(NoteData& out, const std::vector<NoteData>& in);
 /**
  * @brief Autogenerate notes from one type to another.
@@ -52,7 +52,7 @@ void CombineCompositeNoteData(NoteData& out, const std::vector<NoteData>& in);
  * @param out the new NoteData.
  * @param iNewNumTracks the number of tracks/columns of the new NoteData. */
 void LoadTransformedSlidingWindow(
-    const NoteData& in, NoteData& out, int iNewNumTracks);
+    const NoteData& in, NoteData& out, int new_num_tracks);
 /**
  * @brief Autogenerate notes from one type to another.
  *
@@ -60,17 +60,17 @@ void LoadTransformedSlidingWindow(
  * @param in The original NoteData.
  * @param out the new NoteData.
  * @param iNewNumTracks the number of tracks/columns of the new NoteData. */
-void LoadOverlapped(const NoteData& in, NoteData& out, int iNewNumTracks);
+void LoadOverlapped(const NoteData& in, NoteData& out, int new_num_tracks);
 void LoadTransformedLights(
-    const NoteData& in, NoteData& out, int iNewNumTracks);
+    const NoteData& in, NoteData& out, int new_num_tracks);
 void LoadTransformedLightsFromTwo(
     const NoteData& marquee, const NoteData& bass, NoteData& out);
 void InsertHoldTails(NoteData& inout);
 
 void CalculateRadarValues(
-    const NoteData& in, float fSongSeconds, RadarValues& out);
+    const NoteData& in, float song_seconds, RadarValues& out);
 void CalculateRadarValues(
-    const NoteData& in, float fSongSeconds, const TimingData* timing,
+    const NoteData& in, float song_seconds, const TimingData* timing,
     RadarValues& out);
 
 /**
@@ -79,18 +79,18 @@ void CalculateRadarValues(
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveHoldNotes(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void ChangeRollsToHolds(NoteData& in, int iStartIndex, int iEndIndex);
-void ChangeHoldsToRolls(NoteData& in, int iStartIndex, int iEndIndex);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void ChangeRollsToHolds(NoteData& in, int start_index, int end_index);
+void ChangeHoldsToRolls(NoteData& in, int start_index, int end_index);
 void RemoveSimultaneousNotes(
-    NoteData& inout, int iMaxSimultaneous, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int max_simultaneous, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 void RemoveJumps(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void RemoveHands(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void RemoveQuads(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 /**
  * @brief Remove all of a specific TapNote Type.
  * @param inout the Notedata to be transformed.
@@ -98,33 +98,33 @@ void RemoveQuads(
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveSpecificTapNotes(
-    NoteData& inout, TapNoteType tn, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, TapNoteType tn, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 /**
  * @brief Remove all of the mines from the chart.
  * @param inout the Notedata to be transformed.
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveMines(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 /**
  * @brief Remove all of the lifts from the chart.
  * @param inout the Notedata to be transformed.
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveLifts(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 /**
  * @brief Remove all of the fakes from the chart.
  * @param inout the Notedata to be transformed.
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveFakes(
-    NoteData& inout, const TimingData& timing_data, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, const TimingData& timing_data, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 void RemoveStretch(
-    NoteData& inout, StepsType st, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, StepsType st, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 void RemoveAllButOneTap(NoteData& inout, int row);
 /** @brief The types of transformations available for the NoteData. */
 enum TrackMapping {
@@ -148,33 +148,33 @@ enum TrackMapping {
   NUM_TRACK_MAPPINGS
 };
 void Turn(
-    NoteData& inout, StepsType st, TrackMapping tt, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
-void Little(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Wide(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Big(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Quick(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void BMRize(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Skippy(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, StepsType st, TrackMapping tt, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
+void Little(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void Wide(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void Big(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void Quick(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void BMRize(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void Skippy(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void InsertIntelligentTaps(
-    NoteData& in, int iWindowSizeRows, int iInsertOffsetRows,
-    int iWindowStrideRows, bool bSkippy, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& in, int window_size_rows, int insert_offset_rows,
+    int window_stride_rows, bool skippy, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 void AddMines(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Echo(NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+void Echo(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void Stomp(
-    NoteData& inout, StepsType st, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, StepsType st, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 void Planted(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void Floored(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void Twister(
-    NoteData& inout, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void ConvertTapsToHolds(
-    NoteData& inout, int iSimultaneousHolds, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& inout, int simultaneous_holds, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 
 /**
  * @brief Convert all taps added via transforms into original style tap notes.
@@ -189,43 +189,43 @@ void ClearLeft(NoteData& inout);
 void ClearRight(NoteData& inout);
 void CollapseToOne(NoteData& inout);
 void CollapseLeft(NoteData& inout);
-void ShiftTracks(NoteData& inout, int iShiftBy);
+void ShiftTracks(NoteData& inout, int shift_by);
 void ShiftLeft(NoteData& inout);
 void ShiftRight(NoteData& inout);
 void SwapUpDown(NoteData& inout, StepsType st);
 void ArbitraryRemap(NoteData& inout, int* mapping);
 
 void SnapToNearestNoteType(
-    NoteData& inout, NoteType nt1, NoteType nt2, int iStartIndex,
-    int iEndIndex);
+    NoteData& inout, NoteType nt1, NoteType nt2, int start_index,
+    int end_index);
 
 inline void SnapToNearestNoteType(
-    NoteData& inout, NoteType nt, int iStartIndex, int iEndIndex) {
-  SnapToNearestNoteType(inout, nt, NoteType_Invalid, iStartIndex, iEndIndex);
+    NoteData& inout, NoteType nt, int start_index, int end_index) {
+  SnapToNearestNoteType(inout, nt, NoteType_Invalid, start_index, end_index);
 }
 
 // True if no notes in row that aren't true in the mask
-bool RowPassesValidMask(NoteData& inout, int row, const bool bValidMask[]);
+bool RowPassesValidMask(NoteData& inout, int row, const bool valid_mask[]);
 
 void TransformNoteData(
     NoteData& nd, const TimingData& timing_data, const AttackArray& aa,
-    StepsType st, Song* pSong);
+    StepsType st, Song* song);
 void TransformNoteData(
     NoteData& nd, const TimingData& timing_data, const PlayerOptions& po,
-    StepsType st, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
+    StepsType st, int start_index = 0, int end_index = MAX_NOTE_ROW);
 void ScaleRegion(
-    NoteData& nd, float fScale, int iStartIndex = 0,
-    int iEndIndex = MAX_NOTE_ROW);
+    NoteData& nd, float scale, int start_index = 0,
+    int end_index = MAX_NOTE_ROW);
 
-void InsertRows(NoteData& nd, int iStartIndex, int iRowsToShift);
-void DeleteRows(NoteData& nd, int iStartIndex, int iRowsToShift);
+void InsertRows(NoteData& nd, int start_index, int rows_to_shift);
+void DeleteRows(NoteData& nd, int start_index, int rows_to_shift);
 
-void RemoveAllTapsOfType(NoteData& ndInOut, TapNoteType typeToRemove);
-void RemoveAllTapsExceptForType(NoteData& ndInOut, TapNoteType typeToKeep);
+void RemoveAllTapsOfType(NoteData& in_out, TapNoteType type_to_remove);
+void RemoveAllTapsExceptForType(NoteData& in_out, TapNoteType type_to_keep);
 
 int GetMaxNonEmptyTrack(const NoteData& in);
-bool GetNextEditorPosition(const NoteData& in, int& rowInOut);
-bool GetPrevEditorPosition(const NoteData& in, int& rowInOut);
+bool GetNextEditorPosition(const NoteData& in, int& row_in_out);
+bool GetPrevEditorPosition(const NoteData& in, int& row_in_out);
 
 /** @brief Count the number of hold ticks that will fire, assuming that
  * tickholds are on.

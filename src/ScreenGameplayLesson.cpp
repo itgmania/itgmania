@@ -47,17 +47,17 @@ void ScreenGameplayLesson::Init() {
   dancing_state_ = STATE_DANCING;
 
   // Load pages
-  Song* pSong = GAMESTATE->cur_song_;
-  std::string sDir = pSong->GetSongDir();
+  Song* song = GAMESTATE->cur_song_;
+  std::string dir = song->GetSongDir();
   std::vector<std::string> vs;
-  GetDirListing(sDir + "Page*", vs, true, true);
+  GetDirListing(dir + "Page*", vs, true, true);
   pages_.resize(vs.size());
   int i = 0;
   for (const std::string& s : vs) {
     AutoActor& aa = pages_[i];
 
-    LuaThreadVariable iIndex("PageIndex", LuaReference::Create(i++));
-    LuaThreadVariable iPages("NumPages", LuaReference::Create((int)vs.size()));
+    LuaThreadVariable index("PageIndex", LuaReference::Create(i++));
+    LuaThreadVariable pages("NumPages", LuaReference::Create((int)vs.size()));
     aa.Load(s);
 
     aa->SetDrawOrder(DRAW_ORDER_OVERLAY + 1);
@@ -66,8 +66,8 @@ void ScreenGameplayLesson::Init() {
 
   i = 0;
   for (AutoActor& aa : pages_) {
-    bool bIsFirst = (i++ == 0);
-    aa->PlayCommand(bIsFirst ? "Show" : "Hide");
+    bool is_first = (i++ == 0);
+    aa->PlayCommand(is_first ? "Show" : "Hide");
     aa->PlayCommand("On");
   }
 
@@ -93,21 +93,21 @@ bool ScreenGameplayLesson::Input(const InputEventPlus& input) {
   }
 }
 
-void ScreenGameplayLesson::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_NotesEnded) {
-    bool bShowingAPage = current_page_index_ != -1;
+void ScreenGameplayLesson::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_NotesEnded) {
+    bool showing_a_page = current_page_index_ != -1;
 
     // While showing a page, loop the music.
-    if (bShowingAPage) {
+    if (showing_a_page) {
       ResetAndRestartCurrentSong();
     } else {
       PlayerStageStats& pss = STATSMAN->cur_stage_stats_.player_[PLAYER_1];
-      int iActual = pss.GetLessonScoreActual();
-      int iNeeded = pss.GetLessonScoreNeeded();
-      bool bCleared = iActual >= iNeeded;
-      bool bAnyTriesLeft = try_ + 1 < NUM_Try;
+      int actual = pss.GetLessonScoreActual();
+      int needed = pss.GetLessonScoreNeeded();
+      bool cleared = actual >= needed;
+      bool any_tries_left = try_ + 1 < NUM_Try;
 
-      if (bCleared) {
+      if (cleared) {
         MESSAGEMAN->Broadcast(Message_LessonCleared);
         this->HandleScreenMessage(SM_LeaveGameplay);
 
@@ -115,7 +115,7 @@ void ScreenGameplayLesson::HandleScreenMessage(const ScreenMessage SM) {
         // Only commit if we've cleared.  Don't commit if we've failed all 3
         // tries.
         STATSMAN->cur_stage_stats_.FinalizeScores(false);
-      } else if (bAnyTriesLeft) {
+      } else if (any_tries_left) {
         ResetAndRestartCurrentSong();
 
         try_ = (Try)(try_ + 1);
@@ -129,7 +129,7 @@ void ScreenGameplayLesson::HandleScreenMessage(const ScreenMessage SM) {
     return;  // handled
   }
 
-  ScreenGameplay::HandleScreenMessage(SM);
+  ScreenGameplay::HandleScreenMessage(sm);
 }
 
 bool ScreenGameplayLesson::MenuStart(const InputEventPlus& input) {
@@ -154,11 +154,11 @@ bool ScreenGameplayLesson::MenuBack(const InputEventPlus& input) {
   return true;
 }
 
-void ScreenGameplayLesson::ChangeLessonPage(int iDir) {
-  if (current_page_index_ + iDir < 0) {
+void ScreenGameplayLesson::ChangeLessonPage(int dir) {
+  if (current_page_index_ + dir < 0) {
     // don't change
     return;
-  } else if (current_page_index_ + iDir >= (int)pages_.size()) {
+  } else if (current_page_index_ + dir >= (int)pages_.size()) {
     pages_[current_page_index_]->PlayCommand("Hide");
     current_page_index_ = -1;
 
@@ -183,7 +183,7 @@ void ScreenGameplayLesson::ChangeLessonPage(int iDir) {
     }
   } else {
     pages_[current_page_index_]->PlayCommand("Hide");
-    current_page_index_ += iDir;
+    current_page_index_ += dir;
     pages_[current_page_index_]->PlayCommand("Show");
   }
 }

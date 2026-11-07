@@ -67,8 +67,7 @@ inline bool IsPump(InputDevice id) {
 inline bool IsMouse(InputDevice id) { return id == DEVICE_MOUSE; }
 
 struct InputDeviceInfo {
-  InputDeviceInfo(InputDevice id_, std::string sDesc_)
-      : id_(id_), desc_(sDesc_) {}
+  InputDeviceInfo(InputDevice id, std::string desc) : id_(id), desc_(desc) {}
 
   InputDevice id_;
   std::string desc_;
@@ -406,8 +405,8 @@ struct DeviceInput {
         z_(0),
         down_(level_ > 0.5f),
         ts_(t) {}
-  DeviceInput(InputDevice d, DeviceButton b, const RageTimer& t, int zVal = 0)
-      : device_(d), button_(b), level_(0), z_(zVal), down_(false), ts_(t) {}
+  DeviceInput(InputDevice d, DeviceButton b, const RageTimer& t, int z_val = 0)
+      : device_(d), button_(b), level_(0), z_(z_val), down_(false), ts_(t) {}
 
   std::string ToString() const;
   bool FromString(const std::string& s);

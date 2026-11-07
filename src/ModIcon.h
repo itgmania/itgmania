@@ -14,8 +14,8 @@ class ModIcon : public ActorFrame {
  public:
   ModIcon();
   ModIcon(const ModIcon& cpy);
-  void Load(std::string sMetricsGroup);
-  void Set(const std::string& sText);
+  void Load(std::string metrics_group);
+  void Set(const std::string& text);
 
  protected:
   BitmapText text_;

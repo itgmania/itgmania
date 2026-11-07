@@ -15,28 +15,28 @@ class FadingBanner : public ActorFrame {
   FadingBanner();
   virtual FadingBanner* Copy() const;
 
-  void ScaleToClipped(float fWidth, float fHeight);
+  void ScaleToClipped(float width, float height);
 
   /* If you previously loaded a cached banner, and are now loading the full-
    * resolution banner, set bLowResToHighRes to true. */
-  void Load(RageTextureID ID, bool bLowResToHighRes = false);
-  void LoadFromSong(const Song* pSong);  // nullptr means no song
+  void Load(RageTextureID id, bool low_res_to_high_res = false);
+  void LoadFromSong(const Song* song);  // nullptr means no song
   void LoadMode();
-  void LoadFromSongGroup(std::string sSongGroup);
-  void LoadFromCourse(const Course* pCourse);
-  void LoadIconFromCharacter(Character* pCharacter);
-  void LoadBannerFromUnlockEntry(const UnlockEntry* pUE);
+  void LoadFromSongGroup(std::string song_group);
+  void LoadFromCourse(const Course* course);
+  void LoadIconFromCharacter(Character* character);
+  void LoadBannerFromUnlockEntry(const UnlockEntry* ue);
   void LoadRoulette();
   void LoadRandom();
   void LoadFromSortOrder(SortOrder so);
   void LoadFallback();
   void LoadCourseFallback();
-  void LoadCustom(std::string sBanner);
+  void LoadCustom(std::string banner);
 
   bool LoadFromCachedBanner(const std::string& path);
 
   void SetMovingFast(bool fast) { moving_fast_ = fast; }
-  virtual void UpdateInternal(float fDeltaTime);
+  virtual void UpdateInternal(float delta_time);
   virtual void DrawPrimitives();
 
   int GetLatestIndex() { return index_latest_; }
@@ -45,7 +45,7 @@ class FadingBanner : public ActorFrame {
   void PushSelf(lua_State* L);
 
  protected:
-  void BeforeChange(bool bLowResToHighRes = false);
+  void BeforeChange(bool low_res_to_high_res = false);
 
   static const int kNumBanners = 5;
   Banner banner_[kNumBanners];

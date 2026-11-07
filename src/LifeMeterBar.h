@@ -14,13 +14,13 @@ class LifeMeterBar : public LifeMeter {
   ~LifeMeterBar();
 
   virtual void Load(
-      const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   virtual void ChangeLife(TapNoteScore score);
   virtual void ChangeLife(HoldNoteScore score, TapNoteScore tscore);
-  virtual void ChangeLife(float fDeltaLifePercent);
+  virtual void ChangeLife(float delta_life_percent);
   virtual void SetLife(float value);
   virtual void HandleTapScoreNone();
   virtual void AfterLifeChanged();
@@ -30,7 +30,7 @@ class LifeMeterBar : public LifeMeter {
   virtual float GetLife() const { return life_percentage_; }
 
   void UpdateNonstopLifebar();
-  void FillForHowToPlay(int NumT2s, int NumMisses);
+  void FillForHowToPlay(int num_t2s, int num_misses);
   // this function is solely for HowToPlay
 
  private:

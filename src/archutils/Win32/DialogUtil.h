@@ -4,7 +4,7 @@
 #include <windows.h>
 
 namespace DialogUtil {
-void SetHeaderFont(HWND hdlg, int nID);
+void SetHeaderFont(HWND hdlg, int id);
 void LocalizeDialogAndContents(HWND hdlg);
 };  // namespace DialogUtil
 

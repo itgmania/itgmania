@@ -25,8 +25,8 @@ static const ThemeMetric<float> RADAR_EDGE_WIDTH("GrooveRadar", "EdgeWidth");
 static const ThemeMetric<float> RADAR_CENTER_ALPHA(
     "GrooveRadar", "CenterAlpha");
 
-static float RADAR_VALUE_ROTATION(int iValueIndex) {
-  return PI / 2 + PI * 2 / 5.0f * iValueIndex;
+static float RADAR_VALUE_ROTATION(int value_index) {
+  return PI / 2 + PI * 2 / 5.0f * value_index;
 }
 
 static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
@@ -57,8 +57,8 @@ GrooveRadar::GrooveRadar() {
   }
 }
 
-void GrooveRadar::LoadFromNode(const XNode* pNode) {
-  ActorFrame::LoadFromNode(pNode);
+void GrooveRadar::LoadFromNode(const XNode* node) {
+  ActorFrame::LoadFromNode(node);
 }
 
 void GrooveRadar::SetEmpty(PlayerNumber pn) { SetFromSteps(pn, nullptr); }
@@ -68,14 +68,14 @@ void GrooveRadar::SetFromRadarValues(PlayerNumber pn, const RadarValues& rv) {
 }
 
 void GrooveRadar::SetFromSteps(
-    PlayerNumber pn, Steps* pSteps)  // nullptr means no Song
+    PlayerNumber pn, Steps* steps)  // nullptr means no Song
 {
-  if (pSteps == nullptr) {
+  if (steps == nullptr) {
     groove_radar_value_map_[pn].SetEmpty();
     return;
   }
 
-  const RadarValues& rv = pSteps->GetRadarValues(pn);
+  const RadarValues& rv = steps->GetRadarValues(pn);
   groove_radar_value_map_[pn].SetFromSteps(rv);
 }
 
@@ -98,9 +98,9 @@ void GrooveRadar::GrooveRadarValueMap::SetEmpty() { values_visible_ = false; }
 void GrooveRadar::GrooveRadarValueMap::SetFromSteps(const RadarValues& rv) {
   values_visible_ = true;
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    const float fValueCurrent = values_old_[c] * (1 - percent_toward_new_) +
+    const float value_current = values_old_[c] * (1 - percent_toward_new_) +
                                 values_new_[c] * percent_toward_new_;
-    values_old_[c] = fValueCurrent;
+    values_old_[c] = value_current;
     values_new_[c] = std::clamp(rv[c], 0.0f, 1.0f);
   }
 
@@ -114,9 +114,9 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps(const RadarValues& rv) {
 void GrooveRadar::GrooveRadarValueMap::SetFromValues(std::vector<float> vals) {
   values_visible_ = true;
   for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
-    const float fValueCurrent = values_old_[c] * (1 - percent_toward_new_) +
+    const float value_current = values_old_[c] * (1 - percent_toward_new_) +
                                 values_new_[c] * percent_toward_new_;
-    values_old_[c] = fValueCurrent;
+    values_old_[c] = value_current;
     values_new_[c] = vals[c];
   }
 
@@ -127,17 +127,17 @@ void GrooveRadar::GrooveRadarValueMap::SetFromValues(std::vector<float> vals) {
   }
 }
 
-void GrooveRadar::GrooveRadarValueMap::Update(float fDeltaTime) {
-  ActorFrame::Update(fDeltaTime);
+void GrooveRadar::GrooveRadarValueMap::Update(float delta_time) {
+  ActorFrame::Update(delta_time);
 
-  percent_toward_new_ = std::min(percent_toward_new_ + 4.0f * fDeltaTime, 1.0f);
+  percent_toward_new_ = std::min(percent_toward_new_ + 4.0f * delta_time, 1.0f);
 }
 
 void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
   ActorFrame::DrawPrimitives();
 
   // draw radar filling
-  const float fRadius = GetUnzoomedWidth() / 2.0f * 1.1f;
+  const float radius = GetUnzoomedWidth() / 2.0f * 1.1f;
 
   DISPLAY->ClearAllTextures();
   DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Modulate);
@@ -163,15 +163,15 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
        i++)  // do one extra to close the fan
   {
     const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
-    const float fDistFromCenter =
+    const float dist_from_center =
         (values_old_[c] * (1 - percent_toward_new_) +
          values_new_[c] * percent_toward_new_ + 0.07f) *
-        fRadius;
-    const float fRotation = RADAR_VALUE_ROTATION(i);
-    const float fX = std::cos(fRotation) * fDistFromCenter;
-    const float fY = -std::sin(fRotation) * fDistFromCenter;
+        radius;
+    const float rotation = RADAR_VALUE_ROTATION(i);
+    const float x = std::cos(rotation) * dist_from_center;
+    const float y = -std::sin(rotation) * dist_from_center;
 
-    v[1 + i].p_ = RageVector3(fX, fY, 0);
+    v[1 + i].p_ = RageVector3(x, y, 0);
     v[1 + i].c_ = v[1].c_;
   }
 
@@ -180,15 +180,15 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
   // use a line loop to draw the thick line
   for (int i = 0; i <= NUM_SHOWN_RADAR_CATEGORIES; i++) {
     const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
-    const float fDistFromCenter =
+    const float dist_from_center =
         (values_old_[c] * (1 - percent_toward_new_) +
          values_new_[c] * percent_toward_new_ + 0.07f) *
-        fRadius;
-    const float fRotation = RADAR_VALUE_ROTATION(i);
-    const float fX = std::cos(fRotation) * fDistFromCenter;
-    const float fY = -std::sin(fRotation) * fDistFromCenter;
+        radius;
+    const float rotation = RADAR_VALUE_ROTATION(i);
+    const float x = std::cos(rotation) * dist_from_center;
+    const float y = -std::sin(rotation) * dist_from_center;
 
-    v[i].p_ = RageVector3(fX, fY, 0);
+    v[i].p_ = RageVector3(x, y, 0);
     v[i].c_ = this->temp_state_->diffuse_[0];
   }
 
@@ -215,8 +215,8 @@ class LunaGrooveRadar : public Luna<GrooveRadar> {
     if (lua_isnil(L, 2)) {
       p->SetEmpty(pn);
     } else {
-      RadarValues* pRV = Luna<RadarValues>::check(L, 2);
-      p->SetFromRadarValues(pn, *pRV);
+      RadarValues* rv = Luna<RadarValues>::check(L, 2);
+      p->SetFromRadarValues(pn, *rv);
     }
     COMMON_RETURN_SELF;
   }

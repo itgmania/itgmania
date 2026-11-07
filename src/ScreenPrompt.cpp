@@ -40,23 +40,23 @@ void* g_pCallbackData;
 };  // namespace
 
 void ScreenPrompt::SetPromptSettings(
-    const std::string& sText, PromptType type, PromptAnswer defaultAnswer,
-    void (*OnYes)(void*), void (*OnNo)(void*), void* pCallbackData) {
-  g_sText = sText;
+    const std::string& text, PromptType type, PromptAnswer default_answer,
+    void (*on_yes)(void*), void (*on_no)(void*), void* callback_data) {
+  g_sText = text;
   g_PromptType = type;
-  g_defaultAnswer = defaultAnswer;
-  g_pOnYes = OnYes;
-  g_pOnNo = OnNo;
-  g_pCallbackData = pCallbackData;
+  g_defaultAnswer = default_answer;
+  g_pOnYes = on_yes;
+  g_pOnNo = on_no;
+  g_pCallbackData = callback_data;
 }
 
 void ScreenPrompt::Prompt(
-    ScreenMessage smSendOnPop, const std::string& sText, PromptType type,
-    PromptAnswer defaultAnswer, void (*OnYes)(void*), void (*OnNo)(void*),
-    void* pCallbackData) {
-  SetPromptSettings(sText, type, defaultAnswer, OnYes, OnNo, pCallbackData);
+    ScreenMessage send_on_pop, const std::string& text, PromptType type,
+    PromptAnswer default_answer, void (*on_yes)(void*), void (*on_no)(void*),
+    void* callback_data) {
+  SetPromptSettings(text, type, default_answer, on_yes, on_no, callback_data);
 
-  SCREENMAN->AddNewScreenToTop("ScreenPrompt", smSendOnPop);
+  SCREENMAN->AddNewScreenToTop("ScreenPrompt", send_on_pop);
 }
 
 REGISTER_SCREEN_CLASS(ScreenPrompt);
@@ -101,18 +101,18 @@ void ScreenPrompt::BeginScreen() {
   spr_cursor_->PlayCommand("On");
 
   for (int i = 0; i <= g_PromptType; i++) {
-    std::string sElem = ssprintf("Answer%dOf%d", i + 1, g_PromptType + 1);
-    text_answer_[i].SetName(sElem);
+    std::string elem = ssprintf("Answer%dOf%d", i + 1, g_PromptType + 1);
+    text_answer_[i].SetName(elem);
     LOAD_ALL_COMMANDS(text_answer_[i]);
     // Side note:  Because LOAD_ALL_COMMANDS occurs here, InitCommand will
     // not be run for the actors.  People can just use OnCommand instead.
-    std::string sAnswer = PromptAnswerToString((PromptAnswer)i);
+    std::string answer = PromptAnswerToString((PromptAnswer)i);
     // FRAGILE
     if (g_PromptType == PROMPT_OK) {
-      sAnswer = "OK";
+      answer = "OK";
     }
 
-    text_answer_[i].SetText(ANSWER_TEXT(sAnswer));
+    text_answer_[i].SetText(ANSWER_TEXT(answer));
     text_answer_[i].PlayCommand("On");
     SET_XY(text_answer_[i]);
   }
@@ -212,7 +212,7 @@ bool ScreenPrompt::MenuBack(const InputEventPlus& input) {
   return false;
 }
 
-void ScreenPrompt::End(bool bCancelled) {
+void ScreenPrompt::End(bool cancelled) {
   switch (answer_) {
     case ANSWER_YES:
       send_on_pop_ = SM_Success;
@@ -224,7 +224,7 @@ void ScreenPrompt::End(bool bCancelled) {
       break;
   }
 
-  if (bCancelled) {
+  if (cancelled) {
     Cancel(SM_GoToNextScreen);
   } else {
     SCREENMAN->PlayStartSound();
@@ -246,8 +246,8 @@ void ScreenPrompt::End(bool bCancelled) {
       break;
   }
 
-  last_answer_ = bCancelled ? ANSWER_CANCEL : answer_;
-  cancelled_last_ = bCancelled;
+  last_answer_ = cancelled ? ANSWER_CANCEL : answer_;
+  cancelled_last_ = cancelled;
 }
 
 void ScreenPrompt::PositionCursor() {

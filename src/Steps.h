@@ -60,9 +60,9 @@ class Steps {
   ~Steps();
 
   // initializers
-  void AutogenFrom(const Steps* parent, StepsType ntTo);
-  void CopyFrom(Steps* pSource, StepsType ntTo, float fMusicLengthSeconds);
-  void CreateBlank(StepsType ntTo);
+  void AutogenFrom(const Steps* parent, StepsType to);
+  void CopyFrom(Steps* source, StepsType to, float music_length_seconds);
+  void CreateBlank(StepsType to);
 
   void Compress() const;
   void Decompress() const;
@@ -140,21 +140,21 @@ class Steps {
   void SetDifficulty(Difficulty dc) {
     SetDifficultyAndDescription(dc, GetDescription());
   }
-  void SetDescription(std::string sDescription) {
-    SetDifficultyAndDescription(this->GetDifficulty(), sDescription);
+  void SetDescription(std::string description) {
+    SetDifficultyAndDescription(this->GetDifficulty(), description);
   }
-  void SetDifficultyAndDescription(Difficulty dc, std::string sDescription);
-  void SetCredit(std::string sCredit);
-  void SetChartStyle(std::string sChartStyle);
+  void SetDifficultyAndDescription(Difficulty dc, std::string description);
+  void SetCredit(std::string credit);
+  void SetChartStyle(std::string chart_style);
   static bool MakeValidEditDescription(
-      std::string& sPreferredDescription);  // return true if was modified
+      std::string& preferred_description);  // return true if was modified
 
   /** @brief Produces a chart that's reduced to it's smallest unique
    * representable form. */
-  std::string MinimizedChartString(const NoteData& noteData);
+  std::string MinimizedChartString(const NoteData& note_data);
 
   /** @brief Generates a hash used for GrooveStats integration. */
-  void CalculateGrooveStatsHash(const NoteData& noteData);
+  void CalculateGrooveStatsHash(const NoteData& note_data);
   const std::string GetGrooveStatsHash() const;
   int GetGrooveStatsHashVersion() const;
 
@@ -164,19 +164,19 @@ class Steps {
   void SetMeter(int meter);
   void SetRadarValues(const RadarValues v[NUM_PLAYERS]);
   void SetTechCounts(const TechCounts ts[NUM_PLAYERS]);
-  void SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
-  void SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
-  void SetStreamBreakdown(std::vector<StreamBreakdown>& streamBreakdown);
-  void SetNoteAnnotations(std::vector<NoteAnnotationCache>& noteAnnotations);
-  void SetPeakNps(std::vector<float>& peakNps);
+  void SetNpsPerMeasure(std::vector<std::vector<float>>& nps_per_measure);
+  void SetNotesPerMeasure(std::vector<std::vector<int>>& notes_per_measure);
+  void SetStreamBreakdown(std::vector<StreamBreakdown>& stream_breakdown);
+  void SetNoteAnnotations(std::vector<NoteAnnotationCache>& note_annotations);
+  void SetPeakNps(std::vector<float>& peak_nps);
   void SetGrooveStatsHash(const std::string& key);
   void SetGrooveStatsHashVersion(int version);
   float PredictMeter() const;
 
   unsigned GetHash() const;
-  void GetNoteData(NoteData& noteDataOut) const;
+  void GetNoteData(NoteData& note_data_out) const;
   NoteData GetNoteData() const;
-  void SetNoteData(const NoteData& noteDataNew);
+  void SetNoteData(const NoteData& note_data_new);
   void SetSMNoteData(const std::string& notes_comp);
   void GetSMNoteData(std::string& notes_comp_out) const;
 
@@ -196,17 +196,17 @@ class Steps {
 
   /** @brief Convenience function to calculate Radar Values, Tech Stats, Measure
    * Stats, and GrooveStats key.*/
-  void CalculateStepStats(float fMusicLengthSeconds);
+  void CalculateStepStats(float music_length_seconds);
 
   void CalculateRadarValues(
-      float fMusicLengthSeconds, const NoteData& noteData);
+      float music_length_seconds, const NoteData& note_data);
 
-  void CalculateTechCounts(const NoteData& noteData);
+  void CalculateTechCounts(const NoteData& note_data);
   const TechCounts& GetTechCounts(PlayerNumber pn) const {
     return Real()->tech_counts_[pn];
   }
 
-  void CalculateMeasureInfo(const NoteData& noteData);
+  void CalculateMeasureInfo(const NoteData& note_data);
   const std::vector<NoteAnnotation>& GetNoteAnnotations(PlayerNumber pn) const;
   const std::vector<NoteAnnotationCache>& GetNoteAnnotationCaches() const;
 
@@ -282,7 +282,7 @@ class Steps {
   float GetMinBPM() const { return this->specified_bpm_min_; }
   void SetMaxBPM(const float f) { this->specified_bpm_max_ = f; }
   float GetMaxBPM() const { return this->specified_bpm_max_; }
-  void GetDisplayBpms(DisplayBpms& addTo) const;
+  void GetDisplayBpms(DisplayBpms& add_to) const;
 
   std::string GetStepsAttackString() const {
     return join(":", this->attack_string_);
@@ -296,11 +296,11 @@ class Steps {
   std::vector<std::string> attack_string_;
 
  public:
-  std::vector<ColumnCue> GetColumnCues(PlayerNumber pn, float minDuration);
+  std::vector<ColumnCue> GetColumnCues(PlayerNumber pn, float min_duration);
 
  private:
   inline const Steps* Real() const { return parent_ ? parent_ : this; }
-  void DeAutogen(bool bCopyNoteData = true); /* If this Steps is autogenerated,
+  void DeAutogen(bool copy_note_data = true); /* If this Steps is autogenerated,
                                                 make it a real Steps. */
 
   /**

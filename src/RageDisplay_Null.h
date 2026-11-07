@@ -13,7 +13,7 @@ class RageDisplay_Null : public RageDisplay {
  public:
   RageDisplay_Null();
   virtual std::string Init(
-      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
+      const VideoModeParams& p, bool allow_unaccelerated_renderer);
 
   virtual std::string GetApiDescription() const { return "Null"; }
   virtual void GetDisplaySpecs(DisplaySpecs& out) const;

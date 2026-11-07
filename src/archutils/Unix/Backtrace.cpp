@@ -166,11 +166,11 @@ static int find_address(const void* p, const void** starts, const void** ends) {
 static void* SavedStackPointer = nullptr;
 
 void InitializeBacktrace() {
-  static bool bInitialized = false;
-  if (bInitialized) {
+  static bool initialized = false;
+  if (initialized) {
     return;
   }
-  bInitialized = true;
+  initialized = true;
 
   /* We might have a different stack in the signal handler.  Record a pointer
    * that lies in the real stack, so we can look it up later. */
@@ -422,14 +422,14 @@ void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc) {
 void GetBacktrace(const void** buf, size_t size, const BacktraceContext* ctx) {
   InitializeBacktrace();
 
-  BacktraceContext CurrentCtx;
+  BacktraceContext current_ctx;
   if (ctx == nullptr) {
-    ctx = &CurrentCtx;
+    ctx = &current_ctx;
 
-    CurrentCtx.ip_ = nullptr;
-    CurrentCtx.bp_ = __builtin_frame_address(0);
-    CurrentCtx.sp_ = __builtin_frame_address(0);
-    CurrentCtx.pid_ = GetCurrentThreadId();
+    current_ctx.ip_ = nullptr;
+    current_ctx.bp_ = __builtin_frame_address(0);
+    current_ctx.sp_ = __builtin_frame_address(0);
+    current_ctx.pid_ = GetCurrentThreadId();
   }
 
   do_backtrace(buf, size, ctx);

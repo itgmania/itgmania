@@ -18,7 +18,7 @@ namespace CourseWriterCRS {
  * @param bSavingCache is true if cache information is being saved as well.
  * @return its success or failure.
  */
-bool Write(const Course& course, RageFileBasic& f, bool bSavingCache);
+bool Write(const Course& course, RageFileBasic& f, bool saving_cache);
 /**
  * @brief Write the course to a file.
  * @param course the course contents.
@@ -26,7 +26,7 @@ bool Write(const Course& course, RageFileBasic& f, bool bSavingCache);
  * @param bSavingCache is true if cache information is being saved as well.
  * @return its success or failure.
  */
-bool Write(const Course& course, const std::string& sPath, bool bSavingCache);
+bool Write(const Course& course, const std::string& path, bool saving_cache);
 
 bool WriteCourseEntry(const CourseEntry& entry, RageFileBasic& f);
 

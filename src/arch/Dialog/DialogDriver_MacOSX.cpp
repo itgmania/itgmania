@@ -13,16 +13,16 @@
 REGISTER_DIALOG_DRIVER_CLASS(MacOSX);
 
 static CFOptionFlags ShowAlert(
-    CFOptionFlags flags, const std::string& sMessage, CFStringRef OK,
+    CFOptionFlags flags, const std::string& message, CFStringRef ok,
     CFStringRef alt = nullptr, CFStringRef other = nullptr) {
   CFOptionFlags result;
   CFStringRef text = CFStringCreateWithCString(
-      nullptr, sMessage.c_str(), kCFStringEncodingUTF8);
+      nullptr, message.c_str(), kCFStringEncodingUTF8);
 
   if (text == nullptr) {
     std::string error = ssprintf(
         "CFString for dialog string \"%s\" could not be created.",
-        sMessage.c_str());
+        message.c_str());
     WARN(error);
     DEBUG_ASSERT_M(false, error);
     return kCFUserNotificationDefaultResponse;  // Is this better than
@@ -30,7 +30,7 @@ static CFOptionFlags ShowAlert(
                                                 // message?
   }
   CFUserNotificationDisplayAlert(
-      0.0, flags, nullptr, nullptr, nullptr, CFSTR(PRODUCT_FAMILY), text, OK,
+      0.0, flags, nullptr, nullptr, nullptr, CFSTR(PRODUCT_FAMILY), text, ok,
       alt, other, &result);
   CFRelease(text);
 
@@ -47,38 +47,37 @@ static CFOptionFlags ShowAlert(
 #define LSTRING(b, x) \
   CFBundleCopyLocalizedString((b), CFSTR(x), nullptr, CFSTR("Localizable"))
 
-void DialogDriver_MacOSX::OK(std::string sMessage, std::string sID) {
+void DialogDriver_MacOSX::OK(std::string message, std::string id) {
   CFBundleRef bundle = CFBundleGetMainBundle();
-  CFStringRef sDSA = LSTRING(bundle, "Don't show again");
+  CFStringRef dsa = LSTRING(bundle, "Don't show again");
   CFOptionFlags result = ShowAlert(
-      kCFUserNotificationNoteAlertLevel, sMessage.c_str(), CFSTR("OK"), sDSA);
+      kCFUserNotificationNoteAlertLevel, message.c_str(), CFSTR("OK"), dsa);
 
-  CFRelease(sDSA);
+  CFRelease(dsa);
   if (result == kCFUserNotificationAlternateResponse) {
-    Dialog::IgnoreMessage(sID);
+    Dialog::IgnoreMessage(id);
   }
 }
 
-void DialogDriver_MacOSX::Error(std::string sError, std::string sID) {
-  ShowAlert(kCFUserNotificationStopAlertLevel, sError.c_str(), CFSTR("OK"));
+void DialogDriver_MacOSX::Error(std::string error, std::string id) {
+  ShowAlert(kCFUserNotificationStopAlertLevel, error.c_str(), CFSTR("OK"));
 }
 
 Dialog::Result DialogDriver_MacOSX::AbortRetryIgnore(
-    std::string sMessage, std::string sID) {
+    std::string message, std::string id) {
   CFBundleRef bundle = CFBundleGetMainBundle();
-  CFStringRef sIgnore = LSTRING(bundle, "Ignore");
-  CFStringRef sRetry = LSTRING(bundle, "Retry");
-  CFStringRef sAbort = LSTRING(bundle, "Abort");
+  CFStringRef ignore = LSTRING(bundle, "Ignore");
+  CFStringRef retry = LSTRING(bundle, "Retry");
+  CFStringRef abort = LSTRING(bundle, "Abort");
   CFOptionFlags result = ShowAlert(
-      kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sIgnore, sRetry,
-      sAbort);
+      kCFUserNotificationNoteAlertLevel, message.c_str(), ignore, retry, abort);
 
-  CFRelease(sIgnore);
-  CFRelease(sRetry);
-  CFRelease(sAbort);
+  CFRelease(ignore);
+  CFRelease(retry);
+  CFRelease(abort);
   switch (result) {
     case kCFUserNotificationDefaultResponse:
-      Dialog::IgnoreMessage(sID);
+      Dialog::IgnoreMessage(id);
       return Dialog::ignore;
     case kCFUserNotificationAlternateResponse:
       return Dialog::retry;
@@ -91,15 +90,15 @@ Dialog::Result DialogDriver_MacOSX::AbortRetryIgnore(
 }
 
 Dialog::Result DialogDriver_MacOSX::AbortRetry(
-    std::string sMessage, std::string sID) {
+    std::string message, std::string id) {
   CFBundleRef bundle = CFBundleGetMainBundle();
-  CFStringRef sRetry = LSTRING(bundle, "Retry");
-  CFStringRef sAbort = LSTRING(bundle, "Abort");
+  CFStringRef retry = LSTRING(bundle, "Retry");
+  CFStringRef abort = LSTRING(bundle, "Abort");
   CFOptionFlags result = ShowAlert(
-      kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sRetry, sAbort);
+      kCFUserNotificationNoteAlertLevel, message.c_str(), retry, abort);
 
-  CFRelease(sRetry);
-  CFRelease(sAbort);
+  CFRelease(retry);
+  CFRelease(abort);
   switch (result) {
     case kCFUserNotificationDefaultResponse:
     case kCFUserNotificationCancelResponse:

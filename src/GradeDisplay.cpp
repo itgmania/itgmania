@@ -14,13 +14,13 @@
 
 REGISTER_ACTOR_CLASS(GradeDisplay);
 
-void GradeDisplay::Load(std::string sMetricsGroup) {
+void GradeDisplay::Load(std::string metrics_group) {
   ASSERT(spr_.empty());
   spr_.resize(NUM_POSSIBLE_GRADES);
   int i = 0;
   FOREACH_PossibleGrade(g) {
     AutoActor& spr = spr_[i];
-    spr.Load(THEME->GetPathG(sMetricsGroup, GradeToString(g)));
+    spr.Load(THEME->GetPathG(metrics_group, GradeToString(g)));
     spr->SetVisible(false);
     this->AddChild(spr);
     i++;

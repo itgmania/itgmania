@@ -11,33 +11,33 @@
 #include "global.h"
 
 ScrollBar::ScrollBar() {
-  std::string sMetricsGroup = "ScrollBar";
+  std::string metrics_group = "ScrollBar";
 
-  spr_middle_.Load(THEME->GetPathG(sMetricsGroup, "middle"));
+  spr_middle_.Load(THEME->GetPathG(metrics_group, "middle"));
   this->AddChild(spr_middle_);
 
-  spr_top_.Load(THEME->GetPathG(sMetricsGroup, "top"));
+  spr_top_.Load(THEME->GetPathG(metrics_group, "top"));
   spr_top_->SetVertAlign(VertAlign_Bottom);
   this->AddChild(spr_top_);
 
-  spr_bottom_.Load(THEME->GetPathG(sMetricsGroup, "bottom"));
+  spr_bottom_.Load(THEME->GetPathG(metrics_group, "bottom"));
   spr_bottom_->SetVertAlign(VertAlign_Top);
   this->AddChild(spr_bottom_);
 
-  spr_scroll_tick_thumb_.Load(THEME->GetPathG(sMetricsGroup, "TickThumb"));
+  spr_scroll_tick_thumb_.Load(THEME->GetPathG(metrics_group, "TickThumb"));
   this->AddChild(spr_scroll_tick_thumb_);
 
   for (unsigned i = 0; i < ARRAYLEN(spr_scroll_stretch_thumb_); i++) {
     spr_scroll_stretch_thumb_[i].Load(
-        THEME->GetPathG(sMetricsGroup, "StretchThumb"));
+        THEME->GetPathG(metrics_group, "StretchThumb"));
     this->AddChild(spr_scroll_stretch_thumb_[i]);
   }
 
   SetBarHeight(100);
 }
 
-void ScrollBar::SetBarHeight(int iHeight) {
-  bar_height_ = iHeight;
+void ScrollBar::SetBarHeight(int height) {
+  bar_height_ = height;
   spr_middle_->SetZoomY(bar_height_ / spr_middle_->GetUnzoomedHeight());
   spr_top_->SetY(-bar_height_ / 2.0f);
   spr_bottom_->SetY(+bar_height_ / 2.0f);
@@ -47,61 +47,64 @@ void ScrollBar::SetBarHeight(int iHeight) {
   }
 }
 
-void ScrollBar::SetPercentage(float fCenterPercent, float fSizePercent) {
-  wrap(fCenterPercent, 1.0f);
+void ScrollBar::SetPercentage(float center_percent, float size_percent) {
+  wrap(center_percent, 1.0f);
 
-  const int iBarContentHeight =
+  const int bar_content_height =
       static_cast<int>(spr_middle_->GetZoomedHeight());
-  ASSERT(iBarContentHeight != 0);
+  ASSERT(bar_content_height != 0);
 
   /* Set tick thumb */
   {
-    float fY = SCALE(
-        fCenterPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
-        iBarContentHeight / 2.0f);
-    fY = std::round(fY);
-    spr_scroll_tick_thumb_->SetY(fY);
+    float y = SCALE(
+        center_percent, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        bar_content_height / 2.0f);
+    y = std::round(y);
+    spr_scroll_tick_thumb_->SetY(y);
   }
 
   /* Set stretch thumb */
-  float fStartPercent = fCenterPercent - fSizePercent;
-  float fEndPercent = fCenterPercent + fSizePercent;
+  float start_percent = center_percent - size_percent;
+  float end_percent = center_percent + size_percent;
 
   // make sure the percent numbers are between 0 and 1
-  fStartPercent = std::fmod(fStartPercent + 1, 1);
-  fEndPercent = std::fmod(fEndPercent + 1, 1);
+  start_percent = std::fmod(start_percent + 1, 1);
+  end_percent = std::fmod(end_percent + 1, 1);
 
   CHECKPOINT_M("Percentages set.");
-  float fPartTopY[2], fPartBottomY[2];
+  float part_top_y[2], part_bottom_y[2];
 
-  if (fStartPercent < fEndPercent)  // we only need to one 1 stretch thumb part
+  if (start_percent < end_percent)  // we only need to one 1 stretch thumb part
   {
-    fPartTopY[0] = SCALE(
-        fStartPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
-        +iBarContentHeight / 2.0f);
-    fPartBottomY[0] = SCALE(
-        fEndPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
-        +iBarContentHeight / 2.0f);
-    fPartTopY[1] = 0;
-    fPartBottomY[1] = 0;
+    part_top_y[0] = SCALE(
+        start_percent, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
+    part_bottom_y[0] = SCALE(
+        end_percent, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
+    part_top_y[1] = 0;
+    part_bottom_y[1] = 0;
   } else  // we need two stretch thumb parts
   {
-    fPartTopY[0] = SCALE(
-        0.0f, 0.0f, 1.0f, -iBarContentHeight / 2.0f, +iBarContentHeight / 2.0f);
-    fPartBottomY[0] = SCALE(
-        fEndPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
-        +iBarContentHeight / 2.0f);
-    fPartTopY[1] = SCALE(
-        fStartPercent, 0.0f, 1.0f, -iBarContentHeight / 2.0f,
-        +iBarContentHeight / 2.0f);
-    fPartBottomY[1] = SCALE(
-        1.0f, 0.0f, 1.0f, -iBarContentHeight / 2.0f, +iBarContentHeight / 2.0f);
+    part_top_y[0] = SCALE(
+        0.0f, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
+    part_bottom_y[0] = SCALE(
+        end_percent, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
+    part_top_y[1] = SCALE(
+        start_percent, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
+    part_bottom_y[1] = SCALE(
+        1.0f, 0.0f, 1.0f, -bar_content_height / 2.0f,
+        +bar_content_height / 2.0f);
   }
 
   for (unsigned i = 0; i < ARRAYLEN(spr_scroll_stretch_thumb_); i++) {
     RectF rect(
-        -spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2, fPartTopY[i],
-        +spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2, fPartBottomY[i]);
+        -spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2, part_top_y[i],
+        +spr_scroll_stretch_thumb_[i]->GetUnzoomedWidth() / 2,
+        part_bottom_y[i]);
     spr_scroll_stretch_thumb_[i]->StretchTo(rect);
   }
 }

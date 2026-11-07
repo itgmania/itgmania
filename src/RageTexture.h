@@ -59,7 +59,7 @@ class RageTexture {
     return GetSourceToImageCoordsRatioY() * GetImageToTexCoordsRatioY();
   }
 
-  const RectF* GetTextureCoordRect(int frameNo) const;
+  const RectF* GetTextureCoordRect(int frame_no) const;
   int GetNumFrames() const { return frames_wide_ * frames_high_; }
 
   // Used by RageTextureManager. Order is important; see RageTextureManager.cpp.
@@ -72,7 +72,7 @@ class RageTexture {
   const RageTextureID& GetID() const { return id_; }
 
   static void GetFrameDimensionsFromFileName(
-      std::string sPath, int* puFramesWide, int* puFramesHigh,
+      std::string path, int* frames_wide, int* frames_high,
       int source_width = 0, int source_height = 0);
 
   // Lua

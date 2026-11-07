@@ -45,15 +45,15 @@ static std::vector<RageColor> RAINBOW_COLORS;
 BitmapText::BitmapText() {
   // Loading these theme metrics is slow, so only do it every 20th time.
   // todo: why not check to see if you need to bother updating this at all? -aj
-  static int iReloadCounter = 0;
-  if (iReloadCounter % 20 == 0) {
+  static int reload_counter = 0;
+  if (reload_counter % 20 == 0) {
     RAINBOW_COLORS.resize(THEME->GetMetricI("BitmapText", "NumRainbowColors"));
     for (unsigned i = 0; i < RAINBOW_COLORS.size(); ++i) {
       RAINBOW_COLORS[i] =
           THEME->GetMetricC("BitmapText", ssprintf("RainbowColor%i", i + 1));
     }
   }
-  iReloadCounter++;
+  reload_counter++;
 
   font_ = nullptr;
   uppercase_ = false;
@@ -216,15 +216,16 @@ void BitmapText::LoadFromNode(const XNode* node) {
   Actor::LoadFromNode(node);
 }
 
-bool BitmapText::LoadFromFont(const std::string& sFontFilePath) {
-  CHECKPOINT_M(ssprintf("BitmapText::LoadFromFont(%s)", sFontFilePath.c_str()));
+bool BitmapText::LoadFromFont(const std::string& font_file_path) {
+  CHECKPOINT_M(
+      ssprintf("BitmapText::LoadFromFont(%s)", font_file_path.c_str()));
 
   if (font_) {
     FONT->UnloadFont(font_);
     font_ = nullptr;
   }
 
-  font_ = FONT->LoadFont(sFontFilePath);
+  font_ = FONT->LoadFont(font_file_path);
 
   this->SetStrokeColor(font_->GetDefaultStrokeColor());
 
@@ -234,17 +235,17 @@ bool BitmapText::LoadFromFont(const std::string& sFontFilePath) {
 }
 
 bool BitmapText::LoadFromTextureAndChars(
-    const std::string& sTexturePath, const std::string& sChars) {
+    const std::string& texture_path, const std::string& chars) {
   CHECKPOINT_M(ssprintf(
       "BitmapText::LoadFromTextureAndChars(\"%s\",\"%s\")",
-      sTexturePath.c_str(), sChars.c_str()));
+      texture_path.c_str(), chars.c_str()));
 
   if (font_) {
     FONT->UnloadFont(font_);
     font_ = nullptr;
   }
 
-  font_ = FONT->LoadFont(sTexturePath, sChars);
+  font_ = FONT->LoadFont(texture_path, chars);
 
   BuildChars();
 
@@ -281,55 +282,55 @@ void BitmapText::BuildChars() {
   size_.y_ = float(font_->GetHeight() * text_lines_.size());
 
   // The height (from the origin to the baseline):
-  int iPadding = font_->GetLineSpacing() - font_->GetHeight();
-  iPadding += vert_spacing_;
+  int padding = font_->GetLineSpacing() - font_->GetHeight();
+  padding += vert_spacing_;
 
   // There's padding between every line:
-  size_.y_ += iPadding * int(text_lines_.size() - 1);
+  size_.y_ += padding * int(text_lines_.size() - 1);
 
   // the top position of the first row of characters
-  int iY = std::lrint(-size_.y_ / 2.0f);
+  int y = std::lrint(-size_.y_ / 2.0f);
 
   for (unsigned i = 0; i < text_lines_.size(); i++)  // foreach line
   {
-    iY += font_->GetHeight();
+    y += font_->GetHeight();
 
-    std::wstring sLine = text_lines_[i];
+    std::wstring line = text_lines_[i];
     if (font_->IsRightToLeft()) {
-      reverse(sLine.begin(), sLine.end());
+      reverse(line.begin(), line.end());
     }
-    const int iLineWidth = line_widths_[i];
+    const int line_width = line_widths_[i];
 
-    float fX = SCALE(
+    float f_x = SCALE(
         horiz_align_, 0.0f, 1.0f, -size_.x_ / 2.0f,
-        +size_.x_ / 2.0f - iLineWidth);
-    int iX = std::lrint(fX);
+        +size_.x_ / 2.0f - line_width);
+    int i_x = std::lrint(f_x);
 
-    for (unsigned j = 0; j < sLine.size(); ++j) {
+    for (unsigned j = 0; j < line.size(); ++j) {
       RageSpriteVertex v[4];
-      const glyph& g = font_->GetGlyph(sLine[j]);
+      const glyph& g = font_->GetGlyph(line[j]);
 
       // Advance the cursor early for RTL(?)
       if (font_->IsRightToLeft()) {
-        iX -= g.hadvance_;
+        i_x -= g.hadvance_;
       }
 
       // set vertex positions
       v[0].p_ =
-          RageVector3(iX + g.hshift_, iY + g.page_->vshift_, 0);  // top left
+          RageVector3(i_x + g.hshift_, y + g.page_->vshift_, 0);  // top left
       v[1].p_ = RageVector3(
-          iX + g.hshift_, iY + g.page_->vshift_ + g.height_,
+          i_x + g.hshift_, y + g.page_->vshift_ + g.height_,
           0);  // bottom left
       v[2].p_ = RageVector3(
-          iX + g.hshift_ + g.width_, iY + g.page_->vshift_ + g.height_,
+          i_x + g.hshift_ + g.width_, y + g.page_->vshift_ + g.height_,
           0);  // bottom right
       v[3].p_ = RageVector3(
-          iX + g.hshift_ + g.width_, iY + g.page_->vshift_,
+          i_x + g.hshift_ + g.width_, y + g.page_->vshift_,
           0);  // top right
 
       // Advance the cursor.
       if (!font_->IsRightToLeft()) {
-        iX += g.hadvance_;
+        i_x += g.hadvance_;
       }
 
       // set texture coordinates
@@ -343,12 +344,12 @@ void BitmapText::BuildChars() {
     }
 
     // The amount of padding a line needs:
-    iY += iPadding;
+    y += padding;
   }
 
   if (using_distortion_) {
-    int iSeed = RageTimer::GetTimeSinceStartSeconds() * 500000;
-    RandomGen rnd(iSeed);
+    int seed = RageTimer::GetTimeSinceStartSeconds() * 500000;
+    RandomGen rnd(seed);
     for (unsigned int i = 0; i < vertices_.size(); i += 4) {
       float w = vertices_[i + 2].p_.x_ - vertices_[i].p_.x_;
       float h = vertices_[i + 2].p_.y_ - vertices_[i].p_.y_;
@@ -362,106 +363,108 @@ void BitmapText::BuildChars() {
   }
 }
 
-void BitmapText::DrawChars(bool bUseStrokeTexture) {
+void BitmapText::DrawChars(bool use_stroke_texture) {
   // bail if cropped all the way
   if (temp_state_->crop_.left_ + temp_state_->crop_.right_ >= 1 ||
       temp_state_->crop_.top_ + temp_state_->crop_.bottom_ >= 1) {
     return;
   }
 
-  const int iNumGlyphs = font_page_textures_.size();
-  int iStartGlyph = std::lrint(
-      SCALE(temp_state_->crop_.left_, 0.f, 1.f, 0, (float)iNumGlyphs));
-  int iEndGlyph = std::lrint(
-      SCALE(temp_state_->crop_.right_, 0.f, 1.f, (float)iNumGlyphs, 0));
-  iStartGlyph = std::clamp(iStartGlyph, 0, iNumGlyphs);
-  iEndGlyph = std::clamp(iEndGlyph, 0, iNumGlyphs);
+  const int num_glyphs = font_page_textures_.size();
+  int start_glyph = std::lrint(
+      SCALE(temp_state_->crop_.left_, 0.f, 1.f, 0, (float)num_glyphs));
+  int end_glyph = std::lrint(
+      SCALE(temp_state_->crop_.right_, 0.f, 1.f, (float)num_glyphs, 0));
+  start_glyph = std::clamp(start_glyph, 0, num_glyphs);
+  end_glyph = std::clamp(end_glyph, 0, num_glyphs);
 
   if (temp_state_->fade_.top_ > 0 || temp_state_->fade_.bottom_ > 0 ||
       temp_state_->fade_.left_ > 0 || temp_state_->fade_.right_ > 0) {
     // Handle fading by tweaking the alpha values of the vertices.
 
     // Actual size of the fade on each side:
-    const RectF& FadeDist = temp_state_->fade_;
-    RectF FadeSize = FadeDist;
+    const RectF& fade_dist = temp_state_->fade_;
+    RectF fade_size = fade_dist;
 
     // If the cropped size is less than the fade distance, clamp.
-    const float fHorizRemaining =
+    const float horiz_remaining =
         1.0f - (temp_state_->crop_.left_ + temp_state_->crop_.right_);
-    if (FadeDist.left_ + FadeDist.right_ > 0 &&
-        fHorizRemaining < FadeDist.left_ + FadeDist.right_) {
-      const float LeftPercent =
-          FadeDist.left_ / (FadeDist.left_ + FadeDist.right_);
-      FadeSize.left_ = LeftPercent * fHorizRemaining;
-      FadeSize.right_ = (1.0f - LeftPercent) * fHorizRemaining;
+    if (fade_dist.left_ + fade_dist.right_ > 0 &&
+        horiz_remaining < fade_dist.left_ + fade_dist.right_) {
+      const float left_percent =
+          fade_dist.left_ / (fade_dist.left_ + fade_dist.right_);
+      fade_size.left_ = left_percent * horiz_remaining;
+      fade_size.right_ = (1.0f - left_percent) * horiz_remaining;
     }
 
     /* We fade from 0 to LeftColor, then from RightColor to 0. (We won't fade
      * all the way to 0 if the crop is beyond the outer edge.) */
-    const float fRightAlpha = SCALE(FadeSize.right_, FadeDist.right_, 0, 1, 0);
-    const float fLeftAlpha = SCALE(FadeSize.left_, FadeDist.left_, 0, 1, 0);
+    const float right_alpha =
+        SCALE(fade_size.right_, fade_dist.right_, 0, 1, 0);
+    const float left_alpha = SCALE(fade_size.left_, fade_dist.left_, 0, 1, 0);
 
-    const float fStartFadeLeftPercent = temp_state_->crop_.left_;
-    const float fStopFadeLeftPercent =
-        temp_state_->crop_.left_ + FadeSize.left_;
-    const float fLeftFadeStartGlyph =
-        SCALE(fStartFadeLeftPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
-    const float fLeftFadeStopGlyph =
-        SCALE(fStopFadeLeftPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
+    const float start_fade_left_percent = temp_state_->crop_.left_;
+    const float stop_fade_left_percent =
+        temp_state_->crop_.left_ + fade_size.left_;
+    const float left_fade_start_glyph =
+        SCALE(start_fade_left_percent, 0.f, 1.f, 0, (float)num_glyphs);
+    const float left_fade_stop_glyph =
+        SCALE(stop_fade_left_percent, 0.f, 1.f, 0, (float)num_glyphs);
 
-    const float fStartFadeRightPercent =
-        1 - (temp_state_->crop_.right_ + FadeSize.right_);
-    const float fStopFadeRightPercent = 1 - (temp_state_->crop_.right_);
-    const float fRightFadeStartGlyph =
-        SCALE(fStartFadeRightPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
-    const float fRightFadeStopGlyph =
-        SCALE(fStopFadeRightPercent, 0.f, 1.f, 0, (float)iNumGlyphs);
+    const float start_fade_right_percent =
+        1 - (temp_state_->crop_.right_ + fade_size.right_);
+    const float stop_fade_right_percent = 1 - (temp_state_->crop_.right_);
+    const float right_fade_start_glyph =
+        SCALE(start_fade_right_percent, 0.f, 1.f, 0, (float)num_glyphs);
+    const float right_fade_stop_glyph =
+        SCALE(stop_fade_right_percent, 0.f, 1.f, 0, (float)num_glyphs);
 
-    for (int start = iStartGlyph; start < iEndGlyph; ++start) {
+    for (int start = start_glyph; start < end_glyph; ++start) {
       int i = start * 4;
 
-      float fAlpha = 1.0f;
-      if (FadeSize.left_ > 0.001f) {
+      float alpha = 1.0f;
+      if (fade_size.left_ > 0.001f) {
         // Add .5, so we fade wrt. the center of the vert, not the left side.
-        float fPercent = SCALE(
-            start + 0.5f, fLeftFadeStartGlyph, fLeftFadeStopGlyph, 0.0f, 1.0f);
-        fPercent = std::clamp(fPercent, 0.0f, 1.0f);
-        fAlpha *= fPercent * fLeftAlpha;
+        float percent = SCALE(
+            start + 0.5f, left_fade_start_glyph, left_fade_stop_glyph, 0.0f,
+            1.0f);
+        percent = std::clamp(percent, 0.0f, 1.0f);
+        alpha *= percent * left_alpha;
       }
 
-      if (FadeSize.right_ > 0.001f) {
-        float fPercent = SCALE(
-            start + 0.5f, fRightFadeStartGlyph, fRightFadeStopGlyph, 1.0f,
+      if (fade_size.right_ > 0.001f) {
+        float percent = SCALE(
+            start + 0.5f, right_fade_start_glyph, right_fade_stop_glyph, 1.0f,
             0.0f);
-        fPercent = std::clamp(fPercent, 0.0f, 1.0f);
-        fAlpha *= fPercent * fRightAlpha;
+        percent = std::clamp(percent, 0.0f, 1.0f);
+        alpha *= percent * right_alpha;
       }
 
       for (int j = 0; j < 4; ++j) {
         vertices_[i + j].c_.a_ =
-            (unsigned char)(vertices_[i + j].c_.a_ * fAlpha);
+            (unsigned char)(vertices_[i + j].c_.a_ * alpha);
       }
     }
   }
 
-  bool bDistanceField = font_->IsDistanceField();
-  if (bDistanceField) {
+  bool distance_field = font_->IsDistanceField();
+  if (distance_field) {
     DISPLAY->SetEffectMode(EffectMode_DistanceField);
   }
 
-  for (int start = iStartGlyph; start < iEndGlyph;) {
+  for (int start = start_glyph; start < end_glyph;) {
     int end = start;
-    while (end < iEndGlyph &&
+    while (end < end_glyph &&
            *font_page_textures_[end] == *font_page_textures_[start]) {
       end++;
     }
 
-    bool bHaveATexture =
-        !bUseStrokeTexture ||
-        (bUseStrokeTexture && font_page_textures_[start]->texture_stroke_);
-    if (bHaveATexture) {
+    bool have_a_texture =
+        !use_stroke_texture ||
+        (use_stroke_texture && font_page_textures_[start]->texture_stroke_);
+    if (have_a_texture) {
       DISPLAY->ClearAllTextures();
-      if (bUseStrokeTexture) {
+      if (use_stroke_texture) {
         DISPLAY->SetTexture(
             TextureUnit_1,
             font_page_textures_[start]->texture_stroke_->GetTexHandle());
@@ -486,7 +489,7 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
 
     start = end;
   }
-  if (bDistanceField) {
+  if (distance_field) {
     DISPLAY->SetEffectMode(EffectMode_Normal);
   }
 }
@@ -495,28 +498,27 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
  * font, sAlternateText will be used instead. If there are unavailable
  * characters in sAlternateText, too, just use sText. */
 void BitmapText::SetText(
-    const std::string& _sText, const std::string& _sAlternateText,
-    int iWrapWidthPixels) {
+    const std::string& text, const std::string& alternate_text,
+    int wrap_width_pixels) {
   ASSERT(font_ != nullptr);
 
-  std::string sNewText = StringWillUseAlternate(_sText, _sAlternateText)
-                             ? _sAlternateText
-                             : _sText;
+  std::string new_text =
+      StringWillUseAlternate(text, alternate_text) ? alternate_text : text;
 
   if (uppercase_) {
-    MakeUpper(sNewText);
+    MakeUpper(new_text);
   }
 
-  if (iWrapWidthPixels == -1) {  // wrap not specified
-    iWrapWidthPixels = wrap_width_pixels_;
+  if (wrap_width_pixels == -1) {  // wrap not specified
+    wrap_width_pixels = wrap_width_pixels_;
   }
 
-  if (text_ == sNewText && iWrapWidthPixels == wrap_width_pixels_) {
+  if (text_ == new_text && wrap_width_pixels == wrap_width_pixels_) {
     return;
   }
 
-  text_ = sNewText;
-  wrap_width_pixels_ = iWrapWidthPixels;
+  text_ = new_text;
+  wrap_width_pixels_ = wrap_width_pixels;
   ClearAttributes();
   SetTextInternal();
 }
@@ -536,41 +538,41 @@ void BitmapText::SetTextInternal() {
     /* "...I can add Japanese wrapping, at least. We could handle hyphens
      * and soft hyphens and pretty easily, too." -glenn */
     // TODO: Move this wrapping logic into Font.
-    std::vector<std::string> asLines;
-    split(text_, "\n", asLines, false);
+    std::vector<std::string> lines;
+    split(text_, "\n", lines, false);
 
-    for (unsigned line = 0; line < asLines.size(); ++line) {
-      std::vector<std::string> asWords;
-      split(asLines[line], " ", asWords);
+    for (unsigned line = 0; line < lines.size(); ++line) {
+      std::vector<std::string> words;
+      split(lines[line], " ", words);
 
-      std::string sCurLine;
-      int iCurLineWidth = 0;
+      std::string cur_line;
+      int cur_line_width = 0;
 
-      for (unsigned i = 0; i < asWords.size(); i++) {
-        const std::string& sWord = asWords[i];
-        int iWidthWord =
-            font_->GetLineWidthInSourcePixels(RStringToWstring(sWord));
+      for (unsigned i = 0; i < words.size(); i++) {
+        const std::string& word = words[i];
+        int width_word =
+            font_->GetLineWidthInSourcePixels(RStringToWstring(word));
 
-        if (sCurLine.empty()) {
-          sCurLine = sWord;
-          iCurLineWidth = iWidthWord;
+        if (cur_line.empty()) {
+          cur_line = word;
+          cur_line_width = width_word;
           continue;
         }
 
-        std::string sToAdd = " " + sWord;
-        int iWidthToAdd = font_->GetLineWidthInSourcePixels(L" ") + iWidthWord;
-        if (iCurLineWidth + iWidthToAdd <=
+        std::string to_add = " " + word;
+        int width_to_add = font_->GetLineWidthInSourcePixels(L" ") + width_word;
+        if (cur_line_width + width_to_add <=
             wrap_width_pixels_)  // will fit on current line
         {
-          sCurLine += sToAdd;
-          iCurLineWidth += iWidthToAdd;
+          cur_line += to_add;
+          cur_line_width += width_to_add;
         } else {
-          text_lines_.push_back(RStringToWstring(sCurLine));
-          sCurLine = sWord;
-          iCurLineWidth = iWidthWord;
+          text_lines_.push_back(RStringToWstring(cur_line));
+          cur_line = word;
+          cur_line_width = width_word;
         }
       }
-      text_lines_.push_back(RStringToWstring(sCurLine));
+      text_lines_.push_back(RStringToWstring(cur_line));
     }
   }
 
@@ -578,18 +580,18 @@ void BitmapText::SetTextInternal() {
   UpdateBaseZoom();
 }
 
-void BitmapText::SetVertSpacing(int iSpacing) {
-  vert_spacing_ = iSpacing;
+void BitmapText::SetVertSpacing(int spacing) {
+  vert_spacing_ = spacing;
   BuildChars();
 }
 
-void BitmapText::SetMaxWidth(float fMaxWidth) {
-  max_width_ = fMaxWidth;
+void BitmapText::SetMaxWidth(float max_width) {
+  max_width_ = max_width;
   UpdateBaseZoom();
 }
 
-void BitmapText::SetMaxHeight(float fMaxHeight) {
-  max_height_ = fMaxHeight;
+void BitmapText::SetMaxHeight(float max_height) {
+  max_height_ = max_height;
   UpdateBaseZoom();
 }
 
@@ -626,7 +628,7 @@ void BitmapText::UpdateBaseZoom() {
   // Factor in the non-base zoom so that maxwidth will be in terms of theme
   // pixels when zoom is used.
 
-  constexpr float maxZoom = 1.0f;
+  constexpr float kMaxZoom = 1.0f;
 
   if (max_width_ == 0) {
     SetBaseZoomX(1);
@@ -636,7 +638,7 @@ void BitmapText::UpdateBaseZoom() {
       width /= GetZoomX();
     }
     if (width != 0) {
-      const float zoom = std::fmin(maxZoom, max_width_ / width);
+      const float zoom = std::fmin(kMaxZoom, max_width_ / width);
       SetBaseZoomX(zoom);
     }
   }
@@ -649,28 +651,28 @@ void BitmapText::UpdateBaseZoom() {
       height /= GetZoomY();
     }
     if (height != 0) {
-      const float zoom = std::fmin(maxZoom, max_height_ / height);
+      const float zoom = std::fmin(kMaxZoom, max_height_ / height);
       SetBaseZoomY(zoom);
     }
   }
 }
 
 bool BitmapText::StringWillUseAlternate(
-    const std::string& sText, const std::string& sAlternateText) const {
+    const std::string& text, const std::string& alternate_text) const {
   ASSERT(font_ != nullptr);
 
   // Can't use the alternate if there isn't one.
-  if (!sAlternateText.size()) {
+  if (!alternate_text.size()) {
     return false;
   }
 
   // False if the alternate isn't needed.
-  if (font_->FontCompleteForString(RStringToWstring(sText))) {
+  if (font_->FontCompleteForString(RStringToWstring(text))) {
     return false;
   }
 
   // False if the alternate is also incomplete.
-  if (!font_->FontCompleteForString(RStringToWstring(sAlternateText))) {
+  if (!font_->FontCompleteForString(RStringToWstring(alternate_text))) {
     return false;
   }
 
@@ -750,10 +752,10 @@ void BitmapText::DrawPrimitives() noexcept {
       std::map<size_t, Attribute>::const_iterator iter = attributes_.begin();
       while (i < vertices_.size()) {
         // Set the colors up to the next attribute.
-        size_t iEnd =
+        size_t end =
             iter == attributes_.end() ? vertices_.size() : iter->first * 4;
-        iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
-        for (; i < iEnd; i += 4) {
+        end = std::min(end, vertices_.size());  // clamp to vertex size
+        for (; i < end; i += 4) {
           vertices_[i + 0].c_ = temp_state_->diffuse_[0];  // top left
           vertices_[i + 1].c_ = temp_state_->diffuse_[2];  // bottom left
           vertices_[i + 2].c_ = temp_state_->diffuse_[3];  // bottom right
@@ -766,11 +768,11 @@ void BitmapText::DrawPrimitives() noexcept {
         const Attribute& attr = iter->second;
         ++iter;
         if (attr.length_ < 0) {
-          iEnd = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
+          end = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
         } else {
-          iEnd = i + attr.length_ * 4;
+          end = i + attr.length_ * 4;
         }
-        iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
+        end = std::min(end, vertices_.size());  // clamp to vertex size
         std::vector<RageColor> temp_attr_diffuse(
             NUM_DIFFUSE_COLORS, internal_diffuse_);
         for (size_t c = 0; c < NUM_DIFFUSE_COLORS; ++c) {
@@ -779,7 +781,7 @@ void BitmapText::DrawPrimitives() noexcept {
             temp_attr_diffuse[c] *= temp_state_->diffuse_[c];
           }
         }
-        for (; i < iEnd; i += 4) {
+        for (; i < end; i += 4) {
           vertices_[i + 0].c_ = temp_attr_diffuse[0];  // top left
           vertices_[i + 1].c_ = temp_attr_diffuse[2];  // bottom left
           vertices_[i + 2].c_ = temp_attr_diffuse[3];  // bottom right
@@ -789,13 +791,13 @@ void BitmapText::DrawPrimitives() noexcept {
     }
 
     // apply jitter to verts
-    std::vector<RageVector3> vGlyphJitter;
+    std::vector<RageVector3> glyph_jitter;
     if (jitter_) {
-      int iSeed = RageTimer::GetTimeSinceStartSeconds() * 8;
-      RandomGen rnd(iSeed);
+      int seed = RageTimer::GetTimeSinceStartSeconds() * 8;
+      RandomGen rnd(seed);
       for (size_t i = 0; i < vertices_.size(); i += 4) {
         RageVector3 jitter(rnd() % 2, rnd() % 3, 0);
-        vGlyphJitter.push_back(jitter);
+        glyph_jitter.push_back(jitter);
 
         vertices_[i + 0].p_ += jitter;  // top left
         vertices_[i + 1].p_ += jitter;  // bottom left
@@ -808,9 +810,9 @@ void BitmapText::DrawPrimitives() noexcept {
 
     // undo jitter to verts
     if (jitter_) {
-      ASSERT(vGlyphJitter.size() == vertices_.size() / 4);
+      ASSERT(glyph_jitter.size() == vertices_.size() / 4);
       for (size_t i = 0; i < vertices_.size(); i += 4) {
-        const RageVector3& jitter = vGlyphJitter[i / 4];
+        const RageVector3& jitter = glyph_jitter[i / 4];
         ;
 
         vertices_[i + 0].p_ -= jitter;  // top left
@@ -828,10 +830,10 @@ void BitmapText::DrawPrimitives() noexcept {
     size_t i = 0;
     auto iter = attributes_.begin();
     while (i < vertices_.size()) {
-      size_t iEnd =
+      size_t end =
           iter == attributes_.end() ? vertices_.size() : iter->first * 4;
-      iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
-      for (; i < iEnd; ++i) {
+      end = std::min(end, vertices_.size());  // clamp to vertex size
+      for (; i < end; ++i) {
         vertices_[i].c_ = temp_state_->glow_;
       }
       if (iter == attributes_.end()) {
@@ -841,12 +843,12 @@ void BitmapText::DrawPrimitives() noexcept {
       const Attribute& attr = iter->second;
       ++iter;
       if (attr.length_ < 0) {
-        iEnd = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
+        end = iter == attributes_.end() ? vertices_.size() : iter->first * 4;
       } else {
-        iEnd = i + attr.length_ * 4;
+        end = i + attr.length_ * 4;
       }
-      iEnd = std::min(iEnd, vertices_.size());  // clamp to vertex size
-      for (; i < iEnd; ++i) {
+      end = std::min(end, vertices_.size());  // clamp to vertex size
+      for (; i < end; ++i) {
         if (internal_glow_.a_ > 0) {
           vertices_[i].c_ = attr.glow_ * internal_glow_;
         } else {
@@ -865,20 +867,20 @@ void BitmapText::DrawPrimitives() noexcept {
 
 // Rebuild when these change.
 void BitmapText::SetHorizAlign(float f) {
-  float fHorizAlign = horiz_align_;
+  float horiz_align = horiz_align_;
   Actor::SetHorizAlign(f);
-  if (fHorizAlign == horiz_align_) {
+  if (horiz_align == horiz_align_) {
     return;
   }
   BuildChars();
 }
 
-void BitmapText::SetWrapWidthPixels(int iWrapWidthPixels) {
+void BitmapText::SetWrapWidthPixels(int wrap_width_pixels) {
   ASSERT(font_ != nullptr);  // always load a font first
-  if (wrap_width_pixels_ == iWrapWidthPixels) {
+  if (wrap_width_pixels_ == wrap_width_pixels) {
     return;
   }
-  wrap_width_pixels_ = iWrapWidthPixels;
+  wrap_width_pixels_ = wrap_width_pixels;
   SetTextInternal();
 }
 
@@ -891,91 +893,92 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const {
   return attr;
 }
 
-void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
+void BitmapText::AddAttribute(size_t pos, const Attribute& attr) {
   // Fixup position for new lines.
-  Attribute newAttr = attr;
-  auto lineIter = text_lines_.cbegin();
+  Attribute new_attr = attr;
+  auto line_iter = text_lines_.cbegin();
 
-  int iLines = 0;
-  size_t iAdjustedPos = iPos;
+  int lines = 0;
+  size_t adjusted_pos = pos;
 
-  for (; lineIter != text_lines_.cend(); ++lineIter) {
-    size_t length = lineIter->length() +
+  for (; line_iter != text_lines_.cend(); ++line_iter) {
+    size_t length = line_iter->length() +
                     1;  // +1 to account for implicit newline at the end
-    if (length > iAdjustedPos) {
+    if (length > adjusted_pos) {
       break;
     }
-    iAdjustedPos -= length;
-    ++iLines;
+    adjusted_pos -= length;
+    ++lines;
   }
 
-  if (newAttr.length_ > 0) {
+  if (new_attr.length_ > 0) {
     // Fixup length for new lines.
-    size_t iAdjustedEndPos = iAdjustedPos + newAttr.length_;
-    for (; lineIter != text_lines_.cend(); ++lineIter) {
-      size_t length = lineIter->length() +
+    size_t adjusted_end_pos = adjusted_pos + new_attr.length_;
+    for (; line_iter != text_lines_.cend(); ++line_iter) {
+      size_t length = line_iter->length() +
                       1;  // +1 to account for implicit newline at the end
-      if (length > iAdjustedEndPos || newAttr.length_ == 0) {
+      if (length > adjusted_end_pos || new_attr.length_ == 0) {
         break;
       }
-      iAdjustedEndPos -= length;
-      newAttr.length_ -= 1;
+      adjusted_end_pos -= length;
+      new_attr.length_ -= 1;
     }
   }
 
-  if (newAttr.length_ ==
+  if (new_attr.length_ ==
       0) {  // Attribute doesn't cover any printable characters
     return;
   }
 
   // Check if there are existing attributes overlapping this one. We might need
   // to remove or fix them up.
-  const size_t iStartPos = iPos - iLines;
-  const size_t iEndPos = iStartPos + newAttr.length_;
+  const size_t start_pos = pos - lines;
+  const size_t end_pos = start_pos + new_attr.length_;
 
   // First attribute starting at the same position or further than the new
   // attribute
-  const auto iterFirstAfterStart = attributes_.lower_bound(iStartPos);
-  if (iterFirstAfterStart != attributes_.begin()) {
+  const auto iter_first_after_start = attributes_.lower_bound(start_pos);
+  if (iter_first_after_start != attributes_.begin()) {
     // Last attribute starting at earlier position than the new attribute (if it
     // exists)
-    auto iterLastBeforeStart = iterFirstAfterStart;
-    --iterLastBeforeStart;
+    auto iter_last_before_start = iter_first_after_start;
+    --iter_last_before_start;
 
     // Fixup the length so that it ends before the new attribute
-    iterLastBeforeStart->second.length_ = std::min(
-        iterLastBeforeStart->second.length_,
-        static_cast<int>(iStartPos - iterLastBeforeStart->first));
+    iter_last_before_start->second.length_ = std::min(
+        iter_last_before_start->second.length_,
+        static_cast<int>(start_pos - iter_last_before_start->first));
   }
 
   // First attribute starting after the end of the new attribute
-  auto iterLastBeforeEnd = attributes_.lower_bound(iEndPos);
-  if (iterLastBeforeEnd != iterFirstAfterStart) {
+  auto iter_last_before_end = attributes_.lower_bound(end_pos);
+  if (iter_last_before_end != iter_first_after_start) {
     // Go back one, so that we are at the last overlapping attribute
-    --iterLastBeforeEnd;
-    const bool lastAttrOverlappingCompletely =
-        iterLastBeforeEnd->first + iterLastBeforeEnd->second.length_ <= iEndPos;
+    --iter_last_before_end;
+    const bool last_attr_overlapping_completely =
+        iter_last_before_end->first + iter_last_before_end->second.length_ <=
+        end_pos;
 
-    auto iterEraseEnd = iterLastBeforeEnd;
+    auto iter_erase_end = iter_last_before_end;
     // If it's overlapping completely, erase it as well
-    if (lastAttrOverlappingCompletely) {
-      ++iterEraseEnd;
+    if (last_attr_overlapping_completely) {
+      ++iter_erase_end;
     }
-    attributes_.erase(iterFirstAfterStart, iterEraseEnd);
+    attributes_.erase(iter_first_after_start, iter_erase_end);
 
     // Otherwise it's only overlapping partially so fix it up
-    if (!lastAttrOverlappingCompletely) {
+    if (!last_attr_overlapping_completely) {
       // Fixup the length accordingly
-      Attribute lastAttr = iterLastBeforeEnd->second;
-      lastAttr.length_ -= iEndPos - iterLastBeforeEnd->first;
+      Attribute last_attr = iter_last_before_end->second;
+      last_attr.length_ -= end_pos - iter_last_before_end->first;
 
       // Erase it and insert just after the new attribute
-      attributes_.erase(iterLastBeforeEnd);
-      attributes_[iEndPos] = lastAttr;
+      attributes_.erase(iter_last_before_end);
+      attributes_[end_pos] = last_attr;
     }
   }
 
-  attributes_[iStartPos] = newAttr;
+  attributes_[start_pos] = new_attr;
   has_glow_attribute_ = has_glow_attribute_ || attr.glow_.a_ > 0.0001f;
 }
 
@@ -984,42 +987,42 @@ void BitmapText::ClearAttributes() {
   has_glow_attribute_ = false;
 }
 
-void BitmapText::Attribute::FromStack(lua_State* L, int iPos) {
-  if (lua_type(L, iPos) != LUA_TTABLE) {
+void BitmapText::Attribute::FromStack(lua_State* L, int pos) {
+  if (lua_type(L, pos) != LUA_TTABLE) {
     return;
   }
 
-  lua_pushvalue(L, iPos);
-  const int iTab = lua_gettop(L);
+  lua_pushvalue(L, pos);
+  const int tab = lua_gettop(L);
 
   // Get the length.
-  lua_getfield(L, iTab, "Length");
+  lua_getfield(L, tab, "Length");
   length_ = lua_tointeger(L, -1);
-  lua_settop(L, iTab);
+  lua_settop(L, tab);
 
   // Get the diffuse colors.
-  lua_getfield(L, iTab, "Diffuses");
+  lua_getfield(L, tab, "Diffuses");
   if (!lua_isnil(L, -1)) {
     for (int i = 1; i <= NUM_DIFFUSE_COLORS; ++i) {
       lua_rawgeti(L, -i, i);
       diffuse_[i - 1].FromStack(L, -1);
     }
   }
-  lua_settop(L, iTab);
+  lua_settop(L, tab);
 
   // Get a single diffuse color.
-  lua_getfield(L, iTab, "Diffuse");
+  lua_getfield(L, tab, "Diffuse");
   if (!lua_isnil(L, -1)) {
     diffuse_[0].FromStack(L, -1);
     diffuse_[1] = diffuse_[2] = diffuse_[3] = diffuse_[0];
   }
-  lua_settop(L, iTab);
+  lua_settop(L, tab);
 
   // Get the glow color.
-  lua_getfield(L, iTab, "Glow");
+  lua_getfield(L, tab, "Glow");
   glow_.FromStack(L, -1);
 
-  lua_settop(L, iTab - 1);
+  lua_settop(L, tab - 1);
 }
 
 // lua start
@@ -1050,7 +1053,7 @@ class LunaBitmapText : public Luna<BitmapText> {
   }
   static int settext(T* p, lua_State* L) {
     std::string s = SArg(1);
-    std::string sAlt;
+    std::string alt;
     /* XXX: Lua strings should simply use "\n" natively. However, some
      * settext calls may be made from GetMetric() calls to other strings, and
      * it's confusing for :: to work in some strings and not others.
@@ -1060,12 +1063,12 @@ class LunaBitmapText : public Luna<BitmapText> {
     FontCharAliases::ReplaceMarkers(s);
 
     if (lua_gettop(L) > 1) {
-      sAlt = SArg(2);
-      Replace(sAlt, "::", "\n");
-      FontCharAliases::ReplaceMarkers(sAlt);
+      alt = SArg(2);
+      Replace(alt, "::", "\n");
+      FontCharAliases::ReplaceMarkers(alt);
     }
 
-    p->SetText(s, sAlt);
+    p->SetText(s, alt);
     COMMON_RETURN_SELF;
   }
   static int rainbowscroll(T* p, lua_State* L) {
@@ -1090,11 +1093,11 @@ class LunaBitmapText : public Luna<BitmapText> {
     return 1;
   }
   static int AddAttribute(T* p, lua_State* L) {
-    size_t iPos = IArg(1);
+    size_t pos = IArg(1);
     BitmapText::Attribute attr = p->GetDefaultAttribute();
 
     attr.FromStack(L, 2);
-    p->AddAttribute(iPos, attr);
+    p->AddAttribute(pos, attr);
     COMMON_RETURN_SELF;
   }
   static int ClearAttributes(T* p, lua_State* L) {

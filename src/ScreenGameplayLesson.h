@@ -17,13 +17,13 @@ class ScreenGameplayLesson : public ScreenGameplayNormal {
   virtual void Init();
 
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuBack(const InputEventPlus& input);
 
  protected:
-  void ChangeLessonPage(int iDir);
+  void ChangeLessonPage(int dir);
   void ResetAndRestartCurrentSong();
 
   std::vector<AutoActor> pages_;

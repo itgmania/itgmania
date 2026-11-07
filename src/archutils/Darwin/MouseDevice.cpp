@@ -22,8 +22,8 @@ Mouse::Mouse()
       z_min_(0),
       z_max_(0) {}
 
-bool MouseDevice::AddLogicalDevice(int usagePage, int usage) {
-  if (usagePage != kHIDPage_GenericDesktop) {
+bool MouseDevice::AddLogicalDevice(int usage_page, int usage) {
+  if (usage_page != kHIDPage_GenericDesktop) {
     return false;
   }
 
@@ -41,40 +41,42 @@ bool MouseDevice::AddLogicalDevice(int usagePage, int usage) {
 }
 
 void MouseDevice::AddElement(
-    int usagePage, int usage, IOHIDElementCookie cookie,
+    int usage_page, int usage, IOHIDElementCookie cookie,
     const CFDictionaryRef properties) {
-  if (usagePage >= kHIDPage_VendorDefinedStart) {
+  if (usage_page >= kHIDPage_VendorDefinedStart) {
     return;
   }
 
   Mouse& m = mouse_;
 
-  switch (usagePage) {
+  switch (usage_page) {
     case kHIDPage_GenericDesktop: {  // ease scope
-      int iMin = 0;
+      int min_val = 0;
       IntValue(
-          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMinKey)), iMin);
-      int iMax = 0;
+          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMinKey)),
+          min_val);
+      int max_val = 0;
       IntValue(
-          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMaxKey)), iMax);
+          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMaxKey)),
+          max_val);
 
       // based on usage
       switch (usage) {
         case kHIDUsage_GD_X:
           m.x_axis_ = cookie;
-          m.x_min_ = iMin;
-          m.x_max_ = iMax;
+          m.x_min_ = min_val;
+          m.x_max_ = max_val;
           break;
         case kHIDUsage_GD_Y:
           m.y_axis_ = cookie;
-          m.y_min_ = iMin;
-          m.y_max_ = iMax;
+          m.y_min_ = min_val;
+          m.y_max_ = max_val;
           break;
         case kHIDUsage_GD_Z:
         case kHIDUsage_GD_Wheel:  // also handle wheel
           m.z_axis_ = cookie;
-          m.z_min_ = iMin;
-          m.z_max_ = iMax;
+          m.z_min_ = min_val;
+          m.z_max_ = max_val;
           break;
         default:
           // LOG->Warn( "Unknown usagePage usage pair: (kHIDPage_GenericDesktop,
@@ -83,18 +85,18 @@ void MouseDevice::AddElement(
       }
     } break;
     case kHIDPage_Button: {
-      const DeviceButton buttonID =
+      const DeviceButton button_id =
           enum_add2(MOUSE_LEFT, usage - kHIDUsage_Button_1);
 
-      if (buttonID <= MOUSE_MIDDLE) {
-        mapping_[cookie] = buttonID;
+      if (button_id <= MOUSE_MIDDLE) {
+        mapping_[cookie] = button_id;
       } else {
-        LOG->Warn("Button id too large: %d.", int(buttonID));
+        LOG->Warn("Button id too large: %d.", int(button_id));
       }
       break;
     } break;
     default:
-      // LOG->Warn( "Unknown usagePage usage pair: (%d, %d).", usagePage, usage
+      // LOG->Warn( "Unknown usagePage usage pair: (%d, %d).", usage_page, usage
       // );
       break;
   }
@@ -116,14 +118,14 @@ void MouseDevice::Open() {
 }
 
 void MouseDevice::GetButtonPresses(
-    std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+    std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   // todo: add mouse axis stuff -aj
   const Mouse& m = mouse_;
   HRESULT result;
-  IOHIDEventStruct hidEvent;
+  IOHIDEventStruct hid_event;
   // result =
-  // (*interface_)->getElementValue(hidDeviceInterface,cookie,&hidEvent);
+  // (*interface_)->getElementValue(hidDeviceInterface,cookie,&hid_event);
 
   if (m.x_axis_ == cookie) {
     // INPUTFILTER->UpdateCursorLocation(value,m.y_axis_);
@@ -141,12 +143,12 @@ void MouseDevice::GetButtonPresses(
     std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter =
         mapping_.find(cookie);
     if (iter != mapping_.end()) {
-      vPresses.push_back(DeviceInput(DEVICE_MOUSE, iter->second, value, now));
+      presses.push_back(DeviceInput(DEVICE_MOUSE, iter->second, value, now));
     }
   }
 }
 
 void MouseDevice::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevices) const {
-  vDevices.push_back(InputDeviceInfo(DEVICE_MOUSE, "Mouse"));
+    std::vector<InputDeviceInfo>& devices) const {
+  devices.push_back(InputDeviceInfo(DEVICE_MOUSE, "Mouse"));
 }

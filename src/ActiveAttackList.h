@@ -12,11 +12,11 @@ class ActiveAttackList : public BitmapText {
   /**
    * @brief Set up the PlayerState.
    * @param pPlayerState the PlayerState involved with the attacks. */
-  void Init(const PlayerState* pPlayerState);
+  void Init(const PlayerState* player_state);
   /**
    * @brief Look into updating the list.
    * @param fDelta the present time. */
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   /** @brief Refresh the list of attacks. */
   void Refresh();
 

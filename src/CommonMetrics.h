@@ -14,7 +14,7 @@ class ThemeMetricDifficultiesToShow : public ThemeMetric<std::string> {
  public:
   ThemeMetricDifficultiesToShow() : v_() {}
   ThemeMetricDifficultiesToShow(
-      const std::string& sGroup, const std::string& sName);
+      const std::string& group, const std::string& name);
   void Read();
   const std::vector<Difficulty>& GetValue() const;
 
@@ -25,7 +25,7 @@ class ThemeMetricCourseDifficultiesToShow : public ThemeMetric<std::string> {
  public:
   ThemeMetricCourseDifficultiesToShow() : v_() {}
   ThemeMetricCourseDifficultiesToShow(
-      const std::string& sGroup, const std::string& sName);
+      const std::string& group, const std::string& name);
   void Read();
   const std::vector<CourseDifficulty>& GetValue() const;
 
@@ -36,7 +36,7 @@ class ThemeMetricStepsTypesToShow : public ThemeMetric<std::string> {
  public:
   ThemeMetricStepsTypesToShow() : v_() {}
   ThemeMetricStepsTypesToShow(
-      const std::string& sGroup, const std::string& sName);
+      const std::string& group, const std::string& name);
   void Read();
   const std::vector<StepsType>& GetValue() const;
 
@@ -80,7 +80,7 @@ extern ThemeMetric<int> PERCENT_SCORE_DECIMAL_PLACES;
 
 extern ThemeMetric<std::string> IMAGES_TO_CACHE;
 
-std::string LocalizeOptionItem(const std::string& s, bool bOptional);
+std::string LocalizeOptionItem(const std::string& s, bool optional);
 };  // namespace CommonMetrics
 
 #endif

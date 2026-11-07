@@ -28,20 +28,20 @@ bool child_read(int fd, void* p, int size);
 
 const char* g_pCrashHandlerArgv0 = nullptr;
 
-static void output_stack_trace(FILE* out, const void** BacktracePointers) {
-  if (BacktracePointers[0] == BACKTRACE_METHOD_NOT_AVAILABLE) {
+static void output_stack_trace(FILE* out, const void** backtrace_pointers) {
+  if (backtrace_pointers[0] == BACKTRACE_METHOD_NOT_AVAILABLE) {
     fprintf(out, "No backtrace method available.\n");
     return;
   }
 
-  if (!BacktracePointers[0]) {
+  if (!backtrace_pointers[0]) {
     fprintf(out, "Backtrace was empty.\n");
     return;
   }
 
-  for (int i = 0; BacktracePointers[i]; ++i) {
+  for (int i = 0; backtrace_pointers[i]; ++i) {
     BacktraceNames bn;
-    bn.FromAddr(const_cast<void*>(BacktracePointers[i]));
+    bn.FromAddr(const_cast<void*>(backtrace_pointers[i]));
     bn.Demangle();
 
     /* Don't show the main module name. */
@@ -97,8 +97,8 @@ static void child_process() {
   if (!child_read(3, &size, sizeof(size))) {
     return;
   }
-  char* Info = new char[size];
-  if (!child_read(3, Info, size)) {
+  char* info = new char[size];
+  if (!child_read(3, info, size)) {
     return;
   }
 
@@ -107,8 +107,8 @@ static void child_process() {
     return;
   }
 
-  char* AdditionalLog = new char[size];
-  if (!child_read(3, AdditionalLog, size)) {
+  char* additional_log = new char[size];
+  if (!child_read(3, additional_log, size)) {
     return;
   }
 
@@ -117,13 +117,13 @@ static void child_process() {
   if (!child_read(3, &cnt, sizeof(cnt))) {
     return;
   }
-  char* Recent[1024];
+  char* recent[1024];
   for (int i = 0; i < cnt; ++i) {
     if (!child_read(3, &size, sizeof(size))) {
       return;
     }
-    Recent[i] = new char[size];
-    if (!child_read(3, Recent[i], size)) {
+    recent[i] = new char[size];
+    if (!child_read(3, recent[i], size)) {
       return;
     }
   }
@@ -138,8 +138,8 @@ static void child_process() {
     return;
   }
 
-  std::vector<std::string> Checkpoints;
-  split(temp, "$$", Checkpoints);
+  std::vector<std::string> checkpoints;
+  split(temp, "$$", checkpoints);
   delete[] temp;
 
   /* 6. Read the crashed thread's name. */
@@ -150,7 +150,7 @@ static void child_process() {
   if (!child_read(3, temp, size)) {
     return;
   }
-  const std::string CrashedThread(temp);
+  const std::string crashed_thread(temp);
   delete[] temp;
 
   /* Wait for the child to either finish cleaning up or die. */
@@ -186,32 +186,32 @@ static void child_process() {
     }
   }
 
-  std::string sCrashInfoPath = "/tmp";
+  std::string crash_info_path = "/tmp";
 #if defined(MACOSX)
-  sCrashInfoPath = CrashHandler::GetLogsDirectory();
+  crash_info_path = CrashHandler::GetLogsDirectory();
 #else
   const char* home = getenv("HOME");
   if (home) {
-    sCrashInfoPath = home;
+    crash_info_path = home;
   }
 #endif
-  sCrashInfoPath += "/crashinfo.txt";
+  crash_info_path += "/crashinfo.txt";
 
-  FILE* CrashDump = fopen(sCrashInfoPath.c_str(), "w+");
-  if (CrashDump == nullptr) {
+  FILE* crash_dump = fopen(crash_info_path.c_str(), "w+");
+  if (crash_dump == nullptr) {
     fprintf(
-        stderr, "Couldn't open %s: %s\n", sCrashInfoPath.c_str(),
+        stderr, "Couldn't open %s: %s\n", crash_info_path.c_str(),
         strerror(errno));
     exit(1);
   }
 
-  fprintf(CrashDump, "%s%s crash report", PRODUCT_FAMILY, product_version);
+  fprintf(crash_dump, "%s%s crash report", PRODUCT_FAMILY, product_version);
   fprintf(
-      CrashDump, " (build %s, %s @ %s)", ::sm_version_git_hash, version_date,
+      crash_dump, " (build %s, %s @ %s)", ::sm_version_git_hash, version_date,
       version_time);
-  fprintf(CrashDump, "\n");
-  fprintf(CrashDump, "--------------------------------------\n");
-  fprintf(CrashDump, "\n");
+  fprintf(crash_dump, "\n");
+  fprintf(crash_dump, "--------------------------------------\n");
+  fprintf(crash_dump, "\n");
 
   std::string reason;
   switch (crash.type_) {
@@ -243,38 +243,38 @@ static void child_process() {
       break;
   }
 
-  fprintf(CrashDump, "Architecture:   %s\n", HOOKS->GetArchName().c_str());
-  fprintf(CrashDump, "Crash reason:   %s\n", reason.c_str());
-  fprintf(CrashDump, "Crashed thread: %s\n\n", CrashedThread.c_str());
+  fprintf(crash_dump, "Architecture:   %s\n", HOOKS->GetArchName().c_str());
+  fprintf(crash_dump, "Crash reason:   %s\n", reason.c_str());
+  fprintf(crash_dump, "Crashed thread: %s\n\n", crashed_thread.c_str());
 
-  fprintf(CrashDump, "Checkpoints:\n");
-  for (unsigned i = 0; i < Checkpoints.size(); ++i) {
-    fputs(Checkpoints[i].c_str(), CrashDump);
+  fprintf(crash_dump, "Checkpoints:\n");
+  for (unsigned i = 0; i < checkpoints.size(); ++i) {
+    fputs(checkpoints[i].c_str(), crash_dump);
   }
-  fprintf(CrashDump, "\n");
+  fprintf(crash_dump, "\n");
 
   for (int i = 0; i < CrashData::MAX_BACKTRACE_THREADS; ++i) {
     if (!crash.backtrace_pointers_[i][0]) {
       break;
     }
-    fprintf(CrashDump, "Thread: %s\n", crash.thread_name_[i]);
-    output_stack_trace(CrashDump, crash.backtrace_pointers_[i]);
-    fprintf(CrashDump, "\n");
+    fprintf(crash_dump, "Thread: %s\n", crash.thread_name_[i]);
+    output_stack_trace(crash_dump, crash.backtrace_pointers_[i]);
+    fprintf(crash_dump, "\n");
   }
 
-  fprintf(CrashDump, "Static log:\n");
-  fprintf(CrashDump, "%s", Info);
-  fprintf(CrashDump, "%s", AdditionalLog);
-  fprintf(CrashDump, "\nPartial log:\n");
+  fprintf(crash_dump, "Static log:\n");
+  fprintf(crash_dump, "%s", info);
+  fprintf(crash_dump, "%s", additional_log);
+  fprintf(crash_dump, "\nPartial log:\n");
   for (int i = 0; i < cnt; ++i) {
-    fprintf(CrashDump, "%s\n", Recent[i]);
+    fprintf(crash_dump, "%s\n", recent[i]);
   }
-  fprintf(CrashDump, "\n");
-  fprintf(CrashDump, "-- End of report\n");
-  fclose(CrashDump);
+  fprintf(crash_dump, "\n");
+  fprintf(crash_dump, "-- End of report\n");
+  fclose(crash_dump);
 
 #if defined(MACOSX)
-  CrashHandler::InformUserOfCrash(sCrashInfoPath);
+  CrashHandler::InformUserOfCrash(crash_info_path);
 #else
   /* stdout may have been inadvertently closed by the crash in the parent;
    * write to /dev/tty instead. */
@@ -287,7 +287,7 @@ static void child_process() {
       ("\n" PRODUCT_ID " has crashed.  Debug information has been output to\n"
        "\n"
        "    " +
-       sCrashInfoPath +
+       crash_info_path +
        "\n"
        "\n"
        "Please report a bug at:\n"

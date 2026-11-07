@@ -7,7 +7,7 @@
 
 #include "RageSurface_Load.h"
 RageSurfaceUtils::OpenResult RageSurface_Load_PNG(
-    const std::string& sPath, RageSurface*& ret, bool bHeaderOnly,
+    const std::string& path, RageSurface*& ret, bool header_only,
     std::string& error);
 
 #endif

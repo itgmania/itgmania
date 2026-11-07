@@ -4,32 +4,32 @@
 
 WindowsDialogBox::WindowsDialogBox() { wnd_ = nullptr; }
 
-void WindowsDialogBox::Run(int iDialog) {
-  char szFullAppPath[MAX_PATH];
-  GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
-  HINSTANCE hHandle = LoadLibrary(szFullAppPath);
+void WindowsDialogBox::Run(int dialog) {
+  char full_app_path[MAX_PATH];
+  GetModuleFileName(nullptr, full_app_path, MAX_PATH);
+  HINSTANCE handle = LoadLibrary(full_app_path);
 
   DialogBoxParam(
-      hHandle, MAKEINTRESOURCE(iDialog), nullptr, DlgProc, (LPARAM)this);
+      handle, MAKEINTRESOURCE(dialog), nullptr, DlgProc, (LPARAM)this);
 }
 
 INT_PTR APIENTRY
-WindowsDialogBox::DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+WindowsDialogBox::DlgProc(HWND dlg, UINT msg, WPARAM w_param, LPARAM l_param) {
   if (msg == WM_INITDIALOG) {
-    SetProp(hDlg, "WindowsDialogBox", (HANDLE)lParam);
+    SetProp(dlg, "WindowsDialogBox", (HANDLE)l_param);
   }
 
-  WindowsDialogBox* pThis =
-      (WindowsDialogBox*)GetProp(hDlg, "WindowsDialogBox");
-  if (pThis == nullptr) {
+  WindowsDialogBox* this_ptr =
+      (WindowsDialogBox*)GetProp(dlg, "WindowsDialogBox");
+  if (this_ptr == nullptr) {
     return FALSE;
   }
 
-  if (pThis->wnd_ == nullptr) {
-    pThis->wnd_ = hDlg;
+  if (this_ptr->wnd_ == nullptr) {
+    this_ptr->wnd_ = dlg;
   }
 
-  return pThis->HandleMessage(msg, wParam, lParam);
+  return this_ptr->HandleMessage(msg, w_param, l_param);
 }
 
 /*

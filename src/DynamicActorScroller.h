@@ -8,11 +8,11 @@
 class DynamicActorScroller : public ActorScroller {
  public:
   virtual DynamicActorScroller* Copy() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
 
  protected:
-  virtual void ShiftSubActors(int iDist);
-  virtual void ConfigureActor(Actor* pActor, int iItem);
+  virtual void ShiftSubActors(int dist);
+  virtual void ConfigureActor(Actor* actor, int item);
 
   LuaReference load_function_;
 };

@@ -15,8 +15,8 @@ InputHandler_MonkeyKeyboard::InputHandler_MonkeyKeyboard() {
 InputHandler_MonkeyKeyboard::~InputHandler_MonkeyKeyboard() {}
 
 void InputHandler_MonkeyKeyboard::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
-  vDevicesOut.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "MonkeyKeyboard"));
+    std::vector<InputDeviceInfo>& devices_out) {
+  devices_out.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "MonkeyKeyboard"));
 }
 
 static const DeviceButton g_keys[] = {
@@ -66,9 +66,9 @@ void InputHandler_MonkeyKeyboard::Update() {
     return;
   }
 
-  float fSecsAgo = timer_press_button_.Ago();
+  float secs_ago = timer_press_button_.Ago();
 
-  if (fSecsAgo > 0.5) {
+  if (secs_ago > 0.5) {
     if (last_ != DeviceButton_Invalid) {
       // End the previous key
       DeviceInput di = DeviceInput(DEVICE_KEYBOARD, last_, 0);

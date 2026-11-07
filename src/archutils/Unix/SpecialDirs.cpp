@@ -4,10 +4,10 @@
 #include <string>
 
 std::string SpecialDirs::GetDesktopDir() {
-  char* psPath = getenv("HOME");
-  if (psPath) {
+  char* path = getenv("HOME");
+  if (path) {
     // XXX: should use PRODUCT_ID, probably
-    return std::string(psPath) + "/Desktop/stepmania5/";
+    return std::string(path) + "/Desktop/stepmania5/";
   }
   return "DICKS";  // not my suggestion -freem
 }

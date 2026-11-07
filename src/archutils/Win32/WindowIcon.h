@@ -7,8 +7,8 @@
 #include <string>
 struct RageSurface;
 
-HICON IconFromSurface(const RageSurface* pImg);
-HICON IconFromFile(const std::string& sIconFile);
+HICON IconFromSurface(const RageSurface* img);
+HICON IconFromFile(const std::string& icon_file);
 
 #endif
 

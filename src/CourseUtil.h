@@ -14,45 +14,44 @@ class CourseEntry;
 class Song;
 
 bool CompareCoursePointersBySortValueAscending(
-    const Course* pSong1, const Course* pSong2);
+    const Course* song1, const Course* song2);
 bool CompareCoursePointersBySortValueDescending(
-    const Course* pSong1, const Course* pSong2);
-bool CompareCoursePointersByTitle(
-    const Course* pCourse1, const Course* pCourse2);
+    const Course* song1, const Course* song2);
+bool CompareCoursePointersByTitle(const Course* course1, const Course* course2);
 
 /** @brief Utility functions that deal with Courses. */
 namespace CourseUtil {
-void SortCoursePointerArrayByDifficulty(std::vector<Course*>& vpCoursesInOut);
-void SortCoursePointerArrayByType(std::vector<Course*>& vpCoursesInOut);
-void SortCoursePointerArrayByTitle(std::vector<Course*>& vpCoursesInOut);
+void SortCoursePointerArrayByDifficulty(std::vector<Course*>& courses_in_out);
+void SortCoursePointerArrayByType(std::vector<Course*>& courses_in_out);
+void SortCoursePointerArrayByTitle(std::vector<Course*>& courses_in_out);
 void SortCoursePointerArrayByAvgDifficulty(
-    std::vector<Course*>& vpCoursesInOut);
+    std::vector<Course*>& courses_in_out);
 void SortCoursePointerArrayByTotalDifficulty(
-    std::vector<Course*>& vpCoursesInOut);
-void SortCoursePointerArrayByRanking(std::vector<Course*>& vpCoursesInOut);
+    std::vector<Course*>& courses_in_out);
+void SortCoursePointerArrayByRanking(std::vector<Course*>& courses_in_out);
 void SortCoursePointerArrayByNumPlays(
-    std::vector<Course*>& vpCoursesInOut, ProfileSlot slot, bool bDescending);
+    std::vector<Course*>& courses_in_out, ProfileSlot slot, bool descending);
 void SortCoursePointerArrayByNumPlays(
-    std::vector<Course*>& vpCoursesInOut, const Profile* pProfile,
-    bool bDescending);
-void SortByMostRecentlyPlayedForMachine(std::vector<Course*>& vpCoursesInOut);
+    std::vector<Course*>& courses_in_out, const Profile* profile,
+    bool descending);
+void SortByMostRecentlyPlayedForMachine(std::vector<Course*>& courses_in_out);
 // sm-ssc sort additions:
 // void SortCoursePointerArrayBySectionName( std::vector<Course*>
 // &vpCoursesInOut, SortOrder so );
 
-void MoveRandomToEnd(std::vector<Course*>& vpCoursesInOut);
+void MoveRandomToEnd(std::vector<Course*>& courses_in_out);
 
 void AutogenEndlessFromGroup(
-    const std::string& sGroupName, Difficulty dc, Course& out);
+    const std::string& group_name, Difficulty dc, Course& out);
 void AutogenNonstopFromGroup(
-    const std::string& sGroupName, Difficulty dc, Course& out);
+    const std::string& group_name, Difficulty dc, Course& out);
 void AutogenOniFromArtist(
-    const std::string& sArtistName, std::string sArtistNameTranslit,
-    std::vector<Song*> aSongs, Difficulty dc, Course& out);
+    const std::string& artist_name, std::string artist_name_translit,
+    std::vector<Song*> songs, Difficulty dc, Course& out);
 
-bool ValidateEditCourseName(const std::string& sAnswer, std::string& sErrorOut);
+bool ValidateEditCourseName(const std::string& answer, std::string& error_out);
 
-void WarnOnInvalidMods(std::string sMods);
+void WarnOnInvalidMods(std::string mods);
 
 // sm-ssc additions:
 // std::string GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder
@@ -64,11 +63,11 @@ namespace EditCourseUtil {
 void UpdateAndSetTrail();
 void PrepareForPlay();
 void LoadDefaults(Course& out);
-bool RemoveAndDeleteFile(Course* pCourse);
-bool ValidateEditCourseName(const std::string& sAnswer, std::string& sErrorOut);
-void GetAllEditCourses(std::vector<Course*>& vpCoursesOut);
-bool Save(Course* pCourse);
-bool RenameAndSave(Course* pCourse, std::string sName);
+bool RemoveAndDeleteFile(Course* course);
+bool ValidateEditCourseName(const std::string& answer, std::string& error_out);
+void GetAllEditCourses(std::vector<Course*>& courses_out);
+bool Save(Course* course);
+bool RenameAndSave(Course* course, std::string name);
 
 extern int MAX_NAME_LENGTH;
 extern int MAX_PER_PROFILE;
@@ -94,8 +93,8 @@ class CourseID {
   }
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
-  void FromPath(std::string _sPath) { path_ = _sPath; }
+  void LoadFromNode(const XNode* node);
+  void FromPath(std::string path) { path_ = path; }
   bool IsValid() const;
 
  private:

@@ -43,56 +43,56 @@ bool BackgroundDef::operator==(const BackgroundDef& other) const {
 }
 
 XNode* BackgroundDef::CreateNode() const {
-  XNode* pNode = new XNode("BackgroundDef");
+  XNode* node = new XNode("BackgroundDef");
 
   if (!effect_.empty()) {
-    pNode->AppendAttr("Effect", effect_);
+    node->AppendAttr("Effect", effect_);
   }
   if (!file1_.empty()) {
-    pNode->AppendAttr("File1", file1_);
+    node->AppendAttr("File1", file1_);
   }
   if (!file2_.empty()) {
-    pNode->AppendAttr("File2", file2_);
+    node->AppendAttr("File2", file2_);
   }
   if (!color1_.empty()) {
-    pNode->AppendAttr("Color1", color1_);
+    node->AppendAttr("Color1", color1_);
   }
   if (!color2_.empty()) {
-    pNode->AppendAttr("Color2", color2_);
+    node->AppendAttr("Color2", color2_);
   }
 
-  return pNode;
+  return node;
 }
 
 std::string BackgroundChange::GetTextDescription() const {
-  std::vector<std::string> vsParts;
+  std::vector<std::string> parts;
   if (!def_.file1_.empty()) {
-    vsParts.push_back(def_.file1_);
+    parts.push_back(def_.file1_);
   }
   if (!def_.file2_.empty()) {
-    vsParts.push_back(def_.file2_);
+    parts.push_back(def_.file2_);
   }
   if (rate_ != 1.0f) {
-    vsParts.push_back(ssprintf("%.2f%%", rate_ * 100));
+    parts.push_back(ssprintf("%.2f%%", rate_ * 100));
   }
   if (!transition_.empty()) {
-    vsParts.push_back(transition_);
+    parts.push_back(transition_);
   }
   if (!def_.effect_.empty()) {
-    vsParts.push_back(def_.effect_);
+    parts.push_back(def_.effect_);
   }
   if (!def_.color1_.empty()) {
-    vsParts.push_back(def_.color1_);
+    parts.push_back(def_.color1_);
   }
   if (!def_.color2_.empty()) {
-    vsParts.push_back(def_.color2_);
+    parts.push_back(def_.color2_);
   }
 
-  if (vsParts.empty()) {
-    vsParts.push_back("(empty)");
+  if (parts.empty()) {
+    parts.push_back("(empty)");
   }
 
-  std::string s = join("\n", vsParts);
+  std::string s = join("\n", parts);
   return s;
 }
 
@@ -130,14 +130,14 @@ const std::string SBE_StretchRewind = "StretchRewind";
 const std::string SBT_CrossFade = "CrossFade";
 
 static void StripCvsAndSvn(
-    std::vector<std::string>& vsPathsToStrip,
-    std::vector<std::string>& vsNamesToStrip) {
-  ASSERT(vsPathsToStrip.size() == vsNamesToStrip.size());
-  for (unsigned i = 0; i < vsNamesToStrip.size(); i++) {
-    if (CompareNoCase(Right(vsNamesToStrip[i], 3), "CVS") == 0 ||
-        vsNamesToStrip[i] == ".svn") {
-      vsPathsToStrip.erase(vsPathsToStrip.begin() + i);
-      vsNamesToStrip.erase(vsNamesToStrip.begin() + i);
+    std::vector<std::string>& paths_to_strip,
+    std::vector<std::string>& names_to_strip) {
+  ASSERT(paths_to_strip.size() == names_to_strip.size());
+  for (unsigned i = 0; i < names_to_strip.size(); i++) {
+    if (CompareNoCase(Right(names_to_strip[i], 3), "CVS") == 0 ||
+        names_to_strip[i] == ".svn") {
+      paths_to_strip.erase(paths_to_strip.begin() + i);
+      names_to_strip.erase(names_to_strip.begin() + i);
     }
   }
 }
@@ -148,176 +148,172 @@ int CompareBackgroundChanges(
 }
 
 void BackgroundUtil::SortBackgroundChangesArray(
-    std::vector<BackgroundChange>& vBackgroundChanges) {
+    std::vector<BackgroundChange>& background_changes) {
   sort(
-      vBackgroundChanges.begin(), vBackgroundChanges.end(),
+      background_changes.begin(), background_changes.end(),
       CompareBackgroundChanges);
 }
 
 void BackgroundUtil::AddBackgroundChange(
-    std::vector<BackgroundChange>& vBackgroundChanges, BackgroundChange seg) {
+    std::vector<BackgroundChange>& background_changes, BackgroundChange seg) {
   std::vector<BackgroundChange>::iterator it;
   it = upper_bound(
-      vBackgroundChanges.begin(), vBackgroundChanges.end(), seg,
+      background_changes.begin(), background_changes.end(), seg,
       CompareBackgroundChanges);
-  vBackgroundChanges.insert(it, seg);
+  background_changes.insert(it, seg);
 }
 
 void BackgroundUtil::GetBackgroundEffects(
-    const std::string& _sName, std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  std::string sName = _sName;
+    const std::string& s_name, std::vector<std::string>& paths_out,
+    std::vector<std::string>& names_out) {
+  std::string sName = s_name;
   if (sName == "") {
     sName = "*";
   }
 
-  vsPathsOut.clear();
+  paths_out.clear();
   GetDirListing(
-      BACKGROUND_EFFECTS_DIR + sName + ".lua", vsPathsOut, false, true);
+      BACKGROUND_EFFECTS_DIR + sName + ".lua", paths_out, false, true);
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(GetFileNameWithoutExtension(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(GetFileNameWithoutExtension(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 void BackgroundUtil::GetBackgroundTransitions(
-    const std::string& _sName, std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  std::string sName = _sName;
+    const std::string& s_name, std::vector<std::string>& paths_out,
+    std::vector<std::string>& names_out) {
+  std::string sName = s_name;
   if (sName == "") {
     sName = "*";
   }
 
-  vsPathsOut.clear();
+  paths_out.clear();
   if (true) {
     GetDirListing(
-        BACKGROUND_TRANSITIONS_DIR + sName + ".xml", vsPathsOut, false, true);
+        BACKGROUND_TRANSITIONS_DIR + sName + ".xml", paths_out, false, true);
   }
   GetDirListing(
-      BACKGROUND_TRANSITIONS_DIR + sName + ".lua", vsPathsOut, false, true);
+      BACKGROUND_TRANSITIONS_DIR + sName + ".lua", paths_out, false, true);
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(GetFileNameWithoutExtension(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(GetFileNameWithoutExtension(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 void BackgroundUtil::GetSongBGAnimations(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  vsPathsOut.clear();
-  if (sMatch.empty()) {
-    GetDirListing(pSong->GetSongDir() + "*", vsPathsOut, true, true);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out) {
+  paths_out.clear();
+  if (match.empty()) {
+    GetDirListing(song->GetSongDir() + "*", paths_out, true, true);
   } else {
-    GetDirListing(pSong->GetSongDir() + sMatch, vsPathsOut, true, true);
+    GetDirListing(song->GetSongDir() + match, paths_out, true, true);
   }
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(Basename(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(Basename(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 void BackgroundUtil::GetSongMovies(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  vsPathsOut.clear();
-  if (sMatch.empty()) {
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out) {
+  paths_out.clear();
+  if (match.empty()) {
     FILEMAN->GetDirListingWithMultipleExtensions(
-        pSong->GetSongDir() + sMatch, ActorUtil::GetTypeExtensionList(FT_Movie),
-        vsPathsOut, false, true);
+        song->GetSongDir() + match, ActorUtil::GetTypeExtensionList(FT_Movie),
+        paths_out, false, true);
   } else {
-    GetDirListing(pSong->GetSongDir() + sMatch, vsPathsOut, false, true);
+    GetDirListing(song->GetSongDir() + match, paths_out, false, true);
   }
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(Basename(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(Basename(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 void BackgroundUtil::GetSongBitmaps(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  vsPathsOut.clear();
-  if (sMatch.empty()) {
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out) {
+  paths_out.clear();
+  if (match.empty()) {
     FILEMAN->GetDirListingWithMultipleExtensions(
-        pSong->GetSongDir() + sMatch,
-        ActorUtil::GetTypeExtensionList(FT_Bitmap), vsPathsOut, false, true);
+        song->GetSongDir() + match, ActorUtil::GetTypeExtensionList(FT_Bitmap),
+        paths_out, false, true);
   } else {
-    GetDirListing(pSong->GetSongDir() + sMatch, vsPathsOut, false, true);
+    GetDirListing(song->GetSongDir() + match, paths_out, false, true);
   }
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(Basename(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(Basename(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 static void GetFilterToFileNames(
-    const std::string sBaseDir, const Song* pSong,
-    std::set<std::string>& vsPossibleFileNamesOut) {
-  vsPossibleFileNamesOut.clear();
+    const std::string base_dir, const Song* song,
+    std::set<std::string>& possible_file_names_out) {
+  possible_file_names_out.clear();
 
-  if (pSong->genre_.empty()) {
+  if (song->genre_.empty()) {
     return;
   }
 
-  ASSERT(!pSong->group_name_.empty());
+  ASSERT(!song->group_name_.empty());
   IniFile ini;
-  std::string sPath =
-      sBaseDir + pSong->group_name_ + "/" + "BackgroundMapping.ini";
-  ini.ReadFile(sPath);
+  std::string path =
+      base_dir + song->group_name_ + "/" + "BackgroundMapping.ini";
+  ini.ReadFile(path);
 
-  std::string sSection;
-  bool bSuccess = ini.GetValue("GenreToSection", pSong->genre_, sSection);
-  if (!bSuccess) {
+  std::string s_section;
+  bool success = ini.GetValue("GenreToSection", song->genre_, s_section);
+  if (!success) {
     // LOG->Warn( "Genre '%s' isn't mapped", pSong->m_sGenre.c_str() );
     return;
   }
 
-  XNode* pSection = ini.GetChild(sSection);
-  if (pSection == nullptr) {
+  XNode* p_section = ini.GetChild(s_section);
+  if (p_section == nullptr) {
     ASSERT_M(
         0, ssprintf(
                "File '%s' refers to a section '%s' that is missing.",
-               sPath.c_str(), sSection.c_str()));
+               path.c_str(), s_section.c_str()));
     return;
   }
 
-  FOREACH_CONST_Attr(pSection, p) vsPossibleFileNamesOut.insert(p->first);
+  FOREACH_CONST_Attr(p_section, p) possible_file_names_out.insert(p->first);
 }
 
 void BackgroundUtil::GetGlobalBGAnimations(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut) {
-  vsPathsOut.clear();
-  GetDirListing(BG_ANIMS_DIR + sMatch + "*", vsPathsOut, true, true);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out) {
+  paths_out.clear();
+  GetDirListing(BG_ANIMS_DIR + match + "*", paths_out, true, true);
   if (true) {
-    GetDirListing(BG_ANIMS_DIR + sMatch + "*.xml", vsPathsOut, false, true);
+    GetDirListing(BG_ANIMS_DIR + match + "*.xml", paths_out, false, true);
   }
 
-  vsNamesOut.clear();
-  for (const std::string& s : vsPathsOut) {
-    vsNamesOut.push_back(Basename(s));
+  names_out.clear();
+  for (const std::string& s : paths_out) {
+    names_out.push_back(Basename(s));
   }
 
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 namespace {
@@ -325,68 +321,70 @@ namespace {
  * @brief Fetches the appropriate path(s) for global random movies.
  */
 void GetGlobalRandomMoviePaths(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut,
-    bool bTryInsideOfSongGroupAndGenreFirst, bool bTryInsideOfSongGroupFirst) {
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out,
+    bool try_inside_of_song_group_and_genre_first,
+    bool try_inside_of_song_group_first) {
   // Check for an exact match
-  if (!sMatch.empty()) {
+  if (!match.empty()) {
     GetDirListing(
-        SONG_MOVIES_DIR + pSong->group_name_ + "/" + sMatch, vsPathsOut, false,
+        SONG_MOVIES_DIR + song->group_name_ + "/" + match, paths_out, false,
         true);  // search in SongMovies/SongGroupName/ first
-    GetDirListing(SONG_MOVIES_DIR + sMatch, vsPathsOut, false, true);
-    GetDirListing(RANDOMMOVIES_DIR + sMatch, vsPathsOut, false, true);
-    if (vsPathsOut.empty() && sMatch != NO_SONG_BG_FILE) {
-      LOG->Warn("Background missing: %s", sMatch.c_str());
+    GetDirListing(SONG_MOVIES_DIR + match, paths_out, false, true);
+    GetDirListing(RANDOMMOVIES_DIR + match, paths_out, false, true);
+    if (paths_out.empty() && match != NO_SONG_BG_FILE) {
+      LOG->Warn("Background missing: %s", match.c_str());
     }
     return;
   }
 
   // Search for the most appropriate background
-  std::set<std::string> ssFileNameWhitelist;
-  if (bTryInsideOfSongGroupAndGenreFirst && pSong && !pSong->genre_.empty()) {
-    GetFilterToFileNames(RANDOMMOVIES_DIR, pSong, ssFileNameWhitelist);
+  std::set<std::string> file_name_whitelist;
+  if (try_inside_of_song_group_and_genre_first && song &&
+      !song->genre_.empty()) {
+    GetFilterToFileNames(RANDOMMOVIES_DIR, song, file_name_whitelist);
   }
 
-  std::vector<std::string> vsDirsToTry;
-  if (bTryInsideOfSongGroupFirst && pSong) {
-    ASSERT(!pSong->group_name_.empty());
-    vsDirsToTry.push_back(RANDOMMOVIES_DIR + pSong->group_name_ + "/");
+  std::vector<std::string> dirs_to_try;
+  if (try_inside_of_song_group_first && song) {
+    ASSERT(!song->group_name_.empty());
+    dirs_to_try.push_back(RANDOMMOVIES_DIR + song->group_name_ + "/");
   }
-  vsDirsToTry.push_back(RANDOMMOVIES_DIR);
+  dirs_to_try.push_back(RANDOMMOVIES_DIR);
 
-  for (const std::string& sDir : vsDirsToTry) {
-    vsPathsOut.clear();
-    GetDirListing(sDir + "*", vsPathsOut, false, true);
+  for (const std::string& dir : dirs_to_try) {
+    paths_out.clear();
+    GetDirListing(dir + "*", paths_out, false, true);
 
-    size_t writeIndex = 0;
-    for (size_t bytesRead = 0; bytesRead < vsPathsOut.size(); ++bytesRead) {
-      if (ActorUtil::GetFileType(vsPathsOut[bytesRead]) == FT_Movie) {
-        if (writeIndex != bytesRead) {
-          vsPathsOut[writeIndex] = vsPathsOut[bytesRead];
+    size_t write_index = 0;
+    for (size_t bytes_read = 0; bytes_read < paths_out.size(); ++bytes_read) {
+      if (ActorUtil::GetFileType(paths_out[bytes_read]) == FT_Movie) {
+        if (write_index != bytes_read) {
+          paths_out[write_index] = paths_out[bytes_read];
         }
-        ++writeIndex;
+        ++write_index;
       }
     }
-    vsPathsOut.resize(writeIndex);
+    paths_out.resize(write_index);
 
-    if (!ssFileNameWhitelist.empty()) {
-      std::vector<std::string> vsMatches;
-      for (const std::string& s : vsPathsOut) {
-        std::string sBasename = Basename(s);
-        bool bFound =
-            ssFileNameWhitelist.find(sBasename) != ssFileNameWhitelist.end();
-        if (bFound) {
-          vsMatches.push_back(s);
+    if (!file_name_whitelist.empty()) {
+      std::vector<std::string> matches;
+      for (const std::string& s : paths_out) {
+        std::string basename = Basename(s);
+        bool found =
+            file_name_whitelist.find(basename) != file_name_whitelist.end();
+        if (found) {
+          matches.push_back(s);
         }
       }
       // If we found any that match the whitelist, use only them.
       // If none match the whitelist, ignore the whitelist..
-      if (!vsMatches.empty()) {
-        vsPathsOut = vsMatches;
+      if (!matches.empty()) {
+        paths_out = matches;
       }
     }
 
-    if (!vsPathsOut.empty()) {
+    if (!paths_out.empty()) {
       // Return only the first directory found
       return;
     }
@@ -396,21 +394,22 @@ void GetGlobalRandomMoviePaths(
 }  // namespace
 
 void BackgroundUtil::GetGlobalRandomMovies(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut,
-    bool bTryInsideOfSongGroupAndGenreFirst, bool bTryInsideOfSongGroupFirst) {
-  vsPathsOut.clear();
-  vsNamesOut.clear();
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out,
+    bool try_inside_of_song_group_and_genre_first,
+    bool try_inside_of_song_group_first) {
+  paths_out.clear();
+  names_out.clear();
 
   GetGlobalRandomMoviePaths(
-      pSong, sMatch, vsPathsOut, bTryInsideOfSongGroupAndGenreFirst,
-      bTryInsideOfSongGroupFirst);
+      song, match, paths_out, try_inside_of_song_group_and_genre_first,
+      try_inside_of_song_group_first);
 
-  for (const std::string& s : vsPathsOut) {
-    std::string sName = Right(s, s.size() - RANDOMMOVIES_DIR.size() - 1);
-    vsNamesOut.push_back(sName);
+  for (const std::string& s : paths_out) {
+    std::string name = Right(s, s.size() - RANDOMMOVIES_DIR.size() - 1);
+    names_out.push_back(name);
   }
-  StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  StripCvsAndSvn(paths_out, names_out);
 }
 
 /*

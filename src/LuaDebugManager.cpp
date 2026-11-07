@@ -28,7 +28,7 @@ namespace LuaDebug {
 class Server : public ix::SocketServer {
  public:
   static std::unique_ptr<Server> Start(
-      Debugger& debugger, const std::string& address, bool startPaused) {
+      Debugger& debugger, const std::string& address, bool start_paused) {
     // Split the address to host and port.
     std::string url =
         std::string("tcp://") + (address.empty() ? DefaultAddress : address);
@@ -43,13 +43,13 @@ class Server : public ix::SocketServer {
     }
 
     std::unique_ptr<Server> server(new Server(debugger, host, port));
-    std::pair<bool, std::string> listenOk = server->listen();
-    if (!listenOk.first) {
-      LOG->Warn("LuaDebugger: listen failed: %s", listenOk.second.c_str());
+    std::pair<bool, std::string> listen_ok = server->listen();
+    if (!listen_ok.first) {
+      LOG->Warn("LuaDebugger: listen failed: %s", listen_ok.second.c_str());
       return nullptr;
     }
 
-    if (startPaused) {
+    if (start_paused) {
       debugger.SendRequest(LuaDebug::CreatePauseRequest(0));
     }
 
@@ -75,12 +75,12 @@ class Server : public ix::SocketServer {
 
   virtual void handleConnection(
       std::unique_ptr<ix::Socket> socket,
-      std::shared_ptr<ix::ConnectionState> connectionState) override {
+      std::shared_ptr<ix::ConnectionState> connection_state) override {
     LOG->Info("LuaDebugger: client connected");
     connected_clients_ = 1;
 
     Serve(*socket);
-    connectionState->setTerminated();
+    connection_state->setTerminated();
 
     // Send a fake disconnect request in case the connection was closed
     // unexpectedly.
@@ -91,10 +91,10 @@ class Server : public ix::SocketServer {
 
   void Serve(ix::Socket& socket) {
     bool initialized = false;
-    SeqNo nextMessageSeq = 1;
-    size_t bufferLength = 1024;
-    size_t bufferFilled = 0;
-    std::unique_ptr<char[]> buffer(new char[bufferLength]);
+    SeqNo next_message_seq = 1;
+    size_t buffer_length = 1024;
+    size_t buffer_filled = 0;
+    std::unique_ptr<char[]> buffer(new char[buffer_length]);
 
     while (server_running_.load(std::memory_order_relaxed)) {
       bool terminate = false;
@@ -109,7 +109,7 @@ class Server : public ix::SocketServer {
           }
         }
 
-        response["seq"] = nextMessageSeq++;
+        response["seq"] = next_message_seq++;
         if (!SendDapMessage(socket, response)) {
           terminate = true;
           break;
@@ -125,90 +125,91 @@ class Server : public ix::SocketServer {
         break;
       }
 
-      ASSERT(bufferFilled <= bufferLength);
-      if (std::string_view(buffer.get(), bufferFilled).find("\r\n\r\n") ==
+      ASSERT(buffer_filled <= buffer_length);
+      if (std::string_view(buffer.get(), buffer_filled).find("\r\n\r\n") ==
           std::string_view::npos) {
         // We don't have a complete header; need to read more data.
-        size_t freeSpace = bufferLength - bufferFilled;
-        if (freeSpace == 0) {
+        size_t free_space = buffer_length - buffer_filled;
+        if (free_space == 0) {
           LOG->Warn("LuaDebugger: too big request header");
           break;
         }
-        ASSERT(freeSpace <= INT_MAX);
+        ASSERT(free_space <= INT_MAX);
 
-        ix::PollResultType pollResult = socket.isReadyToRead(DefaultTimeoutMs);
-        if (pollResult == ix::PollResultType::Timeout) {
+        ix::PollResultType poll_result = socket.isReadyToRead(DefaultTimeoutMs);
+        if (poll_result == ix::PollResultType::Timeout) {
           continue;
         }
-        if (pollResult != ix::PollResultType::ReadyForRead) {
+        if (poll_result != ix::PollResultType::ReadyForRead) {
           break;
         }
 
-        ssize_t recvResult =
-            socket.recv(buffer.get() + bufferFilled, freeSpace);
-        if (recvResult < 0) {
+        ssize_t recv_result =
+            socket.recv(buffer.get() + buffer_filled, free_space);
+        if (recv_result < 0) {
           LOG->Warn("LuaDebugger: recv failed");
         }
-        if (recvResult <= 0) {
+        if (recv_result <= 0) {
           break;
         }
-        ASSERT(recvResult <= (int)freeSpace);
-        bufferFilled += recvResult;
+        ASSERT(recv_result <= (int)free_space);
+        buffer_filled += recv_result;
 
-        if (std::string_view(buffer.get(), bufferFilled).find("\r\n\r\n") ==
+        if (std::string_view(buffer.get(), buffer_filled).find("\r\n\r\n") ==
             std::string_view::npos) {
           continue;
         }
       }
 
       LuaDebug::Header header;
-      if (!header.TryParse(buffer.get(), bufferFilled)) {
+      if (!header.TryParse(buffer.get(), buffer_filled)) {
         LOG->Warn("LuaDebugger: invalid request header");
         break;
       }
-      ASSERT(header.GetHeaderLength() <= bufferFilled);
+      ASSERT(header.GetHeaderLength() <= buffer_filled);
 
-      size_t totalSize = header.GetHeaderLength() + header.GetContentLength();
-      if (totalSize > 10000000) {
+      size_t total_size = header.GetHeaderLength() + header.GetContentLength();
+      if (total_size > 10000000) {
         LOG->Warn("LuaDebugger: too big request");
         break;
       }
 
-      if (bufferLength < totalSize) {
-        bufferLength = totalSize;
-        std::unique_ptr<char[]> newBuffer(new char[bufferLength]);
-        memcpy(newBuffer.get(), buffer.get(), bufferFilled);
-        buffer = std::move(newBuffer);
+      if (buffer_length < total_size) {
+        buffer_length = total_size;
+        std::unique_ptr<char[]> new_buffer(new char[buffer_length]);
+        memcpy(new_buffer.get(), buffer.get(), buffer_filled);
+        buffer = std::move(new_buffer);
       }
 
-      if (totalSize > bufferFilled) {
-        size_t bytesMissing = totalSize - bufferFilled;
-        ASSERT(bytesMissing <= INT_MAX);
+      if (total_size > buffer_filled) {
+        size_t bytes_missing = total_size - buffer_filled;
+        ASSERT(bytes_missing <= INT_MAX);
 
-        ix::OnProgressCallback onProgress;
-        std::pair<bool, std::string> recvResult = socket.readBytes(
-            bytesMissing, onProgress,
-            [&buffer, &bufferFilled, &bytesMissing](const std::string& chunk) {
-              ASSERT(chunk.length() <= bytesMissing);
+        ix::OnProgressCallback on_progress;
+        std::pair<bool, std::string> recv_result = socket.readBytes(
+            bytes_missing, on_progress,
+            [&buffer, &buffer_filled,
+             &bytes_missing](const std::string& chunk) {
+              ASSERT(chunk.length() <= bytes_missing);
               std::memcpy(
-                  buffer.get() + bufferFilled, chunk.data(), chunk.length());
-              bufferFilled += chunk.length();
-              bytesMissing -= chunk.length();
+                  buffer.get() + buffer_filled, chunk.data(), chunk.length());
+              buffer_filled += chunk.length();
+              bytes_missing -= chunk.length();
             },
             [this] {
               return !server_running_.load(std::memory_order_relaxed);
             });
-        if (!recvResult.first) {
+        if (!recv_result.first) {
           LOG->Warn("LuaDebugger: recv failed");
           break;
         }
-        ASSERT(bytesMissing == 0);
+        ASSERT(bytes_missing == 0);
       }
 
       LuaDebug::Request request;
       if (!request.TryParse(
               buffer.get() + header.GetHeaderLength(),
-              bufferFilled - header.GetHeaderLength())) {
+              buffer_filled - header.GetHeaderLength())) {
         LOG->Warn("LuaDebugger: invalid request body");
         break;
       }
@@ -216,17 +217,18 @@ class Server : public ix::SocketServer {
       debugger_.SendRequest(std::move(request));
 
       // Move rest of the data to the start of the buffer.
-      if (bufferFilled > totalSize) {
+      if (buffer_filled > total_size) {
         memcpy(
-            buffer.get(), buffer.get() + totalSize, bufferFilled - totalSize);
+            buffer.get(), buffer.get() + total_size,
+            buffer_filled - total_size);
       }
-      bufferFilled -= totalSize;
+      buffer_filled -= total_size;
     }
 
     // Notify the client that it's getting disconnected.
-    LuaDebug::Event terminatedEvent = LuaDebug::CreateTerminatedEvent();
-    terminatedEvent["seq"] = nextMessageSeq++;
-    SendDapMessage(socket, terminatedEvent);
+    LuaDebug::Event terminated_event = LuaDebug::CreateTerminatedEvent();
+    terminated_event["seq"] = next_message_seq++;
+    SendDapMessage(socket, terminated_event);
   }
 
  private:
@@ -241,23 +243,23 @@ class Server : public ix::SocketServer {
     std::string body = Json::FastWriter{}.write(message);
     std::string data = std::string("Content-Length: ") +
                        std::to_string(body.length()) + "\r\n\r\n" + body;
-    bool isFirstTry = true;
-    bool sendOk = socket.writeBytes(data, [this, &isFirstTry] {
-      if (isFirstTry) {
+    bool is_first_try = true;
+    bool send_ok = socket.writeBytes(data, [this, &is_first_try] {
+      if (is_first_try) {
         // If we can send the message without waiting, send it
         // event if the server is terminating. This way, the client
         // can receive the terminated event before the connection
         // is closed.
-        isFirstTry = false;
+        is_first_try = false;
         return false;
       }
       return !server_running_.load(std::memory_order_relaxed);
     });
 
-    if (!sendOk) {
+    if (!send_ok) {
       LOG->Warn("LuaDebugger: send failed");
     }
-    return sendOk;
+    return send_ok;
   }
 };
 }  // namespace LuaDebug
@@ -266,9 +268,9 @@ LuaDebugManager::LuaDebugManager()
     : debugger_(new LuaDebug::Debugger()), server_(nullptr) {}
 LuaDebugManager::~LuaDebugManager() = default;
 
-void LuaDebugManager::Start(std::string address, bool startPaused) {
+void LuaDebugManager::Start(std::string address, bool start_paused) {
   ix::initNetSystem();
-  server_ = LuaDebug::Server::Start(*debugger_, address, startPaused);
+  server_ = LuaDebug::Server::Start(*debugger_, address, start_paused);
 }
 
 void LuaDebugManager::ActivateState(lua_State* lua) {

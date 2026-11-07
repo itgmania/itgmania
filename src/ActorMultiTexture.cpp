@@ -35,14 +35,14 @@ ActorMultiTexture::ActorMultiTexture(const ActorMultiTexture& cpy)
 
 void ActorMultiTexture::SetTextureCoords(const RectF& r) { rect_ = r; }
 
-void ActorMultiTexture::LoadFromNode(const XNode* pNode) {
+void ActorMultiTexture::LoadFromNode(const XNode* node) {
   rect_ = RectF(0, 0, 1, 1);
-  Actor::LoadFromNode(pNode);
+  Actor::LoadFromNode(node);
 }
 
-void ActorMultiTexture::SetSizeFromTexture(RageTexture* pTexture) {
-  ActorMultiTexture::size_.x_ = pTexture->GetSourceWidth();
-  ActorMultiTexture::size_.y_ = pTexture->GetSourceHeight();
+void ActorMultiTexture::SetSizeFromTexture(RageTexture* texture) {
+  ActorMultiTexture::size_.x_ = texture->GetSourceWidth();
+  ActorMultiTexture::size_.y_ = texture->GetSourceHeight();
 }
 
 void ActorMultiTexture::ClearTextures() {
@@ -52,36 +52,36 @@ void ActorMultiTexture::ClearTextures() {
   texture_units_.clear();
 }
 
-int ActorMultiTexture::AddTexture(RageTexture* pTexture) {
-  if (pTexture == nullptr) {
+int ActorMultiTexture::AddTexture(RageTexture* texture) {
+  if (texture == nullptr) {
     LOG->Warn("Can't add nil texture to ActorMultiTexture");
     return texture_units_.size();
   }
   LOG->Trace(
       "ActorMultiTexture::AddTexture( %s )",
-      pTexture->GetID().filename_.c_str());
+      texture->GetID().filename_.c_str());
 
   texture_units_.push_back(TextureUnitState());
-  texture_units_.back().texture_ = TEXTUREMAN->CopyTexture(pTexture);
+  texture_units_.back().texture_ = TEXTUREMAN->CopyTexture(texture);
   return texture_units_.size();
 }
 
-void ActorMultiTexture::SetTextureMode(int iIndex, TextureMode tm) {
-  if (iIndex >= (int)texture_units_.size()) {
-    LOG->Warn("Can't set texture mode, index %d too high.", iIndex);
+void ActorMultiTexture::SetTextureMode(int index, TextureMode tm) {
+  if (index >= (int)texture_units_.size()) {
+    LOG->Warn("Can't set texture mode, index %d too high.", index);
     return;
   }
-  texture_units_[iIndex].texture_mode_ = tm;
+  texture_units_[index].texture_mode_ = tm;
 }
 
 void ActorMultiTexture::DrawPrimitives() {
   Actor::SetGlobalRenderStates();  // set Actor-specified render states
 
-  RectF quadVerticies;
-  quadVerticies.left_ = -size_.x_ / 2.0f;
-  quadVerticies.right_ = +size_.x_ / 2.0f;
-  quadVerticies.top_ = -size_.y_ / 2.0f;
-  quadVerticies.bottom_ = +size_.y_ / 2.0f;
+  RectF quad_verticies;
+  quad_verticies.left_ = -size_.x_ / 2.0f;
+  quad_verticies.right_ = +size_.x_ / 2.0f;
+  quad_verticies.top_ = -size_.y_ / 2.0f;
+  quad_verticies.bottom_ = +size_.y_ / 2.0f;
 
   DISPLAY->ClearAllTextures();
   for (size_t i = 0; i < texture_units_.size(); ++i) {
@@ -95,22 +95,23 @@ void ActorMultiTexture::DrawPrimitives() {
 
   static RageSpriteVertex v[4];
   v[0].p_ =
-      RageVector3(quadVerticies.left_, quadVerticies.top_, 0);  // top left
+      RageVector3(quad_verticies.left_, quad_verticies.top_, 0);  // top left
   v[1].p_ = RageVector3(
-      quadVerticies.left_, quadVerticies.bottom_, 0);  // bottom left
+      quad_verticies.left_, quad_verticies.bottom_, 0);  // bottom left
   v[2].p_ = RageVector3(
-      quadVerticies.right_, quadVerticies.bottom_, 0);  // bottom right
+      quad_verticies.right_, quad_verticies.bottom_, 0);  // bottom right
   v[3].p_ =
-      RageVector3(quadVerticies.right_, quadVerticies.top_, 0);  // top right
+      RageVector3(quad_verticies.right_, quad_verticies.top_, 0);  // top right
 
-  const RectF* pTexCoordRect = &rect_;
-  v[0].t_ = RageVector2(pTexCoordRect->left_, pTexCoordRect->top_);  // top left
-  v[1].t_ =
-      RageVector2(pTexCoordRect->left_, pTexCoordRect->bottom_);  // bottom left
+  const RectF* tex_coord_rect = &rect_;
+  v[0].t_ =
+      RageVector2(tex_coord_rect->left_, tex_coord_rect->top_);  // top left
+  v[1].t_ = RageVector2(
+      tex_coord_rect->left_, tex_coord_rect->bottom_);  // bottom left
   v[2].t_ = RageVector2(
-      pTexCoordRect->right_, pTexCoordRect->bottom_);  // bottom right
+      tex_coord_rect->right_, tex_coord_rect->bottom_);  // bottom right
   v[3].t_ =
-      RageVector2(pTexCoordRect->right_, pTexCoordRect->top_);  // top right
+      RageVector2(tex_coord_rect->right_, tex_coord_rect->top_);  // top right
 
   v[0].c_ = temp_state_->diffuse_[0];  // top left
   v[1].c_ = temp_state_->diffuse_[2];  // bottom left
@@ -141,15 +142,15 @@ class LunaActorMultiTexture : public Luna<ActorMultiTexture> {
     COMMON_RETURN_SELF;
   }
   static int AddTexture(T* p, lua_State* L) {
-    RageTexture* pTexture = Luna<RageTexture>::check(L, 1);
-    int iRet = p->AddTexture(pTexture);
-    lua_pushinteger(L, iRet);
+    RageTexture* texture = Luna<RageTexture>::check(L, 1);
+    int ret = p->AddTexture(texture);
+    lua_pushinteger(L, ret);
     return 1;
   }
   static int SetTextureMode(T* p, lua_State* L) {
-    int iIndex = IArg(1);
+    int index = IArg(1);
     TextureMode tm = Enum::Check<TextureMode>(L, 2);
-    p->SetTextureMode(iIndex, tm);
+    p->SetTextureMode(index, tm);
     COMMON_RETURN_SELF;
   }
   static int SetTextureCoords(T* p, lua_State* L) {
@@ -157,8 +158,8 @@ class LunaActorMultiTexture : public Luna<ActorMultiTexture> {
     COMMON_RETURN_SELF;
   }
   static int SetSizeFromTexture(T* p, lua_State* L) {
-    RageTexture* pTexture = Luna<RageTexture>::check(L, 1);
-    p->SetSizeFromTexture(pTexture);
+    RageTexture* texture = Luna<RageTexture>::check(L, 1);
+    p->SetSizeFromTexture(texture);
     COMMON_RETURN_SELF;
   }
   static int SetEffectMode(T* p, lua_State* L) {

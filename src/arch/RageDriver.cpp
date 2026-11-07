@@ -6,22 +6,22 @@
 #include "RageUtil.h"
 #include "global.h"
 
-void DriverList::Add(const istring& sName, CreateRageDriverFn pfn) {
+void DriverList::Add(const istring& name, CreateRageDriverFn pfn) {
   if (registrees_ == nullptr) {
     registrees_ = new std::map<istring, CreateRageDriverFn>;
   }
 
-  ASSERT(registrees_->find(sName) == registrees_->end());
-  (*registrees_)[sName] = pfn;
+  ASSERT(registrees_->find(name) == registrees_->end());
+  (*registrees_)[name] = pfn;
 }
 
-RageDriver* DriverList::Create(const std::string& sDriverName) {
+RageDriver* DriverList::Create(const std::string& driver_name) {
   if (registrees_ == nullptr) {
     return nullptr;
   }
 
   std::map<istring, CreateRageDriverFn>::const_iterator iter =
-      registrees_->find(istring(sDriverName.c_str()));
+      registrees_->find(istring(driver_name.c_str()));
   if (iter == registrees_->end()) {
     return nullptr;
   }
@@ -29,8 +29,8 @@ RageDriver* DriverList::Create(const std::string& sDriverName) {
 }
 
 RegisterRageDriver::RegisterRageDriver(
-    DriverList* pDriverList, const istring& sName, CreateRageDriverFn pfn) {
-  pDriverList->Add(sName, pfn);
+    DriverList* driver_list, const istring& name, CreateRageDriverFn pfn) {
+  driver_list->Add(name, pfn);
 }
 
 /*

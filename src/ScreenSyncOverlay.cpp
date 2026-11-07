@@ -38,14 +38,14 @@ void ScreenSyncOverlay::Init() {
   Update(0);
 }
 
-void ScreenSyncOverlay::Update(float fDeltaTime) {
+void ScreenSyncOverlay::Update(float delta_time) {
   this->SetVisible(IsGameplay());
   if (!IsGameplay()) {
     HideHelp();
     return;
   }
 
-  Screen::Update(fDeltaTime);
+  Screen::Update(delta_time);
 
   UpdateText();
 }
@@ -118,21 +118,21 @@ void ScreenSyncOverlay::UpdateText() {
   Message set_adjustments("SetAdjustments");
   set_adjustments.SetParam("visible", visible);
   if (visible) {
-    float fNew;
-    float fOld;
+    float f_new;
+    float old;
     if (GAMESTATE->song_options_.GetCurrent().autosync_type_ ==
         AutosyncType_Machine) {
-      fNew = PREFSMAN->global_offset_seconds_;
-      fOld = AdjustSync::global_offset_seconds_original_;
+      f_new = PREFSMAN->global_offset_seconds_;
+      old = AdjustSync::global_offset_seconds_original_;
     } else {
-      fNew = GAMESTATE->cur_song_->song_timing_.beat0_offset_in_seconds_;
-      fOld = AdjustSync::timing_data_original_[0].beat0_offset_in_seconds_;
+      f_new = GAMESTATE->cur_song_->song_timing_.beat0_offset_in_seconds_;
+      old = AdjustSync::timing_data_original_[0].beat0_offset_in_seconds_;
     }
-    float fStdDev = AdjustSync::standard_deviation_;
+    float std_dev = AdjustSync::standard_deviation_;
     std::string s;
-    s += OLD_OFFSET.GetValue() + ssprintf(": %0.3f\n", fOld);
-    s += NEW_OFFSET.GetValue() + ssprintf(": %0.3f\n", fNew);
-    s += STANDARD_DEVIATION.GetValue() + ssprintf(": %0.3f\n", fStdDev);
+    s += OLD_OFFSET.GetValue() + ssprintf(": %0.3f\n", old);
+    s += NEW_OFFSET.GetValue() + ssprintf(": %0.3f\n", f_new);
+    s += STANDARD_DEVIATION.GetValue() + ssprintf(": %0.3f\n", std_dev);
     s += COLLECTING_SAMPLE.GetValue() +
          ssprintf(
              ": %d / %d", AdjustSync::autosync_offset_sample_ + 1,
@@ -166,21 +166,21 @@ bool ScreenSyncOverlay::Input(const InputEventPlus& input) {
   };
   Action a = Action_Invalid;
 
-  bool bIncrease = true;
+  bool increase = true;
   switch (input.device_i_.button_) {
     case KEY_F4:
       a = RevertSyncChanges;
       break;
 
     case KEY_F9:
-      bIncrease = false;
+      increase = false;
       [[fallthrough]];
     case KEY_F10:
       a = ChangeSongBPM;
       break;
 
     case KEY_F11:
-      bIncrease = false;
+      increase = false;
       [[fallthrough]];
     case KEY_F12:
       if (INPUTFILTER->IsBeingPressed(
@@ -211,20 +211,20 @@ bool ScreenSyncOverlay::Input(const InputEventPlus& input) {
       AdjustSync::RevertSyncChanges();
       break;
     case ChangeSongBPM: {
-      float fDelta = bIncrease ? +0.02f : -0.02f;
+      float delta = increase ? +0.02f : -0.02f;
       if (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT)) ||
           INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT))) {
-        fDelta /= 20;
+        delta /= 20;
       }
       switch (input.type_) {
         case IET_RELEASE:
-          fDelta *= 0;
+          delta *= 0;
           break;
         case IET_REPEAT: {
           if (INPUTFILTER->GetSecsHeld(input.device_i_) < 1.0f) {
-            fDelta *= 0;
+            delta *= 0;
           } else {
-            fDelta *= 10;
+            delta *= 10;
           }
           break;
         }
@@ -232,43 +232,42 @@ bool ScreenSyncOverlay::Input(const InputEventPlus& input) {
           break;
       }
       if (GAMESTATE->cur_song_ != nullptr) {
-        TimingData& sTiming = GAMESTATE->cur_song_->song_timing_;
+        TimingData& s_timing = GAMESTATE->cur_song_->song_timing_;
         BPMSegment* seg =
-            sTiming.GetBPMSegmentAtBeat(GAMESTATE->position_.song_beat_);
-        seg->SetBPS(seg->GetBPS() + fDelta);
-        const std::vector<Steps*>& vpSteps =
-            GAMESTATE->cur_song_->GetAllSteps();
-        for (Steps* s : vpSteps) {
-          TimingData& pTiming = s->timing_;
+            s_timing.GetBPMSegmentAtBeat(GAMESTATE->position_.song_beat_);
+        seg->SetBPS(seg->GetBPS() + delta);
+        const std::vector<Steps*>& steps = GAMESTATE->cur_song_->GetAllSteps();
+        for (Steps* s : steps) {
+          TimingData& p_timing = s->timing_;
           // Empty means it inherits song timing,
           // which has already been updated.
-          if (pTiming.empty()) {
+          if (p_timing.empty()) {
             continue;
           }
           float second =
-              sTiming.GetElapsedTimeFromBeat(GAMESTATE->position_.song_beat_);
-          seg = pTiming.GetBPMSegmentAtBeat(
-              pTiming.GetBeatFromElapsedTime(second));
-          seg->SetBPS(seg->GetBPS() + fDelta);
+              s_timing.GetElapsedTimeFromBeat(GAMESTATE->position_.song_beat_);
+          seg = p_timing.GetBPMSegmentAtBeat(
+              p_timing.GetBeatFromElapsedTime(second));
+          seg->SetBPS(seg->GetBPS() + delta);
         }
       }
     } break;
     case ChangeGlobalOffset:
     case ChangeSongOffset: {
-      float fDelta = bIncrease ? +0.02f : -0.02f;
+      float delta = increase ? +0.02f : -0.02f;
       if (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT)) ||
           INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT))) {
-        fDelta /= 20; /* 1ms */
+        delta /= 20; /* 1ms */
       }
       switch (input.type_) {
         case IET_RELEASE:
-          fDelta *= 0;
+          delta *= 0;
           break;
         case IET_REPEAT: {
           if (INPUTFILTER->GetSecsHeld(input.device_i_) < 1.0f) {
-            fDelta *= 0;
+            delta *= 0;
           } else {
-            fDelta *= 10;
+            delta *= 10;
           }
         }
         default:
@@ -278,23 +277,23 @@ bool ScreenSyncOverlay::Input(const InputEventPlus& input) {
       switch (a) {
         case ChangeGlobalOffset: {
           PREFSMAN->global_offset_seconds_.Set(
-              PREFSMAN->global_offset_seconds_ + fDelta);
+              PREFSMAN->global_offset_seconds_ + delta);
           break;
         }
 
         case ChangeSongOffset: {
           if (GAMESTATE->cur_song_ != nullptr) {
             GAMESTATE->cur_song_->song_timing_.beat0_offset_in_seconds_ +=
-                fDelta;
-            const std::vector<Steps*>& vpSteps =
+                delta;
+            const std::vector<Steps*>& steps =
                 GAMESTATE->cur_song_->GetAllSteps();
-            for (Steps* s : vpSteps) {
+            for (Steps* s : steps) {
               // Empty means it inherits song timing,
               // which has already been updated.
               if (s->timing_.empty()) {
                 continue;
               }
-              s->timing_.beat0_offset_in_seconds_ += fDelta;
+              s->timing_.beat0_offset_in_seconds_ += delta;
             }
           }
           break;

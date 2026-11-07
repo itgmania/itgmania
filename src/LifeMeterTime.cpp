@@ -49,9 +49,9 @@ static const float g_fTimeMeterSecondsChangeInit[] = {
 static_assert(ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent);
 
 static void TimeMeterSecondsChangeInit(
-    size_t /*ScoreEvent*/ i, std::string& sNameOut, float& defaultValueOut) {
-  sNameOut = "TimeMeterSecondsChange" + ScoreEventToString((ScoreEvent)i);
-  defaultValueOut = g_fTimeMeterSecondsChangeInit[i];
+    size_t /*ScoreEvent*/ i, std::string& name_out, float& default_value_out) {
+  name_out = "TimeMeterSecondsChange" + ScoreEventToString((ScoreEvent)i);
+  default_value_out = g_fTimeMeterSecondsChangeInit[i];
 }
 
 static Preference1D<float> g_fTimeMeterSecondsChange(
@@ -66,12 +66,12 @@ LifeMeterTime::LifeMeterTime() {
 LifeMeterTime::~LifeMeterTime() { delete stream_; }
 
 void LifeMeterTime::Load(
-    const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
-  LifeMeter::Load(pPlayerState, pPlayerStageStats);
+    const PlayerState* player_state, PlayerStageStats* player_stage_stats) {
+  LifeMeter::Load(player_state, player_stage_stats);
 
-  const std::string sType = "LifeMeterTime";
+  const std::string type = "LifeMeterTime";
 
-  spr_background_.Load(THEME->GetPathG(sType, "background"));
+  spr_background_.Load(THEME->GetPathG(type, "background"));
   spr_background_->SetName("Background");
   spr_background_->ZoomToWidth(METER_WIDTH);
   spr_background_->ZoomToHeight(METER_HEIGHT);
@@ -86,16 +86,16 @@ void LifeMeterTime::Load(
   this->AddChild(&quad_danger_glow_);
 
   stream_ = new StreamDisplay;
-  bool bExtra = GAMESTATE->IsAnExtraStage();
-  stream_->Load(bExtra ? "StreamDisplayExtra" : "StreamDisplay");
+  bool b_extra = GAMESTATE->IsAnExtraStage();
+  stream_->Load(b_extra ? "StreamDisplayExtra" : "StreamDisplay");
   this->AddChild(stream_);
 
-  std::string sExtra = bExtra ? "extra " : "";
-  spr_frame_.Load(THEME->GetPathG(sType, sExtra + "frame"));
+  std::string s_extra = b_extra ? "extra " : "";
+  spr_frame_.Load(THEME->GetPathG(type, s_extra + "frame"));
   spr_frame_->SetName("Frame");
   this->AddChild(spr_frame_);
 
-  sound_gain_life_.Load(THEME->GetPathS(sType, "GainLife"));
+  sound_gain_life_.Load(THEME->GetPathS(type, "GainLife"));
 }
 
 void LifeMeterTime::OnLoadSong() {
@@ -103,13 +103,13 @@ void LifeMeterTime::OnLoadSong() {
     return;
   }
 
-  float fOldLife = life_total_lost_seconds_;
-  float fGainSeconds = 0;
+  float old_life = life_total_lost_seconds_;
+  float gain_seconds = 0;
   if (GAMESTATE->IsCourseMode()) {
-    Course* pCourse = GAMESTATE->cur_course_;
-    ASSERT(pCourse != nullptr);
-    fGainSeconds =
-        pCourse->entries_[GAMESTATE->GetCourseSongIndex()].gain_seconds_;
+    Course* course = GAMESTATE->cur_course_;
+    ASSERT(course != nullptr);
+    gain_seconds =
+        course->entries_[GAMESTATE->GetCourseSongIndex()].gain_seconds_;
   } else {
     // Placeholderish, at least this way it won't crash when someone tries it
     // out in non-course mode. -Kyz
@@ -128,15 +128,15 @@ void LifeMeterTime::OnLoadSong() {
     // Calculate the amount of time to give for the player to need 80% W1.
     float gainable_score_time =
         scorable_things * g_fTimeMeterSecondsChange[SE_W1];
-    fGainSeconds = song_len - (gainable_score_time * INITIAL_VALUE);
+    gain_seconds = song_len - (gainable_score_time * INITIAL_VALUE);
   }
 
-  if (MIN_LIFE_TIME > fGainSeconds) {
-    fGainSeconds = MIN_LIFE_TIME;
+  if (MIN_LIFE_TIME > gain_seconds) {
+    gain_seconds = MIN_LIFE_TIME;
   }
-  life_total_gained_seconds_ += fGainSeconds;
+  life_total_gained_seconds_ += gain_seconds;
   sound_gain_life_.Play(false);
-  SendLifeChangedMessage(fOldLife, TapNoteScore_Invalid, HoldNoteScore_Invalid);
+  SendLifeChangedMessage(old_life, TapNoteScore_Invalid, HoldNoteScore_Invalid);
 }
 
 void LifeMeterTime::ChangeLife(TapNoteScore tns) {
@@ -144,42 +144,42 @@ void LifeMeterTime::ChangeLife(TapNoteScore tns) {
     return;
   }
 
-  float fMeterChange = 0;
+  float meter_change = 0;
   switch (tns) {
     default:
       FAIL_M(ssprintf("Invalid TapNoteScore: %i", tns));
     case TNS_W1:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_W1];
+      meter_change = g_fTimeMeterSecondsChange[SE_W1];
       break;
     case TNS_W2:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_W2];
+      meter_change = g_fTimeMeterSecondsChange[SE_W2];
       break;
     case TNS_W3:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_W3];
+      meter_change = g_fTimeMeterSecondsChange[SE_W3];
       break;
     case TNS_W4:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_W4];
+      meter_change = g_fTimeMeterSecondsChange[SE_W4];
       break;
     case TNS_W5:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_W5];
+      meter_change = g_fTimeMeterSecondsChange[SE_W5];
       break;
     case TNS_Miss:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_Miss];
+      meter_change = g_fTimeMeterSecondsChange[SE_Miss];
       break;
     case TNS_HitMine:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_HitMine];
+      meter_change = g_fTimeMeterSecondsChange[SE_HitMine];
       break;
     case TNS_CheckpointHit:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_CheckpointHit];
+      meter_change = g_fTimeMeterSecondsChange[SE_CheckpointHit];
       break;
     case TNS_CheckpointMiss:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_CheckpointMiss];
+      meter_change = g_fTimeMeterSecondsChange[SE_CheckpointMiss];
       break;
   }
 
-  float fOldLife = life_total_lost_seconds_;
-  life_total_lost_seconds_ -= fMeterChange;
-  SendLifeChangedMessage(fOldLife, tns, HoldNoteScore_Invalid);
+  float old_life = life_total_lost_seconds_;
+  life_total_lost_seconds_ -= meter_change;
+  SendLifeChangedMessage(old_life, tns, HoldNoteScore_Invalid);
 }
 
 void LifeMeterTime::ChangeLife(HoldNoteScore hns, TapNoteScore tns) {
@@ -187,24 +187,24 @@ void LifeMeterTime::ChangeLife(HoldNoteScore hns, TapNoteScore tns) {
     return;
   }
 
-  float fMeterChange = 0;
+  float meter_change = 0;
   switch (hns) {
     default:
       FAIL_M(ssprintf("Invalid HoldNoteScore: %i", hns));
     case HNS_Held:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_Held];
+      meter_change = g_fTimeMeterSecondsChange[SE_Held];
       break;
     case HNS_LetGo:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_LetGo];
+      meter_change = g_fTimeMeterSecondsChange[SE_LetGo];
       break;
     case HNS_Missed:
-      fMeterChange = g_fTimeMeterSecondsChange[SE_Missed];
+      meter_change = g_fTimeMeterSecondsChange[SE_Missed];
       break;
   }
 
-  float fOldLife = life_total_lost_seconds_;
-  life_total_lost_seconds_ -= fMeterChange;
-  SendLifeChangedMessage(fOldLife, tns, hns);
+  float old_life = life_total_lost_seconds_;
+  life_total_lost_seconds_ -= meter_change;
+  SendLifeChangedMessage(old_life, tns, hns);
 }
 
 void LifeMeterTime::ChangeLife(float delta) {
@@ -224,13 +224,13 @@ void LifeMeterTime::HandleTapScoreNone() {
 }
 
 void LifeMeterTime::SendLifeChangedMessage(
-    float fOldLife, TapNoteScore tns, HoldNoteScore hns) {
+    float old_life, TapNoteScore tns, HoldNoteScore hns) {
   Message msg("LifeChanged");
   msg.SetParam("Player", player_state_->player_number_);
   msg.SetParam("TapNoteScore", LuaReference::Create(tns));
   msg.SetParam("HoldNoteScore", LuaReference::Create(hns));
-  msg.SetParam("OldLife", fOldLife);
-  msg.SetParam("Difference", fOldLife - life_total_lost_seconds_);
+  msg.SetParam("OldLife", old_life);
+  msg.SetParam("Difference", old_life - life_total_lost_seconds_);
   msg.SetParam("LifeMeter", LuaReference::CreateFromPush(*this));
   MESSAGEMAN->Broadcast(msg);
 }
@@ -243,13 +243,13 @@ bool LifeMeterTime::IsHot() const { return false; }
 
 bool LifeMeterTime::IsFailing() const { return GetLifeSeconds() <= 0; }
 
-void LifeMeterTime::Update(float fDeltaTime) {
+void LifeMeterTime::Update(float delta_time) {
   // update current stage stats so ScoreDisplayLifeTime can show the right thing
-  float fSecs = GetLifeSeconds();
-  fSecs = std::max(0.0f, fSecs);
-  player_stage_stats_->life_remaining_seconds_ = fSecs;
+  float secs = GetLifeSeconds();
+  secs = std::max(0.0f, secs);
+  player_stage_stats_->life_remaining_seconds_ = secs;
 
-  LifeMeter::Update(fDeltaTime);
+  LifeMeter::Update(delta_time);
 
   stream_->SetPercent(GetLife());
   stream_->SetPassingAlpha(0);
@@ -263,9 +263,9 @@ void LifeMeterTime::Update(float fDeltaTime) {
 }
 
 float LifeMeterTime::GetLife() const {
-  float fPercent = GetLifeSeconds() / FULL_LIFE_SECONDS;
-  rage_clamp(fPercent, 0, 1);
-  return fPercent;
+  float percent = GetLifeSeconds() / FULL_LIFE_SECONDS;
+  rage_clamp(percent, 0, 1);
+  return percent;
 }
 
 float LifeMeterTime::GetLifeSeconds() const {

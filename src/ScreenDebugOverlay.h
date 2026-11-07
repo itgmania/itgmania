@@ -11,8 +11,8 @@
 #include "Quad.h"
 #include "Screen.h"
 
-void ChangeVolume(float fDelta);
-void ChangeVisualDelay(float fDelta);
+void ChangeVolume(float delta);
+void ChangeVisualDelay(float delta);
 
 class ScreenDebugOverlay : public Screen {
  public:
@@ -21,7 +21,7 @@ class ScreenDebugOverlay : public Screen {
 
   bool Input(const InputEventPlus& input);
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
  private:
   void UpdateText();

@@ -3,10 +3,10 @@
 #include "RageSurface_Load_STB.h"
 
 RageSurfaceUtils::OpenResult RageSurface_Load_GIF(
-    const std::string& sPath, RageSurface*& ret, bool bHeaderOnly,
+    const std::string& path, RageSurface*& ret, bool header_only,
     std::string& error) {
   return RageSurface_Load_STB(
-      sPath, ret, bHeaderOnly, error, RageSurfaceSTBFormat::GIF);
+      path, ret, header_only, error, RageSurfaceSTBFormat::GIF);
 }
 
 /*

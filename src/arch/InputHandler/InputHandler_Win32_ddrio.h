@@ -69,7 +69,7 @@ class InputHandler_Win32_ddrio : public InputHandler {
   ~InputHandler_Win32_ddrio();
 
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   RageThread input_thread_;
@@ -80,8 +80,8 @@ class InputHandler_Win32_ddrio : public InputHandler {
   static int InputThread_Start(void* p);
   void InputThreadMain();
 
-  void PushInputState(uint32_t newInput);
-  void PushLightState(LightsState newLS);
+  void PushInputState(uint32_t new_input);
+  void PushLightState(LightsState new_ls);
 };
 
 /*

@@ -18,15 +18,15 @@ class WorkoutGraph : public ActorFrame {
   virtual WorkoutGraph* Copy() const;
 
   void Load();
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   void SetFromCurrentWorkout();
-  void SetFromGameStateAndHighlightSong(int iSongIndex);
+  void SetFromGameStateAndHighlightSong(int song_index);
 
   // Lua
   void PushSelf(lua_State* L);
 
  protected:
-  void SetInternal(int iNumSongsToShowForCurrentStage);
+  void SetInternal(int num_songs_to_show_for_current_stage);
 
   Sprite spr_empty_;
   std::vector<Sprite*> bars_;

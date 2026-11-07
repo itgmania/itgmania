@@ -22,33 +22,33 @@ LoadingWindow* LoadingWindow::Create() {
 #endif
   // Don't load nullptr by default.
   const std::string drivers = "win32,macosx,gtk";
-  std::vector<std::string> DriversToTry;
-  split(drivers, ",", DriversToTry, true);
+  std::vector<std::string> drivers_to_try;
+  split(drivers, ",", drivers_to_try, true);
 
-  ASSERT(DriversToTry.size() != 0);
+  ASSERT(drivers_to_try.size() != 0);
 
-  std::string Driver;
+  std::string driver;
   LoadingWindow* ret = nullptr;
 
-  for (unsigned i = 0; ret == nullptr && i < DriversToTry.size(); ++i) {
-    Driver = DriversToTry[i];
+  for (unsigned i = 0; ret == nullptr && i < drivers_to_try.size(); ++i) {
+    driver = drivers_to_try[i];
 
 #ifdef USE_LOADING_WINDOW_MACOSX
-    if (!CompareNoCase(DriversToTry[i], "MacOSX")) {
+    if (!CompareNoCase(drivers_to_try[i], "MacOSX")) {
       ret = new LoadingWindow_MacOSX;
     }
 #endif
 #ifdef USE_LOADING_WINDOW_GTK
-    if (!CompareNoCase(DriversToTry[i], "Gtk")) {
+    if (!CompareNoCase(drivers_to_try[i], "Gtk")) {
       ret = new LoadingWindow_Gtk;
     }
 #endif
 #ifdef USE_LOADING_WINDOW_WIN32
-    if (!CompareNoCase(DriversToTry[i], "Win32")) {
+    if (!CompareNoCase(drivers_to_try[i], "Win32")) {
       ret = new LoadingWindow_Win32;
     }
 #endif
-    if (!CompareNoCase(DriversToTry[i], "Null")) {
+    if (!CompareNoCase(drivers_to_try[i], "Null")) {
       ret = new LoadingWindow_Null;
     }
 
@@ -56,17 +56,17 @@ LoadingWindow* LoadingWindow::Create() {
       continue;
     }
 
-    std::string sError = ret->Init();
-    if (sError != "") {
+    std::string error = ret->Init();
+    if (error != "") {
       LOG->Info(
-          "Couldn't load driver %s: %s", DriversToTry[i].c_str(),
-          sError.c_str());
+          "Couldn't load driver %s: %s", drivers_to_try[i].c_str(),
+          error.c_str());
       RageUtil::SafeDelete(ret);
     }
   }
 
   if (ret) {
-    LOG->Info("Loading window: %s", Driver.c_str());
+    LOG->Info("Loading window: %s", driver.c_str());
 
     ret->SetIndeterminate(true);
   }

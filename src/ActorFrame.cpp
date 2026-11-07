@@ -74,8 +74,8 @@ ActorFrame::ActorFrame(const ActorFrame& cpy) : Actor(cpy) {
    * the current order of m_SubActors. */
   if (delete_children_) {
     for (unsigned i = 0; i < cpy.sub_actors_.size(); ++i) {
-      Actor* pActor = cpy.sub_actors_[i]->Copy();
-      this->AddChild(pActor);
+      Actor* actor = cpy.sub_actors_[i]->Copy();
+      this->AddChild(actor);
     }
   }
 }
@@ -86,88 +86,87 @@ void ActorFrame::InitState() {
   Actor::InitState();
 }
 
-void ActorFrame::LoadFromNode(const XNode* pNode) {
+void ActorFrame::LoadFromNode(const XNode* node) {
   if (AutoLoadChildren()) {
-    LoadChildrenFromNode(pNode);
+    LoadChildrenFromNode(node);
   }
 
-  Actor::LoadFromNode(pNode);
+  Actor::LoadFromNode(node);
 
-  pNode->GetAttrValue("UpdateRate", update_rate_);
-  pNode->GetAttrValue("FOV", fov_);
-  pNode->GetAttrValue("VanishX", vanish_x_);
-  pNode->GetAttrValue("VanishY", vanish_y_);
-  override_lighting_ = pNode->GetAttrValue("Lighting", lighting_);
+  node->GetAttrValue("UpdateRate", update_rate_);
+  node->GetAttrValue("FOV", fov_);
+  node->GetAttrValue("VanishX", vanish_x_);
+  node->GetAttrValue("VanishY", vanish_y_);
+  override_lighting_ = node->GetAttrValue("Lighting", lighting_);
   // new lighting values (only ambient color seems to work?) -aj
-  std::string sTemp1, sTemp2, sTemp3;
-  pNode->GetAttrValue("AmbientColor", sTemp1);
-  ambient_color_.FromString(sTemp1);
-  pNode->GetAttrValue("DiffuseColor", sTemp2);
-  diffuse_color_.FromString(sTemp2);
-  pNode->GetAttrValue("SpecularColor", sTemp3);
-  specular_color_.FromString(sTemp3);
+  std::string temp1, temp2, temp3;
+  node->GetAttrValue("AmbientColor", temp1);
+  ambient_color_.FromString(temp1);
+  node->GetAttrValue("DiffuseColor", temp2);
+  diffuse_color_.FromString(temp2);
+  node->GetAttrValue("SpecularColor", temp3);
+  specular_color_.FromString(temp3);
   // Values need to be converted into a RageVector3, so more work needs to be
   // done...
   // pNode->GetAttrValue( "LightDirection", m_lightDirection );
 }
 
-void ActorFrame::LoadChildrenFromNode(const XNode* pNode) {
+void ActorFrame::LoadChildrenFromNode(const XNode* node) {
   // Shouldn't be calling this unless we're going to delete our children.
   ASSERT(delete_children_);
 
   // Load children
-  const XNode* pChildren = pNode->GetChild("children");
-  bool bArrayOnly = false;
-  if (pChildren == nullptr) {
-    bArrayOnly = true;
-    pChildren = pNode;
+  const XNode* children = node->GetChild("children");
+  bool array_only = false;
+  if (children == nullptr) {
+    array_only = true;
+    children = node;
   }
 
-  FOREACH_CONST_Child(pChildren, pChild) {
-    if (bArrayOnly && !IsAnInt(pChild->GetName())) {
+  FOREACH_CONST_Child(children, child) {
+    if (array_only && !IsAnInt(child->GetName())) {
       continue;
     }
 
-    Actor* pChildActor = ActorUtil::LoadFromNode(pChild, this);
-    if (pChildActor) {
-      AddChild(pChildActor);
+    Actor* child_actor = ActorUtil::LoadFromNode(child, this);
+    if (child_actor) {
+      AddChild(child_actor);
     }
   }
   SortByDrawOrder();
 }
 
-void ActorFrame::AddChild(Actor* pActor) {
+void ActorFrame::AddChild(Actor* actor) {
 #ifdef DEBUG
   // check that this Actor isn't already added.
   std::vector<Actor*>::iterator iter =
-      find(sub_actors_.begin(), sub_actors_.end(), pActor);
+      find(sub_actors_.begin(), sub_actors_.end(), actor);
   if (iter != sub_actors_.end()) {
     Dialog::OK(ssprintf(
         "Actor \"%s\" adds child \"%s\" more than once", GetLineage().c_str(),
-        pActor->GetName().c_str()));
+        actor->GetName().c_str()));
   }
 #endif
 
-  ASSERT(pActor != nullptr);
+  ASSERT(actor != nullptr);
   ASSERT(
-      reinterpret_cast<uintptr_t>(pActor) !=
-      static_cast<uintptr_t>(0xC0000005));
-  sub_actors_.push_back(pActor);
+      reinterpret_cast<uintptr_t>(actor) != static_cast<uintptr_t>(0xC0000005));
+  sub_actors_.push_back(actor);
 
-  pActor->SetParent(this);
+  actor->SetParent(this);
 }
 
-void ActorFrame::RemoveChild(Actor* pActor) {
+void ActorFrame::RemoveChild(Actor* actor) {
   std::vector<Actor*>::iterator iter =
-      find(sub_actors_.begin(), sub_actors_.end(), pActor);
+      find(sub_actors_.begin(), sub_actors_.end(), actor);
   if (iter != sub_actors_.end()) {
     sub_actors_.erase(iter);
   }
 }
 
-Actor* ActorFrame::GetChild(const std::string& sName) {
+Actor* ActorFrame::GetChild(const std::string& name) {
   for (Actor* a : sub_actors_) {
-    if (a->GetName() == sName || a->IsAlias(sName)) {
+    if (a->GetName() == name || a->IsAlias(name)) {
       return a;
     }
   }
@@ -176,15 +175,15 @@ Actor* ActorFrame::GetChild(const std::string& sName) {
 
 void ActorFrame::RemoveAllChildren() { sub_actors_.clear(); }
 
-void ActorFrame::MoveToTail(Actor* pActor) {
+void ActorFrame::MoveToTail(Actor* actor) {
   std::vector<Actor*>::iterator iter =
-      find(sub_actors_.begin(), sub_actors_.end(), pActor);
+      find(sub_actors_.begin(), sub_actors_.end(), actor);
   if (iter == sub_actors_.end()) {  // didn't find
     FAIL_M("Nonexistent actor");
   }
 
   sub_actors_.erase(iter);
-  sub_actors_.push_back(pActor);
+  sub_actors_.push_back(actor);
 }
 
 void ActorFrame::BeginDraw() {
@@ -224,8 +223,8 @@ void ActorFrame::DrawPrimitives() {
       return;
     }
     this->PushSelf(L);
-    std::string Error = "Error running DrawFunction: ";
-    LuaHelpers::RunScriptOnStack(L, Error, 1, 0, true);  // 1 arg, 0 results
+    std::string error = "Error running DrawFunction: ";
+    LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);  // 1 arg, 0 results
     LUA->Release(L);
     return;
   }
@@ -371,10 +370,10 @@ void ActorFrame::PushChildrenTable(lua_State* L) {
   }
 }
 
-void ActorFrame::PushChildTable(lua_State* L, const std::string& sName) {
+void ActorFrame::PushChildTable(lua_State* L, const std::string& name) {
   int found = 0;
   for (Actor* a : sub_actors_) {
-    if (a->GetName() == sName || a->IsAlias(sName)) {
+    if (a->GetName() == name || a->IsAlias(name)) {
       if (found == 0) {
         a->PushSelf(L);
       } else if (found == 1) {
@@ -391,55 +390,55 @@ void ActorFrame::PushChildTable(lua_State* L, const std::string& sName) {
 }
 
 void ActorFrame::PlayCommandOnChildren(
-    const std::string& sCommandName, const LuaReference* pParamTable) {
-  const apActorCommands* pCmd = GetCommand(sCommandName);
-  if (pCmd != nullptr) {
-    RunCommandsOnChildren(*pCmd, pParamTable);
+    const std::string& command_name, const LuaReference* param_table) {
+  const apActorCommands* cmd = GetCommand(command_name);
+  if (cmd != nullptr) {
+    RunCommandsOnChildren(*cmd, param_table);
   }
 }
 
 void ActorFrame::PlayCommandOnLeaves(
-    const std::string& sCommandName, const LuaReference* pParamTable) {
-  const apActorCommands* pCmd = GetCommand(sCommandName);
-  if (pCmd != nullptr) {
-    RunCommandsOnLeaves(**pCmd, pParamTable);
+    const std::string& command_name, const LuaReference* param_table) {
+  const apActorCommands* cmd = GetCommand(command_name);
+  if (cmd != nullptr) {
+    RunCommandsOnLeaves(**cmd, param_table);
   }
 }
 
 void ActorFrame::RunCommandsRecursively(
-    const LuaReference& cmds, const LuaReference* pParamTable) {
+    const LuaReference& cmds, const LuaReference* param_table) {
   for (unsigned i = 0; i < sub_actors_.size(); i++) {
-    sub_actors_[i]->RunCommandsRecursively(cmds, pParamTable);
+    sub_actors_[i]->RunCommandsRecursively(cmds, param_table);
   }
-  Actor::RunCommandsRecursively(cmds, pParamTable);
+  Actor::RunCommandsRecursively(cmds, param_table);
 }
 
 void ActorFrame::RunCommandsOnChildren(
-    const LuaReference& cmds, const LuaReference* pParamTable) {
+    const LuaReference& cmds, const LuaReference* param_table) {
   for (unsigned i = 0; i < sub_actors_.size(); i++) {
-    sub_actors_[i]->RunCommands(cmds, pParamTable);
+    sub_actors_[i]->RunCommands(cmds, param_table);
   }
 }
 
 void ActorFrame::RunCommandsOnLeaves(
-    const LuaReference& cmds, const LuaReference* pParamTable) {
+    const LuaReference& cmds, const LuaReference* param_table) {
   for (unsigned i = 0; i < sub_actors_.size(); i++) {
-    sub_actors_[i]->RunCommandsOnLeaves(cmds, pParamTable);
+    sub_actors_[i]->RunCommandsOnLeaves(cmds, param_table);
   }
 }
 
-void ActorFrame::UpdateInternal(float fDeltaTime) {
+void ActorFrame::UpdateInternal(float delta_time) {
   //	LOG->Trace( "ActorFrame::Update( %f )", fDeltaTime );
 
-  fDeltaTime *= update_rate_;
+  delta_time *= update_rate_;
 
-  Actor::UpdateInternal(fDeltaTime);
+  Actor::UpdateInternal(delta_time);
 
   // update all sub-Actors
   for (std::vector<Actor*>::iterator it = sub_actors_.begin();
        it != sub_actors_.end(); it++) {
-    Actor* pActor = *it;
-    pActor->Update(fDeltaTime);
+    Actor* actor = *it;
+    actor->Update(delta_time);
   }
 
   if (unlikely(!update_function_.IsNil())) {
@@ -451,9 +450,9 @@ void ActorFrame::UpdateInternal(float fDeltaTime) {
       return;
     }
     this->PushSelf(L);
-    lua_pushnumber(L, fDeltaTime);
-    std::string Error = "Error running UpdateFunction: ";
-    LuaHelpers::RunScriptOnStack(L, Error, 2, 0, true);  // 1 args, 0 results
+    lua_pushnumber(L, delta_time);
+    std::string error = "Error running UpdateFunction: ";
+    LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);  // 1 args, 0 results
     LUA->Release(L);
   }
 }
@@ -483,8 +482,8 @@ PropagateActorFrameCommand(FinishTweening)
   float m = Actor::GetTweenTimeLeft();
 
   for (unsigned i = 0; i < sub_actors_.size(); i++) {
-    const Actor* pActor = sub_actors_[i];
-    m = std::max(m, hibernate_seconds_left_ + pActor->GetTweenTimeLeft());
+    const Actor* actor = sub_actors_[i];
+    m = std::max(m, hibernate_seconds_left_ + actor->GetTweenTimeLeft());
   }
 
   return m;
@@ -507,11 +506,11 @@ void ActorFrame::DeleteAllChildren() {
 }
 
 void ActorFrame::RunCommands(
-    const LuaReference& cmds, const LuaReference* pParamTable) {
+    const LuaReference& cmds, const LuaReference* param_table) {
   if (propagate_commands_) {
-    RunCommandsOnChildren(cmds, pParamTable);
+    RunCommandsOnChildren(cmds, param_table);
   } else {
-    Actor::RunCommands(cmds, pParamTable);
+    Actor::RunCommands(cmds, param_table);
   }
 }
 
@@ -527,8 +526,8 @@ void ActorFrame::HandleMessage(const Message& msg) {
   }
 
   for (unsigned i = 0; i < sub_actors_.size(); i++) {
-    Actor* pActor = sub_actors_[i];
-    pActor->HandleMessage(msg);
+    Actor* actor = sub_actors_[i];
+    actor->HandleMessage(msg);
   }
 }
 
@@ -559,14 +558,14 @@ class LunaActorFrame : public Luna<ActorFrame> {
   static int RunCommandsOnChildren(T* p, lua_State* L) {
     luaL_checktype(L, 1, LUA_TFUNCTION);
     lua_pushvalue(L, 2);
-    LuaReference ParamTable;
-    ParamTable.SetFromStack(L);
+    LuaReference param_table;
+    param_table.SetFromStack(L);
 
     lua_pushvalue(L, 1);
     LuaReference cmds;
     cmds.SetFromStack(L);
 
-    p->RunCommandsOnChildren(cmds, &ParamTable);
+    p->RunCommandsOnChildren(cmds, &param_table);
     COMMON_RETURN_SELF;
   }
   static int propagate(T* p, lua_State* L) {
@@ -682,19 +681,19 @@ class LunaActorFrame : public Luna<ActorFrame> {
     if (coords.size() != 3) {
       // error
     }
-    RageVector3 vTmp = RageVector3(coords[0], coords[1], coords[2]);
-    p->SetLightDirection(vTmp);
+    RageVector3 tmp = RageVector3(coords[0], coords[1], coords[2]);
+    p->SetLightDirection(tmp);
     COMMON_RETURN_SELF;
   }
 
   static int AddChildFromPath(T* p, lua_State* L) {
     // this one is tricky, we need to get an Actor from Lua.
-    Actor* pActor = ActorUtil::MakeActor(SArg(1));
-    if (pActor == nullptr) {
+    Actor* actor = ActorUtil::MakeActor(SArg(1));
+    if (actor == nullptr) {
       lua_pushboolean(L, 0);
       return 1;
     }
-    p->AddChild(pActor);
+    p->AddChild(actor);
     lua_pushboolean(L, 1);
     return 1;
   }

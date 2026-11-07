@@ -53,8 +53,8 @@ bool ScreenAttract::Input(const InputEventPlus& input) {
   return ScreenWithMenuElements::Input(input) || handled;
 }
 
-void ScreenAttract::SetAttractVolume(bool bInAttract) {
-  if (bInAttract) {
+void ScreenAttract::SetAttractVolume(bool in_attract) {
+  if (in_attract) {
     if (GAMESTATE->IsTimeToPlayAttractSounds()) {
       SOUNDMAN->SetVolumeOfNonCriticalSounds(
           g_fSoundVolumeAttract);  // unmute attract sounds
@@ -66,15 +66,15 @@ void ScreenAttract::SetAttractVolume(bool bInAttract) {
   }
 }
 
-void ScreenAttract::Cancel(ScreenMessage smSendWhenDone) {
+void ScreenAttract::Cancel(ScreenMessage send_when_done) {
   LOG->Trace("ScreenAttract::AttractInput: begin fading to START_SCREEN");
 
   SetAttractVolume(false);  // unmute attract sounds
-  ScreenWithMenuElements::Cancel(smSendWhenDone);
+  ScreenWithMenuElements::Cancel(send_when_done);
 }
 
 bool ScreenAttract::AttractInput(
-    const InputEventPlus& input, ScreenWithMenuElements* pScreen) {
+    const InputEventPlus& input, ScreenWithMenuElements* screen) {
   if (input.type_ != IET_FIRST_PRESS) {
     return false;  // don't care
   }
@@ -94,7 +94,7 @@ bool ScreenAttract::AttractInput(
           GAMESTATE->GetNumSidesJoined() == 0) {
         return true;
       }
-      if (pScreen->IsTransitioning()) {
+      if (screen->IsTransitioning()) {
         return false;
       }
 
@@ -104,13 +104,13 @@ bool ScreenAttract::AttractInput(
         SCREENMAN->PlayStartSound();
       }
 
-      pScreen->Cancel(SM_GoToStartScreen);
+      screen->Cancel(SM_GoToStartScreen);
       return true;
     default:
       break;
   }
 
-  if (pScreen->IsTransitioning()) {
+  if (screen->IsTransitioning()) {
     return false;
   }
 
@@ -128,39 +128,39 @@ void ScreenAttract::StartPlayingMusic() {
   ScreenWithMenuElements::StartPlayingMusic();
 }
 
-void ScreenAttract::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_MenuTimer || SM == SM_BeginFadingOut) {
+void ScreenAttract::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_MenuTimer || sm == SM_BeginFadingOut) {
     if (!IsTransitioning()) {
       StartTransitioningScreen(SM_GoToNextScreen);
     }
-  } else if (SM == SM_GoToStartScreen) {
+  } else if (sm == SM_GoToStartScreen) {
     GoToStartScreen(name_);
-  } else if (SM == SM_GoToNextScreen) {
+  } else if (sm == SM_GoToNextScreen) {
     /* Look at the def of the screen we're going to; if it has a music theme
      * element and it's the same as the one we're playing now, don't stop.
      * However, if we're going to interrupt it when we fade in, stop the old
      * music before we fade out. */
-    bool bMusicChanging = false;
+    bool music_changing = false;
     if (PLAY_MUSIC) {
-      bMusicChanging = THEME->GetPathS(name_, "music") !=
+      music_changing = THEME->GetPathS(name_, "music") !=
                        THEME->GetPathS(
                            GetNextScreenName(), "music",
                            true);  // GetPath optional on the next screen
                                    // because it may not have music.
     }
 
-    if (bMusicChanging) {
+    if (music_changing) {
       SOUND->StopMusic();
     }
-  } else if (SM == SM_LoseFocus) {
+  } else if (sm == SM_LoseFocus) {
     ScreenAttract::SetAttractVolume(false);
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
-void ScreenAttract::GoToStartScreen(std::string sScreenName) {
-  SCREENMAN->SetNewScreen(START_SCREEN(sScreenName));
+void ScreenAttract::GoToStartScreen(std::string screen_name) {
+  SCREENMAN->SetNewScreen(START_SCREEN(screen_name));
 }
 
 // lua start

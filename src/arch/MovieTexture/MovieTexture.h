@@ -11,16 +11,16 @@ void ForceToAscii(std::string& str);
 
 class RageMovieTexture : public RageTexture {
  public:
-  static RageMovieTexture* Create(RageTextureID ID);
+  static RageMovieTexture* Create(RageTextureID id);
 
-  RageMovieTexture(RageTextureID ID) : RageTexture(ID) {}
+  RageMovieTexture(RageTextureID id) : RageTexture(id) {}
   virtual ~RageMovieTexture() {}
   virtual void Update(float /* fDeltaTime */) {}
 
   virtual void Reload() = 0;
 
-  virtual void SetPosition(float fSeconds) = 0;
-  virtual void SetPlaybackRate(float fRate) = 0;
+  virtual void SetPosition(float seconds) = 0;
+  virtual void SetPlaybackRate(float rate) = 0;
   virtual void SetLooping(bool = true) {}
 
   bool IsAMovie() const { return true; }
@@ -32,7 +32,7 @@ class RageMovieTexture : public RageTexture {
 class RageMovieTextureDriver : public RageDriver {
  public:
   virtual ~RageMovieTextureDriver() {}
-  virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError) = 0;
+  virtual RageMovieTexture* Create(RageTextureID id, std::string& error) = 0;
   static DriverList driver_list_;
 };
 

@@ -15,13 +15,13 @@ LightsDriver_snek::LightsDriver_snek()
 
 LightsDriver_snek::~LightsDriver_snek() {}
 
-void LightsDriver_snek::SetBuffer(int index, bool lightState) {
+void LightsDriver_snek::SetBuffer(int index, bool light_state) {
   // the first byte is the report ID, so we offset it here to adjust.
   uint8_t index_offset = index + 1;
 
   // each index in the array represents a single light,
   // the light will turn on for any value that isn't 0x00
-  uint8_t val = lightState ? 0xFF : 0x00;
+  uint8_t val = light_state ? 0xFF : 0x00;
 
   // ensure report ID is set.
   output_buffer_[0] = SNEK_REPORT_ID;

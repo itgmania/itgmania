@@ -16,16 +16,16 @@ void fill_frame_index_cache(madlib_t* mad);
 
 class RageSoundReader_MP3 : public RageSoundReader_FileReader {
  public:
-  OpenResult Open(RageFileBasic* pFile);
+  OpenResult Open(RageFileBasic* file);
   void Close();
   int GetLength() const { return GetLengthConst(false); }
   int GetLength_Fast() const { return GetLengthConst(true); }
-  int SetPosition(int iSample);
-  int Read(float* pBuf, int iFrames);
+  int SetPosition(int sample);
+  int Read(float* buf, int frames);
   unsigned GetNumChannels() const { return channels_; }
   int GetSampleRate() const { return sample_rate_; }
   int GetNextSourceFrame() const;
-  bool SetProperty(const std::string& sProperty, float fValue);
+  bool SetProperty(const std::string& property, float value);
 
   RageSoundReader_MP3();
   ~RageSoundReader_MP3();
@@ -40,8 +40,8 @@ class RageSoundReader_MP3 : public RageSoundReader_FileReader {
   madlib_t* mad_;
 
   bool MADLIB_rewind();
-  int SetPosition_hard(int iSample);
-  int SetPosition_estimate(int iSample);
+  int SetPosition_hard(int sample);
+  int SetPosition_estimate(int sample);
 
   int fill_buffer();
   int do_mad_frame_decode(bool headers_only = false);

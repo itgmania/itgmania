@@ -15,10 +15,10 @@ class ScoreDisplayLifeTime : public ScoreDisplay {
   ScoreDisplayLifeTime();
 
   virtual void Init(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
   virtual void OnLoadSong();
   virtual void OnJudgment(TapNoteScore score);

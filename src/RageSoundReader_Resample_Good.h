@@ -15,20 +15,20 @@ class RageSoundResampler_Polyphase;
 class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
  public:
   /* We own source. */
-  RageSoundReader_Resample_Good(RageSoundReader* pSource, int iSampleRate);
+  RageSoundReader_Resample_Good(RageSoundReader* source, int sample_rate);
   RageSoundReader_Resample_Good(const RageSoundReader_Resample_Good& cpy);
-  int SetPosition(int iFrame);
-  int Read(float* pBuf, int iFrames);
+  int SetPosition(int frame);
+  int Read(float* buf, int frames);
   virtual ~RageSoundReader_Resample_Good();
   RageSoundReader_Resample_Good* Copy() const;
-  bool SetProperty(const std::string& sProperty, float fValue);
+  bool SetProperty(const std::string& property, float value);
   int GetNextSourceFrame() const;
   float GetStreamToSourceRatio() const;
 
   /**
    * @brief Change the rate of a sound without changing the sample rate.
    * @param fRatio the ratio for changing. */
-  void SetRate(float fRatio);
+  void SetRate(float ratio);
 
   /**
    * @brief Retrieve the exact rate.
@@ -40,7 +40,7 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
  private:
   void Reset();
   void ReopenResampler();
-  void GetFactors(int& iDownFactor, int& iUpFactor) const;
+  void GetFactors(int& down_factor, int& up_factor) const;
 
   std::vector<RageSoundResampler_Polyphase*> resamplers_; /* one per channel */
 

@@ -23,8 +23,8 @@
 #include "archutils/Common/PthreadHelpers.h"
 #endif
 
-void ThreadImpl_Pthreads::Halt(bool Kill) {
-  (void)Kill;
+void ThreadImpl_Pthreads::Halt(bool kill) {
+  (void)kill;
   /* Linux:
    * Send a SIGSTOP to the thread. If we send a SIGKILL, pthreads will
    * "helpfully" propagate it to the other threads, and we'll get killed, too.
@@ -46,9 +46,9 @@ int ThreadImpl_Pthreads::Wait() {
   int ret = pthread_join(thread_, (void**)&val);
   ASSERT_M(ret == 0, ssprintf("pthread_join: %s", strerror(ret)));
 
-  int iRet = *val;
+  int i_ret = *val;
   delete val;
-  return iRet;
+  return i_ret;
 }
 
 ThreadImpl* MakeThisThread() {
@@ -60,26 +60,26 @@ ThreadImpl* MakeThisThread() {
   return thread;
 }
 
-static void* StartThread(void* pData) {
-  ThreadImpl_Pthreads* pThis = (ThreadImpl_Pthreads*)pData;
+static void* StartThread(void* data) {
+  ThreadImpl_Pthreads* p_this = (ThreadImpl_Pthreads*)data;
 
-  pThis->thread_handle_ = GetCurrentThreadId();
-  *pThis->thread_id_ = pThis->thread_handle_;
+  p_this->thread_handle_ = GetCurrentThreadId();
+  *p_this->thread_id_ = p_this->thread_handle_;
 
   // Tell MakeThread that we've set thread_id_, so it's safe to return.
-  pThis->start_finished_sem_->Post();
+  p_this->start_finished_sem_->Post();
 
-  int iRet = pThis->func_(pThis->data_);
+  int ret = p_this->func_(p_this->data_);
 
-  return new int(iRet);
+  return new int(ret);
 }
 
 ThreadImpl* MakeThread(
-    int (*pFunc)(void* pData), void* pData, uint64_t* piThreadID) {
+    int (*func)(void* data), void* data, uint64_t* thread_id) {
   ThreadImpl_Pthreads* thread = new ThreadImpl_Pthreads;
-  thread->func_ = pFunc;
-  thread->data_ = pData;
-  thread->thread_id_ = piThreadID;
+  thread->func_ = func;
+  thread->data_ = data;
+  thread->thread_id_ = thread_id;
 
   thread->start_finished_sem_ = new SemaImpl_Pthreads(0);
 
@@ -92,31 +92,31 @@ ThreadImpl* MakeThread(
   delete thread->start_finished_sem_;
 
   // Copy the thread name.
-  const char* rawname = RageThread::GetThreadNameByID(*piThreadID);
-  const size_t maxNameLen = sizeof(thread->name_);
-  if (strlen(rawname) < maxNameLen) {
+  const char* rawname = RageThread::GetThreadNameByID(*thread_id);
+  const size_t max_name_len = sizeof(thread->name_);
+  if (strlen(rawname) < max_name_len) {
     // If it fits, I sits^H^H^H^Hcopy.
-    strncpy(thread->name_, rawname, maxNameLen);
+    strncpy(thread->name_, rawname, max_name_len);
   } else {
     if (strstr(rawname, "Worker thread") && strchr(rawname, '(')) {
       // Special case for RageUtil_WorkerThread.cpp
       // "Worker thread (name)", e.g.
       // "Worker thread (/@mc1int/)" => "(/@mc1int/)".
       const char* workername = strchr(rawname, '(');
-      strncpy(thread->name_, workername, maxNameLen);
+      strncpy(thread->name_, workername, max_name_len);
     } else {
       // Abbreviate the name by taking the first 6, last 7
       // characters and adding '..' in the middle.
       LOG->Trace(
-          "Truncated thread name due to size limit of %zu: %s", maxNameLen,
+          "Truncated thread name due to size limit of %zu: %s", max_name_len,
           rawname);
       snprintf(
-          thread->name_, maxNameLen, "%.6s..%s", rawname,
+          thread->name_, max_name_len, "%.6s..%s", rawname,
           &rawname[strlen(rawname) - 7]);
     }
   }
   // Ensure there is always a terminating NUL character.
-  thread->name_[maxNameLen - 1] = '\0';
+  thread->name_[max_name_len - 1] = '\0';
 
 #ifndef MACOSX
   // macOS/BSD can only set the name of the calling thread
@@ -226,17 +226,17 @@ void InitMonotonic() {
   }
   bInitialized = true;
 
-  void* pLib = nullptr;
+  void* lib = nullptr;
 
   do {
     {
-      pLib = dlopen(nullptr, RTLD_LAZY);
-      if (pLib == nullptr) {
+      lib = dlopen(nullptr, RTLD_LAZY);
+      if (lib == nullptr) {
         break;
       }
 
       g_CondattrSetclock =
-          (CONDATTR_SET_CLOCK)dlsym(pLib, "pthread_condattr_setclock");
+          (CONDATTR_SET_CLOCK)dlsym(lib, "pthread_condattr_setclock");
 
       if (g_CondattrSetclock == nullptr) {
         break;
@@ -259,10 +259,10 @@ void InitMonotonic() {
   } while (0);
 
   g_CondattrSetclock = nullptr;
-  if (pLib != nullptr) {
-    dlclose(pLib);
+  if (lib != nullptr) {
+    dlclose(lib);
   }
-  pLib = nullptr;
+  lib = nullptr;
 }
 #elif defined(MACOSX)
 void InitMonotonic() { bInitialized = true; }
@@ -274,8 +274,8 @@ clockid_t GetClock() { return CLOCK_REALTIME; }
 #endif
 };  // namespace
 
-EventImpl_Pthreads::EventImpl_Pthreads(MutexImpl_Pthreads* pParent) {
-  parent_ = pParent;
+EventImpl_Pthreads::EventImpl_Pthreads(MutexImpl_Pthreads* parent) {
+  parent_ = parent;
 
   InitMonotonic();
 
@@ -292,8 +292,8 @@ EventImpl_Pthreads::EventImpl_Pthreads(MutexImpl_Pthreads* pParent) {
 
 EventImpl_Pthreads::~EventImpl_Pthreads() { pthread_cond_destroy(&cond_); }
 
-bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
-  if (pTimeout == nullptr) {
+bool EventImpl_Pthreads::Wait(RageTimer* timeout) {
+  if (timeout == nullptr) {
     pthread_cond_wait(&cond_, &parent_->mutex_);
     return true;
   }
@@ -306,8 +306,8 @@ bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
     /* If we support condattr_setclock, we'll set the condition to use
      * the same clock as RageTimer and can use it directly. If the
      * clock is CLOCK_REALTIME, that's the default anyway. */
-    abstime.tv_sec = pTimeout->secs_;
-    abstime.tv_nsec = pTimeout->us_ * 1000;
+    abstime.tv_sec = timeout->secs_;
+    abstime.tv_nsec = timeout->us_ * 1000;
   } else {
     // The RageTimer clock is different than the wait clock; convert it.
     timeval tv;
@@ -315,15 +315,15 @@ bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
 
     RageTimer timeofday(tv.tv_sec, tv.tv_usec);
 
-    float fSecondsInFuture = -pTimeout->Ago();
-    timeofday += fSecondsInFuture;
+    float seconds_in_future = -timeout->Ago();
+    timeofday += seconds_in_future;
 
     abstime.tv_sec = timeofday.secs_;
     abstime.tv_nsec = timeofday.us_ * 1000;
   }
 
-  int iRet = pthread_cond_timedwait(&cond_, &parent_->mutex_, &abstime);
-  return iRet != ETIMEDOUT;
+  int ret = pthread_cond_timedwait(&cond_, &parent_->mutex_, &abstime);
+  return ret != ETIMEDOUT;
 }
 
 bool EventImpl_Pthreads::WaitTimeoutSupported() const { return true; }
@@ -332,14 +332,14 @@ void EventImpl_Pthreads::Signal() { pthread_cond_signal(&cond_); }
 
 void EventImpl_Pthreads::Broadcast() { pthread_cond_broadcast(&cond_); }
 
-EventImpl* MakeEvent(MutexImpl* pMutex) {
-  MutexImpl_Pthreads* pPthreadsMutex = (MutexImpl_Pthreads*)pMutex;
+EventImpl* MakeEvent(MutexImpl* mutex) {
+  MutexImpl_Pthreads* pthreads_mutex = (MutexImpl_Pthreads*)mutex;
 
-  return new EventImpl_Pthreads(pPthreadsMutex);
+  return new EventImpl_Pthreads(pthreads_mutex);
 }
 
 // Use conditions, to work around macOS "forgetting" to implement semaphores.
-SemaImpl_Pthreads::SemaImpl_Pthreads(int iInitialValue) {
+SemaImpl_Pthreads::SemaImpl_Pthreads(int initial_value) {
   int ret = pthread_cond_init(&cond_, nullptr);
   ASSERT_M(
       ret == 0,
@@ -349,7 +349,7 @@ SemaImpl_Pthreads::SemaImpl_Pthreads(int iInitialValue) {
       ret == 0,
       ssprintf("SemaImpl_Pthreads: pthread_mutex_init: %s", strerror(errno)));
 
-  value_ = iInitialValue;
+  value_ = initial_value;
 }
 
 SemaImpl_Pthreads::~SemaImpl_Pthreads() {
@@ -411,8 +411,8 @@ bool SemaImpl_Pthreads::Wait() {
   }
 }
 
-SemaImpl* MakeSemaphore(int iInitialValue) {
-  return new SemaImpl_Pthreads(iInitialValue);
+SemaImpl* MakeSemaphore(int initial_value) {
+  return new SemaImpl_Pthreads(initial_value);
 }
 
 /*

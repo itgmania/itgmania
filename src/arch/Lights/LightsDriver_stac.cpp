@@ -21,74 +21,74 @@ LightsDriver_stac::LightsDriver_stac()
 LightsDriver_stac::~LightsDriver_stac() {}
 
 void LightsDriver_stac::SetBuffer(
-    int index, bool lightState, GameController ctrlNum) {
+    int index, bool light_state, GameController ctrl_num) {
   // the first byte is the report ID, so we offset it here to adjust.
   uint8_t index_offset = index + 1;
 
   // each index in the array represents a single light,
   // the light will turn on for any value that isn't 0x00
-  uint8_t val = lightState ? 0xFF : 0x00;
+  uint8_t val = light_state ? 0xFF : 0x00;
 
   // ensure report ID is set.
-  output_buffer_[ctrlNum][0] = STAC_REPORT_ID;
+  output_buffer_[ctrl_num][0] = STAC_REPORT_ID;
 
   // ensure the index is valid and the light value has changed.
   if (index_offset < STAC_HIDREPORT_SIZE &&
-      output_buffer_[ctrlNum][index_offset] != val) {
-    output_buffer_[ctrlNum][index_offset] = val;
+      output_buffer_[ctrl_num][index_offset] != val) {
+    output_buffer_[ctrl_num][index_offset] = val;
 
     // signal the loop to push the new buffer to the device.
-    state_changed_[ctrlNum] = true;
+    state_changed_[ctrl_num] = true;
   }
 }
 
 void LightsDriver_stac::HandleState(
-    const LightsState* ls, GameController ctrlNum) {
+    const LightsState* ls, GameController ctrl_num) {
   // do not create a message for an disconnected device.
-  if (!devs_[ctrlNum].FoundOnce()) {
+  if (!devs_[ctrl_num].FoundOnce()) {
     return;
   }
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->input_scheme_;
-  std::string sInputName = pInput->name_;
+  const InputScheme* input = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  std::string input_name = input->name_;
 
-  if (EqualsNoCase(sInputName, "dance")) {
-    SetBuffer(
-        STAC_LIGHTINDEX_BTN1, ls->game_button_lights_[ctrlNum][DANCE_BUTTON_UP],
-        ctrlNum);
-    SetBuffer(
-        STAC_LIGHTINDEX_BTN2,
-        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_DOWN], ctrlNum);
-    SetBuffer(
-        STAC_LIGHTINDEX_BTN3,
-        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_LEFT], ctrlNum);
-    SetBuffer(
-        STAC_LIGHTINDEX_BTN4,
-        ls->game_button_lights_[ctrlNum][DANCE_BUTTON_RIGHT], ctrlNum);
-  } else if (EqualsNoCase(sInputName, "pump")) {
+  if (EqualsNoCase(input_name, "dance")) {
     SetBuffer(
         STAC_LIGHTINDEX_BTN1,
-        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_UPLEFT], ctrlNum);
+        ls->game_button_lights_[ctrl_num][DANCE_BUTTON_UP], ctrl_num);
     SetBuffer(
         STAC_LIGHTINDEX_BTN2,
-        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_UPRIGHT], ctrlNum);
+        ls->game_button_lights_[ctrl_num][DANCE_BUTTON_DOWN], ctrl_num);
     SetBuffer(
         STAC_LIGHTINDEX_BTN3,
-        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_CENTER], ctrlNum);
+        ls->game_button_lights_[ctrl_num][DANCE_BUTTON_LEFT], ctrl_num);
     SetBuffer(
         STAC_LIGHTINDEX_BTN4,
-        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_DOWNLEFT], ctrlNum);
+        ls->game_button_lights_[ctrl_num][DANCE_BUTTON_RIGHT], ctrl_num);
+  } else if (EqualsNoCase(input_name, "pump")) {
+    SetBuffer(
+        STAC_LIGHTINDEX_BTN1,
+        ls->game_button_lights_[ctrl_num][PUMP_BUTTON_UPLEFT], ctrl_num);
+    SetBuffer(
+        STAC_LIGHTINDEX_BTN2,
+        ls->game_button_lights_[ctrl_num][PUMP_BUTTON_UPRIGHT], ctrl_num);
+    SetBuffer(
+        STAC_LIGHTINDEX_BTN3,
+        ls->game_button_lights_[ctrl_num][PUMP_BUTTON_CENTER], ctrl_num);
+    SetBuffer(
+        STAC_LIGHTINDEX_BTN4,
+        ls->game_button_lights_[ctrl_num][PUMP_BUTTON_DOWNLEFT], ctrl_num);
     SetBuffer(
         STAC_LIGHTINDEX_BTN5,
-        ls->game_button_lights_[ctrlNum][PUMP_BUTTON_DOWNRIGHT], ctrlNum);
+        ls->game_button_lights_[ctrl_num][PUMP_BUTTON_DOWNRIGHT], ctrl_num);
   }
 
   // only push changes.
-  if (state_changed_[ctrlNum]) {
-    devs_[ctrlNum].Write(
-        (unsigned char*)&output_buffer_[ctrlNum], STAC_HIDREPORT_SIZE);
-    state_changed_[ctrlNum] = false;
+  if (state_changed_[ctrl_num]) {
+    devs_[ctrl_num].Write(
+        (unsigned char*)&output_buffer_[ctrl_num], STAC_HIDREPORT_SIZE);
+    state_changed_[ctrl_num] = false;
   }
 }
 

@@ -17,9 +17,9 @@ class RageModelGeometry {
   virtual ~RageModelGeometry();
 
   void LoadMilkshapeAscii(
-      const std::string& sMilkshapeAsciiFile, bool bNeedsNormals);
+      const std::string& milkshape_ascii_file, bool needs_normals);
   void OptimizeBones();
-  void MergeMeshes(int iFromIndex, int iToIndex);
+  void MergeMeshes(int from_index, int to_index);
   bool HasAnyPerVertexBones() const;
 
   int ref_count_;

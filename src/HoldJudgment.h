@@ -11,8 +11,8 @@ class HoldJudgment : public ActorFrame {
  public:
   HoldJudgment();
   virtual HoldJudgment* Copy() const;
-  void Load(const std::string& sPath);
-  void LoadFromNode(const XNode* pNode);
+  void Load(const std::string& path);
+  void LoadFromNode(const XNode* node);
 
   void SetHoldJudgment(HoldNoteScore hns);
 

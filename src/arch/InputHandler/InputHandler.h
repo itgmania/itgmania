@@ -27,7 +27,7 @@
 class InputHandler : public RageDriver {
  public:
   static void Create(
-      const std::string& sDrivers, std::vector<InputHandler*>& apAdd);
+      const std::string& drivers, std::vector<InputHandler*>& add);
   static DriverList driver_list_;
 
   InputHandler() : last_update_(), inputs_since_update_(0) {}
@@ -35,13 +35,13 @@ class InputHandler : public RageDriver {
   virtual void Update() {}
   virtual bool DevicesChanged() { return false; }
   virtual void GetDevicesAndDescriptions(
-      std::vector<InputDeviceInfo>& vDevicesOut) = 0;
+      std::vector<InputDeviceInfo>& devices_out) = 0;
 
   // Override to return a pretty string that's specific to the controller type.
   virtual std::string GetDeviceSpecificInputString(const DeviceInput& di);
   virtual std::string GetLocalizedInputString(const DeviceInput& di);
   virtual wchar_t DeviceButtonToChar(
-      DeviceButton button, bool bUseCurrentKeyModifiers);
+      DeviceButton button, bool use_current_key_modifiers);
 
   /* In Windows, some devices need to be recreated if we recreate our main
    * window. Override this if you need to do that. */

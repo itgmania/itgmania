@@ -89,21 +89,21 @@ class Style {
   bool lock_difficulties_;
 
   void StyleInputToGameInput(
-      int iCol, PlayerNumber pn, std::vector<GameInput>& ret) const;
+      int col, PlayerNumber pn, std::vector<GameInput>& ret) const;
   /**
    * @brief Retrieve the column based on the game input.
    * @param GameI the game input.
    * @return the Column number of the style, or Column_Invalid if it's an
    * invalid column. Examples of this include getting the upper left hand corner
    * in a traditional four panel mode. */
-  int GameInputToColumn(const GameInput& GameI) const;
-  std::string ColToButtonName(int iCol) const;
+  int GameInputToColumn(const GameInput& game_i) const;
+  std::string ColToButtonName(int col) const;
 
   bool GetUsesCenteredArrows() const;
   void GetTransformedNoteDataForStyle(
-      PlayerNumber pn, const NoteData& original, NoteData& noteDataOut) const;
+      PlayerNumber pn, const NoteData& original, NoteData& note_data_out) const;
   void GetMinAndMaxColX(
-      PlayerNumber pn, float& fMixXOut, float& fMaxXOut) const;
+      PlayerNumber pn, float& mix_x_out, float& max_x_out) const;
   float GetWidth(PlayerNumber pn) const;
 
   // Lua

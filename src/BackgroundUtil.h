@@ -66,34 +66,34 @@ struct BackgroundChange {
 /** @brief Shared background-related routines. */
 namespace BackgroundUtil {
 void AddBackgroundChange(
-    std::vector<BackgroundChange>& vBackgroundChanges, BackgroundChange seg);
+    std::vector<BackgroundChange>& background_changes, BackgroundChange seg);
 void SortBackgroundChangesArray(
-    std::vector<BackgroundChange>& vBackgroundChanges);
+    std::vector<BackgroundChange>& background_changes);
 
 void GetBackgroundEffects(
-    const std::string& sName, std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut);
+    const std::string& name, std::vector<std::string>& paths_out,
+    std::vector<std::string>& names_out);
 void GetBackgroundTransitions(
-    const std::string& sName, std::vector<std::string>& vsPathsOut,
-    std::vector<std::string>& vsNamesOut);
+    const std::string& name, std::vector<std::string>& paths_out,
+    std::vector<std::string>& names_out);
 
 void GetSongBGAnimations(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out);
 void GetSongMovies(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out);
 void GetSongBitmaps(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out);
 void GetGlobalBGAnimations(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out);
 void GetGlobalRandomMovies(
-    const Song* pSong, const std::string& sMatch,
-    std::vector<std::string>& vsPathsOut, std::vector<std::string>& vsNamesOut,
-    bool bTryInsideOfSongGroupAndGenreFirst = true,
-    bool bTryInsideOfSongGroupFirst = true);
+    const Song* song, const std::string& match,
+    std::vector<std::string>& paths_out, std::vector<std::string>& names_out,
+    bool try_inside_of_song_group_and_genre_first = true,
+    bool try_inside_of_song_group_first = true);
 
 };  // namespace BackgroundUtil
 

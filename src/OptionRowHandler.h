@@ -194,7 +194,7 @@ class OptionRowHandler {
     return this->LoadInternal(cmds);
   }
   std::string OptionTitle() const;
-  std::string GetThemedItemText(int iChoice) const;
+  std::string GetThemedItemText(int choice) const;
 
   virtual bool LoadInternal(const Commands&) { return true; }
 
@@ -212,15 +212,15 @@ class OptionRowHandler {
   virtual int GetDefaultOption() const { return -1; }
   virtual void ImportOption(
       OptionRow*, const std::vector<PlayerNumber>&,
-      std::vector<bool> vbSelectedOut[NUM_PLAYERS]) const {}
+      std::vector<bool> selected_out[NUM_PLAYERS]) const {}
   // Returns an OPT mask.
   virtual int ExportOption(
       const std::vector<PlayerNumber>&,
-      const std::vector<bool> vbSelected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[NUM_PLAYERS]) const {
     return 0;
   }
   virtual void GetIconTextAndGameCommand(
-      int iFirstSelection, std::string& sIconTextOut, GameCommand& gcOut) const;
+      int first_selection, std::string& icon_text_out, GameCommand& out) const;
   virtual std::string GetScreen(int /* iChoice */) const {
     return std::string();
   }
@@ -236,12 +236,12 @@ OptionRowHandler* Make(const Commands& cmds);
 OptionRowHandler* MakeNull();
 OptionRowHandler* MakeSimple(const MenuRowDef& mrd);
 
-void SelectExactlyOne(int iSelection, std::vector<bool>& vbSelectedOut);
-int GetOneSelection(const std::vector<bool>& vbSelected);
+void SelectExactlyOne(int selection, std::vector<bool>& selected_out);
+int GetOneSelection(const std::vector<bool>& selected);
 }  // namespace OptionRowHandlerUtil
 
 inline void VerifySelected(
-    SelectType st, std::vector<bool>& selected, const std::string& sName) {
+    SelectType st, std::vector<bool>& selected, const std::string& name) {
   int num_selected = 0;
   if (st == SELECT_ONE) {
     size_t first_selected = std::numeric_limits<size_t>::max();
@@ -250,7 +250,7 @@ inline void VerifySelected(
           "Option row %s requires only one "
           "thing to be selected, but the list of selected things has zero "
           "elements.",
-          sName.c_str());
+          name.c_str());
       return;
     }
     for (size_t e = 0; e < selected.size(); ++e) {
@@ -265,7 +265,7 @@ inline void VerifySelected(
       LuaHelpers::ReportScriptErrorFmt(
           "Option row %s requires only one "
           "thing to be selected, but %i out of %i things are selected.",
-          sName.c_str(), num_selected, static_cast<int>(selected.size()));
+          name.c_str(), num_selected, static_cast<int>(selected.size()));
       for (size_t e = 0; e < selected.size(); ++e) {
         if (selected[e] && e != first_selected) {
           selected[e] = false;

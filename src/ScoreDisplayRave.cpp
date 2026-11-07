@@ -26,11 +26,11 @@ ScoreDisplayRave::ScoreDisplayRave() {
 }
 
 void ScoreDisplayRave::Init(
-    const PlayerState* pPlayerState,
-    const PlayerStageStats* pPlayerStageStats) {
-  ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
+    const PlayerState* player_state,
+    const PlayerStageStats* player_stage_stats) {
+  ScoreDisplay::Init(player_state, player_stage_stats);
 
-  PlayerNumber pn = pPlayerState->player_number_;
+  PlayerNumber pn = player_state->player_number_;
 
   spr_frame_base_.Load(
       THEME->GetPathG("ScoreDisplayRave", ssprintf("frame base p%d", pn + 1)));
@@ -55,11 +55,11 @@ void ScoreDisplayRave::Init(
   this->AddChild(spr_frame_overlay_);
 }
 
-void ScoreDisplayRave::Update(float fDelta) {
-  ScoreDisplay::Update(fDelta);
+void ScoreDisplayRave::Update(float delta) {
+  ScoreDisplay::Update(delta);
 
-  float fLevel = player_state_->super_meter_;
-  AttackLevel level = (AttackLevel)(int)fLevel;
+  float f_level = player_state_->super_meter_;
+  AttackLevel level = (AttackLevel)(int)f_level;
 
   if (level != last_level_seen_) {
     spr_meter_[last_level_seen_].SetCropRight(1.f);
@@ -67,8 +67,8 @@ void ScoreDisplayRave::Update(float fDelta) {
     text_level_.SetText(ssprintf("%d", level + 1));
   }
 
-  float fPercent = fLevel - Enum::to_integral(level);
-  spr_meter_[level].SetCropRight(1 - fPercent);
+  float percent = f_level - Enum::to_integral(level);
+  spr_meter_[level].SetCropRight(1 - percent);
 }
 
 /*

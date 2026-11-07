@@ -13,12 +13,12 @@ class InputHandler_X11 : public InputHandler {
   InputHandler_X11();
   ~InputHandler_X11();
   void Update();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   // timestamp is unsigned long to match X11 Time type
   void RegisterKeyEvent(
-      unsigned long timestamp, bool keyDown, DeviceButton button);
+      unsigned long timestamp, bool key_down, DeviceButton button);
 };
 
 #endif

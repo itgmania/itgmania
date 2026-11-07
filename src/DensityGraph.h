@@ -20,7 +20,7 @@ class DensityGraph : public ActorMultiVertex {
   virtual ~DensityGraph();
   virtual DensityGraph* Copy() const override;
   // Sets the chart to graph and which player's data to use.
-  void SetSteps(Steps* pSteps, PlayerNumber pn);
+  void SetSteps(Steps* steps, PlayerNumber pn);
   // The size of the visible graph area, in pixels.
   void SetSize(float width, float height);
   // The full width of the graph. Defaults to the width passed to SetSize if

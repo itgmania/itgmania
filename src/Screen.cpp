@@ -39,7 +39,7 @@ static const char* ScreenTypeNames[] = {
 XToString(ScreenType);
 LuaXType(ScreenType);
 
-void Screen::InitScreen(Screen* pScreen) { pScreen->Init(); }
+void Screen::InitScreen(Screen* screen) { screen->Init(); }
 
 Screen::~Screen() {}
 
@@ -69,24 +69,24 @@ void Screen::Init() {
 
   PlayCommandNoRecurse(Message("Init"));
 
-  std::vector<std::string> asList;
-  split(PREPARE_SCREENS, ",", asList);
-  for (unsigned i = 0; i < asList.size(); ++i) {
+  std::vector<std::string> list;
+  split(PREPARE_SCREENS, ",", list);
+  for (unsigned i = 0; i < list.size(); ++i) {
     LOG->Trace(
-        "Screen \"%s\" preparing \"%s\"", name_.c_str(), asList[i].c_str());
-    SCREENMAN->PrepareScreen(asList[i]);
+        "Screen \"%s\" preparing \"%s\"", name_.c_str(), list[i].c_str());
+    SCREENMAN->PrepareScreen(list[i]);
   }
 
-  asList.clear();
-  split(GROUPED_SCREENS, ",", asList);
-  for (unsigned i = 0; i < asList.size(); ++i) {
-    SCREENMAN->GroupScreen(asList[i]);
+  list.clear();
+  split(GROUPED_SCREENS, ",", list);
+  for (unsigned i = 0; i < list.size(); ++i) {
+    SCREENMAN->GroupScreen(list[i]);
   }
 
-  asList.clear();
-  split(PERSIST_SCREENS, ",", asList);
-  for (unsigned i = 0; i < asList.size(); ++i) {
-    SCREENMAN->PersistantScreen(asList[i]);
+  list.clear();
+  split(PERSIST_SCREENS, ",", list);
+  for (unsigned i = 0; i < list.size(); ++i) {
+    SCREENMAN->PersistantScreen(list[i]);
   }
 }
 
@@ -120,10 +120,10 @@ void Screen::EndScreen() {
   delayed_callback_removals_.clear();
 }
 
-void Screen::Update(float fDeltaTime) {
-  ActorFrame::Update(fDeltaTime);
+void Screen::Update(float delta_time) {
+  ActorFrame::Update(delta_time);
 
-  lock_input_secs_ = std::max(0.0f, lock_input_secs_ - fDeltaTime);
+  lock_input_secs_ = std::max(0.0f, lock_input_secs_ - delta_time);
 
   /* We need to ensure two things:
    * 1. Messages must be sent in the order of delay. If two messages are sent
@@ -150,11 +150,11 @@ void Screen::Update(float fDeltaTime) {
      * occasionally not quite finishing their tweens.
      * Let's delay all messages that have a non-zero time an extra frame. */
     if (queued_messages_[i].delay_remaining_ > 0.0001f) {
-      queued_messages_[i].delay_remaining_ -= fDeltaTime;
+      queued_messages_[i].delay_remaining_ -= delta_time;
       queued_messages_[i].delay_remaining_ =
           std::max(queued_messages_[i].delay_remaining_, 0.0001f);
     } else {
-      queued_messages_[i].delay_remaining_ -= fDeltaTime;
+      queued_messages_[i].delay_remaining_ -= delta_time;
     }
   }
 
@@ -168,20 +168,20 @@ void Screen::Update(float fDeltaTime) {
     }
 
     // Remove the message from the list.
-    const ScreenMessage SM = queued_messages_[i].sm_;
+    const ScreenMessage sm = queued_messages_[i].sm_;
     queued_messages_.erase(queued_messages_.begin() + i);
     i--;
 
-    unsigned iSize = queued_messages_.size();
+    unsigned size = queued_messages_.size();
 
     // send this sucker!
     CHECKPOINT_M(ssprintf(
         "ScreenMessage(%s)",
-        ScreenMessageHelpers::ScreenMessageToString(SM).c_str()));
-    this->HandleScreenMessage(SM);
+        ScreenMessageHelpers::ScreenMessageToString(sm).c_str()));
+    this->HandleScreenMessage(sm);
 
     // If the size changed, start over.
-    if (iSize != queued_messages_.size()) {
+    if (size != queued_messages_.size()) {
       i = 0;
     }
   }
@@ -256,20 +256,20 @@ bool Screen::Input(const InputEventPlus& input) {
   }
 }
 
-void Screen::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_GoToNextScreen || SM == SM_GoToPrevScreen) {
+void Screen::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_GoToNextScreen || sm == SM_GoToPrevScreen) {
     if (SCREENMAN->IsStackedScreen(this)) {
       SCREENMAN->PopTopScreen(send_on_pop_);
     } else {
-      std::string ToScreen =
-          (SM == SM_GoToNextScreen ? GetNextScreenName() : GetPrevScreen());
-      if (ToScreen == "") {
+      std::string to_screen =
+          (sm == SM_GoToNextScreen ? GetNextScreenName() : GetPrevScreen());
+      if (to_screen == "") {
         LuaHelpers::ReportScriptError("Error:  Tried to go to empty screen.");
       } else {
-        SCREENMAN->SetNewScreen(ToScreen);
+        SCREENMAN->SetNewScreen(to_screen);
       }
     }
-  } else if (SM == SM_GainFocus) {
+  } else if (sm == SM_GainFocus) {
     if (REPEAT_RATE != -1.0f) {
       INPUTFILTER->SetRepeatRate(REPEAT_RATE);
     }
@@ -278,7 +278,7 @@ void Screen::HandleScreenMessage(const ScreenMessage SM) {
     }
 
     LIGHTSMAN->SetLightsMode(LIGHTS_MODE);
-  } else if (SM == SM_LoseFocus) {
+  } else if (sm == SM_LoseFocus) {
     INPUTFILTER->ResetRepeatRate();
   }
 }
@@ -301,20 +301,20 @@ std::string Screen::GetPrevScreen() const {
   return PREV_SCREEN;
 }
 
-void Screen::PostScreenMessage(const ScreenMessage SM, float fDelay) {
-  ASSERT(fDelay >= 0.0);
+void Screen::PostScreenMessage(const ScreenMessage sm, float delay) {
+  ASSERT(delay >= 0.0);
 
-  QueuedScreenMessage QSM;
-  QSM.sm_ = SM;
-  QSM.delay_remaining_ = fDelay;
-  queued_messages_.push_back(QSM);
+  QueuedScreenMessage qsm;
+  qsm.sm_ = sm;
+  qsm.delay_remaining_ = delay;
+  queued_messages_.push_back(qsm);
 }
 
 void Screen::ClearMessageQueue() { queued_messages_.clear(); }
 
-void Screen::ClearMessageQueue(const ScreenMessage SM) {
+void Screen::ClearMessageQueue(const ScreenMessage sm) {
   for (int i = queued_messages_.size() - 1; i >= 0; i--) {
-    if (queued_messages_[i].sm_ == SM) {
+    if (queued_messages_[i].sm_ == sm) {
       queued_messages_.erase(queued_messages_.begin() + i);
     }
   }
@@ -439,9 +439,9 @@ class LunaScreen : public Luna<Screen> {
   DEFINE_METHOD(GetScreenType, GetScreenType())
 
   static int PostScreenMessage(T* p, lua_State* L) {
-    std::string sMessage = SArg(1);
-    ScreenMessage SM = ScreenMessageHelpers::ToScreenMessage(sMessage);
-    p->PostScreenMessage(SM, IArg(2));
+    std::string message = SArg(1);
+    ScreenMessage sm = ScreenMessageHelpers::ToScreenMessage(message);
+    p->PostScreenMessage(sm, IArg(2));
     COMMON_RETURN_SELF;
   }
 

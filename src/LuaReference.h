@@ -30,7 +30,7 @@ class LuaReference {
    * reference. For example, evaluating "{ 1, 2, 3 }" will result in a reference
    * to a table. On success, return true.  On error, set to nil and return
    * false. */
-  bool SetFromExpression(const std::string& sExpression);
+  bool SetFromExpression(const std::string& expression);
 
   /** @brief Deep-copy tables, detaching this reference from any others. */
   void DeepCopy();
@@ -88,11 +88,11 @@ class LuaTable : public LuaReference {
   LuaTable();
 
   /* Get the key with the given name, and push it on the stack. */
-  void Get(Lua* L, const std::string& sKey);
+  void Get(Lua* L, const std::string& key);
 
   /* Set a key by the given name to a value on the stack, and pop the value
    * off the stack. */
-  void Set(Lua* L, const std::string& sKey);
+  void Set(Lua* L, const std::string& key);
 };
 
 #endif

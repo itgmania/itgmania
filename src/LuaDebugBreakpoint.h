@@ -19,18 +19,18 @@ class Breakpoint {
   static Breakpoint Return(lua_State* L);
   static Breakpoint Step(lua_State* L);
   static Breakpoint Next(lua_State* L);
-  static Breakpoint Function(BreakpointId id, const std::string& functionName);
+  static Breakpoint Function(BreakpointId id, const std::string& function_name);
   static Breakpoint Line(
-      BreakpointId id, const std::string& fileName, int lineNumber);
+      BreakpointId id, const std::string& file_name, int line_number);
 
   /* Checks if the breakpoint is hit, ignoring condition and hit count
    * condition. Fills in debug.source, debug.currentline, and debug.name as
    * needed. */
   bool IsHit(lua_State* L, lua_Debug& debug);
   bool EvaluateConditions(
-      DebuggeeState& stackFrame, std::string& evaluationError);
+      DebuggeeState& stack_frame, std::string& evaluation_error);
   std::string EvaluateLogMessage(
-      DebuggeeState& stackFrame, std::string& evaluationError);
+      DebuggeeState& stack_frame, std::string& evaluation_error);
 
   BreakpointId GetId() const { return id_; }
   int GetEventMask() const { return event_mask_; }
@@ -42,9 +42,11 @@ class Breakpoint {
   bool IsBreak() const { return log_message_.empty(); }
 
   void SetCondition(const std::string& condition) { condition_ = condition; }
-  void SetHitCondition(uint64_t hitCondition) { hit_condition_ = hitCondition; }
-  void SetLogMessage(const std::string& logMessage) {
-    log_message_ = logMessage;
+  void SetHitCondition(uint64_t hit_condition) {
+    hit_condition_ = hit_condition;
+  }
+  void SetLogMessage(const std::string& log_message) {
+    log_message_ = log_message;
   }
 
  private:

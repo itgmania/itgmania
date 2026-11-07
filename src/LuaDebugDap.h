@@ -38,22 +38,22 @@ typedef Message Response;
 typedef Message Event;
 
 Request CreateDapRequest(const std::string& command);
-Request CreatePauseRequest(ThreadId threadId);
-Request CreateContinueRequest(ThreadId threadId);
-Request CreateDisconnectRequest(bool suspendDebuggee);
+Request CreatePauseRequest(ThreadId thread_id);
+Request CreateContinueRequest(ThreadId thread_id);
+Request CreateDisconnectRequest(bool suspend_debuggee);
 
 Event CreateDapEvent(const std::string& event);
 Event CreateStoppedEvent(
-    ThreadId threadId, const std::string& reason,
-    const std::vector<BreakpointId>& hitBreakpoints);
+    ThreadId thread_id, const std::string& reason,
+    const std::vector<BreakpointId>& hit_breakpoints);
 Event CreateBreakpointEvaluationErrorEvent(
-    ThreadId threadId, const std::string& errors,
-    const std::vector<BreakpointId>& hitBreakpoints);
-Event CreateContinuedEvent(ThreadId threadId);
+    ThreadId thread_id, const std::string& errors,
+    const std::vector<BreakpointId>& hit_breakpoints);
+Event CreateContinuedEvent(ThreadId thread_id);
 Event CreateOutputEvent(
-    const std::string& output, const std::string& sourceName,
-    const std::string& source, int lineNumber);
-Event CreateThreadStartedEvent(ThreadId threadId);
+    const std::string& output, const std::string& source_name,
+    const std::string& source, int line_number);
+Event CreateThreadStartedEvent(ThreadId thread_id);
 Event CreateTerminatedEvent();
 
 Response CreateDapResponse(const Request& request);

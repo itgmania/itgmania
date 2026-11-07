@@ -35,7 +35,7 @@ class TempoDetector {
    * @return nullptr if the music could not be read, in which case sError
    *         describes the problem. */
   static TempoDetector* Create(
-      const std::string& sMusicPath, std::string& sError);
+      const std::string& music_path, std::string& error);
 
   /** @brief Stops the worker thread, waiting for it to notice if needed. */
   ~TempoDetector();

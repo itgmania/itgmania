@@ -57,7 +57,7 @@ enum HttpErrorCode {
   HttpErrorCode_Invalid,
 };
 const std::string& HttpErrorCodeToString(HttpErrorCode dc);
-HttpErrorCode StringToHttpErrorCode(const std::string& sDC);
+HttpErrorCode StringToHttpErrorCode(const std::string& dc);
 LuaDeclareType(HttpErrorCode);
 
 enum WebSocketMessageType {
@@ -71,7 +71,7 @@ enum WebSocketMessageType {
   WebSocketMessageType_Invalid,
 };
 const std::string& WebSocketMessageTypeToString(WebSocketMessageType dc);
-WebSocketMessageType StringToWebSocketMessageType(const std::string& sDC);
+WebSocketMessageType StringToWebSocketMessageType(const std::string& dc);
 LuaDeclareType(WebSocketMessageType);
 
 struct HttpRequestArgs {
@@ -143,7 +143,7 @@ class HttpRequestPool {
   typedef std::function<std::function<void()>(ix::HttpClient& client)> Task;
 
   HttpRequestPool(
-      int maxThreads, bool ordered, const ix::SocketTLSOptions& tlsOptions);
+      int max_threads, bool ordered, const ix::SocketTLSOptions& tls_options);
   ~HttpRequestPool();
 
   // Runs task on a pool thread with that thread's client. request is the

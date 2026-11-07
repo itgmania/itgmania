@@ -13,16 +13,16 @@ class SoundEffectControl {
  public:
   SoundEffectControl();
   void Load(
-      const std::string& sType, PlayerState* pPlayerState,
-      const NoteData* pNoteData);
+      const std::string& type, PlayerState* player_state,
+      const NoteData* note_data);
 
-  void SetSoundReader(RageSoundReader* pPlayer);
+  void SetSoundReader(RageSoundReader* player);
   void ReleaseSound() { SetSoundReader(nullptr); }
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
  private:
-  void HoldsBeingHeld(int iRow, int& iHoldsHeld, int& iHoldsLetGo) const;
+  void HoldsBeingHeld(int row, int& holds_held, int& holds_let_go) const;
 
   ThemeMetric<std::string> SOUND_PROPERTY;
   ThemeMetric<bool> LOCK_TO_HOLD;

@@ -11,41 +11,42 @@
 
 using namespace __gnu_cxx;
 
-bool KeyboardDevice::AddLogicalDevice(int usagePage, int usage) {
-  return usagePage == kHIDPage_GenericDesktop && usage == kHIDUsage_GD_Keyboard;
+bool KeyboardDevice::AddLogicalDevice(int usage_page, int usage) {
+  return usage_page == kHIDPage_GenericDesktop &&
+         usage == kHIDUsage_GD_Keyboard;
 }
 
-static bool UsbKeyToDeviceButton(UInt8 iUsbKey, DeviceButton& buttonOut) {
-  UInt8 usage = iUsbKey;
+static bool UsbKeyToDeviceButton(UInt8 usb_key, DeviceButton& button_out) {
+  UInt8 usage = usb_key;
 
   if (usage < kHIDUsage_KeyboardA) {
     return false;
   }
 
   if (usage <= kHIDUsage_KeyboardZ) {
-    buttonOut = enum_add2(KEY_Ca, usage - kHIDUsage_KeyboardA);
+    button_out = enum_add2(KEY_Ca, usage - kHIDUsage_KeyboardA);
     return true;
   }
 
   // KEY_C0 = KEY_C1 - 1, kHIDUsage_Keyboard0 = kHIDUsage_Keyboard9 + 1
   if (usage <= kHIDUsage_Keyboard9) {
-    buttonOut = enum_add2(KEY_C1, usage - kHIDUsage_Keyboard1);
+    button_out = enum_add2(KEY_C1, usage - kHIDUsage_Keyboard1);
     return true;
   }
 
   if (usage >= kHIDUsage_KeyboardF1 && usage <= kHIDUsage_KeyboardF12) {
-    buttonOut = enum_add2(KEY_F1, usage - kHIDUsage_KeyboardF1);
+    button_out = enum_add2(KEY_F1, usage - kHIDUsage_KeyboardF1);
     return true;
   }
 
   if (usage >= kHIDUsage_KeyboardF13 && usage <= kHIDUsage_KeyboardF16) {
-    buttonOut = enum_add2(KEY_F13, usage - kHIDUsage_KeyboardF13);
+    button_out = enum_add2(KEY_F13, usage - kHIDUsage_KeyboardF13);
     return true;
   }
 
   // keypad 0 is again backward
   if (usage >= kHIDUsage_Keypad1 && usage <= kHIDUsage_Keypad9) {
-    buttonOut = enum_add2(KEY_KP_C1, usage - kHIDUsage_Keypad1);
+    button_out = enum_add2(KEY_KP_C1, usage - kHIDUsage_Keypad1);
     return true;
   }
 
@@ -53,21 +54,21 @@ static bool UsbKeyToDeviceButton(UInt8 iUsbKey, DeviceButton& buttonOut) {
 
   // [0, 8]
   if (usage >= kHIDUsage_KeyboardF17 && usage <= kHIDUsage_KeyboardExecute) {
-    buttonOut = OTHER(0 + usage - kHIDUsage_KeyboardF17);
+    button_out = OTHER(0 + usage - kHIDUsage_KeyboardF17);
     return true;
   }
 
   // [9, 19]
   if (usage >= kHIDUsage_KeyboardSelect &&
       usage <= kHIDUsage_KeyboardVolumeDown) {
-    buttonOut = OTHER(9 + usage - kHIDUsage_KeyboardSelect);
+    button_out = OTHER(9 + usage - kHIDUsage_KeyboardSelect);
     return true;
   }
 
   // [20, 41]
   if (usage >= kHIDUsage_KeypadEqualSignAS400 &&
       usage <= kHIDUsage_KeyboardCancel) {
-    buttonOut = OTHER(20 + usage - kHIDUsage_KeypadEqualSignAS400);
+    button_out = OTHER(20 + usage - kHIDUsage_KeypadEqualSignAS400);
     return true;
   }
 
@@ -75,13 +76,13 @@ static bool UsbKeyToDeviceButton(UInt8 iUsbKey, DeviceButton& buttonOut) {
   // XXX kHIDUsage_KeyboardClearOrAgain
   if (usage >= kHIDUsage_KeyboardSeparator &&
       usage <= kHIDUsage_KeyboardExSel) {
-    buttonOut = OTHER(32 + usage - kHIDUsage_KeyboardSeparator);
+    button_out = OTHER(32 + usage - kHIDUsage_KeyboardSeparator);
     return true;
   }
 
-#define X(x, y)    \
-  case x:          \
-    buttonOut = y; \
+#define X(x, y)     \
+  case x:           \
+    button_out = y; \
     return true
 
   // Time for the special cases
@@ -154,9 +155,9 @@ static bool UsbKeyToDeviceButton(UInt8 iUsbKey, DeviceButton& buttonOut) {
 }
 
 void KeyboardDevice::AddElement(
-    int usagePage, int usage, IOHIDElementCookie cookie,
+    int usage_page, int usage, IOHIDElementCookie cookie,
     const CFDictionaryRef properties) {
-  if (usagePage != kHIDPage_KeyboardOrKeypad) {
+  if (usage_page != kHIDPage_KeyboardOrKeypad) {
     return;
   }
 
@@ -177,24 +178,23 @@ void KeyboardDevice::Open() {
 }
 
 void KeyboardDevice::GetButtonPresses(
-    std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+    std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter =
       mapping_.find(cookie);
 
   if (iter != mapping_.end()) {
     // LOG->Trace( "Pushed %s", DeviceButtonToString(iter->second).c_str() );
-    vPresses.push_back(DeviceInput(DEVICE_KEYBOARD, iter->second, value, now));
+    presses.push_back(DeviceInput(DEVICE_KEYBOARD, iter->second, value, now));
   }
 }
 
 void KeyboardDevice::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevices) const {
-  if (vDevices.size() && vDevices[0].id_ == DEVICE_KEYBOARD) {
+    std::vector<InputDeviceInfo>& devices) const {
+  if (devices.size() && devices[0].id_ == DEVICE_KEYBOARD) {
     return;
   }
-  vDevices.insert(
-      vDevices.begin(), InputDeviceInfo(DEVICE_KEYBOARD, "Keyboard"));
+  devices.insert(devices.begin(), InputDeviceInfo(DEVICE_KEYBOARD, "Keyboard"));
 }
 
 // http://lists.apple.com/archives/carbon-dev/2005/Feb/msg00071.html
@@ -477,29 +477,29 @@ static UInt8 g_iUsbKeyToMacVirtualKey[256] = {
 static UInt8 g_iDeviceButtonToMacVirtualKey[KEY_OTHER_0];
 
 bool KeyboardDevice::DeviceButtonToMacVirtualKey(
-    DeviceButton button, UInt8& iMacVKOut) {
-  static bool bInited = false;
+    DeviceButton button, UInt8& mac_vk_out) {
+  static bool inited = false;
 
-  if (!bInited) {
+  if (!inited) {
     memset(
         g_iDeviceButtonToMacVirtualKey, 0xFF,
         sizeof(g_iDeviceButtonToMacVirtualKey));
-    for (int iUsbKey = 0; iUsbKey < 256; ++iUsbKey) {
+    for (int usb_key = 0; usb_key < 256; ++usb_key) {
       DeviceButton button2;
-      if (UsbKeyToDeviceButton(iUsbKey, button2) &&
+      if (UsbKeyToDeviceButton(usb_key, button2) &&
           size_t(button2) < sizeof(g_iDeviceButtonToMacVirtualKey)) {
         g_iDeviceButtonToMacVirtualKey[button2] =
-            g_iUsbKeyToMacVirtualKey[iUsbKey];
+            g_iUsbKeyToMacVirtualKey[usb_key];
       }
     }
-    bInited = true;
+    inited = true;
   }
   if (button < sizeof(g_iDeviceButtonToMacVirtualKey)) {
-    iMacVKOut = g_iDeviceButtonToMacVirtualKey[button];
+    mac_vk_out = g_iDeviceButtonToMacVirtualKey[button];
   } else {
-    iMacVKOut = 0xFF;
+    mac_vk_out = 0xFF;
   }
-  return iMacVKOut != 0xFF;
+  return mac_vk_out != 0xFF;
 }
 
 /*

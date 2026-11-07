@@ -15,7 +15,7 @@ class InputHandler_Win32_Pump : public InputHandler {
   InputHandler_Win32_Pump();
   ~InputHandler_Win32_Pump();
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   USBDevice* device_;
@@ -24,7 +24,7 @@ class InputHandler_Win32_Pump : public InputHandler {
 
   static int InputThread_Start(void* p);
   void InputThreadMain();
-  void HandleInput(int devno, int event);
+  void HandleInput(int device, int event);
 };
 
 #endif

@@ -27,29 +27,29 @@ void Foreground::Unload() {
   song_ = nullptr;
 }
 
-void Foreground::LoadFromSong(const Song* pSong) {
+void Foreground::LoadFromSong(const Song* song) {
   // Song graphics can get very big; never keep them in memory.
-  RageTextureID::TexPolicy OldPolicy = TEXTUREMAN->GetDefaultTexturePolicy();
+  RageTextureID::TexPolicy old_policy = TEXTUREMAN->GetDefaultTexturePolicy();
   TEXTUREMAN->SetDefaultTexturePolicy(RageTextureID::TEX_VOLATILE);
 
-  song_ = pSong;
-  for (const BackgroundChange& change : pSong->GetForegroundChanges()) {
-    std::string sBGName = change.def_.file1_,
-                sLuaFile = pSong->GetSongDir() + sBGName + "/default.lua",
-                sXmlFile = pSong->GetSongDir() + sBGName + "/default.xml";
+  song_ = song;
+  for (const BackgroundChange& change : song->GetForegroundChanges()) {
+    std::string bg_name = change.def_.file1_,
+                lua_file = song->GetSongDir() + bg_name + "/default.lua",
+                xml_file = song->GetSongDir() + bg_name + "/default.xml";
 
     LoadedBGA bga;
-    if (DoesFileExist(sLuaFile)) {
-      bga.bga_ = ActorUtil::MakeActor(sLuaFile, this);
-    } else if (PREFSMAN->quirks_mode_ && DoesFileExist(sXmlFile)) {
-      bga.bga_ = ActorUtil::MakeActor(sXmlFile, this);
+    if (DoesFileExist(lua_file)) {
+      bga.bga_ = ActorUtil::MakeActor(lua_file, this);
+    } else if (PREFSMAN->quirks_mode_ && DoesFileExist(xml_file)) {
+      bga.bga_ = ActorUtil::MakeActor(xml_file, this);
     } else {
-      bga.bga_ = ActorUtil::MakeActor(pSong->GetSongDir() + sBGName, this);
+      bga.bga_ = ActorUtil::MakeActor(song->GetSongDir() + bg_name, this);
     }
     if (bga.bga_ == nullptr) {
       continue;
     }
-    bga.bga_->SetName(sBGName);
+    bga.bga_->SetName(bg_name);
     // ActorUtil::MakeActor calls LoadFromNode to load the actor, and
     // LoadFromNode takes care of running the InitCommand, so do not run the
     // InitCommand here. -Kyz
@@ -62,17 +62,17 @@ void Foreground::LoadFromSong(const Song* pSong) {
     bg_animations_.push_back(bga);
   }
 
-  TEXTUREMAN->SetDefaultTexturePolicy(OldPolicy);
+  TEXTUREMAN->SetDefaultTexturePolicy(old_policy);
 
   this->SortByDrawOrder();
 }
 
-void Foreground::Update(float fDeltaTime) {
+void Foreground::Update(float f_delta_time) {
   // Calls to Update() should *not* be scaled by music rate unless
   // RateModsAffectFGChanges is enabled. Undo it.
-  const float fRate = PREFSMAN->rate_mods_affect_tweens_
-                          ? 1.0f
-                          : GAMESTATE->song_options_.GetCurrent().music_rate_;
+  const float rate = PREFSMAN->rate_mods_affect_tweens_
+                         ? 1.0f
+                         : GAMESTATE->song_options_.GetCurrent().music_rate_;
 
   for (unsigned i = 0; i < bg_animations_.size(); ++i) {
     LoadedBGA& bga = bg_animations_[i];
@@ -88,25 +88,25 @@ void Foreground::Update(float fDeltaTime) {
 
     /* Update the actor even if we're about to hide it, so queued commands
      * are always run. */
-    float lDeltaTime;
+    float l_delta_time;
     if (!bga.bga_->GetVisible()) {
       bga.bga_->SetVisible(true);
       bga.bga_->PlayCommand("On");
 
-      const float fStartSecond =
+      const float start_second =
           song_->song_timing_.GetElapsedTimeFromBeat(bga.start_beat_);
-      const float fStopSecond = fStartSecond + bga.bga_->GetTweenTimeLeft();
-      bga.stop_beat_ = song_->song_timing_.GetBeatFromElapsedTime(fStopSecond);
+      const float stop_second = start_second + bga.bga_->GetTweenTimeLeft();
+      bga.stop_beat_ = song_->song_timing_.GetBeatFromElapsedTime(stop_second);
 
-      lDeltaTime = GAMESTATE->position_.music_seconds_ - fStartSecond;
+      l_delta_time = GAMESTATE->position_.music_seconds_ - start_second;
     } else {
-      lDeltaTime = GAMESTATE->position_.music_seconds_ - last_music_seconds_;
+      l_delta_time = GAMESTATE->position_.music_seconds_ - last_music_seconds_;
     }
 
     // This shouldn't go down, but be safe:
-    lDeltaTime = std::max(lDeltaTime, 0.0f);
+    l_delta_time = std::max(l_delta_time, 0.0f);
 
-    bga.bga_->Update(lDeltaTime / fRate);
+    bga.bga_->Update(l_delta_time / rate);
 
     if (GAMESTATE->position_.song_beat_ > bga.stop_beat_) {
       // Finished.

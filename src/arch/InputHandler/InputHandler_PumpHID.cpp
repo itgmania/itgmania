@@ -62,8 +62,8 @@ std::string InputHandler_PumpHID::GetDeviceSpecificInputString(
 }
 
 void InputHandler_PumpHID::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
-  vDevicesOut.push_back(
+    std::vector<InputDeviceInfo>& devices_out) {
+  devices_out.push_back(
       InputDeviceInfo(InputDevice(DEVICE_PUMPHID), "PumpHID"));
 }
 
@@ -74,20 +74,20 @@ int InputHandler_PumpHID::InputThread_Start(void* p) {
 
 void InputHandler_PumpHID::BroadcastFullSensorStateHelper(
     PlayerNumber pn, uint8_t sensor_index, pumphid_player_byte_t state) {
-  PadSensor currSensor = PadSensor_TopCenter;
+  PadSensor curr_sensor = PadSensor_TopCenter;
 
   switch (sensor_index) {
     case 0:
-      currSensor = PadSensor_RightCenter;
+      curr_sensor = PadSensor_RightCenter;
       break;
     case 1:
-      currSensor = PadSensor_LeftCenter;
+      curr_sensor = PadSensor_LeftCenter;
       break;
     case 2:
-      currSensor = PadSensor_BottomCenter;
+      curr_sensor = PadSensor_BottomCenter;
       break;
     case 3:
-      currSensor = PadSensor_TopCenter;
+      curr_sensor = PadSensor_TopCenter;
       break;
     default:
       LOG->Warn("Invalid sensor position %d", sensor_index);
@@ -95,53 +95,53 @@ void InputHandler_PumpHID::BroadcastFullSensorStateHelper(
   }
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->input_scheme_;
-  std::string sInputName = pInput->name_;
+  const InputScheme* input = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  std::string input_name = input->name_;
 
   // all buttons here are active low, so set to zero when "true"
-  if (EqualsNoCase(sInputName, "dance")) {
+  if (EqualsNoCase(input_name, "dance")) {
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_Up, currSensor, !(state.btn_ul_u_));
+        pn, PadPanel_Up, curr_sensor, !(state.btn_ul_u_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_Down, currSensor, !(state.btn_ur_d_));
+        pn, PadPanel_Down, curr_sensor, !(state.btn_ur_d_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_Left, currSensor, !(state.btn_cn_l_));
+        pn, PadPanel_Left, curr_sensor, !(state.btn_cn_l_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_Right, currSensor, !(state.btn_ll_r_));
+        pn, PadPanel_Right, curr_sensor, !(state.btn_ll_r_));
 
-  } else if (EqualsNoCase(sInputName, "pump")) {
+  } else if (EqualsNoCase(input_name, "pump")) {
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_UpLeft, currSensor, !(state.btn_ul_u_));
+        pn, PadPanel_UpLeft, curr_sensor, !(state.btn_ul_u_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_UpRight, currSensor, !(state.btn_ur_d_));
+        pn, PadPanel_UpRight, curr_sensor, !(state.btn_ur_d_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_Center, currSensor, !(state.btn_cn_l_));
+        pn, PadPanel_Center, curr_sensor, !(state.btn_cn_l_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_DownLeft, currSensor, !(state.btn_ll_r_));
+        pn, PadPanel_DownLeft, curr_sensor, !(state.btn_ll_r_));
     INPUTFILTER->setFullSensorStateBinary(
-        pn, PadPanel_DownRight, currSensor, !(state.btn_lr_start_));
+        pn, PadPanel_DownRight, curr_sensor, !(state.btn_lr_start_));
   }
 }
 
 void InputHandler_PumpHID::InputThreadMain() {
-  uint32_t newInput = 0;
-  LightsState newLS = {};
+  uint32_t new_input = 0;
+  LightsState new_ls = {};
 
-  uint32_t prevInput = 0;
-  LightsState prevLS = {};
+  uint32_t prev_input = 0;
+  LightsState prev_ls = {};
 
   pumphid_player_byte_t prev_p1_sensor[PUMP_HID_NUMOFSENSORS] = {};
   pumphid_player_byte_t prev_p2_sensor[PUMP_HID_NUMOFSENSORS] = {};
 
   while (!shutdown_) {
-    newLS = LightsDriver_Export::GetState();
+    new_ls = LightsDriver_Export::GetState();
 
     // even though we need to write to the PumpHID every cycle (otherwise it
     // will lock up) we don't need to make a new message every time because you
     // know it hasn't changed.
-    if (prevLS != newLS) {
-      CreateLightingMessage(newLS);
-      prevLS = newLS;
+    if (prev_ls != new_ls) {
+      CreateLightingMessage(new_ls);
+      prev_ls = new_ls;
     }
 
     // hidapi always wants a report id for the device
@@ -149,30 +149,30 @@ void InputHandler_PumpHID::InputThreadMain() {
     msg_to_device_.report_id_pad_ = 0;
 
     // push lighting state
-    HidResults writeRtn =
+    HidResults write_rtn =
         dev_.Write(msg_to_device_.raw_buff_, PUMPHID_PAYLOADSIZE_TODEV);
 
-    if (writeRtn != HidResults::Success) {
-      LOG->Warn("PumpHID write fail %d", writeRtn);
+    if (write_rtn != HidResults::Success) {
+      LOG->Warn("PumpHID write fail %d", write_rtn);
       continue;
     }
 
     // pull input state
-    int readRtn =
+    int read_rtn =
         dev_.Read(msg_from_device_.raw_buff_, PUMPHID_PAYLOADSIZE_FROMDEV);
 
-    if (readRtn != PUMPHID_PAYLOADSIZE_FROMDEV) {
-      LOG->Warn("PumpHID read fail %d", readRtn);
+    if (read_rtn != PUMPHID_PAYLOADSIZE_FROMDEV) {
+      LOG->Warn("PumpHID read fail %d", read_rtn);
       continue;
     }
 
     // convert it to a local value.
-    newInput = PumpHIDToLocalState(msg_from_device_);
+    new_input = PumpHIDToLocalState(msg_from_device_);
 
     // don't flood the engine with states that are not different.
-    if (prevInput != newInput) {
-      PushInputStateToEngine(newInput);
-      prevInput = newInput;
+    if (prev_input != new_input) {
+      PushInputStateToEngine(new_input);
+      prev_input = new_input;
     }
 
     // we have to separately compare the sensor states in the event the whole
@@ -194,76 +194,76 @@ void InputHandler_PumpHID::InputThreadMain() {
   }
 }
 
-void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
+void InputHandler_PumpHID::CreateLightingMessage(LightsState new_ls) {
   // clear the state and recreate.
   memset(msg_to_device_.raw_buff_, PUMPHID_DEF_LIGHTS, sizeof(msg_to_device_));
 
   // lights are active high, so we can just set them as booleans.
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->input_scheme_;
-  std::string sInputName = pInput->name_;
+  const InputScheme* input = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  std::string input_name = input->name_;
 
-  if (EqualsNoCase(sInputName, "dance")) {
+  if (EqualsNoCase(input_name, "dance")) {
     msg_to_device_.lamp_p1_ul_ =
-        newLS.game_button_lights_[GameController_1][DANCE_BUTTON_UP];
+        new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_UP];
     msg_to_device_.lamp_p1_ur_ =
-        newLS.game_button_lights_[GameController_1][DANCE_BUTTON_DOWN];
+        new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_DOWN];
     msg_to_device_.lamp_p1_cn_ =
-        newLS.game_button_lights_[GameController_1][DANCE_BUTTON_LEFT];
+        new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_LEFT];
     msg_to_device_.lamp_p1_ll_ =
-        newLS.game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT];
+        new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT];
 
     msg_to_device_.lamp_p2_ul_ =
-        newLS.game_button_lights_[GameController_2][DANCE_BUTTON_UP];
+        new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_UP];
     msg_to_device_.lamp_p2_ur_ =
-        newLS.game_button_lights_[GameController_2][DANCE_BUTTON_DOWN];
+        new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_DOWN];
     msg_to_device_.lamp_p2_cn_ =
-        newLS.game_button_lights_[GameController_2][DANCE_BUTTON_LEFT];
+        new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_LEFT];
     msg_to_device_.lamp_p2_ll_ =
-        newLS.game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT];
-  } else if (EqualsNoCase(sInputName, "pump")) {
+        new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT];
+  } else if (EqualsNoCase(input_name, "pump")) {
     msg_to_device_.lamp_p1_ul_ =
-        newLS.game_button_lights_[GameController_1][PUMP_BUTTON_UPLEFT];
+        new_ls.game_button_lights_[GameController_1][PUMP_BUTTON_UPLEFT];
     msg_to_device_.lamp_p1_ur_ =
-        newLS.game_button_lights_[GameController_1][PUMP_BUTTON_UPRIGHT];
+        new_ls.game_button_lights_[GameController_1][PUMP_BUTTON_UPRIGHT];
     msg_to_device_.lamp_p1_cn_ =
-        newLS.game_button_lights_[GameController_1][PUMP_BUTTON_CENTER];
+        new_ls.game_button_lights_[GameController_1][PUMP_BUTTON_CENTER];
     msg_to_device_.lamp_p1_ll_ =
-        newLS.game_button_lights_[GameController_1][PUMP_BUTTON_DOWNLEFT];
+        new_ls.game_button_lights_[GameController_1][PUMP_BUTTON_DOWNLEFT];
     msg_to_device_.lamp_p1_lr_ =
-        newLS.game_button_lights_[GameController_1][PUMP_BUTTON_DOWNRIGHT];
+        new_ls.game_button_lights_[GameController_1][PUMP_BUTTON_DOWNRIGHT];
 
     msg_to_device_.lamp_p2_ul_ =
-        newLS.game_button_lights_[GameController_2][PUMP_BUTTON_UPLEFT];
+        new_ls.game_button_lights_[GameController_2][PUMP_BUTTON_UPLEFT];
     msg_to_device_.lamp_p2_ur_ =
-        newLS.game_button_lights_[GameController_2][PUMP_BUTTON_UPRIGHT];
+        new_ls.game_button_lights_[GameController_2][PUMP_BUTTON_UPRIGHT];
     msg_to_device_.lamp_p2_cn_ =
-        newLS.game_button_lights_[GameController_2][PUMP_BUTTON_CENTER];
+        new_ls.game_button_lights_[GameController_2][PUMP_BUTTON_CENTER];
     msg_to_device_.lamp_p2_ll_ =
-        newLS.game_button_lights_[GameController_2][PUMP_BUTTON_DOWNLEFT];
+        new_ls.game_button_lights_[GameController_2][PUMP_BUTTON_DOWNLEFT];
     msg_to_device_.lamp_p2_lr_ =
-        newLS.game_button_lights_[GameController_2][PUMP_BUTTON_DOWNRIGHT];
+        new_ls.game_button_lights_[GameController_2][PUMP_BUTTON_DOWNRIGHT];
   }
 
   // TODO how to handle Menu U/D/L/R vs lx cabs UR/UL/C etc
   // menu buttons.
   msg_to_device_.menu_p1_cn_ =
-      newLS.game_button_lights_[GameController_1][GAME_BUTTON_START];
+      new_ls.game_button_lights_[GameController_1][GAME_BUTTON_START];
 
   msg_to_device_.menu_p2_cn_ =
-      newLS.game_button_lights_[GameController_1][GAME_BUTTON_START];
+      new_ls.game_button_lights_[GameController_1][GAME_BUTTON_START];
 
   // cabinet lights
-  msg_to_device_.lamp_mar_ul_ = newLS.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT];
-  msg_to_device_.lamp_maq_ur_ = newLS.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT];
-  msg_to_device_.lamp_maq_ll_ = newLS.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT];
-  msg_to_device_.lamp_maq_lr_ = newLS.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT];
+  msg_to_device_.lamp_mar_ul_ = new_ls.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT];
+  msg_to_device_.lamp_maq_ur_ = new_ls.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT];
+  msg_to_device_.lamp_maq_ll_ = new_ls.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT];
+  msg_to_device_.lamp_maq_lr_ = new_ls.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT];
 
-  msg_to_device_.lamp_neon_ = newLS.cabinet_lights_[LIGHT_BASS_LEFT] ||
-                              newLS.cabinet_lights_[LIGHT_BASS_RIGHT];
+  msg_to_device_.lamp_neon_ = new_ls.cabinet_lights_[LIGHT_BASS_LEFT] ||
+                              new_ls.cabinet_lights_[LIGHT_BASS_RIGHT];
 
-  msg_to_device_.lamp_coin_pulse_ = newLS.coin_counter_;
+  msg_to_device_.lamp_coin_pulse_ = new_ls.coin_counter_;
 
   // static values to match.
   msg_to_device_.lamp_alwayson0_ = true;
@@ -315,9 +315,9 @@ uint32_t InputHandler_PumpHID::PumpHIDToLocalState(
   return state.raw_;
 }
 
-void InputHandler_PumpHID::PushInputStateToEngine(std::uint32_t newInput) {
+void InputHandler_PumpHID::PushInputStateToEngine(std::uint32_t new_input) {
   for (int i = 0; i < 32; i++) {
-    bool pressed = (newInput & (1 << i));
+    bool pressed = (new_input & (1 << i));
 
     DeviceInput di(DEVICE_PUMPHID, enum_add2(JOY_BUTTON_1, i), pressed);
 

@@ -27,15 +27,15 @@ void ScreenOptionsEditProfile::Init() { ScreenOptions::Init(); }
 void ScreenOptionsEditProfile::BeginScreen() {
   original_ = *GAMESTATE->GetEditLocalProfile();
 
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
 
-  Profile* pProfile =
+  Profile* profile =
       PROFILEMAN->GetLocalProfile(GAMESTATE->edit_local_profile_id_);
-  ASSERT(pProfile != nullptr);
+  ASSERT(profile != nullptr);
 
   {
-    vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->def_;
+    hands.push_back(OptionRowHandlerUtil::MakeNull());
+    OptionRowDefinition& def = hands.back()->def_;
     def.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
     def.one_choice_for_all_players_ = true;
     def.allow_theme_items_ = false;
@@ -44,9 +44,9 @@ void ScreenOptionsEditProfile::BeginScreen() {
     def.export_on_change_ = true;
     def.name_ = "Character";
     def.choices_.clear();
-    std::vector<Character*> vpCharacters;
-    CHARMAN->GetCharacters(vpCharacters);
-    for (const Character* c : vpCharacters) {
+    std::vector<Character*> characters;
+    CHARMAN->GetCharacters(characters);
+    for (const Character* c : characters) {
       def.choices_.push_back(c->GetDisplayName());
     }
     if (def.choices_.empty()) {
@@ -54,7 +54,7 @@ void ScreenOptionsEditProfile::BeginScreen() {
     }
   }
 
-  InitMenu(vHands);
+  InitMenu(hands);
 
   ScreenOptions::BeginScreen();
 }
@@ -62,51 +62,50 @@ void ScreenOptionsEditProfile::BeginScreen() {
 ScreenOptionsEditProfile::~ScreenOptionsEditProfile() {}
 
 void ScreenOptionsEditProfile::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  Profile* pProfile =
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  Profile* profile =
       PROFILEMAN->GetLocalProfile(GAMESTATE->edit_local_profile_id_);
-  ASSERT(pProfile != nullptr);
-  OptionRow& row = *rows_[iRow];
+  ASSERT(profile != nullptr);
+  OptionRow& row = *rows_[i_row];
 
-  switch (iRow) {
+  switch (i_row) {
     case ROW_CHARACTER:
-      row.SetOneSharedSelectionIfPresent(pProfile->character_id_);
+      row.SetOneSharedSelectionIfPresent(profile->character_id_);
       break;
   }
 }
 
 void ScreenOptionsEditProfile::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  Profile* pProfile =
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  Profile* profile =
       PROFILEMAN->GetLocalProfile(GAMESTATE->edit_local_profile_id_);
-  ASSERT(pProfile != nullptr);
-  OptionRow& row = *rows_[iRow];
-  int iIndex = row.GetOneSharedSelection(true);
-  std::string sValue;
-  if (iIndex >= 0) {
-    sValue = row.GetRowDef().choices_[iIndex];
+  ASSERT(profile != nullptr);
+  OptionRow& row = *rows_[i_row];
+  int index = row.GetOneSharedSelection(true);
+  std::string value;
+  if (index >= 0) {
+    value = row.GetRowDef().choices_[index];
   }
 
-  switch (iRow) {
+  switch (i_row) {
     case ROW_CHARACTER:
-      pProfile->character_id_ = sValue;
+      profile->character_id_ = value;
       break;
   }
 }
 
-void ScreenOptionsEditProfile::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_GoToNextScreen) {
+void ScreenOptionsEditProfile::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_GoToNextScreen) {
     PROFILEMAN->SaveLocalProfile(GAMESTATE->edit_local_profile_id_);
-  } else if (SM == SM_GoToPrevScreen) {
+  } else if (sm == SM_GoToPrevScreen) {
     *GAMESTATE->GetEditLocalProfile() = original_;
   }
 
-  ScreenOptions::HandleScreenMessage(SM);
+  ScreenOptions::HandleScreenMessage(sm);
 }
 
-void ScreenOptionsEditProfile::AfterChangeValueInRow(
-    int iRow, PlayerNumber pn) {
-  ScreenOptions::AfterChangeValueInRow(iRow, pn);
+void ScreenOptionsEditProfile::AfterChangeValueInRow(int row, PlayerNumber pn) {
+  ScreenOptions::AfterChangeValueInRow(row, pn);
 
   // cause the overlay to reload
   GAMESTATE->edit_local_profile_id_.Set(GAMESTATE->edit_local_profile_id_);
@@ -117,10 +116,10 @@ void ScreenOptionsEditProfile::ProcessMenuStart(const InputEventPlus& input) {
     return;
   }
 
-  int iRow = GetCurrentRow();
+  int row = GetCurrentRow();
   // OptionRow &row = *m_pRows[iRow];
 
-  switch (iRow) {
+  switch (row) {
     case ROW_CHARACTER: {
     } break;
     default:

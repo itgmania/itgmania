@@ -11,7 +11,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "StdString.h"
 
-std::string GetRandomFileInDir(std::string sDir);
+std::string GetRandomFileInDir(std::string dir);
 
 Character::Character()
     : char_dir_(""),
@@ -20,17 +20,17 @@ Character::Character()
       card_path_(""),
       icon_path_("") {}
 
-bool Character::Load(std::string sCharDir) {
+bool Character::Load(std::string char_dir) {
   // Save character directory
-  if (Right(sCharDir, 1) != "/") {
-    sCharDir += "/";
+  if (Right(char_dir, 1) != "/") {
+    char_dir += "/";
   }
-  char_dir_ = sCharDir;
+  char_dir_ = char_dir;
 
   // save ID
   {
     std::vector<std::string> as;
-    split(sCharDir, "/", as);
+    split(char_dir, "/", as);
     character_id_ = as.back();
   }
 
@@ -64,7 +64,7 @@ bool Character::Load(std::string sCharDir) {
 
   // Save attacks
   IniFile ini;
-  if (!ini.ReadFile(sCharDir + "character.ini")) {
+  if (!ini.ReadFile(char_dir + "character.ini")) {
     return false;
   }
   for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
@@ -86,13 +86,13 @@ bool Character::Load(std::string sCharDir) {
   return true;
 }
 
-std::string GetRandomFileInDir(std::string sDir) {
-  std::vector<std::string> asFiles;
-  GetDirListing(sDir, asFiles, false, true);
-  if (asFiles.empty()) {
+std::string GetRandomFileInDir(std::string dir) {
+  std::vector<std::string> files;
+  GetDirListing(dir, files, false, true);
+  if (files.empty()) {
     return std::string();
   } else {
-    return asFiles[RandomInt(asFiles.size())];
+    return files[RandomInt(files.size())];
   }
 }
 

@@ -44,7 +44,7 @@ void InputHandler::ButtonPressed(DeviceInput di) {
 }
 
 wchar_t InputHandler::DeviceButtonToChar(
-    DeviceButton button, bool bUseCurrentKeyModifiers) {
+    DeviceButton button, bool use_current_key_modifiers) {
   wchar_t c = L'\0';
   switch (button) {
     default:
@@ -76,18 +76,18 @@ wchar_t InputHandler::DeviceButtonToChar(
 
   // Handle some default US keyboard modifiers for derived InputHandlers that
   // don't implement DeviceButtonToChar.
-  if (bUseCurrentKeyModifiers) {
-    bool bHoldingShift =
+  if (use_current_key_modifiers) {
+    bool holding_shift =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
 
-    bool bHoldingCtrl =
+    bool holding_ctrl =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
 
     // todo: handle Caps Lock -freem
 
-    if (bHoldingShift && !bHoldingCtrl) {
+    if (holding_shift && !holding_ctrl) {
       MakeUpper(&c, 1);
 
       switch (c) {
@@ -245,23 +245,22 @@ DriverList InputHandler::driver_list_;
 static LocalizedString INPUT_HANDLERS_EMPTY(
     "Arch", "Input Handlers cannot be empty.");
 void InputHandler::Create(
-    const std::string& drivers_, std::vector<InputHandler*>& add) {
-  const std::vector<std::string>& driversToTry =
-      drivers_.empty() ? GetDefaultInputDriverList()
-                       : split(drivers_, ',', true);
+    const std::string& drivers, std::vector<InputHandler*>& add) {
+  const std::vector<std::string>& drivers_to_try =
+      drivers.empty() ? GetDefaultInputDriverList() : split(drivers, ',', true);
 
-  if (driversToTry.empty()) {
+  if (drivers_to_try.empty()) {
     RageException::Throw("%s", INPUT_HANDLERS_EMPTY.GetValue().c_str());
   }
 
-  for (const std::string& s : driversToTry) {
-    RageDriver* pDriver = InputHandler::driver_list_.Create(s);
-    if (pDriver == nullptr) {
+  for (const std::string& s : drivers_to_try) {
+    RageDriver* driver = InputHandler::driver_list_.Create(s);
+    if (driver == nullptr) {
       LOG->Trace("Unknown Input Handler name: %s", s.c_str());
       continue;
     }
 
-    InputHandler* ret = dynamic_cast<InputHandler*>(pDriver);
+    InputHandler* ret = dynamic_cast<InputHandler*>(driver);
     DEBUG_ASSERT(ret);
     add.push_back(ret);
   }

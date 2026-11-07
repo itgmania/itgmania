@@ -70,8 +70,8 @@ class Debugger::Impl {
     }
 
     if (thread == nullptr) {
-      LuaThread newThread{next_thread_id_++, lua, true};
-      threads_.push_back(newThread);
+      LuaThread new_thread{next_thread_id_++, lua, true};
+      threads_.push_back(new_thread);
       thread = &threads_.back();
       SendResponse(CreateThreadStartedEvent(thread->thread_id_));
     }
@@ -103,8 +103,8 @@ class Debugger::Impl {
   }
 
   void SendRequest(Request&& request) {
-    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
-    if (!isLocked) {
+    bool is_locked = lua_debug_mutex_.IsLockedByThisThread();
+    if (!is_locked) {
       lua_debug_mutex_.Lock();
     }
     if (is_paused_) {
@@ -113,7 +113,7 @@ class Debugger::Impl {
     } else {
       HandleRequest(request);
     }
-    if (!isLocked) {
+    if (!is_locked) {
       lua_debug_mutex_.Unlock();
     }
   }
@@ -129,13 +129,13 @@ class Debugger::Impl {
   }
 
   void SendResponse(Response&& response) {
-    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
-    if (!isLocked) {
+    bool is_locked = lua_debug_mutex_.IsLockedByThisThread();
+    if (!is_locked) {
       lua_debug_mutex_.Lock();
     }
     to_server_thread_.push(std::move(response));
     lua_debug_mutex_.Broadcast();
-    if (!isLocked) {
+    if (!is_locked) {
       lua_debug_mutex_.Unlock();
     }
   }
@@ -151,14 +151,14 @@ class Debugger::Impl {
   }
 
   void ReceiveRequest(Request& request) {
-    bool isLocked = lua_debug_mutex_.IsLockedByThisThread();
-    if (!isLocked) {
+    bool is_locked = lua_debug_mutex_.IsLockedByThisThread();
+    if (!is_locked) {
       lua_debug_mutex_.Lock();
     }
     while (!TryReceiveRequest(request)) {
       lua_debug_mutex_.Wait();
     }
-    if (!isLocked) {
+    if (!is_locked) {
       lua_debug_mutex_.Unlock();
     }
   }
@@ -242,40 +242,40 @@ class Debugger::Impl {
   }
 
   void ExecuteSetBreakpointsCommand(const Request& request) {
-    std::string absPath = request["arguments"]["source"]["path"].asString();
+    std::string abs_path = request["arguments"]["source"]["path"].asString();
 
     const Json::Value& breakpoints = request["arguments"]["breakpoints"];
-    int breakpointCount = (int)breakpoints.size();
+    int breakpoint_count = (int)breakpoints.size();
 
-    std::vector<BreakpointId> newBreakpointIds;
-    std::vector<int> lineNumbers;
+    std::vector<BreakpointId> new_breakpoint_ids;
+    std::vector<int> line_numbers;
     for (int i = 0; (size_t)i < breakpoints.size(); i++) {
-      int lineNumber = breakpoints[i]["line"].asInt();
-      if (lineNumber >= 0) {
-        lineNumber -= client_.lines_offset_;
+      int line_number = breakpoints[i]["line"].asInt();
+      if (line_number >= 0) {
+        line_number -= client_.lines_offset_;
       }
-      if (lineNumber < 0) {
-        lineNumber = 0;
+      if (line_number < 0) {
+        line_number = 0;
       }
-      lineNumbers.push_back(lineNumber);
-      newBreakpointIds.push_back(next_breakpoint_id_++);
+      line_numbers.push_back(line_number);
+      new_breakpoint_ids.push_back(next_breakpoint_id_++);
     }
 
-    std::vector<std::string> luaPaths = UnresolvePath(absPath);
-    for (std::string& source : luaPaths) {
+    std::vector<std::string> lua_paths = UnresolvePath(abs_path);
+    for (std::string& source : lua_paths) {
       DeleteBreakpointsInSource(source);
 
-      for (int i = 0; i < breakpointCount; i++) {
-        if (lineNumbers[i] <= 0) {
+      for (int i = 0; i < breakpoint_count; i++) {
+        if (line_numbers[i] <= 0) {
           continue;
         }
 
         Breakpoint bp =
-            Breakpoint::Line(newBreakpointIds[i], source, lineNumbers[i]);
+            Breakpoint::Line(new_breakpoint_ids[i], source, line_numbers[i]);
         bp.SetCondition(breakpoints[i]["condition"].asString());
-        std::string hitCondition = breakpoints[i]["hitCondition"].asString();
-        if (!hitCondition.empty()) {
-          bp.SetHitCondition(std::stoi(hitCondition));
+        std::string hit_condition = breakpoints[i]["hitCondition"].asString();
+        if (!hit_condition.empty()) {
+          bp.SetHitCondition(std::stoi(hit_condition));
         }
         bp.SetLogMessage(breakpoints[i]["logMessage"].asString());
 
@@ -283,55 +283,55 @@ class Debugger::Impl {
       }
     }
 
-    Json::Value breakpointsJson(Json::arrayValue);
-    for (int i = 0; i < breakpointCount; i++) {
-      Json::Value bpJson;
-      bpJson["id"] = newBreakpointIds[i];
-      bpJson["source"]["path"] = absPath;
-      bpJson["line"] = lineNumbers[i] + client_.lines_offset_;
-      if (luaPaths.empty()) {
-        bpJson["verified"] = false;
-        bpJson["reason"] = "failed";
-        bpJson["message"] = "Source file not found";
+    Json::Value breakpoints_json(Json::arrayValue);
+    for (int i = 0; i < breakpoint_count; i++) {
+      Json::Value json;
+      json["id"] = new_breakpoint_ids[i];
+      json["source"]["path"] = abs_path;
+      json["line"] = line_numbers[i] + client_.lines_offset_;
+      if (lua_paths.empty()) {
+        json["verified"] = false;
+        json["reason"] = "failed";
+        json["message"] = "Source file not found";
       } else {
-        bpJson["verified"] = true;
+        json["verified"] = true;
       }
-      breakpointsJson.append(bpJson);
+      breakpoints_json.append(json);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["breakpoints"] = breakpointsJson;
+    result["body"]["breakpoints"] = breakpoints_json;
     SendResponse(std::move(result));
   }
 
   void ExecuteSetFunctionBreakpointsCommand(const Request& request) {
     const Json::Value& breakpoints = request["arguments"]["breakpoints"];
-    int breakpointCount = (int)breakpoints.size();
+    int breakpoint_count = (int)breakpoints.size();
 
     DeleteAllFunctionBreakpoints();
 
-    Json::Value breakpointsJson(Json::arrayValue);
+    Json::Value breakpoints_json(Json::arrayValue);
     for (int i = 0; (size_t)i < breakpoints.size(); i++) {
       Breakpoint bp = Breakpoint::Function(
           next_breakpoint_id_++, breakpoints[i]["name"].asString());
       bp.SetCondition(breakpoints[i]["condition"].asString());
-      std::string hitCondition = breakpoints[i]["hitCondition"].asString();
-      if (!hitCondition.empty()) {
-        bp.SetHitCondition(std::stoi(hitCondition));
+      std::string hit_condition = breakpoints[i]["hitCondition"].asString();
+      if (!hit_condition.empty()) {
+        bp.SetHitCondition(std::stoi(hit_condition));
       }
       bp.SetLogMessage(breakpoints[i]["logMessage"].asString());
 
       AddBreakpoint(bp);
 
-      Json::Value bpJson;
-      bpJson["id"] = bp.GetId();
-      bpJson["verified"] = false;
-      bpJson["reason"] = "pending";
-      breakpointsJson.append(bpJson);
+      Json::Value json;
+      json["id"] = bp.GetId();
+      json["verified"] = false;
+      json["reason"] = "pending";
+      breakpoints_json.append(json);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["breakpoints"] = breakpointsJson;
+    result["body"]["breakpoints"] = breakpoints_json;
     SendResponse(std::move(result));
   }
 
@@ -386,8 +386,8 @@ class Debugger::Impl {
   void ExecuteDisconnectCommand(const Request& request) {
     DeleteAllBreakpoints();
 
-    bool suspendDebuggee = request["arguments"]["suspendDebuggee"].asBool();
-    if (is_paused_ && !suspendDebuggee) {
+    bool suspend_debuggee = request["arguments"]["suspendDebuggee"].asBool();
+    if (is_paused_ && !suspend_debuggee) {
       ContinueExecution();
     }
 
@@ -404,62 +404,62 @@ class Debugger::Impl {
     }
 
     std::string expression = request["arguments"]["expression"].asString();
-    ObjectRef frameId = request["arguments"]["frameId"].asInt();
+    ObjectRef frame_id = request["arguments"]["frameId"].asInt();
 
-    DebuggeeState& frameOrThread =
-        frameId ? debuggee_state_.GetObject(frameId)
-                : debuggee_state_.GetThread(current_thread_);
-    if (!frameOrThread) {
+    DebuggeeState& frame_or_thread =
+        frame_id ? debuggee_state_.GetObject(frame_id)
+                 : debuggee_state_.GetThread(current_thread_);
+    if (!frame_or_thread) {
       return SendResponse(CreateErrorResponse(request, "no such frame"));
     }
 
-    lua_State* L = frameOrThread.GetLua();
-    int firstResultIndex = lua_gettop(L) + 1;
-    int resultCount = LuaEvaluate(expression, frameOrThread);
-    if (resultCount < 0) {
+    lua_State* L = frame_or_thread.GetLua();
+    int first_result_index = lua_gettop(L) + 1;
+    int result_count = LuaEvaluate(expression, frame_or_thread);
+    if (result_count < 0) {
       std::string error = LuaValueToString(L, -1, false);
       lua_pop(L, 1);
       return SendResponse(CreateErrorResponse(request, error));
     }
 
     std::string result;
-    std::string resultType;
-    for (int i = 0; i < resultCount; i++) {
+    std::string result_type;
+    for (int i = 0; i < result_count; i++) {
       if (!result.empty()) {
         result.append(", ");
       }
-      result.append(LuaValueToString(L, firstResultIndex + i));
+      result.append(LuaValueToString(L, first_result_index + i));
 
-      if (!resultType.empty()) {
-        resultType.append(", ");
+      if (!result_type.empty()) {
+        result_type.append(", ");
       }
-      resultType.append(lua_typename(L, lua_type(L, firstResultIndex + i)));
+      result_type.append(lua_typename(L, lua_type(L, first_result_index + i)));
     }
 
-    ObjectRef variablesReference = 0;
-    if (resultCount > 1) {
+    ObjectRef variables_reference = 0;
+    if (result_count > 1) {
       // Create a reference for the return values.
-      lua_createtable(L, resultCount, 0);
-      for (int i = 0; i < resultCount; i++) {
-        lua_pushvalue(L, firstResultIndex + i);
+      lua_createtable(L, result_count, 0);
+      for (int i = 0; i < result_count; i++) {
+        lua_pushvalue(L, first_result_index + i);
         lua_rawseti(L, -2, i + 1);
       }
-      variablesReference = frameOrThread.CreateReferenceFromStack().GetId();
-    } else if (resultCount == 1 && lua_type(L, -1) == LUA_TTABLE) {
+      variables_reference = frame_or_thread.CreateReferenceFromStack().GetId();
+    } else if (result_count == 1 && lua_type(L, -1) == LUA_TTABLE) {
       // Create a reference for the single return value.
       lua_pushvalue(L, -1);
-      variablesReference = frameOrThread.CreateReferenceFromStack().GetId();
+      variables_reference = frame_or_thread.CreateReferenceFromStack().GetId();
     } else {
-      variablesReference = 0;
+      variables_reference = 0;
     }
-    lua_pop(L, resultCount);
+    lua_pop(L, result_count);
 
     Response response = CreateDapResponse(request);
     response["body"]["result"] = result;
     if (client_.supports_variable_type_) {
-      response["body"]["type"] = resultType;
+      response["body"]["type"] = result_type;
     }
-    response["body"]["variablesReference"] = variablesReference;
+    response["body"]["variablesReference"] = variables_reference;
     SendResponse(std::move(response));
   }
 
@@ -467,32 +467,32 @@ class Debugger::Impl {
     if (!is_paused_) {
       return SendResponse(CreateNotStoppedResponse(request));
     }
-    ObjectRef parentId = request["arguments"]["variablesReference"].asInt();
-    std::string varName = request["arguments"]["name"].asString();
+    ObjectRef parent_id = request["arguments"]["variablesReference"].asInt();
+    std::string var_name = request["arguments"]["name"].asString();
     std::string expression = request["arguments"]["value"].asString();
 
-    DebuggeeState& parent = debuggee_state_.GetObject(parentId);
+    DebuggeeState& parent = debuggee_state_.GetObject(parent_id);
     if (!parent) {
       return SendResponse(CreateErrorResponse(request, "no such variable"));
     }
     lua_State* L = parent.GetLua();
 
-    DebuggeeState& var = parent.GetVariable(varName);
+    DebuggeeState& var = parent.GetVariable(var_name);
     if (!var) {
       return SendResponse(CreateErrorResponse(request, "no such variable"));
     }
 
-    int resultCount = LuaEvaluate(expression, parent.GetThread());
-    if (resultCount < 0) {
+    int result_count = LuaEvaluate(expression, parent.GetThread());
+    if (result_count < 0) {
       std::string error = LuaValueToString(L, -1, false);
       lua_pop(L, 1);
       return SendResponse(CreateErrorResponse(request, error));
     }
 
-    if (resultCount > 1) {
-      lua_pop(L, resultCount - 1);
+    if (result_count > 1) {
+      lua_pop(L, result_count - 1);
     }
-    if (resultCount < 1) {
+    if (result_count < 1) {
       lua_pushnil(L);
     }
 
@@ -516,26 +516,26 @@ class Debugger::Impl {
   }
 
   void ExecuteThreadsCommand(const Request& request) {
-    Json::Value threadsJson(Json::arrayValue);
+    Json::Value threads_json(Json::arrayValue);
     for (DebuggeeState* thread : debuggee_state_.GetChildren()) {
       if (thread->GetType() != DebuggeeState::Type::Thread) {
         continue;
       }
-      Json::Value threadJson;
-      threadJson["id"] = thread->GetThreadId();
-      threadJson["name"] = "Thread " + std::to_string(thread->GetThreadId());
-      threadsJson.append(threadJson);
+      Json::Value thread_json;
+      thread_json["id"] = thread->GetThreadId();
+      thread_json["name"] = "Thread " + std::to_string(thread->GetThreadId());
+      threads_json.append(thread_json);
     }
 
-    if (threadsJson.empty()) {
-      Json::Value fakeThread;
-      fakeThread["id"] = 0;
-      fakeThread["name"] = "No threads";
-      threadsJson.append(fakeThread);
+    if (threads_json.empty()) {
+      Json::Value fake_thread;
+      fake_thread["id"] = 0;
+      fake_thread["name"] = "No threads";
+      threads_json.append(fake_thread);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["threads"] = std::move(threadsJson);
+    result["body"]["threads"] = std::move(threads_json);
     SendResponse(std::move(result));
   }
 
@@ -544,24 +544,24 @@ class Debugger::Impl {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
-    ThreadId threadId = request["arguments"]["threadId"].asUInt64();
-    int startFrame = request["arguments"]["startFrame"].asInt();
+    ThreadId thread_id = request["arguments"]["threadId"].asUInt64();
+    int start_frame = request["arguments"]["startFrame"].asInt();
     int levels = request["arguments"]["levels"].asInt();
     if (levels <= 0) {
       levels = INT_MAX;
     }
 
-    DebuggeeState& thread = debuggee_state_.GetThread(threadId);
+    DebuggeeState& thread = debuggee_state_.GetThread(thread_id);
     if (!thread) {
-      Response emptyResult = CreateDapResponse(request);
-      emptyResult["body"]["stackFrames"] = Json::Value(Json::arrayValue);
-      emptyResult["body"]["totalFrames"] = 0;
-      SendResponse(std::move(emptyResult));
+      Response empty_result = CreateDapResponse(request);
+      empty_result["body"]["stackFrames"] = Json::Value(Json::arrayValue);
+      empty_result["body"]["totalFrames"] = 0;
+      SendResponse(std::move(empty_result));
     }
 
-    Json::Value framesJson = Json::Value(Json::arrayValue);
-    for (size_t i = startFrame;
-         i < thread.GetChildren().size() && framesJson.size() < (size_t)levels;
+    Json::Value frames_json = Json::Value(Json::arrayValue);
+    for (size_t i = start_frame;
+         i < thread.GetChildren().size() && frames_json.size() < (size_t)levels;
          i++) {
       DebuggeeState& frame = *thread.GetChildren()[i];
       if (frame.GetType() != DebuggeeState::Type::StackFrame) {
@@ -573,41 +573,41 @@ class Debugger::Impl {
       }
       lua_getinfo(frame.GetLua(), "lnS", &debug);
 
-      Json::Value frameJson;
-      frameJson["id"] = frame.GetId();
+      Json::Value frame_json;
+      frame_json["id"] = frame.GetId();
       if (debug.name != nullptr && debug.name[0] != 0) {
-        frameJson["name"] = debug.name;
+        frame_json["name"] = debug.name;
       } else if (debug.what != nullptr && strcmp(debug.what, "Lua") == 0) {
-        frameJson["name"] = "<Lua function>";
+        frame_json["name"] = "<Lua function>";
       } else if (debug.what != nullptr && strcmp(debug.what, "C") == 0) {
-        frameJson["name"] = "<C function>";
+        frame_json["name"] = "<C function>";
       } else if (debug.what != nullptr && strcmp(debug.what, "C") == 0) {
-        frameJson["name"] = "<main>";
+        frame_json["name"] = "<main>";
       } else if (debug.what != nullptr && strcmp(debug.what, "tail") == 0) {
-        frameJson["name"] = "<tail call>";
-        frameJson["presentationHint"] = "label";
+        frame_json["name"] = "<tail call>";
+        frame_json["presentationHint"] = "label";
       } else {
-        frameJson["name"] = "<unknown>";
+        frame_json["name"] = "<unknown>";
       }
 
       std::string source = debug.source ? ResolvePath(debug.source) : "";
       if (!source.empty()) {
-        frameJson["source"]["name"] = debug.short_src;
-        frameJson["source"]["path"] = source;
+        frame_json["source"]["name"] = debug.short_src;
+        frame_json["source"]["path"] = source;
       }
 
       if (debug.currentline > 0) {
-        frameJson["line"] = debug.currentline + client_.lines_offset_;
+        frame_json["line"] = debug.currentline + client_.lines_offset_;
       } else {
-        frameJson["line"] = 0;
+        frame_json["line"] = 0;
       }
 
-      frameJson["column"] = 0;
-      framesJson.append(frameJson);
+      frame_json["column"] = 0;
+      frames_json.append(frame_json);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["stackFrames"] = framesJson;
+    result["body"]["stackFrames"] = frames_json;
     result["body"]["totalFrames"] = (int)thread.GetChildren().size();
     SendResponse(std::move(result));
   }
@@ -617,47 +617,47 @@ class Debugger::Impl {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
-    ObjectRef frameId = request["arguments"]["frameId"].asInt();
+    ObjectRef frame_id = request["arguments"]["frameId"].asInt();
 
-    DebuggeeState& frame = debuggee_state_.GetObject(frameId);
+    DebuggeeState& frame = debuggee_state_.GetObject(frame_id);
     if (frame.GetType() != DebuggeeState::Type::StackFrame) {
-      Response emptyResult = CreateDapResponse(request);
-      emptyResult["body"]["scopes"] = Json::Value(Json::arrayValue);
-      return SendResponse(std::move(emptyResult));
+      Response empty_result = CreateDapResponse(request);
+      empty_result["body"]["scopes"] = Json::Value(Json::arrayValue);
+      return SendResponse(std::move(empty_result));
     }
 
-    Json::Value scopesJson(Json::arrayValue);
+    Json::Value scopes_json(Json::arrayValue);
 
     DebuggeeState& locals = frame.GetLocals();
     if (locals) {
-      Json::Value localsJson;
-      localsJson["variablesReference"] = locals.GetId();
-      localsJson["name"] = "Locals";
-      localsJson["expensive"] = false;
-      localsJson["presentationHint"] = "locals";
-      scopesJson.append(localsJson);
+      Json::Value locals_json;
+      locals_json["variablesReference"] = locals.GetId();
+      locals_json["name"] = "Locals";
+      locals_json["expensive"] = false;
+      locals_json["presentationHint"] = "locals";
+      scopes_json.append(locals_json);
     }
 
     DebuggeeState& upvalues = frame.GetUpvalues();
     if (upvalues) {
-      Json::Value upvaluesJson;
-      upvaluesJson["variablesReference"] = upvalues.GetId();
-      upvaluesJson["name"] = "Upvalues";
-      upvaluesJson["expensive"] = false;
-      scopesJson.append(upvaluesJson);
+      Json::Value upvalues_json;
+      upvalues_json["variablesReference"] = upvalues.GetId();
+      upvalues_json["name"] = "Upvalues";
+      upvalues_json["expensive"] = false;
+      scopes_json.append(upvalues_json);
     }
 
     DebuggeeState& globals = frame.GetGlobals();
     if (globals) {
-      Json::Value globalsJson;
-      globalsJson["variablesReference"] = globals.GetId();
-      globalsJson["name"] = "Globals";
-      globalsJson["expensive"] = true;
-      scopesJson.append(globalsJson);
+      Json::Value globals_json;
+      globals_json["variablesReference"] = globals.GetId();
+      globals_json["name"] = "Globals";
+      globals_json["expensive"] = true;
+      scopes_json.append(globals_json);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["scopes"] = std::move(scopesJson);
+    result["body"]["scopes"] = std::move(scopes_json);
     SendResponse(std::move(result));
   }
 
@@ -666,26 +666,27 @@ class Debugger::Impl {
       return SendResponse(CreateNotStoppedResponse(request));
     }
 
-    ObjectRef parentId = request["arguments"]["variablesReference"].asInt();
+    ObjectRef parent_id = request["arguments"]["variablesReference"].asInt();
 
-    DebuggeeState& parent = debuggee_state_.GetObject(parentId);
+    DebuggeeState& parent = debuggee_state_.GetObject(parent_id);
     if (!parent.IsVariablesContainer()) {
       return SendResponse(CreateErrorResponse(request, "no such variable"));
     }
 
-    bool skipNamed = request["arguments"]["filter"].asString() == "indexed";
-    bool skipIndexed = parent.IsScope() &&
-                       request["arguments"]["filter"].asString() == "named";
+    bool skip_named = request["arguments"]["filter"].asString() == "indexed";
+    bool skip_indexed = parent.IsScope() &&
+                        request["arguments"]["filter"].asString() == "named";
 
-    Json::Value varsJson(Json::arrayValue);
+    Json::Value vars_json(Json::arrayValue);
     for (DebuggeeState* var : parent.GetChildren()) {
       if (!var->IsVariable()) {
         continue;
       }
-      if (skipNamed && var->GetType() != DebuggeeState::Type::IndexedVariable) {
+      if (skip_named &&
+          var->GetType() != DebuggeeState::Type::IndexedVariable) {
         continue;
       }
-      if (skipIndexed &&
+      if (skip_indexed &&
           var->GetType() == DebuggeeState::Type::IndexedVariable) {
         continue;
       }
@@ -696,31 +697,31 @@ class Debugger::Impl {
       lua_State* L = var->GetLua();
       int luaType = lua_type(L, -1);
 
-      Json::Value varJson;
-      varJson["name"] = var->GetName();
-      varJson["value"] = LuaValueToString(L, -1);
+      Json::Value var_json;
+      var_json["name"] = var->GetName();
+      var_json["value"] = LuaValueToString(L, -1);
       if (client_.supports_variable_type_) {
-        varJson["type"] = lua_typename(L, luaType);
+        var_json["type"] = lua_typename(L, luaType);
       }
-      varJson["variablesReference"] = luaType == LUA_TTABLE ? var->GetId() : 0;
+      var_json["variablesReference"] = luaType == LUA_TTABLE ? var->GetId() : 0;
 
       if (var->GetType() == DebuggeeState::Type::MetaTableVariable) {
-        varJson["presentationHint"]["kind"] = "virtual";
+        var_json["presentationHint"]["kind"] = "virtual";
       } else if (parent.IsScope() && var->IsTemporaryVariable()) {
-        varJson["presentationHint"]["kind"] = "virtual";
+        var_json["presentationHint"]["kind"] = "virtual";
       } else if (luaType == LUA_TFUNCTION) {
-        varJson["presentationHint"]["kind"] = "method";
+        var_json["presentationHint"]["kind"] = "method";
       } else if (parent.IsScope()) {
-        varJson["presentationHint"]["kind"] = "property";
+        var_json["presentationHint"]["kind"] = "property";
       }
 
-      varsJson.append(varJson);
+      vars_json.append(var_json);
 
       lua_pop(L, 1);
     }
 
     Response result = CreateDapResponse(request);
-    result["body"]["variables"] = std::move(varsJson);
+    result["body"]["variables"] = std::move(vars_json);
     SendResponse(std::move(result));
   }
 
@@ -798,11 +799,11 @@ class Debugger::Impl {
   void UpdateHook() {
     ASSERT(lua_debug_mutex_.IsLockedByThisThread());
 
-    int fullMask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
+    int full_mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
     int mask = 0;
     for (Breakpoint& bp : breakpoints_) {
       mask |= bp.GetEventMask();
-      if (mask == fullMask) {
+      if (mask == full_mask) {
         break;
       }
     }
@@ -830,14 +831,14 @@ class Debugger::Impl {
     LockMutex lock(lua_debug_mutex_);
     std::lock_guard lock2(breakpoints_lock_);
 
-    bool anyDeleted = false;
+    bool any_deleted = false;
     for (int i = breakpoints_.size() - 1; i >= 0; i--) {
       if (breakpoints_[i].GetFileName() == source) {
         breakpoints_.erase(breakpoints_.begin() + i);
-        anyDeleted = true;
+        any_deleted = true;
       }
     }
-    if (anyDeleted) {
+    if (any_deleted) {
       UpdateHook();
     }
   }
@@ -846,14 +847,14 @@ class Debugger::Impl {
     LockMutex lock(lua_debug_mutex_);
     std::lock_guard lock2(breakpoints_lock_);
 
-    bool anyDeleted = false;
+    bool any_deleted = false;
     for (int i = breakpoints_.size() - 1; i >= 0; i--) {
       if (!breakpoints_[i].GetFunctionName().empty()) {
         breakpoints_.erase(breakpoints_.begin() + i);
-        anyDeleted = true;
+        any_deleted = true;
       }
     }
-    if (anyDeleted) {
+    if (any_deleted) {
       UpdateHook();
     }
   }
@@ -876,16 +877,16 @@ class Debugger::Impl {
     // Locking the m_luaDebugMutex mutex is slow, so try with only
     // m_breakpointsLock first. Only try to lock it once to avoid excessive
     // spinning if the server thread holds it for a long time.
-    bool isAnyHit = false;
+    bool is_any_hit = false;
     if (breakpoints_lock_.try_lock()) {
       for (Breakpoint& bp : breakpoints_) {
         if (bp.IsHit(L, *ar)) {
-          isAnyHit = true;
+          is_any_hit = true;
           break;
         }
       }
       breakpoints_lock_.unlock();
-      if (!isAnyHit) {
+      if (!is_any_hit) {
         return;
       }
     }
@@ -895,48 +896,48 @@ class Debugger::Impl {
     // Check again after acquiring m_luaDebugMutex. The breakpoints could have
     // changed between releasing m_breakpointsLock and acquiring
     // m_luaDebugMutex, or if we failed to acquire m_breakpointsLock at all.
-    isAnyHit = false;
+    is_any_hit = false;
     for (Breakpoint& bp : breakpoints_) {
       if (bp.IsHit(L, *ar)) {
-        isAnyHit = true;
+        is_any_hit = true;
         break;
       }
     }
-    if (!isAnyHit) {
+    if (!is_any_hit) {
       return;
     }
 
     std::string source = ar->source ? ResolvePath(ar->source) : "";
-    std::string sourceName = !source.empty() ? ar->short_src : "";
-    int lineNumber =
+    std::string source_name = !source.empty() ? ar->short_src : "";
+    int line_number =
         ar->currentline > 0 ? ar->currentline + client_.lines_offset_ : -1;
 
-    DebuggeeState& currentStackFrame =
+    DebuggeeState& current_stack_frame =
         debuggee_state_.GetThread(L).GetStackFrame(0);
-    current_thread_ = currentStackFrame.GetThreadId();
+    current_thread_ = current_stack_frame.GetThreadId();
 
     std::string reason;
-    std::string evaluationErrors;
-    std::vector<BreakpointId> hitBreakpointIds;
-    bool anyDeleted = false;
+    std::string evaluation_errors;
+    std::vector<BreakpointId> hit_breakpoint_ids;
+    bool any_deleted = false;
     for (size_t i = 0; i < breakpoints_.size(); i++) {
       Breakpoint& bp = breakpoints_[i];
       if (!bp.IsHit(L, *ar)) {
         continue;
       }
 
-      std::string evalError;
-      if (!bp.EvaluateConditions(currentStackFrame, evalError)) {
+      std::string eval_error;
+      if (!bp.EvaluateConditions(current_stack_frame, eval_error)) {
         continue;
       }
-      if (!evalError.empty()) {
+      if (!eval_error.empty()) {
         is_paused_ = true;
-        if (!evaluationErrors.empty()) {
-          evaluationErrors.append("\n");
+        if (!evaluation_errors.empty()) {
+          evaluation_errors.append("\n");
         }
-        evaluationErrors.append(evalError);
+        evaluation_errors.append(eval_error);
         if (bp.GetId() != 0) {
-          hitBreakpointIds.push_back(bp.GetId());
+          hit_breakpoint_ids.push_back(bp.GetId());
         }
         continue;
       }
@@ -945,48 +946,48 @@ class Debugger::Impl {
         is_paused_ = true;
         reason = bp.GetReason();
         if (bp.GetId() != 0) {
-          hitBreakpointIds.push_back(bp.GetId());
+          hit_breakpoint_ids.push_back(bp.GetId());
         }
       }
 
-      std::string logError;
-      std::string logMessage =
-          bp.EvaluateLogMessage(currentStackFrame, logError);
-      if (!logError.empty()) {
+      std::string log_error;
+      std::string log_message =
+          bp.EvaluateLogMessage(current_stack_frame, log_error);
+      if (!log_error.empty()) {
         is_paused_ = true;
-        if (!evaluationErrors.empty()) {
-          evaluationErrors.append("\n");
+        if (!evaluation_errors.empty()) {
+          evaluation_errors.append("\n");
         }
-        evaluationErrors.append(logError);
+        evaluation_errors.append(log_error);
         if (bp.GetId() != 0) {
-          hitBreakpointIds.push_back(bp.GetId());
+          hit_breakpoint_ids.push_back(bp.GetId());
         }
         continue;
       }
 
-      if (!logMessage.empty()) {
+      if (!log_message.empty()) {
         SendResponse(
-            CreateOutputEvent(logMessage, sourceName, source, lineNumber));
+            CreateOutputEvent(log_message, source_name, source, line_number));
       }
 
       if (bp.IsTemporary()) {
         breakpoints_.erase(breakpoints_.begin() + i);
         i--;
-        anyDeleted = true;
+        any_deleted = true;
       }
     }
 
-    if (anyDeleted) {
+    if (any_deleted) {
       UpdateHook();
     }
 
     if (is_paused_) {
-      if (!evaluationErrors.empty()) {
+      if (!evaluation_errors.empty()) {
         SendResponse(CreateBreakpointEvaluationErrorEvent(
-            current_thread_, evaluationErrors, hitBreakpointIds));
+            current_thread_, evaluation_errors, hit_breakpoint_ids));
       } else {
         SendResponse(
-            CreateStoppedEvent(current_thread_, reason, hitBreakpointIds));
+            CreateStoppedEvent(current_thread_, reason, hit_breakpoint_ids));
       }
 
       while (is_paused_) {

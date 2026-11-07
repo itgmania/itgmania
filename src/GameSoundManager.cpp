@@ -75,13 +75,13 @@ struct MusicPlaying {
    * song that's starting. We'll copy it to m_Timing once sound is heard. */
   TimingData new_timing_;
   RageSound* music_;
-  MusicPlaying(RageSound* Music) {
+  MusicPlaying(RageSound* music) {
     timing_.AddSegment(BPMSegment(0, 120));
     new_timing_.AddSegment(BPMSegment(0, 120));
     has_timing_ = false;
     timing_delayed_ = false;
     apply_music_rate_ = false;
-    music_ = Music;
+    music_ = music;
   }
 
   ~MusicPlaying() { delete music_; }
@@ -111,233 +111,234 @@ struct MusicToPlay {
 std::vector<MusicToPlay> g_MusicsToPlay;
 static GameSoundManager::PlayMusicParams g_FallbackMusicParams;
 
-static void StartMusic(MusicToPlay& ToPlay) {
-  LockMutex L(*g_Mutex);
+static void StartMusic(MusicToPlay& to_play) {
+  LockMutex l(*g_Mutex);
   if (g_Playing->music_->IsPlaying() &&
-      EqualsNoCase(g_Playing->music_->GetLoadedFilePath(), ToPlay.file_)) {
+      EqualsNoCase(g_Playing->music_->GetLoadedFilePath(), to_play.file_)) {
     return;
   }
 
   /* We're changing or stopping the music.  If we were dimming, reset. */
   g_FadeState = FADE_NONE;
 
-  if (ToPlay.file_.empty()) {
+  if (to_play.file_.empty()) {
     /* StopPlaying() can take a while, so don't hold the lock while we stop the
      * sound. Be sure to leave the rest of g_Playing in place. */
-    RageSound* pOldSound = g_Playing->music_;
+    RageSound* old_sound = g_Playing->music_;
     g_Playing->music_ = new RageSound;
-    L.Unlock();
+    l.Unlock();
 
-    delete pOldSound;
+    delete old_sound;
     return;
   }
 
   /* Unlock, load the sound here, and relock.  Loading may take a while if we're
    * reading from CD and we have to seek far, which can throw off the timing
    * below. */
-  MusicPlaying* NewMusic;
+  MusicPlaying* new_music;
   {
     g_Mutex->Unlock();
-    RageSound* pSound = new RageSound;
+    RageSound* sound = new RageSound;
     RageSoundLoadParams params;
-    params.support_rate_changing_ = ToPlay.apply_music_rate_;
-    pSound->Load(ToPlay.file_, false, &params);
+    params.support_rate_changing_ = to_play.apply_music_rate_;
+    sound->Load(to_play.file_, false, &params);
     g_Mutex->Lock();
 
-    NewMusic = new MusicPlaying(pSound);
+    new_music = new MusicPlaying(sound);
   }
 
-  NewMusic->timing_ = g_Playing->timing_;
-  NewMusic->lights_ = g_Playing->lights_;
+  new_music->timing_ = g_Playing->timing_;
+  new_music->lights_ = g_Playing->lights_;
 
   /* See if we can find timing data, if it's not already loaded. */
-  if (!ToPlay.has_timing_ && IsAFile(ToPlay.timing_file_)) {
-    LOG->Trace("Found '%s'", ToPlay.timing_file_.c_str());
+  if (!to_play.has_timing_ && IsAFile(to_play.timing_file_)) {
+    LOG->Trace("Found '%s'", to_play.timing_file_.c_str());
     Song song;
-    SSCLoader loaderSSC;
-    SMLoader loaderSM;
-    if (GetExtension(ToPlay.timing_file_) == ".ssc" &&
-        loaderSSC.LoadFromSimfile(ToPlay.timing_file_, song)) {
-      ToPlay.has_timing_ = true;
-      ToPlay.timing_data_ = song.song_timing_;
+    SSCLoader loader_ssc;
+    SMLoader loader_sm;
+    if (GetExtension(to_play.timing_file_) == ".ssc" &&
+        loader_ssc.LoadFromSimfile(to_play.timing_file_, song)) {
+      to_play.has_timing_ = true;
+      to_play.timing_data_ = song.song_timing_;
       // get cabinet lights if any
-      Steps* pStepsCabinetLights =
+      Steps* steps_cabinet_lights =
           SongUtil::GetOneSteps(&song, StepsType_lights_cabinet);
-      if (pStepsCabinetLights) {
-        pStepsCabinetLights->GetNoteData(ToPlay.lights_data_);
+      if (steps_cabinet_lights) {
+        steps_cabinet_lights->GetNoteData(to_play.lights_data_);
       }
     } else if (
-        GetExtension(ToPlay.timing_file_) == ".sm" &&
-        loaderSM.LoadFromSimfile(ToPlay.timing_file_, song)) {
-      ToPlay.has_timing_ = true;
-      ToPlay.timing_data_ = song.song_timing_;
+        GetExtension(to_play.timing_file_) == ".sm" &&
+        loader_sm.LoadFromSimfile(to_play.timing_file_, song)) {
+      to_play.has_timing_ = true;
+      to_play.timing_data_ = song.song_timing_;
       // get cabinet lights if any
-      Steps* pStepsCabinetLights =
+      Steps* steps_cabinet_lights =
           SongUtil::GetOneSteps(&song, StepsType_lights_cabinet);
-      if (pStepsCabinetLights) {
-        pStepsCabinetLights->GetNoteData(ToPlay.lights_data_);
+      if (steps_cabinet_lights) {
+        steps_cabinet_lights->GetNoteData(to_play.lights_data_);
       }
     }
   }
 
-  if (ToPlay.has_timing_) {
-    NewMusic->new_timing_ = ToPlay.timing_data_;
-    NewMusic->lights_ = ToPlay.lights_data_;
+  if (to_play.has_timing_) {
+    new_music->new_timing_ = to_play.timing_data_;
+    new_music->lights_ = to_play.lights_data_;
   }
 
-  if (ToPlay.align_beat_ && ToPlay.has_timing_ && ToPlay.force_loop_ &&
-      ToPlay.length_seconds_ != -1) {
+  if (to_play.align_beat_ && to_play.has_timing_ && to_play.force_loop_ &&
+      to_play.length_seconds_ != -1) {
     /* Extend the loop period so it always starts and ends on the same
      * fractional beat.  That is, if it starts on beat 1.5, and ends on
      * beat 10.2, extend it to end on beat 10.5.  This way, effects always loop
      * cleanly. */
-    float fStartBeat = NewMusic->new_timing_.GetBeatFromElapsedTimeNoOffset(
-        ToPlay.start_second_);
-    float fEndSec = ToPlay.start_second_ + ToPlay.length_seconds_;
-    float fEndBeat =
-        NewMusic->new_timing_.GetBeatFromElapsedTimeNoOffset(fEndSec);
+    float start_beat = new_music->new_timing_.GetBeatFromElapsedTimeNoOffset(
+        to_play.start_second_);
+    float end_sec = to_play.start_second_ + to_play.length_seconds_;
+    float end_beat =
+        new_music->new_timing_.GetBeatFromElapsedTimeNoOffset(end_sec);
 
-    const float fStartBeatFraction = fmodfp(fStartBeat, 1);
-    const float fEndBeatFraction = fmodfp(fEndBeat, 1);
+    const float start_beat_fraction = fmodfp(start_beat, 1);
+    const float end_beat_fraction = fmodfp(end_beat, 1);
 
-    float fBeatDifference = fStartBeatFraction - fEndBeatFraction;
-    if (fBeatDifference < 0) {
-      fBeatDifference += 1.0f; /* unwrap */
+    float beat_difference = start_beat_fraction - end_beat_fraction;
+    if (beat_difference < 0) {
+      beat_difference += 1.0f; /* unwrap */
     }
 
-    fEndBeat += fBeatDifference;
+    end_beat += beat_difference;
 
-    const float fRealEndSec =
-        NewMusic->new_timing_.GetElapsedTimeFromBeatNoOffset(fEndBeat);
-    const float fNewLengthSec = fRealEndSec - ToPlay.start_second_;
+    const float real_end_sec =
+        new_music->new_timing_.GetElapsedTimeFromBeatNoOffset(end_beat);
+    const float new_length_sec = real_end_sec - to_play.start_second_;
 
     /* Extend fFadeOutLengthSeconds, so the added time is faded out. */
-    ToPlay.fade_out_length_seconds_ += fNewLengthSec - ToPlay.length_seconds_;
-    ToPlay.length_seconds_ = fNewLengthSec;
+    to_play.fade_out_length_seconds_ +=
+        new_length_sec - to_play.length_seconds_;
+    to_play.length_seconds_ = new_length_sec;
   }
 
-  bool StartImmediately = false;
-  if (!ToPlay.has_timing_) {
+  bool start_immediately = false;
+  if (!to_play.has_timing_) {
     /* This song has no real timing data.  The offset is arbitrary.  Change it
      * so the beat will line up to where we are now, so we don't have to delay.
      */
-    float fDestBeat = fmodfp(GAMESTATE->position_.song_beat_no_offset_, 1);
-    float fTime =
-        NewMusic->new_timing_.GetElapsedTimeFromBeatNoOffset(fDestBeat);
+    float dest_beat = fmodfp(GAMESTATE->position_.song_beat_no_offset_, 1);
+    float time =
+        new_music->new_timing_.GetElapsedTimeFromBeatNoOffset(dest_beat);
 
-    NewMusic->new_timing_.beat0_offset_in_seconds_ = fTime;
+    new_music->new_timing_.beat0_offset_in_seconds_ = time;
 
-    StartImmediately = true;
+    start_immediately = true;
   }
 
   /* If we have an active timer, try to start on the next update.  Otherwise,
    * start now. */
   if (!g_Playing->has_timing_ && !g_UpdatingTimer) {
-    StartImmediately = true;
+    start_immediately = true;
   }
-  if (!ToPlay.align_beat_) {
-    StartImmediately = true;
+  if (!to_play.align_beat_) {
+    start_immediately = true;
   }
 
   RageTimer when; /* zero */
-  if (!StartImmediately) {
+  if (!start_immediately) {
     /* GetPlayLatency returns the minimum time until a sound starts.  That's
      * common when starting a precached sound, but our sound isn't, so it'll
      * probably take a little longer.  Nudge the latency up. */
-    const float fPresumedLatency = SOUNDMAN->GetPlayLatency() + 0.040f;
-    const float fCurSecond =
-        GAMESTATE->position_.music_seconds_ + fPresumedLatency;
-    const float fCurBeat =
-        g_Playing->timing_.GetBeatFromElapsedTimeNoOffset(fCurSecond);
+    const float presumed_latency = SOUNDMAN->GetPlayLatency() + 0.040f;
+    const float cur_second =
+        GAMESTATE->position_.music_seconds_ + presumed_latency;
+    const float cur_beat =
+        g_Playing->timing_.GetBeatFromElapsedTimeNoOffset(cur_second);
 
     /* The beat that the new sound will start on. */
-    const float fStartBeat =
-        NewMusic->new_timing_.GetBeatFromElapsedTimeNoOffset(
-            ToPlay.start_second_);
-    const float fStartBeatFraction = fmodfp(fStartBeat, 1);
+    const float start_beat =
+        new_music->new_timing_.GetBeatFromElapsedTimeNoOffset(
+            to_play.start_second_);
+    const float start_beat_fraction = fmodfp(start_beat, 1);
 
-    float fCurBeatToStartOn = std::trunc(fCurBeat) + fStartBeatFraction;
-    if (fCurBeatToStartOn < fCurBeat) {
-      fCurBeatToStartOn += 1.0f;
+    float cur_beat_to_start_on = std::trunc(cur_beat) + start_beat_fraction;
+    if (cur_beat_to_start_on < cur_beat) {
+      cur_beat_to_start_on += 1.0f;
     }
 
-    const float fSecondToStartOn =
-        g_Playing->timing_.GetElapsedTimeFromBeatNoOffset(fCurBeatToStartOn);
-    const float fMaximumDistance = 2;
-    const float fDistance = std::min(
-        fSecondToStartOn - GAMESTATE->position_.music_seconds_,
-        fMaximumDistance);
+    const float second_to_start_on =
+        g_Playing->timing_.GetElapsedTimeFromBeatNoOffset(cur_beat_to_start_on);
+    const float maximum_distance = 2;
+    const float distance = std::min(
+        second_to_start_on - GAMESTATE->position_.music_seconds_,
+        maximum_distance);
 
-    when = GAMESTATE->position_.last_beat_update_ + fDistance;
+    when = GAMESTATE->position_.last_beat_update_ + distance;
   }
 
   /* Important: don't hold the mutex while we load and seek the actual sound. */
-  L.Unlock();
+  l.Unlock();
   {
-    NewMusic->has_timing_ = ToPlay.has_timing_;
-    if (ToPlay.has_timing_) {
-      NewMusic->new_timing_ = ToPlay.timing_data_;
+    new_music->has_timing_ = to_play.has_timing_;
+    if (to_play.has_timing_) {
+      new_music->new_timing_ = to_play.timing_data_;
     }
-    NewMusic->timing_delayed_ = true;
-    NewMusic->apply_music_rate_ = ToPlay.apply_music_rate_;
+    new_music->timing_delayed_ = true;
+    new_music->apply_music_rate_ = to_play.apply_music_rate_;
     //		NewMusic->m_Music->Load( ToPlay.m_sFile, false );
 
     RageSoundParams p;
-    p.start_second_ = ToPlay.start_second_;
-    p.length_seconds_ = ToPlay.length_seconds_;
-    p.fade_in_seconds_ = ToPlay.fade_in_length_seconds_;
-    p.fade_out_seconds_ = ToPlay.fade_out_length_seconds_;
+    p.start_second_ = to_play.start_second_;
+    p.length_seconds_ = to_play.length_seconds_;
+    p.fade_in_seconds_ = to_play.fade_in_length_seconds_;
+    p.fade_out_seconds_ = to_play.fade_out_length_seconds_;
     p.start_time_ = when;
-    if (ToPlay.force_loop_) {
+    if (to_play.force_loop_) {
       p.stop_mode_ = RageSoundParams::M_LOOP;
     }
-    NewMusic->music_->SetParams(p);
-    NewMusic->music_->StartPlaying();
+    new_music->music_->SetParams(p);
+    new_music->music_->StartPlaying();
   }
 
   LockMut(*g_Mutex);
   delete g_Playing;
-  g_Playing = NewMusic;
+  g_Playing = new_music;
 }
 
-static void DoPlayOnce(std::string sPath) {
+static void DoPlayOnce(std::string path) {
   /* We want this to start quickly, so don't try to prebuffer it. */
-  RageSound* pSound = new RageSound;
-  pSound->Load(sPath, false);
+  RageSound* sound = new RageSound;
+  sound->Load(path, false);
 
-  pSound->Play(false);
-  pSound->DeleteSelfWhenFinishedPlaying();
+  sound->Play(false);
+  sound->DeleteSelfWhenFinishedPlaying();
 }
 
-static void DoPlayOnceFromDir(std::string sPath) {
-  if (sPath == "") {
+static void DoPlayOnceFromDir(std::string path) {
+  if (path == "") {
     return;
   }
 
   // make sure there's a slash at the end of this path
-  if (Right(sPath, 1) != "/") {
-    sPath += "/";
+  if (Right(path, 1) != "/") {
+    path += "/";
   }
 
-  std::vector<std::string> arraySoundFiles;
-  GetDirListing(sPath + "*.mp3", arraySoundFiles);
-  GetDirListing(sPath + "*.wav", arraySoundFiles);
-  GetDirListing(sPath + "*.ogg", arraySoundFiles);
-  GetDirListing(sPath + "*.oga", arraySoundFiles);
+  std::vector<std::string> array_sound_files;
+  GetDirListing(path + "*.mp3", array_sound_files);
+  GetDirListing(path + "*.wav", array_sound_files);
+  GetDirListing(path + "*.ogg", array_sound_files);
+  GetDirListing(path + "*.oga", array_sound_files);
 
-  if (arraySoundFiles.empty()) {
+  if (array_sound_files.empty()) {
     return;
-  } else if (arraySoundFiles.size() == 1) {
-    DoPlayOnce(sPath + arraySoundFiles[0]);
+  } else if (array_sound_files.size() == 1) {
+    DoPlayOnce(path + array_sound_files[0]);
     return;
   }
 
   g_Mutex->Lock();
   std::vector<int>& order =
-      g_DirSoundOrder.insert({sPath, std::vector<int>()}).first->second;
+      g_DirSoundOrder.insert({path, std::vector<int>()}).first->second;
   // If order is exhausted, repopulate and reshuffle
   if (order.size() == 0) {
-    for (int i = 0; i < (int)arraySoundFiles.size(); ++i) {
+    for (int i = 0; i < (int)array_sound_files.size(); ++i) {
       order.push_back(i);
     }
     std::shuffle(order.begin(), order.end(), g_RandomNumberGenerator);
@@ -347,7 +348,7 @@ static void DoPlayOnceFromDir(std::string sPath) {
   order.pop_back();
   g_Mutex->Unlock();
 
-  DoPlayOnce(sPath + arraySoundFiles[index]);
+  DoPlayOnce(path + array_sound_files[index]);
 }
 
 static bool SoundWaiting() {
@@ -357,36 +358,37 @@ static bool SoundWaiting() {
 
 static void StartQueuedSounds() {
   g_Mutex->Lock();
-  std::vector<std::string> aSoundsToPlayOnce = g_SoundsToPlayOnce;
+  std::vector<std::string> sounds_to_play_once = g_SoundsToPlayOnce;
   g_SoundsToPlayOnce.clear();
-  std::vector<std::string> aSoundsToPlayOnceFromDir = g_SoundsToPlayOnceFromDir;
+  std::vector<std::string> sounds_to_play_once_from_dir =
+      g_SoundsToPlayOnceFromDir;
   g_SoundsToPlayOnceFromDir.clear();
-  std::vector<std::string> aSoundsToPlayOnceFromAnnouncer =
+  std::vector<std::string> sounds_to_play_once_from_announcer =
       g_SoundsToPlayOnceFromAnnouncer;
   g_SoundsToPlayOnceFromAnnouncer.clear();
-  std::vector<MusicToPlay> aMusicsToPlay = g_MusicsToPlay;
+  std::vector<MusicToPlay> musics_to_play = g_MusicsToPlay;
   g_MusicsToPlay.clear();
   g_Mutex->Unlock();
 
-  for (unsigned i = 0; i < aSoundsToPlayOnce.size(); ++i) {
-    if (aSoundsToPlayOnce[i] != "") {
-      DoPlayOnce(aSoundsToPlayOnce[i]);
+  for (unsigned i = 0; i < sounds_to_play_once.size(); ++i) {
+    if (sounds_to_play_once[i] != "") {
+      DoPlayOnce(sounds_to_play_once[i]);
     }
   }
 
-  for (unsigned i = 0; i < aSoundsToPlayOnceFromDir.size(); ++i) {
-    DoPlayOnceFromDir(aSoundsToPlayOnceFromDir[i]);
+  for (unsigned i = 0; i < sounds_to_play_once_from_dir.size(); ++i) {
+    DoPlayOnceFromDir(sounds_to_play_once_from_dir[i]);
   }
 
-  for (unsigned i = 0; i < aSoundsToPlayOnceFromAnnouncer.size(); ++i) {
-    std::string sPath = aSoundsToPlayOnceFromAnnouncer[i];
-    if (sPath != "") {
-      sPath = ANNOUNCER->GetPathTo(sPath);
-      DoPlayOnceFromDir(sPath);
+  for (unsigned i = 0; i < sounds_to_play_once_from_announcer.size(); ++i) {
+    std::string path = sounds_to_play_once_from_announcer[i];
+    if (path != "") {
+      path = ANNOUNCER->GetPathTo(path);
+      DoPlayOnceFromDir(path);
     }
   }
 
-  for (unsigned i = 0; i < aMusicsToPlay.size(); ++i) {
+  for (unsigned i = 0; i < musics_to_play.size(); ++i) {
     /* Don't bother starting this music if there's another one in the queue
      * after it. */
     /* Actually, it's a little trickier: the editor gives us a stop and then a
@@ -394,18 +396,18 @@ static void StartQueuedSounds() {
      * sound if it was already playing.  We don't want to waste time loading a
      * sound if it's going to be replaced immediately, though.  So, if we have
      * more music in the queue, then forcibly stop the current sound. */
-    if (i + 1 == aMusicsToPlay.size()) {
-      StartMusic(aMusicsToPlay[i]);
+    if (i + 1 == musics_to_play.size()) {
+      StartMusic(musics_to_play[i]);
     } else {
       CHECKPOINT_M(ssprintf("Removing old sound at index %d", i));
       /* StopPlaying() can take a while, so don't hold the lock while we stop
        * the sound. */
       g_Mutex->Lock();
-      RageSound* pOldSound = g_Playing->music_;
+      RageSound* old_sound = g_Playing->music_;
       g_Playing->music_ = new RageSound;
       g_Mutex->Unlock();
 
-      delete pOldSound;
+      delete old_sound;
     }
   }
 }
@@ -435,11 +437,11 @@ int MusicThread_start(void* p) {
      * so check g_bFlushing before calling.  This won't work if more than
      * one thread might call Flush(), but only the main thread is allowed
      * to make SOUND calls. */
-    bool bFlushing = g_bFlushing;
+    bool flushing = g_bFlushing;
 
     StartQueuedSounds();
 
-    if (bFlushing) {
+    if (flushing) {
       g_Mutex->Lock();
       g_Mutex->Signal();
       g_bFlushing = false;
@@ -490,27 +492,27 @@ GameSoundManager::~GameSoundManager() {
   RageUtil::SafeDelete(g_Mutex);
 }
 
-void GameSoundManager::Update(float fDeltaTime) {
+void GameSoundManager::Update(float delta_time) {
   {
     g_Mutex->Lock();
     if (g_Playing->apply_music_rate_) {
       RageSoundParams p = g_Playing->music_->GetParams();
-      float fRate = GAMESTATE->song_options_.GetPreferred().music_rate_;
-      if (p.speed_ != fRate) {
-        p.speed_ = fRate;
+      float rate = GAMESTATE->song_options_.GetPreferred().music_rate_;
+      if (p.speed_ != rate) {
+        p.speed_ = rate;
         g_Playing->music_->SetParams(p);
       }
     }
 
-    bool bIsPlaying = g_Playing->music_->IsPlaying();
+    bool is_playing = g_Playing->music_->IsPlaying();
     g_Mutex->Unlock();
-    if (!bIsPlaying && g_bWasPlayingOnLastUpdate &&
+    if (!is_playing && g_bWasPlayingOnLastUpdate &&
         !g_FallbackMusicParams.file_.empty()) {
       PlayMusic(g_FallbackMusicParams);
 
       g_FallbackMusicParams.file_ = "";
     }
-    g_bWasPlayingOnLastUpdate = bIsPlaying;
+    g_bWasPlayingOnLastUpdate = is_playing;
   }
 
   LockMut(*g_Mutex);
@@ -519,45 +521,45 @@ void GameSoundManager::Update(float fDeltaTime) {
     /* Duration of the fade-in and fade-out: */
     // const float fFadeInSpeed = 1.5f;
     // const float fFadeOutSpeed = 0.3f;
-    float fFadeInSpeed = g_Playing->music_->GetParams().fade_in_seconds_;
-    float fFadeOutSpeed = g_Playing->music_->GetParams().fade_out_seconds_;
-    float fVolume = g_Playing->music_->GetParams().volume_;
+    float fade_in_speed = g_Playing->music_->GetParams().fade_in_seconds_;
+    float fade_out_speed = g_Playing->music_->GetParams().fade_out_seconds_;
+    float volume = g_Playing->music_->GetParams().volume_;
     switch (g_FadeState) {
       case FADE_NONE:
         break;
       case FADE_OUT:
-        if (fFadeOutSpeed > 0.0) {
-          fapproach(fVolume, g_fDimVolume, fDeltaTime / fFadeOutSpeed);
+        if (fade_out_speed > 0.0) {
+          fapproach(volume, g_fDimVolume, delta_time / fade_out_speed);
         } else {
           // Treat an invalid fade speed as instant
-          fVolume = g_fDimVolume;
+          volume = g_fDimVolume;
         }
-        if (std::abs(fVolume - g_fDimVolume) < 0.001f) {
+        if (std::abs(volume - g_fDimVolume) < 0.001f) {
           g_FadeState = FADE_WAIT;
         }
         break;
       case FADE_WAIT:
-        g_fDimDurationRemaining -= fDeltaTime;
+        g_fDimDurationRemaining -= delta_time;
         if (g_fDimDurationRemaining <= 0) {
           g_FadeState = FADE_IN;
         }
         break;
       case FADE_IN:
-        if (fFadeInSpeed > 0.0) {
-          fapproach(fVolume, g_fOriginalVolume, fDeltaTime / fFadeInSpeed);
+        if (fade_in_speed > 0.0) {
+          fapproach(volume, g_fOriginalVolume, delta_time / fade_in_speed);
         } else {
           // Treat an invalid fade speed as instant
-          fVolume = g_fOriginalVolume;
+          volume = g_fOriginalVolume;
         }
-        if (std::abs(fVolume - g_fOriginalVolume) < 0.001f) {
+        if (std::abs(volume - g_fOriginalVolume) < 0.001f) {
           g_FadeState = FADE_NONE;
         }
         break;
     }
 
     RageSoundParams p = g_Playing->music_->GetParams();
-    if (p.volume_ != fVolume) {
-      p.volume_ = fVolume;
+    if (p.volume_ != volume) {
+      p.volume_ = volume;
       g_Playing->music_->SetParams(p);
     }
   }
@@ -569,10 +571,10 @@ void GameSoundManager::Update(float fDeltaTime) {
   if (!g_Playing->music_->IsPlaying()) {
     /* There's no song playing.  Fake it. */
     CHECKPOINT_M(ssprintf(
-        "%f, delta %f", GAMESTATE->position_.music_seconds_, fDeltaTime));
+        "%f, delta %f", GAMESTATE->position_.music_seconds_, delta_time));
     GAMESTATE->UpdateSongPosition(
         GAMESTATE->position_.music_seconds_ +
-            fDeltaTime * g_Playing->music_->GetPlaybackRate(),
+            delta_time * g_Playing->music_->GetPlaybackRate(),
         g_Playing->timing_);
     return;
   }
@@ -581,30 +583,30 @@ void GameSoundManager::Update(float fDeltaTime) {
    * Keep using the previous timing data until we get a non-approximate time,
    * indicating that the sound has actually started playing. */
   RageTimer tm;
-  const float fSeconds = g_Playing->music_->GetPositionSeconds(&tm);
+  const float seconds = g_Playing->music_->GetPositionSeconds(&tm);
 
   // Check for song timing skips.
   if (PREFSMAN->log_skips_ && !g_Playing->timing_delayed_) {
-    const float fExpectedTimePassed =
+    const float expected_time_passed =
         (tm - GAMESTATE->position_.last_beat_update_) *
         g_Playing->music_->GetPlaybackRate();
-    const float fSoundTimePassed =
-        fSeconds - GAMESTATE->position_.music_seconds_;
-    const float fDiff = fExpectedTimePassed - fSoundTimePassed;
+    const float sound_time_passed =
+        seconds - GAMESTATE->position_.music_seconds_;
+    const float diff = expected_time_passed - sound_time_passed;
 
-    static std::string sLastFile = "";
-    const std::string ThisFile = g_Playing->music_->GetLoadedFilePath();
+    static std::string last_file = "";
+    const std::string this_file = g_Playing->music_->GetLoadedFilePath();
 
     /* If fSoundTimePassed < 0, the sound has probably looped. */
-    if (sLastFile == ThisFile && fSoundTimePassed >= 0 &&
-        std::abs(fDiff) > 0.003f) {
+    if (last_file == this_file && sound_time_passed >= 0 &&
+        std::abs(diff) > 0.003f) {
       LOG->Trace(
           "Song position skip in %s: expected %.3f, got %.3f (cur %f, prev %f) "
           "(%.3f difference)",
-          Basename(ThisFile).c_str(), fExpectedTimePassed, fSoundTimePassed,
-          fSeconds, GAMESTATE->position_.music_seconds_, fDiff);
+          Basename(this_file).c_str(), expected_time_passed, sound_time_passed,
+          seconds, GAMESTATE->position_.music_seconds_, diff);
     }
-    sLastFile = ThisFile;
+    last_file = this_file;
   }
 
   // If g_Playing->m_bTimingDelayed, we're waiting for the new music to actually
@@ -619,50 +621,50 @@ void GameSoundManager::Update(float fDeltaTime) {
     /* We're still waiting for the new sound to start playing, so keep using the
      * old timing data and fake the time. */
     GAMESTATE->UpdateSongPosition(
-        GAMESTATE->position_.music_seconds_ + fDeltaTime, g_Playing->timing_);
+        GAMESTATE->position_.music_seconds_ + delta_time, g_Playing->timing_);
   } else {
-    GAMESTATE->UpdateSongPosition(fSeconds, g_Playing->timing_, tm);
+    GAMESTATE->UpdateSongPosition(seconds, g_Playing->timing_, tm);
   }
 
   // Send crossed messages
   if (GAMESTATE->cur_song_) {
-    static int iBeatLastCrossed = 0;
+    static int beat_last_crossed = 0;
 
-    float fSongBeat = GAMESTATE->position_.song_beat_;
+    float song_beat = GAMESTATE->position_.song_beat_;
 
-    int iRowNow = BeatToNoteRowNotRounded(fSongBeat);
-    iRowNow = std::max(0, iRowNow);
+    int row_now = BeatToNoteRowNotRounded(song_beat);
+    row_now = std::max(0, row_now);
 
-    int iBeatNow = iRowNow / ROWS_PER_BEAT;
+    int beat_now = row_now / ROWS_PER_BEAT;
 
-    for (int iBeat = iBeatLastCrossed + 1; iBeat <= iBeatNow; ++iBeat) {
+    for (int beat = beat_last_crossed + 1; beat <= beat_now; ++beat) {
       Message msg("CrossedBeat");
-      msg.SetParam("Beat", iBeat);
+      msg.SetParam("Beat", beat);
       MESSAGEMAN->Broadcast(msg);
     }
 
-    iBeatLastCrossed = iBeatNow;
+    beat_last_crossed = beat_now;
   }
 
   // Update lights
   NoteData& lights = g_Playing->lights_;
   if (lights.GetNumTracks() > 0)  // lights data was loaded
   {
-    const float fSongBeat = GAMESTATE->position_.light_song_beat_;
-    const int iSongRow = BeatToNoteRowNotRounded(fSongBeat);
+    const float song_beat = GAMESTATE->position_.light_song_beat_;
+    const int song_row = BeatToNoteRowNotRounded(song_beat);
 
-    static int iRowLastCrossed = 0;
+    static int row_last_crossed = 0;
 
     FOREACH_CabinetLight(cl) {
       // Are we "holding" the light?
-      if (lights.IsHoldNoteAtRow(cl, iSongRow)) {
+      if (lights.IsHoldNoteAtRow(cl, song_row)) {
         LIGHTSMAN->BlinkCabinetLight(cl);
         continue;
       }
 
       // Otherwise, for each index we crossed since the last update:
       FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE(
-          lights, cl, r, iRowLastCrossed + 1, iSongRow + 1) {
+          lights, cl, r, row_last_crossed + 1, song_row + 1) {
         if (lights.GetTapNote(cl, r).type_ != TapNoteType_Empty) {
           LIGHTSMAN->BlinkCabinetLight(cl);
           break;
@@ -670,7 +672,7 @@ void GameSoundManager::Update(float fDeltaTime) {
       }
     }
 
-    iRowLastCrossed = iSongRow;
+    row_last_crossed = song_row;
   }
 }
 
@@ -680,58 +682,58 @@ std::string GameSoundManager::GetMusicPath() const {
 }
 
 void GameSoundManager::PlayMusic(
-    std::string sFile, const TimingData* pTiming, bool bForceLoop,
-    float fStartSecond, float fLengthSeconds, float fFadeInLengthSeconds,
-    float fFadeOutLengthSeconds, bool bAlignBeat, bool bApplyMusicRate) {
+    std::string file, const TimingData* timing, bool force_loop,
+    float start_second, float length_seconds, float fade_in_length_seconds,
+    float fade_out_length_seconds, bool align_beat, bool apply_music_rate) {
   PlayMusicParams params;
-  params.file_ = sFile;
-  params.timing_ = pTiming;
-  params.force_loop_ = bForceLoop;
-  params.start_second_ = fStartSecond;
-  params.length_seconds_ = fLengthSeconds;
-  params.fade_in_length_seconds_ = fFadeInLengthSeconds;
-  params.fade_out_length_seconds_ = fFadeOutLengthSeconds;
-  params.align_beat_ = bAlignBeat;
-  params.apply_music_rate_ = bApplyMusicRate;
+  params.file_ = file;
+  params.timing_ = timing;
+  params.force_loop_ = force_loop;
+  params.start_second_ = start_second;
+  params.length_seconds_ = length_seconds;
+  params.fade_in_length_seconds_ = fade_in_length_seconds;
+  params.fade_out_length_seconds_ = fade_out_length_seconds;
+  params.align_beat_ = align_beat;
+  params.apply_music_rate_ = apply_music_rate;
   PlayMusic(params);
 }
 
 void GameSoundManager::PlayMusic(
-    PlayMusicParams params, PlayMusicParams FallbackMusicParams) {
-  g_FallbackMusicParams = FallbackMusicParams;
+    PlayMusicParams params, PlayMusicParams fallback_music_params) {
+  g_FallbackMusicParams = fallback_music_params;
 
   //	LOG->Trace("play '%s' (current '%s')", file.c_str(),
   // g_Playing->m_Music->GetLoadedFilePath().c_str());
 
-  MusicToPlay ToPlay;
+  MusicToPlay to_play;
 
-  ToPlay.file_ = params.file_;
+  to_play.file_ = params.file_;
   if (params.timing_) {
-    ToPlay.has_timing_ = true;
-    ToPlay.timing_data_ = *params.timing_;
+    to_play.has_timing_ = true;
+    to_play.timing_data_ = *params.timing_;
   } else {
     /* If no timing data was provided, look for it in the same place as the
      * music file. */
     // todo: allow loading .ssc files as well -aj
-    ToPlay.timing_file_ = SetExtension(params.file_, "sm");
+    to_play.timing_file_ = SetExtension(params.file_, "sm");
   }
 
-  ToPlay.force_loop_ = params.force_loop_;
-  ToPlay.start_second_ = params.start_second_;
-  ToPlay.length_seconds_ = params.length_seconds_;
-  ToPlay.fade_in_length_seconds_ = params.fade_in_length_seconds_;
-  ToPlay.fade_out_length_seconds_ = params.fade_out_length_seconds_;
-  ToPlay.align_beat_ = params.align_beat_;
-  ToPlay.apply_music_rate_ = params.apply_music_rate_;
+  to_play.force_loop_ = params.force_loop_;
+  to_play.start_second_ = params.start_second_;
+  to_play.length_seconds_ = params.length_seconds_;
+  to_play.fade_in_length_seconds_ = params.fade_in_length_seconds_;
+  to_play.fade_out_length_seconds_ = params.fade_out_length_seconds_;
+  to_play.align_beat_ = params.align_beat_;
+  to_play.apply_music_rate_ = params.apply_music_rate_;
 
   /* Add the MusicToPlay to the g_MusicsToPlay queue. */
   g_Mutex->Lock();
-  g_MusicsToPlay.push_back(ToPlay);
+  g_MusicsToPlay.push_back(to_play);
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
 }
 
-void GameSoundManager::DimMusic(float fVolume, float fDurationSeconds) {
+void GameSoundManager::DimMusic(float volume, float duration_seconds) {
   LockMut(*g_Mutex);
 
   if (g_FadeState == FADE_NONE) {
@@ -740,8 +742,8 @@ void GameSoundManager::DimMusic(float fVolume, float fDurationSeconds) {
   // otherwise, g_fOriginalVolume is already set and m_Volume will be the
   // current state, not the original state
 
-  g_fDimDurationRemaining = fDurationSeconds;
-  g_fDimVolume = fVolume;
+  g_fDimDurationRemaining = duration_seconds;
+  g_fDimVolume = volume;
   g_FadeState = FADE_OUT;
 }
 
@@ -750,26 +752,26 @@ void GameSoundManager::HandleSongTimer(bool on) {
   g_UpdatingTimer = on;
 }
 
-void GameSoundManager::PlayOnce(std::string sPath) {
+void GameSoundManager::PlayOnce(std::string path) {
   /* Add the sound to the g_SoundsToPlayOnce queue. */
   g_Mutex->Lock();
-  g_SoundsToPlayOnce.push_back(sPath);
+  g_SoundsToPlayOnce.push_back(path);
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
 }
 
-void GameSoundManager::PlayOnceFromDir(std::string sPath) {
+void GameSoundManager::PlayOnceFromDir(std::string path) {
   /* Add the path to the g_SoundsToPlayOnceFromDir queue. */
   g_Mutex->Lock();
-  g_SoundsToPlayOnceFromDir.push_back(sPath);
+  g_SoundsToPlayOnceFromDir.push_back(path);
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
 }
 
-void GameSoundManager::PlayOnceFromAnnouncer(std::string sPath) {
+void GameSoundManager::PlayOnceFromAnnouncer(std::string path) {
   /* Add the path to the g_SoundsToPlayOnceFromAnnouncer queue. */
   g_Mutex->Lock();
-  g_SoundsToPlayOnceFromAnnouncer.push_back(sPath);
+  g_SoundsToPlayOnceFromAnnouncer.push_back(path);
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
 }
@@ -789,22 +791,22 @@ float GameSoundManager::GetPlayerBalance(PlayerNumber pn) {
 class LunaGameSoundManager : public Luna<GameSoundManager> {
  public:
   static int DimMusic(T* p, lua_State* L) {
-    float fVolume = FArg(1);
-    float fDurationSeconds = FArg(2);
-    p->DimMusic(fVolume, fDurationSeconds);
+    float volume = FArg(1);
+    float duration_seconds = FArg(2);
+    p->DimMusic(volume, duration_seconds);
     COMMON_RETURN_SELF;
   }
   static int PlayOnce(T* p, lua_State* L) {
-    std::string sPath = SArg(1);
+    std::string path = SArg(1);
     if (lua_toboolean(L, 2) && PREFSMAN->mute_actions_) {
       COMMON_RETURN_SELF;
     }
-    p->PlayOnce(sPath);
+    p->PlayOnce(path);
     COMMON_RETURN_SELF;
   }
   static int PlayAnnouncer(T* p, lua_State* L) {
-    std::string sPath = SArg(1);
-    p->PlayOnceFromAnnouncer(sPath);
+    std::string path = SArg(1);
+    p->PlayOnceFromAnnouncer(path);
     COMMON_RETURN_SELF;
   }
   static int GetPlayerBalance(T* p, lua_State* L) {
@@ -813,32 +815,32 @@ class LunaGameSoundManager : public Luna<GameSoundManager> {
     return 1;
   }
   static int PlayMusicPart(T* p, lua_State* L) {
-    std::string musicPath = SArg(1);
-    float musicStart = FArg(2);
-    float musicLength = FArg(3);
-    float fadeIn = 0;
-    float fadeOut = 0;
+    std::string music_path = SArg(1);
+    float music_start = FArg(2);
+    float music_length = FArg(3);
+    float fade_in = 0;
+    float fade_out = 0;
     bool loop = false;
-    bool applyRate = false;
-    bool alignBeat = true;
+    bool apply_rate = false;
+    bool align_beat = true;
     if (!lua_isnoneornil(L, 4)) {
-      fadeIn = FArg(4);
+      fade_in = FArg(4);
     }
     if (!lua_isnoneornil(L, 5)) {
-      fadeOut = FArg(5);
+      fade_out = FArg(5);
     }
     if (!lua_isnoneornil(L, 6)) {
       loop = BArg(6);
     }
     if (!lua_isnoneornil(L, 7)) {
-      applyRate = BArg(7);
+      apply_rate = BArg(7);
     }
     if (!lua_isnoneornil(L, 8)) {
-      alignBeat = BArg(8);
+      align_beat = BArg(8);
     }
     p->PlayMusic(
-        musicPath, nullptr, loop, musicStart, musicLength, fadeIn, fadeOut,
-        alignBeat, applyRate);
+        music_path, nullptr, loop, music_start, music_length, fade_in, fade_out,
+        align_beat, apply_rate);
     COMMON_RETURN_SELF;
   }
 

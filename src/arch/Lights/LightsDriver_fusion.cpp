@@ -42,10 +42,10 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
   // fusion does not have player button lights...
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->input_scheme_;
-  std::string sInputName = pInput->name_;
+  const InputScheme* input = &GAMESTATE->GetCurrentGame()->input_scheme_;
+  std::string input_name = input->name_;
 
-  if (EqualsNoCase(sInputName, "dance")) {
+  if (EqualsNoCase(input_name, "dance")) {
     output_buffer_[FUSION_P1_UL] =
         ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP] ? 0xFF
                                                                    : 0x00;
@@ -71,7 +71,7 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
     output_buffer_[FUSION_P2_LL] =
         ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT] ? 0xFF
                                                                       : 0x00;
-  } else if (EqualsNoCase(sInputName, "pump")) {
+  } else if (EqualsNoCase(input_name, "pump")) {
     output_buffer_[FUSION_P1_UL] =
         ls->game_button_lights_[GameController_1][PUMP_BUTTON_UPLEFT] ? 0xFF
                                                                       : 0x00;

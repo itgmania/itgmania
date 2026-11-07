@@ -41,7 +41,7 @@ class RageDisplay_Legacy : public RageDisplay {
   RageDisplay_Legacy();
   virtual ~RageDisplay_Legacy();
   virtual std::string Init(
-      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
+      const VideoModeParams& p, bool allow_unaccelerated_renderer);
 
   virtual std::string GetApiDescription() const { return "OpenGL"; }
   virtual void GetDisplaySpecs(DisplaySpecs& out) const;
@@ -55,18 +55,18 @@ class RageDisplay_Legacy : public RageDisplay {
   bool SupportsTextureFormat(RagePixelFormat pixfmt, bool realtime = false);
   bool SupportsPerVertexMatrixScale();
   uintptr_t CreateTexture(
-      RagePixelFormat pixfmt, RageSurface* img, bool bGenerateMipMaps);
+      RagePixelFormat pixfmt, RageSurface* img, bool generate_mip_maps);
   void UpdateTexture(
-      uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset,
+      uintptr_t tex_handle, RageSurface* img, int xoffset, int yoffset,
       int width, int height);
-  void DeleteTexture(uintptr_t iTexHandle);
+  void DeleteTexture(uintptr_t tex_handle);
   bool UseOffscreenRenderTarget();
-  RageSurface* GetTexture(uintptr_t iTexture);
+  RageSurface* GetTexture(uintptr_t texture);
   RageTextureLock* CreateTextureLock();
 
   void ClearAllTextures();
   int GetNumTextureUnits();
-  void SetTexture(TextureUnit tu, uintptr_t iTexture);
+  void SetTexture(TextureUnit tu, uintptr_t texture);
   void SetTextureMode(TextureUnit tu, TextureMode tm);
   void SetTextureWrapping(TextureUnit tu, bool b);
   int GetMaxTextureSize() const;
@@ -76,10 +76,10 @@ class RageDisplay_Legacy : public RageDisplay {
   bool SupportsRenderToTexture() const;
   bool SupportsFullscreenBorderlessWindow() const;
   uintptr_t CreateRenderTarget(
-      const RenderTargetParam& param, int& iTextureWidthOut,
-      int& iTextureHeightOut);
+      const RenderTargetParam& param, int& texture_width_out,
+      int& texture_height_out);
   uintptr_t GetRenderTarget();
-  void SetRenderTarget(uintptr_t iHandle, bool bPreserveTexture);
+  void SetRenderTarget(uintptr_t handle, bool preserve_texture);
   bool IsZWriteEnabled() const;
   void SetZWrite(bool b);
   void SetZBias(float f);
@@ -103,26 +103,26 @@ class RageDisplay_Legacy : public RageDisplay {
   void DeleteCompiledGeometry(RageCompiledGeometry* p);
 
   // hacks for cell-shaded models
-  virtual void SetLineWidth(float fWidth);
+  virtual void SetLineWidth(float width);
 
  protected:
-  void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawQuadStripInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawFanInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawStripInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawTrianglesInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawQuadsInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawQuadStripInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawFanInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawStripInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawTrianglesInternal(const RageSpriteVertex v[], int num_verts);
   void DrawCompiledGeometryInternal(
-      const RageCompiledGeometry* p, int iMeshIndex);
+      const RageCompiledGeometry* p, int mesh_index);
   void DrawLineStripInternal(
-      const RageSpriteVertex v[], int iNumVerts, float LineWidth);
+      const RageSpriteVertex v[], int num_verts, float line_width);
   void DrawSymmetricQuadStripInternal(
-      const RageSpriteVertex v[], int iNumVerts);
+      const RageSpriteVertex v[], int num_verts);
 
-  std::string TryVideoMode(const VideoModeParams& p, bool& bNewDeviceOut);
+  std::string TryVideoMode(const VideoModeParams& p, bool& new_device_out);
   RageSurface* CreateScreenshot();
   RagePixelFormat GetImgPixelFormat(
-      RageSurface*& img, bool& FreeImg, int width, int height,
-      bool bPalettedTexture);
+      RageSurface*& img, bool& free_img, int width, int height,
+      bool paletted_texture);
   bool SupportsSurfaceFormat(RagePixelFormat pixfmt);
 
   void SendCurrentMatrices();

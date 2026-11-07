@@ -22,14 +22,13 @@ ReceptorArrowRow::ReceptorArrowRow() {
 }
 
 void ReceptorArrowRow::Load(
-    const PlayerState* pPlayerState, float fYReverseOffset) {
-  player_state_ = pPlayerState;
-  y_reverse_offset_pixels_ = fYReverseOffset;
+    const PlayerState* player_state, float y_reverse_offset) {
+  player_state_ = player_state;
+  y_reverse_offset_pixels_ = y_reverse_offset;
 
-  const Style* pStyle =
-      GAMESTATE->GetCurrentStyle(pPlayerState->player_number_);
+  const Style* style = GAMESTATE->GetCurrentStyle(player_state->player_number_);
 
-  for (int c = 0; c < pStyle->cols_per_player_; c++) {
+  for (int c = 0; c < style->cols_per_player_; c++) {
     receptor_arrow_.push_back(new ReceptorArrow);
     receptor_arrow_[c]->SetName("ReceptorArrow");
     receptor_arrow_[c]->Load(player_state_, c);
@@ -54,8 +53,8 @@ ReceptorArrowRow::~ReceptorArrowRow() {
   }
 }
 
-void ReceptorArrowRow::Update(float fDeltaTime) {
-  ActorFrame::Update(fDeltaTime);
+void ReceptorArrowRow::Update(float delta_time) {
+  ActorFrame::Update(delta_time);
   // If we're on gameplay, then the notefield will take care of updating
   // ArrowEffects.  But if we're on ScreenNameEntry, there is no notefield,
   // Checking whether m_renderers is null is a proxy for checking whether
@@ -66,14 +65,14 @@ void ReceptorArrowRow::Update(float fDeltaTime) {
 
   for (unsigned c = 0; c < receptor_arrow_.size(); c++) {
     // m_fDark==1 or m_fFadeToFailPercent==1 should make fBaseAlpha==0
-    float fBaseAlpha =
+    float base_alpha =
         (1 - player_state_->player_options_.GetCurrent().dark_ -
          player_state_->player_options_.GetCurrent().darks_[c]);
     if (fade_to_fail_percent_ != -1) {
-      fBaseAlpha *= (1 - fade_to_fail_percent_);
+      base_alpha *= (1 - fade_to_fail_percent_);
     }
-    rage_clamp(fBaseAlpha, 0.0f, 1.0f);
-    receptor_arrow_[c]->SetBaseAlpha(fBaseAlpha);
+    rage_clamp(base_alpha, 0.0f, 1.0f);
+    receptor_arrow_[c]->SetBaseAlpha(base_alpha);
 
     if (renderers_ != nullptr) {
       // set arrow XYZ
@@ -90,27 +89,27 @@ void ReceptorArrowRow::Update(float fDeltaTime) {
 }
 
 void ReceptorArrowRow::DrawPrimitives() {
-  const Style* pStyle =
+  const Style* style =
       GAMESTATE->GetCurrentStyle(player_state_->player_number_);
   for (unsigned i = 0; i < receptor_arrow_.size(); i++) {
-    const int c = pStyle->column_draw_order_[i];
+    const int c = style->column_draw_order_[i];
     receptor_arrow_[c]->Draw();
   }
 }
 
-void ReceptorArrowRow::Step(int iCol, TapNoteScore score) {
-  ASSERT(iCol >= 0 && iCol < (int)receptor_arrow_.size());
-  receptor_arrow_[iCol]->Step(score);
+void ReceptorArrowRow::Step(int col, TapNoteScore score) {
+  ASSERT(col >= 0 && col < (int)receptor_arrow_.size());
+  receptor_arrow_[col]->Step(score);
 }
 
-void ReceptorArrowRow::SetPressed(int iCol) {
-  ASSERT(iCol >= 0 && iCol < (int)receptor_arrow_.size());
-  receptor_arrow_[iCol]->SetPressed();
+void ReceptorArrowRow::SetPressed(int col) {
+  ASSERT(col >= 0 && col < (int)receptor_arrow_.size());
+  receptor_arrow_[col]->SetPressed();
 }
 
-void ReceptorArrowRow::SetNoteUpcoming(int iCol, bool b) {
-  ASSERT(iCol >= 0 && iCol < (int)receptor_arrow_.size());
-  receptor_arrow_[iCol]->SetNoteUpcoming(b);
+void ReceptorArrowRow::SetNoteUpcoming(int col, bool b) {
+  ASSERT(col >= 0 && col < (int)receptor_arrow_.size());
+  receptor_arrow_[col]->SetNoteUpcoming(b);
 }
 
 /*

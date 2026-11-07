@@ -12,7 +12,7 @@ class ScreenTestLights : public ScreenWithMenuElements {
   virtual void BeginScreen();
   virtual void EndScreen();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual bool Input(const InputEventPlus& input);
 
   virtual bool MenuLeft(const InputEventPlus& input);

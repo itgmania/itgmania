@@ -17,21 +17,21 @@ class ScreenOptionsMemoryCard : public ScreenOptions {
   virtual void Init();
   void BeginScreen();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
  protected:
   virtual void AfterChangeRow(PlayerNumber pn);
 
  private:
-  void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
-  void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
   void HandleMessage(const Message& msg);
 
   void ProcessMenuStart(const InputEventPlus& input);
 
   void CreateMenu();
-  void SelectRowWithMemoryCard(const std::string& sOsMountPoint);
+  void SelectRowWithMemoryCard(const std::string& os_mount_point);
 
   bool UpdateCurrentUsbStorageDevices();
   std::vector<UsbStorageDevice> current_usb_storage_devices_;

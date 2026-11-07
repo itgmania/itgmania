@@ -14,18 +14,18 @@ class ReceptorArrowRow : public ActorFrame {
  public:
   ReceptorArrowRow();
   virtual ~ReceptorArrowRow();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void DrawPrimitives();
 
-  void Load(const PlayerState* pPlayerState, float fYReverseOffset);
+  void Load(const PlayerState* player_state, float y_reverse_offset);
   void SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers);
 
-  void Step(int iCol, TapNoteScore score);
-  void SetPressed(int iCol);
-  void SetNoteUpcoming(int iCol, bool b);
+  void Step(int col, TapNoteScore score);
+  void SetPressed(int col);
+  void SetNoteUpcoming(int col, bool b);
 
-  void SetFadeToFailPercent(float fFadeToFailPercent) {
-    fade_to_fail_percent_ = fFadeToFailPercent;
+  void SetFadeToFailPercent(float fade_to_fail_percent) {
+    fade_to_fail_percent_ = fade_to_fail_percent;
   }
 
  protected:

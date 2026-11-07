@@ -14,7 +14,7 @@ namespace RageException {
 [[noreturn]]
 void Throw(const char* fmt, ...) PRINTF(1, 2);
 
-void SetCleanupHandler(void (*pHandler)(const std::string& sError));
+void SetCleanupHandler(void (*handler)(const std::string& error));
 }  // namespace RageException
 
 #endif

@@ -190,11 +190,11 @@ void SetBGChanges(SongTagInfo& info) {
       *info.song_, (*info.params_)[0], info.path_, (*info.params_)[1]);
 }
 void SetFGChanges(SongTagInfo& info) {
-  std::vector<std::vector<std::string>> aFGChanges;
+  std::vector<std::vector<std::string>> fg_changes;
   info.loader_->ParseBGChangesString(
-      (*info.params_)[1], aFGChanges, info.song_->GetSongDir());
+      (*info.params_)[1], fg_changes, info.song_->GetSongDir());
 
-  for (const auto& b : aFGChanges) {
+  for (const auto& b : fg_changes) {
     BackgroundChange change;
     if (info.loader_->LoadFromBGChangesVector(change, b)) {
       info.song_->AddForegroundChange(change);
@@ -331,40 +331,40 @@ void SetTechCounts(StepsTagInfo& info) {
 
 void SetNoteAnnotations(StepsTagInfo& info) {
   if (info.for_load_edit_) {
-    std::vector<std::string> valuesPerPlayer;
-    split((*info.params_)[1], "|", valuesPerPlayer, true);
+    std::vector<std::string> values_per_player;
+    split((*info.params_)[1], "|", values_per_player, true);
 
-    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+    if (values_per_player.size() > NUM_PlayerNumber) {
       LOG->Warn(
           "#NOTEANNOTATIONS has more sections (%zu) than possible number of "
           "players (%d)!",
-          valuesPerPlayer.size(), NUM_PlayerNumber);
+          values_per_player.size(), NUM_PlayerNumber);
     }
 
-    std::vector<NoteAnnotationCache> annotationsPerPlayer;
+    std::vector<NoteAnnotationCache> annotations_per_player;
 
     for (std::size_t pn = 0;
-         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      NoteAnnotationCache annotationCache;
-      annotationCache.compressed_ = valuesPerPlayer[pn];
-      annotationsPerPlayer.push_back(annotationCache);
+         pn < values_per_player.size() && pn < NUM_PlayerNumber; pn++) {
+      NoteAnnotationCache annotation_cache;
+      annotation_cache.compressed_ = values_per_player[pn];
+      annotations_per_player.push_back(annotation_cache);
     }
-    info.steps_->SetNoteAnnotations(annotationsPerPlayer);
+    info.steps_->SetNoteAnnotations(annotations_per_player);
   }
   info.ssc_format_ = true;
 }
 
 template <typename T, typename Convert>
 static std::vector<T> ParseMeasureValues(
-    const std::string& sValue, Convert convert) {
+    const std::string& value, Convert convert) {
   std::vector<T> values;
-  for (std::size_t start = 0; start < sValue.size();) {
-    std::size_t end = sValue.find(',', start);
+  for (std::size_t start = 0; start < value.size();) {
+    std::size_t end = value.find(',', start);
     if (end == std::string::npos) {
-      end = sValue.size();
+      end = value.size();
     }
     if (end > start) {
-      values.push_back(convert(sValue.c_str() + start));
+      values.push_back(convert(value.c_str() + start));
     }
     start = end + 1;
   }
@@ -373,27 +373,27 @@ static std::vector<T> ParseMeasureValues(
 
 void SetNpsPerMeasure(StepsTagInfo& info) {
   if (info.for_load_edit_) {
-    std::vector<std::string> valuesPerPlayer;
-    split((*info.params_)[1], "|", valuesPerPlayer, true);
+    std::vector<std::string> values_per_player;
+    split((*info.params_)[1], "|", values_per_player, true);
 
-    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+    if (values_per_player.size() > NUM_PlayerNumber) {
       LOG->Warn(
           "#NPSPERMEASURE has more sections (%zu) than possible number of "
           "players (%d)!",
-          valuesPerPlayer.size(), NUM_PlayerNumber);
+          values_per_player.size(), NUM_PlayerNumber);
     }
 
-    std::vector<std::vector<float>> npsPerMeasures;
+    std::vector<std::vector<float>> nps_per_measures;
     for (std::size_t pn = 0;
-         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      npsPerMeasures.push_back(
+         pn < values_per_player.size() && pn < NUM_PlayerNumber; pn++) {
+      nps_per_measures.push_back(
           ParseMeasureValues<float>(
-              valuesPerPlayer[pn], [](const char* pValue) {
-                const float fValue = std::strtof(pValue, nullptr);
-                return std::isfinite(fValue) ? fValue : 0.0f;
+              values_per_player[pn], [](const char* p_value) {
+                const float f_value = std::strtof(p_value, nullptr);
+                return std::isfinite(f_value) ? f_value : 0.0f;
               }));
     }
-    info.steps_->SetNpsPerMeasure(npsPerMeasures);
+    info.steps_->SetNpsPerMeasure(nps_per_measures);
   } else {
     // just recalc at time.
   }
@@ -402,25 +402,25 @@ void SetNpsPerMeasure(StepsTagInfo& info) {
 
 void SetNotesPerMeasure(StepsTagInfo& info) {
   if (info.for_load_edit_) {
-    std::vector<std::string> valuesPerPlayer;
-    split((*info.params_)[1], "|", valuesPerPlayer, true);
+    std::vector<std::string> values_per_player;
+    split((*info.params_)[1], "|", values_per_player, true);
 
-    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+    if (values_per_player.size() > NUM_PlayerNumber) {
       LOG->Warn(
           "#NOTESPERMEASURE has more sections (%zu) than possible number of "
           "players (%d)!",
-          valuesPerPlayer.size(), NUM_PlayerNumber);
+          values_per_player.size(), NUM_PlayerNumber);
     }
 
-    std::vector<std::vector<int>> notesPerMeasures;
+    std::vector<std::vector<int>> notes_per_measures;
     for (std::size_t pn = 0;
-         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      notesPerMeasures.push_back(
-          ParseMeasureValues<int>(valuesPerPlayer[pn], [](const char* pValue) {
-            return static_cast<int>(std::strtol(pValue, nullptr, 10));
+         pn < values_per_player.size() && pn < NUM_PlayerNumber; pn++) {
+      notes_per_measures.push_back(
+          ParseMeasureValues<int>(values_per_player[pn], [](const char* value) {
+            return static_cast<int>(std::strtol(value, nullptr, 10));
           }));
     }
-    info.steps_->SetNotesPerMeasure(notesPerMeasures);
+    info.steps_->SetNotesPerMeasure(notes_per_measures);
   } else {
     // just recalc at time.
   }
@@ -429,22 +429,22 @@ void SetNotesPerMeasure(StepsTagInfo& info) {
 
 void SetPeakNps(StepsTagInfo& info) {
   if (info.for_load_edit_) {
-    std::vector<std::string> valuesPerPlayer;
-    split((*info.params_)[1], "|", valuesPerPlayer, true);
+    std::vector<std::string> values_per_player;
+    split((*info.params_)[1], "|", values_per_player, true);
 
-    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+    if (values_per_player.size() > NUM_PlayerNumber) {
       LOG->Warn(
           "#PEAKNPS has more sections (%zu) than possible number of players "
           "(%d)!",
-          valuesPerPlayer.size(), NUM_PlayerNumber);
+          values_per_player.size(), NUM_PlayerNumber);
     }
 
-    std::vector<float> peakNps;
+    std::vector<float> peak_nps;
     for (std::size_t pn = 0;
-         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      peakNps.push_back(StringToFloat(valuesPerPlayer[pn]));
+         pn < values_per_player.size() && pn < NUM_PlayerNumber; pn++) {
+      peak_nps.push_back(StringToFloat(values_per_player[pn]));
     }
-    info.steps_->SetPeakNps(peakNps);
+    info.steps_->SetPeakNps(peak_nps);
   } else {
     // just recalc at time.
   }
@@ -462,8 +462,8 @@ void SetGrooveStatsHash(StepsTagInfo& info) {
 void SetGrooveStatsHashVersion(StepsTagInfo& info) {
   if (info.for_load_edit_) {
     std::string value = (*info.params_)[1];
-    int hashVersion = StringToInt(value);
-    info.steps_->SetGrooveStatsHashVersion(hashVersion);
+    int hash_version = StringToInt(value);
+    info.steps_->SetGrooveStatsHashVersion(hash_version);
   }
   info.ssc_format_ = true;
 }
@@ -699,167 +699,167 @@ ssc_parser_helper_t parser_helper;
 // End parser_helper related functions. -Kyz
 /****************************************************************/
 
-void SSCLoader::ProcessBPMs(TimingData& out, const std::string sParam) {
-  std::vector<std::string> arrayBPMExpressions;
-  split(sParam, ",", arrayBPMExpressions);
+void SSCLoader::ProcessBPMs(TimingData& out, const std::string param) {
+  std::vector<std::string> array_bpm_expressions;
+  split(param, ",", array_bpm_expressions);
 
-  for (unsigned b = 0; b < arrayBPMExpressions.size(); b++) {
-    std::vector<std::string> arrayBPMValues;
-    Trim(arrayBPMExpressions[b]);
-    if (arrayBPMExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_bpm_expressions.size(); b++) {
+    std::vector<std::string> array_bpm_values;
+    Trim(array_bpm_expressions[b]);
+    if (array_bpm_expressions[b].empty()) {
       continue;
     }
-    split(arrayBPMExpressions[b], "=", arrayBPMValues);
-    if (arrayBPMValues.size() != 2) {
+    split(array_bpm_expressions[b], "=", array_bpm_values);
+    if (array_bpm_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #BPMS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayBPMExpressions[b].c_str());
+          array_bpm_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = StringToFloat(arrayBPMValues[0]);
-    const float fNewBPM = StringToFloat(arrayBPMValues[1]);
-    if (fBeat >= 0 && fNewBPM > 0) {
-      out.AddSegment(BPMSegment(BeatToNoteRow(fBeat), fNewBPM));
+    const float beat = StringToFloat(array_bpm_values[0]);
+    const float new_bpm = StringToFloat(array_bpm_values[1]);
+    if (beat >= 0 && new_bpm > 0) {
+      out.AddSegment(BPMSegment(BeatToNoteRow(beat), new_bpm));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid BPM at beat %f, BPM %f.", fBeat, fNewBPM);
+          "has an invalid BPM at beat %f, BPM %f.", beat, new_bpm);
     }
   }
 }
 
-void SSCLoader::ProcessStops(TimingData& out, const std::string sParam) {
-  std::vector<std::string> arrayStopExpressions;
-  split(sParam, ",", arrayStopExpressions);
+void SSCLoader::ProcessStops(TimingData& out, const std::string param) {
+  std::vector<std::string> array_stop_expressions;
+  split(param, ",", array_stop_expressions);
 
-  for (unsigned b = 0; b < arrayStopExpressions.size(); b++) {
-    std::vector<std::string> arrayStopValues;
-    Trim(arrayStopExpressions[b]);
-    if (arrayStopExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_stop_expressions.size(); b++) {
+    std::vector<std::string> array_stop_values;
+    Trim(array_stop_expressions[b]);
+    if (array_stop_expressions[b].empty()) {
       continue;
     }
-    split(arrayStopExpressions[b], "=", arrayStopValues);
-    if (arrayStopValues.size() != 2) {
+    split(array_stop_expressions[b], "=", array_stop_values);
+    if (array_stop_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #STOPS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayStopExpressions[b].c_str());
+          array_stop_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = StringToFloat(arrayStopValues[0]);
-    const float fNewStop = StringToFloat(arrayStopValues[1]);
-    if (fBeat >= 0 && fNewStop > 0) {
-      out.AddSegment(StopSegment(BeatToNoteRow(fBeat), fNewStop));
+    const float beat = StringToFloat(array_stop_values[0]);
+    const float new_stop = StringToFloat(array_stop_values[1]);
+    if (beat >= 0 && new_stop > 0) {
+      out.AddSegment(StopSegment(BeatToNoteRow(beat), new_stop));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid Stop at beat %f, length %f.", fBeat, fNewStop);
+          "has an invalid Stop at beat %f, length %f.", beat, new_stop);
     }
   }
 }
 
 void SSCLoader::ProcessWarps(
-    TimingData& out, const std::string sParam, const float fVersion) {
-  std::vector<std::string> arrayWarpExpressions;
-  split(sParam, ",", arrayWarpExpressions);
+    TimingData& out, const std::string param, const float version) {
+  std::vector<std::string> array_warp_expressions;
+  split(param, ",", array_warp_expressions);
 
-  for (unsigned b = 0; b < arrayWarpExpressions.size(); b++) {
-    std::vector<std::string> arrayWarpValues;
-    Trim(arrayWarpExpressions[b]);
-    if (arrayWarpExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_warp_expressions.size(); b++) {
+    std::vector<std::string> array_warp_values;
+    Trim(array_warp_expressions[b]);
+    if (array_warp_expressions[b].empty()) {
       continue;
     }
-    split(arrayWarpExpressions[b], "=", arrayWarpValues);
-    if (arrayWarpValues.size() != 2) {
+    split(array_warp_expressions[b], "=", array_warp_values);
+    if (array_warp_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #WARPS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayWarpExpressions[b].c_str());
+          array_warp_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = StringToFloat(arrayWarpValues[0]);
-    const float fNewBeat = StringToFloat(arrayWarpValues[1]);
+    const float beat = StringToFloat(array_warp_values[0]);
+    const float new_beat = StringToFloat(array_warp_values[1]);
     // Early versions were absolute in beats. They should be relative.
-    if ((fVersion < VERSION_SPLIT_TIMING && fNewBeat > fBeat)) {
-      out.AddSegment(WarpSegment(BeatToNoteRow(fBeat), fNewBeat - fBeat));
-    } else if (fNewBeat > 0) {
-      out.AddSegment(WarpSegment(BeatToNoteRow(fBeat), fNewBeat));
+    if ((version < VERSION_SPLIT_TIMING && new_beat > beat)) {
+      out.AddSegment(WarpSegment(BeatToNoteRow(beat), new_beat - beat));
+    } else if (new_beat > 0) {
+      out.AddSegment(WarpSegment(BeatToNoteRow(beat), new_beat));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid Warp at beat %f, BPM %f.", fBeat, fNewBeat);
+          "has an invalid Warp at beat %f, BPM %f.", beat, new_beat);
     }
   }
 }
 
-void SSCLoader::ProcessLabels(TimingData& out, const std::string sParam) {
-  std::vector<std::string> arrayLabelExpressions;
-  split(sParam, ",", arrayLabelExpressions);
+void SSCLoader::ProcessLabels(TimingData& out, const std::string param) {
+  std::vector<std::string> array_label_expressions;
+  split(param, ",", array_label_expressions);
 
-  for (unsigned b = 0; b < arrayLabelExpressions.size(); b++) {
-    std::vector<std::string> arrayLabelValues;
-    Trim(arrayLabelExpressions[b]);
-    if (arrayLabelExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_label_expressions.size(); b++) {
+    std::vector<std::string> array_label_values;
+    Trim(array_label_expressions[b]);
+    if (array_label_expressions[b].empty()) {
       continue;
     }
-    split(arrayLabelExpressions[b], "=", arrayLabelValues);
-    if (arrayLabelValues.size() != 2) {
+    split(array_label_expressions[b], "=", array_label_values);
+    if (array_label_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #LABELS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayLabelExpressions[b].c_str());
+          array_label_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = StringToFloat(arrayLabelValues[0]);
-    std::string sLabel = arrayLabelValues[1];
-    TrimRight(sLabel);
-    if (fBeat >= 0.0f) {
-      out.AddSegment(LabelSegment(BeatToNoteRow(fBeat), sLabel));
+    const float beat = StringToFloat(array_label_values[0]);
+    std::string label = array_label_values[1];
+    TrimRight(label);
+    if (beat >= 0.0f) {
+      out.AddSegment(LabelSegment(BeatToNoteRow(beat), label));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid Label at beat %f called %s.", fBeat, sLabel.c_str());
+          "has an invalid Label at beat %f called %s.", beat, label.c_str());
     }
   }
 }
 
 void SSCLoader::ProcessCombos(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
-  std::vector<std::string> arrayComboExpressions;
-  split(line, ",", arrayComboExpressions);
+    TimingData& out, const std::string line, const int rows_per_beat) {
+  std::vector<std::string> array_combo_expressions;
+  split(line, ",", array_combo_expressions);
 
-  for (unsigned f = 0; f < arrayComboExpressions.size(); f++) {
-    std::vector<std::string> arrayComboValues;
-    split(arrayComboExpressions[f], "=", arrayComboValues);
-    unsigned size = arrayComboValues.size();
+  for (unsigned f = 0; f < array_combo_expressions.size(); f++) {
+    std::vector<std::string> array_combo_values;
+    split(array_combo_expressions[f], "=", array_combo_values);
+    unsigned size = array_combo_values.size();
     if (size < 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #COMBOS value \"%s\" (must have at least one '='), "
           "ignored.",
-          arrayComboExpressions[f].c_str());
+          array_combo_expressions[f].c_str());
       continue;
     }
-    const float fComboBeat = StringToFloat(arrayComboValues[0]);
-    const int iCombos = StringToInt(arrayComboValues[1]);
-    const int iMisses =
-        (size == 2 ? iCombos : StringToInt(arrayComboValues[2]));
-    out.AddSegment(ComboSegment(BeatToNoteRow(fComboBeat), iCombos, iMisses));
+    const float combo_beat = StringToFloat(array_combo_values[0]);
+    const int combos = StringToInt(array_combo_values[1]);
+    const int misses =
+        (size == 2 ? combos : StringToInt(array_combo_values[2]));
+    out.AddSegment(ComboSegment(BeatToNoteRow(combo_beat), combos, misses));
   }
 }
 
-void SSCLoader::ProcessScrolls(TimingData& out, const std::string sParam) {
+void SSCLoader::ProcessScrolls(TimingData& out, const std::string param) {
   std::vector<std::string> vs1;
-  split(sParam, ",", vs1);
+  split(param, ",", vs1);
 
   for (const std::string& s1 : vs1) {
     std::vector<std::string> vs2;
@@ -872,17 +872,17 @@ void SSCLoader::ProcessScrolls(TimingData& out, const std::string sParam) {
       continue;
     }
 
-    const float fBeat = StringToFloat(vs2[0]);
-    const float fRatio = StringToFloat(vs2[1]);
+    const float beat = StringToFloat(vs2[0]);
+    const float ratio = StringToFloat(vs2[1]);
 
-    if (fBeat < 0) {
+    if (beat < 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an scroll change with beat %f.", fBeat);
+          "has an scroll change with beat %f.", beat);
       continue;
     }
 
-    out.AddSegment(ScrollSegment(BeatToNoteRow(fBeat), fRatio));
+    out.AddSegment(ScrollSegment(BeatToNoteRow(beat), ratio));
   }
 }
 
@@ -897,45 +897,45 @@ bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
     return false;
   }
 
-  bool tryingSteps = false;
-  float storedVersion = 0;
+  bool trying_steps = false;
+  float stored_version = 0;
   const unsigned values = msd.GetNumValues();
 
   for (unsigned i = 0; i < values; i++) {
     const MsdFile::value_t& params = msd.GetValue(i);
-    std::string valueName = params[0];
-    MakeUpper(valueName);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
     std::string matcher = params[1];  // mainly for debugging.
     Trim(matcher);
 
     load_note_data_handler_map_t::iterator handler =
-        parser_helper.load_note_data_handlers_.find(valueName);
+        parser_helper.load_note_data_handlers_.find(value_name);
     if (handler != parser_helper.load_note_data_handlers_.end()) {
-      if (tryingSteps) {
+      if (trying_steps) {
         switch (handler->second) {
           case LNDID_version:
             // Note that version is in both switches.  Formerly, it was
             // checked before the tryingSteps condition. -Kyz
-            storedVersion = StringToFloat(matcher);
+            stored_version = StringToFloat(matcher);
             break;
           case LNDID_stepstype:
             if (out.steps_type_ != GAMEMAN->StringToStepsType(matcher)) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_chartname:
-            if (storedVersion >= VERSION_CHART_NAME_TAG &&
+            if (stored_version >= VERSION_CHART_NAME_TAG &&
                 out.GetChartName() != matcher) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_description:
-            if (storedVersion < VERSION_CHART_NAME_TAG) {
+            if (stored_version < VERSION_CHART_NAME_TAG) {
               if (out.GetChartName() != matcher) {
-                tryingSteps = false;
+                trying_steps = false;
               }
             } else if (out.GetDescription() != matcher) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_difficulty:
@@ -945,17 +945,17 @@ bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
             if (out.GetDifficulty() != StringToDifficulty(matcher) &&
                 !(out.GetDifficulty() == Difficulty_Edit &&
                   MakeLower(GetExtension(path)) == "edit")) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_meter:
             if (out.GetMeter() != StringToInt(matcher)) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_credit:
             if (out.GetCredit() != matcher) {
-              tryingSteps = false;
+              trying_steps = false;
             }
             break;
           case LNDID_notes:
@@ -971,10 +971,10 @@ bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
           case LNDID_version:
             // Note that version is in both switches.  Formerly, it was
             // checked before the tryingSteps condition. -Kyz
-            storedVersion = StringToFloat(matcher);
+            stored_version = StringToFloat(matcher);
             break;
           case LNDID_notedata:
-            tryingSteps = true;
+            trying_steps = true;
             break;
           default:
             break;
@@ -987,71 +987,71 @@ bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
   return false;
 }
 
-bool SSCLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
+bool SSCLoader::LoadFromSimfile(const std::string& path, Song& out) {
   // LOG->Trace( "Song::LoadFromSSCFile(%s)", sPath.c_str() );
 
   MsdFile msd;
-  if (!msd.ReadFile(sPath, true)) {
+  if (!msd.ReadFile(path, true)) {
     LOG->UserLog(
-        "Song file", sPath, "couldn't be opened: %s", msd.GetError().c_str());
+        "Song file", path, "couldn't be opened: %s", msd.GetError().c_str());
     return false;
   }
 
-  out.song_timing_.file_ = sPath;  // songs still have their fallback timing.
-  out.song_file_name_ = sPath;
+  out.song_timing_.file_ = path;  // songs still have their fallback timing.
+  out.song_file_name_ = path;
 
   int state = GETTING_SONG_INFO;
   const unsigned values = msd.GetNumValues();
-  Steps* pNewNotes = nullptr;
-  TimingData stepsTiming;
+  Steps* new_notes = nullptr;
+  TimingData steps_timing;
 
-  SongTagInfo reused_song_info(&*this, &out, sPath);
-  StepsTagInfo reused_steps_info(&*this, &out, sPath);
+  SongTagInfo reused_song_info(&*this, &out, path);
+  StepsTagInfo reused_steps_info(&*this, &out, path);
 
   for (unsigned i = 0; i < values; i++) {
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
 
     switch (state) {
       case GETTING_SONG_INFO: {
-        reused_song_info.params_ = &sParams;
+        reused_song_info.params_ = &params;
         song_handler_map_t::iterator handler =
-            parser_helper.song_tag_handlers_.find(sValueName);
+            parser_helper.song_tag_handlers_.find(value_name);
         if (handler != parser_helper.song_tag_handlers_.end()) {
           handler->second(reused_song_info);
-        } else if (Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES") {
+        } else if (Left(value_name, strlen("BGCHANGES")) == "BGCHANGES") {
           SetBGChanges(reused_song_info);
         }
         // This tag will get us to the next section.
-        else if (sValueName == "NOTEDATA") {
+        else if (value_name == "NOTEDATA") {
           state = GETTING_STEP_INFO;
-          pNewNotes = out.CreateSteps();
-          stepsTiming = TimingData(out.song_timing_.beat0_offset_in_seconds_);
+          new_notes = out.CreateSteps();
+          steps_timing = TimingData(out.song_timing_.beat0_offset_in_seconds_);
           reused_steps_info.has_own_timing_ = false;
-          reused_steps_info.steps_ = pNewNotes;
-          reused_steps_info.timing_ = &stepsTiming;
+          reused_steps_info.steps_ = new_notes;
+          reused_steps_info.timing_ = &steps_timing;
         } else {
           // Silently ignore unrecognized tags, as was done before. -Kyz
         }
         break;
       }
       case GETTING_STEP_INFO: {
-        reused_steps_info.params_ = &sParams;
+        reused_steps_info.params_ = &params;
         steps_handler_map_t::iterator handler =
-            parser_helper.steps_tag_handlers_.find(sValueName);
+            parser_helper.steps_tag_handlers_.find(value_name);
         if (handler != parser_helper.steps_tag_handlers_.end()) {
           handler->second(reused_steps_info);
-        } else if (sValueName == "NOTES" || sValueName == "NOTES2") {
+        } else if (value_name == "NOTES" || value_name == "NOTES2") {
           state = GETTING_SONG_INFO;
           if (reused_steps_info.has_own_timing_) {
-            pNewNotes->timing_ = stepsTiming;
+            new_notes->timing_ = steps_timing;
           }
           reused_steps_info.has_own_timing_ = false;
-          pNewNotes->SetSMNoteData(sParams[1]);
-          pNewNotes->TidyUpData();
-          pNewNotes->SetFilename(sPath);
-          out.AddSteps(pNewNotes);
+          new_notes->SetSMNoteData(params[1]);
+          new_notes->TidyUpData();
+          new_notes->SetFilename(path);
+          out.AddSteps(new_notes);
         } else {
           // Silently ignore unrecognized tags, as was done before. -Kyz
         }
@@ -1065,72 +1065,73 @@ bool SSCLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
 }
 
 bool SSCLoader::LoadEditFromFile(
-    std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
-    Song* givenSong /* = nullptr */) {
-  LOG->Trace("SSCLoader::LoadEditFromFile(%s)", sEditFilePath.c_str());
+    std::string edit_file_path, ProfileSlot slot, bool add_steps_to_song,
+    Song* given_song /* = nullptr */) {
+  LOG->Trace("SSCLoader::LoadEditFromFile(%s)", edit_file_path.c_str());
 
-  int iBytes = FILEMAN->GetFileSizeInBytes(sEditFilePath);
-  if (iBytes > MAX_EDIT_STEPS_SIZE_BYTES) {
+  int bytes = FILEMAN->GetFileSizeInBytes(edit_file_path);
+  if (bytes > MAX_EDIT_STEPS_SIZE_BYTES) {
     LOG->UserLog(
-        "Edit file", sEditFilePath,
+        "Edit file", edit_file_path,
         "is unreasonably large. It won't be loaded.");
     return false;
   }
 
   MsdFile msd;
-  if (!msd.ReadFile(sEditFilePath, true))  // unescape
+  if (!msd.ReadFile(edit_file_path, true))  // unescape
   {
     LOG->UserLog(
-        "Edit file", sEditFilePath, "couldn't be opened: %s",
+        "Edit file", edit_file_path, "couldn't be opened: %s",
         msd.GetError().c_str());
     return false;
   }
 
-  return LoadEditFromMsd(msd, sEditFilePath, slot, bAddStepsToSong, givenSong);
+  return LoadEditFromMsd(
+      msd, edit_file_path, slot, add_steps_to_song, given_song);
 }
 
 bool SSCLoader::LoadEditFromMsd(
-    const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
-    bool bAddStepsToSong, Song* givenSong /* = nullptr */) {
-  Song* pSong = givenSong;
-  Steps* pNewNotes = nullptr;
-  TimingData stepsTiming;
+    const MsdFile& msd, const std::string& edit_file_path, ProfileSlot slot,
+    bool add_steps_to_song, Song* given_song /* = nullptr */) {
+  Song* song = given_song;
+  Steps* new_notes = nullptr;
+  TimingData steps_timing;
 
-  StepsTagInfo reused_steps_info(&*this, pSong, sEditFilePath);
+  StepsTagInfo reused_steps_info(&*this, song, edit_file_path);
   reused_steps_info.for_load_edit_ = true;
-  reused_steps_info.timing_ = &stepsTiming;
+  reused_steps_info.timing_ = &steps_timing;
 
   for (unsigned int i = 0; i < msd.GetNumValues(); ++i) {
-    int iNumParams = msd.GetNumParams(i);
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    int num_params = msd.GetNumParams(i);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
 
-    if (pSong != nullptr) {
-      reused_steps_info.params_ = &sParams;
+    if (song != nullptr) {
+      reused_steps_info.params_ = &params;
       steps_handler_map_t::iterator handler =
-          parser_helper.steps_tag_handlers_.find(sValueName);
-      if (pNewNotes != nullptr &&
+          parser_helper.steps_tag_handlers_.find(value_name);
+      if (new_notes != nullptr &&
           handler != parser_helper.steps_tag_handlers_.end()) {
         handler->second(reused_steps_info);
-      } else if (sValueName == "NOTEDATA") {
-        pNewNotes = pSong->CreateSteps();
-        reused_steps_info.steps_ = pNewNotes;
+      } else if (value_name == "NOTEDATA") {
+        new_notes = song->CreateSteps();
+        reused_steps_info.steps_ = new_notes;
         reused_steps_info.ssc_format_ = true;
-      } else if (sValueName == "NOTES") {
-        if (pSong == nullptr) {
+      } else if (value_name == "NOTES") {
+        if (song == nullptr) {
           LOG->UserLog(
-              "Edit file", sEditFilePath,
+              "Edit file", edit_file_path,
               "doesn't have a #SONG tag preceeding the first #NOTES tag,"
               " and is not in a valid song-specific folder.");
           return false;
         }
 
-        if (!reused_steps_info.ssc_format_ && iNumParams < 7) {
+        if (!reused_steps_info.ssc_format_ && num_params < 7) {
           LOG->UserLog(
-              "Edit file", sEditFilePath,
+              "Edit file", edit_file_path,
               "has %d fields in a #NOTES tag, but should have at least 7.",
-              iNumParams);
+              num_params);
           continue;
         }
 
@@ -1139,78 +1140,78 @@ bool SSCLoader::LoadEditFromMsd(
         // whatever steps data was loaded, possibly leaking the memory used
         // by pNewNotes.  It was here before I rewrote LoadEditFromMsd to
         // use a map instead of an else if chain, so I preserved it. -Kyz
-        if (!bAddStepsToSong) {
+        if (!add_steps_to_song) {
           return true;
         }
 
         // Force the difficulty to edit in case the edit set its own
         // difficulty because IsEditAlreadyLoaded has an assert and edits
         // shouldn't be able to add charts of other difficulties. -Kyz
-        if (pNewNotes != nullptr) {
-          pNewNotes->SetDifficulty(Difficulty_Edit);
-          if (pSong->IsEditAlreadyLoaded(pNewNotes)) {
+        if (new_notes != nullptr) {
+          new_notes->SetDifficulty(Difficulty_Edit);
+          if (song->IsEditAlreadyLoaded(new_notes)) {
             LOG->UserLog(
-                "Edit file", sEditFilePath,
+                "Edit file", edit_file_path,
                 "is a duplicate of another edit that was already loaded.");
-            RageUtil::SafeDelete(pNewNotes);
+            RageUtil::SafeDelete(new_notes);
             return false;
           }
         }
 
         if (reused_steps_info.ssc_format_) {
           if (reused_steps_info.has_own_timing_) {
-            pNewNotes->timing_ = stepsTiming;
+            new_notes->timing_ = steps_timing;
           }
-          pNewNotes->SetSMNoteData(sParams[1]);
-          pNewNotes->TidyUpData();
+          new_notes->SetSMNoteData(params[1]);
+          new_notes->TidyUpData();
         } else {
-          pNewNotes = pSong->CreateSteps();
+          new_notes = song->CreateSteps();
           LoadFromTokens(
-              sParams[1], sParams[2], sParams[3], sParams[4], sParams[5],
-              sParams[6], *pNewNotes);
+              params[1], params[2], params[3], params[4], params[5], params[6],
+              *new_notes);
         }
 
-        pNewNotes->SetLoadedFromProfile(slot);
-        pNewNotes->SetDifficulty(Difficulty_Edit);
-        pNewNotes->SetFilename(sEditFilePath);
+        new_notes->SetLoadedFromProfile(slot);
+        new_notes->SetDifficulty(Difficulty_Edit);
+        new_notes->SetFilename(edit_file_path);
 
-        pSong->AddSteps(pNewNotes);
+        song->AddSteps(new_notes);
         return true;  // Only allow one Steps per edit file!
       } else {
         LOG->UserLog(
-            "Edit file", sEditFilePath, "has an unexpected value \"%s\".",
-            sValueName.c_str());
+            "Edit file", edit_file_path, "has an unexpected value \"%s\".",
+            value_name.c_str());
       }
     } else {
-      if (sValueName == "SONG") {
-        if (pSong) {
+      if (value_name == "SONG") {
+        if (song) {
           /* LOG->UserLog("Edit file", sEditFilePath, "has more than one #SONG
              tag."); return false; */
           continue;
         }
 
-        std::string sSongFullTitle = sParams[1];
-        this->SetSongTitle(sParams[1]);
-        Replace(sSongFullTitle, '\\', '/');
-        pSong = SONGMAN->FindSong(sSongFullTitle);
-        reused_steps_info.song_ = pSong;
-        if (pSong == nullptr) {
+        std::string song_full_title = params[1];
+        this->SetSongTitle(params[1]);
+        Replace(song_full_title, '\\', '/');
+        song = SONGMAN->FindSong(song_full_title);
+        reused_steps_info.song_ = song;
+        if (song == nullptr) {
           LOG->UserLog(
-              "Edit file", sEditFilePath,
+              "Edit file", edit_file_path,
               "requires a song \"%s\" that isn't present.",
-              sSongFullTitle.c_str());
+              song_full_title.c_str());
           return false;
         }
-        if (pSong->GetNumStepsLoadedFromProfile(slot) >=
+        if (song->GetNumStepsLoadedFromProfile(slot) >=
             MAX_EDITS_PER_SONG_PER_PROFILE) {
           LOG->UserLog(
-              "Song file", sSongFullTitle,
+              "Song file", song_full_title,
               "already has the maximum number of edits allowed for "
               "ProfileSlotP%d.",
               slot + 1);
           return false;
         }
-        reused_steps_info.song_ = pSong;
+        reused_steps_info.song_ = song;
       }
     }
   }

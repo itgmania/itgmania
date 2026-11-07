@@ -12,18 +12,18 @@ class RageFileBasic;
 class FilenameDB;
 class RageFileDriver {
  public:
-  RageFileDriver(FilenameDB* pDB) { fdb_ = pDB; }
+  RageFileDriver(FilenameDB* db) { fdb_ = db; }
   virtual ~RageFileDriver();
   virtual RageFileBasic* Open(
-      const std::string& sPath, int iMode, int& iError) = 0;
+      const std::string& path, int mode, int& error) = 0;
   virtual void GetDirListing(
-      const std::string& sPath, std::vector<std::string>& asAddTo,
-      bool bOnlyDirs, bool bReturnPathToo);
-  virtual RageFileManager::FileType GetFileType(const std::string& sPath);
-  virtual int GetFileSizeInBytes(const std::string& sFilePath);
-  virtual int GetFileHash(const std::string& sPath);
-  virtual int GetPathValue(const std::string& sPath);
-  virtual void FlushDirCache(const std::string& sPath);
+      const std::string& path, std::vector<std::string>& add_to, bool only_dirs,
+      bool return_path_too);
+  virtual RageFileManager::FileType GetFileType(const std::string& path);
+  virtual int GetFileSizeInBytes(const std::string& file_path);
+  virtual int GetFileHash(const std::string& path);
+  virtual int GetPathValue(const std::string& path);
+  virtual void FlushDirCache(const std::string& path);
   virtual void CacheFile(const std::string& /* sPath */) {}
   virtual bool Move(
       const std::string& /* sOldPath */, const std::string& /* sNewPath */) {
@@ -44,15 +44,15 @@ class RageFileDriver {
 
 /* This is used to register the driver, so RageFileManager can see it. */
 struct FileDriverEntry {
-  FileDriverEntry(const std::string& sType);
+  FileDriverEntry(const std::string& type);
   virtual ~FileDriverEntry();
-  virtual RageFileDriver* Create(const std::string& sRoot) const = 0;
+  virtual RageFileDriver* Create(const std::string& root) const = 0;
 
   std::string type_;
   const FileDriverEntry* link_;
 };
 RageFileDriver* MakeFileDriver(
-    const std::string& Type, const std::string& Root);
+    const std::string& type, const std::string& root);
 
 #endif
 

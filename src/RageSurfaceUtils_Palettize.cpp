@@ -92,27 +92,26 @@ static bool compare_index_3(
 }
 
 static acolorhist_item* pam_computeacolorhist(
-    const RageSurface* src, int maxacolors, int* acolorsP);
+    const RageSurface* src, int maxacolors, int* acolors_p);
 static void pam_addtoacolorhash(
-    acolorhash_hash& acht, const uint8_t acolorP[4], int value);
+    acolorhash_hash& acht, const uint8_t acolor_p[4], int value);
 static int pam_lookupacolor(
-    const acolorhash_hash& acht, const uint8_t acolorP[4]);
+    const acolorhash_hash& acht, const uint8_t acolor_p[4]);
 static void pam_freeacolorhist(acolorhist_item* achv);
 
 struct pixerror_t {
   int c_[4];
 };
 
-void RageSurfaceUtils::Palettize(
-    RageSurface*& pImg, int iColors, bool bDither) {
-  ASSERT(iColors != 0);
+void RageSurfaceUtils::Palettize(RageSurface*& img, int i_colors, bool dither) {
+  ASSERT(i_colors != 0);
 
   acolorhist_item* acolormap = nullptr;
   int newcolors = 0;
 
   // "apixel", etc. make assumptions about byte order.
   RageSurfaceUtils::ConvertSurface(
-      pImg, pImg->w_, pImg->h_, 32, Swap32BE(0xFF000000), Swap32BE(0x00FF0000),
+      img, img->w_, img->h_, 32, Swap32BE(0xFF000000), Swap32BE(0x00FF0000),
       Swap32BE(0x0000FF00), Swap32BE(0x000000FF));
 
   pixval maxval = 255;
@@ -126,7 +125,7 @@ void RageSurfaceUtils::Palettize(
     acolorhist_item* achv;
     int colors;
     for (;;) {
-      achv = pam_computeacolorhist(pImg, MAXCOLORS, &colors);
+      achv = pam_computeacolorhist(img, MAXCOLORS, &colors);
       if (achv != nullptr) {
         break;
       }
@@ -136,27 +135,27 @@ void RageSurfaceUtils::Palettize(
       for (int c = 0; c <= maxval; ++c) {
         table[c] = ((uint8_t)c * newmaxval + maxval / 2) / maxval;
       }
-      for (int row = 0; row < pImg->h_; ++row) {
-        apixel* pP = (apixel*)(pImg->pixels_ + row * pImg->pitch_);
-        for (int col = 0; col < pImg->w_; ++col, ++pP) {
-          PAM_DEPTH(*pP);
+      for (int row = 0; row < img->h_; ++row) {
+        apixel* p = (apixel*)(img->pixels_ + row * img->pitch_);
+        for (int col = 0; col < img->w_; ++col, ++p) {
+          PAM_DEPTH(*p);
         }
       }
       maxval = newmaxval;
     }
-    newcolors = std::min(colors, iColors);
+    newcolors = std::min(colors, i_colors);
 
     // Apply median-cut to histogram, making the new acolormap.
-    acolormap = mediancut(achv, colors, pImg->h_ * pImg->w_, maxval, newcolors);
+    acolormap = mediancut(achv, colors, img->h_ * img->w_, maxval, newcolors);
     pam_freeacolorhist(achv);
   }
 
-  RageSurface* pRet = CreateSurface(pImg->w_, pImg->h_, 8, 0, 0, 0, 0);
-  pRet->format_->palette_->ncolors_ = newcolors;
+  RageSurface* ret = CreateSurface(img->w_, img->h_, 8, 0, 0, 0, 0);
+  ret->format_->palette_->ncolors_ = newcolors;
 
   // Rescale the palette colors to a maxval of 255.
   {
-    std::unique_ptr<RageSurfacePalette>& pal = pRet->format_->palette_;
+    std::unique_ptr<RageSurfacePalette>& pal = ret->format_->palette_;
     for (int x = 0; x < pal->ncolors_; ++x) {
       // This is really just PAM_DEPTH() broken out for the palette.
       pal->colors_[x].r_ =
@@ -176,37 +175,37 @@ void RageSurfaceUtils::Palettize(
   bool fs_direction = 0;
   pixerror_t *thiserr = nullptr, *nexterr = nullptr;
 
-  if (bDither) {
+  if (dither) {
     // Initialize Floyd-Steinberg error vectors.
-    thiserr = new pixerror_t[pImg->w_ + 2];
-    nexterr = new pixerror_t[pImg->w_ + 2];
+    thiserr = new pixerror_t[img->w_ + 2];
+    nexterr = new pixerror_t[img->w_ + 2];
 
-    memset(thiserr, 0, sizeof(pixerror_t) * (pImg->w_ + 2));
+    memset(thiserr, 0, sizeof(pixerror_t) * (img->w_ + 2));
   }
 
-  for (int row = 0; row < pImg->h_; ++row) {
-    if (bDither) {
-      memset(nexterr, 0, sizeof(pixerror_t) * (pImg->w_ + 2));
+  for (int row = 0; row < img->h_; ++row) {
+    if (dither) {
+      memset(nexterr, 0, sizeof(pixerror_t) * (img->w_ + 2));
     }
 
     int col, limitcol;
     if (!fs_direction) {
       col = 0;
-      limitcol = pImg->w_;
+      limitcol = img->w_;
     } else {
-      col = pImg->w_ - 1;
+      col = img->w_ - 1;
       limitcol = -1;
     }
 
-    const uint8_t* pIn = pImg->pixels_ + row * pImg->pitch_;
-    uint8_t* pOut = pRet->pixels_ + row * pRet->pitch_;
-    pIn += col * 4;
-    pOut += col;
+    const uint8_t* in = img->pixels_ + row * img->pitch_;
+    uint8_t* out = ret->pixels_ + row * ret->pitch_;
+    in += col * 4;
+    out += col;
 
     do {
       int32_t sc[4];
-      uint8_t pixel[4] = {pIn[0], pIn[1], pIn[2], pIn[3]};
-      if (bDither) {
+      uint8_t pixel[4] = {in[0], in[1], in[2], in[3]};
+      if (dither) {
         // Use Floyd-Steinberg errors to adjust actual color.
         for (int c = 0; c < 4; ++c) {
           sc[c] = pixel[c] + thiserr[col + 1].c_[c] / FS_SCALE;
@@ -222,11 +221,11 @@ void RageSurfaceUtils::Palettize(
       int ind = pam_lookupacolor(acht, pixel);
       if (ind == -1) {
         // No; search acolormap for closest match.
-        static int square_table[512], *pSquareTable = nullptr;
-        if (pSquareTable == nullptr) {
-          pSquareTable = square_table + 256;
+        static int square_table[512], *p_square_table = nullptr;
+        if (p_square_table == nullptr) {
+          p_square_table = square_table + 256;
           for (int c = -256; c < 256; ++c) {
-            pSquareTable[c] = c * c;
+            p_square_table[c] = c * c;
           }
         }
 
@@ -235,10 +234,10 @@ void RageSurfaceUtils::Palettize(
           const uint8_t* colors2 = acolormap[i].acolor_;
 
           int newdist = 0;
-          newdist += pSquareTable[int(pixel[0]) - colors2[0]];
-          newdist += pSquareTable[int(pixel[1]) - colors2[1]];
-          newdist += pSquareTable[int(pixel[2]) - colors2[2]];
-          newdist += pSquareTable[int(pixel[3]) - colors2[3]];
+          newdist += p_square_table[int(pixel[0]) - colors2[0]];
+          newdist += p_square_table[int(pixel[1]) - colors2[1]];
+          newdist += p_square_table[int(pixel[2]) - colors2[2]];
+          newdist += p_square_table[int(pixel[3]) - colors2[3]];
 
           if (newdist < dist) {
             ind = i;
@@ -249,7 +248,7 @@ void RageSurfaceUtils::Palettize(
         pam_addtoacolorhash(acht, pixel, ind);
       }
 
-      if (bDither) {
+      if (dither) {
         // Propagate Floyd-Steinberg error terms.
         if (!fs_direction) {
           for (int c = 0; c < 4; ++c) {
@@ -270,20 +269,20 @@ void RageSurfaceUtils::Palettize(
         }
       }
 
-      *pOut = (uint8_t)ind;
+      *out = (uint8_t)ind;
 
       if (!fs_direction) {
         ++col;
-        pIn += 4;
-        ++pOut;
+        in += 4;
+        ++out;
       } else {
         --col;
-        pIn -= 4;
-        --pOut;
+        in -= 4;
+        --out;
       }
     } while (col != limitcol);
 
-    if (bDither) {
+    if (dither) {
       std::swap(thiserr, nexterr);
       fs_direction = !fs_direction;
     }
@@ -293,8 +292,8 @@ void RageSurfaceUtils::Palettize(
   delete[] thiserr;
   delete[] nexterr;
 
-  delete pImg;
-  pImg = pRet;
+  delete img;
+  img = ret;
 }
 
 /* Here is the fun part, the median-cut colormap generator.  This is based
@@ -380,14 +379,14 @@ static acolorhist_item* mediancut(
 
     // Find the largest dimension, and sort by that component.
     {
-      int iMax = 0;
+      int max = 0;
       for (int i = 1; i < 3; ++i) {
-        if (maxs[i] - mins[i] > maxs[iMax] - mins[iMax]) {
-          iMax = i;
+        if (maxs[i] - mins[i] > maxs[max] - mins[max]) {
+          max = i;
         }
       }
 
-      switch (iMax) {
+      switch (max) {
         case 0:
           std::sort(&achv[indx], &achv[indx + clrs], compare_index_0);
           break;
@@ -436,22 +435,22 @@ static acolorhist_item* mediancut(
 #ifdef REP_AVERAGE_PIXELS
     int indx = bv[bi].ind_;
     int clrs = bv[bi].colors_;
-    long r = 0, g = 0, b = 0, a = 0, lSum = 0;
+    long r = 0, g = 0, b = 0, a = 0, l_sum = 0;
 
     for (int i = 0; i < clrs; ++i) {
       r += PAM_GETR(achv[indx + i].acolor_) * achv[indx + i].value_;
       g += PAM_GETG(achv[indx + i].acolor_) * achv[indx + i].value_;
       b += PAM_GETB(achv[indx + i].acolor_) * achv[indx + i].value_;
       a += PAM_GETA(achv[indx + i].acolor_) * achv[indx + i].value_;
-      lSum += achv[indx + i].value_;
+      l_sum += achv[indx + i].value_;
     }
-    r = r / lSum;
+    r = r / l_sum;
     r = std::min(r, (long)maxval);
-    g = g / lSum;
+    g = g / l_sum;
     g = std::min(g, (long)maxval);
-    b = b / lSum;
+    b = b / l_sum;
     b = std::min(b, (long)maxval);
-    a = a / lSum;
+    a = a / l_sum;
     a = std::min(a, (long)maxval);
     PAM_ASSIGN(
         acolormap[bi].acolor_, (uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a);
@@ -484,33 +483,33 @@ static acolorhist_item* mediancut(
    (unsigned)HASH_SIZE)
 
 static bool pam_computeacolorhash(
-    const RageSurface* src, int maxacolors, int* acolorsP,
+    const RageSurface* src, int maxacolors, int* acolors_p,
     acolorhash_hash& hash) {
   ASSERT(src->format_->bytes_per_pixel_ == 4);
 
-  *acolorsP = 0;
+  *acolors_p = 0;
 
   // Go through the entire image, building a hash table of colors.
   for (int row = 0; row < src->h_; ++row) {
-    const apixel* pP = (const apixel*)(src->pixels_ + row * src->pitch_);
-    for (int col = 0; col < src->w_; ++col, pP++) {
-      int hashval = pam_hashapixel(*pP);
+    const apixel* p = (const apixel*)(src->pixels_ + row * src->pitch_);
+    for (int col = 0; col < src->w_; ++col, p++) {
+      int hashval = pam_hashapixel(*p);
       acolorhist_list achl;
       for (achl = hash.hash_[hashval]; achl != nullptr; achl = achl->next_) {
-        if (PAM_EQUAL(achl->ch_.acolor_, *pP)) {
+        if (PAM_EQUAL(achl->ch_.acolor_, *p)) {
           break;
         }
       }
       if (achl != nullptr) {
         ++achl->ch_.value_;
       } else {
-        if (++(*acolorsP) > maxacolors) {
+        if (++(*acolors_p) > maxacolors) {
           return false;
         }
         achl = (acolorhist_list)malloc(sizeof(struct acolorhist_list_item));
         ASSERT(achl != nullptr);
 
-        memcpy(achl->ch_.acolor_, *pP, sizeof(apixel));
+        memcpy(achl->ch_.acolor_, *p, sizeof(apixel));
         achl->ch_.value_ = 1;
         achl->next_ = hash.hash_[hashval];
         hash.hash_[hashval] = achl;
@@ -544,35 +543,35 @@ static acolorhist_item* pam_acolorhashtoacolorhist(
 }
 
 static acolorhist_item* pam_computeacolorhist(
-    const RageSurface* src, int maxacolors, int* acolorsP) {
+    const RageSurface* src, int maxacolors, int* acolors_p) {
   acolorhash_hash acht;
-  if (!pam_computeacolorhash(src, maxacolors, acolorsP, acht)) {
+  if (!pam_computeacolorhash(src, maxacolors, acolors_p, acht)) {
     return nullptr;
   }
 
-  acolorhist_item* achv = pam_acolorhashtoacolorhist(acht, *acolorsP);
+  acolorhist_item* achv = pam_acolorhashtoacolorhist(acht, *acolors_p);
   return achv;
 }
 
 static void pam_addtoacolorhash(
-    acolorhash_hash& acht, const uint8_t acolorP[4], int value) {
+    acolorhash_hash& acht, const uint8_t acolor_p[4], int value) {
   acolorhist_list achl =
       (acolorhist_list)malloc(sizeof(struct acolorhist_list_item));
   ASSERT(achl != nullptr);
 
-  int hash = pam_hashapixel(acolorP);
-  memcpy(achl->ch_.acolor_, acolorP, sizeof(apixel));
+  int hash = pam_hashapixel(acolor_p);
+  memcpy(achl->ch_.acolor_, acolor_p, sizeof(apixel));
   achl->ch_.value_ = value;
   achl->next_ = acht.hash_[hash];
   acht.hash_[hash] = achl;
 }
 
 static int pam_lookupacolor(
-    const acolorhash_hash& acht, const uint8_t acolorP[4]) {
-  const int hash = pam_hashapixel(acolorP);
+    const acolorhash_hash& acht, const uint8_t acolor_p[4]) {
+  const int hash = pam_hashapixel(acolor_p);
   for (acolorhist_list_item* achl = acht.hash_[hash]; achl != nullptr;
        achl = achl->next_) {
-    if (PAM_EQUAL(achl->ch_.acolor_, acolorP)) {
+    if (PAM_EQUAL(achl->ch_.acolor_, acolor_p)) {
       return achl->ch_.value_;
     }
   }

@@ -101,7 +101,7 @@ inline void swap(AutoPtrCopyOnWrite<T>& a, AutoPtrCopyOnWrite<T>& b) {
  */
 template <class T>
 struct HiddenPtrTraits {
-  static T* Copy(const T* pCopy);
+  static T* Copy(const T* copy);
   static void Delete(T* p);
 };
 #define REGISTER_CLASS_TRAITS(T, CopyExpr)      \

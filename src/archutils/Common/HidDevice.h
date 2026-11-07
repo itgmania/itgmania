@@ -48,15 +48,15 @@ class HidDevice {
 
  public:
   static void GetDeviceInfo(
-      int vid, const std::vector<int> pids, int interfaceNumber,
+      int vid, const std::vector<int> pids, int interface_number,
       HidDeviceInfo* device_info);
 
   HidDevice(
-      int vid, const std::vector<int> pids, int interfaceNum = -1,
-      bool autoReconnection = true, bool nonBlockingRead = false);
+      int vid, const std::vector<int> pids, int interface_num = -1,
+      bool auto_reconnection = true, bool non_blocking_read = false);
   HidDevice(
-      int vid, int pid, int interfaceNum = -1, bool autoReconnection = true,
-      bool nonBlockingRead = false);
+      int vid, int pid, int interface_num = -1, bool auto_reconnection = true,
+      bool non_blocking_read = false);
 
   virtual ~HidDevice();
 

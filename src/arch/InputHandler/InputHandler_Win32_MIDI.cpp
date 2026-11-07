@@ -18,13 +18,13 @@ REGISTER_INPUT_HANDLER_CLASS2(MIDI, Win32_MIDI);
 
 static HMIDIIN g_device;
 static void CALLBACK midiCallback(
-    HMIDIIN g_device, UINT status, DWORD_PTR instancePtr, DWORD_PTR data,
+    HMIDIIN device, UINT status, DWORD_PTR instance_ptr, DWORD_PTR data,
     DWORD_PTR timestamp);
 
 static std::string GetMidiError(MMRESULT result) {
-  char szError[256];
-  midiOutGetErrorText(result, szError, 256);
-  return szError;
+  char error[256];
+  midiOutGetErrorText(result, error, 256);
+  return error;
 }
 
 InputHandler_Win32_MIDI::InputHandler_Win32_MIDI() {
@@ -70,31 +70,31 @@ InputHandler_Win32_MIDI::~InputHandler_Win32_MIDI() {
 }
 
 void InputHandler_Win32_MIDI::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   if (found_device_) {
-    vDevicesOut.push_back(InputDeviceInfo(DEVICE_MIDI, "Win32_MIDI"));
+    devices_out.push_back(InputDeviceInfo(DEVICE_MIDI, "Win32_MIDI"));
   }
 }
 
 static void CALLBACK midiCallback(
-    HMIDIIN device, UINT status, DWORD_PTR instancePtr, DWORD_PTR data,
+    HMIDIIN device, UINT status, DWORD_PTR instance_ptr, DWORD_PTR data,
     DWORD_PTR timestamp) {
   if (status == MIM_DATA) {
-    int iType = data & 0xff;
-    int iChannel = (data & 0xff00) >> 8;
-    int iValue = (data & 0xff0000) >> 16;
+    int type = data & 0xff;
+    int channel = (data & 0xff00) >> 8;
+    int value = (data & 0xff0000) >> 16;
 
     // Channel 0 in midi is a special channel that generally will get triggered
     // when too many channels are pressed.
-    if (iChannel == 0) {
+    if (channel == 0) {
       return;
     }
 
-    if (iType == 144) {
+    if (type == 144) {
       DeviceInput di =
-          DeviceInput(DEVICE_MIDI, enum_add2(MIDI_FIRST, iChannel), iValue > 0);
+          DeviceInput(DEVICE_MIDI, enum_add2(MIDI_FIRST, channel), value > 0);
       di.ts_.Touch();
-      (reinterpret_cast<InputHandler_Win32_MIDI*>(instancePtr))->SetDev(di);
+      (reinterpret_cast<InputHandler_Win32_MIDI*>(instance_ptr))->SetDev(di);
     }
   }
 }

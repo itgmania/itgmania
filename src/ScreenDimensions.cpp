@@ -28,27 +28,27 @@ float ScreenDimensions::GetThemeAspectRatio() { return THEME_NATIVE_ASPECT; }
  * and 854x480 (should really be 852 so that SCREEN_CENTER_X == 426 and not 427)
  * respectively. -aj */
 float ScreenDimensions::GetScreenWidth() {
-  float fAspect = PREFSMAN->display_aspect_ratio_;
-  float fScale = 1;
-  if (fAspect > THEME_NATIVE_ASPECT) {
-    fScale = fAspect / THEME_NATIVE_ASPECT;
+  float aspect = PREFSMAN->display_aspect_ratio_;
+  float scale = 1;
+  if (aspect > THEME_NATIVE_ASPECT) {
+    scale = aspect / THEME_NATIVE_ASPECT;
   }
-  ASSERT(fScale >= 1);
+  ASSERT(scale >= 1);
   // ceil causes the width to come out odd when it shouldn't.
   // 576 * 1.7778 = 1024.0128, which is rounded to 1025. -Kyz
-  int width = std::ceil(THEME_SCREEN_WIDTH * fScale);
+  int width = std::ceil(THEME_SCREEN_WIDTH * scale);
   width -= width % 2;
   return (float)width;
 }
 
 float ScreenDimensions::GetScreenHeight() {
-  float fAspect = PREFSMAN->display_aspect_ratio_;
-  float fScale = 1;
-  if (fAspect < THEME_NATIVE_ASPECT) {
-    fScale = THEME_NATIVE_ASPECT / fAspect;
+  float aspect = PREFSMAN->display_aspect_ratio_;
+  float scale = 1;
+  if (aspect < THEME_NATIVE_ASPECT) {
+    scale = THEME_NATIVE_ASPECT / aspect;
   }
-  ASSERT(fScale >= 1);
-  return std::ceil(THEME_SCREEN_HEIGHT * fScale);
+  ASSERT(scale >= 1);
+  return std::ceil(THEME_SCREEN_HEIGHT * scale);
 }
 
 void ScreenDimensions::ReloadScreenDimensions() {

@@ -11,37 +11,37 @@
 
 // Create*Font copied from MFC's CFont
 
-// pLogFont->nHeight is interpreted as PointSize * 10
-static HFONT CreatePointFontIndirect(const LOGFONT* lpLogFont) {
-  HDC hDC = ::GetDC(nullptr);
+// log_font->nHeight is interpreted as PointSize * 10
+static HFONT CreatePointFontIndirect(const LOGFONT* lp_log_font) {
+  HDC dc = ::GetDC(nullptr);
 
   // convert nPointSize to logical units based on pDC
-  LOGFONT logFont = *lpLogFont;
+  LOGFONT log_font = *lp_log_font;
   POINT pt;
-  pt.y = ::GetDeviceCaps(hDC, LOGPIXELSY) * logFont.lfHeight;
+  pt.y = ::GetDeviceCaps(dc, LOGPIXELSY) * log_font.lfHeight;
   pt.y /= 720;  // 72 points/inch * 10 decipoints/point
   pt.x = 0;
-  ::DPtoLP(hDC, &pt, 1);
-  POINT ptOrg = {0, 0};
-  ::DPtoLP(hDC, &ptOrg, 1);
-  logFont.lfHeight = -std::abs(pt.y - ptOrg.y);
+  ::DPtoLP(dc, &pt, 1);
+  POINT pt_org = {0, 0};
+  ::DPtoLP(dc, &pt_org, 1);
+  log_font.lfHeight = -std::abs(pt.y - pt_org.y);
 
-  ReleaseDC(nullptr, hDC);
+  ReleaseDC(nullptr, dc);
 
-  return ::CreateFontIndirect(&logFont);
+  return ::CreateFontIndirect(&log_font);
 }
 
-// nPointSize is actually scaled 10x
-static HFONT CreatePointFont(int nPointSize, LPCTSTR lpszFaceName) {
-  ASSERT(lpszFaceName != nullptr);
+// point_size is actually scaled 10x
+static HFONT CreatePointFont(int point_size, LPCTSTR face_name) {
+  ASSERT(face_name != nullptr);
 
-  LOGFONT logFont;
-  memset(&logFont, 0, sizeof(LOGFONT));
-  logFont.lfCharSet = DEFAULT_CHARSET;
-  logFont.lfHeight = nPointSize;
-  lstrcpyn(logFont.lfFaceName, lpszFaceName, strlen(logFont.lfFaceName));
+  LOGFONT log_font;
+  memset(&log_font, 0, sizeof(LOGFONT));
+  log_font.lfCharSet = DEFAULT_CHARSET;
+  log_font.lfHeight = point_size;
+  lstrcpyn(log_font.lfFaceName, face_name, strlen(log_font.lfFaceName));
 
-  return ::CreatePointFontIndirect(&logFont);
+  return ::CreatePointFontIndirect(&log_font);
 }
 
 struct FontDeleter {
@@ -52,42 +52,42 @@ struct FontDeleter {
   }
 };
 
-void DialogUtil::SetHeaderFont(HWND hdlg, int nID) {
+void DialogUtil::SetHeaderFont(HWND hdlg, int id) {
   ASSERT(hdlg != nullptr);
 
-  HWND hControl = ::GetDlgItem(hdlg, nID);
-  ASSERT(hControl != nullptr);
+  HWND control = ::GetDlgItem(hdlg, id);
+  ASSERT(control != nullptr);
 
   static std::unique_ptr<std::remove_pointer<HFONT>::type, FontDeleter> hfont(
       CreatePointFont(16 * 10, "Arial Black"));
 
-  ::SendMessage(hControl, WM_SETFONT, (WPARAM)hfont.get(), TRUE);
+  ::SendMessage(control, WM_SETFONT, (WPARAM)hfont.get(), TRUE);
 }
 
 void DialogUtil::LocalizeDialogAndContents(HWND hdlg) {
   ASSERT(THEME != nullptr);
 
-  const int LARGE_STRING = 256;
-  char szTemp[LARGE_STRING] = "";
-  std::string sGroup;
+  const int kLargeString = 256;
+  char temp[kLargeString] = "";
+  std::string group;
 
   {
-    ::GetWindowText(hdlg, szTemp, ARRAYLEN(szTemp));
-    std::string s = szTemp;
-    sGroup = "Dialog-" + s;
-    s = THEME->GetString(sGroup, s);
+    ::GetWindowText(hdlg, temp, ARRAYLEN(temp));
+    std::string s = temp;
+    group = "Dialog-" + s;
+    s = THEME->GetString(group, s);
     ::SetWindowText(hdlg, ConvertUTF8ToACP(s).c_str());
   }
 
-  for (HWND hwndChild = ::GetTopWindow(hdlg); hwndChild != nullptr;
-       hwndChild = ::GetNextWindow(hwndChild, GW_HWNDNEXT)) {
-    ::GetWindowText(hwndChild, szTemp, ARRAYLEN(szTemp));
-    std::string s = szTemp;
+  for (HWND hwnd_child = ::GetTopWindow(hdlg); hwnd_child != nullptr;
+       hwnd_child = ::GetNextWindow(hwnd_child, GW_HWNDNEXT)) {
+    ::GetWindowText(hwnd_child, temp, ARRAYLEN(temp));
+    std::string s = temp;
     if (s.empty()) {
       continue;
     }
-    s = THEME->GetString(sGroup, s);
-    ::SetWindowText(hwndChild, ConvertUTF8ToACP(s).c_str());
+    s = THEME->GetString(group, s);
+    ::SetWindowText(hwnd_child, ConvertUTF8ToACP(s).c_str());
   }
 }
 

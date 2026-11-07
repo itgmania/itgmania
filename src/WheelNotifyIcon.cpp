@@ -70,9 +70,9 @@ void WheelNotifyIcon::SetFlags(Flags flags) {
     }
   }
 
-  const unsigned int newSize = std::min<unsigned int>(
+  const unsigned int new_size = std::min<unsigned int>(
       icons_to_show_.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
-  icons_to_show_.resize(newSize);
+  icons_to_show_.resize(new_size);
 
   // Broadcast Set message so items can react. (futures) -aj
   // Message msg("Set");
@@ -90,18 +90,18 @@ bool WheelNotifyIcon::EarlyAbortDraw() const {
   return Sprite::EarlyAbortDraw();
 }
 
-void WheelNotifyIcon::Update(float fDeltaTime) {
+void WheelNotifyIcon::Update(float delta_time) {
   if (icons_to_show_.size() > 0) {
     /* We should probably end up parsing the vector and then dynamically
      * insert flag icons based on "priority". Easy to do, hopefully
             - Midiman */
-    static uint_fast32_t updateCounter = 0;
-    updateCounter++;
-    const int index = updateCounter % icons_to_show_.size();
+    static uint_fast32_t update_counter = 0;
+    update_counter++;
+    const int index = update_counter % icons_to_show_.size();
     Sprite::SetState(icons_to_show_[index]);
   }
 
-  Sprite::Update(fDeltaTime);
+  Sprite::Update(delta_time);
 }
 
 /*

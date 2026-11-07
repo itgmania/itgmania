@@ -86,11 +86,11 @@ bool LuaReference::IsNil() const { return reference_ == LUA_REFNIL; }
 int LuaReference::GetLuaType() const {
   Lua* L = LUA->Get();
   this->PushSelf(L);
-  int iRet = lua_type(L, -1);
+  int ret = lua_type(L, -1);
   lua_pop(L, 1);
   LUA->Release(L);
 
-  return iRet;
+  return ret;
 }
 
 void LuaReference::Unregister() {
@@ -104,31 +104,31 @@ void LuaReference::Unregister() {
   reference_ = LUA_NOREF;
 }
 
-bool LuaReference::SetFromExpression(const std::string& sExpression) {
+bool LuaReference::SetFromExpression(const std::string& expression) {
   Lua* L = LUA->Get();
 
-  bool bSuccess = LuaHelpers::RunExpression(L, sExpression);
+  bool success = LuaHelpers::RunExpression(L, expression);
   this->SetFromStack(L);
 
   LUA->Release(L);
-  return bSuccess;
+  return success;
 }
 
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>
-bool FromStack<LuaReference>(lua_State* L, LuaReference& Object, int iOffset) {
-  lua_pushvalue(L, iOffset);
-  Object.SetFromStack(L);
+bool FromStack<LuaReference>(lua_State* L, LuaReference& object, int offset) {
+  lua_pushvalue(L, offset);
+  object.SetFromStack(L);
   return true;
 }
 
 template <>
 bool FromStack<apActorCommands>(
-    lua_State* L, apActorCommands& Object, int iOffset) {
-  LuaReference* pRef = new LuaReference;
-  FromStack(L, *pRef, iOffset);
-  Object = apActorCommands(pRef);
+    lua_State* L, apActorCommands& object, int offset) {
+  LuaReference* ref = new LuaReference;
+  FromStack(L, *ref, offset);
+  object = apActorCommands(ref);
   return true;
 }
 }  // namespace LuaHelpers
@@ -140,25 +140,25 @@ LuaTable::LuaTable() {
   LUA->Release(L);
 }
 
-void LuaTable::Set(Lua* L, const std::string& sKey) {
-  int iTop = lua_gettop(L);
+void LuaTable::Set(Lua* L, const std::string& key) {
+  int top = lua_gettop(L);
   this->PushSelf(L);
-  lua_pushvalue(L, iTop);  // push the value
-  lua_setfield(L, -2, sKey.c_str());
-  lua_settop(L, iTop - 1);  // remove all of the above
+  lua_pushvalue(L, top);  // push the value
+  lua_setfield(L, -2, key.c_str());
+  lua_settop(L, top - 1);  // remove all of the above
 }
 
-void LuaTable::Get(Lua* L, const std::string& sKey) {
+void LuaTable::Get(Lua* L, const std::string& key) {
   this->PushSelf(L);
-  lua_getfield(L, -1, sKey.c_str());
+  lua_getfield(L, -1, key.c_str());
   lua_remove(L, -2);  // remove self
 }
 
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>
-void Push<LuaReference>(lua_State* L, const LuaReference& Object) {
-  Object.PushSelf(L);
+void Push<LuaReference>(lua_State* L, const LuaReference& object) {
+  object.PushSelf(L);
 }
 }  // namespace LuaHelpers
 

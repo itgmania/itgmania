@@ -13,13 +13,13 @@ class BGAnimation : public ActorFrameAutoDeleteChildren {
   BGAnimation();
   virtual ~BGAnimation();
 
-  void LoadFromAniDir(const std::string& sAniDir);
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromAniDir(const std::string& ani_dir);
+  void LoadFromNode(const XNode* node);
 
   virtual BGAnimation* Copy() const;
 
  protected:
-  void AddLayersFromAniDir(const std::string& _sAniDir, const XNode* pNode);
+  void AddLayersFromAniDir(const std::string& ani_dir, const XNode* node);
 };
 
 #endif

@@ -19,14 +19,14 @@ enum PromptAnswer { ANSWER_YES, ANSWER_NO, ANSWER_CANCEL, NUM_PromptAnswer };
 class ScreenPrompt : public ScreenWithMenuElements {
  public:
   static void SetPromptSettings(
-      const std::string& sText, PromptType type = PROMPT_OK,
-      PromptAnswer defaultAnswer = ANSWER_NO, void (*OnYes)(void*) = nullptr,
-      void (*OnNo)(void*) = nullptr, void* pCallbackData = nullptr);
+      const std::string& text, PromptType type = PROMPT_OK,
+      PromptAnswer default_answer = ANSWER_NO, void (*on_yes)(void*) = nullptr,
+      void (*on_no)(void*) = nullptr, void* callback_data = nullptr);
   static void Prompt(
-      ScreenMessage smSendOnPop, const std::string& sText,
-      PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO,
-      void (*OnYes)(void*) = nullptr, void (*OnNo)(void*) = nullptr,
-      void* pCallbackData = nullptr);
+      ScreenMessage send_on_pop, const std::string& text,
+      PromptType type = PROMPT_OK, PromptAnswer default_answer = ANSWER_NO,
+      void (*on_yes)(void*) = nullptr, void (*on_no)(void*) = nullptr,
+      void* callback_data = nullptr);
 
   virtual void Init();
   virtual void BeginScreen();
@@ -47,7 +47,7 @@ class ScreenPrompt : public ScreenWithMenuElements {
   bool MenuBack(const InputEventPlus& input);
   bool MenuStart(const InputEventPlus& input);
 
-  virtual void End(bool bCancelled);
+  virtual void End(bool cancelled);
   void PositionCursor();
 
   virtual void TweenOffScreen();

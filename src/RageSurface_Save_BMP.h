@@ -9,7 +9,7 @@ struct RageSurface;
 class RageFile;
 /** @brief Utility functions for the RageSurfaces. */
 namespace RageSurfaceUtils {
-bool SaveBMP(RageSurface* surface, RageFile& f, std::string& sError);
+bool SaveBMP(RageSurface* surface, RageFile& f, std::string& error);
 bool SaveBMP(RageSurface* surface, RageFile& f);
 };  // namespace RageSurfaceUtils
 

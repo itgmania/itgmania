@@ -10,67 +10,67 @@
 
 void RageColor::PushTable(lua_State* L) const {
   lua_newtable(L);
-  int iTable = lua_gettop(L);
+  int table = lua_gettop(L);
 
   lua_pushnumber(L, r_);
-  lua_rawseti(L, iTable, 1);
+  lua_rawseti(L, table, 1);
   lua_pushnumber(L, g_);
-  lua_rawseti(L, iTable, 2);
+  lua_rawseti(L, table, 2);
   lua_pushnumber(L, b_);
-  lua_rawseti(L, iTable, 3);
+  lua_rawseti(L, table, 3);
   lua_pushnumber(L, a_);
-  lua_rawseti(L, iTable, 4);
+  lua_rawseti(L, table, 4);
 }
 
-void RageColor::FromStack(lua_State* L, int iPos) {
-  if (lua_type(L, iPos) != LUA_TTABLE) {
+void RageColor::FromStack(lua_State* L, int pos) {
+  if (lua_type(L, pos) != LUA_TTABLE) {
     return;
   }
 
-  lua_pushvalue(L, iPos);
-  int iFrom = lua_gettop(L);
+  lua_pushvalue(L, pos);
+  int from = lua_gettop(L);
 
-  lua_rawgeti(L, iFrom, 1);
+  lua_rawgeti(L, from, 1);
   r_ = (float)lua_tonumber(L, -1);
-  lua_rawgeti(L, iFrom, 2);
+  lua_rawgeti(L, from, 2);
   g_ = (float)lua_tonumber(L, -1);
-  lua_rawgeti(L, iFrom, 3);
+  lua_rawgeti(L, from, 3);
   b_ = (float)lua_tonumber(L, -1);
-  lua_rawgeti(L, iFrom, 4);
+  lua_rawgeti(L, from, 4);
   a_ = (float)lua_tonumber(L, -1);
   lua_pop(L, 5);
 }
 
-void RageColor::FromStackCompat(lua_State* L, int iPos) {
-  if (lua_type(L, iPos) == LUA_TTABLE) {
-    FromStack(L, iPos);
+void RageColor::FromStackCompat(lua_State* L, int pos) {
+  if (lua_type(L, pos) == LUA_TTABLE) {
+    FromStack(L, pos);
   } else {
-    r_ = FArg(iPos + 0);
-    g_ = FArg(iPos + 1);
-    b_ = FArg(iPos + 2);
-    a_ = FArg(iPos + 3);
+    r_ = FArg(pos + 0);
+    g_ = FArg(pos + 1);
+    b_ = FArg(pos + 2);
+    a_ = FArg(pos + 3);
   }
 }
 
 std::string RageColor::ToString() const {
-  int iR = std::clamp(static_cast<int>(std::lrint(r_ * 255)), 0, 255);
-  int iG = std::clamp(static_cast<int>(std::lrint(g_ * 255)), 0, 255);
-  int iB = std::clamp(static_cast<int>(std::lrint(b_ * 255)), 0, 255);
-  int iA = std::clamp(static_cast<int>(std::lrint(a_ * 255)), 0, 255);
+  int r = std::clamp(static_cast<int>(std::lrint(r_ * 255)), 0, 255);
+  int g = std::clamp(static_cast<int>(std::lrint(g_ * 255)), 0, 255);
+  int b = std::clamp(static_cast<int>(std::lrint(b_ * 255)), 0, 255);
+  int a = std::clamp(static_cast<int>(std::lrint(a_ * 255)), 0, 255);
 
-  if (iA == 255) {
-    return ssprintf("#%02X%02X%02X", iR, iG, iB);
+  if (a == 255) {
+    return ssprintf("#%02X%02X%02X", r, g, b);
   } else {
-    return ssprintf("#%02X%02X%02X%02X", iR, iG, iB, iA);
+    return ssprintf("#%02X%02X%02X%02X", r, g, b, a);
   }
 }
 
-std::string RageColor::NormalizeColorString(std::string sColor) {
-  if (sColor.empty()) {
+std::string RageColor::NormalizeColorString(std::string color) {
+  if (color.empty()) {
     return "";
   }
   RageColor c;
-  if (!c.FromString(sColor)) {
+  if (!c.FromString(color)) {
     return "";
   }
   return c.ToString();
@@ -99,13 +99,13 @@ void WeightedAvergeOfRSVs(
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>
-bool FromStack<RageColor>(lua_State* L, RageColor& Object, int iOffset) {
-  Object.FromStack(L, iOffset);
+bool FromStack<RageColor>(lua_State* L, RageColor& object, int offset) {
+  object.FromStack(L, offset);
   return true;
 }
 template <>
-void Push<RageColor>(lua_State* L, const RageColor& Object) {
-  Object.PushTable(L);
+void Push<RageColor>(lua_State* L, const RageColor& object) {
+  object.PushTable(L);
 }
 }  // namespace LuaHelpers
 
@@ -183,9 +183,9 @@ XToString(TextGlowMode);
 LuaXType(TextGlowMode);
 
 int LuaFunc_color(lua_State* L) {
-  std::string sColor = SArg(1);
+  std::string color = SArg(1);
   RageColor c;
-  c.FromString(sColor);
+  c.FromString(color);
   c.PushTable(L);
   return 1;
 }

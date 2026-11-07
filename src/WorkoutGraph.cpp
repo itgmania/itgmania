@@ -34,80 +34,80 @@ void WorkoutGraph::Load() {
   this->AddChild(&spr_empty_);
 }
 
-void WorkoutGraph::LoadFromNode(const XNode* pNode) {
-  ActorFrame::LoadFromNode(pNode);
+void WorkoutGraph::LoadFromNode(const XNode* node) {
+  ActorFrame::LoadFromNode(node);
 
   Load();
 }
 
 void WorkoutGraph::SetFromCurrentWorkout() { SetInternal(0); }
 
-void WorkoutGraph::SetInternal(int iMinSongsPlayed) {
+void WorkoutGraph::SetInternal(int min_songs_played) {
   for (Sprite* s : bars_) {
     this->RemoveChild(s);
     delete s;
   }
   bars_.clear();
 
-  Trail* pTrail = GAMESTATE->cur_trail_[PLAYER_1];
-  if (pTrail == nullptr) {
+  Trail* trail = GAMESTATE->cur_trail_[PLAYER_1];
+  if (trail == nullptr) {
     return;
   }
 
-  std::vector<int> viMeters;
-  for (const TrailEntry& e : pTrail->entries_) {
+  std::vector<int> meters;
+  for (const TrailEntry& e : trail->entries_) {
     ASSERT(e.steps_ != nullptr);
-    viMeters.push_back(e.steps_->GetMeter());
+    meters.push_back(e.steps_->GetMeter());
   }
 
-  int iBlocksWide = viMeters.size();
-  int iBlocksHigh = MAX_METER;
+  int blocks_wide = meters.size();
+  int blocks_high = MAX_METER;
 
-  const float fMaxWidth = 300;
-  float fTotalWidth = SCALE(iBlocksWide, 1.0f, 10.0f, 50.0f, fMaxWidth);
-  rage_clamp(fTotalWidth, 50, fMaxWidth);
+  const float max_width = 300;
+  float total_width = SCALE(blocks_wide, 1.0f, 10.0f, 50.0f, max_width);
+  rage_clamp(total_width, 50, max_width);
 
-  const float fMaxHeight = 130;
-  float fTotalHeight = SCALE(iBlocksHigh, 1.0f, 10.0f, 50.0f, fMaxHeight);
-  rage_clamp(fTotalHeight, 50, fMaxHeight);
+  const float max_height = 130;
+  float total_height = SCALE(blocks_high, 1.0f, 10.0f, 50.0f, max_height);
+  rage_clamp(total_height, 50, max_height);
 
-  float fBlockSize =
-      std::min(fTotalWidth / iBlocksWide, fTotalHeight / iBlocksHigh);
+  float block_size =
+      std::min(total_width / blocks_wide, total_height / blocks_high);
 
   spr_empty_.SetVertAlign(align_bottom);
   spr_empty_.SetCustomImageRect(
-      RectF(0, 0, (float)iBlocksWide, (float)iBlocksHigh));
-  spr_empty_.ZoomToWidth(iBlocksWide * fBlockSize);
-  spr_empty_.ZoomToHeight(iBlocksHigh * fBlockSize);
+      RectF(0, 0, (float)blocks_wide, (float)blocks_high));
+  spr_empty_.ZoomToWidth(blocks_wide * block_size);
+  spr_empty_.ZoomToHeight(blocks_high * block_size);
 
   int index = 0;
-  for (const int& meter : viMeters) {
-    float fOffsetFromCenter = (index++) - (iBlocksWide - 1) / 2.0f;
+  for (const int& meter : meters) {
+    float offset_from_center = (index++) - (blocks_wide - 1) / 2.0f;
     Sprite* p = new Sprite;
     p->Load(THEME->GetPathG("WorkoutGraph", "bar"));
     p->SetVertAlign(align_bottom);
-    p->ZoomToWidth(fBlockSize);
-    int iMetersToCover = (MAX_METER - meter);
+    p->ZoomToWidth(block_size);
+    int meters_to_cover = (MAX_METER - meter);
     p->SetCustomImageRect(
-        RectF(0, (float)iMetersToCover / (float)iBlocksHigh, 1, 1));
-    p->ZoomToHeight(meter * fBlockSize);
-    p->SetX(fOffsetFromCenter * fBlockSize);
+        RectF(0, (float)meters_to_cover / (float)blocks_high, 1, 1));
+    p->ZoomToHeight(meter * block_size);
+    p->SetX(offset_from_center * block_size);
     bars_.push_back(p);
     this->AddChild(p);
   }
 }
 
-void WorkoutGraph::SetFromGameStateAndHighlightSong(int iSongIndex) {
-  SetInternal(iSongIndex + 1);
+void WorkoutGraph::SetFromGameStateAndHighlightSong(int song_index) {
+  SetInternal(song_index + 1);
 
   for (Sprite* s : bars_) {
     s->StopEffect();
   }
 
-  int iBarIndex = iSongIndex - songs_chopped_off_at_beginning_;
+  int bar_index = song_index - songs_chopped_off_at_beginning_;
 
-  if (iBarIndex < (int)bars_.size()) {
-    bars_[iBarIndex]->SetEffectGlowBlink(
+  if (bar_index < (int)bars_.size()) {
+    bars_[bar_index]->SetEffectGlowBlink(
         0.3f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
   }
 }

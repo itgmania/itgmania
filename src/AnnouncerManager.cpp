@@ -32,29 +32,29 @@ AnnouncerManager::~AnnouncerManager() {
   LUA->UnsetGlobal("ANNOUNCER");
 }
 
-void AnnouncerManager::GetAnnouncerNames(std::vector<std::string>& AddTo) {
-  GetDirListing(ANNOUNCERS_DIR + "*", AddTo, true);
+void AnnouncerManager::GetAnnouncerNames(std::vector<std::string>& add_to) {
+  GetDirListing(ANNOUNCERS_DIR + "*", add_to, true);
 
-  StripCvsAndSvn(AddTo);
-  StripMacResourceForks(AddTo);
+  StripCvsAndSvn(add_to);
+  StripMacResourceForks(add_to);
 
   // strip out the empty announcer folder
-  for (int i = AddTo.size() - 1; i >= 0; i--) {
-    if (!strcasecmp(AddTo[i].c_str(), EMPTY_ANNOUNCER_NAME.c_str())) {
-      AddTo.erase(AddTo.begin() + i, AddTo.begin() + i + 1);
+  for (int i = add_to.size() - 1; i >= 0; i--) {
+    if (!strcasecmp(add_to[i].c_str(), EMPTY_ANNOUNCER_NAME.c_str())) {
+      add_to.erase(add_to.begin() + i, add_to.begin() + i + 1);
     }
   }
 }
 
-bool AnnouncerManager::DoesAnnouncerExist(std::string sAnnouncerName) {
-  if (sAnnouncerName == "") {
+bool AnnouncerManager::DoesAnnouncerExist(std::string announcer_name) {
+  if (announcer_name == "") {
     return true;
   }
 
-  std::vector<std::string> asAnnouncerNames;
-  GetAnnouncerNames(asAnnouncerNames);
-  for (unsigned i = 0; i < asAnnouncerNames.size(); i++) {
-    if (0 == strcasecmp(sAnnouncerName.c_str(), asAnnouncerNames[i].c_str())) {
+  std::vector<std::string> announcer_names;
+  GetAnnouncerNames(announcer_names);
+  for (unsigned i = 0; i < announcer_names.size(); i++) {
+    if (0 == strcasecmp(announcer_name.c_str(), announcer_names[i].c_str())) {
       return true;
     }
   }
@@ -62,15 +62,15 @@ bool AnnouncerManager::DoesAnnouncerExist(std::string sAnnouncerName) {
 }
 
 std::string AnnouncerManager::GetAnnouncerDirFromName(
-    std::string sAnnouncerName) {
-  return ANNOUNCERS_DIR + sAnnouncerName + "/";
+    std::string announcer_name) {
+  return ANNOUNCERS_DIR + announcer_name + "/";
 }
 
-void AnnouncerManager::SwitchAnnouncer(std::string sNewAnnouncerName) {
-  if (!DoesAnnouncerExist(sNewAnnouncerName)) {
+void AnnouncerManager::SwitchAnnouncer(std::string new_announcer_name) {
+  if (!DoesAnnouncerExist(new_announcer_name)) {
     cur_announcer_name_ = "";
   } else {
-    cur_announcer_name_ = sNewAnnouncerName;
+    cur_announcer_name_ = new_announcer_name;
   }
 }
 
@@ -118,26 +118,26 @@ static const char* aliases[][2] = {
  * have "select difficulty intro" with sounds and an empty
  * "ScreenSelectDifficulty intro". */
 std::string AnnouncerManager::GetPathTo(
-    std::string sAnnouncerName, std::string sFolderName) {
-  if (sAnnouncerName == "") {
+    std::string announcer_name, std::string folder_name) {
+  if (announcer_name == "") {
     return std::string(); /* announcer disabled */
   }
 
-  const std::string AnnouncerPath = GetAnnouncerDirFromName(sAnnouncerName);
+  const std::string announcer_path = GetAnnouncerDirFromName(announcer_name);
 
-  if (!DirectoryIsEmpty(AnnouncerPath + sFolderName + "/")) {
-    return AnnouncerPath + sFolderName + "/";
+  if (!DirectoryIsEmpty(announcer_path + folder_name + "/")) {
+    return announcer_path + folder_name + "/";
   }
 
   /* Search for the announcer folder in the list of aliases. */
   int i;
   for (i = 0; aliases[i][0] != nullptr; ++i) {
-    if (!EqualsNoCase(sFolderName, aliases[i][0])) {
+    if (!EqualsNoCase(folder_name, aliases[i][0])) {
       continue; /* no match */
     }
 
-    if (!DirectoryIsEmpty(AnnouncerPath + aliases[i][1] + "/")) {
-      return AnnouncerPath + aliases[i][1] + "/";
+    if (!DirectoryIsEmpty(announcer_path + aliases[i][1] + "/")) {
+      return announcer_path + aliases[i][1] + "/";
     }
   }
 
@@ -146,23 +146,23 @@ std::string AnnouncerManager::GetPathTo(
 #ifdef DEBUG
   LOG->Trace(
       "The announcer in '%s' is missing the folder '%s'.",
-      AnnouncerPath.c_str(), sFolderName.c_str());
+      announcer_path.c_str(), folder_name.c_str());
   //	MessageBeep( MB_OK );
   RageFile temp;
   temp.Open(
-      AnnouncerPath + sFolderName + "/announcer files go here.txt",
+      announcer_path + folder_name + "/announcer files go here.txt",
       RageFile::WRITE);
 #endif
 
   return std::string();
 }
 
-std::string AnnouncerManager::GetPathTo(std::string sFolderName) {
-  return GetPathTo(cur_announcer_name_, sFolderName);
+std::string AnnouncerManager::GetPathTo(std::string folder_name) {
+  return GetPathTo(cur_announcer_name_, folder_name);
 }
 
-bool AnnouncerManager::HasSoundsFor(std::string sFolderName) {
-  return !DirectoryIsEmpty(GetPathTo(sFolderName));
+bool AnnouncerManager::HasSoundsFor(std::string folder_name) {
+  return !DirectoryIsEmpty(GetPathTo(folder_name));
 }
 
 void AnnouncerManager::NextAnnouncer() {
@@ -184,8 +184,8 @@ void AnnouncerManager::NextAnnouncer() {
     if (i == as.size() - 1) {
       SwitchAnnouncer("");
     } else {
-      int iNewIndex = (i + 1) % as.size();
-      SwitchAnnouncer(as[iNewIndex]);
+      int new_index = (i + 1) % as.size();
+      SwitchAnnouncer(as[new_index]);
     }
   }
 }
@@ -200,9 +200,9 @@ class LunaAnnouncerManager : public Luna<AnnouncerManager> {
     return 1;
   }
   static int GetAnnouncerNames(T* p, lua_State* L) {
-    std::vector<std::string> vAnnouncers;
-    p->GetAnnouncerNames(vAnnouncers);
-    LuaHelpers::CreateTableFromArray(vAnnouncers, L);
+    std::vector<std::string> announcers;
+    p->GetAnnouncerNames(announcers);
+    LuaHelpers::CreateTableFromArray(announcers, L);
     return 1;
   }
   static int GetCurrentAnnouncer(T* p, lua_State* L) {

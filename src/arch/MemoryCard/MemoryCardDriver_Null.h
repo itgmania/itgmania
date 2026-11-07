@@ -10,10 +10,10 @@ class MemoryCardDriver_Null : public MemoryCardDriver {
   MemoryCardDriver_Null() {}
   virtual bool USBStorageDevicesChanged() { return false; }
   virtual void GetUSBStorageDevices(
-      std::vector<UsbStorageDevice>& vDevicesOut) {}
-  virtual bool Mount(UsbStorageDevice* pDevice) { return false; }
-  virtual void Unmount(UsbStorageDevice* pDevice) {}
-  virtual void Flush(UsbStorageDevice* pDevice) {}
+      std::vector<UsbStorageDevice>& devices_out) {}
+  virtual bool Mount(UsbStorageDevice* device) { return false; }
+  virtual void Unmount(UsbStorageDevice* device) {}
+  virtual void Flush(UsbStorageDevice* device) {}
 };
 
 #endif

@@ -13,9 +13,9 @@ class Transition : public ActorFrame {
  public:
   Transition();
 
-  void Load(std::string sBGAniDir);
+  void Load(std::string bg_ani_dir);
 
-  virtual void UpdateInternal(float fDeltaTime);
+  virtual void UpdateInternal(float delta_time);
 
   virtual void StartTransitioning(ScreenMessage send_when_done = SM_None);
   virtual bool EarlyAbortDraw() const;

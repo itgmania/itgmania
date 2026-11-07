@@ -46,7 +46,7 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   void MixerThread();
   RageThread mixing_thread_;
 
-  bool InitWASAPI(std::string& sError);
+  bool InitWASAPI(std::string& error);
   void FreeWASAPI();
 };
 

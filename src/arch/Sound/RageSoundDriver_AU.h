@@ -24,11 +24,11 @@ class RageSoundDriver_AU : public RageSoundDriver {
 
  private:
   static OSStatus Render(
-      void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags,
-      const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber,
-      UInt32 inNumberFrames, AudioBufferList* ioData);
+      void* in_ref_con, AudioUnitRenderActionFlags* io_action_flags,
+      const AudioTimeStamp* in_time_stamp, UInt32 in_bus_number,
+      UInt32 in_number_frames, AudioBufferList* io_data);
   static void NameHALThread(
-      CFRunLoopObserverRef, CFRunLoopActivity activity, void* inRefCon);
+      CFRunLoopObserverRef, CFRunLoopActivity activity, void* in_ref_con);
 
   double time_scale_;
   AudioUnit output_unit_;

@@ -13,7 +13,7 @@ class ScreenSplash : public ScreenWithMenuElements {
   virtual void Init();
   virtual void BeginScreen();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual bool MenuBack(const InputEventPlus& input);
   virtual bool MenuStart(const InputEventPlus& input);
 

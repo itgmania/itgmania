@@ -77,9 +77,9 @@ void PaneDisplay::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
   FOREACH_ENUM(PaneCategory, pc) {
     LuaThreadVariable var("PaneCategory", LuaReference::Create(pc));
 
-    std::string sFontType = g_Contents[pc].font_type_;
+    std::string font_type = g_Contents[pc].font_type_;
 
-    text_contents_[pc].LoadFromFont(THEME->GetPathF(sMetricsGroup, sFontType));
+    text_contents_[pc].LoadFromFont(THEME->GetPathF(sMetricsGroup, font_type));
     text_contents_[pc].SetName(PaneCategoryToString(pc) + "Text");
     ActorUtil::LoadAllCommands(text_contents_[pc], sMetricsGroup);
     ActorUtil::SetXY(text_contents_[pc], sMetricsGroup);
@@ -100,19 +100,19 @@ void PaneDisplay::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
   this->AddChild(&contents_frame_);
 }
 
-void PaneDisplay::LoadFromNode(const XNode* pNode) {
+void PaneDisplay::LoadFromNode(const XNode* node) {
   bool b;
 
-  std::string sMetricsGroup;
-  b = pNode->GetAttrValue("MetricsGroup", sMetricsGroup);
+  std::string metrics_group;
+  b = node->GetAttrValue("MetricsGroup", metrics_group);
   if (!b) {
-    sMetricsGroup = "PaneDisplay";
+    metrics_group = "PaneDisplay";
     LuaHelpers::ReportScriptError(
         "PaneDisplay must have a MetricsGroup specified.");
   }
 
   Lua* L = LUA->Get();
-  b = pNode->PushAttrValue(L, "PlayerNumber");
+  b = node->PushAttrValue(L, "PlayerNumber");
   PlayerNumber pn;
   if (!b) {
     lua_pop(L, 1);
@@ -124,39 +124,39 @@ void PaneDisplay::LoadFromNode(const XNode* pNode) {
   }
   LUA->Release(L);
 
-  Load(sMetricsGroup, pn);
+  Load(metrics_group, pn);
 
-  ActorFrame::LoadFromNode(pNode);
+  ActorFrame::LoadFromNode(node);
 }
 
 void PaneDisplay::GetPaneTextAndLevel(
-    PaneCategory c, std::string& sTextOut, float& fLevelOut) {
-  const Song* pSong = GAMESTATE->cur_song_;
-  const Steps* pSteps = GAMESTATE->cur_steps_[player_number_];
-  const Course* pCourse = GAMESTATE->cur_course_;
-  const Trail* pTrail = GAMESTATE->cur_trail_[player_number_];
-  const Profile* pProfile = PROFILEMAN->IsPersistentProfile(player_number_)
-                                ? PROFILEMAN->GetProfile(player_number_)
-                                : nullptr;
-  bool bIsPlayerEdit = pSteps && pSteps->IsAPlayerEdit();
+    PaneCategory c, std::string& text_out, float& level_out) {
+  const Song* song = GAMESTATE->cur_song_;
+  const Steps* steps = GAMESTATE->cur_steps_[player_number_];
+  const Course* course = GAMESTATE->cur_course_;
+  const Trail* trail = GAMESTATE->cur_trail_[player_number_];
+  const Profile* profile = PROFILEMAN->IsPersistentProfile(player_number_)
+                               ? PROFILEMAN->GetProfile(player_number_)
+                               : nullptr;
+  bool is_player_edit = steps && steps->IsAPlayerEdit();
 
   // Defaults, will be filled in later
-  sTextOut = NULL_COUNT_STRING;
-  fLevelOut = 0;
+  text_out = NULL_COUNT_STRING;
+  level_out = 0;
 
-  if (GAMESTATE->IsCourseMode() && !pTrail) {
+  if (GAMESTATE->IsCourseMode() && !trail) {
     if ((g_Contents[c].req_ & NEED_PROFILE)) {
-      sTextOut = NOT_AVAILABLE;
+      text_out = NOT_AVAILABLE;
     }
 
     {
       switch (c) {
         case PaneCategory_MachineHighName:
-          sTextOut = EMPTY_MACHINE_HIGH_SCORE_NAME;
+          text_out = EMPTY_MACHINE_HIGH_SCORE_NAME;
           break;
         case PaneCategory_MachineHighScore:
         case PaneCategory_ProfileHighScore:
-          sTextOut = NOT_AVAILABLE;
+          text_out = NOT_AVAILABLE;
           break;
         default:
           break;
@@ -164,19 +164,19 @@ void PaneDisplay::GetPaneTextAndLevel(
     }
 
     return;
-  } else if (!GAMESTATE->IsCourseMode() && !pSong) {
+  } else if (!GAMESTATE->IsCourseMode() && !song) {
     if ((g_Contents[c].req_ & NEED_PROFILE)) {
-      sTextOut = NOT_AVAILABLE;
+      text_out = NOT_AVAILABLE;
     }
 
     {
       switch (c) {
         case PaneCategory_MachineHighName:
-          sTextOut = EMPTY_MACHINE_HIGH_SCORE_NAME;
+          text_out = EMPTY_MACHINE_HIGH_SCORE_NAME;
           break;
         case PaneCategory_MachineHighScore:
         case PaneCategory_ProfileHighScore:
-          sTextOut = NOT_AVAILABLE;
+          text_out = NOT_AVAILABLE;
           break;
         default:
           break;
@@ -186,17 +186,17 @@ void PaneDisplay::GetPaneTextAndLevel(
     return;
   }
 
-  if ((g_Contents[c].req_ & NEED_NOTES) && !pSteps && !pTrail) {
+  if ((g_Contents[c].req_ & NEED_NOTES) && !steps && !trail) {
     return;
   }
-  if ((g_Contents[c].req_ & NEED_PROFILE) && !pProfile) {
-    sTextOut = NOT_AVAILABLE;
+  if ((g_Contents[c].req_ & NEED_PROFILE) && !profile) {
+    text_out = NOT_AVAILABLE;
     return;
   }
 
   {
     RadarValues rv;
-    HighScoreList* pHSL = nullptr;
+    HighScoreList* hsl = nullptr;
     ProfileSlot slot = ProfileSlot_Machine;
     switch (c) {
       case PaneCategory_ProfileHighScore:
@@ -205,47 +205,46 @@ void PaneDisplay::GetPaneTextAndLevel(
         break;
     }
 
-    if (pSteps) {
-      rv = pSteps->GetRadarValues(player_number_);
-      pHSL =
-          &PROFILEMAN->GetProfile(slot)->GetStepsHighScoreList(pSong, pSteps);
-    } else if (pTrail) {
-      rv = pTrail->GetRadarValues();
-      pHSL = &PROFILEMAN->GetProfile(slot)->GetCourseHighScoreList(
-          pCourse, pTrail);
+    if (steps) {
+      rv = steps->GetRadarValues(player_number_);
+      hsl = &PROFILEMAN->GetProfile(slot)->GetStepsHighScoreList(song, steps);
+    } else if (trail) {
+      rv = trail->GetRadarValues();
+      hsl =
+          &PROFILEMAN->GetProfile(slot)->GetCourseHighScoreList(course, trail);
     }
 
     switch (c) {
       case PaneCategory_NumSteps: {
-        fLevelOut = rv[RadarCategory_TapsAndHolds];
+        level_out = rv[RadarCategory_TapsAndHolds];
         break;
       }
       case PaneCategory_Jumps: {
-        fLevelOut = rv[RadarCategory_Jumps];
+        level_out = rv[RadarCategory_Jumps];
         break;
       }
       case PaneCategory_Holds: {
-        fLevelOut = rv[RadarCategory_Holds];
+        level_out = rv[RadarCategory_Holds];
         break;
       }
       case PaneCategory_Rolls: {
-        fLevelOut = rv[RadarCategory_Rolls];
+        level_out = rv[RadarCategory_Rolls];
         break;
       }
       case PaneCategory_Mines: {
-        fLevelOut = rv[RadarCategory_Mines];
+        level_out = rv[RadarCategory_Mines];
         break;
       }
       case PaneCategory_Hands: {
-        fLevelOut = rv[RadarCategory_Hands];
+        level_out = rv[RadarCategory_Hands];
         break;
       }
       case PaneCategory_Lifts: {
-        fLevelOut = rv[RadarCategory_Lifts];
+        level_out = rv[RadarCategory_Lifts];
         break;
       }
       case PaneCategory_Fakes: {
-        fLevelOut = rv[RadarCategory_Fakes];
+        level_out = rv[RadarCategory_Fakes];
         break;
       }
       case PaneCategory_ProfileHighScore:
@@ -253,22 +252,22 @@ void PaneDisplay::GetPaneTextAndLevel(
       case PaneCategory_MachineHighScore: {
         CHECKPOINT_M(
             "Getting data from a high score instead of a radar value.");
-        fLevelOut = pHSL->GetTopScore().GetPercentDP();
+        level_out = hsl->GetTopScore().GetPercentDP();
         break;
       }
       default:
         break;
     };
 
-    if (fLevelOut != RADAR_VAL_UNKNOWN) {
+    if (level_out != RADAR_VAL_UNKNOWN) {
       switch (c) {
         case PaneCategory_MachineHighName:
-          if (pHSL->high_scores_.empty()) {
-            sTextOut = EMPTY_MACHINE_HIGH_SCORE_NAME;
+          if (hsl->high_scores_.empty()) {
+            text_out = EMPTY_MACHINE_HIGH_SCORE_NAME;
           } else {
-            sTextOut = pHSL->GetTopScore().GetName();
-            if (sTextOut.empty()) {
-              sTextOut = "????";
+            text_out = hsl->GetTopScore().GetName();
+            if (text_out.empty()) {
+              text_out = "????";
             }
           }
           break;
@@ -276,10 +275,10 @@ void PaneDisplay::GetPaneTextAndLevel(
         case PaneCategory_ProfileHighScore:
           // Don't show or save machine high scores for edits loaded from a
           // player profile.
-          if (bIsPlayerEdit) {
-            sTextOut = NOT_AVAILABLE;
+          if (is_player_edit) {
+            text_out = NOT_AVAILABLE;
           } else {
-            sTextOut = PlayerStageStats::FormatPercentScore(fLevelOut);
+            text_out = PlayerStageStats::FormatPercentScore(level_out);
           }
           break;
         case PaneCategory_NumSteps:
@@ -290,7 +289,7 @@ void PaneDisplay::GetPaneTextAndLevel(
         case PaneCategory_Hands:
         case PaneCategory_Lifts:
         case PaneCategory_Fakes:
-          sTextOut = ssprintf(COUNT_FORMAT.GetValue().c_str(), fLevelOut);
+          text_out = ssprintf(COUNT_FORMAT.GetValue().c_str(), level_out);
           break;
         default:
           break;

@@ -56,7 +56,7 @@ static void SetPrefsDefaultModifiers(
  * between T and U can be represented as a float. */
 template <class T, class U>
 int FindClosestEntry(T value, const U* mapping, unsigned cnt) {
-  int iBestIndex = 0;
+  int best_index = 0;
   float best_dist = 0;
   bool have_best = false;
 
@@ -79,16 +79,16 @@ int FindClosestEntry(T value, const U* mapping, unsigned cnt) {
     have_best = true;
     best_dist = dist;
 
-    iBestIndex = i;
+    best_index = i;
   }
 
-  return iBestIndex;
+  return best_index;
 }
 
 template <class T>
 static void MoveMap(
-    int& sel, T& opt, bool ToSel, const T* mapping, unsigned cnt) {
-  if (ToSel) {
+    int& sel, T& opt, bool to_sel, const T* mapping, unsigned cnt) {
+  if (to_sel) {
     sel = FindClosestEntry(opt, mapping, cnt);
   } else {
     // sel -> opt
@@ -98,72 +98,69 @@ static void MoveMap(
 
 template <class T>
 static void MoveMap(
-    int& sel, IPreference& opt, bool ToSel, const T* mapping, unsigned cnt) {
-  if (ToSel) {
-    std::string sOpt = opt.ToString();
+    int& sel, IPreference& opt, bool to_sel, const T* mapping, unsigned cnt) {
+  if (to_sel) {
+    std::string s_opt = opt.ToString();
     // This should really be T, but we can't FromString an enum.
     float val;
-    FromString(sOpt, val);
+    FromString(s_opt, val);
     sel = FindClosestEntry(val, mapping, cnt);
   } else {
     // sel -> opt
-    std::string sOpt = ToString(mapping[sel]);
-    opt.FromString(sOpt);
+    std::string s_opt = ToString(mapping[sel]);
+    opt.FromString(s_opt);
   }
 }
 
 template <class T>
 static void MoveMap(
-    int& sel, const ConfOption* pConfOption, bool ToSel, const T* mapping,
+    int& sel, const ConfOption* conf_option, bool to_sel, const T* mapping,
     unsigned cnt) {
-  ASSERT(pConfOption != nullptr);
-  IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->pref_name_);
-  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
+  ASSERT(conf_option != nullptr);
+  IPreference* pref = IPreference::GetPreferenceByName(conf_option->pref_name_);
+  ASSERT_M(pref != nullptr, conf_option->pref_name_);
 
-  MoveMap(sel, *pPref, ToSel, mapping, cnt);
+  MoveMap(sel, *pref, to_sel, mapping, cnt);
 }
 
 template <class T>
-static void MovePref(int& iSel, bool bToSel, const ConfOption* pConfOption) {
-  IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->pref_name_);
-  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
+static void MovePref(int& sel, bool to_sel, const ConfOption* conf_option) {
+  IPreference* pref = IPreference::GetPreferenceByName(conf_option->pref_name_);
+  ASSERT_M(pref != nullptr, conf_option->pref_name_);
 
-  if (bToSel) {
+  if (to_sel) {
     // TODO: why not get the int directly from pPref?
     // Why are we writing it to a string and then back?
     T t;
-    FromString(pPref->ToString(), t);
-    iSel = static_cast<int>(t);
+    FromString(pref->ToString(), t);
+    sel = static_cast<int>(t);
   } else {
-    pPref->FromString(ToString(static_cast<T>(iSel)));
+    pref->FromString(ToString(static_cast<T>(sel)));
   }
 }
 
 template <>
-void MovePref<bool>(int& iSel, bool bToSel, const ConfOption* pConfOption) {
-  IPreference* pPref =
-      IPreference::GetPreferenceByName(pConfOption->pref_name_);
-  ASSERT_M(pPref != nullptr, pConfOption->pref_name_);
+void MovePref<bool>(int& sel, bool to_sel, const ConfOption* conf_option) {
+  IPreference* pref = IPreference::GetPreferenceByName(conf_option->pref_name_);
+  ASSERT_M(pref != nullptr, conf_option->pref_name_);
 
-  if (bToSel) {
+  if (to_sel) {
     // TODO: why not get the int directly from pPref?
     // Why are we writing it to a string and then back?
     bool b;
-    FromString(pPref->ToString(), b);
-    iSel = b ? 1 : 0;
+    FromString(pref->ToString(), b);
+    sel = b ? 1 : 0;
   } else {
     // If we don't make a specific instantiation of MovePref<bool>, there is
     // a compile warning here because of static_cast<bool>( iSel ) where
     // iSel is an int. What is the best way to remove that compile warning?
-    pPref->FromString(ToString<bool>(iSel ? true : false));
+    pref->FromString(ToString<bool>(sel ? true : false));
   }
 }
 
-static void MoveNop(int& iSel, bool bToSel, const ConfOption* pConfOption) {
-  if (bToSel) {
-    iSel = 0;
+static void MoveNop(int& sel, bool to_sel, const ConfOption* conf_option) {
+  if (to_sel) {
+    sel = 0;
   }
 }
 
@@ -180,43 +177,43 @@ static void PremiumFreeMinuteChoices(std::vector<std::string>& out) {
 }
 
 static void PremiumFreeMinutes(
-    int& sel, bool toSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   int mapping[NUM_PREMIUM_FREE_MINUTE_VALUES];
   for (int i = 0; i < NUM_PREMIUM_FREE_MINUTE_VALUES; ++i) {
     mapping[i] = PREMIUM_FREE_MIN_MINUTES + i;
   }
 
-  MoveMap(sel, pConfOption, toSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 // TODO: Write GenerateValueList() function that can use ints and floats. -aj
 
 static void GameChoices(std::vector<std::string>& out) {
-  std::vector<const Game*> aGames;
-  GAMEMAN->GetEnabledGames(aGames);
-  for (const Game* g : aGames) {
-    std::string sGameName = g->name_;
-    out.push_back(sGameName);
+  std::vector<const Game*> games;
+  GAMEMAN->GetEnabledGames(games);
+  for (const Game* g : games) {
+    std::string game_name = g->name_;
+    out.push_back(game_name);
   }
 }
 
-static void GameSel(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void GameSel(int& sel, bool to_sel, const ConfOption* conf_option) {
   std::vector<std::string> choices;
-  pConfOption->MakeOptionsList(choices);
+  conf_option->MakeOptionsList(choices);
 
-  if (ToSel) {
-    const std::string sCurGameName = PREFSMAN->GetCurrentGame();
+  if (to_sel) {
+    const std::string cur_game_name = PREFSMAN->GetCurrentGame();
 
     sel = 0;
     for (unsigned i = 0; i < choices.size(); ++i) {
-      if (!strcasecmp(choices[i].c_str(), sCurGameName.c_str())) {
+      if (!strcasecmp(choices[i].c_str(), cur_game_name.c_str())) {
         sel = i;
       }
     }
   } else {
-    std::vector<const Game*> aGames;
-    GAMEMAN->GetEnabledGames(aGames);
-    PREFSMAN->SetCurrentGame(aGames[sel]->name_);
+    std::vector<const Game*> games;
+    GAMEMAN->GetEnabledGames(games);
+    PREFSMAN->SetCurrentGame(games[sel]->name_);
   }
 }
 
@@ -226,22 +223,21 @@ static void LanguageChoices(std::vector<std::string>& out) {
   SortRStringArray(vs, true);
 
   for (const std::string& s : vs) {
-    const LanguageInfo* pLI = GetLanguageInfo(s);
-    if (pLI) {
-      out.push_back(
-          THEME->GetString("NativeLanguageNames", pLI->english_name_));
+    const LanguageInfo* li = GetLanguageInfo(s);
+    if (li) {
+      out.push_back(THEME->GetString("NativeLanguageNames", li->english_name_));
     } else {
       out.push_back(s);
     }
   }
 }
 
-static void Language(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void Language(int& sel, bool to_sel, const ConfOption* conf_option) {
   std::vector<std::string> vs;
   THEME->GetLanguages(vs);
   SortRStringArray(vs, true);
 
-  if (ToSel) {
+  if (to_sel) {
     sel = -1;
     for (unsigned i = 0; sel == -1 && i < vs.size(); ++i) {
       if (!strcasecmp(vs[i].c_str(), THEME->GetCurLanguage().c_str())) {
@@ -265,10 +261,10 @@ static void Language(int& sel, bool ToSel, const ConfOption* pConfOption) {
       sel = 0;
     }
   } else {
-    const std::string& sNewLanguage = vs[sel];
+    const std::string& new_language = vs[sel];
 
-    PREFSMAN->language_.Set(sNewLanguage);
-    if (THEME->GetCurLanguage() != sNewLanguage) {
+    PREFSMAN->language_.Set(new_language);
+    if (THEME->GetCurLanguage() != new_language) {
       THEME->SwitchThemeAndLanguage(
           THEME->GetCurThemeName(), PREFSMAN->language_,
           PREFSMAN->pseudo_localize_);
@@ -302,24 +298,23 @@ static void DisplayResolutionChoices(std::vector<std::string>& out) {
 }
 
 static void RequestedTheme(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   std::vector<std::string> choices;
-  pConfOption->MakeOptionsList(choices);
+  conf_option->MakeOptionsList(choices);
 
-  std::vector<std::string> vsThemeNames;
-  THEME->GetSelectableThemeNames(vsThemeNames);
+  std::vector<std::string> theme_names;
+  THEME->GetSelectableThemeNames(theme_names);
 
-  if (ToSel) {
+  if (to_sel) {
     sel = 0;
-    for (unsigned i = 1; i < vsThemeNames.size(); i++) {
-      if (!strcasecmp(
-              vsThemeNames[i].c_str(), PREFSMAN->theme_.Get().c_str())) {
+    for (unsigned i = 1; i < theme_names.size(); i++) {
+      if (!strcasecmp(theme_names[i].c_str(), PREFSMAN->theme_.Get().c_str())) {
         sel = i;
       }
     }
   } else {
-    const std::string sNewTheme = vsThemeNames[sel];
-    PREFSMAN->theme_.Set(sNewTheme);  // OPT_APPLY_THEME will load the theme
+    const std::string new_theme = theme_names[sel];
+    PREFSMAN->theme_.Set(new_theme);  // OPT_APPLY_THEME will load the theme
   }
 }
 
@@ -329,11 +324,11 @@ static void AnnouncerChoices(std::vector<std::string>& out) {
   out.insert(out.begin(), OFF);
 }
 
-static void Announcer(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void Announcer(int& sel, bool to_sel, const ConfOption* conf_option) {
   std::vector<std::string> choices;
-  pConfOption->MakeOptionsList(choices);
+  conf_option->MakeOptionsList(choices);
 
-  if (ToSel) {
+  if (to_sel) {
     sel = 0;
     for (unsigned i = 1; i < choices.size(); i++) {
       if (!strcasecmp(
@@ -342,9 +337,9 @@ static void Announcer(int& sel, bool ToSel, const ConfOption* pConfOption) {
       }
     }
   } else {
-    const std::string sNewAnnouncer = sel ? choices[sel] : std::string("");
-    ANNOUNCER->SwitchAnnouncer(sNewAnnouncer);
-    PREFSMAN->announcer_.Set(sNewAnnouncer);
+    const std::string new_announcer = sel ? choices[sel] : std::string("");
+    ANNOUNCER->SwitchAnnouncer(new_announcer);
+    PREFSMAN->announcer_.Set(new_announcer);
   }
 }
 
@@ -353,11 +348,11 @@ static void DefaultNoteSkinChoices(std::vector<std::string>& out) {
 }
 
 static void DefaultNoteSkin(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   std::vector<std::string> choices;
-  pConfOption->MakeOptionsList(choices);
+  conf_option->MakeOptionsList(choices);
 
-  if (ToSel) {
+  if (to_sel) {
     PlayerOptions po;
     po.FromString(PREFSMAN->default_modifiers_);
     sel = 0;
@@ -398,48 +393,48 @@ static void DefaultFailType(
 }
 
 // Background options
-static void BGBrightness(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void BGBrightness(int& sel, bool to_sel, const ConfOption* conf_option) {
   // TODO: I hate the way the list of numbers is duplicated here and where the
   // option is created. Try to find a way to only use the same list once.
   // Do that for all of these float and int lists.
   const float mapping[] = {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
                            0.6f, 0.7f, 0.8f, 0.9f, 1.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void BGBrightnessNoZero(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
                            0.6f, 0.7f, 0.8f, 0.9f, 1.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void BGBrightnessOrStatic(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {0.5f, 0.25f, 0.5f, 0.75f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 
-  IPreference* pSongBackgroundsPref =
+  IPreference* song_backgrounds_pref =
       IPreference::GetPreferenceByName("SongBackgrounds");
-  if (ToSel && pSongBackgroundsPref->ToString() == "0") {
+  if (to_sel && song_backgrounds_pref->ToString() == "0") {
     sel = 0;
   }
-  if (!ToSel) {
-    pSongBackgroundsPref->FromString(sel ? "1" : "0");
+  if (!to_sel) {
+    song_backgrounds_pref->FromString(sel ? "1" : "0");
   }
 }
 
 static void NumBackgrounds(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {1, 5, 10, 15, 20};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 // Input options
 static void MusicWheelSwitchSpeed(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {5, 10, 15, 25};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void InputDebounceTime(
@@ -451,11 +446,11 @@ static void InputDebounceTime(
 
 // Machine options
 static void CoinModeNoHome(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   // 0 = Pay, 1 = Free
   // But MovePref<CoinMode> thinks 0 = Home, 1 = Pay, 2 = Free
-  if (ToSel) {
-    MovePref<CoinMode>(sel, ToSel, pConfOption);
+  if (to_sel) {
+    MovePref<CoinMode>(sel, to_sel, conf_option);
     // If the mode was Pay, the index is 0; otherwise, set the index
     // to 1 to avoid out-of-range crashing.
     if (sel == 1) {
@@ -465,46 +460,47 @@ static void CoinModeNoHome(
     }
   } else {
     int tmp = sel + 1;
-    MovePref<CoinMode>(tmp, ToSel, pConfOption);
+    MovePref<CoinMode>(tmp, to_sel, conf_option);
   }
 }
 
 static void CoinsPerCredit(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
-  if (ToSel) {
-    MovePref<int>(sel, ToSel, pConfOption);
+    int& sel, bool to_sel, const ConfOption* conf_option) {
+  if (to_sel) {
+    MovePref<int>(sel, to_sel, conf_option);
     sel--;
   } else {
     int tmp = sel + 1;
-    MovePref<int>(tmp, ToSel, pConfOption);
+    MovePref<int>(tmp, to_sel, conf_option);
   }
 }
 
-static void MaxNumCredits(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void MaxNumCredits(
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {20, 40, 60, 80, 100};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
-static void JointPremium(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void JointPremium(int& sel, bool to_sel, const ConfOption* conf_option) {
   const Premium mapping[] = {
       Premium_DoubleFor1Credit, Premium_2PlayersFor1Credit};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
-static void SongsPerPlay(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void SongsPerPlay(int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {1, 2, 3, 4, 5};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void SongsPerPlayOrEventMode(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {1, 2, 3, 4, 5, 6};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 
-  if (ToSel && PREFSMAN->event_mode_) {
+  if (to_sel && PREFSMAN->event_mode_) {
     sel = 5;
   }
-  if (!ToSel) {
+  if (!to_sel) {
     PREFSMAN->event_mode_.Set(sel == 5);
   }
 }
@@ -512,19 +508,19 @@ static void SongsPerPlayOrEventMode(
 // Machine options
 /** @brief Timing Window scale */
 static void TimingWindowScale(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   // StepMania 5 values (implemented 2008/03/12)
   // const float mapping[] = { 2.0f,1.66f,1.33f,1.00f,0.75f,0.50f,0.25f };
 
   // StepMania 3.9 and 4.0 values:
   const float mapping[] = {1.50f, 1.33f, 1.16f, 1.00f, 0.84f,
                            0.66f, 0.50f, 0.33f, 0.20f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 /** @brief Life Difficulty scale */
 static void LifeDifficulty(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   // original StepMania 5 values (implemented 2008/03/12)
   // const float mapping[] = { 2.0f,1.50f,1.00f,0.66f,0.33f };
   // 3.9 modified so that L6 is L4 (in SM5 some time after)
@@ -532,7 +528,7 @@ static void LifeDifficulty(
 
   // StepMania 3.9 and 4.0 values:
   const float mapping[] = {1.60f, 1.40f, 1.20f, 1.00f, 0.80f, 0.60f, 0.40f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void MaxHighScoresPerListForMachine(
@@ -552,18 +548,18 @@ static void MaxHighScoresPerListForPlayer(
 #include "LuaManager.h"
 
 static int GetTimingDifficulty() {
-  int iTimingDifficulty = 0;
+  int timing_difficulty = 0;
   TimingWindowScale(
-      iTimingDifficulty, true, ConfOption::Find("TimingWindowScale"));
-  iTimingDifficulty++;  // TimingDifficulty returns an index
-  return iTimingDifficulty;
+      timing_difficulty, true, ConfOption::Find("TimingWindowScale"));
+  timing_difficulty++;  // TimingDifficulty returns an index
+  return timing_difficulty;
 }
 LuaFunction(GetTimingDifficulty, GetTimingDifficulty());
 static int GetLifeDifficulty() {
-  int iLifeDifficulty = 0;
-  LifeDifficulty(iLifeDifficulty, true, ConfOption::Find("LifeDifficulty"));
-  iLifeDifficulty++;  // LifeDifficulty returns an index
-  return iLifeDifficulty;
+  int life_difficulty = 0;
+  LifeDifficulty(life_difficulty, true, ConfOption::Find("LifeDifficulty"));
+  life_difficulty++;  // LifeDifficulty returns an index
+  return life_difficulty;
 }
 LuaFunction(GetLifeDifficulty, GetLifeDifficulty());
 
@@ -571,7 +567,7 @@ LuaFunction(GetLifeDifficulty, GetLifeDifficulty());
 struct res_t {
   int w_, h_;
   res_t() : w_(0), h_(0) {}
-  res_t(int w_, int h_) : w_(w_), h_(h_) {}
+  res_t(int w, int h) : w_(w), h_(h) {}
 
   res_t& operator-=(const res_t& rhs) {
     w_ -= rhs.w_;
@@ -605,7 +601,7 @@ inline res_t operator-(res_t lhs, const res_t& rhs) {
 }
 
 static void DisplayResolutionM(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   static std::vector<res_t> res_choices;
 
   if (res_choices.empty()) {
@@ -618,62 +614,62 @@ static void DisplayResolutionM(
   }
 
   res_t sel_res(PREFSMAN->display_width_, PREFSMAN->display_height_);
-  MoveMap(sel, sel_res, ToSel, &res_choices[0], res_choices.size());
-  if (!ToSel) {
+  MoveMap(sel, sel_res, to_sel, &res_choices[0], res_choices.size());
+  if (!to_sel) {
     PREFSMAN->display_width_.Set(sel_res.w_);
     PREFSMAN->display_height_.Set(sel_res.h_);
   }
 }
 
 static void DisplayColorDepth(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {16, 32};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void MaxTextureResolution(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {256, 512, 1024, 2048};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void TextureColorDepth(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {16, 32};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void MovieColorDepth(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {16, 32};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
-static void RefreshRate(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void RefreshRate(int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {
       (int)REFRESH_DEFAULT, 60, 75, 85, 100, 120, 144, 165, 180, 240, 360};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void DisplayAspectRatio(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {3 / 4.f,    1,        4 / 3.0f, 5 / 4.0f,
                            16 / 10.0f, 16 / 9.f, 8 / 3.f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 /* Simpler DisplayAspectRatio setting, which only offers "on" and "off".
  * "On" can be 16:9 or 16:10. */
 static void WideScreen16_10(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {4 / 3.0f, 16 / 10.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void WideScreen16_9(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {4 / 3.0f, 16 / 9.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 // BackgroundCache code isn't live yet -aj
@@ -689,40 +685,40 @@ ARRAYLEN(mapping) );
 */
 
 // Sound options
-static void SoundVolume(int& sel, bool ToSel, const ConfOption* pConfOption) {
+static void SoundVolume(int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
                            0.6f, 0.7f, 0.8f, 0.9f, 1.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void SoundVolumeAttract(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
                            0.6f, 0.7f, 0.8f, 0.9f, 1.0f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void PreferredSampleRate(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {0, 44100, 48000};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void VisualDelaySeconds(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   const float mapping[] = {-0.125f, -0.1f, -0.075f, -0.05f, -0.025f, 0.0f,
                            0.025f,  0.05f, 0.075f,  0.1f,   0.125f};
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void GlobalOffsetSeconds(
-    int& sel, bool ToSel, const ConfOption* pConfOption) {
+    int& sel, bool to_sel, const ConfOption* conf_option) {
   float mapping[41];
   for (int i = 0; i < 41; ++i) {
     mapping[i] = SCALE(i, 0.0f, 40.0f, -0.1f, +0.1f);
   }
 
-  MoveMap(sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping));
+  MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
 static void EditRecordModeLeadIn(

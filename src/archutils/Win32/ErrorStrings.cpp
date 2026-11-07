@@ -29,20 +29,20 @@ std::string werr_ssprintf(int err, const char* fmt, ...) {
   return s += ssprintf(" (%s)", text.c_str());
 }
 
-std::string ConvertWstringToCodepage(std::wstring s, int iCodePage) {
+std::string ConvertWstringToCodepage(std::wstring s, int code_page) {
   if (s.empty()) {
     return std::string();
   }
 
-  int iBytes = WideCharToMultiByte(
-      iCodePage, 0, s.data(), s.size(), nullptr, 0, nullptr, FALSE);
+  int bytes = WideCharToMultiByte(
+      code_page, 0, s.data(), s.size(), nullptr, 0, nullptr, FALSE);
   ASSERT_M(
-      iBytes > 0, werr_ssprintf(GetLastError(), "WideCharToMultiByte").c_str());
+      bytes > 0, werr_ssprintf(GetLastError(), "WideCharToMultiByte").c_str());
 
-  char* buf = new char[iBytes + 1];
-  std::fill(buf, buf + iBytes + 1, '\0');
+  char* buf = new char[bytes + 1];
+  std::fill(buf, buf + bytes + 1, '\0');
   WideCharToMultiByte(
-      CP_ACP, 0, s.data(), s.size(), buf, iBytes, nullptr, FALSE);
+      CP_ACP, 0, s.data(), s.size(), buf, bytes, nullptr, FALSE);
   std::string ret(buf);
   delete[] buf;
   return ret;
@@ -52,22 +52,21 @@ std::string ConvertUTF8ToACP(const std::string& s) {
   return ConvertWstringToCodepage(RStringToWstring(s), CP_ACP);
 }
 
-std::wstring ConvertCodepageToWString(std::string s, int iCodePage) {
+std::wstring ConvertCodepageToWString(std::string s, int code_page) {
   if (s.empty()) {
     return std::wstring();
   }
 
-  int iBytes =
-      MultiByteToWideChar(iCodePage, 0, s.data(), s.size(), nullptr, 0);
+  int bytes = MultiByteToWideChar(code_page, 0, s.data(), s.size(), nullptr, 0);
   ASSERT_M(
-      iBytes > 0, werr_ssprintf(GetLastError(), "MultiByteToWideChar").c_str());
+      bytes > 0, werr_ssprintf(GetLastError(), "MultiByteToWideChar").c_str());
 
-  wchar_t* pTemp = new wchar_t[iBytes];
-  MultiByteToWideChar(iCodePage, 0, s.data(), s.size(), pTemp, iBytes);
-  std::wstring sRet(pTemp, iBytes);
-  delete[] pTemp;
+  wchar_t* temp = new wchar_t[bytes];
+  MultiByteToWideChar(code_page, 0, s.data(), s.size(), temp, bytes);
+  std::wstring ret(temp, bytes);
+  delete[] temp;
 
-  return sRet;
+  return ret;
 }
 
 std::string ConvertACPToUTF8(const std::string& s) {

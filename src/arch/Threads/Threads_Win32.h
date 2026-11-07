@@ -15,16 +15,16 @@ class ThreadImpl_Win32 : public ThreadImpl {
   HANDLE thread_handle_;
   DWORD thread_id_;
 
-  int (*func_)(void* pData);
+  int (*func_)(void* data);
   void* data_;
 
-  void Halt(bool Kill);
+  void Halt(bool kill);
   void Resume();
   uint64_t GetThreadId() const;
   int Wait();
 };
 
-HANDLE Win32ThreadIdToHandle(uint64_t iID);
+HANDLE Win32ThreadIdToHandle(uint64_t id);
 
 class MutexImpl_Win32 : public MutexImpl {
   friend class EventImpl_Win32;
@@ -43,10 +43,10 @@ class MutexImpl_Win32 : public MutexImpl {
 
 class EventImpl_Win32 : public EventImpl {
  public:
-  EventImpl_Win32(MutexImpl_Win32* pParent);
+  EventImpl_Win32(MutexImpl_Win32* parent);
   ~EventImpl_Win32();
 
-  bool Wait(RageTimer* pTimeout);
+  bool Wait(RageTimer* timeout);
   void Signal();
   void Broadcast();
   bool WaitTimeoutSupported() const { return true; }
@@ -62,7 +62,7 @@ class EventImpl_Win32 : public EventImpl {
 
 class SemaImpl_Win32 : public SemaImpl {
  public:
-  SemaImpl_Win32(int iInitialValue);
+  SemaImpl_Win32(int initial_value);
   ~SemaImpl_Win32();
   void Post();
   bool Wait();

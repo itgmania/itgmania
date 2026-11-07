@@ -266,14 +266,14 @@ void ScreenSelectMusic::Init() {
     this->AddChild(&text_high_score_[p]);
   }
 
-  RageSoundLoadParams SoundParams;
-  SoundParams.support_pan_ = true;
+  RageSoundLoadParams sound_params;
+  sound_params.support_pan_ = true;
 
   sound_start_.Load(THEME->GetPathS(name_, "start"));
   sound_difficulty_easier_.Load(
-      THEME->GetPathS(name_, "difficulty easier"), false, &SoundParams);
+      THEME->GetPathS(name_, "difficulty easier"), false, &sound_params);
   sound_difficulty_harder_.Load(
-      THEME->GetPathS(name_, "difficulty harder"), false, &SoundParams);
+      THEME->GetPathS(name_, "difficulty harder"), false, &sound_params);
   sound_options_change_.Load(THEME->GetPathS(name_, "options"));
   sound_locked_.Load(THEME->GetPathS(name_, "locked"));
 
@@ -295,15 +295,15 @@ void ScreenSelectMusic::BeginScreen() {
     // Instead of crashing, set the first compatible style.
     std::vector<StepsType> vst;
     GAMEMAN->GetStepsTypesForGame(GAMESTATE->cur_game_, vst);
-    const Style* pStyle = GAMEMAN->GetFirstCompatibleStyle(
+    const Style* style = GAMEMAN->GetFirstCompatibleStyle(
         GAMESTATE->cur_game_, GAMESTATE->GetNumSidesJoined(), vst[0]);
-    if (pStyle == nullptr) {
+    if (style == nullptr) {
       FAIL_M(ssprintf(
           "No compatible styles for %s with %d player%s.",
           GAMESTATE->cur_game_->name_, GAMESTATE->GetNumSidesJoined(),
           GAMESTATE->GetNumSidesJoined() == 1 ? "" : "s"));
     }
-    GAMESTATE->SetCurrentStyle(pStyle, PLAYER_INVALID);
+    GAMESTATE->SetCurrentStyle(style, PLAYER_INVALID);
   }
 
   if (GAMESTATE->play_mode_ == PlayMode_Invalid) {
@@ -350,28 +350,28 @@ ScreenSelectMusic::~ScreenSelectMusic() {
 
 // If bForce is true, the next request will be started even if it might cause a
 // skip.
-void ScreenSelectMusic::CheckBackgroundRequests(bool bForce) {
+void ScreenSelectMusic::CheckBackgroundRequests(bool force) {
   if (g_bCDTitleWaiting) {
     // The CDTitle is normally very small, so we don't bother waiting to display
     // it.
-    std::string sPath;
-    if (!background_loader_.IsCacheFileFinished(g_sCDTitlePath, sPath)) {
+    std::string path;
+    if (!background_loader_.IsCacheFileFinished(g_sCDTitlePath, path)) {
       return;
     }
 
     g_bCDTitleWaiting = false;
 
-    std::string sCDTitlePath = sPath;
+    std::string cd_title_path = path;
 
-    if (sCDTitlePath.empty() || !IsAFile(sCDTitlePath)) {
-      sCDTitlePath =
+    if (cd_title_path.empty() || !IsAFile(cd_title_path)) {
+      cd_title_path =
           g_bWantFallbackCdTitle ? fallback_cd_title_path_ : std::string("");
     }
 
-    if (!sCDTitlePath.empty()) {
+    if (!cd_title_path.empty()) {
       TEXTUREMAN->DisableOddDimensionWarning();
-      spr_cd_title_front_.Load(sCDTitlePath);
-      spr_cd_title_back_.Load(sCDTitlePath);
+      spr_cd_title_front_.Load(cd_title_path);
+      spr_cd_title_back_.Load(cd_title_path);
       TEXTUREMAN->EnableOddDimensionWarning();
     }
 
@@ -384,7 +384,7 @@ void ScreenSelectMusic::CheckBackgroundRequests(bool bForce) {
    * Also, don't do this if the wheel is locked, since we're just bouncing
    * around after selecting TYPE_RANDOM, and it'll take a while before the wheel
    * will settle. */
-  if (!music_wheel_.IsSettled() && !music_wheel_.WheelIsLocked() && !bForce) {
+  if (!music_wheel_.IsSettled() && !music_wheel_.WheelIsLocked() && !force) {
     return;
   }
 
@@ -393,24 +393,24 @@ void ScreenSelectMusic::CheckBackgroundRequests(bool bForce) {
       return;
     }
 
-    std::string sPath;
-    bool bFreeCache = false;
+    std::string path;
+    bool free_cache = false;
     if (TEXTUREMAN->IsTextureRegistered(
             Sprite::SongBannerTexture(g_sBannerPath))) {
       /* If the file is already loaded into a texture, it's finished,
        * and we only do this to honor the HighQualTime value. */
-      sPath = g_sBannerPath;
+      path = g_sBannerPath;
     } else {
-      if (!background_loader_.IsCacheFileFinished(g_sBannerPath, sPath)) {
+      if (!background_loader_.IsCacheFileFinished(g_sBannerPath, path)) {
         return;
       }
-      bFreeCache = true;
+      free_cache = true;
     }
 
     g_bBannerWaiting = false;
-    banner_.Load(sPath, true);
+    banner_.Load(path, true);
 
-    if (bFreeCache) {
+    if (free_cache) {
       background_loader_.FinishedWithCachedFile(g_sBannerPath);
     }
   }
@@ -428,33 +428,33 @@ void ScreenSelectMusic::CheckBackgroundRequests(bool bForce) {
     }
 
     // Don't start the music sample when moving fast.
-    if (g_StartedLoadingAt.Ago() < SAMPLE_MUSIC_DELAY && !bForce) {
+    if (g_StartedLoadingAt.Ago() < SAMPLE_MUSIC_DELAY && !force) {
       return;
     }
 
     g_bSampleMusicWaiting = false;
 
-    GameSoundManager::PlayMusicParams PlayParams;
-    PlayParams.file_ = HandleLuaMusicFile(sample_music_to_play_);
-    PlayParams.timing_ = sample_music_timing_data_;
-    PlayParams.force_loop_ = SAMPLE_MUSIC_LOOPS;
-    PlayParams.start_second_ = sample_start_seconds_;
-    PlayParams.length_seconds_ = sample_length_seconds_;
-    PlayParams.fade_out_length_seconds_ = SAMPLE_MUSIC_FADE_OUT_SECONDS;
-    PlayParams.align_beat_ = ALIGN_MUSIC_BEATS;
-    PlayParams.apply_music_rate_ = true;
+    GameSoundManager::PlayMusicParams play_params;
+    play_params.file_ = HandleLuaMusicFile(sample_music_to_play_);
+    play_params.timing_ = sample_music_timing_data_;
+    play_params.force_loop_ = SAMPLE_MUSIC_LOOPS;
+    play_params.start_second_ = sample_start_seconds_;
+    play_params.length_seconds_ = sample_length_seconds_;
+    play_params.fade_out_length_seconds_ = SAMPLE_MUSIC_FADE_OUT_SECONDS;
+    play_params.align_beat_ = ALIGN_MUSIC_BEATS;
+    play_params.apply_music_rate_ = true;
 
-    GameSoundManager::PlayMusicParams FallbackMusic;
-    FallbackMusic.file_ = loop_music_path_;
-    FallbackMusic.fade_in_length_seconds_ =
+    GameSoundManager::PlayMusicParams fallback_music;
+    fallback_music.file_ = loop_music_path_;
+    fallback_music.fade_in_length_seconds_ =
         SAMPLE_MUSIC_FALLBACK_FADE_IN_SECONDS;
-    FallbackMusic.align_beat_ = ALIGN_MUSIC_BEATS;
+    fallback_music.align_beat_ = ALIGN_MUSIC_BEATS;
 
-    SOUND->PlayMusic(PlayParams, FallbackMusic);
+    SOUND->PlayMusic(play_params, fallback_music);
   }
 }
 
-void ScreenSelectMusic::Update(float fDeltaTime) {
+void ScreenSelectMusic::Update(float delta_time) {
   if (!IsTransitioning()) {
     if (IDLE_COMMENT_SECONDS > 0 &&
         timer_idle_comment_.Ago() >= IDLE_COMMENT_SECONDS) {
@@ -463,7 +463,7 @@ void ScreenSelectMusic::Update(float fDeltaTime) {
     }
   }
 
-  ScreenWithMenuElements::Update(fDeltaTime);
+  ScreenWithMenuElements::Update(delta_time);
 
   CheckBackgroundRequests(false);
 }
@@ -499,7 +499,7 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
   }
 
   if (!IsTransitioning() && selection_state_ != SelectionState_Finalized) {
-    bool bHoldingCtrl =
+    bool holding_ctrl =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
 
@@ -510,7 +510,7 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
     wchar_t c = INPUTMAN->DeviceInputToChar(input.device_i_, false);
     MakeUpper(&c, 1);
 
-    if (holding_shift && bHoldingCtrl && c == 'R' && music_wheel_.IsSettled()) {
+    if (holding_shift && holding_ctrl && c == 'R' && music_wheel_.IsSettled()) {
       // Reload the currently selected song. -Kyz
       Song* to_reload = music_wheel_.GetSelectedSong();
       if (to_reload) {
@@ -521,7 +521,7 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         }
         return true;
       }
-    } else if (bHoldingCtrl && (c >= 'A') && (c <= 'Z')) {
+    } else if (holding_ctrl && (c >= 'A') && (c <= 'Z')) {
       // Only allow changing the sort order if the wheel is not locked
       // and we're not in course mode. -aj
       if (!music_wheel_.WheelIsLocked() && !GAMESTATE->IsCourseMode()) {
@@ -546,19 +546,19 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         return true;
       }
     } else if (
-        input.device_i_.device_ == DEVICE_KEYBOARD && bHoldingCtrl &&
+        input.device_i_.device_ == DEVICE_KEYBOARD && holding_ctrl &&
         input.device_i_.button_ == KEY_BACK && input.type_ == IET_FIRST_PRESS &&
         music_wheel_.IsSettled()) {
       // Keyboard shortcut to delete a song from disk (ctrl + backspace)
-      Song* songToDelete = music_wheel_.GetSelectedSong();
-      if (songToDelete && PREFSMAN->allow_song_deletion_.Get()) {
-        song_awaiting_deletion_confirmation_ = songToDelete;
+      Song* song_to_delete = music_wheel_.GetSelectedSong();
+      if (song_to_delete && PREFSMAN->allow_song_deletion_.Get()) {
+        song_awaiting_deletion_confirmation_ = song_to_delete;
         ScreenPrompt::Prompt(
             SM_ConfirmDeleteSong,
             ssprintf(
                 PERMANENTLY_DELETE.GetValue().c_str(),
-                songToDelete->main_title_.c_str(),
-                songToDelete->GetSongDir().c_str()),
+                song_to_delete->main_title_.c_str(),
+                song_to_delete->GetSongDir().c_str()),
             PROMPT_YES_NO);
         return true;
       }
@@ -723,8 +723,8 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         return false;
       }
 
-      bool bLeftIsDown = false;
-      bool bRightIsDown = false;
+      bool left_is_down = false;
+      bool right_is_down = false;
 
       FOREACH_HumanPlayer(p) {
         if (options_list_[p].IsOpened()) {
@@ -735,18 +735,18 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
           continue;
         }
 
-        bLeftIsDown |=
+        left_is_down |=
             INPUTMAPPER->IsBeingPressed(game_button_previous_song_, p);
-        bRightIsDown |= INPUTMAPPER->IsBeingPressed(game_button_next_song_, p);
+        right_is_down |= INPUTMAPPER->IsBeingPressed(game_button_next_song_, p);
       }
 
-      bool bBothDown = bLeftIsDown && bRightIsDown;
-      bool bNeitherDown = !bLeftIsDown && !bRightIsDown;
+      bool both_down = left_is_down && right_is_down;
+      bool neither_down = !left_is_down && !right_is_down;
 
-      if (bNeitherDown) {
+      if (neither_down) {
         // Both buttons released.
         music_wheel_.Move(0);
-      } else if (bBothDown) {
+      } else if (both_down) {
         music_wheel_.Move(0);
         if (input.type_ == IET_FIRST_PRESS) {
           if (input.menu_i_ == game_button_previous_song_) {
@@ -755,12 +755,12 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
             music_wheel_.ChangeMusicUnlessLocked(+1);
           }
         }
-      } else if (bLeftIsDown) {
+      } else if (left_is_down) {
         if (input.type_ != IET_RELEASE) {
           MESSAGEMAN->Broadcast("PreviousSong");
           music_wheel_.Move(-1);
         }
-      } else if (bRightIsDown) {
+      } else if (right_is_down) {
         if (input.type_ != IET_RELEASE) {
           MESSAGEMAN->Broadcast("NextSong");
           music_wheel_.Move(+1);
@@ -816,9 +816,9 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
           sound_locked_.Play(true);
         } else {
-          std::string sNewGroup = music_wheel_.JumpToPrevGroup();
-          music_wheel_.SelectSection(sNewGroup);
-          music_wheel_.SetOpenSection(sNewGroup);
+          std::string new_group = music_wheel_.JumpToPrevGroup();
+          music_wheel_.SelectSection(new_group);
+          music_wheel_.SetOpenSection(new_group);
           MESSAGEMAN->Broadcast("PreviousGroup");
           AfterMusicChange();
         }
@@ -826,9 +826,9 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
           sound_locked_.Play(true);
         } else {
-          std::string sNewGroup = music_wheel_.JumpToNextGroup();
-          music_wheel_.SelectSection(sNewGroup);
-          music_wheel_.SetOpenSection(sNewGroup);
+          std::string new_group = music_wheel_.JumpToNextGroup();
+          music_wheel_.SelectSection(new_group);
+          music_wheel_.SetOpenSection(new_group);
           MESSAGEMAN->Broadcast("NextGroup");
           AfterMusicChange();
         }
@@ -882,9 +882,9 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
           sound_locked_.Play(true);
         } else {
-          std::string sNewGroup = music_wheel_.JumpToPrevGroup();
-          music_wheel_.SelectSection(sNewGroup);
-          music_wheel_.SetOpenSection(sNewGroup);
+          std::string new_group = music_wheel_.JumpToPrevGroup();
+          music_wheel_.SelectSection(new_group);
+          music_wheel_.SetOpenSection(new_group);
           MESSAGEMAN->Broadcast("TwoPartConfirmCanceled");
           MESSAGEMAN->Broadcast("PreviousGroup");
           AfterMusicChange();
@@ -893,9 +893,9 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
         if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
           sound_locked_.Play(true);
         } else {
-          std::string sNewGroup = music_wheel_.JumpToNextGroup();
-          music_wheel_.SelectSection(sNewGroup);
-          music_wheel_.SetOpenSection(sNewGroup);
+          std::string new_group = music_wheel_.JumpToNextGroup();
+          music_wheel_.SelectSection(new_group);
+          music_wheel_.SetOpenSection(new_group);
           MESSAGEMAN->Broadcast("TwoPartConfirmCanceled");
           MESSAGEMAN->Broadcast("NextGroup");
           AfterMusicChange();
@@ -933,8 +933,8 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
           sound_locked_.Play(true);
         } else {
           // XXX: should this be called "TwoPartCancelled"?
-          float fSeconds = menu_timer_->GetSeconds();
-          if (fSeconds > 10) {
+          float seconds = menu_timer_->GetSeconds();
+          if (seconds > 10) {
             Message msg("SongUnchosen");
             msg.SetParam("Player", input.pn_);
             MESSAGEMAN->Broadcast(msg);
@@ -1014,9 +1014,9 @@ bool ScreenSelectMusic::DetectCodes(const InputEventPlus& input) {
         music_wheel_.WheelIsLocked() || music_wheel_.IsRouletting()) {
       sound_locked_.Play(true);
     } else {
-      std::string sNewGroup = music_wheel_.JumpToNextGroup();
-      music_wheel_.SelectSection(sNewGroup);
-      music_wheel_.SetOpenSection(sNewGroup);
+      std::string new_group = music_wheel_.JumpToNextGroup();
+      music_wheel_.SelectSection(new_group);
+      music_wheel_.SetOpenSection(new_group);
       MESSAGEMAN->Broadcast("NextGroup");
       AfterMusicChange();
     }
@@ -1027,9 +1027,9 @@ bool ScreenSelectMusic::DetectCodes(const InputEventPlus& input) {
         music_wheel_.WheelIsLocked() || music_wheel_.IsRouletting()) {
       sound_locked_.Play(true);
     } else {
-      std::string sNewGroup = music_wheel_.JumpToPrevGroup();
-      music_wheel_.SelectSection(sNewGroup);
-      music_wheel_.SetOpenSection(sNewGroup);
+      std::string new_group = music_wheel_.JumpToPrevGroup();
+      music_wheel_.SelectSection(new_group);
+      music_wheel_.SetOpenSection(new_group);
       MESSAGEMAN->Broadcast("PreviousGroup");
       AfterMusicChange();
     }
@@ -1040,14 +1040,14 @@ bool ScreenSelectMusic::DetectCodes(const InputEventPlus& input) {
 }
 
 void ScreenSelectMusic::UpdateSelectButton(
-    PlayerNumber pn, bool bSelectIsDown) {
+    PlayerNumber pn, bool select_is_down) {
   if (!SELECT_MENU_AVAILABLE || !CanChangeSong()) {
-    bSelectIsDown = false;
+    select_is_down = false;
   }
 
-  if (select_is_down_[pn] != bSelectIsDown) {
-    select_is_down_[pn] = bSelectIsDown;
-    Message msg(bSelectIsDown ? "SelectMenuOpened" : "SelectMenuClosed");
+  if (select_is_down_[pn] != select_is_down) {
+    select_is_down_[pn] = select_is_down;
+    Message msg(select_is_down ? "SelectMenuOpened" : "SelectMenuClosed");
     msg.SetParam("Player", pn);
     MESSAGEMAN->Broadcast(msg);
   }
@@ -1070,9 +1070,9 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
 
     // the user explicity switched difficulties. Update the preferred Difficulty
     // and StepsType
-    Steps* pSteps = steps_[selection_[pn]];
+    Steps* steps = steps_[selection_[pn]];
     GAMESTATE->ChangePreferredDifficultyAndStepsType(
-        pn, pSteps->GetDifficulty(), pSteps->steps_type_);
+        pn, steps->GetDifficulty(), steps->steps_type_);
   } else if (GAMESTATE->cur_course_) {
     selection_[pn] += dir;
     if (WRAP_CHANGE_STEPS) {
@@ -1085,9 +1085,9 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
 
     // the user explicity switched difficulties. Update the preferred Difficulty
     // and StepsType
-    Trail* pTrail = trails_[selection_[pn]];
+    Trail* trail = trails_[selection_[pn]];
     GAMESTATE->ChangePreferredCourseDifficultyAndStepsType(
-        pn, pTrail->course_difficulty_, pTrail->steps_type_);
+        pn, trail->course_difficulty_, trail->steps_type_);
   } else {
     // If we're showing multiple StepsTypes in the list, don't allow
     // changing the difficulty/StepsType when a non-Song, non-Course is
@@ -1111,12 +1111,12 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
   }
   AfterStepsOrTrailChange(vpns);
 
-  float fBalance = GameSoundManager::GetPlayerBalance(pn);
+  float balance = GameSoundManager::GetPlayerBalance(pn);
   if (dir < 0) {
-    sound_difficulty_easier_.SetProperty("Pan", fBalance);
+    sound_difficulty_easier_.SetProperty("Pan", balance);
     sound_difficulty_easier_.PlayCopy(true);
   } else {
-    sound_difficulty_harder_.SetProperty("Pan", fBalance);
+    sound_difficulty_harder_.SetProperty("Pan", balance);
     sound_difficulty_harder_.PlayCopy(true);
   }
   GAMESTATE->ForceOtherPlayersToCompatibleSteps(pn);
@@ -1139,10 +1139,10 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
 
     // A checking card will be loaded asynchronously when it becomes ready.
     // Continue loading local profiles immediately when there is no card.
-    bool bProfileLoaded = false;
+    bool profile_loaded = false;
     if (MEMCARDMAN->GetCardState(pn) != MemoryCardState_Checking &&
         GAMESTATE->HaveProfileToLoad(pn)) {
-      bProfileLoaded = LoadPlayerProfile(pn);
+      profile_loaded = LoadPlayerProfile(pn);
     }
 
     PlayerNumber master_pn = GAMESTATE->GetMasterPlayerNumber();
@@ -1162,25 +1162,25 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
 
     AfterMusicChange();
 
-    int iSel = 0;
-    if (bProfileLoaded) {
+    int sel = 0;
+    if (profile_loaded) {
       SCREENMAN
           ->ZeroNextUpdate();  // be kind, don't skip frames if you can avoid it
     }
 
-    selection_[pn] = iSel;
+    selection_[pn] = sel;
     if (GAMESTATE->IsCourseMode()) {
-      Trail* pTrail = trails_.empty() ? nullptr : trails_[selection_[pn]];
-      GAMESTATE->cur_trail_[pn].Set(pTrail);
+      Trail* trail = trails_.empty() ? nullptr : trails_[selection_[pn]];
+      GAMESTATE->cur_trail_[pn].Set(trail);
     } else {
-      Steps* pSteps = steps_.empty() ? nullptr : steps_[selection_[pn]];
+      Steps* steps = steps_.empty() ? nullptr : steps_[selection_[pn]];
 
       // handle changing rave difficulty on join
       if (GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
-        pSteps = steps_[selection_[master_pn]];
+        steps = steps_[selection_[master_pn]];
       }
 
-      GAMESTATE->cur_steps_[pn].Set(pSteps);
+      GAMESTATE->cur_steps_[pn].Set(steps);
     }
   } else if (
       running_ && msg == Message_StorageDevicesChanged &&
@@ -1204,19 +1204,19 @@ bool ScreenSelectMusic::LoadPlayerProfile(PlayerNumber pn) {
 }
 
 bool ScreenSelectMusic::LoadReadyMemoryCards() {
-  bool bProfileLoaded = false;
+  bool profile_loaded = false;
   FOREACH_HumanPlayer(pn) {
     if (MEMCARDMAN->GetCardState(pn) == MemoryCardState_Ready) {
-      bProfileLoaded |= LoadPlayerProfile(pn);
+      profile_loaded |= LoadPlayerProfile(pn);
     }
   }
 
-  if (bProfileLoaded) {
+  if (profile_loaded) {
     music_wheel_.ReloadSongList();
     SCREENMAN->ZeroNextUpdate();
   }
 
-  return bProfileLoaded;
+  return profile_loaded;
 }
 
 bool ScreenSelectMusic::ShouldWaitForMemoryCard() const {
@@ -1230,10 +1230,10 @@ bool ScreenSelectMusic::ShouldWaitForMemoryCard() const {
   return false;
 }
 
-void ScreenSelectMusic::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_AllowOptionsMenuRepeat) {
+void ScreenSelectMusic::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_AllowOptionsMenuRepeat) {
     allow_options_menu_repeat_ = true;
-  } else if (SM == SM_MenuTimer) {
+  } else if (sm == SM_MenuTimer) {
     if (music_wheel_.IsRouletting()) {
       MenuStart(InputEventPlus());
       menu_timer_->SetSeconds(ROULETTE_TIMER_SECONDS);
@@ -1257,45 +1257,45 @@ void ScreenSelectMusic::HandleScreenMessage(const ScreenMessage SM) {
       MenuStart(InputEventPlus());
     }
     return;
-  } else if (SM == SM_GoToPrevScreen) {
+  } else if (sm == SM_GoToPrevScreen) {
     /* We may have stray SM_SongChanged messages from the music wheel.
      * We can't handle them anymore, since the title menu (and attract
      * screens) reset the game state, so just discard them. */
     ClearMessageQueue();
-  } else if (SM == SM_BeginFadingOut) {
+  } else if (sm == SM_BeginFadingOut) {
     allow_options_menu_ = false;
     if (OPTIONS_MENU_AVAILABLE && !go_to_options_) {
       this->PlayCommand("HidePressStartForOptions");
     }
 
     this->PostScreenMessage(SM_GoToNextScreen, this->GetTweenTimeLeft());
-  } else if (SM == SM_GoToNextScreen) {
+  } else if (sm == SM_GoToNextScreen) {
     if (!go_to_options_) {
       SOUND->StopMusic();
     }
-  } else if (SM == SM_SongChanged) {
+  } else if (sm == SM_SongChanged) {
     AfterMusicChange();
-  } else if (SM == SM_SortOrderChanging)  // happens immediately
+  } else if (sm == SM_SortOrderChanging)  // happens immediately
   {
     this->PlayCommand("SortChange");
-  } else if (SM == SM_GainFocus) {
+  } else if (sm == SM_GainFocus) {
     CodeDetector::RefreshCacheItems(CODES);
-  } else if (SM == SM_LoseFocus) {
+  } else if (sm == SM_LoseFocus) {
     CodeDetector::RefreshCacheItems();  // reset for other screens
-  } else if (SM == SM_ConfirmDeleteSong) {
+  } else if (sm == SM_ConfirmDeleteSong) {
     if (ScreenPrompt::last_answer_ == ANSWER_YES) {
       OnConfirmSongDeletion();
     } else {
       // need to resume the song preview that was automatically paused
       music_wheel_.ChangeMusic(0);
     }
-  } else if (SM == SM_ConfirmExit) {
+  } else if (sm == SM_ConfirmExit) {
     if (ScreenPrompt::last_answer_ == ANSWER_YES) {
       ConfirmedCancel(SM_GoToPrevScreen);
     }
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
@@ -1335,19 +1335,19 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
           CheckBackgroundRequests(true);
         }
 
-        const bool bIsNew =
+        const bool is_new =
             PROFILEMAN->IsSongNew(music_wheel_.GetSelectedSong());
-        bool bIsHard = false;
+        bool is_hard = false;
         FOREACH_HumanPlayer(p) {
           if (GAMESTATE->cur_steps_[p] &&
               GAMESTATE->cur_steps_[p]->GetMeter() >= HARD_COMMENT_METER) {
-            bIsHard = true;
+            is_hard = true;
           }
         }
 
         // See if this song is a repeat.
         // If we're in event mode, only check the last five songs.
-        bool bIsRepeat = false;
+        bool is_repeat = false;
         int i = 0;
         if (GAMESTATE->IsEventMode()) {
           i = std::max(0, int(STATSMAN->played_stage_stats_.size()) - 5);
@@ -1355,20 +1355,20 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
         for (; i < (int)STATSMAN->played_stage_stats_.size(); ++i) {
           if (STATSMAN->played_stage_stats_[i].played_songs_.back() ==
               music_wheel_.GetSelectedSong()) {
-            bIsRepeat = true;
+            is_repeat = true;
           }
         }
 
         // Don't complain about repeats if the user didn't get to pick.
         if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
-          bIsRepeat = false;
+          is_repeat = false;
         }
 
-        if (bIsRepeat) {
+        if (is_repeat) {
           SOUND->PlayOnceFromAnnouncer("select music comment repeat");
-        } else if (bIsNew) {
+        } else if (is_new) {
           SOUND->PlayOnceFromAnnouncer("select music comment new");
-        } else if (bIsHard) {
+        } else if (is_hard) {
           SOUND->PlayOnceFromAnnouncer("select music comment hard");
         } else {
           SOUND->PlayOnceFromAnnouncer("select music comment general");
@@ -1382,22 +1382,22 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
       } else if (music_wheel_.GetSelectedCourse() != nullptr) {
         SOUND->PlayOnceFromAnnouncer("select course comment general");
 
-        Course* pCourse = music_wheel_.GetSelectedCourse();
-        ASSERT(pCourse != nullptr);
-        GAMESTATE->play_mode_.Set(pCourse->GetPlayMode());
+        Course* course = music_wheel_.GetSelectedCourse();
+        ASSERT(course != nullptr);
+        GAMESTATE->play_mode_.Set(course->GetPlayMode());
 
         // apply #LIVES
-        if (pCourse->lives_ != -1) {
+        if (course->lives_ != -1) {
           FOREACH_EnabledPlayer(pn) {
             PO_GROUP_ASSIGN(
                 GAMESTATE->player_state_[pn]->player_options_, ModsLevel_Stage,
                 life_type_, LifeType_Battery);
             PO_GROUP_ASSIGN(
                 GAMESTATE->player_state_[pn]->player_options_, ModsLevel_Stage,
-                battery_lives_, pCourse->lives_);
+                battery_lives_, course->lives_);
           }
         }
-        if (pCourse->GetCourseType() == COURSE_TYPE_SURVIVAL) {
+        if (course->GetCourseType() == COURSE_TYPE_SURVIVAL) {
           FOREACH_EnabledPlayer(pn) {
             PO_GROUP_ASSIGN(
                 GAMESTATE->player_state_[pn]->player_options_, ModsLevel_Stage,
@@ -1415,19 +1415,19 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
 
     case SelectionState_SelectingSteps: {
       PlayerNumber pn = input.pn_;
-      bool bInitiatedByMenuTimer = pn == PLAYER_INVALID;
-      bool bAllOtherHumanPlayersDone = true;
+      bool initiated_by_menu_timer = pn == PLAYER_INVALID;
+      bool all_other_human_players_done = true;
       FOREACH_HumanPlayer(p) {
         if (p == pn) {
           continue;
         }
-        bAllOtherHumanPlayersDone &= steps_chosen_[p];
+        all_other_human_players_done &= steps_chosen_[p];
       }
 
-      bool bAllPlayersDoneSelectingSteps =
-          bInitiatedByMenuTimer || bAllOtherHumanPlayersDone;
+      bool all_players_done_selecting_steps =
+          initiated_by_menu_timer || all_other_human_players_done;
       if (TWO_PART_CONFIRMS_ONLY) {
-        bAllPlayersDoneSelectingSteps = true;
+        all_players_done_selecting_steps = true;
       }
 
       /* TRICKY: if we have a Routine chart selected, we need to ensure
@@ -1445,33 +1445,33 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
        */
 
       if (!GAMESTATE->IsCourseMode() && GAMESTATE->GetNumSidesJoined() == 2) {
-        bool bSelectedRoutineSteps[NUM_PLAYERS], bAnySelectedRoutine = false;
-        bool bSelectedSameSteps =
+        bool selected_routine_steps[NUM_PLAYERS], any_selected_routine = false;
+        bool selected_same_steps =
             GAMESTATE->cur_steps_[PLAYER_1] == GAMESTATE->cur_steps_[PLAYER_2];
 
         FOREACH_HumanPlayer(p) {
-          const Steps* pSteps = GAMESTATE->cur_steps_[p];
+          const Steps* steps = GAMESTATE->cur_steps_[p];
           const StepsTypeInfo& sti =
-              GAMEMAN->GetStepsTypeInfo(pSteps->steps_type_);
+              GAMEMAN->GetStepsTypeInfo(steps->steps_type_);
 
-          bSelectedRoutineSteps[p] =
+          selected_routine_steps[p] =
               sti.steps_type_category_ == StepsTypeCategory_Routine;
-          bAnySelectedRoutine |= bSelectedRoutineSteps[p];
+          any_selected_routine |= selected_routine_steps[p];
         }
 
-        if (bAnySelectedRoutine) {
+        if (any_selected_routine) {
           /* Timer ran out. If we haven't agreed on steps, move players with
            * Routine steps down to Beginner. I'll admit that's annoying,
            * but at least they won't lose more stages. */
-          if (bInitiatedByMenuTimer && !bSelectedSameSteps) {
+          if (initiated_by_menu_timer && !selected_same_steps) {
             /* Since m_vpSteps is sorted by Difficulty, the first
              * entry should be the easiest. */
             ASSERT(steps_.size() != 0);
-            Steps* pSteps = steps_[0];
+            Steps* steps = steps_[0];
 
             FOREACH_PlayerNumber(p) {
-              if (bSelectedRoutineSteps[p]) {
-                GAMESTATE->cur_steps_[p].Set(pSteps);
+              if (selected_routine_steps[p]) {
+                GAMESTATE->cur_steps_[p].Set(steps);
               }
             }
 
@@ -1480,15 +1480,15 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
 
           // If the steps don't match up, we need to check some more
           // conditions...
-          if (!bSelectedSameSteps) {
+          if (!selected_same_steps) {
             const PlayerNumber other = OPPOSITE_PLAYER[pn];
 
             if (steps_chosen_[other]) {
               /* Unready the other player if they selected Routine
                * steps, but we didn't. */
-              if (bSelectedRoutineSteps[other]) {
+              if (selected_routine_steps[other]) {
                 steps_chosen_[other] = false;
-                bAllPlayersDoneSelectingSteps =
+                all_players_done_selecting_steps =
                     false;  // if the timer ran out, we handled it earlier
 
                 // HACK: send an event to Input to tell it to unready.
@@ -1497,7 +1497,7 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
                 event.pn_ = other;
 
                 this->Input(event);
-              } else if (bSelectedRoutineSteps[pn]) {
+              } else if (selected_routine_steps[pn]) {
                 /* They selected non-Routine steps, so we can't
                  * select Routine steps. */
                 return false;
@@ -1507,7 +1507,7 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
         }
       }
 
-      if (!bAllPlayersDoneSelectingSteps) {
+      if (!all_players_done_selecting_steps) {
         steps_chosen_[pn] = true;
         sound_start_.Play(true);
 
@@ -1520,10 +1520,10 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
     } break;
   }
 
-  const bool bFinalizing =
+  const bool finalizing =
       GetNextSelectionState() == SelectionState_Finalized ||
       (TWO_PART_CONFIRMS_ONLY && menu_timer_->GetSeconds() < 1);
-  if (bFinalizing && !GAMESTATE->IsCourseMode() &&
+  if (finalizing && !GAMESTATE->IsCourseMode() &&
       GAMESTATE->prepare_song_for_gameplay() != 0) {
     SCREENMAN->PlayInvalidSound();
     return true;
@@ -1562,9 +1562,9 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
         // Don't play start sound. We play it again below on finalized
         // m_soundStart.Play(true);
 
-        Message lMsg("StepsChosen");
-        lMsg.SetParam("Player", p);
-        MESSAGEMAN->Broadcast(lMsg);
+        Message l_msg("StepsChosen");
+        l_msg.SetParam("Player", p);
+        MESSAGEMAN->Broadcast(l_msg);
       }
     }
 
@@ -1594,16 +1594,16 @@ bool ScreenSelectMusic::MenuStart(const InputEventPlus& input) {
       }
 
       StartTransitioningScreen(SM_None);
-      float fTime =
+      float time =
           std::max(SHOW_OPTIONS_MESSAGE_SECONDS, this->GetTweenTimeLeft());
-      this->PostScreenMessage(SM_BeginFadingOut, fTime);
+      this->PostScreenMessage(SM_BeginFadingOut, time);
     } else {
       StartTransitioningScreen(SM_BeginFadingOut);
     }
   } else  // !finalized.  Set the timer for selecting difficulty and mods.
   {
-    float fSeconds = menu_timer_->GetSeconds();
-    if (fSeconds < 10) {
+    float seconds = menu_timer_->GetSeconds();
+    if (seconds < 10) {
       menu_timer_->SetSeconds(TWO_PART_TIMER_SECONDS);  // was 13 -aj
       menu_timer_->Start();
     }
@@ -1636,20 +1636,20 @@ bool ScreenSelectMusic::MenuBack(const InputEventPlus& /* input */) {
   return true;
 }
 
-void ScreenSelectMusic::Cancel(ScreenMessage smSendWhenDone) {
+void ScreenSelectMusic::Cancel(ScreenMessage send_when_done) {
   if (CONFIRM_EXIT) {
     music_wheel_.Move(0);
     ScreenPrompt::Prompt(
         SM_ConfirmExit, PROMPT_BEFORE_EXITING.GetValue().c_str(),
         PROMPT_YES_NO);
   } else {
-    ConfirmedCancel(smSendWhenDone);
+    ConfirmedCancel(send_when_done);
   }
 }
 
-void ScreenSelectMusic::ConfirmedCancel(ScreenMessage smSendWhenDone) {
+void ScreenSelectMusic::ConfirmedCancel(ScreenMessage send_when_done) {
   background_loader_.Abort();
-  ScreenWithMenuElements::Cancel(smSendWhenDone);
+  ScreenWithMenuElements::Cancel(send_when_done);
 }
 
 void ScreenSelectMusic::AfterStepsOrTrailChange(
@@ -1667,43 +1667,43 @@ void ScreenSelectMusic::AfterStepsOrTrailChange(
     if (GAMESTATE->cur_song_) {
       rage_clamp(selection_[pn], 0, steps_.size() - 1);
 
-      Song* pSong = GAMESTATE->cur_song_;
-      Steps* pSteps = steps_.empty() ? nullptr : steps_[selection_[pn]];
+      Song* song = GAMESTATE->cur_song_;
+      Steps* steps = steps_.empty() ? nullptr : steps_[selection_[pn]];
 
-      GAMESTATE->cur_steps_[pn].Set(pSteps);
+      GAMESTATE->cur_steps_[pn].Set(steps);
       GAMESTATE->cur_trail_[pn].Set(nullptr);
 
-      int iScore = 0;
-      if (pSteps) {
-        const Profile* pProfile = PROFILEMAN->IsPersistentProfile(pn)
-                                      ? PROFILEMAN->GetProfile(pn)
-                                      : PROFILEMAN->GetMachineProfile();
-        iScore = pProfile->GetStepsHighScoreList(pSong, pSteps)
-                     .GetTopScore()
-                     .GetScore();
+      int score = 0;
+      if (steps) {
+        const Profile* profile = PROFILEMAN->IsPersistentProfile(pn)
+                                     ? PROFILEMAN->GetProfile(pn)
+                                     : PROFILEMAN->GetMachineProfile();
+        score = profile->GetStepsHighScoreList(song, steps)
+                    .GetTopScore()
+                    .GetScore();
       }
 
-      text_high_score_[pn].SetText(ssprintf("%*i", NUM_SCORE_DIGITS, iScore));
+      text_high_score_[pn].SetText(ssprintf("%*i", NUM_SCORE_DIGITS, score));
     } else if (GAMESTATE->cur_course_) {
       rage_clamp(selection_[pn], 0, trails_.size() - 1);
 
-      Course* pCourse = GAMESTATE->cur_course_;
-      Trail* pTrail = trails_.empty() ? nullptr : trails_[selection_[pn]];
+      Course* course = GAMESTATE->cur_course_;
+      Trail* trail = trails_.empty() ? nullptr : trails_[selection_[pn]];
 
       GAMESTATE->cur_steps_[pn].Set(nullptr);
-      GAMESTATE->cur_trail_[pn].Set(pTrail);
+      GAMESTATE->cur_trail_[pn].Set(trail);
 
-      int iScore = 0;
-      if (pTrail) {
-        const Profile* pProfile = PROFILEMAN->IsPersistentProfile(pn)
-                                      ? PROFILEMAN->GetProfile(pn)
-                                      : PROFILEMAN->GetMachineProfile();
-        iScore = pProfile->GetCourseHighScoreList(pCourse, pTrail)
-                     .GetTopScore()
-                     .GetScore();
+      int score = 0;
+      if (trail) {
+        const Profile* profile = PROFILEMAN->IsPersistentProfile(pn)
+                                     ? PROFILEMAN->GetProfile(pn)
+                                     : PROFILEMAN->GetMachineProfile();
+        score = profile->GetCourseHighScoreList(course, trail)
+                    .GetTopScore()
+                    .GetScore();
       }
 
-      text_high_score_[pn].SetText(ssprintf("%*i", NUM_SCORE_DIGITS, iScore));
+      text_high_score_[pn].SetText(ssprintf("%*i", NUM_SCORE_DIGITS, score));
     } else {
       // The numbers shouldn't stay if the current selection is nullptr.
       text_high_score_[pn].SetText(NULL_SCORE_STRING);
@@ -1714,67 +1714,67 @@ void ScreenSelectMusic::AfterStepsOrTrailChange(
 void ScreenSelectMusic::SwitchPlayerStepDifficulty(
     PlayerNumber pn, Difficulty d) {
   // Find the closest match to the given difficulty and StepsType.
-  int iCurDifference = -1;
-  int& iSelection = selection_[pn];
+  int cur_difference = -1;
+  int& selection = selection_[pn];
   int i = 0;
   for (Steps* s : steps_) {
     // If the current steps are listed, use them.
     if (GAMESTATE->cur_steps_[pn] == s) {
-      iSelection = i;
+      selection = i;
       break;
     }
 
     if (d != Difficulty_Invalid) {
-      int iDifficultyDifference = std::abs(s->GetDifficulty() - d);
-      int iStepsTypeDifference = 0;
+      int difficulty_difference = std::abs(s->GetDifficulty() - d);
+      int steps_type_difference = 0;
       if (GAMESTATE->preferred_steps_type_ != StepsType_Invalid) {
-        iStepsTypeDifference =
+        steps_type_difference =
             std::abs(s->steps_type_ - GAMESTATE->preferred_steps_type_);
       }
-      int iTotalDifference =
-          iStepsTypeDifference * NUM_Difficulty + iDifficultyDifference;
+      int total_difference =
+          steps_type_difference * NUM_Difficulty + difficulty_difference;
 
-      if (iCurDifference == -1 || iTotalDifference < iCurDifference) {
-        iSelection = i;
-        iCurDifference = iTotalDifference;
+      if (cur_difference == -1 || total_difference < cur_difference) {
+        selection = i;
+        cur_difference = total_difference;
       }
     }
     i += 1;
   }
 
-  rage_clamp(iSelection, 0, steps_.size() - 1);
+  rage_clamp(selection, 0, steps_.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchPlayerCourseDifficulty(
     PlayerNumber pn, Difficulty d) {
   // Find the closest match to the given difficulty.
-  int iCurDifference = -1;
-  int& iSelection = selection_[pn];
+  int cur_difference = -1;
+  int& selection = selection_[pn];
   int i = 0;
   for (Trail* t : trails_) {
     // If the current trail is listed, use it.
     if (GAMESTATE->cur_trail_[pn] == trails_[i]) {
-      iSelection = i;
+      selection = i;
       break;
     }
 
     if (d != Difficulty_Invalid &&
         GAMESTATE->preferred_steps_type_ != StepsType_Invalid) {
-      int iDifficultyDifference = std::abs(t->course_difficulty_ - d);
-      int iStepsTypeDifference =
+      int difficulty_difference = std::abs(t->course_difficulty_ - d);
+      int steps_type_difference =
           std::abs(t->steps_type_ - GAMESTATE->preferred_steps_type_);
-      int iTotalDifference =
-          iStepsTypeDifference * NUM_CourseDifficulty + iDifficultyDifference;
+      int total_difference =
+          steps_type_difference * NUM_CourseDifficulty + difficulty_difference;
 
-      if (iCurDifference == -1 || iTotalDifference < iCurDifference) {
-        iSelection = i;
-        iCurDifference = iTotalDifference;
+      if (cur_difference == -1 || total_difference < cur_difference) {
+        selection = i;
+        cur_difference = total_difference;
       }
     }
     i += 1;
   }
 
-  rage_clamp(iSelection, 0, trails_.size() - 1);
+  rage_clamp(selection, 0, trails_.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchToDifficulty(Difficulty d) {
@@ -1821,16 +1821,16 @@ void ScreenSelectMusic::AfterMusicChange() {
     menu_timer_->Stall();
   }
 
-  Song* pSong = music_wheel_.GetSelectedSong();
-  GAMESTATE->cur_song_.Set(pSong);
-  if (pSong) {
-    GAMESTATE->preferred_song_ = pSong;
+  Song* song = music_wheel_.GetSelectedSong();
+  GAMESTATE->cur_song_.Set(song);
+  if (song) {
+    GAMESTATE->preferred_song_ = song;
   }
 
-  Course* pCourse = music_wheel_.GetSelectedCourse();
-  GAMESTATE->cur_course_.Set(pCourse);
-  if (pCourse) {
-    GAMESTATE->preferred_course_ = pCourse;
+  Course* p_course = music_wheel_.GetSelectedCourse();
+  GAMESTATE->cur_course_.Set(p_course);
+  if (p_course) {
+    GAMESTATE->preferred_course_ = p_course;
   }
 
   steps_.clear();
@@ -1845,12 +1845,12 @@ void ScreenSelectMusic::AfterMusicChange() {
   g_sCDTitlePath = "";
   g_sBannerPath = "";
   g_bWantFallbackCdTitle = false;
-  bool bWantBanner = true;
+  bool want_banner = true;
 
-  static SortOrder s_lastSortOrder = SortOrder_Invalid;
-  if (GAMESTATE->sort_order_ != s_lastSortOrder) {
+  static SortOrder last_sort_order = SortOrder_Invalid;
+  if (GAMESTATE->sort_order_ != last_sort_order) {
     // Reload to let Lua metrics have a chance to change the help text.
-    s_lastSortOrder = GAMESTATE->sort_order_;
+    last_sort_order = GAMESTATE->sort_order_;
   }
 
   WheelItemDataType wtype = music_wheel_.GetSelectedType();
@@ -1882,17 +1882,17 @@ void ScreenSelectMusic::AfterMusicChange() {
         case WheelItemDataType_ParentSection:
           // reduce scope
           {
-            SortOrder curSort = GAMESTATE->sort_order_;
+            SortOrder cur_sort = GAMESTATE->sort_order_;
             if (wtype == WheelItemDataType_ParentSection &&
-                curSort == SORT_SERIES) {
+                cur_sort == SORT_SERIES) {
               g_sBannerPath = SONGMAN->GetSeriesBannerPath(
                   music_wheel_.GetSelectedSection());
-            } else if (curSort == SORT_GROUP || curSort == SORT_SERIES) {
+            } else if (cur_sort == SORT_GROUP || cur_sort == SORT_SERIES) {
               g_sBannerPath = SONGMAN->GetSongGroupBannerPath(
                   music_wheel_.GetSelectedSection());
             } else {
-              bWantBanner = false;  // we load it ourself
-              banner_.LoadFromSortOrder(curSort);
+              want_banner = false;  // we load it ourself
+              banner_.LoadFromSortOrder(cur_sort);
             }
 
             if (SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong) {
@@ -1901,32 +1901,32 @@ void ScreenSelectMusic::AfterMusicChange() {
           }
           break;
         case WheelItemDataType_Sort:
-          bWantBanner = false;  // we load it ourself
+          want_banner = false;  // we load it ourself
           banner_.LoadMode();
           if (SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong) {
             sample_music_to_play_ = sort_music_path_;
           }
           break;
         case WheelItemDataType_Roulette:
-          bWantBanner = false;  // we load it ourself
+          want_banner = false;  // we load it ourself
           banner_.LoadRoulette();
           if (SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong) {
             sample_music_to_play_ = roulette_music_path_;
           }
           break;
         case WheelItemDataType_Random:
-          bWantBanner = false;  // we load it ourself
+          want_banner = false;  // we load it ourself
           banner_.LoadRandom();
           // if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
           sample_music_to_play_ = random_music_path_;
           break;
         case WheelItemDataType_Custom: {
-          bWantBanner = false;  // we load it ourself
-          std::string sBannerName =
+          want_banner = false;  // we load it ourself
+          std::string banner_name =
               GetMusicWheel()
                   ->GetCurWheelItemData(GetMusicWheel()->GetCurrentIndex())
                   ->action_->name_.c_str();
-          banner_.LoadCustom(sBannerName);
+          banner_.LoadCustom(banner_name);
           if (SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong) {
             sample_music_to_play_ = section_music_path_;
           }
@@ -1962,7 +1962,7 @@ void ScreenSelectMusic::AfterMusicChange() {
         case SampleMusicPreviewMode_Normal:
         case SampleMusicPreviewMode_LastSong:
           // play the sample music
-          sample_music_to_play_ = pSong->GetPreviewMusicPath();
+          sample_music_to_play_ = song->GetPreviewMusicPath();
           if (!sample_music_to_play_.empty() &&
               ActorUtil::GetFileType(sample_music_to_play_) != FT_Sound) {
             LuaHelpers::ReportScriptErrorFmt(
@@ -1970,24 +1970,24 @@ void ScreenSelectMusic::AfterMusicChange() {
                 sample_music_to_play_.c_str());
             sample_music_to_play_ = "";
           }
-          sample_music_timing_data_ = &pSong->song_timing_;
-          sample_start_seconds_ = pSong->GetPreviewStartSeconds();
-          sample_length_seconds_ = pSong->music_sample_length_seconds_;
+          sample_music_timing_data_ = &song->song_timing_;
+          sample_start_seconds_ = song->GetPreviewStartSeconds();
+          sample_length_seconds_ = song->music_sample_length_seconds_;
           break;
         default:
           FAIL_M(ssprintf("Invalid preview mode: %i", pmode));
       }
 
-      SongUtil::GetPlayableSteps(pSong, steps_);
+      SongUtil::GetPlayableSteps(song, steps_);
       if (steps_.empty()) {
         // LuaHelpers::ReportScriptError("GetPlayableSteps returned nothing.");
       }
 
       if (PREFSMAN->show_banners_) {
-        g_sBannerPath = pSong->GetBannerPath();
+        g_sBannerPath = song->GetBannerPath();
       }
 
-      g_sCDTitlePath = pSong->GetCDTitlePath();
+      g_sCDTitlePath = song->GetCDTitlePath();
       g_bWantFallbackCdTitle = true;
 
       if (GAMESTATE->sort_order_ == SORT_METER) {
@@ -2004,13 +2004,13 @@ void ScreenSelectMusic::AfterMusicChange() {
       break;
 
     case WheelItemDataType_Course: {
-      const Course* lCourse = music_wheel_.GetSelectedCourse();
-      const Style* pStyle = nullptr;
+      const Course* l_course = music_wheel_.GetSelectedCourse();
+      const Style* style = nullptr;
       if (CommonMetrics::AUTO_SET_STYLE) {
-        pStyle = pCourse->GetCourseStyle(
+        style = p_course->GetCourseStyle(
             GAMESTATE->cur_game_, GAMESTATE->GetNumPlayersEnabled());
-        if (pStyle == nullptr) {
-          lCourse->GetAllTrails(trails_);
+        if (style == nullptr) {
+          l_course->GetAllTrails(trails_);
           std::vector<Trail*>::iterator tra = trails_.begin();
           const Game* cur_game = GAMESTATE->GetCurrentGame();
           int num_players = GAMESTATE->GetNumPlayersEnabled();
@@ -2023,18 +2023,18 @@ void ScreenSelectMusic::AfterMusicChange() {
             }
           }
         } else {
-          lCourse->GetTrails(trails_, pStyle->steps_type_);
+          l_course->GetTrails(trails_, style->steps_type_);
         }
       } else {
-        pStyle = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
-        lCourse->GetTrails(trails_, pStyle->steps_type_);
+        style = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
+        l_course->GetTrails(trails_, style->steps_type_);
       }
 
       sample_music_to_play_ = course_music_path_;
       sample_start_seconds_ = 0;
       sample_length_seconds_ = -1;
 
-      g_sBannerPath = lCourse->GetBannerPath();
+      g_sBannerPath = l_course->GetBannerPath();
       if (g_sBannerPath.empty()) {
         banner_.LoadFallback();
       }
@@ -2061,7 +2061,7 @@ void ScreenSelectMusic::AfterMusicChange() {
   }
 
   g_bBannerWaiting = false;
-  if (bWantBanner) {
+  if (want_banner) {
     LOG->Trace("LoadFromCachedBanner(%s)", g_sBannerPath.c_str());
     // TODO: We should probably have some fallback banner for videos, but for
     // now we can just load the video file directly. This is to try an address
@@ -2114,8 +2114,8 @@ void ScreenSelectMusic::OpenOptionsList(PlayerNumber pn) {
 }
 
 void ScreenSelectMusic::OnConfirmSongDeletion() {
-  Song* deletedSong = song_awaiting_deletion_confirmation_;
-  if (!deletedSong) {
+  Song* deleted_song = song_awaiting_deletion_confirmation_;
+  if (!deleted_song) {
     LOG->Warn(
         "Attempted to delete a null song "
         "(ScreenSelectMusic::OnConfirmSongDeletion)");
@@ -2129,14 +2129,14 @@ void ScreenSelectMusic::OnConfirmSongDeletion() {
     return;
   }
 
-  std::string deleteDir = deletedSong->GetSongDir();
+  std::string delete_dir = deleted_song->GetSongDir();
   // flush the deleted song from any caches
-  SONGMAN->UnlistSong(deletedSong);
+  SONGMAN->UnlistSong(deleted_song);
   // refresh the song list
   music_wheel_.ReloadSongList();
-  LOG->Trace("Deleting song: '%s'\n", deleteDir.c_str());
+  LOG->Trace("Deleting song: '%s'\n", delete_dir.c_str());
   // delete the song directory from disk
-  FILEMAN->DeleteRecursive(deleteDir);
+  FILEMAN->DeleteRecursive(delete_dir);
 
   song_awaiting_deletion_confirmation_ = nullptr;
 }

@@ -44,8 +44,8 @@ static uint8_t DitherPixel(int x, int y, int intensity, int conv) {
 }
 
 void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
-  static std::atomic<bool> DitherMatCalc_initted = false;
-  if (!DitherMatCalc_initted.load(std::memory_order_acquire)) {
+  static std::atomic<bool> dither_mat_calc_initted = false;
+  if (!dither_mat_calc_initted.load(std::memory_order_acquire)) {
     for (int i = 0; i < DitherMatDim; ++i) {
       for (int j = 0; j < DitherMatDim; ++j) {
         /* Each value is 0..15.  They represent 0/16 through 15/16.
@@ -55,7 +55,7 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
       }
     }
 
-    DitherMatCalc_initted.store(true, std::memory_order_release);
+    dither_mat_calc_initted.store(true, std::memory_order_release);
   }
 
   // We can't dither to paletted surfaces.
@@ -69,13 +69,13 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
   // channel.
   int conv[4];
   for (int i = 0; i < 4; ++i) {
-    int MaxInputIntensity = (1 << src_cbits[i]) - 1;
-    int MaxOutputIntensity = (1 << dst_cbits[i]) - 1;
+    int max_input_intensity = (1 << src_cbits[i]) - 1;
+    int max_output_intensity = (1 << dst_cbits[i]) - 1;
     // If the source is missing the channel, avoid div/0.
-    if (MaxInputIntensity == 0) {
+    if (max_input_intensity == 0) {
       conv[i] = 0;
     } else {
-      conv[i] = MaxOutputIntensity * 65536 / MaxInputIntensity;
+      conv[i] = max_output_intensity * 65536 / max_input_intensity;
     }
   }
 
@@ -122,7 +122,7 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
 }
 
 static uint8_t EDDitherPixel(
-    int x, int y, int intensity, int conv, int32_t& accumError) {
+    int x, int y, int intensity, int conv, int32_t& accum_error) {
   // Convert the number to the destination range.
   int out_intensity = intensity * conv;
 
@@ -130,7 +130,7 @@ static uint8_t EDDitherPixel(
   ++out_intensity;
 
   // Add bias.
-  out_intensity += accumError;
+  out_intensity += accum_error;
 
   /* out_intensity is now what we actually want this component to be.
    * To store it, we have to clamp it (prevent overflow) and shift it
@@ -142,10 +142,10 @@ static uint8_t EDDitherPixel(
   // Truncate.
   uint8_t ret = uint8_t(clamped_intensity >> 16);
 
-  accumError = out_intensity - clamped_intensity;
+  accum_error = out_intensity - clamped_intensity;
 
   // Reduce funky streaks in low-bit channels by clamping error.
-  rage_clamp(accumError, -128 * 65536, +128 * 65536);
+  rage_clamp(accum_error, -128 * 65536, +128 * 65536);
 
   return ret;
 }
@@ -169,13 +169,13 @@ void RageSurfaceUtils::ErrorDiffusionDither(
   // channel.
   int conv[4];
   for (int i = 0; i < 4; ++i) {
-    int MaxInputIntensity = (1 << src_cbits[i]) - 1;
-    int MaxOutputIntensity = (1 << dst_cbits[i]) - 1;
+    int max_input_intensity = (1 << src_cbits[i]) - 1;
+    int max_output_intensity = (1 << dst_cbits[i]) - 1;
     // If the source is missing the channel, avoid div/0.
-    if (MaxInputIntensity == 0) {
+    if (max_input_intensity == 0) {
       conv[i] = 0;
     } else {
-      conv[i] = MaxOutputIntensity * 65536 / MaxInputIntensity;
+      conv[i] = max_output_intensity * 65536 / max_input_intensity;
     }
   }
 
@@ -184,7 +184,7 @@ void RageSurfaceUtils::ErrorDiffusionDither(
 
   // For each row:
   for (int row = 0; row < src->h_; ++row) {
-    int32_t accumError[4] = {
+    int32_t accum_error[4] = {
         0, 0, 0, 0};  // accum error values are reset every row
 
     const uint8_t* srcp = src->pixels_ + row * src->pitch_;
@@ -196,7 +196,7 @@ void RageSurfaceUtils::ErrorDiffusionDither(
       RageSurfaceUtils::GetRawRGBAV(srcp, src->fmt_, colors);
 
       for (int c = 0; c < 3; ++c) {
-        colors[c] = EDDitherPixel(col, row, colors[c], conv[c], accumError[c]);
+        colors[c] = EDDitherPixel(col, row, colors[c], conv[c], accum_error[c]);
       }
 
       /* If the source has no alpha, the conversion formula will end up

@@ -68,10 +68,10 @@ void sm_crash(const char* reason = "Internal error");
     FAIL_M(ssprintf("%s = %i", #i, (i)))
 
 void ShowWarningOrTrace(
-    const char* file, int line, const std::string& message, bool bWarning);
+    const char* file, int line, const std::string& message, bool warning);
 void ShowWarningOrTrace(
     const char* file, int line, const char* message,
-    bool bWarning);  // don't pull in LOG here
+    bool warning);  // don't pull in LOG here
 #define WARN(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, true))
 #define TRACE(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, false))
 

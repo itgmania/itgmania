@@ -26,52 +26,52 @@ class RageFileManager {
   void MountUserFilesystems();
 
   void GetDirListing(
-      const std::string& sPath, std::vector<std::string>& AddTo, bool bOnlyDirs,
-      bool bReturnPathToo);
+      const std::string& path, std::vector<std::string>& add_to, bool only_dirs,
+      bool return_path_too);
   void GetDirListingWithMultipleExtensions(
-      const std::string& sPath, const std::vector<std::string>& ExtensionList,
-      std::vector<std::string>& AddTo, bool bOnlyDirs = false,
-      bool bReturnPathToo = false);
-  bool Move(const std::string& fromPath, const std::string& toPath);
-  bool Copy(const std::string& fromPath, const std::string& toPath);
-  bool Remove(const std::string& sPath);
-  bool DeleteRecursive(const std::string& sPath);
-  void CreateDir(const std::string& sDir);
+      const std::string& path, const std::vector<std::string>& extension_list,
+      std::vector<std::string>& add_to, bool only_dirs = false,
+      bool return_path_too = false);
+  bool Move(const std::string& from_path, const std::string& to_path);
+  bool Copy(const std::string& from_path, const std::string& to_path);
+  bool Remove(const std::string& path);
+  bool DeleteRecursive(const std::string& path);
+  void CreateDir(const std::string& dir);
 
   enum FileType { TYPE_FILE, TYPE_DIR, TYPE_NONE };
-  FileType GetFileType(const std::string& sPath);
+  FileType GetFileType(const std::string& path);
 
-  bool IsAFile(const std::string& sPath);
-  bool IsADirectory(const std::string& sPath);
-  bool DoesFileExist(const std::string& sPath);
+  bool IsAFile(const std::string& path);
+  bool IsADirectory(const std::string& path);
+  bool DoesFileExist(const std::string& path);
 
-  int GetFileSizeInBytes(const std::string& sPath);
-  int GetFileHash(const std::string& sPath);
+  int GetFileSizeInBytes(const std::string& path);
+  int GetFileHash(const std::string& path);
 
   bool Mount(
-      const std::string& sType, const std::string& sRealPath,
-      const std::string& sMountPoint);
+      const std::string& type, const std::string& real_path,
+      const std::string& mount_point);
   void Unmount(
-      const std::string& sType, const std::string& sRoot,
-      const std::string& sMountPoint);
+      const std::string& type, const std::string& root,
+      const std::string& mount_point);
 
   struct DriverLocation {
     std::string type_, root_, mount_point_;
   };
-  void GetLoadedDrivers(std::vector<DriverLocation>& asMounts);
+  void GetLoadedDrivers(std::vector<DriverLocation>& mounts);
 
-  void FlushDirCache(const std::string& sPath = std::string());
+  void FlushDirCache(const std::string& path = std::string());
 
   /* Used only by RageFile: */
-  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
-  void CacheFile(const RageFileBasic* fb, const std::string& sPath);
+  RageFileBasic* Open(const std::string& path, int mode, int& error);
+  void CacheFile(const RageFileBasic* fb, const std::string& path);
 
   /* Retrieve or release a reference to the low-level driver for a mountpoint.
    */
-  RageFileDriver* GetFileDriver(std::string sMountpoint);
-  void ReleaseFileDriver(RageFileDriver* pDriver);
+  RageFileDriver* GetFileDriver(std::string mountpoint);
+  void ReleaseFileDriver(RageFileDriver* driver);
 
-  bool Unzip(const std::string& zipPath, std::string targetPath, int strip);
+  bool Unzip(const std::string& zip_path, std::string target_path, int strip);
 
   // path protection
   void ProtectPath(const std::string& path);
@@ -81,10 +81,8 @@ class RageFileManager {
   void PushSelf(lua_State* L);
 
  private:
-  RageFileBasic* OpenForReading(
-      const std::string& sPath, int iMode, int& iError);
-  RageFileBasic* OpenForWriting(
-      const std::string& sPath, int iMode, int& iError);
+  RageFileBasic* OpenForReading(const std::string& path, int mode, int& error);
+  RageFileBasic* OpenForWriting(const std::string& path, int mode, int& error);
 
   std::unordered_set<std::string> protected_paths_;
 };

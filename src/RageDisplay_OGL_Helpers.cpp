@@ -8,11 +8,11 @@
 namespace {
 std::map<GLenum, std::string> g_Strings;
 void InitStringMap() {
-  static bool bInitialized = false;
-  if (bInitialized) {
+  static bool initialized = false;
+  if (initialized) {
     return;
   }
-  bInitialized = true;
+  initialized = true;
 
 #define X(a) g_Strings[a] = #a;
   X(GL_RGBA8);

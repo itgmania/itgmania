@@ -15,11 +15,11 @@
 ScoreDisplayNormal::ScoreDisplayNormal() {
   LOG->Trace("ScoreDisplayNormal::ScoreDisplayNormal()");
 
-  std::string sType = "ScoreDisplayNormal";
+  std::string type = "ScoreDisplayNormal";
 
-  spr_frame_.Load(THEME->GetPathG(sType, "Frame"));
+  spr_frame_.Load(THEME->GetPathG(type, "Frame"));
   spr_frame_->SetName("Frame");
-  ActorUtil::LoadAllCommandsAndSetXY(spr_frame_, sType);
+  ActorUtil::LoadAllCommandsAndSetXY(spr_frame_, type);
   this->AddChild(spr_frame_);
 
   // init the text
@@ -27,18 +27,18 @@ ScoreDisplayNormal::ScoreDisplayNormal() {
   text_.Load("RollingNumbers");
   text_.SetName("Text");
   text_.UpdateText();
-  ActorUtil::LoadAllCommandsAndSetXY(text_, sType);
+  ActorUtil::LoadAllCommandsAndSetXY(text_, type);
   this->AddChild(&text_);
 }
 
 void ScoreDisplayNormal::Init(
-    const PlayerState* pPlayerState,
-    const PlayerStageStats* pPlayerStageStats) {
-  ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
+    const PlayerState* p_player_state,
+    const PlayerStageStats* p_player_stage_stats) {
+  ScoreDisplay::Init(p_player_state, p_player_stage_stats);
 
-  PlayerState* pPlayerState_ = const_cast<PlayerState*>(pPlayerState);
+  PlayerState* pPlayerState_ = const_cast<PlayerState*>(p_player_state);
   PlayerStageStats* pPlayerStageStats_ =
-      const_cast<PlayerStageStats*>(pPlayerStageStats);
+      const_cast<PlayerStageStats*>(p_player_stage_stats);
 
   Message msg("Load");
   msg.SetParam("PlayerState", LuaReference::CreateFromPush(*pPlayerState_));
@@ -47,10 +47,10 @@ void ScoreDisplayNormal::Init(
   this->HandleMessage(msg);
 }
 
-void ScoreDisplayNormal::SetScore(int iNewScore) {
-  float fScore = (float)iNewScore;
+void ScoreDisplayNormal::SetScore(int new_score) {
+  float score = (float)new_score;
 
-  text_.SetTargetNumber(fScore);
+  text_.SetTargetNumber(score);
 }
 
 /*

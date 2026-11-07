@@ -13,7 +13,7 @@ class ScreenJukebox : public ScreenGameplayNormal {
   virtual void Init();
 
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
  protected:
   bool demonstration_;

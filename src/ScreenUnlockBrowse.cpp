@@ -60,8 +60,8 @@ bool ScreenUnlockBrowse::MenuStart(const InputEventPlus& input) {
 
 void ScreenUnlockBrowse::HandleMessage(const Message& msg) {
   if (msg == Message_MenuSelectionChanged) {
-    int iSelection = this->GetSelectionIndex(PLAYER_1);
-    const UnlockEntry& ue = UNLOCKMAN->unlock_entries_[iSelection];
+    int selection = this->GetSelectionIndex(PLAYER_1);
+    const UnlockEntry& ue = UNLOCKMAN->unlock_entries_[selection];
     if (ue.IsLocked()) {
       banner_.LoadFallback();
     } else {

@@ -45,10 +45,10 @@ AutoScreenMessage(SM_ComboContinuing);
 class Player : public ActorFrame {
  public:
   // The passed in NoteData isn't touched until Load() is called.
-  Player(NoteData& nd, bool bVisibleParts = true);
+  Player(NoteData& nd, bool visible_parts = true);
   ~Player();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void DrawPrimitives();
   // PushPlayerMatrix and PopPlayerMatrix are separate functions because
   // they need to be used twice so that the notefield board can rendered
@@ -81,16 +81,16 @@ class Player : public ActorFrame {
     TapNote* tn_;
   };
   void UpdateHoldNotes(
-      int iSongRow, float fDeltaTime, std::vector<TrackRowTapNote>& vTN);
+      int song_row, float delta_time, std::vector<TrackRowTapNote>& tn);
 
   void Init(
-      const std::string& sType, PlayerState* pPlayerState,
-      PlayerStageStats* pPlayerStageStats, LifeMeter* pLM,
-      CombinedLifeMeter* pCombinedLM, ScoreDisplay* pScoreDisplay,
-      ScoreDisplay* pSecondaryScoreDisplay, ScoreKeeper* pPrimaryScoreKeeper,
-      ScoreKeeper* pSecondaryScoreKeeper);
+      const std::string& type, PlayerState* player_state,
+      PlayerStageStats* player_stage_stats, LifeMeter* lm,
+      CombinedLifeMeter* combined_lm, ScoreDisplay* score_display,
+      ScoreDisplay* secondary_score_display, ScoreKeeper* primary_score_keeper,
+      ScoreKeeper* secondary_score_keeper);
   void Load();
-  void CrossedRows(int iLastRowCrossed, const RageTimer& now);
+  void CrossedRows(int last_row_crossed, const RageTimer& now);
   bool IsOniDead() const;
 
   /**
@@ -102,23 +102,23 @@ class Player : public ActorFrame {
 
   void DoTapScoreNone();
 
-  void Step(int col, int row, const RageTimer& tm, bool bHeld, bool bRelease);
+  void Step(int col, int row, const RageTimer& tm, bool held, bool release);
 
   void FadeToFail();
   void CacheAllUsedNoteSkins();
   void ApplyWaitingTransforms();
-  void SetPaused(bool bPaused) { paused_ = bPaused; }
+  void SetPaused(bool paused) { paused_ = paused; }
 
   static float GetMaxStepDistanceSeconds();
   static float GetWindowSeconds(TimingWindow tw);
   const NoteData& GetNoteData() const { return note_data_; }
   bool HasVisibleParts() const { return note_field_ != nullptr; }
 
-  void SetActorWithJudgmentPosition(Actor* pActor) {
-    actor_with_judgment_position_ = pActor;
+  void SetActorWithJudgmentPosition(Actor* actor) {
+    actor_with_judgment_position_ = actor;
   }
-  void SetActorWithComboPosition(Actor* pActor) {
-    actor_with_combo_position_ = pActor;
+  void SetActorWithComboPosition(Actor* actor) {
+    actor_with_combo_position_ = actor;
   }
 
   // OITG bug:  Actor::SetZoom only sets X and Y.  When mini is applied to
@@ -136,30 +136,30 @@ class Player : public ActorFrame {
   bool inside_lua_set_life_;
 
  protected:
-  void UpdateTapNotesMissedOlderThan(float fMissIfOlderThanThisBeat);
+  void UpdateTapNotesMissedOlderThan(float miss_if_older_than_this_beat);
   void UpdateJudgedRows();
-  void FlashGhostRow(int iRow);
+  void FlashGhostRow(int row);
   void HandleTapRowScore(unsigned row);
   void HandleHoldScore(const TapNote& tn);
   void HandleHoldCheckpoint(
-      int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow,
-      const std::vector<int>& viColsWithHold);
+      int row, int num_holds_held_this_row, int num_holds_missed_this_row,
+      const std::vector<int>& cols_with_hold);
   void DrawTapJudgments();
   void DrawHoldJudgments();
-  void SendComboMessages(unsigned int iOldCombo, unsigned int iOldMissCombo);
+  void SendComboMessages(unsigned int old_combo, unsigned int old_miss_combo);
   void PlayKeysound(const TapNote& tn, TapNoteScore score);
 
-  void SetMineJudgment(TapNoteScore tns, int iTrack);
-  void SetJudgment(int iRow, int iFirstTrack, const TapNote& tn) {
+  void SetMineJudgment(TapNoteScore tns, int track);
+  void SetJudgment(int row, int first_track, const TapNote& tn) {
     SetJudgment(
-        iRow, iFirstTrack, tn, tn.result_.tns_, tn.result_.tap_note_offset_);
+        row, first_track, tn, tn.result_.tns_, tn.result_.tap_note_offset_);
   }
   void SetJudgment(
-      int iRow, int iFirstTrack, const TapNote& tn, TapNoteScore tns,
-      float fTapNoteOffset);  // -1 if no track as in TNS_Miss
-  void SetHoldJudgment(TapNote& tn, int iTrack);
-  void SetCombo(unsigned int iCombo, unsigned int iMisses);
-  void IncrementComboOrMissCombo(bool bComboOrMissCombo);
+      int row, int first_track, const TapNote& tn, TapNoteScore tns,
+      float tap_note_offset);  // -1 if no track as in TNS_Miss
+  void SetHoldJudgment(TapNote& tn, int track);
+  void SetCombo(unsigned int combo, unsigned int misses);
+  void IncrementComboOrMissCombo(bool combo_or_miss_combo);
   void IncrementCombo() { IncrementComboOrMissCombo(true); };
   void IncrementMissCombo() { IncrementComboOrMissCombo(false); };
 
@@ -168,11 +168,11 @@ class Player : public ActorFrame {
   void ChangeLifeRecord();
 
   int GetClosestNoteDirectional(
-      int col, int iStartRow, int iMaxRowsAhead, bool bAllowGraded,
-      bool bForward) const;
+      int col, int start_row, int max_rows_ahead, bool allow_graded,
+      bool forward) const;
   int GetClosestNote(
-      int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind,
-      bool bAllowGraded) const;
+      int col, int note_row, int max_rows_ahead, int max_rows_behind,
+      bool allow_graded) const;
   std::string ApplyRandomAttack();
 
   inline void HideNote(int col, int row) {

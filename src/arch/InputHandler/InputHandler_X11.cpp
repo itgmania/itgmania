@@ -19,7 +19,7 @@ REGISTER_INPUT_HANDLER_CLASS(X11);
 
 static DeviceButton XSymToDeviceButton(int key) {
 #define KEY_INV DeviceButton_Invalid
-  static const DeviceButton ASCIIKeySyms[] = {
+  static const DeviceButton kAsciiKeySyms[] = {
       KEY_INV,        KEY_INV,       KEY_INV,
       KEY_INV,        KEY_INV, /* 0 - 4 */
       KEY_INV,        KEY_INV,       KEY_INV,
@@ -74,8 +74,8 @@ static DeviceButton XSymToDeviceButton(int key) {
   };
 
   /* 32...127: */
-  if (key < int(ARRAYLEN(ASCIIKeySyms))) {
-    return ASCIIKeySyms[key];
+  if (key < int(ARRAYLEN(kAsciiKeySyms))) {
+    return kAsciiKeySyms[key];
   }
 
   /* XK_KP_0 ... XK_KP_9 to KEY_KP_C0 ... KEY_KP_C9 */
@@ -233,14 +233,14 @@ InputHandler_X11::InputHandler_X11() {
   if (Dpy == nullptr || Win == None) {
     return;
   }
-  XWindowAttributes winAttrib;
+  XWindowAttributes win_attrib;
 
-  XGetWindowAttributes(Dpy, Win, &winAttrib);
+  XGetWindowAttributes(Dpy, Win, &win_attrib);
   // todo: add ButtonMotionMask, Button(1-5)MotionMask,
   // (EnterWindowMask/LeaveWindowMask?) -aj
   XSelectInput(
       Dpy, Win,
-      winAttrib.your_event_mask | KeyPressMask | KeyReleaseMask |
+      win_attrib.your_event_mask | KeyPressMask | KeyReleaseMask |
           ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
           FocusChangeMask);
 }
@@ -251,12 +251,12 @@ InputHandler_X11::~InputHandler_X11() {
   }
   // TODO: Determine if we even need to set this back (or is the window
   // destroyed just after this?)
-  XWindowAttributes winAttrib;
+  XWindowAttributes win_attrib;
 
-  XGetWindowAttributes(Dpy, Win, &winAttrib);
+  XGetWindowAttributes(Dpy, Win, &win_attrib);
   XSelectInput(
       Dpy, Win,
-      winAttrib.your_event_mask &
+      win_attrib.your_event_mask &
           ~(KeyPressMask | KeyReleaseMask | ButtonPressMask |
             ButtonReleaseMask | PointerMotionMask | FocusChangeMask));
 }
@@ -267,9 +267,9 @@ void InputHandler_X11::Update() {
     return;
   }
 
-  XEvent event, lastEvent;
-  DeviceButton lastDB = DeviceButton_Invalid;
-  lastEvent.type = 0;
+  XEvent event, last_event;
+  DeviceButton last_db = DeviceButton_Invalid;
+  last_event.type = 0;
 
   // We use XCheckWindowEvent instead of XNextEvent because
   // other things (most notably ArchHooks_Unix) may be looking for
@@ -280,26 +280,26 @@ void InputHandler_X11::Update() {
       KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
           PointerMotionMask | FocusChangeMask,
       &event)) {
-    const bool bKeyPress = event.type == KeyPress;
-    const bool isKey = bKeyPress || event.type == KeyRelease;
-    const bool bMousePress = event.type == ButtonPress;
-    const bool isMouse = bMousePress || event.type == ButtonRelease;
+    const bool key_press = event.type == KeyPress;
+    const bool is_key = key_press || event.type == KeyRelease;
+    const bool mouse_press = event.type == ButtonPress;
+    const bool is_mouse = mouse_press || event.type == ButtonRelease;
 
     if (event.type == MotionNotify) {
       INPUTFILTER->UpdateCursorLocation(event.xbutton.x, event.xbutton.y);
     }
 
-    if (lastEvent.type != 0) {
-      if (bKeyPress && event.xkey.time == lastEvent.xkey.time &&
-          event.xkey.keycode == lastEvent.xkey.keycode) {
+    if (last_event.type != 0) {
+      if (key_press && event.xkey.time == last_event.xkey.time &&
+          event.xkey.keycode == last_event.xkey.keycode) {
         // This is a repeat event so ignore it.
-        lastEvent.type = 0;
+        last_event.type = 0;
         continue;
       }
 
       // This is a new event so the last release was not a repeat.
-      lastEvent.type = 0;
-      RegisterKeyEvent(event.xkey.time, false, lastDB);
+      last_event.type = 0;
+      RegisterKeyEvent(event.xkey.time, false, last_db);
     }
 
     if (event.type == FocusOut) {
@@ -307,50 +307,50 @@ void InputHandler_X11::Update() {
       INPUTFILTER->Reset();
     }
 
-    if (isKey) {
+    if (is_key) {
       // Get the first defined keysym for this event's key
-      lastDB = XSymToDeviceButton(XLookupKeysym(&event.xkey, 0));
-    } else if (isMouse) {
-      lastDB =
+      last_db = XSymToDeviceButton(XLookupKeysym(&event.xkey, 0));
+    } else if (is_mouse) {
+      last_db =
           XSymToDeviceButton(XK_Pointer_Button_Dflt + event.xbutton.button);
     } else {
-      lastDB = DeviceButton_Invalid;
+      last_db = DeviceButton_Invalid;
     }
 
-    if (lastDB == DeviceButton_Invalid) {
+    if (last_db == DeviceButton_Invalid) {
       continue;
     }
 
-    if (bKeyPress) {
-      RegisterKeyEvent(event.xkey.time, true, lastDB);
-    } else if (bMousePress) {
-      ButtonPressed(DeviceInput(DEVICE_MOUSE, lastDB, 1));
+    if (key_press) {
+      RegisterKeyEvent(event.xkey.time, true, last_db);
+    } else if (mouse_press) {
+      ButtonPressed(DeviceInput(DEVICE_MOUSE, last_db, 1));
     } else {
-      lastEvent = event;
+      last_event = event;
     }
   }
 
   // Handle any last releases.
-  if (lastEvent.type == KeyRelease) {
-    RegisterKeyEvent(event.xkey.time, false, lastDB);
+  if (last_event.type == KeyRelease) {
+    RegisterKeyEvent(event.xkey.time, false, last_db);
   }
-  if (lastEvent.type == ButtonRelease) {
-    ButtonPressed(DeviceInput(DEVICE_MOUSE, lastDB, 0));
+  if (last_event.type == ButtonRelease) {
+    ButtonPressed(DeviceInput(DEVICE_MOUSE, last_db, 0));
   }
 
   InputHandler::UpdateTimer();
 }
 
 void InputHandler_X11::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   if (Dpy && Win) {
-    vDevicesOut.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "Keyboard"));
-    vDevicesOut.push_back(InputDeviceInfo(DEVICE_MOUSE, "Mouse"));
+    devices_out.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "Keyboard"));
+    devices_out.push_back(InputDeviceInfo(DEVICE_MOUSE, "Mouse"));
   }
 }
 
 void InputHandler_X11::RegisterKeyEvent(
-    unsigned long timestamp, bool keyDown, DeviceButton button) {
+    unsigned long timestamp, bool key_down, DeviceButton button) {
   // https://linux.die.net/man/3/xkeyevent
   // Event timestamp is in milliseconds, truncated to 32 bits in the X11 wire
   // protocol.
@@ -363,7 +363,7 @@ void InputHandler_X11::RegisterKeyEvent(
   // seconds, microseconds
   RageTimer timer(timestamp_ms / 1000, (timestamp_ms % 1000) * 1000);
 
-  DeviceInput di(DEVICE_KEYBOARD, button, keyDown ? 1.0f : 0.0f, timer);
+  DeviceInput di(DEVICE_KEYBOARD, button, key_down ? 1.0f : 0.0f, timer);
 
   ButtonPressed(di);
 }

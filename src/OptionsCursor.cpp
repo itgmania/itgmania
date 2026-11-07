@@ -41,7 +41,7 @@ OptionsCursor::OptionsCursor(const OptionsCursor& cpy)
   }
 }
 
-void OptionsCursor::Load(const std::string& sMetricsGroup, bool bLoadCanGos) {
+void OptionsCursor::Load(const std::string& sMetricsGroup, bool load_can_gos) {
 #define LOAD_SPR(spr, name)                                           \
   spr.Load(THEME->GetPathG(sMetricsGroup, name));                     \
   spr->SetName(name);                                                 \
@@ -51,7 +51,7 @@ void OptionsCursor::Load(const std::string& sMetricsGroup, bool bLoadCanGos) {
   LOAD_SPR(spr_middle_, "Middle");
   LOAD_SPR(spr_left_, "Left");
   LOAD_SPR(spr_right_, "Right");
-  if (bLoadCanGos) {
+  if (load_can_gos) {
     LOAD_SPR(spr_can_go_left_, "CanGoLeft");
     LOAD_SPR(spr_can_go_right_, "CanGoRight");
   }
@@ -59,7 +59,7 @@ void OptionsCursor::Load(const std::string& sMetricsGroup, bool bLoadCanGos) {
 
   original_left_x_ = static_cast<int>(spr_left_->GetX());
   original_right_x_ = static_cast<int>(spr_right_->GetX());
-  if (bLoadCanGos) {
+  if (load_can_gos) {
     original_can_go_left_x_ = static_cast<int>(spr_can_go_left_->GetX());
     original_can_go_right_x_ = static_cast<int>(spr_can_go_right_->GetX());
   }
@@ -67,15 +67,15 @@ void OptionsCursor::Load(const std::string& sMetricsGroup, bool bLoadCanGos) {
   SetCanGo(false, false);
 }
 
-void OptionsCursor::SetCanGo(bool bCanGoLeft, bool bCanGoRight) {
+void OptionsCursor::SetCanGo(bool can_go_left, bool can_go_right) {
   if (spr_can_go_left_) {
-    spr_can_go_left_->EnableAnimation(bCanGoLeft);
-    spr_can_go_right_->EnableAnimation(bCanGoRight);
+    spr_can_go_left_->EnableAnimation(can_go_left);
+    spr_can_go_right_->EnableAnimation(can_go_right);
 
     spr_can_go_left_->SetDiffuse(
-        bCanGoLeft ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
+        can_go_left ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
     spr_can_go_right_->SetDiffuse(
-        bCanGoRight ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
+        can_go_right ? RageColor(1, 1, 1, 1) : RageColor(1, 1, 1, 0));
   }
 }
 
@@ -92,36 +92,36 @@ void OptionsCursor::StopTweening() {
   }
 }
 
-void OptionsCursor::BeginTweening(float fSecs, TweenType tt) {
-  ActorFrame::BeginTweening(fSecs);
+void OptionsCursor::BeginTweening(float secs, TweenType tt) {
+  ActorFrame::BeginTweening(secs);
 
-  spr_middle_->BeginTweening(fSecs);
-  spr_left_->BeginTweening(fSecs);
-  spr_right_->BeginTweening(fSecs);
+  spr_middle_->BeginTweening(secs);
+  spr_left_->BeginTweening(secs);
+  spr_right_->BeginTweening(secs);
 
   if (spr_can_go_left_) {
-    spr_can_go_left_->BeginTweening(fSecs);
-    spr_can_go_right_->BeginTweening(fSecs);
+    spr_can_go_left_->BeginTweening(secs);
+    spr_can_go_right_->BeginTweening(secs);
   }
 }
 
-void OptionsCursor::SetBarWidth(int iWidth) {
-  float fWidth =
-      std::ceil(iWidth / 2.0f) * 2.0f;  // round up to nearest even number
+void OptionsCursor::SetBarWidth(int i_width) {
+  float f_width =
+      std::ceil(i_width / 2.0f) * 2.0f;  // round up to nearest even number
 
-  spr_middle_->ZoomToWidth(fWidth);
+  spr_middle_->ZoomToWidth(f_width);
 
-  spr_left_->SetX(original_left_x_ - fWidth / 2);
-  spr_right_->SetX(original_right_x_ + fWidth / 2);
+  spr_left_->SetX(original_left_x_ - f_width / 2);
+  spr_right_->SetX(original_right_x_ + f_width / 2);
   if (spr_can_go_left_) {
-    spr_can_go_left_->SetX(original_can_go_left_x_ - fWidth / 2);
-    spr_can_go_right_->SetX(original_can_go_right_x_ + fWidth / 2);
+    spr_can_go_left_->SetX(original_can_go_left_x_ - f_width / 2);
+    spr_can_go_right_->SetX(original_can_go_right_x_ + f_width / 2);
   }
 }
 
 int OptionsCursor::GetBarWidth() const {
-  float fWidth = spr_middle_->GetZoomX() * spr_middle_->GetUnzoomedWidth();
-  return (int)fWidth;
+  float width = spr_middle_->GetZoomX() * spr_middle_->GetUnzoomedWidth();
+  return (int)width;
 }
 
 /*

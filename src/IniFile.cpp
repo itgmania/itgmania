@@ -19,8 +19,8 @@ http://en.wikipedia.org/wiki/INI_file
 
 IniFile::IniFile() : XNode("IniFile") {}
 
-bool IniFile::ReadFile(const std::string& sPath) {
-  path_ = sPath;
+bool IniFile::ReadFile(const std::string& path) {
+  path_ = path;
   CHECKPOINT_M(ssprintf("Reading '%s'", path_.c_str()));
 
   RageFile f;
@@ -93,9 +93,9 @@ bool IniFile::ReadFile(RageFileBasic& f) {
           break;
         }
         // New value.
-        size_t iEqualIndex = line.find("=");
-        if (iEqualIndex != std::string::npos) {
-          std::string valuename = Left(line, (int)iEqualIndex);
+        size_t equal_index = line.find("=");
+        if (equal_index != std::string::npos) {
+          std::string valuename = Left(line, (int)equal_index);
           std::string value = Right(line, line.size() - valuename.size() - 1);
           Trim(valuename);
           if (!valuename.empty()) {
@@ -112,23 +112,23 @@ bool IniFile::ReadFile(RageFileBasic& f) {
   }
 }
 
-bool IniFile::WriteFile(const std::string& sPath) const {
+bool IniFile::WriteFile(const std::string& path) const {
   RageFile f;
-  if (!f.Open(sPath, RageFile::WRITE)) {
-    LOG->Warn("Writing '%s' failed: %s", sPath.c_str(), f.GetError().c_str());
+  if (!f.Open(path, RageFile::WRITE)) {
+    LOG->Warn("Writing '%s' failed: %s", path.c_str(), f.GetError().c_str());
     error_ = f.GetError();
     return false;
   }
 
-  bool bSuccess = IniFile::WriteFile(f);
-  int iFlush = f.Flush();
-  bSuccess &= (iFlush != -1);
-  return bSuccess;
+  bool success = IniFile::WriteFile(f);
+  int flush = f.Flush();
+  success &= (flush != -1);
+  return success;
 }
 
 bool IniFile::WriteFile(RageFileBasic& f) const {
-  FOREACH_CONST_Child(this, pKey) {
-    if (f.PutLine(ssprintf("[%s]", pKey->GetName().c_str())) == -1) {
+  FOREACH_CONST_Child(this, key) {
+    if (f.PutLine(ssprintf("[%s]", key->GetName().c_str())) == -1) {
       error_ = f.GetError();
       LOG->Warn(
           "Error when writing key to file '%s': %s", path_.c_str(),
@@ -136,16 +136,16 @@ bool IniFile::WriteFile(RageFileBasic& f) const {
       return false;
     }
 
-    FOREACH_CONST_Attr(pKey, pAttr) {
-      const std::string& sName = pAttr->first;
-      const std::string& sValue = pAttr->second->GetValue<std::string>();
+    FOREACH_CONST_Attr(key, attr) {
+      const std::string& name = attr->first;
+      const std::string& value = attr->second->GetValue<std::string>();
 
       // TODO: Are there escape rules for these?
       // take a cue from how multi-line Lua functions are parsed
-      DEBUG_ASSERT(sName.find('\n') == sName.npos);
-      DEBUG_ASSERT(sName.find('=') == sName.npos);
+      DEBUG_ASSERT(name.find('\n') == name.npos);
+      DEBUG_ASSERT(name.find('=') == name.npos);
 
-      if (f.PutLine(ssprintf("%s=%s", sName.c_str(), sValue.c_str())) == -1) {
+      if (f.PutLine(ssprintf("%s=%s", name.c_str(), value.c_str())) == -1) {
         error_ = f.GetError();
         LOG->Warn("Error when writing attribute: %s", error_.c_str());
         return false;
@@ -162,13 +162,13 @@ bool IniFile::WriteFile(RageFileBasic& f) const {
 }
 
 bool IniFile::DeleteKey(const std::string& keyname) {
-  XNode* pNode = GetChild(keyname);
-  if (pNode == nullptr) {
+  XNode* node = GetChild(keyname);
+  if (node == nullptr) {
     LOG->Warn(
         "Key '%s' not found when attempting to delete a key.", keyname.c_str());
     return false;
   }
-  bool result = RemoveChild(pNode);
+  bool result = RemoveChild(node);
   if (!result) {
     LOG->Warn("Error removing key '%s'.", keyname.c_str());
   }
@@ -181,14 +181,14 @@ bool IniFile::RenameKey(const std::string& from, const std::string& to) {
     return false;
   }
 
-  XNode* pNode = GetChild(from);
-  if (pNode == nullptr) {
+  XNode* node = GetChild(from);
+  if (node == nullptr) {
     LOG->Warn("Key '%s' not found.", from.c_str());
     return false;
   }
 
-  pNode->SetName(to);
-  RenameChildInByName(pNode);
+  node->SetName(to);
+  RenameChildInByName(node);
 
   return true;
 }

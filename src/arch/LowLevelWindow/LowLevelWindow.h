@@ -23,7 +23,7 @@ class LowLevelWindow {
   // bNewDeviceOut is set true if a new device was created and textures
   // need to be reloaded.
   virtual std::string TryVideoMode(
-      const VideoModeParams& p, bool& bNewDeviceOut) = 0;
+      const VideoModeParams& p, bool& new_device_out) = 0;
   virtual void GetDisplaySpecs(DisplaySpecs& out) const = 0;
 
   virtual void LogDebugInformation() const {}

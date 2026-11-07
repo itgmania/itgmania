@@ -11,7 +11,7 @@ class CourseContentsList : public ActorScroller {
   ~CourseContentsList();
   virtual CourseContentsList* Copy() const;
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
 
   void SetFromGameState();
 
@@ -19,7 +19,7 @@ class CourseContentsList : public ActorScroller {
   void PushSelf(lua_State* L);
 
  protected:
-  void SetItemFromGameState(Actor* pActor, int iCourseEntryIndex);
+  void SetItemFromGameState(Actor* actor, int course_entry_index);
 
   std::vector<Actor*> display_;
 };

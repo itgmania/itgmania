@@ -22,8 +22,8 @@ std::string hr_ssprintf(int hr, const char* fmt, ...) {
   std::string s = vssprintf(fmt, va);
   va_end(va);
 
-  std::string szError = GetErrorString(hr);
-  return s + ssprintf(" (%s)", szError.c_str());
+  std::string error = GetErrorString(hr);
+  return s + ssprintf(" (%s)", error.c_str());
 }
 
 #define DXERRMSG(hrcode, dummy) \

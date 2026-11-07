@@ -16,38 +16,38 @@
 }
 - (void)setupWindow:(NSImage*)image;
 - (void)setProgress:(NSNumber*)progress;
-- (void)setTotalWork:(NSNumber*)totalWork;
+- (void)setTotalWork:(NSNumber*)total_work;
 - (void)setIndeterminate:(NSNumber*)indeterminate;
 @end
 
 @implementation LoadingWindowHelper
 - (void)setupWindow:(NSImage*)image {
   NSSize size = [image size];
-  NSRect viewRect, windowRect;
+  NSRect view_rect, window_rect;
   float height = 0.0f;
   float padding = 5.0f;
 
-  NSRect progressIndicatorRect;
-  progressIndicatorRect = NSMakeRect(padding, padding, size.width - padding * 2.0f, 0);
-  progress_indicator_ = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
+  NSRect progress_indicator_rect;
+  progress_indicator_rect = NSMakeRect(padding, padding, size.width - padding * 2.0f, 0);
+  progress_indicator_ = [[NSProgressIndicator alloc] initWithFrame:progress_indicator_rect];
   [progress_indicator_ sizeToFit];
   [progress_indicator_ setIndeterminate:YES];
   [progress_indicator_ setMinValue:0];
   [progress_indicator_ setMaxValue:1];
   [progress_indicator_ setDoubleValue:0];
-  progressIndicatorRect = [progress_indicator_ frame];
-  float progressHeight = progressIndicatorRect.size.height;
+  progress_indicator_rect = [progress_indicator_ frame];
+  float progress_height = progress_indicator_rect.size.height;
 
   NSFont* font = [NSFont systemFontOfSize:0.0f];
-  NSRect textRect;
+  NSRect text_rect;
   // Just give it a size until it is created.
-  textRect = NSMakeRect(0, progressHeight + padding, size.width, size.height);
-  text_ = [[NSTextView alloc] initWithFrame:textRect];
+  text_rect = NSMakeRect(0, progress_height + padding, size.width, size.height);
+  text_ = [[NSTextView alloc] initWithFrame:text_rect];
   [text_ setFont:font];
   height = [[text_ layoutManager] defaultLineHeightForFont:font] * 3 + 4;
-  textRect = NSMakeRect(0, progressHeight + padding, size.width, height);
+  text_rect = NSMakeRect(0, progress_height + padding, size.width, height);
 
-  [text_ setFrame:textRect];
+  [text_ setFrame:text_rect];
   [text_ setEditable:NO];
   [text_ setSelectable:NO];
   [text_ setDrawsBackground:NO];
@@ -57,13 +57,13 @@
   [text_ setVerticallyResizable:NO];
   [text_ setString:@"Initializing Hardware..."];
 
-  viewRect = NSMakeRect(0, height + progressHeight + padding, size.width, size.height);
-  NSImageView* iView = [[NSImageView alloc] initWithFrame:viewRect];
-  [iView setImage:image];
-  [iView setImageFrameStyle:NSImageFrameNone];
+  view_rect = NSMakeRect(0, height + progress_height + padding, size.width, size.height);
+  NSImageView* i_view = [[NSImageView alloc] initWithFrame:view_rect];
+  [i_view setImage:image];
+  [i_view setImageFrameStyle:NSImageFrameNone];
 
-  windowRect = NSMakeRect(0, 0, size.width, size.height + height + progressHeight + padding);
-  window_ = [[NSWindow alloc] initWithContentRect:windowRect
+  window_rect = NSMakeRect(0, 0, size.width, size.height + height + progress_height + padding);
+  window_ = [[NSWindow alloc] initWithContentRect:window_rect
                                         styleMask:NSWindowStyleMaskTitled
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
@@ -80,8 +80,8 @@
   [view addSubview:text_];
   [text_ release];
 
-  [view addSubview:iView];
-  [iView release];
+  [view addSubview:i_view];
+  [i_view release];
 
   [view addSubview:progress_indicator_];
 
@@ -93,8 +93,8 @@
   [progress_indicator_ setDoubleValue:[progress doubleValue]];
 }
 
-- (void)setTotalWork:(NSNumber*)totalWork {
-  [progress_indicator_ setMaxValue:[totalWork doubleValue]];
+- (void)setTotalWork:(NSNumber*)total_work {
+  [progress_indicator_ setMaxValue:[total_work doubleValue]];
 }
 
 - (void)setIndeterminate:(NSNumber*)indeterminate {
@@ -128,7 +128,7 @@ void LoadingWindow_MacOSX::SetText(std::string str) {
   [s release];
 }
 
-void LoadingWindow_MacOSX::SetSplash(const RageSurface* pSplash) {
+void LoadingWindow_MacOSX::SetSplash(const RageSurface* splash) {
   RageFile f;
   std::string data;
   std::vector<std::string> vs;
@@ -172,9 +172,9 @@ void LoadingWindow_MacOSX::SetProgress(const int progress) {
                           waitUntilDone:NO];
 }
 
-void LoadingWindow_MacOSX::SetTotalWork(const int totalWork) {
+void LoadingWindow_MacOSX::SetTotalWork(const int total_work) {
   [g_Helper performSelectorOnMainThread:@selector(setTotalWork:)
-                             withObject:[NSNumber numberWithDouble:(double)totalWork]
+                             withObject:[NSNumber numberWithDouble:(double)total_work]
                           waitUntilDone:NO];
 }
 

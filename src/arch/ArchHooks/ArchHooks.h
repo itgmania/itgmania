@@ -89,17 +89,17 @@ class ArchHooks {
   /*
    * Add file search paths, higher priority first.
    */
-  static void MountInitialFilesystems(const std::string& sDirOfExecutable);
+  static void MountInitialFilesystems(const std::string& dir_of_executable);
 
   /*
    * Add file search paths for user-writable directories.
    */
-  static void MountUserFilesystems(const std::string& sDirOfExecutable);
+  static void MountUserFilesystems(const std::string& dir_of_executable);
 
   /*
    * Platform-specific code calls this to indicate focus changes.
    */
-  void SetHasFocus(bool bAppHasFocus);
+  void SetHasFocus(bool app_has_focus);
 
   /*
    * Return true if the application has input focus.

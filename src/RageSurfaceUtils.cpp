@@ -139,8 +139,8 @@ void RageSurfaceUtils::CopySurface(const RageSurface* src, RageSurface* dest) {
 
 bool RageSurfaceUtils::ConvertSurface(
     const RageSurface* src, RageSurface*& dst, int width, int height, int bpp,
-    uint32_t R, uint32_t G, uint32_t B, uint32_t A) {
-  dst = CreateSurface(width, height, bpp, R, G, B, A);
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+  dst = CreateSurface(width, height, bpp, r, g, b, a);
 
   // If the formats are the same, no conversion is needed. Ignore the palette.
   if (width == src->w_ && height == src->h_ &&
@@ -155,10 +155,10 @@ bool RageSurfaceUtils::ConvertSurface(
 }
 
 void RageSurfaceUtils::ConvertSurface(
-    RageSurface*& image, int width, int height, int bpp, uint32_t R, uint32_t G,
-    uint32_t B, uint32_t A) {
+    RageSurface*& image, int width, int height, int bpp, uint32_t r, uint32_t g,
+    uint32_t b, uint32_t a) {
   RageSurface* ret_image;
-  if (!ConvertSurface(image, ret_image, width, height, bpp, R, G, B, A)) {
+  if (!ConvertSurface(image, ret_image, width, height, bpp, r, g, b, a)) {
     return;
   }
 
@@ -218,39 +218,39 @@ static void FindAlphaRGB(
 /* Local helper for FixHiddenAlpha. Set the underlying RGB values of all pixels
  * in img that are completely transparent. */
 static void SetAlphaRGB(
-    const RageSurface* pImg, uint8_t r, uint8_t g, uint8_t b) {
+    const RageSurface* img, uint8_t r, uint8_t g, uint8_t b) {
   // If it's a paletted surface, all we have to do is change the palette.
-  if (pImg->format_->bits_per_pixel_ == 8) {
-    for (int c = 0; c < pImg->format_->palette_->ncolors_; ++c) {
-      if (pImg->format_->palette_->colors_[c].a_) {
+  if (img->format_->bits_per_pixel_ == 8) {
+    for (int c = 0; c < img->format_->palette_->ncolors_; ++c) {
+      if (img->format_->palette_->colors_[c].a_) {
         continue;
       }
-      pImg->format_->palette_->colors_[c].r_ = r;
-      pImg->format_->palette_->colors_[c].g_ = g;
-      pImg->format_->palette_->colors_[c].b_ = b;
+      img->format_->palette_->colors_[c].r_ = r;
+      img->format_->palette_->colors_[c].g_ = g;
+      img->format_->palette_->colors_[c].b_ = b;
     }
     return;
   }
 
   // If it's RGBA and there's no alpha channel, we have nothing to do.
-  if (pImg->format_->bits_per_pixel_ > 8 && !pImg->format_->amask_) {
+  if (img->format_->bits_per_pixel_ > 8 && !img->format_->amask_) {
     return;
   }
 
   uint32_t trans;
-  pImg->format_->MapRGBA(r, g, b, 0, trans);
-  for (int y = 0; y < pImg->h_; ++y) {
-    uint8_t* row = pImg->pixels_ + pImg->pitch_ * y;
+  img->format_->MapRGBA(r, g, b, 0, trans);
+  for (int y = 0; y < img->h_; ++y) {
+    uint8_t* row = img->pixels_ + img->pitch_ * y;
 
-    for (int x = 0; x < pImg->w_; ++x) {
+    for (int x = 0; x < img->w_; ++x) {
       uint32_t val =
-          RageSurfaceUtils::decodepixel(row, pImg->format_->bytes_per_pixel_);
-      if (val != trans && !(val & pImg->format_->amask_)) {
+          RageSurfaceUtils::decodepixel(row, img->format_->bytes_per_pixel_);
+      if (val != trans && !(val & img->format_->amask_)) {
         RageSurfaceUtils::encodepixel(
-            row, pImg->format_->bytes_per_pixel_, trans);
+            row, img->format_->bytes_per_pixel_, trans);
       }
 
-      row += pImg->format_->bytes_per_pixel_;
+      row += img->format_->bytes_per_pixel_;
     }
   }
 }
@@ -270,23 +270,23 @@ static void SetAlphaRGB(
  * search, do the same in reverse (bottom-top-right-left). If the color
  * we find is different, just set the border color to black.
  */
-void RageSurfaceUtils::FixHiddenAlpha(RageSurface* pImg) {
+void RageSurfaceUtils::FixHiddenAlpha(RageSurface* img) {
   // If there are no alpha bits, there's nothing to fix.
-  if (pImg->format_->bits_per_pixel_ != 8 && pImg->format_->amask_ == 0) {
+  if (img->format_->bits_per_pixel_ != 8 && img->format_->amask_ == 0) {
     return;
   }
 
   uint8_t r, g, b;
-  FindAlphaRGB(pImg, r, g, b, false);
+  FindAlphaRGB(img, r, g, b, false);
 
   uint8_t cr, cg, cb;  // compare
-  FindAlphaRGB(pImg, cr, cg, cb, true);
+  FindAlphaRGB(img, cr, cg, cb, true);
 
   if (cr != r || cg != g || cb != b) {
     r = g = b = 0;
   }
 
-  SetAlphaRGB(pImg, r, g, b);
+  SetAlphaRGB(img, r, g, b);
 }
 
 /* Scan the surface to see what level of alpha it uses. This can be used to
@@ -294,21 +294,21 @@ void RageSurfaceUtils::FixHiddenAlpha(RageSurface* pImg) {
  * TRAIT_NO_TRANSPARENCY surface can use RGB5A1 instead of RGBA4 for greater
  * color resolution; a TRAIT_NO_TRANSPARENCY could also use R5G6B5. */
 int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
-  const int NEEDS_NO_ALPHA = 0, NEEDS_BOOL_ALPHA = 1, NEEDS_FULL_ALPHA = 2;
-  int alpha_type = NEEDS_NO_ALPHA;
+  const int kNeedsNoAlpha = 0, kNeedsBoolAlpha = 1, kNeedsFullAlpha = 2;
+  int alpha_type = kNeedsNoAlpha;
 
   uint32_t max_alpha;
   if (img->format_->bits_per_pixel_ == 8) {
     // Short circuit if we already know we have no transparency.
-    bool bHaveNonOpaque = false;
-    for (int c = 0; !bHaveNonOpaque && c < img->format_->palette_->ncolors_;
+    bool have_non_opaque = false;
+    for (int c = 0; !have_non_opaque && c < img->format_->palette_->ncolors_;
          ++c) {
       if (img->format_->palette_->colors_[c].a_ != 0xFF) {
-        bHaveNonOpaque = true;
+        have_non_opaque = true;
       }
     }
 
-    if (!bHaveNonOpaque) {
+    if (!have_non_opaque) {
       return TRAIT_NO_TRANSPARENCY;
     }
 
@@ -336,9 +336,9 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
       }
 
       if (alpha == 0) {
-        alpha_type = std::max(alpha_type, NEEDS_BOOL_ALPHA);
+        alpha_type = std::max(alpha_type, kNeedsBoolAlpha);
       } else if (alpha != max_alpha) {
-        alpha_type = std::max(alpha_type, NEEDS_FULL_ALPHA);
+        alpha_type = std::max(alpha_type, kNeedsFullAlpha);
       }
 
       row += img->format_->bytes_per_pixel_;
@@ -347,13 +347,13 @@ int RageSurfaceUtils::FindSurfaceTraits(const RageSurface* img) {
 
   int ret = 0;
   switch (alpha_type) {
-    case NEEDS_NO_ALPHA:
+    case kNeedsNoAlpha:
       ret |= TRAIT_NO_TRANSPARENCY;
       break;
-    case NEEDS_BOOL_ALPHA:
+    case kNeedsBoolAlpha:
       ret |= TRAIT_BOOL_TRANSPARENCY;
       break;
-    case NEEDS_FULL_ALPHA:
+    case kNeedsFullAlpha:
       break;
     default:
       FAIL_M(ssprintf("Invalid alpha type: %i", alpha_type));
@@ -491,8 +491,8 @@ static bool blit_rgba_to_rgba(
       // Convert pixel to the destination format.
       unsigned int opixel = 0;
       for (int c = 0; c < 4; ++c) {
-        int lSrc = (pixel & src_masks[c]) >> src_shifts[c];
-        opixel |= lookup[c][lSrc] << dst_shifts[c];
+        int l_src = (pixel & src_masks[c]) >> src_shifts[c];
+        opixel |= lookup[c][l_src] << dst_shifts[c];
       }
 
       // Store it.
@@ -761,50 +761,50 @@ RageSurface* RageSurfaceUtils::LoadSurface(std::string file) {
  *
  * This gives us a generic way to handle arbitrary 8-bit texture formats. */
 RageSurface* RageSurfaceUtils::PalettizeToGrayscale(
-    const RageSurface* src_surf, unsigned int GrayBits,
-    unsigned int AlphaBits) {
-  AlphaBits = std::min(AlphaBits, 8 - src_surf->format_->loss_[3]);
+    const RageSurface* src_surf, unsigned int gray_bits,
+    unsigned int alpha_bits) {
+  alpha_bits = std::min(alpha_bits, 8 - src_surf->format_->loss_[3]);
 
-  const unsigned int TotalBits = GrayBits + AlphaBits;
-  ASSERT(TotalBits <= 8);
+  const unsigned int total_bits = gray_bits + alpha_bits;
+  ASSERT(total_bits <= 8);
 
   RageSurface* dst_surf =
       CreateSurface(src_surf->w_, src_surf->h_, 8, 0, 0, 0, 0);
 
   // Set up the palette.
-  const unsigned int TotalColors = 1u << TotalBits;
-  const unsigned int Ivalues = 1u << GrayBits;  // number of intensity values
-  const unsigned int Ishift = 0u;               // intensity shift
-  const unsigned int Imask = ((1u << GrayBits) - 1u)
-                             << Ishift;  // intensity mask
-  const unsigned int Iloss = 8u - GrayBits;
+  const unsigned int total_colors = 1u << total_bits;
+  const unsigned int ivalues = 1u << gray_bits;  // number of intensity values
+  const unsigned int ishift = 0u;                // intensity shift
+  const unsigned int imask = ((1u << gray_bits) - 1u)
+                             << ishift;  // intensity mask
+  const unsigned int iloss = 8u - gray_bits;
 
-  const unsigned int Avalues = 1u << AlphaBits;  // number of alpha values
-  const unsigned int Ashift = GrayBits;          // alpha shift
-  const unsigned int Amask = ((1u << AlphaBits) - 1u) << Ashift;  // alpha mask
-  const unsigned int Aloss = 8u - AlphaBits;
+  const unsigned int avalues = 1u << alpha_bits;  // number of alpha values
+  const unsigned int ashift = gray_bits;          // alpha shift
+  const unsigned int amask = ((1u << alpha_bits) - 1u) << ashift;  // alpha mask
+  const unsigned int aloss = 8u - alpha_bits;
 
-  for (size_t index = 0; index < TotalColors; ++index) {
-    const unsigned int I = (index & Imask) >> Ishift;
-    const unsigned int A = (index & Amask) >> Ashift;
+  for (size_t index = 0; index < total_colors; ++index) {
+    const unsigned int i = (index & imask) >> ishift;
+    const unsigned int a = (index & amask) >> ashift;
 
     // if only one intensity value, always fullbright
-    const uint8_t ScaledI =
-        Ivalues == 1
+    const uint8_t scaled_i =
+        ivalues == 1
             ? 255
-            : std::clamp(std::lrint(I * (255.0f / (Ivalues - 1))), 0L, 255L);
+            : std::clamp(std::lrint(i * (255.0f / (ivalues - 1))), 0L, 255L);
 
     // if only one alpha value, always opaque
-    const uint8_t ScaledA =
-        Avalues == 1
+    const uint8_t scaled_a =
+        avalues == 1
             ? 255
-            : std::clamp(std::lrint(A * (255.0f / (Avalues - 1))), 0L, 255L);
+            : std::clamp(std::lrint(a * (255.0f / (avalues - 1))), 0L, 255L);
 
     RageSurfaceColor c;
-    c.r_ = ScaledI;
-    c.g_ = ScaledI;
-    c.b_ = ScaledI;
-    c.a_ = ScaledA;
+    c.r_ = scaled_i;
+    c.g_ = scaled_i;
+    c.b_ = scaled_i;
+    c.a_ = scaled_a;
 
     dst_surf->fmt_.palette_->colors_[index] = c;
   }
@@ -830,13 +830,13 @@ RageSurface* RageSurfaceUtils::PalettizeToGrayscale(
       uint8_t colors[4];
       GetRGBAV(pixel, src_surf, colors);
 
-      int Ival = 0;
-      Ival += colors[0];
-      Ival += colors[1];
-      Ival += colors[2];
-      Ival /= 3;
+      int ival = 0;
+      ival += colors[0];
+      ival += colors[1];
+      ival += colors[2];
+      ival /= 3;
 
-      pixel = (Ival >> Iloss) << Ishift | (colors[3] >> Aloss) << Ashift;
+      pixel = (ival >> iloss) << ishift | (colors[3] >> aloss) << ashift;
 
       // Store it.
       *dst = uint8_t(pixel);
@@ -868,8 +868,8 @@ RageSurface* RageSurfaceUtils::MakeDummySurface(int height, int width) {
 /* HACK: Some banners and textures have #F800F8 as the color key.
  * Search the edge for it; if we find it, use that as the color key. */
 static bool ImageUsesOffHotPink(const RageSurface* img) {
-  uint32_t OffHotPink;
-  if (!img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, OffHotPink)) {
+  uint32_t off_hot_pink;
+  if (!img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, off_hot_pink)) {
     return false;
   }
 
@@ -877,7 +877,7 @@ static bool ImageUsesOffHotPink(const RageSurface* img) {
   for (int x = 0; x < img->w_; ++x) {
     uint32_t val =
         RageSurfaceUtils::decodepixel(p, img->format_->bytes_per_pixel_);
-    if (val == OffHotPink) {
+    if (val == off_hot_pink) {
       return true;
     }
     p += img->format_->bytes_per_pixel_;
@@ -888,7 +888,7 @@ static bool ImageUsesOffHotPink(const RageSurface* img) {
   for (int i = 0; i < img->w_; i++) {
     uint32_t val =
         RageSurfaceUtils::decodepixel(p, img->format_->bytes_per_pixel_);
-    if (val == OffHotPink) {
+    if (val == off_hot_pink) {
       return true;
     }
     p += img->format_->bytes_per_pixel_;
@@ -938,15 +938,15 @@ void RageSurfaceUtils::ApplyHotPinkColorKey(RageSurface*& img) {
     }
   }
 
-  uint32_t HotPink;
+  uint32_t hot_pink;
 
-  bool bHaveColorKey;
+  bool have_color_key;
   if (ImageUsesOffHotPink(img)) {
-    bHaveColorKey = img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, HotPink);
+    have_color_key = img->format_->MapRGBA(0xF8, 0, 0xF8, 0xFF, hot_pink);
   } else {
-    bHaveColorKey = img->format_->MapRGBA(0xFF, 0, 0xFF, 0xFF, HotPink);
+    have_color_key = img->format_->MapRGBA(0xFF, 0, 0xFF, 0xFF, hot_pink);
   }
-  if (!bHaveColorKey) {
+  if (!have_color_key) {
     return;
   }
 
@@ -955,7 +955,7 @@ void RageSurfaceUtils::ApplyHotPinkColorKey(RageSurface*& img) {
 
     for (int x = 0; x < img->w_; ++x) {
       uint32_t val = decodepixel(row, img->format_->bytes_per_pixel_);
-      if (val == HotPink) {
+      if (val == hot_pink) {
         encodepixel(row, img->format_->bytes_per_pixel_, 0);
       }
 

@@ -117,15 +117,15 @@ void ScreenRanking::Init() {
     this->AddChild(&text_course_title_);
     LOAD_ALL_COMMANDS(text_course_title_);
 
-    std::vector<std::string> asCoursePaths;
-    split(COURSES_TO_SHOW, ",", asCoursePaths, true);
+    std::vector<std::string> course_paths;
+    split(COURSES_TO_SHOW, ",", course_paths, true);
     for (unsigned i = 0; i < STEPS_TYPES_TO_SHOW.GetValue().size(); i++) {
-      for (unsigned c = 0; c < asCoursePaths.size(); c++) {
+      for (unsigned c = 0; c < course_paths.size(); c++) {
         PageToShow pts;
         pts.color_index_ = i;
         StepsType st = STEPS_TYPES_TO_SHOW.GetValue()[i];
         pts.types_.push_back(std::make_pair(Difficulty_Invalid, st));
-        pts.course_ = SONGMAN->GetCourseFromPath(asCoursePaths[c]);
+        pts.course_ = SONGMAN->GetCourseFromPath(course_paths[c]);
         if (pts.course_ == nullptr) {
           continue;
         }
@@ -186,24 +186,24 @@ void ScreenRanking::BeginScreen() {
   this->HandleScreenMessage(SM_ShowNextPage);
 }
 
-void ScreenRanking::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_ShowNextPage) {
+void ScreenRanking::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_ShowNextPage) {
     if (next_page_to_show_ < pages_to_show_.size()) {
-      float fSecsToShow = SetPage(pages_to_show_[next_page_to_show_]);
+      float secs_to_show = SetPage(pages_to_show_[next_page_to_show_]);
       ++next_page_to_show_;
       this->SortByDrawOrder();
 
       this->PlayCommand("NextPage");
-      this->PostScreenMessage(SM_HidePage, fSecsToShow - PAGE_FADE_SECONDS);
+      this->PostScreenMessage(SM_HidePage, secs_to_show - PAGE_FADE_SECONDS);
     } else {
       StartTransitioningScreen(SM_GoToNextScreen);
     }
-  } else if (SM == SM_HidePage) {
+  } else if (sm == SM_HidePage) {
     this->PlayCommand("SwitchedPage");
     this->PostScreenMessage(SM_ShowNextPage, PAGE_FADE_SECONDS);
   }
 
-  ScreenAttract::HandleScreenMessage(SM);
+  ScreenAttract::HandleScreenMessage(sm);
 }
 
 float ScreenRanking::SetPage(const PageToShow& pts) {
@@ -215,17 +215,17 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
   StepsType st = pts.types_.front().second;
   text_steps_type_.SetText(GAMEMAN->GetStepsTypeInfo(st).GetLocalizedString());
 
-  bool bShowScores = false;
-  bool bShowPoints = false;
-  bool bShowTime = false;
+  bool show_scores = false;
+  bool show_points = false;
+  bool show_time = false;
   switch (RANKING_TYPE) {
     case RankingType_Category:
-      bShowScores = true;
+      show_scores = true;
       break;
     case RankingType_SpecificTrail:
-      bShowScores = !pts.course_->IsOni();
-      bShowPoints = pts.course_->IsOni();
-      bShowTime = pts.course_->IsOni();
+      show_scores = !pts.course_->IsOni();
+      show_points = pts.course_->IsOni();
+      show_time = pts.course_->IsOni();
       break;
     default:
       break;
@@ -234,15 +234,15 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
   for (int l = 0; l < NUM_RANKING_LINES; l++) {
     text_names_[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    text_scores_[l].SetVisible(bShowScores);
+    text_scores_[l].SetVisible(show_scores);
     text_scores_[l].SetDiffuseColor(
         STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    text_points_[l].SetVisible(bShowPoints);
+    text_points_[l].SetVisible(show_points);
     text_points_[l].SetDiffuseColor(
         STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-    text_time_[l].SetVisible(bShowTime);
+    text_time_[l].SetVisible(show_time);
     text_time_[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.color_index_));
   }
 
@@ -258,15 +258,15 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
             PROFILEMAN->GetMachineProfile()->GetCategoryHighScoreList(
                 st, pts.category_);
         HighScore hs;
-        bool bRecentHighScore = false;
+        bool recent_high_score = false;
         if (l < (int)hsl.high_scores_.size()) {
           hs = hsl.high_scores_[l];
-          std::string* psName = hsl.high_scores_[l].GetNameMutable();
-          bRecentHighScore =
+          std::string* name = hsl.high_scores_[l].GetNameMutable();
+          recent_high_score =
               find(
                   GAMESTATE->names_that_were_filled_.begin(),
                   GAMESTATE->names_that_were_filled_.end(),
-                  psName) != GAMESTATE->names_that_were_filled_.end();
+                  name) != GAMESTATE->names_that_were_filled_.end();
         } else {
           hs.SetName(NO_SCORE_NAME);
         }
@@ -278,7 +278,7 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
         text_scores_[l].SetDiffuseColor(
             STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-        if (bRecentHighScore) {
+        if (recent_high_score) {
           text_names_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
           text_scores_[l].SetEffectGlowBlink(
@@ -300,15 +300,15 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
               pts.course_, pts.trail_);
       for (int l = 0; l < NUM_RANKING_LINES; l++) {
         HighScore hs;
-        bool bRecentHighScore = false;
+        bool recent_high_score = false;
         if (l < (int)hsl.high_scores_.size()) {
           hs = hsl.high_scores_[l];
-          const std::string* psName = hsl.high_scores_[l].GetNameMutable();
-          bRecentHighScore =
+          const std::string* name = hsl.high_scores_[l].GetNameMutable();
+          recent_high_score =
               find(
                   GAMESTATE->names_that_were_filled_.begin(),
                   GAMESTATE->names_that_were_filled_.end(),
-                  psName) != GAMESTATE->names_that_were_filled_.end();
+                  name) != GAMESTATE->names_that_were_filled_.end();
         } else {
           hs.SetName(NO_SCORE_NAME);
         }
@@ -332,7 +332,7 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
         text_scores_[l].SetDiffuseColor(
             STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
-        if (bRecentHighScore) {
+        if (recent_high_score) {
           text_names_[l].SetEffectGlowBlink(
               0.1f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
           text_scores_[l].SetEffectGlowBlink(

@@ -24,14 +24,14 @@ class LuaBinding {
   virtual const std::string& GetBaseClassName() const = 0;
 
   static void ApplyDerivedType(
-      Lua* L, const std::string& sClassname, void* pSelf);
-  static bool CheckLuaObjectType(lua_State* L, int narg, const char* szType);
+      Lua* L, const std::string& classname, void* self);
+  static bool CheckLuaObjectType(lua_State* L, int narg, const char* type);
 
  protected:
-  virtual void Register(Lua* L, int iMethods, int iMetatable) = 0;
+  virtual void Register(Lua* L, int methods, int metatable) = 0;
 
-  static void CreateMethodsTable(lua_State* L, const std::string& szName);
-  static void* GetPointerFromStack(Lua* L, const std::string& sType, int iArg);
+  static void CreateMethodsTable(lua_State* L, const std::string& name);
+  static void* GetPointerFromStack(Lua* L, const std::string& type, int arg);
 
   static bool Equal(lua_State* L);
   static int PushEqual(lua_State* L);
@@ -49,16 +49,16 @@ class Luna : public LuaBinding {
     binding_t* mfunc_;
   };
 
-  void Register(Lua* L, int iMethods, int iMetatable) {
+  void Register(Lua* L, int methods, int metatable) {
     lua_pushcfunction(L, tostring_T);
-    lua_setfield(L, iMetatable, "__tostring");
+    lua_setfield(L, metatable, "__tostring");
 
     // fill method table with methods from class T
     for (unsigned i = 0; i < methods_.size(); i++) {
       const RegType* l = &methods_[i];
       lua_pushlightuserdata(L, (void*)l->mfunc_);
       lua_pushcclosure(L, thunk, 1);
-      lua_setfield(L, iMethods, l->name_);
+      lua_setfield(L, methods, l->name_);
     }
   }
 
@@ -71,9 +71,9 @@ class Luna : public LuaBinding {
   static std::string base_class_name_;
 
   // Get userdata from the Lua stack and return a pointer to T object.
-  static T* check(lua_State* L, int narg, bool bIsSelf = false) {
+  static T* check(lua_State* L, int narg, bool is_self = false) {
     if (!LuaBinding::CheckLuaObjectType(L, narg, class_name_.c_str())) {
-      if (bIsSelf) {
+      if (is_self) {
         luaL_typerror(L, narg, class_name_.c_str());
       } else {
         LuaHelpers::TypeError(L, narg, class_name_.c_str());
@@ -89,11 +89,11 @@ class Luna : public LuaBinding {
 
   /* Push a table or userdata for the given object.  This is called on the
    * base class, so we pick up the instance of the base class, if any. */
-  static void PushObject(Lua* L, const std::string& sDerivedClassName, T* p);
+  static void PushObject(Lua* L, const std::string& derived_class_name, T* p);
 
  protected:
-  void AddMethod(const char* szName, int (*pFunc)(T* p, lua_State* L)) {
-    RegType r = {szName, pFunc};
+  void AddMethod(const char* name, int (*func)(T* p, lua_State* L)) {
+    RegType r = {name, func};
     methods_.push_back(r);
   }
 
@@ -104,16 +104,16 @@ class Luna : public LuaBinding {
     T* obj = check(L, 1, true);  // get self
     lua_remove(L, 1);  // remove self so member function args start at index 1
     // get member function from upvalue
-    binding_t* pFunc = (binding_t*)lua_touserdata(L, lua_upvalueindex(1));
-    return pFunc(obj, L);  // call member function
+    binding_t* func = (binding_t*)lua_touserdata(L, lua_upvalueindex(1));
+    return func(obj, L);  // call member function
   }
 
   std::vector<RegType> methods_;
 
   static int tostring_T(lua_State* L) {
     char buff[32];
-    const void* pData = check(L, 1);
-    snprintf(buff, sizeof(buff), "%p", pData);
+    const void* data = check(L, 1);
+    snprintf(buff, sizeof(buff), "%p", data);
     lua_pushfstring(L, "%s (%s)", class_name_.c_str(), buff);
     return 1;
   }

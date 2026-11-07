@@ -52,9 +52,9 @@ LightsDriver_GenericHID::LightsDriver_GenericHID() {
   // clear all lights
   WriteDevice(0);
 
-  std::string lightOrder = g_sGenericHIDLightsOrdering.Get();
-  if (CompareNoCase(lightOrder, "lumenar") == 0 ||
-      CompareNoCase(lightOrder, "openitg") == 0) {
+  std::string light_order = g_sGenericHIDLightsOrdering.Get();
+  if (CompareNoCase(light_order, "lumenar") == 0 ||
+      CompareNoCase(light_order, "openitg") == 0) {
     lights_order_ = 1;
   }
 }

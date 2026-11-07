@@ -11,12 +11,12 @@
 /** @brief File driver for accessing a regular filesystem. */
 class RageFileDriverDirect : public RageFileDriver {
  public:
-  RageFileDriverDirect(const std::string& sRoot);
+  RageFileDriverDirect(const std::string& root);
 
-  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
-  bool Move(const std::string& sOldPath, const std::string& sNewPath);
-  bool Remove(const std::string& sPath);
-  bool Remount(const std::string& sPath);
+  RageFileBasic* Open(const std::string& path, int mode, int& error);
+  bool Move(const std::string& old_path, const std::string& new_path);
+  bool Remove(const std::string& path);
+  bool Remount(const std::string& path);
 
  private:
   std::string root_;
@@ -24,20 +24,20 @@ class RageFileDriverDirect : public RageFileDriver {
 
 class RageFileDriverDirectReadOnly : public RageFileDriverDirect {
  public:
-  RageFileDriverDirectReadOnly(const std::string& sRoot);
-  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
-  bool Move(const std::string& sOldPath, const std::string& sNewPath);
-  bool Remove(const std::string& sPath);
+  RageFileDriverDirectReadOnly(const std::string& root);
+  RageFileBasic* Open(const std::string& path, int mode, int& error);
+  bool Move(const std::string& old_path, const std::string& new_path);
+  bool Remove(const std::string& path);
 };
 
 /** @brief This driver handles direct file access. */
 
 class RageFileObjDirect : public RageFileObj {
  public:
-  RageFileObjDirect(const std::string& sPath, int iFD, int iMode);
+  RageFileObjDirect(const std::string& path, int fd, int mode);
   virtual ~RageFileObjDirect();
-  virtual int ReadInternal(void* pBuffer, size_t iBytes);
-  virtual int WriteInternal(const void* pBuffer, size_t iBytes);
+  virtual int ReadInternal(void* buffer, size_t bytes);
+  virtual int WriteInternal(const void* buffer, size_t bytes);
   virtual int FlushInternal();
   virtual int SeekInternal(int offset);
   virtual RageFileObjDirect* Copy() const;

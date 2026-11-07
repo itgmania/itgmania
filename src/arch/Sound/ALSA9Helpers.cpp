@@ -236,13 +236,13 @@ Alsa9Buf::Alsa9Buf() {
   pcm_ = nullptr;
 }
 
-std::string Alsa9Buf::Init(int iWriteahead, int iChunkSize, int iSampleRate) {
-  preferred_writeahead_ = iWriteahead;
-  preferred_chunksize_ = iChunkSize;
-  if (iSampleRate == 0) {
+std::string Alsa9Buf::Init(int writeahead, int chunk_size, int sample_rate) {
+  preferred_writeahead_ = writeahead;
+  preferred_chunksize_ = chunk_size;
+  if (sample_rate == 0) {
     samplerate_ = FALLBACK_SAMPLE_RATE;
   } else {
-    samplerate_ = iSampleRate;
+    samplerate_ = sample_rate;
   }
 
   GetSoundCardDebugInfo();
@@ -293,7 +293,7 @@ Alsa9Buf::~Alsa9Buf() {
 int Alsa9Buf::GetNumFramesToFill() {
   /* Make sure we can write ahead at least two chunks.  Otherwise, we'll only
    * fill one chunk ahead, and underrun. */
-  int ActualWriteahead = std::max(writeahead_, chunksize_ * 2);
+  int actual_writeahead = std::max(writeahead_, chunksize_ * 2);
 
   snd_pcm_sframes_t avail_frames = dsnd_pcm_avail_update(pcm_);
 
@@ -333,8 +333,8 @@ int Alsa9Buf::GetNumFramesToFill() {
 
   /* Number of frames that don't have data, that are within the writeahead: */
   snd_pcm_sframes_t unfilled_frames = std::clamp(
-      ActualWriteahead - filled_frames, 0l,
-      (snd_pcm_sframes_t)ActualWriteahead);
+      actual_writeahead - filled_frames, 0l,
+      (snd_pcm_sframes_t)actual_writeahead);
 
   //	LOG->Trace( "total_fr: %i; avail_fr: %i; filled_fr: %i; ActualWr %i;
   // chunksize %i; unfilled_frames %i ", 			total_frames,

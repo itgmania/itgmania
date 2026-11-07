@@ -15,32 +15,32 @@ class AnnouncerManager {
   /**
    * @brief Retrieve the announcer names.
    * @param AddTo the list of announcer names. */
-  void GetAnnouncerNames(std::vector<std::string>& AddTo);
+  void GetAnnouncerNames(std::vector<std::string>& add_to);
   /**
    * @brief Determine if the specified announcer exists.
    * @param sAnnouncerName the announcer we're checking for.
    * @return true if it exists, false otherwise. */
-  bool DoesAnnouncerExist(std::string sAnnouncerName);
+  bool DoesAnnouncerExist(std::string announcer_name);
   /**
    * @brief Switch to a new specified announcer.
    * @param sNewAnnouncerName the new announcer the Player will be listening to.
    */
-  void SwitchAnnouncer(std::string sNewAnnouncerName);
+  void SwitchAnnouncer(std::string new_announcer_name);
   /**
    * @brief Retrieve the current announcer's name.
    * @return the current announcer's name. */
   std::string GetCurAnnouncerName() const { return cur_announcer_name_; };
   void NextAnnouncer();
 
-  std::string GetPathTo(std::string sFolderName);
-  bool HasSoundsFor(std::string sFolderName);
+  std::string GetPathTo(std::string folder_name);
+  bool HasSoundsFor(std::string folder_name);
 
   // Lua
   void PushSelf(lua_State* L);
 
  protected:
-  static std::string GetAnnouncerDirFromName(std::string sAnnouncerName);
-  std::string GetPathTo(std::string AnnouncerPath, std::string sFolderName);
+  static std::string GetAnnouncerDirFromName(std::string announcer_name);
+  std::string GetPathTo(std::string announcer_path, std::string folder_name);
   /** @brief the current announcer's name. */
   std::string cur_announcer_name_;
 };

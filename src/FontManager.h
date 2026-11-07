@@ -14,8 +14,8 @@ class FontManager {
   ~FontManager();
 
   Font* LoadFont(
-      const std::string& sFontOrTextureFilePath, std::string sChars = "");
-  Font* CopyFont(Font* pFont);
+      const std::string& font_or_texture_file_path, std::string chars = "");
+  Font* CopyFont(Font* font);
   void UnloadFont(Font* fp);
   // void PruneFonts();
 };

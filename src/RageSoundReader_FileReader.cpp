@@ -15,34 +15,34 @@
 #include "StdString.h"
 
 RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
-    RageFileBasic* pFile, std::string& error, std::string format,
-    bool& bKeepTrying) {
-  RageSoundReader_FileReader* Sample = nullptr;
+    RageFileBasic* file, std::string& error, std::string format,
+    bool& keep_trying) {
+  RageSoundReader_FileReader* sample = nullptr;
 
   if (!CompareNoCase(format, "wav")) {
-    Sample = new RageSoundReader_WAV;
+    sample = new RageSoundReader_WAV;
   }
 
   if (!CompareNoCase(format, "mp3")) {
-    Sample = new RageSoundReader_MP3;
+    sample = new RageSoundReader_MP3;
   }
 
   if (!CompareNoCase(format, "oga") || !CompareNoCase(format, "ogg")) {
-    Sample = new RageSoundReader_Vorbisfile;
+    sample = new RageSoundReader_Vorbisfile;
   }
 
-  if (!Sample) {
+  if (!sample) {
     return nullptr;
   }
 
-  OpenResult ret = Sample->Open(pFile);
-  pFile = nullptr;  // Sample owns it now
+  OpenResult ret = sample->Open(file);
+  file = nullptr;  // Sample owns it now
   if (ret == OPEN_OK) {
-    return Sample;
+    return sample;
   }
 
-  std::string err = Sample->GetError();
-  delete Sample;
+  std::string err = sample->GetError();
+  delete sample;
 
   LOG->Trace("Format %s failed: %s", format.c_str(), err.c_str());
 
@@ -65,17 +65,17 @@ RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
    * readers will probably fail, too.  The returned error is used, and no other
    * formats will be tried.
    */
-  bKeepTrying = (ret != OPEN_FATAL_ERROR);
+  keep_trying = (ret != OPEN_FATAL_ERROR);
   switch (ret) {
     case OPEN_UNKNOWN_FILE_FORMAT:
-      bKeepTrying = true;
+      keep_trying = true;
       error = "Unknown file format";
       break;
 
     case OPEN_FATAL_ERROR:
       /* The file matched, but failed to load.  We know it's this type of data;
        * don't bother trying the other file types. */
-      bKeepTrying = false;
+      keep_trying = false;
       error = err;
       break;
     default:
@@ -88,40 +88,40 @@ RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
 #include "RageFileDriverMemory.h"
 
 RageSoundReader_FileReader* RageSoundReader_FileReader::OpenFile(
-    std::string filename, std::string& error, bool* pPrebuffer) {
-  HiddenPtr<RageFileBasic> pFile;
+    std::string filename, std::string& error, bool* prebuffer) {
+  HiddenPtr<RageFileBasic> file;
   {
-    RageFile* pFileOpen = new RageFile;
-    if (!pFileOpen->Open(filename)) {
-      error = pFileOpen->GetError();
-      delete pFileOpen;
+    RageFile* file_open = new RageFile;
+    if (!file_open->Open(filename)) {
+      error = file_open->GetError();
+      delete file_open;
       return nullptr;
     }
-    pFile = pFileOpen;
+    file = file_open;
   }
 
-  if (pPrebuffer) {
-    if (pFile->GetFileSize() < 1024 * 50) {
-      RageFileObjMem* pMem = new RageFileObjMem;
-      bool bRet = FileCopy(*pFile, *pMem, error, nullptr);
-      if (!bRet) {
-        delete pMem;
+  if (prebuffer) {
+    if (file->GetFileSize() < 1024 * 50) {
+      RageFileObjMem* mem = new RageFileObjMem;
+      bool ret = FileCopy(*file, *mem, error, nullptr);
+      if (!ret) {
+        delete mem;
         return nullptr;
       }
 
-      pFile = pMem;
-      pFile->Seek(0);
-      *pPrebuffer = true;
+      file = mem;
+      file->Seek(0);
+      *prebuffer = true;
     } else {
-      *pPrebuffer = false;
+      *prebuffer = false;
     }
   }
-  std::set<std::string> FileTypes;
+  std::set<std::string> file_types;
   const std::vector<std::string>& sound_exts =
       ActorUtil::GetTypeExtensionList(FT_Sound);
   for (std::vector<std::string>::const_iterator curr = sound_exts.begin();
        curr != sound_exts.end(); ++curr) {
-    FileTypes.insert(*curr);
+    file_types.insert(*curr);
   }
 
   std::string format = GetExtension(filename);
@@ -129,26 +129,26 @@ RageSoundReader_FileReader* RageSoundReader_FileReader::OpenFile(
 
   error = "";
 
-  bool bKeepTrying = true;
+  bool keep_trying = true;
 
   /* If the extension matches a format, try that first. */
-  if (FileTypes.find(format) != FileTypes.end()) {
-    RageSoundReader_FileReader* NewSample =
-        TryOpenFile(pFile->Copy(), error, format, bKeepTrying);
-    if (NewSample) {
-      return NewSample;
+  if (file_types.find(format) != file_types.end()) {
+    RageSoundReader_FileReader* new_sample =
+        TryOpenFile(file->Copy(), error, format, keep_trying);
+    if (new_sample) {
+      return new_sample;
     }
-    FileTypes.erase(format);
+    file_types.erase(format);
   }
 
-  for (std::set<std::string>::iterator it = FileTypes.begin();
-       bKeepTrying && it != FileTypes.end(); ++it) {
-    RageSoundReader_FileReader* NewSample =
-        TryOpenFile(pFile->Copy(), error, *it, bKeepTrying);
-    if (NewSample) {
+  for (std::set<std::string>::iterator it = file_types.begin();
+       keep_trying && it != file_types.end(); ++it) {
+    RageSoundReader_FileReader* new_sample =
+        TryOpenFile(file->Copy(), error, *it, keep_trying);
+    if (new_sample) {
       LOG->UserLog(
-          "Sound file", pFile->GetDisplayPath(), "is really %s.", it->c_str());
-      return NewSample;
+          "Sound file", file->GetDisplayPath(), "is really %s.", it->c_str());
+      return new_sample;
     }
   }
 

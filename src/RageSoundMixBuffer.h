@@ -10,14 +10,14 @@ class RageSoundMixBuffer {
   RageSoundMixBuffer();
   ~RageSoundMixBuffer();
 
-  void SetWriteOffset(int iOffset);
-  void Extend(unsigned iSamples);
+  void SetWriteOffset(int offset);
+  void Extend(unsigned samples);
   void write(
-      const float* pBuf, unsigned iSize, int iSourceStride = 1,
-      int iDestStride = 1);
-  void read(int16_t* pBuf);
-  void read(float* pBuf);
-  void read_deinterlace(float** pBufs, int channels);
+      const float* buf, unsigned i_size, int source_stride = 1,
+      int dest_stride = 1);
+  void read(int16_t* buf);
+  void read(float* buf);
+  void read_deinterlace(float** bufs, int channels);
   inline size_t size() const { return mixbuf_.size(); }
 
  private:

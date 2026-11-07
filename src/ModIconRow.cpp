@@ -18,7 +18,7 @@
 #include "RageUtil.h"
 #include "global.h"
 
-int OptionToPreferredColumn(std::string sOptionText);
+int OptionToPreferredColumn(std::string option_text);
 
 REGISTER_ACTOR_CLASS(ModIconRow);
 
@@ -35,26 +35,26 @@ ModIconRow::~ModIconRow() {
   this->RemoveAllChildren();
 }
 
-void ModIconRow::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
+void ModIconRow::Load(const std::string& metrics_group, PlayerNumber pn) {
   ASSERT_M(pn_ == PlayerNumber_Invalid, "Multiple calls to Load");
 
-  metrics_group_ = sMetricsGroup;
+  metrics_group_ = metrics_group;
   pn_ = pn;
 
-  SPACING_X.Load(sMetricsGroup, "SpacingX");
-  SPACING_Y.Load(sMetricsGroup, "SpacingY");
-  NUM_OPTION_ICONS.Load(sMetricsGroup, "NumModIcons");
-  OPTION_ICON_METRICS_GROUP.Load(sMetricsGroup, "ModIconMetricsGroup");
+  SPACING_X.Load(metrics_group, "SpacingX");
+  SPACING_Y.Load(metrics_group, "SpacingY");
+  NUM_OPTION_ICONS.Load(metrics_group, "NumModIcons");
+  OPTION_ICON_METRICS_GROUP.Load(metrics_group, "ModIconMetricsGroup");
 
   for (int i = 0; i < NUM_OPTION_ICONS; i++) {
     ModIcon* p = new ModIcon;
     p->SetName("ModIcon");
-    float fOffset = SCALE(
+    float offset = SCALE(
         i, 0, NUM_OPTION_ICONS - 1, -(NUM_OPTION_ICONS - 1) / 2.0f,
         (float)(NUM_OPTION_ICONS - 1) / 2.0f);
-    p->SetXY(fOffset * SPACING_X, fOffset * SPACING_Y);
+    p->SetXY(offset * SPACING_X, offset * SPACING_Y);
     p->Load(OPTION_ICON_METRICS_GROUP);
-    ActorUtil::LoadAllCommands(p, sMetricsGroup);
+    ActorUtil::LoadAllCommands(p, metrics_group);
     mod_icon_.push_back(p);
     this->AddChild(p);
   }
@@ -122,15 +122,15 @@ static const OptionColumnEntry g_OptionColumnEntries[] = {
     {"Distant", 6},
 };
 
-int OptionToPreferredColumn(std::string sOptionText) {
+int OptionToPreferredColumn(std::string option_text) {
   // Speedups always go in column 0. digit ... x
-  if (sOptionText.size() > 1 && isdigit(sOptionText[0]) &&
-      tolower(sOptionText[sOptionText.size() - 1]) == 'x') {
+  if (option_text.size() > 1 && isdigit(option_text[0]) &&
+      tolower(option_text[option_text.size() - 1]) == 'x') {
     return 0;
   }
 
   for (unsigned i = 0; i < ARRAYLEN(g_OptionColumnEntries); i++) {
-    if (g_OptionColumnEntries[i].string_ == sOptionText) {
+    if (g_OptionColumnEntries[i].string_ == option_text) {
       return g_OptionColumnEntries[i].slot_index_;
     }
   }
@@ -143,34 +143,34 @@ int OptionToPreferredColumn(std::string sOptionText) {
 void ModIconRow::SetFromGameState() {
   PlayerNumber pn = pn_;
 
-  std::string sOptions =
+  std::string s_options =
       GAMESTATE->player_state_[pn]->player_options_.GetStage().GetString();
-  std::vector<std::string> vsOptions;
-  split(sOptions, ", ", vsOptions, true);
+  std::vector<std::string> vs_options;
+  split(s_options, ", ", vs_options, true);
 
   std::vector<std::string>
-      vsText;  // fill these with what will be displayed on the tabs
-  vsText.resize(mod_icon_.size());
+      text;  // fill these with what will be displayed on the tabs
+  text.resize(mod_icon_.size());
 
   // for each option, look for the best column to place it in
-  for (unsigned i = 0; i < vsOptions.size(); i++) {
-    std::string sOption = vsOptions[i];
-    int iPreferredCol = OptionToPreferredColumn(sOption);
-    iPreferredCol = std::clamp(iPreferredCol, 0, (int)mod_icon_.size() - 1);
+  for (unsigned i = 0; i < vs_options.size(); i++) {
+    std::string option = vs_options[i];
+    int preferred_col = OptionToPreferredColumn(option);
+    preferred_col = std::clamp(preferred_col, 0, (int)mod_icon_.size() - 1);
 
     // search for a vacant spot
-    for (int j = iPreferredCol; j < NUM_OPTION_ICONS; j++) {
-      if (vsText[j] != "") {
+    for (int j = preferred_col; j < NUM_OPTION_ICONS; j++) {
+      if (text[j] != "") {
         continue;
       } else {
-        vsText[j] = sOption;
+        text[j] = option;
         break;
       }
     }
   }
 
   for (unsigned i = 0; i < mod_icon_.size(); i++) {
-    mod_icon_[i]->Set(vsText[i]);
+    mod_icon_[i]->Set(text[i]);
   }
 }
 

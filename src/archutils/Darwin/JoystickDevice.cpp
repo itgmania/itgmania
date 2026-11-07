@@ -35,8 +35,8 @@ Joystick::Joystick()
       hat_min_(0),
       hat_max_(0) {}
 
-bool JoystickDevice::AddLogicalDevice(int usagePage, int usage) {
-  if (usagePage != kHIDPage_GenericDesktop) {
+bool JoystickDevice::AddLogicalDevice(int usage_page, int usage) {
+  if (usage_page != kHIDPage_GenericDesktop) {
     return false;
   }
   switch (usage) {
@@ -51,55 +51,57 @@ bool JoystickDevice::AddLogicalDevice(int usagePage, int usage) {
 }
 
 void JoystickDevice::AddElement(
-    int usagePage, int usage, IOHIDElementCookie cookie,
+    int usage_page, int usage, IOHIDElementCookie cookie,
     const CFDictionaryRef properties) {
-  if (usagePage >= kHIDPage_VendorDefinedStart) {
+  if (usage_page >= kHIDPage_VendorDefinedStart) {
     return;
   }
 
   ASSERT(sticks_.size());
   Joystick& js = sticks_.back();
 
-  switch (usagePage) {
+  switch (usage_page) {
     case kHIDPage_GenericDesktop: {
-      int iMin = 0;
-      int iMax = 0;
+      int min_val = 0;
+      int max_val = 0;
 
       IntValue(
-          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMinKey)), iMin);
+          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMinKey)),
+          min_val);
       IntValue(
-          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMaxKey)), iMax);
+          CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMaxKey)),
+          max_val);
 
       switch (usage) {
         case kHIDUsage_GD_X:
           js.x_axis_ = cookie;
-          js.x_min_ = iMin;
-          js.x_max_ = iMax;
+          js.x_min_ = min_val;
+          js.x_max_ = max_val;
           break;
         case kHIDUsage_GD_Y:
           js.y_axis_ = cookie;
-          js.y_min_ = iMin;
-          js.y_max_ = iMax;
+          js.y_min_ = min_val;
+          js.y_max_ = max_val;
           break;
         case kHIDUsage_GD_Z:
           js.z_axis_ = cookie;
-          js.z_min_ = iMin;
-          js.z_max_ = iMax;
+          js.z_min_ = min_val;
+          js.z_max_ = max_val;
           break;
         case kHIDUsage_GD_Rx:
           js.x_rot_ = cookie;
-          js.rx_min_ = iMin;
-          js.rx_max_ = iMax;
+          js.rx_min_ = min_val;
+          js.rx_max_ = max_val;
           break;
         case kHIDUsage_GD_Ry:
           js.y_rot_ = cookie;
-          js.ry_min_ = iMin;
-          js.ry_max_ = iMax;
+          js.ry_min_ = min_val;
+          js.ry_max_ = max_val;
           break;
         case kHIDUsage_GD_Rz:
           js.z_rot_ = cookie;
-          js.rz_min_ = iMin;
-          js.rz_max_ = iMax;
+          js.rz_min_ = min_val;
+          js.rz_max_ = max_val;
           break;
         case kHIDUsage_GD_DPadUp:
           js.mapping_[cookie] = JOY_UP;
@@ -114,12 +116,12 @@ void JoystickDevice::AddElement(
           js.mapping_[cookie] = JOY_LEFT;
           break;
         case kHIDUsage_GD_Hatswitch: {
-          if (iMax - iMin != 7 && iMax - iMin != 3) {
+          if (max_val - min_val != 7 && max_val - min_val != 3) {
             break;
           }
           js.hat_ = cookie;
-          js.hat_min_ = iMin;
-          js.hat_max_ = iMax;
+          js.hat_min_ = min_val;
+          js.hat_max_ = max_val;
           break;
         }
         default:
@@ -130,21 +132,21 @@ void JoystickDevice::AddElement(
       break;
     }
     case kHIDPage_Button: {
-      const DeviceButton buttonID =
+      const DeviceButton button_id =
           enum_add2(JOY_BUTTON_1, usage - kHIDUsage_Button_1);
 
-      if (buttonID <= JOY_BUTTON_32) {
-        js.mapping_[cookie] = buttonID;
+      if (button_id <= JOY_BUTTON_32) {
+        js.mapping_[cookie] = button_id;
       } else {
-        LOG->Warn("Button id too large: %d.", int(buttonID));
+        LOG->Warn("Button id too large: %d.", int(button_id));
       }
       break;
     }
     default:
-      // LOG->Warn( "Unknown usagePage usage pair: (%d, %d).", usagePage, usage
+      // LOG->Warn( "Unknown usagePage usage pair: (%d, %d).", usage_page, usage
       // );
       break;
-  }  // end switch (usagePage)
+  }  // end switch (usage_page)
 }
 
 void JoystickDevice::Open() {
@@ -173,8 +175,8 @@ bool JoystickDevice::InitDevice(int vid, int pid) {
     return true;
   }
   // It's a Para controller, so try to power it on.
-  uint8_t powerOn = 1;
-  IOReturn ret = SetReport(kIOHIDReportTypeFeature, 0, &powerOn, 1, 10);
+  uint8_t power_on = 1;
+  IOReturn ret = SetReport(kIOHIDReportTypeFeature, 0, &power_on, 1, 10);
 
   if (ret) {
     LOG->Warn("Failed to power on the Para controller: %#08x", ret);
@@ -183,59 +185,60 @@ bool JoystickDevice::InitDevice(int vid, int pid) {
 }
 
 void JoystickDevice::GetButtonPresses(
-    std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+    std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   for (const Joystick& js : sticks_) {
     if (js.x_axis_ == cookie) {
       float level = SCALE(value, js.x_min_, js.x_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_LEFT, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_RIGHT, std::max(level, 0.0f), now));
       break;
     } else if (js.y_axis_ == cookie) {
       float level = SCALE(value, js.y_min_, js.y_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_UP, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_DOWN, std::max(level, 0.0f), now));
       break;
     } else if (js.z_axis_ == cookie) {
       float level = SCALE(value, js.z_min_, js.z_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_Z_UP, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_Z_DOWN, std::max(level, 0.0f), now));
       break;
     } else if (js.x_rot_ == cookie) {
       float level = SCALE(value, js.rx_min_, js.rx_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_LEFT, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_RIGHT, std::max(level, 0.0f), now));
       break;
     } else if (js.y_rot_ == cookie) {
       float level = SCALE(value, js.ry_min_, js.ry_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_UP, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_DOWN, std::max(level, 0.0f), now));
       break;
     } else if (js.z_rot_ == cookie) {
       float level = SCALE(value, js.rz_min_, js.rz_max_, -1.0f, 1.0f);
 
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_Z_UP, std::max(-level, 0.0f), now));
-      vPresses.push_back(
+      presses.push_back(
           DeviceInput(js.id_, JOY_ROT_Z_DOWN, std::max(level, 0.0f), now));
       break;
     } else if (js.hat_ == cookie) {
-      float levelUp = 0.f, levelRight = 0.f, levelDown = 0.f, levelLeft = 0.f;
+      float level_up = 0.f, level_right = 0.f, level_down = 0.f,
+            level_left = 0.f;
 
       value -= js.hat_min_;  // Probably just subtracting 0.
       if (js.hat_max_ - js.hat_min_ == 3) {
@@ -243,38 +246,38 @@ void JoystickDevice::GetButtonPresses(
       }
       switch (value) {
         case 0:
-          levelUp = 1.f;
+          level_up = 1.f;
           break;  // U
         case 1:
-          levelUp = 1.f;
-          levelRight = 1.f;
+          level_up = 1.f;
+          level_right = 1.f;
           break;  // UR
         case 2:
-          levelRight = 1.f;
+          level_right = 1.f;
           break;  // R
         case 3:
-          levelDown = 1.f;
-          levelRight = 1.f;
+          level_down = 1.f;
+          level_right = 1.f;
           break;  // DR
         case 4:
-          levelDown = 1.f;
+          level_down = 1.f;
           break;  // D
         case 5:
-          levelDown = 1.f;
-          levelLeft = 1.f;
+          level_down = 1.f;
+          level_left = 1.f;
           break;  // DL
         case 6:
-          levelLeft = 1.f;
+          level_left = 1.f;
           break;  // L
         case 7:
-          levelUp = 1.f;
-          levelLeft = 1.f;
+          level_up = 1.f;
+          level_left = 1.f;
           break;  // UL
       }
-      vPresses.push_back(DeviceInput(js.id_, JOY_HAT_UP, levelUp, now));
-      vPresses.push_back(DeviceInput(js.id_, JOY_HAT_RIGHT, levelRight, now));
-      vPresses.push_back(DeviceInput(js.id_, JOY_HAT_DOWN, levelDown, now));
-      vPresses.push_back(DeviceInput(js.id_, JOY_HAT_LEFT, levelLeft, now));
+      presses.push_back(DeviceInput(js.id_, JOY_HAT_UP, level_up, now));
+      presses.push_back(DeviceInput(js.id_, JOY_HAT_RIGHT, level_right, now));
+      presses.push_back(DeviceInput(js.id_, JOY_HAT_DOWN, level_down, now));
+      presses.push_back(DeviceInput(js.id_, JOY_HAT_LEFT, level_left, now));
       break;
     } else {
       // hash_map<T,U>::operator[] is not const
@@ -282,32 +285,32 @@ void JoystickDevice::GetButtonPresses(
 
       iter = js.mapping_.find(cookie);
       if (iter != js.mapping_.end()) {
-        vPresses.push_back(DeviceInput(js.id_, iter->second, value, now));
+        presses.push_back(DeviceInput(js.id_, iter->second, value, now));
         break;
       }
     }
   }
 }
 
-int JoystickDevice::AssignIDs(InputDevice startID) {
-  if (!IsJoystick(startID)) {
+int JoystickDevice::AssignIDs(InputDevice start_id) {
+  if (!IsJoystick(start_id)) {
     return -1;
   }
   for (auto i = sticks_.begin(); i != sticks_.end(); ++i) {
-    if (!IsJoystick(startID)) {
+    if (!IsJoystick(start_id)) {
       sticks_.erase(i, sticks_.end());
       break;
     }
-    i->id_ = startID;
-    enum_add(startID, 1);
+    i->id_ = start_id;
+    enum_add(start_id, 1);
   }
   return sticks_.size();
 }
 
 void JoystickDevice::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevices) const {
+    std::vector<InputDeviceInfo>& devices) const {
   for (auto& i : sticks_) {
-    vDevices.push_back(InputDeviceInfo(i.id_, GetDescription()));
+    devices.push_back(InputDeviceInfo(i.id_, GetDescription()));
   }
 }
 

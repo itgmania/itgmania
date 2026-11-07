@@ -5,8 +5,8 @@
 #include "global.h"
 
 void Win32RestartProgram() {
-  TCHAR szFullAppPath[MAX_PATH];
-  GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
+  TCHAR full_app_path[MAX_PATH];
+  GetModuleFileName(nullptr, full_app_path, MAX_PATH);
 
   // Relaunch
   PROCESS_INFORMATION pi;
@@ -14,7 +14,7 @@ void Win32RestartProgram() {
   ZeroMemory(&si, sizeof(si));
   CreateProcess(
       nullptr,        // pointer to name of executable module
-      szFullAppPath,  // pointer to command line string
+      full_app_path,  // pointer to command line string
       nullptr,        // process security attributes
       nullptr,        // thread security attributes
       false,          // handle inheritance flag

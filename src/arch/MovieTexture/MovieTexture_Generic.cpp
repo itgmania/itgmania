@@ -33,12 +33,12 @@ static Preference<bool> g_bMovieTextureDirectUpdates(
     "MovieTextureDirectUpdates", true);
 
 MovieTexture_Generic::MovieTexture_Generic(
-    RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder)
-    : RageMovieTexture(ID) {
+    RageTextureID id, std::unique_ptr<MovieDecoder> decoder)
+    : RageMovieTexture(id) {
   LOG->Trace(
-      "MovieTexture_Generic::MovieTexture_Generic(%s)", ID.filename_.c_str());
+      "MovieTexture_Generic::MovieTexture_Generic(%s)", id.filename_.c_str());
 
-  decoder_ = std::move(pDecoder);
+  decoder_ = std::move(decoder);
 
   texture_handle_ = 0;
   render_target_ = nullptr;
@@ -132,18 +132,18 @@ void MovieTexture_Generic::DestroyTexture() {
 class RageMovieTexture_Generic_Intermediate : public RageTexture {
  public:
   RageMovieTexture_Generic_Intermediate(
-      RageTextureID ID, int iWidth, int iHeight, int iImageWidth,
-      int iImageHeight, int iTextureWidth, int iTextureHeight,
-      RageSurfaceFormat SurfaceFormat, RagePixelFormat pixfmt)
-      : RageTexture(ID), surface_format_(SurfaceFormat) {
+      RageTextureID id, int width, int height, int image_width,
+      int image_height, int texture_width, int texture_height,
+      RageSurfaceFormat surface_format, RagePixelFormat pixfmt)
+      : RageTexture(id), surface_format_(surface_format) {
     pix_fmt_ = pixfmt;
-    source_width_ = iWidth;
-    source_height_ = iHeight;
+    source_width_ = width;
+    source_height_ = height;
 
-    image_width_ = iImageWidth;
-    image_height_ = iImageHeight;
-    texture_width_ = iTextureWidth;
-    texture_height_ = iTextureHeight;
+    image_width_ = image_width;
+    image_height_ = image_height;
+    texture_width_ = texture_width;
+    texture_height_ = texture_height;
 
     CreateFrameRects();
 
@@ -169,13 +169,13 @@ class RageMovieTexture_Generic_Intermediate : public RageTexture {
       return;
     }
 
-    RageSurface* pSurface = CreateSurfaceFrom(
+    RageSurface* surface = CreateSurfaceFrom(
         image_width_, image_height_, surface_format_.bits_per_pixel_,
         surface_format_.mask_[0], surface_format_.mask_[1],
         surface_format_.mask_[2], surface_format_.mask_[3], nullptr, 1);
 
-    texture_handle_ = DISPLAY->CreateTexture(pix_fmt_, pSurface, false);
-    delete pSurface;
+    texture_handle_ = DISPLAY->CreateTexture(pix_fmt_, surface, false);
+    delete surface;
   }
 
   uintptr_t texture_handle_;
@@ -201,11 +201,11 @@ void MovieTexture_Generic::CreateTexture() {
   source_height_ = decoder_->GetHeight();
 
   /* Adjust source_width_ to support different source aspect ratios. */
-  float fSourceAspectRatio = decoder_->GetSourceAspectRatio();
-  if (fSourceAspectRatio < 1) {
-    source_height_ = std::lrint(source_height_ / fSourceAspectRatio);
-  } else if (fSourceAspectRatio > 1) {
-    source_width_ = std::lrint(source_width_ * fSourceAspectRatio);
+  float source_aspect_ratio = decoder_->GetSourceAspectRatio();
+  if (source_aspect_ratio < 1) {
+    source_height_ = std::lrint(source_height_ / source_aspect_ratio);
+  } else if (source_aspect_ratio > 1) {
+    source_width_ = std::lrint(source_width_ * source_aspect_ratio);
   }
 
   /* HACK: Don't cap movie textures to the max texture size, since we
@@ -278,17 +278,18 @@ void MovieTexture_Generic::CreateTexture() {
     param.width_ = image_width_;
     param.height_ = image_height_;
 
-    RageTextureID TargetID(GetID());
-    TargetID.filename_ += " target";
-    render_target_ = std::make_unique<RageTextureRenderTarget>(TargetID, param);
+    RageTextureID target_id(GetID());
+    target_id.filename_ += " target";
+    render_target_ =
+        std::make_unique<RageTextureRenderTarget>(target_id, param);
 
     /* Create the intermediate texture.  This receives the YUV image. */
-    RageTextureID IntermedID(GetID());
-    IntermedID.filename_ += " intermediate";
+    RageTextureID intermed_id(GetID());
+    intermed_id.filename_ += " intermediate";
 
     intermediate_texture_ =
         std::make_unique<RageMovieTexture_Generic_Intermediate>(
-            IntermedID, decoder_->GetWidth(), decoder_->GetHeight(),
+            intermed_id, decoder_->GetWidth(), decoder_->GetHeight(),
             surface_->w_, surface_->h_, power_of_two(surface_->w_),
             power_of_two(surface_->h_), *surface_->format_, pixfmt);
 
@@ -395,10 +396,10 @@ void MovieTexture_Generic::UpdateFrame() {
   }
 
   if (texture_lock_ != nullptr) {
-    uintptr_t iHandle = intermediate_texture_ != nullptr
-                            ? intermediate_texture_->GetTexHandle()
-                            : this->GetTexHandle();
-    texture_lock_->Lock(iHandle, surface_);
+    uintptr_t handle = intermediate_texture_ != nullptr
+                           ? intermediate_texture_->GetTexHandle()
+                           : this->GetTexHandle();
+    texture_lock_->Lock(handle, surface_);
   }
 
   int frame_ret = decoder_->GetFrame(surface_);

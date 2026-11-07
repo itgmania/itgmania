@@ -62,12 +62,12 @@ void Set(const LightsState* ls) {
   if (memcmp(buffer, last_output_, FULL_SEXTET_COUNT) != 0) {
     if (out_ != nullptr) {
 #ifdef _WIN32
-      DWORD cbWritten;
-      bool fSuccess = WriteFile(
+      DWORD written;
+      bool success = WriteFile(
           out_,               // pipe handle
           buffer,             // message
           FULL_SEXTET_COUNT,  // message length
-          &cbWritten,         // bytes written
+          &written,           // bytes written
           NULL);              // not overlapped
 
 #else

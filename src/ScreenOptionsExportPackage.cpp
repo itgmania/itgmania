@@ -37,10 +37,10 @@ void ScreenOptionsExportPackage::BeginScreen() {
   package_types_.push_back("Songs");
   // announcers, characters, others?
 
-  std::vector<OptionRowHandler*> OptionRowHandlers;
+  std::vector<OptionRowHandler*> option_row_handlers;
   for (const std::string& s : package_types_) {
-    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeNull();
-    OptionRowDefinition& def = pHand->def_;
+    OptionRowHandler* hand = OptionRowHandlerUtil::MakeNull();
+    OptionRowDefinition& def = hand->def_;
 
     def.name_ = s;
     def.allow_explanation_ = false;
@@ -51,9 +51,9 @@ void ScreenOptionsExportPackage::BeginScreen() {
     def.one_choice_for_all_players_ = true;
     def.choices_.clear();
     def.choices_.push_back("");
-    OptionRowHandlers.push_back(pHand);
+    option_row_handlers.push_back(hand);
   }
-  ScreenOptions::InitMenu(OptionRowHandlers);
+  ScreenOptions::InitMenu(option_row_handlers);
 
   ScreenOptions::BeginScreen();
 }
@@ -65,13 +65,13 @@ void ScreenOptionsExportPackage::ProcessMenuStart(const InputEventPlus& input) {
 
   // switch to the subpage with the specified type
   // int iCurRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
-  int iRow = GetCurrentRow();
-  if (rows_[iRow]->GetRowType() == OptionRow::RowType_Exit) {
+  int row = GetCurrentRow();
+  if (rows_[row]->GetRowType() == OptionRow::RowType_Exit) {
     ScreenOptions::ProcessMenuStart(input);
     return;
   }
 
-  ExportPackages::m_sPackageType = package_types_[iRow];
+  ExportPackages::m_sPackageType = package_types_[row];
 
   SCREENMAN->PlayStartSound();
   this->BeginFadingOut();
@@ -100,19 +100,19 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 
   // Check type and fill m_vsPossibleDirsToExport
-  const std::string* s_packageType = &ExportPackages::m_sPackageType;
-  if (*s_packageType == "Themes") {
+  const std::string* package_type = &ExportPackages::m_sPackageType;
+  if (*package_type == "Themes") {
     // add themes
     GetDirListing(
         SpecialFiles::THEMES_DIR + "*", possible_dirs_to_export_, true, true);
-  } else if (*s_packageType == "NoteSkins") {
+  } else if (*package_type == "NoteSkins") {
     // add noteskins
     std::vector<std::string> vs;
     GetDirListing(SpecialFiles::NOTESKINS_DIR + "*", vs, true, true);
     for (const std::string& s : vs) {
       GetDirListing(s + "*", possible_dirs_to_export_, true, true);
     }
-  } else if (*s_packageType == "Courses") {
+  } else if (*package_type == "Courses") {
     // Add courses. Only support courses that are in a group folder.
     // Support for courses not in a group folder should be phased out.
     std::vector<std::string> vs;
@@ -123,14 +123,14 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
       possible_dirs_to_export_.push_back(s);
       GetDirListing(s + "/*", possible_dirs_to_export_, true, true);
     }
-  } else if (*s_packageType == "Songs") {
+  } else if (*package_type == "Songs") {
     // Add song groups
-    std::vector<std::string> asAllGroups;
-    SONGMAN->GetSongGroupNames(asAllGroups);
-    for (const std::string& s : asAllGroups) {
+    std::vector<std::string> all_groups;
+    SONGMAN->GetSongGroupNames(all_groups);
+    for (const std::string& s : all_groups) {
       possible_dirs_to_export_.push_back(s);
     }
-  } else if (*s_packageType == "SubGroup") {
+  } else if (*package_type == "SubGroup") {
     // ExportPackages::m_sFolder
     std::vector<std::string> vs;
     GetDirListing(
@@ -144,10 +144,10 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
   StripCvsAndSvn(possible_dirs_to_export_);
   StripMacResourceForks(possible_dirs_to_export_);
 
-  std::vector<OptionRowHandler*> OptionRowHandlers;
+  std::vector<OptionRowHandler*> option_row_handlers;
   for (const std::string& s : possible_dirs_to_export_) {
-    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeNull();
-    OptionRowDefinition& def = pHand->def_;
+    OptionRowHandler* hand = OptionRowHandlerUtil::MakeNull();
+    OptionRowDefinition& def = hand->def_;
     def.layout_type_ = LAYOUT_SHOW_ALL_IN_ROW;
     def.allow_theme_title_ = false;
     def.allow_theme_items_ = false;
@@ -156,33 +156,33 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
     def.explanation_name_ = "# files, # MB, # subdirs";
 
     def.choices_.push_back("");
-    OptionRowHandlers.push_back(pHand);
+    option_row_handlers.push_back(hand);
   }
-  ScreenOptions::InitMenu(OptionRowHandlers);
+  ScreenOptions::InitMenu(option_row_handlers);
 
   ScreenOptions::BeginScreen();
 }
 
-static std::string ReplaceInvalidFileNameChars(std::string sOldFileName) {
-  std::string sNewFileName = sOldFileName;
-  const char charsToReplace[] = {' ', '!',  '@',  '#', '$', '%', '^', '&', '*',
-                                 '(', ')',  '+',  '=', '[', ']', '{', '}', '|',
-                                 ':', '\"', '\\', '<', '>', ',', '?', '/'};
-  for (unsigned i = 0; i < sizeof(charsToReplace); i++) {
-    Replace(sNewFileName, charsToReplace[i], '_');
+static std::string ReplaceInvalidFileNameChars(std::string old_file_name) {
+  std::string new_file_name = old_file_name;
+  const char chars_to_replace[] = {
+      ' ', '!', '@', '#', '$', '%', '^',  '&',  '*', '(', ')', '+', '=',
+      '[', ']', '{', '}', '|', ':', '\"', '\\', '<', '>', ',', '?', '/'};
+  for (unsigned i = 0; i < sizeof(chars_to_replace); i++) {
+    Replace(new_file_name, chars_to_replace[i], '_');
   }
-  return sNewFileName;
+  return new_file_name;
 }
 
 static bool ExportPackage(
-    std::string sPackageName, std::string sDirToExport,
-    std::string& sErrorOut) {
+    std::string package_name, std::string dir_to_export,
+    std::string& error_out) {
   // Mount Desktop/ for each OS.
-  std::string sDesktopDir = SpecialDirs::GetDesktopDir();
-  std::string fn = sDesktopDir + sPackageName;
+  std::string desktop_dir = SpecialDirs::GetDesktopDir();
+  std::string fn = desktop_dir + package_name;
   RageFile f;
   if (!f.Open(fn, RageFile::WRITE)) {
-    sErrorOut = ssprintf(
+    error_out = ssprintf(
         "Couldn't open %s for writing: %s", fn.c_str(), f.GetError().c_str());
     return false;
   }
@@ -196,8 +196,8 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart(
     return;
   }
 
-  int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
-  if (rows_[iCurRow]->GetRowType() == OptionRow::RowType_Exit) {
+  int cur_row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+  if (rows_[cur_row]->GetRowType() == OptionRow::RowType_Exit) {
     ScreenOptions::ProcessMenuStart(input);
     return;
   }
@@ -207,31 +207,31 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart(
       ExportPackages::m_sPackageType == "Songs") {
     // find folder name
     ExportPackages::m_sPackageType = "SubGroup";
-    ExportPackages::m_sFolder = possible_dirs_to_export_[iCurRow];
+    ExportPackages::m_sFolder = possible_dirs_to_export_[cur_row];
     SCREENMAN->SetNewScreen("ScreenOptionsExportPackageSubPage");
     return;
   }
 
-  std::string sDirToExport = possible_dirs_to_export_[iCurRow];
-  std::string sPackageName =
-      ReplaceInvalidFileNameChars(sDirToExport + ".smzip");
+  std::string dir_to_export = possible_dirs_to_export_[cur_row];
+  std::string package_name =
+      ReplaceInvalidFileNameChars(dir_to_export + ".smzip");
 
-  std::string sError;
-  if (ExportPackage(sPackageName, sDirToExport, sError)) {
+  std::string error;
+  if (ExportPackage(package_name, dir_to_export, error)) {
     ScreenPrompt::Prompt(
         SM_None,
-        ssprintf("Exported '%s' to the desktop", sDirToExport.c_str()));
+        ssprintf("Exported '%s' to the desktop", dir_to_export.c_str()));
   } else {
     ScreenPrompt::Prompt(
-        SM_None, ssprintf("Failed to export package: %s", sError.c_str()));
+        SM_None, ssprintf("Failed to export package: %s", error.c_str()));
   }
 }
 
 void ScreenOptionsExportPackageSubPage::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {}
+    int row, const std::vector<PlayerNumber>& vpns) {}
 
 void ScreenOptionsExportPackageSubPage::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {}
+    int row, const std::vector<PlayerNumber>& vpns) {}
 
 /*
  * (c) 2002-2014 Chris Danford, AJ Kelly, Renaud Lepage

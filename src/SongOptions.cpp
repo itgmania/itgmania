@@ -50,40 +50,40 @@ void SongOptions::Approach(const SongOptions& other, float fDeltaSeconds) {
 }
 
 static void AddPart(
-    std::vector<std::string>& AddTo, float level, std::string name) {
+    std::vector<std::string>& add_to, float level, std::string name) {
   if (level == 0) {
     return;
   }
 
-  const std::string LevelStr =
+  const std::string level_str =
       (level == 1) ? std::string("")
                    : ssprintf("%ld%% ", std::lrint(level * 100));
 
-  AddTo.push_back(LevelStr + name);
+  add_to.push_back(level_str + name);
 }
 
-void SongOptions::GetMods(std::vector<std::string>& AddTo) const {
+void SongOptions::GetMods(std::vector<std::string>& add_to) const {
   if (music_rate_ != 1) {
     std::string s = ssprintf("%2.2f", music_rate_);
     if (s[s.size() - 1] == '0') {
       s.erase(s.size() - 1);
     }
-    AddTo.push_back(s + "xMusic");
+    add_to.push_back(s + "xMusic");
   }
 
-  AddPart(AddTo, haste_, "Haste");
+  AddPart(add_to, haste_, "Haste");
 
   switch (autosync_type_) {
     case AutosyncType_Off:
       break;
     case AutosyncType_Song:
-      AddTo.push_back("AutosyncSong");
+      add_to.push_back("AutosyncSong");
       break;
     case AutosyncType_Machine:
-      AddTo.push_back("AutosyncMachine");
+      add_to.push_back("AutosyncMachine");
       break;
     case AutosyncType_Tempo:
-      AddTo.push_back("AutosyncTempo");
+      add_to.push_back("AutosyncTempo");
       break;
     default:
       FAIL_M(ssprintf("Invalid autosync type: %i", autosync_type_));
@@ -93,27 +93,27 @@ void SongOptions::GetMods(std::vector<std::string>& AddTo) const {
     case SoundEffectType_Off:
       break;
     case SoundEffectType_Speed:
-      AddTo.push_back("EffectSpeed");
+      add_to.push_back("EffectSpeed");
       break;
     case SoundEffectType_Pitch:
-      AddTo.push_back("EffectPitch");
+      add_to.push_back("EffectPitch");
       break;
     default:
       FAIL_M(ssprintf("Invalid sound effect type: %i", sound_effect_type_));
   }
 
   if (assist_clap_) {
-    AddTo.push_back("Clap");
+    add_to.push_back("Clap");
   }
   if (assist_metronome_) {
-    AddTo.push_back("Metronome");
+    add_to.push_back("Metronome");
   }
 
   if (static_background_) {
-    AddTo.push_back("StaticBG");
+    add_to.push_back("StaticBG");
   }
   if (random_bg_only_) {
-    AddTo.push_back("RandomBG");
+    add_to.push_back("RandomBG");
   }
 }
 
@@ -138,66 +138,66 @@ std::string SongOptions::GetLocalizedString() const {
 
 /* Options are added to the current settings; call Init() beforehand if
  * you don't want this. */
-void SongOptions::FromString(const std::string& sMultipleMods) {
-  std::string sTemp = sMultipleMods;
+void SongOptions::FromString(const std::string& multiple_mods) {
+  std::string temp = multiple_mods;
   std::vector<std::string> vs;
-  split(sTemp, ",", vs, true);
-  std::string sThrowAway;
+  split(temp, ",", vs, true);
+  std::string throw_away;
   for (std::string& s : vs) {
-    FromOneModString(s, sThrowAway);
+    FromOneModString(s, throw_away);
   }
 }
 
 bool SongOptions::FromOneModString(
-    const std::string& sOneMod, std::string& sErrorOut) {
-  std::string sBit = sOneMod;
-  MakeLower(sBit);
-  Trim(sBit);
+    const std::string& one_mod, std::string& error_out) {
+  std::string bit = one_mod;
+  MakeLower(bit);
+  Trim(bit);
 
   Regex mult("^([0-9]+(\\.[0-9]+)?)xmusic$");
   std::vector<std::string> matches;
-  if (mult.Compare(sBit, matches)) {
+  if (mult.Compare(bit, matches)) {
     music_rate_ = StringToFloat(matches[0]);
     return true;
   }
 
   matches.clear();
 
-  std::vector<std::string> asParts;
-  split(sBit, " ", asParts, true);
+  std::vector<std::string> parts;
+  split(bit, " ", parts, true);
   bool on = true;
-  if (asParts.size() > 1) {
-    sBit = asParts[1];
-    if (asParts[0] == "no") {
+  if (parts.size() > 1) {
+    bit = parts[1];
+    if (parts[0] == "no") {
       on = false;
     }
   }
 
-  if (sBit == "clap") {
+  if (bit == "clap") {
     assist_clap_ = on;
-  } else if (sBit == "metronome") {
+  } else if (bit == "metronome") {
     assist_metronome_ = on;
-  } else if (sBit == "autosync" || sBit == "autosyncsong") {
+  } else if (bit == "autosync" || bit == "autosyncsong") {
     autosync_type_ = on ? AutosyncType_Song : AutosyncType_Off;
-  } else if (sBit == "autosyncmachine") {
+  } else if (bit == "autosyncmachine") {
     autosync_type_ = on ? AutosyncType_Machine : AutosyncType_Off;
-  } else if (sBit == "autosynctempo") {
+  } else if (bit == "autosynctempo") {
     autosync_type_ = on ? AutosyncType_Tempo : AutosyncType_Off;
-  } else if (sBit == "effect" && !on) {
+  } else if (bit == "effect" && !on) {
     sound_effect_type_ = SoundEffectType_Off;
-  } else if (sBit == "effectspeed") {
+  } else if (bit == "effectspeed") {
     sound_effect_type_ = on ? SoundEffectType_Speed : SoundEffectType_Off;
-  } else if (sBit == "effectpitch") {
+  } else if (bit == "effectpitch") {
     sound_effect_type_ = on ? SoundEffectType_Pitch : SoundEffectType_Off;
-  } else if (sBit == "staticbg") {
+  } else if (bit == "staticbg") {
     static_background_ = on;
-  } else if (sBit == "randombg") {
+  } else if (bit == "randombg") {
     random_bg_only_ = on;
-  } else if (sBit == "savescore") {
+  } else if (bit == "savescore") {
     save_score_ = on;
-  } else if (sBit == "savereplay") {
+  } else if (bit == "savereplay") {
     save_replay_ = on;
-  } else if (sBit == "haste") {
+  } else if (bit == "haste") {
     haste_ = on ? 1.0f : 0.0f;
   } else {
     return false;

@@ -28,7 +28,7 @@ class InputQueue {
 };
 
 struct InputQueueCode {
-  bool Load(std::string sButtonsNames);
+  bool Load(std::string buttons_names);
   bool EnteredCode(GameController controller) const;
 
  private:
@@ -55,7 +55,7 @@ struct InputQueueCode {
       const std::vector<ButtonPress>& presses, GameController controller) const;
 
   static bool ParseCodeString(
-      const std::string& sAlt, std::vector<ButtonPress>& presses);
+      const std::string& alt, std::vector<ButtonPress>& presses);
 };
 
 extern InputQueue*

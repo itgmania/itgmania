@@ -37,16 +37,16 @@ struct TapScoreDistribution {
   }
 
   TapNoteScore GetTapNoteScore() {
-    float fRand = randomf(0, 1);
-    float fCumulativePercent = 0;
+    float rand = randomf(0, 1);
+    float cumulative_percent = 0;
     for (int i = 0; i <= TNS_W1; i++) {
-      fCumulativePercent += percent_[i];
-      if (fRand <= fCumulativePercent + 1e-4) {  // rounding error
+      cumulative_percent += percent_[i];
+      if (rand <= cumulative_percent + 1e-4) {  // rounding error
         return (TapNoteScore)i;
       }
     }
     // the fCumulativePercents must sum to 1.0, so we should never get here!
-    ASSERT_M(0, ssprintf("%f,%f", fRand, fCumulativePercent));
+    ASSERT_M(0, ssprintf("%f,%f", rand, cumulative_percent));
     return TNS_W1;
   }
 };
@@ -55,8 +55,8 @@ static TapScoreDistribution g_Distributions[NUM_SKILL_LEVELS];
 
 void PlayerAI::InitFromDisk() {
   IniFile ini;
-  bool bSuccess = ini.ReadFile(AI_PATH);
-  if (!bSuccess) {
+  bool success = ini.ReadFile(AI_PATH);
+  if (!success) {
     LuaHelpers::ReportScriptErrorFmt(
         "Error trying to read \"%s\" to load AI player skill settings.",
         AI_PATH);
@@ -67,9 +67,9 @@ void PlayerAI::InitFromDisk() {
   } else {
     for (int i = 0; i < NUM_SKILL_LEVELS; i++) {
       std::string sKey = ssprintf("Skill%d", i);
-      XNode* pNode = ini.GetChild(sKey);
+      XNode* node = ini.GetChild(sKey);
       TapScoreDistribution& dist = g_Distributions[i];
-      if (pNode == nullptr) {
+      if (node == nullptr) {
         LuaHelpers::ReportScriptErrorFmt(
             "AI.ini: \"%s\" section doesn't exist.", sKey.c_str());
         dist.SetDefaultWeights();
@@ -81,18 +81,18 @@ void PlayerAI::InitFromDisk() {
     dist.percent_[tns] = 0;                                                 \
   }
         dist.percent_[TNS_None] = 0;
-        bSuccess = pNode->GetAttrValue("WeightMiss", dist.percent_[TNS_Miss]);
-        SET_MALF_IF(!bSuccess, TNS_Miss);
-        bSuccess = pNode->GetAttrValue("WeightW5", dist.percent_[TNS_W5]);
-        SET_MALF_IF(!bSuccess, TNS_W5);
-        bSuccess = pNode->GetAttrValue("WeightW4", dist.percent_[TNS_W4]);
-        SET_MALF_IF(!bSuccess, TNS_W4);
-        bSuccess = pNode->GetAttrValue("WeightW3", dist.percent_[TNS_W3]);
-        SET_MALF_IF(!bSuccess, TNS_W3);
-        bSuccess = pNode->GetAttrValue("WeightW2", dist.percent_[TNS_W2]);
-        SET_MALF_IF(!bSuccess, TNS_W2);
-        bSuccess = pNode->GetAttrValue("WeightW1", dist.percent_[TNS_W1]);
-        SET_MALF_IF(!bSuccess, TNS_W1);
+        success = node->GetAttrValue("WeightMiss", dist.percent_[TNS_Miss]);
+        SET_MALF_IF(!success, TNS_Miss);
+        success = node->GetAttrValue("WeightW5", dist.percent_[TNS_W5]);
+        SET_MALF_IF(!success, TNS_W5);
+        success = node->GetAttrValue("WeightW4", dist.percent_[TNS_W4]);
+        SET_MALF_IF(!success, TNS_W4);
+        success = node->GetAttrValue("WeightW3", dist.percent_[TNS_W3]);
+        SET_MALF_IF(!success, TNS_W3);
+        success = node->GetAttrValue("WeightW2", dist.percent_[TNS_W2]);
+        SET_MALF_IF(!success, TNS_W2);
+        success = node->GetAttrValue("WeightW1", dist.percent_[TNS_W1]);
+        SET_MALF_IF(!success, TNS_W1);
 #undef SET_MALF_IF
       }
       dist.ChangeWeightsToPercents();
@@ -100,8 +100,8 @@ void PlayerAI::InitFromDisk() {
   }
 }
 
-TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
-  if (pPlayerState->player_controller_ == PC_AUTOPLAY) {
+TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* player_state) {
+  if (player_state->player_controller_ == PC_AUTOPLAY) {
     return TNS_W1;
   }
 
@@ -113,7 +113,7 @@ TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
   }
   */
 
-  int iCpuSkill = pPlayerState->cpu_skill_;
+  int cpu_skill = player_state->cpu_skill_;
 
   /* If we're in battle mode, reduce the skill based on the number of modifier
    * attacks against us. If we're in demonstration or jukebox mode with
@@ -121,42 +121,42 @@ TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* pPlayerState) {
   // Idea: weight certain modifiers (boomerang, tornado) more? (to simulate
   // readability problems) -aj
   if (!GAMESTATE->demonstration_or_jukebox_) {
-    int iSumOfAttackLevels =
-        pPlayerState->seconds_until_attacks_phased_out_ > 0
-            ? pPlayerState->last_positive_sum_of_attack_levels_
+    int sum_of_attack_levels =
+        player_state->seconds_until_attacks_phased_out_ > 0
+            ? player_state->last_positive_sum_of_attack_levels_
             : 0;
 
     ASSERT_M(
-        iCpuSkill >= 0 && iCpuSkill < NUM_SKILL_LEVELS,
-        ssprintf("%i", iCpuSkill));
+        cpu_skill >= 0 && cpu_skill < NUM_SKILL_LEVELS,
+        ssprintf("%i", cpu_skill));
     ASSERT_M(
-        pPlayerState->player_controller_ == PC_CPU,
-        ssprintf("%i", pPlayerState->player_controller_));
+        player_state->player_controller_ == PC_CPU,
+        ssprintf("%i", player_state->player_controller_));
 
-    iCpuSkill -= iSumOfAttackLevels * 3;
-    rage_clamp(iCpuSkill, 0, NUM_SKILL_LEVELS - 1);
+    cpu_skill -= sum_of_attack_levels * 3;
+    rage_clamp(cpu_skill, 0, NUM_SKILL_LEVELS - 1);
   }
 
-  TapScoreDistribution& distribution = g_Distributions[iCpuSkill];
+  TapScoreDistribution& distribution = g_Distributions[cpu_skill];
 
   TapNoteScore score = distribution.GetTapNoteScore();
 
-  const auto& disabledWindows =
-      pPlayerState->player_options_.GetCurrent().disabled_windows_;
+  const auto& disabled_windows =
+      player_state->player_options_.GetCurrent().disabled_windows_;
   // Downgrade the TapNoteScore if that specific window is disabled.
-  if (score == TNS_W1 && disabledWindows[TW_W1]) {
+  if (score == TNS_W1 && disabled_windows[TW_W1]) {
     score = TNS_W2;
   }
-  if (score == TNS_W2 && disabledWindows[TW_W2]) {
+  if (score == TNS_W2 && disabled_windows[TW_W2]) {
     score = TNS_W3;
   }
-  if (score == TNS_W3 && disabledWindows[TW_W3]) {
+  if (score == TNS_W3 && disabled_windows[TW_W3]) {
     score = TNS_W4;
   }
-  if (score == TNS_W4 && disabledWindows[TW_W4]) {
+  if (score == TNS_W4 && disabled_windows[TW_W4]) {
     score = TNS_W5;
   }
-  if (score == TNS_W5 && disabledWindows[TW_W5]) {
+  if (score == TNS_W5 && disabled_windows[TW_W5]) {
     score = TNS_None;
   }
   return score;

@@ -8,7 +8,7 @@
 
 class Command {
  public:
-  void Load(const std::string& sCommand);
+  void Load(const std::string& command);
 
   std::string GetOriginalCommandString()
       const;  // used when reporting an error in number of args
@@ -41,8 +41,8 @@ class Commands {
 // TODO: This is expensive to do during the game.  Eventually,  move all calls
 // to ParseCommands to happen during load, then execute from the parsed Command
 // structures.
-void ParseCommands(const std::string& sCmds, Commands& vCmdsOut, bool bLegacy);
-Commands ParseCommands(const std::string& sCmds);
+void ParseCommands(const std::string& cmds, Commands& cmds_out, bool legacy);
+Commands ParseCommands(const std::string& cmds);
 
 #endif
 

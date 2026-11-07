@@ -29,7 +29,7 @@ class Alsa9Buf {
   static void InitializeErrorHandler();
   static void GetSoundCardDebugInfo();
   Alsa9Buf();
-  std::string Init(int iWriteahead, int iChunkSize, int iSampleRate);
+  std::string Init(int writeahead, int chunk_size, int sample_rate);
   ~Alsa9Buf();
 
   int GetNumFramesToFill();

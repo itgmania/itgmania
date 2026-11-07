@@ -10,15 +10,15 @@
 
 struct WavReader;
 
-std::string ReadString(RageFileBasic& f, int iSize, std::string& sError);
+std::string ReadString(RageFileBasic& f, int size, std::string& error);
 
 class RageSoundReader_WAV : public RageSoundReader_FileReader {
  public:
-  OpenResult Open(RageFileBasic* pFile);
+  OpenResult Open(RageFileBasic* file);
   void Close();
   int GetLength() const;
-  int SetPosition(int iFrame);
-  int Read(float* pBuf, int iFrames);
+  int SetPosition(int frame);
+  int Read(float* buf, int frames);
   int GetSampleRate() const { return wav_data_.sample_rate_; }
   unsigned GetNumChannels() const { return wav_data_.channels_; }
   int GetNextSourceFrame() const;

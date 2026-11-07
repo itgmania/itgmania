@@ -9,7 +9,7 @@ struct RageSurface;
 class RageFile;
 /** @brief Utility functions for the RageSurfaces. */
 namespace RageSurfaceUtils {
-bool SavePNG(RageSurface* pImg, RageFile& f, std::string& sError);
+bool SavePNG(RageSurface* img, RageFile& f, std::string& error);
 };
 
 #endif

@@ -62,7 +62,7 @@ class MovieDecoder {
    * used, set fmtout.
    */
   virtual RageSurface* CreateCompatibleSurface(
-      int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
+      int texture_width, int texture_height, bool prefer_high_color,
       MovieDecoderPixelFormatYCbCr& fmtout) = 0;
 
   /* The following functions return information about the current frame,
@@ -85,8 +85,7 @@ class MovieDecoder {
 
 class MovieTexture_Generic : public RageMovieTexture {
  public:
-  MovieTexture_Generic(
-      RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder);
+  MovieTexture_Generic(RageTextureID id, std::unique_ptr<MovieDecoder> decoder);
   ~MovieTexture_Generic() override;
   std::string Init();
 

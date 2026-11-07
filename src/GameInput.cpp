@@ -15,41 +15,40 @@ XToString(GameController);
 StringToX(GameController);
 LuaXType(GameController);
 
-std::string GameButtonToString(const InputScheme* pInputs, GameButton i) {
-  return pInputs->GetGameButtonName(i);
+std::string GameButtonToString(const InputScheme* inputs, GameButton i) {
+  return inputs->GetGameButtonName(i);
 }
 
 std::string GameButtonToLocalizedString(
-    const InputScheme* pInputs, GameButton i) {
-  return THEME->GetString("GameButton", GameButtonToString(pInputs, i));
+    const InputScheme* inputs, GameButton i) {
+  return THEME->GetString("GameButton", GameButtonToString(inputs, i));
 }
 
-GameButton StringToGameButton(
-    const InputScheme* pInputs, const std::string& s) {
-  FOREACH_GameButtonInScheme(pInputs, i) {
-    if (s == GameButtonToString(pInputs, i)) {
+GameButton StringToGameButton(const InputScheme* inputs, const std::string& s) {
+  FOREACH_GameButtonInScheme(inputs, i) {
+    if (s == GameButtonToString(inputs, i)) {
       return i;
     }
   }
   return GameButton_Invalid;
 }
 
-std::string GameInput::ToString(const InputScheme* pInputs) const {
+std::string GameInput::ToString(const InputScheme* inputs) const {
   return GameControllerToString(controller_) + std::string("_") +
-         GameButtonToString(pInputs, button_);
+         GameButtonToString(inputs, button_);
 }
 
-bool GameInput::FromString(const InputScheme* pInputs, const std::string& s) {
-  char szController[32] = "";
-  char szButton[32] = "";
+bool GameInput::FromString(const InputScheme* inputs, const std::string& s) {
+  char controller[32] = "";
+  char button[32] = "";
 
-  if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", szController, szButton)) {
+  if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", controller, button)) {
     controller_ = GameController_Invalid;
     return false;
   }
 
-  controller_ = StringToGameController(szController);
-  button_ = StringToGameButton(pInputs, szButton);
+  controller_ = StringToGameController(controller);
+  button_ = StringToGameButton(inputs, button);
   return true;
 };
 

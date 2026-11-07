@@ -40,12 +40,12 @@ void LyricDisplay::Init() {
 
 void LyricDisplay::Stop() { stopped_ = true; }
 
-void LyricDisplay::Update(float fDeltaTime) {
+void LyricDisplay::Update(float delta_time) {
   if (stopped_) {
     return;
   }
 
-  ActorFrame::Update(fDeltaTime);
+  ActorFrame::Update(delta_time);
 
   if (GAMESTATE->cur_song_ == nullptr) {
     return;
@@ -61,40 +61,40 @@ void LyricDisplay::Update(float fDeltaTime) {
     return;
   }
 
-  const Song* pSong = GAMESTATE->cur_song_;
-  const float fStartTime =
-      (pSong->lyric_segments_[cur_lyric_number_].start_time_) -
+  const Song* song = GAMESTATE->cur_song_;
+  const float start_time =
+      (song->lyric_segments_[cur_lyric_number_].start_time_) -
       IN_LENGTH.GetValue();
 
-  if (GAMESTATE->position_.music_seconds_ < fStartTime) {
+  if (GAMESTATE->position_.music_seconds_ < start_time) {
     return;
   }
 
   // Clamp this lyric to the beginning of the next or the end of the music.
-  float fEndTime;
+  float end_time;
   if (cur_lyric_number_ + 1 < GAMESTATE->cur_song_->lyric_segments_.size()) {
-    fEndTime = pSong->lyric_segments_[cur_lyric_number_ + 1].start_time_;
+    end_time = song->lyric_segments_[cur_lyric_number_ + 1].start_time_;
   } else {
-    fEndTime = pSong->GetLastSecond();
+    end_time = song->GetLastSecond();
   }
 
-  const float fDistance =
-      fEndTime - pSong->lyric_segments_[cur_lyric_number_].start_time_;
-  const float fTweenBufferTime = IN_LENGTH.GetValue() + OUT_LENGTH.GetValue();
+  const float distance =
+      end_time - song->lyric_segments_[cur_lyric_number_].start_time_;
+  const float tween_buffer_time = IN_LENGTH.GetValue() + OUT_LENGTH.GetValue();
 
   /* If it's negative, two lyrics are so close together that there's no time
    * to tween properly. Lyrics should never be this brief, anyway, so just
    * skip it. */
-  float fShowLength = std::max(fDistance - fTweenBufferTime, 0.0f);
+  float show_length = std::max(distance - tween_buffer_time, 0.0f);
 
   // Make lyrics show faster for faster song rates.
-  fShowLength /= GAMESTATE->song_options_.GetCurrent().music_rate_;
+  show_length /= GAMESTATE->song_options_.GetCurrent().music_rate_;
 
   const LyricSegment& seg =
       GAMESTATE->cur_song_->lyric_segments_[cur_lyric_number_];
 
   LuaThreadVariable var1("LyricText", seg.lyric_);
-  LuaThreadVariable var2("LyricDuration", LuaReference::Create(fShowLength));
+  LuaThreadVariable var2("LyricDuration", LuaReference::Create(show_length));
   LuaThreadVariable var3("LyricColor", LuaReference::Create(seg.color_));
 
   PlayCommand("Changed");

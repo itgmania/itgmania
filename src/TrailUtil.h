@@ -18,12 +18,12 @@ namespace TrailUtil {
  * <a class="el" href="class_song.html">Songs</a> in the Trail.
  * @param pTrail the Trail itself.
  * @return the number of <a class="el" href="class_song.html">Songs</a>. */
-int GetNumSongs(const Trail* pTrail);
+int GetNumSongs(const Trail* trail);
 /**
  * @brief Retrieve how long the Trail will last in seconds.
  * @param pTrail the Trail itself.
  * @return the total run time of the Trail. */
-float GetTotalSeconds(const Trail* pTrail);
+float GetTotalSeconds(const Trail* trail);
 };  // namespace TrailUtil
 
 class TrailID {
@@ -38,9 +38,9 @@ class TrailID {
   bool MatchesStepsType(StepsType s) const { return st_ == s; }
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   bool IsValid() const;
-  static void Invalidate(Song* pStaleSong);
+  static void Invalidate(Song* stale_song);
 };
 
 #endif

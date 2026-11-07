@@ -23,7 +23,7 @@ class LowLevelWindow_MacOSX : public LowLevelWindow {
   LowLevelWindow_MacOSX();
   ~LowLevelWindow_MacOSX();
   void* GetProcAddress(std::string s);
-  std::string TryVideoMode(const VideoModeParams& p, bool& newDeviceOut);
+  std::string TryVideoMode(const VideoModeParams& p, bool& new_device_out);
   void GetDisplaySpecs(DisplaySpecs& specs) const;
 
   void SwapBuffers();

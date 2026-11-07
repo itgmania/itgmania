@@ -19,70 +19,68 @@
  * scoring.  The other one will just receive misses for everything, and
  * shouldn't do anything. */
 ScoreKeeperShared::ScoreKeeperShared(
-    PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats)
-    : ScoreKeeperNormal(pPlayerState, pPlayerStageStats) {}
+    PlayerState* player_state, PlayerStageStats* player_stage_stats)
+    : ScoreKeeperNormal(player_state, player_stage_stats) {}
 
 void ScoreKeeperShared::Load(
-    const std::vector<Song*>& apSongs, const std::vector<Steps*>& apSteps,
-    const std::vector<AttackArray>& asModifiers) {
-  ScoreKeeperNormal::Load(apSongs, apSteps, asModifiers);
+    const std::vector<Song*>& songs, const std::vector<Steps*>& ap_steps,
+    const std::vector<AttackArray>& modifiers) {
+  ScoreKeeperNormal::Load(songs, ap_steps, modifiers);
 
-  const Style* pStyle =
+  const Style* style =
       GAMESTATE->GetCurrentStyle(player_state_->player_number_);
-  if (pStyle == nullptr ||
-      pStyle->style_type_ != StyleType_TwoPlayersSharedSides) {
+  if (style == nullptr ||
+      style->style_type_ != StyleType_TwoPlayersSharedSides) {
     return;
   }
 
   // Routine shared scoring receives judgments from both players. Recompute
   // possible points using both composite parts so percentage stays bounded.
-  int iTotalPossibleDancePoints = 0;
-  int iTotalPossibleGradePoints = 0;
-  for (unsigned i = 0; i < apSteps.size(); ++i) {
-    Song* pSong = apSongs[i];
-    Steps* pSteps = apSteps[i];
-    ASSERT(pSong != nullptr);
-    ASSERT(pSteps != nullptr);
+  int total_possible_dance_points = 0;
+  int total_possible_grade_points = 0;
+  for (unsigned i = 0; i < ap_steps.size(); ++i) {
+    Song* song = songs[i];
+    Steps* p_steps = ap_steps[i];
+    ASSERT(song != nullptr);
+    ASSERT(p_steps != nullptr);
 
-    NoteData ndTemp;
-    pSteps->GetNoteData(ndTemp);
+    NoteData temp;
+    p_steps->GetNoteData(temp);
 
-    NoteData ndTransformedForStyle;
-    pStyle->GetTransformedNoteDataForStyle(
-        player_state_->player_number_, ndTemp, ndTransformedForStyle);
+    NoteData transformed_for_style;
+    style->GetTransformedNoteDataForStyle(
+        player_state_->player_number_, temp, transformed_for_style);
 
-    std::vector<NoteData> vParts;
-    if (ndTransformedForStyle.IsComposite()) {
-      NoteDataUtil::SplitCompositeNoteData(ndTransformedForStyle, vParts);
+    std::vector<NoteData> parts;
+    if (transformed_for_style.IsComposite()) {
+      NoteDataUtil::SplitCompositeNoteData(transformed_for_style, parts);
     } else {
-      vParts.push_back(ndTransformedForStyle);
+      parts.push_back(transformed_for_style);
     }
 
-    for (const NoteData& part : vParts) {
-      NoteData ndPre = part;
+    for (const NoteData& part : parts) {
+      NoteData pre = part;
       NoteDataUtil::TransformNoteData(
-          ndPre, *(pSteps->GetTimingData()), asModifiers[i],
-          pSteps->steps_type_, pSong);
+          pre, *(p_steps->GetTimingData()), modifiers[i], p_steps->steps_type_,
+          song);
 
-      NoteData ndPost = ndPre;
+      NoteData post = pre;
       NoteDataUtil::TransformNoteData(
-          ndPost, *(pSteps->GetTimingData()),
-          player_state_->player_options_.GetStage(), pSteps->steps_type_);
+          post, *(p_steps->GetTimingData()),
+          player_state_->player_options_.GetStage(), p_steps->steps_type_);
 
       GAMESTATE->SetProcessedTimingData(
-          const_cast<TimingData*>(pSteps->GetTimingData()));
-      iTotalPossibleDancePoints += GetPossibleDancePoints(
-          &ndPre, &ndPost, pSteps->GetTimingData(),
-          pSong->music_length_seconds_);
-      iTotalPossibleGradePoints += GetPossibleGradePoints(
-          &ndPre, &ndPost, pSteps->GetTimingData(),
-          pSong->music_length_seconds_);
+          const_cast<TimingData*>(p_steps->GetTimingData()));
+      total_possible_dance_points += GetPossibleDancePoints(
+          &pre, &post, p_steps->GetTimingData(), song->music_length_seconds_);
+      total_possible_grade_points += GetPossibleGradePoints(
+          &pre, &post, p_steps->GetTimingData(), song->music_length_seconds_);
       GAMESTATE->SetProcessedTimingData(nullptr);
     }
   }
 
-  player_stage_stats_->possible_dance_points_ = iTotalPossibleDancePoints;
-  player_stage_stats_->possible_grade_points_ = iTotalPossibleGradePoints;
+  player_stage_stats_->possible_dance_points_ = total_possible_dance_points;
+  player_stage_stats_->possible_grade_points_ = total_possible_grade_points;
 }
 
 // These ScoreKeepers don't get to draw.
@@ -90,36 +88,36 @@ void ScoreKeeperShared::DrawPrimitives() {
   ScoreKeeperNormal::DrawPrimitives();
 }
 
-void ScoreKeeperShared::Update(float fDelta) {
-  ScoreKeeperNormal::Update(fDelta);
+void ScoreKeeperShared::Update(float delta) {
+  ScoreKeeperNormal::Update(delta);
 }
 
 void ScoreKeeperShared::OnNextSong(
-    int iSongInCourseIndex, const Steps* pSteps, const NoteData* pNoteData) {
-  ScoreKeeperNormal::OnNextSong(iSongInCourseIndex, pSteps, pNoteData);
+    int song_in_course_index, const Steps* steps, const NoteData* note_data) {
+  ScoreKeeperNormal::OnNextSong(song_in_course_index, steps, note_data);
 }
 
 void ScoreKeeperShared::HandleTapScore(const TapNote& tn) {
   ScoreKeeperNormal::HandleTapScore(tn);
 }
 
-void ScoreKeeperShared::HandleTapRowScore(const NoteData& nd, int iRow) {
-  ScoreKeeperNormal::HandleTapRowScore(nd, iRow);
+void ScoreKeeperShared::HandleTapRowScore(const NoteData& nd, int row) {
+  ScoreKeeperNormal::HandleTapRowScore(nd, row);
 }
 
 void ScoreKeeperShared::HandleHoldScore(const TapNote& tn) {
   ScoreKeeperNormal::HandleHoldScore(tn);
 }
 
-void ScoreKeeperShared::HandleHoldActiveSeconds(float fMusicSecondsHeld) {
-  ScoreKeeperNormal::HandleHoldActiveSeconds(fMusicSecondsHeld);
+void ScoreKeeperShared::HandleHoldActiveSeconds(float music_seconds_held) {
+  ScoreKeeperNormal::HandleHoldActiveSeconds(music_seconds_held);
 }
 
 void ScoreKeeperShared::HandleHoldCheckpointScore(
-    const NoteData& nd, int iRow, int iNumHoldsHeldThisRow,
-    int iNumHoldsMissedThisRow) {
+    const NoteData& nd, int row, int num_holds_held_this_row,
+    int num_holds_missed_this_row) {
   ScoreKeeperNormal::HandleHoldCheckpointScore(
-      nd, iRow, iNumHoldsHeldThisRow, iNumHoldsMissedThisRow);
+      nd, row, num_holds_held_this_row, num_holds_missed_this_row);
 }
 
 void ScoreKeeperShared::HandleTapScoreNone() {

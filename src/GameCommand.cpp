@@ -180,8 +180,8 @@ bool GameCommand::DescribesCurrentMode(PlayerNumber pn) const {
   return true;
 }
 
-void GameCommand::Load(int iIndex, const Commands& cmds) {
-  index_ = iIndex;
+void GameCommand::Load(int index, const Commands& cmds) {
+  index_ = index;
   invalid_ = false;
   commands_ = cmds;
 
@@ -191,17 +191,17 @@ void GameCommand::Load(int iIndex, const Commands& cmds) {
 }
 
 void GameCommand::LoadOne(const Command& cmd) {
-  std::string sName = cmd.GetName();
-  if (sName.empty()) {
+  std::string name = cmd.GetName();
+  if (name.empty()) {
     return;
   }
 
-  std::string sValue;
+  std::string value;
   for (unsigned i = 1; i < cmd.args_.size(); ++i) {
     if (i > 1) {
-      sValue += ",";
+      value += ",";
     }
-    sValue += cmd.args_[i];
+    value += cmd.args_[i];
   }
 
 #define MAKE_INVALID(expr)                                                \
@@ -209,69 +209,69 @@ void GameCommand::LoadOne(const Command& cmd) {
   LuaHelpers::ReportScriptError(invalid_reason_, "INVALID_GAME_COMMAND"); \
   invalid_ = true;
 
-#define CHECK_INVALID_COND(member, value, cond, message) \
-  if (cond) {                                            \
-    MAKE_INVALID(message);                               \
-  } else {                                               \
-    member = value;                                      \
+#define CHECK_INVALID_COND(member, val, cond, message) \
+  if (cond) {                                          \
+    MAKE_INVALID(message);                             \
+  } else {                                             \
+    member = val;                                      \
   }
 
-#define CHECK_INVALID_VALUE(member, value, invalid_value, value_name) \
-  CHECK_INVALID_COND(                                                 \
-      member, value, (value == invalid_value),                        \
-      ssprintf("Invalid " #value_name " \"%s\".", sValue.c_str()));
+#define CHECK_INVALID_VALUE(member, val, invalid_value, value_name) \
+  CHECK_INVALID_COND(                                               \
+      member, val, (val == invalid_value),                          \
+      ssprintf("Invalid " #value_name " \"%s\".", value.c_str()));
 
-  if (sName == "style") {
+  if (name == "style") {
     const Style* style =
-        GAMEMAN->GameAndStringToStyle(GAMESTATE->cur_game_, sValue);
+        GAMEMAN->GameAndStringToStyle(GAMESTATE->cur_game_, value);
     CHECK_INVALID_VALUE(style_, style, nullptr, style);
   }
 
-  else if (sName == "playmode") {
-    PlayMode pm = StringToPlayMode(sValue);
+  else if (name == "playmode") {
+    PlayMode pm = StringToPlayMode(value);
     CHECK_INVALID_VALUE(pm_, pm, PlayMode_Invalid, playmode);
   }
 
-  else if (sName == "difficulty") {
-    Difficulty dc = StringToDifficulty(sValue);
+  else if (name == "difficulty") {
+    Difficulty dc = StringToDifficulty(value);
     CHECK_INVALID_VALUE(dc_, dc, Difficulty_Invalid, difficulty);
   }
 
-  else if (sName == "announcer") {
-    announcer_ = sValue;
+  else if (name == "announcer") {
+    announcer_ = value;
   }
 
-  else if (sName == "name") {
-    name_ = sValue;
+  else if (name == "name") {
+    name_ = value;
   }
 
-  else if (sName == "text") {
-    text_ = sValue;
+  else if (name == "text") {
+    text_ = value;
   }
 
-  else if (sName == "mod") {
+  else if (name == "mod") {
     if (preferred_modifiers_ != "") {
       preferred_modifiers_ += ",";
     }
-    preferred_modifiers_ += sValue;
+    preferred_modifiers_ += value;
   }
 
-  else if (sName == "stagemod") {
+  else if (name == "stagemod") {
     if (stage_modifiers_ != "") {
       stage_modifiers_ += ",";
     }
-    stage_modifiers_ += sValue;
+    stage_modifiers_ += value;
   }
 
-  else if (sName == "lua") {
-    lua_function_.SetFromExpression(sValue);
+  else if (name == "lua") {
+    lua_function_.SetFromExpression(value);
     if (lua_function_.IsNil()) {
       MAKE_INVALID(
-          "Lua error in game command: \"" + sValue + "\" evaluated to nil");
+          "Lua error in game command: \"" + value + "\" evaluated to nil");
     }
   }
 
-  else if (sName == "screen") {
+  else if (name == "screen") {
     // OptionsList uses the screen command to push onto its stack.
     // OptionsList "screen"s are OptionRow entries in ScreenOptionsMaster.
     // So if the metric exists in ScreenOptionsMaster, consider it valid.
@@ -279,90 +279,89 @@ void GameCommand::LoadOne(const Command& cmd) {
     // When used to create an OptionRow, it pulls a metric from OptionsList.
     // -Kyz
 
-    if (!THEME->HasMetric("ScreenOptionsMaster", sValue)) {
-      if (!THEME->HasMetric("OptionsList", "Line" + sValue)) {
-        if (!SCREENMAN->IsScreenNameValid(sValue)) {
+    if (!THEME->HasMetric("ScreenOptionsMaster", value)) {
+      if (!THEME->HasMetric("OptionsList", "Line" + value)) {
+        if (!SCREENMAN->IsScreenNameValid(value)) {
           MAKE_INVALID(
-              "screen arg '" + sValue +
+              "screen arg '" + value +
               "' is not a screen name, ScreenOptionsMaster list or OptionsList "
               "entry.");
         }
       }
     }
     if (!invalid_) {
-      screen_ = sValue;
+      screen_ = value;
     }
   }
 
-  else if (sName == "song") {
+  else if (name == "song") {
     CHECK_INVALID_COND(
-        song_, SONGMAN->FindSong(sValue),
-        (SONGMAN->FindSong(sValue) == nullptr),
-        (ssprintf("Song \"%s\" not found", sValue.c_str())));
+        song_, SONGMAN->FindSong(value), (SONGMAN->FindSong(value) == nullptr),
+        (ssprintf("Song \"%s\" not found", value.c_str())));
   }
 
-  else if (sName == "steps") {
-    std::string sSteps = sValue;
+  else if (name == "steps") {
+    std::string steps = value;
 
     // This must be processed after "song" and "style" commands.
     if (!invalid_) {
-      Song* pSong = (song_ != nullptr) ? song_ : GAMESTATE->cur_song_;
-      const Style* pStyle =
+      Song* song = (song_ != nullptr) ? song_ : GAMESTATE->cur_song_;
+      const Style* p_style =
           style_
               ? style_
               : GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
-      if (pSong == nullptr || pStyle == nullptr) {
+      if (song == nullptr || p_style == nullptr) {
         MAKE_INVALID("Must set Song and Style to set Steps.");
       } else {
-        Difficulty dc = StringToDifficulty(sSteps);
+        Difficulty dc = StringToDifficulty(steps);
         Steps* st;
         if (dc < Difficulty_Edit) {
-          st = SongUtil::GetStepsByDifficulty(pSong, pStyle->steps_type_, dc);
+          st = SongUtil::GetStepsByDifficulty(song, p_style->steps_type_, dc);
         } else {
           st = SongUtil::GetStepsByDescription(
-              pSong, pStyle->steps_type_, sSteps);
+              song, p_style->steps_type_, steps);
         }
         CHECK_INVALID_COND(
             steps_, st, (st == nullptr),
-            (ssprintf("Steps \"%s\" not found", sSteps.c_str())));
+            (ssprintf("Steps \"%s\" not found", steps.c_str())));
       }
     }
   }
 
-  else if (sName == "course") {
+  else if (name == "course") {
     CHECK_INVALID_COND(
-        course_, SONGMAN->FindCourse("", sValue),
-        (SONGMAN->FindCourse("", sValue) == nullptr),
-        (ssprintf("Course \"%s\" not found", sValue.c_str())));
+        course_, SONGMAN->FindCourse("", value),
+        (SONGMAN->FindCourse("", value) == nullptr),
+        (ssprintf("Course \"%s\" not found", value.c_str())));
   }
 
-  else if (sName == "trail") {
-    std::string sTrail = sValue;
+  else if (name == "trail") {
+    std::string trail = value;
 
     // This must be processed after "course" and "style" commands.
     if (!invalid_) {
-      Course* pCourse = (course_ != nullptr) ? course_ : GAMESTATE->cur_course_;
-      const Style* pStyle =
+      Course* course = (course_ != nullptr) ? course_ : GAMESTATE->cur_course_;
+      const Style* p_style =
           style_
               ? style_
               : GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
-      if (pCourse == nullptr || pStyle == nullptr) {
+      if (course == nullptr || p_style == nullptr) {
         MAKE_INVALID("Must set Course and Style to set Trail.");
       } else {
-        const CourseDifficulty cd = StringToDifficulty(sTrail);
+        const CourseDifficulty cd = StringToDifficulty(trail);
         if (cd == Difficulty_Invalid) {
-          MAKE_INVALID(ssprintf("Invalid difficulty '%s'", sTrail.c_str()));
+          MAKE_INVALID(ssprintf("Invalid difficulty '%s'", trail.c_str()));
         } else {
-          Trail* tr = pCourse->GetTrail(pStyle->steps_type_, cd);
+          Trail* tr = course->GetTrail(p_style->steps_type_, cd);
           CHECK_INVALID_COND(
               trail_, tr, (tr == nullptr),
-              ("Trail \"" + sTrail + "\" not found."));
+              ("Trail \"" + trail + "\" not found."));
         }
       }
     }
   }
 
-  else if (sName == "setenv") {
+  else if (name == "setenv") {
     if ((cmd.args_.size() - 1) % 2 != 0) {
       MAKE_INVALID("Arguments to setenv game command must be key,value pairs.");
     } else {
@@ -372,74 +371,74 @@ void GameCommand::LoadOne(const Command& cmd) {
     }
   }
 
-  else if (sName == "songgroup") {
+  else if (name == "songgroup") {
     CHECK_INVALID_COND(
-        song_group_, sValue, (!SONGMAN->DoesSongGroupExist(sValue)),
-        ("Song group \"" + sValue + "\" does not exist."));
+        song_group_, value, (!SONGMAN->DoesSongGroupExist(value)),
+        ("Song group \"" + value + "\" does not exist."));
   }
 
-  else if (sName == "sort") {
-    SortOrder so = StringToSortOrder(sValue);
+  else if (name == "sort") {
+    SortOrder so = StringToSortOrder(value);
     CHECK_INVALID_VALUE(sort_order_, so, SortOrder_Invalid, sortorder);
   }
 
-  else if (sName == "weight") {
-    weight_pounds_ = StringToInt(sValue);
+  else if (name == "weight") {
+    weight_pounds_ = StringToInt(value);
   }
 
-  else if (sName == "goalcalories") {
-    goal_calories_ = StringToInt(sValue);
+  else if (name == "goalcalories") {
+    goal_calories_ = StringToInt(value);
   }
 
-  else if (sName == "goaltype") {
-    GoalType go = StringToGoalType(sValue);
+  else if (name == "goaltype") {
+    GoalType go = StringToGoalType(value);
     CHECK_INVALID_VALUE(goal_type_, go, GoalType_Invalid, goaltype);
   }
 
-  else if (sName == "profileid") {
-    profile_id_ = sValue;
+  else if (name == "profileid") {
+    profile_id_ = value;
   }
 
-  else if (sName == "url") {
+  else if (name == "url") {
     // url usage has been deprecated. This block exists for backwards
     // compatibility.
   }
 
-  else if (sName == "sound") {
-    sound_path_ = sValue;
+  else if (name == "sound") {
+    sound_path_ = value;
   }
 
-  else if (sName == "preparescreen") {
-    screens_to_prepare_.push_back(sValue);
+  else if (name == "preparescreen") {
+    screens_to_prepare_.push_back(value);
   }
 
-  else if (sName == "insertcredit") {
+  else if (name == "insertcredit") {
     insert_credit_ = true;
   }
 
-  else if (sName == "clearcredits") {
+  else if (name == "clearcredits") {
     clear_credits_ = true;
   }
 
-  else if (sName == "stopmusic") {
+  else if (name == "stopmusic") {
     stop_music_ = true;
   }
 
-  else if (sName == "applydefaultoptions") {
+  else if (name == "applydefaultoptions") {
     apply_default_options_ = true;
   }
 
-  else if (sName == "premiumfree") {
+  else if (name == "premiumfree") {
     activate_premium_free_ = true;
   }
 
   // sm-ssc additions begin:
-  else if (sName == "urlnoexit") {
+  else if (name == "urlnoexit") {
     // url usage has been deprecated. This block exists for backwards
     // compatibility.
   }
 
-  else if (sName == "setpref") {
+  else if (name == "setpref") {
     if ((cmd.args_.size() - 1) % 2 != 0) {
       MAKE_INVALID(
           "Arguments to setpref game command must be key,value pairs.");
@@ -454,7 +453,7 @@ void GameCommand::LoadOne(const Command& cmd) {
     }
   }
 
-  else if (sName == "fademusic") {
+  else if (name == "fademusic") {
     if (cmd.args_.size() == 3) {
       fade_music_ = true;
       music_fade_out_volume_ = static_cast<float>(atof(cmd.args_[1].c_str()));
@@ -474,14 +473,14 @@ void GameCommand::LoadOne(const Command& cmd) {
 }
 
 int GetNumCreditsPaid() {
-  int iNumCreditsPaid = GAMESTATE->GetNumSidesJoined();
+  int num_credits_paid = GAMESTATE->GetNumSidesJoined();
 
   // players other than the first joined for free
   if (GAMESTATE->GetPremium() == Premium_2PlayersFor1Credit) {
-    iNumCreditsPaid = std::min(iNumCreditsPaid, 1);
+    num_credits_paid = std::min(num_credits_paid, 1);
   }
 
-  return iNumCreditsPaid;
+  return num_credits_paid;
 }
 
 int GetCreditsRequiredToPlayStyle(const Style* style) {
@@ -547,30 +546,30 @@ bool GameCommand::IsPlayable(std::string* why) const {
   }
 
   if (style_) {
-    int iCredits;
+    int credits;
     if (GAMESTATE->GetCoinMode() == CoinMode_Pay) {
-      iCredits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
+      credits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
     } else {
-      iCredits = NUM_PLAYERS;
+      credits = NUM_PLAYERS;
     }
 
-    const int iNumCreditsPaid = GetNumCreditsPaid();
-    const int iNumCreditsRequired = GetCreditsRequiredToPlayStyle(style_);
+    const int num_credits_paid = GetNumCreditsPaid();
+    const int num_credits_required = GetCreditsRequiredToPlayStyle(style_);
 
     /* With PREFSMAN->m_bDelayedCreditsReconcile disabled, enough credits must
      * be paid. (This means that enough sides must be joined.)  Enabled, simply
      * having enough credits lying in the machine is sufficient; we'll deduct
      * the extra in Apply(). */
-    int iNumCreditsAvailable = iNumCreditsPaid;
+    int num_credits_available = num_credits_paid;
     if (PREFSMAN->delayed_credits_reconcile_) {
-      iNumCreditsAvailable += iCredits;
+      num_credits_available += credits;
     }
 
-    if (iNumCreditsAvailable < iNumCreditsRequired) {
+    if (num_credits_available < num_credits_required) {
       if (why) {
         *why = ssprintf(
-            "need %i credits, have %i", iNumCreditsRequired,
-            iNumCreditsAvailable);
+            "need %i credits, have %i", num_credits_required,
+            num_credits_available);
       }
       return false;
     }
@@ -606,10 +605,10 @@ bool GameCommand::IsPlayable(std::string* why) const {
   }
 
   if (!CompareNoCase(screen_, "ScreenEditCoursesMenu")) {
-    std::vector<Course*> vCourses;
-    SONGMAN->GetAllCourses(vCourses, false);
+    std::vector<Course*> courses;
+    SONGMAN->GetAllCourses(courses, false);
 
-    if (vCourses.size() == 0) {
+    if (courses.size() == 0) {
       if (why) {
         *why = "No courses are installed";
       }
@@ -684,7 +683,7 @@ void GameCommand::Apply(const std::vector<PlayerNumber>& vpns) const {
 }
 
 void GameCommand::ApplySelf(const std::vector<PlayerNumber>& vpns) const {
-  const PlayMode OldPlayMode = GAMESTATE->play_mode_;
+  const PlayMode old_play_mode = GAMESTATE->play_mode_;
 
   if (pm_ != PlayMode_Invalid) {
     GAMESTATE->play_mode_.Set(pm_);
@@ -697,14 +696,14 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& vpns) const {
     // If enough players aren't joined, then  we need to subtract credits
     // for the sides that will be joined as a result of applying this option.
     if (GAMESTATE->GetCoinMode() == CoinMode_Pay) {
-      int iNumCreditsRequired = GetCreditsRequiredToPlayStyle(style_);
-      int iNumCreditsPaid = GetNumCreditsPaid();
-      int iNumCreditsOwed = iNumCreditsRequired - iNumCreditsPaid;
+      int num_credits_required = GetCreditsRequiredToPlayStyle(style_);
+      int num_credits_paid = GetNumCreditsPaid();
+      int num_credits_owed = num_credits_required - num_credits_paid;
       GAMESTATE->coins_.Set(
-          GAMESTATE->coins_ - iNumCreditsOwed * PREFSMAN->coins_per_credit_);
+          GAMESTATE->coins_ - num_credits_owed * PREFSMAN->coins_per_credit_);
       LOG->Trace(
           "Deducted %i coins, %i remaining",
-          iNumCreditsOwed * PREFSMAN->coins_per_credit_,
+          num_credits_owed * PREFSMAN->coins_per_credit_,
           GAMESTATE->coins_.Get());
 
       // Credit Used, make sure to update CoinsFile
@@ -876,7 +875,7 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& vpns) const {
   // we don't override the user's changes if they back out.
   FOREACH_PlayerNumber(pn) {
     if (GAMESTATE->play_mode_ == PLAY_MODE_ONI &&
-        GAMESTATE->play_mode_ != OldPlayMode &&
+        GAMESTATE->play_mode_ != old_play_mode &&
         GAMESTATE->player_state_[pn]->player_options_.GetStage().life_type_ ==
             LifeType_Bar) {
       PO_GROUP_ASSIGN(
@@ -927,8 +926,8 @@ class LunaGameCommand : public Luna<GameCommand> {
     if (p->style_ == nullptr) {
       lua_pushnil(L);
     } else {
-      Style* pStyle = (Style*)p->style_;
-      pStyle->PushSelf(L);
+      Style* style = (Style*)p->style_;
+      style->PushSelf(L);
     }
     return 1;
   }

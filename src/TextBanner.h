@@ -17,13 +17,14 @@ class TextBanner : public ActorFrame {
   TextBanner(const TextBanner& cpy);
   virtual TextBanner* Copy() const;
 
-  void LoadFromNode(const XNode* pNode);
-  void Load(std::string sMetricsGroup);  // load metrics
-  void SetFromSong(const Song* pSong);
+  void LoadFromNode(const XNode* node);
+  void Load(std::string metrics_group);  // load metrics
+  void SetFromSong(const Song* song);
   void SetFromString(
-      const std::string& sDisplayTitle, const std::string& sTranslitTitle,
-      const std::string& sDisplaySubTitle, const std::string& sTranslitSubTitle,
-      const std::string& sDisplayArtist, const std::string& sTranslitArtist);
+      const std::string& display_title, const std::string& translit_title,
+      const std::string& display_sub_title,
+      const std::string& translit_sub_title, const std::string& display_artist,
+      const std::string& translit_artist);
 
   // Lua
   void PushSelf(lua_State* L);

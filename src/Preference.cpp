@@ -12,8 +12,8 @@
 
 static SubscriptionManager<IPreference> m_Subscribers;
 
-IPreference::IPreference(const std::string& sName, PreferenceType type)
-    : name_(sName),
+IPreference::IPreference(const std::string& name, PreferenceType type)
+    : name_(name),
       do_not_write_(type == PreferenceType::Deprecated),
       immutable_(type == PreferenceType::Immutable) {
   m_Subscribers.Subscribe(this);
@@ -21,9 +21,9 @@ IPreference::IPreference(const std::string& sName, PreferenceType type)
 
 IPreference::~IPreference() { m_Subscribers.Unsubscribe(this); }
 
-IPreference* IPreference::GetPreferenceByName(const std::string& sName) {
+IPreference* IPreference::GetPreferenceByName(const std::string& name) {
   for (IPreference* p : *m_Subscribers.subscribers_) {
-    if (!CompareNoCase(p->GetName(), sName)) {
+    if (!CompareNoCase(p->GetName(), name)) {
       return p;
     }
   }
@@ -37,25 +37,25 @@ void IPreference::LoadAllDefaults() {
   }
 }
 
-void IPreference::ReadAllPrefsFromNode(const XNode* pNode, bool bIsStatic) {
-  ASSERT(pNode != nullptr);
+void IPreference::ReadAllPrefsFromNode(const XNode* node, bool is_static) {
+  ASSERT(node != nullptr);
   for (IPreference* p : *m_Subscribers.subscribers_) {
-    p->ReadFrom(pNode, bIsStatic);
+    p->ReadFrom(node, is_static);
   }
 }
 
-void IPreference::SavePrefsToNode(XNode* pNode) {
+void IPreference::SavePrefsToNode(XNode* node) {
   for (IPreference* p : *m_Subscribers.subscribers_) {
-    p->WriteTo(pNode);
+    p->WriteTo(node);
   }
 }
 
-void IPreference::ReadAllDefaultsFromNode(const XNode* pNode) {
-  if (pNode == nullptr) {
+void IPreference::ReadAllDefaultsFromNode(const XNode* node) {
+  if (node == nullptr) {
     return;
   }
   for (IPreference* p : *m_Subscribers.subscribers_) {
-    p->ReadDefaultFrom(pNode);
+    p->ReadDefaultFrom(node);
   }
 }
 
@@ -79,36 +79,36 @@ void IPreference::SetFromStack(lua_State* L) {
   lua_pop(L, 1);
 }
 
-void IPreference::ReadFrom(const XNode* pNode, bool bIsStatic) {
-  std::string sVal;
-  if (pNode->GetAttrValue(name_, sVal)) {
-    FromString(sVal);
-    if (bIsStatic) {
+void IPreference::ReadFrom(const XNode* node, bool is_static) {
+  std::string val;
+  if (node->GetAttrValue(name_, val)) {
+    FromString(val);
+    if (is_static) {
       do_not_write_ = true;
     }
   }
 }
 
-void IPreference::WriteTo(XNode* pNode) const {
+void IPreference::WriteTo(XNode* node) const {
   if (do_not_write_) {
     return;
   }
 
-  pNode->AppendAttr(name_, ToString());
+  node->AppendAttr(name_, ToString());
 }
 
 /* Load our value from the node, and make it the new default. */
-void IPreference::ReadDefaultFrom(const XNode* pNode) {
-  std::string sVal;
-  if (!pNode->GetAttrValue(name_, sVal)) {
+void IPreference::ReadDefaultFrom(const XNode* node) {
+  std::string val;
+  if (!node->GetAttrValue(name_, val)) {
     return;
   }
-  SetDefaultFromString(sVal);
+  SetDefaultFromString(val);
 }
 
-void BroadcastPreferenceChanged(const std::string& sPreferenceName) {
+void BroadcastPreferenceChanged(const std::string& preference_name) {
   if (MESSAGEMAN) {
-    MESSAGEMAN->Broadcast(sPreferenceName + "Changed");
+    MESSAGEMAN->Broadcast(preference_name + "Changed");
   }
 }
 

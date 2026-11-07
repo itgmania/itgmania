@@ -15,7 +15,7 @@ class DancingCharacters : public ActorFrame {
 
   void LoadNextSong();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual void DrawPrimitives();
   bool draw_danger_light_;
 

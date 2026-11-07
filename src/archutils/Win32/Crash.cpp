@@ -44,11 +44,11 @@ static void BufferedFormatString(
 
 static void SpliceProgramPath(char* buf, int bufsiz, const char* fn) {
   char tbuf[MAX_PATH];
-  char* pszFile;
+  char* file;
 
   GetModuleFileNameA(nullptr, tbuf, sizeof tbuf);
-  GetFullPathNameA(tbuf, bufsiz, buf, &pszFile);
-  strcpy(pszFile, fn);
+  GetFullPathNameA(tbuf, bufsiz, buf, &file);
+  strcpy(file, fn);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -108,36 +108,35 @@ static const char* LookupException(DWORD code) {
 }
 
 static CrashInfo g_CrashInfo;
-static void GetReason(const EXCEPTION_RECORD* pRecord, CrashInfo* crash) {
+static void GetReason(const EXCEPTION_RECORD* record, CrashInfo* crash) {
   // fill out bomb reason
-  const char* reason = LookupException(pRecord->ExceptionCode);
+  const char* reason = LookupException(record->ExceptionCode);
 
   if (reason == nullptr) {
     BufferedFormatString(
         crash->crash_reason_, sizeof(crash->crash_reason_),
-        "unknown exception 0x%08lx", pRecord->ExceptionCode);
+        "unknown exception 0x%08lx", record->ExceptionCode);
   } else {
     strcpy(crash->crash_reason_, reason);
   }
 }
 
 static HWND g_hForegroundWnd = nullptr;
-void CrashHandler::SetForegroundWindow(HWND hWnd) { g_hForegroundWnd = hWnd; }
+void CrashHandler::SetForegroundWindow(HWND wnd) { g_hForegroundWnd = wnd; }
 
-void WriteToChild(HANDLE hPipe, const void* pData, size_t iSize) {
-  while (iSize) {
-    DWORD iActual;
-    if (!WriteFile(
-            hPipe, pData, static_cast<DWORD>(iSize), &iActual, nullptr)) {
+void WriteToChild(HANDLE pipe, const void* data, size_t size) {
+  while (size) {
+    DWORD actual;
+    if (!WriteFile(pipe, data, static_cast<DWORD>(size), &actual, nullptr)) {
       return;
     }
-    iSize -= iActual;
+    size -= actual;
   }
 }
 
 /* Execute the child process. Return a handle to the process, a writable handle
  * to its stdin, and a readable handle to its stdout. */
-bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
+bool StartChild(HANDLE& process, HANDLE& to_stdin, HANDLE& from_stdout) {
   char cwd[MAX_PATH];
   SpliceProgramPath(cwd, MAX_PATH, "");
 
@@ -151,21 +150,21 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
     sa.bInheritHandle = true;
     sa.lpSecurityDescriptor = nullptr;
 
-    CreatePipe(&si.hStdInput, &hToStdin, &sa, 0);
-    CreatePipe(&hFromStdout, &si.hStdOutput, &sa, 0);
-    SetHandleInformation(hToStdin, HANDLE_FLAG_INHERIT, 0);
-    SetHandleInformation(hFromStdout, HANDLE_FLAG_INHERIT, 0);
+    CreatePipe(&si.hStdInput, &to_stdin, &sa, 0);
+    CreatePipe(&from_stdout, &si.hStdOutput, &sa, 0);
+    SetHandleInformation(to_stdin, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(from_stdout, HANDLE_FLAG_INHERIT, 0);
   }
 
-  char szBuf[MAX_PATH] = "";
-  GetModuleFileNameA(nullptr, szBuf, MAX_PATH);
-  strcat(szBuf, " ");
-  strcat(szBuf, CHILD_MAGIC_PARAMETER);
+  char buf[MAX_PATH] = "";
+  GetModuleFileNameA(nullptr, buf, MAX_PATH);
+  strcat(buf, " ");
+  strcat(buf, CHILD_MAGIC_PARAMETER);
 
   PROCESS_INFORMATION pi;
-  int iRet = CreateProcessA(
+  int ret = CreateProcessA(
       nullptr,  // pointer to name of executable module
-      szBuf,    // pointer to command line string
+      buf,      // pointer to command line string
       nullptr,  // process security attributes
       nullptr,  // thread security attributes
       true,     // handle inheritance flag
@@ -179,44 +178,44 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
   CloseHandle(si.hStdInput);
   CloseHandle(si.hStdOutput);
 
-  if (!iRet) {
-    CloseHandle(hToStdin);
-    CloseHandle(hFromStdout);
+  if (!ret) {
+    CloseHandle(to_stdin);
+    CloseHandle(from_stdout);
     return false;
   }
 
-  hProcess = pi.hProcess;
+  process = pi.hProcess;
   CloseHandle(pi.hThread);
 
   return true;
 }
 
-static const char* CrashGetModuleBaseName(HMODULE hmod, char* pszBaseName) {
-  char szPath1[MAX_PATH];
-  char szPath2[MAX_PATH];
+static const char* CrashGetModuleBaseName(HMODULE hmod, char* base_name) {
+  char path1[MAX_PATH];
+  char path2[MAX_PATH];
 
   // XXX: It looks like nothing in here COULD throw an exception. Need to verify
   // that.
   //	__try {
-  if (!GetModuleFileNameA(hmod, szPath1, sizeof(szPath1))) {
+  if (!GetModuleFileNameA(hmod, path1, sizeof(path1))) {
     return nullptr;
   }
 
-  char* pszFile;
-  DWORD dw = GetFullPathNameA(szPath1, sizeof(szPath2), szPath2, &pszFile);
+  char* file;
+  DWORD dw = GetFullPathNameA(path1, sizeof(path2), path2, &file);
 
-  if (!dw || dw > sizeof(szPath2)) {
+  if (!dw || dw > sizeof(path2)) {
     return nullptr;
   }
 
-  strcpy(pszBaseName, pszFile);
+  strcpy(base_name, file);
 
-  pszFile = pszBaseName;
+  file = base_name;
 
   char* period = nullptr;
-  while (*pszFile++) {
-    if (pszFile[-1] == '.') {
-      period = pszFile - 1;
+  while (*file++) {
+    if (file[-1] == '.') {
+      period = file - 1;
     }
   }
 
@@ -227,40 +226,40 @@ static const char* CrashGetModuleBaseName(HMODULE hmod, char* pszBaseName) {
   //		return nullptr;
   //	}
 
-  return pszBaseName;
+  return base_name;
 }
 
 void RunChild() {
-  HANDLE hProcess = nullptr, hToStdin = nullptr, hFromStdout = nullptr;
-  if (!StartChild(hProcess, hToStdin, hFromStdout)) {
+  HANDLE process = nullptr, to_stdin = nullptr, from_stdout = nullptr;
+  if (!StartChild(process, to_stdin, from_stdout)) {
     ASSERT_M(0, "Failed to start child process");
   }
 
   // 0. Send a handle of this process to the crash handling process, which it
   // can use to handle symbol lookups.
   {
-    HANDLE hTargetHandle;
+    HANDLE target_handle;
     DuplicateHandle(
-        GetCurrentProcess(), GetCurrentProcess(), hProcess, &hTargetHandle, 0,
+        GetCurrentProcess(), GetCurrentProcess(), process, &target_handle, 0,
         FALSE, DUPLICATE_SAME_ACCESS);
 
-    WriteToChild(hToStdin, &hTargetHandle, sizeof(hTargetHandle));
+    WriteToChild(to_stdin, &target_handle, sizeof(target_handle));
   }
 
   // 1. Write the CrashData.
-  WriteToChild(hToStdin, &g_CrashInfo, sizeof(g_CrashInfo));
+  WriteToChild(to_stdin, &g_CrashInfo, sizeof(g_CrashInfo));
 
   // 2. Write info.
   const TCHAR* p = RageLog::GetInfo();
-  int iSize = static_cast<int>(strlen(p));
-  WriteToChild(hToStdin, &iSize, sizeof(iSize));
-  WriteToChild(hToStdin, p, iSize);
+  int size = static_cast<int>(strlen(p));
+  WriteToChild(to_stdin, &size, sizeof(size));
+  WriteToChild(to_stdin, p, size);
 
   // 3. Write AdditionalLog.
   p = RageLog::GetAdditionalLog();
-  iSize = static_cast<int>(strlen(p));
-  WriteToChild(hToStdin, &iSize, sizeof(iSize));
-  WriteToChild(hToStdin, p, iSize);
+  size = static_cast<int>(strlen(p));
+  WriteToChild(to_stdin, &size, sizeof(size));
+  WriteToChild(to_stdin, p, size);
 
   // 4. Write RecentLogs.
   int cnt = 0;
@@ -269,25 +268,25 @@ void RunChild() {
     ++cnt;
   }
 
-  WriteToChild(hToStdin, &cnt, sizeof(cnt));
+  WriteToChild(to_stdin, &cnt, sizeof(cnt));
   for (int i = 0; i < cnt; ++i) {
-    iSize = static_cast<int>(strlen(ps[i])) + 1;
-    WriteToChild(hToStdin, &iSize, sizeof(iSize));
-    WriteToChild(hToStdin, ps[i], iSize);
+    size = static_cast<int>(strlen(ps[i])) + 1;
+    WriteToChild(to_stdin, &size, sizeof(size));
+    WriteToChild(to_stdin, ps[i], size);
   }
 
   // 5. Write CHECKPOINTs.
   static TCHAR buf[1024 * 32];
   Checkpoints::GetLogs(buf, sizeof(buf), "$$");
-  iSize = static_cast<int>(strlen(buf)) + 1;
-  WriteToChild(hToStdin, &iSize, sizeof(iSize));
-  WriteToChild(hToStdin, buf, iSize);
+  size = static_cast<int>(strlen(buf)) + 1;
+  WriteToChild(to_stdin, &size, sizeof(size));
+  WriteToChild(to_stdin, buf, size);
 
   // 6. Write the crashed thread's name.
   p = RageThread::GetCurrentThreadName();
-  iSize = static_cast<int>(strlen(p)) + 1;
-  WriteToChild(hToStdin, &iSize, sizeof(iSize));
-  WriteToChild(hToStdin, p, iSize);
+  size = static_cast<int>(strlen(p)) + 1;
+  WriteToChild(to_stdin, &size, sizeof(size));
+  WriteToChild(to_stdin, p, size);
 
   /* The parent process needs to access this process briefly. When it's done,
    * it'll close the handle. Wait until we see that before exiting. */
@@ -295,23 +294,23 @@ void RunChild() {
     /* Ugly: the new process can't execute GetModuleFileName on this process,
      * since GetModuleFileNameEx might not be available. Run the requests here.
      */
-    HMODULE hMod;
-    DWORD iActual;
-    if (!ReadFile(hFromStdout, &hMod, sizeof(hMod), &iActual, nullptr)) {
+    HMODULE mod;
+    DWORD actual;
+    if (!ReadFile(from_stdout, &mod, sizeof(mod), &actual, nullptr)) {
       break;
     }
 
-    TCHAR szName[MAX_PATH];
-    if (!CrashGetModuleBaseName(hMod, szName)) {
-      strcpy(szName, "???");
+    TCHAR name[MAX_PATH];
+    if (!CrashGetModuleBaseName(mod, name)) {
+      strcpy(name, "???");
     }
-    iSize = static_cast<int>(strlen(szName));
-    WriteToChild(hToStdin, &iSize, sizeof(iSize));
-    WriteToChild(hToStdin, szName, iSize);
+    size = static_cast<int>(strlen(name));
+    WriteToChild(to_stdin, &size, sizeof(size));
+    WriteToChild(to_stdin, name, size);
   }
 }
 
-static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
+static DWORD WINAPI MainExceptionHandler(LPVOID parameter) {
   // Flush the log so it isn't cut off at the end.
   /* 1. We can't do regular file access in the crash handler.
    * 2. We can't access LOG itself at all, since it may not be set up or the
@@ -328,30 +327,30 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
    * However, once in a while some driver or library turns evil and unmasks an
    * exception flag on us. If this happens, re-mask it and continue execution.
    */
-  PEXCEPTION_POINTERS pExc = reinterpret_cast<PEXCEPTION_POINTERS>(lpParameter);
-  switch (pExc->ExceptionRecord->ExceptionCode) {
+  PEXCEPTION_POINTERS exc = reinterpret_cast<PEXCEPTION_POINTERS>(parameter);
+  switch (exc->ExceptionRecord->ExceptionCode) {
     case EXCEPTION_FLT_INVALID_OPERATION:
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
     case EXCEPTION_FLT_OVERFLOW:
     case EXCEPTION_FLT_UNDERFLOW:
     case EXCEPTION_FLT_INEXACT_RESULT:
-      pExc->ContextRecord->FltSave.ControlWord |= 0x3F;
+      exc->ContextRecord->FltSave.ControlWord |= 0x3F;
       return static_cast<DWORD>(EXCEPTION_CONTINUE_EXECUTION);
   }
 
-  static int InHere = 0;
-  if (InHere > 0) {
+  static int in_here = 0;
+  if (in_here > 0) {
     /* If we get here, then we've been called recursively, which means we
-     * crashed. If InHere is greater than 1, then we crashed after writing
+     * crashed. If in_here is greater than 1, then we crashed after writing
      * the crash dump; say so. */
     SetUnhandledExceptionFilter(nullptr);
     MessageBoxA(
         nullptr,
-        InHere == 1 ? "The error reporting interface has crashed.\n"
-                    : "The error reporting interface has crashed. However, "
-                      "crashinfo.txt was written successfully to the program "
-                      "directory.\n",
+        in_here == 1 ? "The error reporting interface has crashed.\n"
+                     : "The error reporting interface has crashed. However, "
+                       "crashinfo.txt was written successfully to the program "
+                       "directory.\n",
         "Fatal Error", MB_OK);
 #ifdef DEBUG
     DebugBreak();
@@ -359,21 +358,21 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
 
     return EXCEPTION_EXECUTE_HANDLER;
   }
-  ++InHere;
+  ++in_here;
   /////////////////////////
 
   RageThread::HaltAllThreads(false);
 
   if (!g_CrashInfo.crash_reason_[0]) {
-    GetReason(pExc->ExceptionRecord, &g_CrashInfo);
+    GetReason(exc->ExceptionRecord, &g_CrashInfo);
   }
   CrashHandler::do_backtrace(
       (void**)g_CrashInfo.backtrace_pointers_, BACKTRACE_MAX_SIZE,
-      GetCurrentProcess(), GetCurrentThread(), pExc->ContextRecord);
+      GetCurrentProcess(), GetCurrentThread(), exc->ContextRecord);
 
   RunChild();
 
-  ++InHere;
+  ++in_here;
 
   if (g_bAutoRestart) {
     Win32RestartProgram();
@@ -394,7 +393,7 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
     ChangeDisplaySettings(nullptr, 0);
   }
 
-  InHere = false;
+  in_here = false;
 
   SetUnhandledExceptionFilter(nullptr);
 
@@ -405,29 +404,29 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-long __stdcall CrashHandler::ExceptionHandler(EXCEPTION_POINTERS* pExc) {
+long __stdcall CrashHandler::ExceptionHandler(EXCEPTION_POINTERS* exc) {
   /* If the stack overflowed, we have a very limited amount of stack space.
    * In this case, we will allocate a new 32KB stack, and run the exception
    * handler in it, to increase the chances of success. */
-  if (pExc->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
-    HANDLE hExceptionHandler = CreateThread(
-        nullptr, 1024 * 32, MainExceptionHandler,
-        reinterpret_cast<LPVOID>(pExc), 0, nullptr);
-    if (hExceptionHandler == NULL) {
+  if (exc->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
+    HANDLE exception_handler = CreateThread(
+        nullptr, 1024 * 32, MainExceptionHandler, reinterpret_cast<LPVOID>(exc),
+        0, nullptr);
+    if (exception_handler == NULL) {
       TerminateProcess(GetCurrentProcess(), 0);
       return EXCEPTION_EXECUTE_HANDLER;
     }
-    WaitForSingleObject(hExceptionHandler, INFINITE);
+    WaitForSingleObject(exception_handler, INFINITE);
 
     DWORD ret;
-    GetExitCodeThread(hExceptionHandler, &ret);
-    CloseHandle(hExceptionHandler);
+    GetExitCodeThread(exception_handler, &ret);
+    CloseHandle(exception_handler);
 
     return static_cast<long>(ret);
   }
 
   // Common case.
-  return static_cast<long>(MainExceptionHandler(pExc));
+  return static_cast<long>(MainExceptionHandler(exc));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -437,17 +436,17 @@ long __stdcall CrashHandler::ExceptionHandler(EXCEPTION_POINTERS* pExc) {
 // If fewer than 'size' frames are found, the next element is set to nullptr.
 // Only works on x86_64.
 void CrashHandler::do_backtrace(
-    void** buf, size_t size, HANDLE hProcess, HANDLE hThread,
-    const CONTEXT* pContext) {
-  if (!buf || !pContext || size == 0) {
+    void** buf, size_t size, HANDLE process, HANDLE thread,
+    const CONTEXT* context) {
+  if (!buf || !context || size == 0) {
     return;
   }
 
   size_t count = 0;
 
 #if defined(_M_X64) || defined(__x86_64__)
-  uintptr_t ip = static_cast<uintptr_t>(pContext->Rip);
-  uintptr_t frame = static_cast<uintptr_t>(pContext->Rbp);
+  uintptr_t ip = static_cast<uintptr_t>(context->Rip);
+  uintptr_t frame = static_cast<uintptr_t>(context->Rbp);
 #else
   uintptr_t ip = 0, frame = 0;
 #endif
@@ -509,75 +508,75 @@ static void debug_crash() {
 #pragma warning(pop)
 
 /* Get a stack trace of the current thread and the specified thread.
- * If iID == GetInvalidThreadId(), then output a stack trace for every thread.
+ * If id == GetInvalidThreadId(), then output a stack trace for every thread.
  */
-void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
+void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
   strncpy(
       g_CrashInfo.crash_reason_, reason.c_str(),
       sizeof(g_CrashInfo.crash_reason_));
   g_CrashInfo.crash_reason_[sizeof(g_CrashInfo.crash_reason_) - 1] = 0;
 
   /* Suspend the other thread we're going to backtrace. (We need to at least
-   * suspend hThread, for GetThreadContext to work.) */
+   * suspend thread, for GetThreadContext to work.) */
   RageThread::HaltAllThreads(false);
 
-  if (iID == GetInvalidThreadId()) {
+  if (id == GetInvalidThreadId()) {
     // Backtrace all threads.
-    int iCnt = 0;
-    for (int i = 0; RageThread::EnumThreadIDs(i, iID); ++i) {
-      if (iID == GetInvalidThreadId()) {
+    int cnt = 0;
+    for (int i = 0; RageThread::EnumThreadIDs(i, id); ++i) {
+      if (id == GetInvalidThreadId()) {
         continue;
       }
 
-      if (iID == GetCurrentThreadId()) {
+      if (id == GetCurrentThreadId()) {
         continue;
       }
 
-      const HANDLE hThread = Win32ThreadIdToHandle(iID);
+      const HANDLE thread = Win32ThreadIdToHandle(id);
 
       CONTEXT context;
       context.ContextFlags = CONTEXT_FULL;
-      if (!GetThreadContext(hThread, &context)) {
+      if (!GetThreadContext(thread, &context)) {
         size_t used = strlen(g_CrashInfo.crash_reason_);
         BufferedFormatString(
             g_CrashInfo.crash_reason_ + used,
             sizeof(g_CrashInfo.crash_reason_) - used,
             "; GetThreadContext(%Ix) failed",
-            reinterpret_cast<uintptr_t>(hThread));
+            reinterpret_cast<uintptr_t>(thread));
       } else {
-        static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
+        static const void* kBacktracePointers[BACKTRACE_MAX_SIZE];
         do_backtrace(
-            (void**)g_CrashInfo.alternate_thread_backtrace_[iCnt],
-            BACKTRACE_MAX_SIZE, GetCurrentProcess(), hThread, &context);
+            (void**)g_CrashInfo.alternate_thread_backtrace_[cnt],
+            BACKTRACE_MAX_SIZE, GetCurrentProcess(), thread, &context);
 
-        const char* pName = RageThread::GetThreadNameByID(iID);
+        const char* name = RageThread::GetThreadNameByID(id);
         strncpy(
-            g_CrashInfo.alternate_thread_name_[iCnt], pName ? pName : "???",
-            sizeof(g_CrashInfo.alternate_thread_name_[iCnt]) - 1);
+            g_CrashInfo.alternate_thread_name_[cnt], name ? name : "???",
+            sizeof(g_CrashInfo.alternate_thread_name_[cnt]) - 1);
 
-        ++iCnt;
+        ++cnt;
       }
 
-      if (iCnt == CrashInfo::kMaxBacktraceThreads) {
+      if (cnt == CrashInfo::kMaxBacktraceThreads) {
         break;
       }
     }
   } else {
-    const HANDLE hThread = Win32ThreadIdToHandle(iID);
+    const HANDLE thread = Win32ThreadIdToHandle(id);
 
     CONTEXT context;
     context.ContextFlags = CONTEXT_FULL;
-    if (!GetThreadContext(hThread, &context)) {
+    if (!GetThreadContext(thread, &context)) {
       strcat(g_CrashInfo.crash_reason_, "(GetThreadContext failed)");
     } else {
-      static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
+      static const void* kBacktracePointers[BACKTRACE_MAX_SIZE];
       do_backtrace(
           (void**)g_CrashInfo.alternate_thread_backtrace_[0],
-          BACKTRACE_MAX_SIZE, GetCurrentProcess(), hThread, &context);
+          BACKTRACE_MAX_SIZE, GetCurrentProcess(), thread, &context);
 
-      const char* pName = RageThread::GetThreadNameByID(iID);
+      const char* name = RageThread::GetThreadNameByID(id);
       strncpy(
-          g_CrashInfo.alternate_thread_name_[0], pName ? pName : "???",
+          g_CrashInfo.alternate_thread_name_[0], name ? name : "???",
           sizeof(g_CrashInfo.alternate_thread_name_[0]) - 1);
     }
   }

@@ -67,16 +67,16 @@ bool CodeDetector::EnteredCode(GameController controller, Code code) {
   return g_CodeItems[code].EnteredCode(controller);
 }
 
-void CodeDetector::RefreshCacheItems(std::string sClass) {
-  if (sClass == "") {
-    sClass = "CodeDetector";
+void CodeDetector::RefreshCacheItems(std::string s_class) {
+  if (s_class == "") {
+    s_class = "CodeDetector";
   }
   FOREACH_ENUM(Code, c) {
     InputQueueCode& item = g_CodeItems[c];
-    const std::string sCodeName = CodeToString(c);
-    const std::string sButtonsNames = THEME->GetMetric(sClass, sCodeName);
+    const std::string code_name = CodeToString(c);
+    const std::string buttons_names = THEME->GetMetric(s_class, code_name);
 
-    item.Load(sButtonsNames);
+    item.Load(buttons_names);
   }
 }
 
