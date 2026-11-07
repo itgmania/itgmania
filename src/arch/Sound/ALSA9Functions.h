@@ -4,6 +4,13 @@
 #error "Improper use of FUNC X-macro in ALSA9Functions.h"
 #endif
 
+/* OPTIONAL_FUNC: newer symbols the driver can do without. LoadALSA leaves
+ * them null when missing; everywhere else they are declared like FUNC. */
+#ifndef OPTIONAL_FUNC
+#define OPTIONAL_FUNC FUNC
+#define ALSA9_UNDEF_OPTIONAL_FUNC
+#endif
+
 FUNC(size_t, snd_pcm_hw_params_sizeof, (void));
 FUNC(size_t, snd_pcm_sw_params_sizeof, (void));
 FUNC(size_t, snd_pcm_info_sizeof, (void));
@@ -56,7 +63,17 @@ FUNC(
 FUNC(int, snd_pcm_status, (snd_pcm_t * pcm, snd_pcm_status_t* status));
 FUNC(
     snd_pcm_uframes_t, snd_pcm_status_get_avail, (const snd_pcm_status_t* obj));
+FUNC(
+    snd_pcm_sframes_t, snd_pcm_status_get_delay, (const snd_pcm_status_t* obj));
+FUNC(snd_pcm_state_t, snd_pcm_status_get_state, (const snd_pcm_status_t* obj));
+FUNC(
+    void, snd_pcm_status_get_htstamp,
+    (const snd_pcm_status_t* obj, snd_htimestamp_t* ptr));
+FUNC(
+    void, snd_pcm_status_get_trigger_htstamp,
+    (const snd_pcm_status_t* obj, snd_htimestamp_t* ptr));
 FUNC(size_t, snd_pcm_status_sizeof, (void));
+FUNC(int, snd_pcm_recover, (snd_pcm_t * pcm, int err, int silent));
 FUNC(int, snd_pcm_hwsync, (snd_pcm_t * pcm));
 FUNC(int, snd_ctl_pcm_next_device, (snd_ctl_t * ctl, int* device));
 FUNC(int, snd_ctl_pcm_info, (snd_ctl_t * ctl, snd_pcm_info_t* info));
@@ -100,6 +117,18 @@ FUNC(
 FUNC(
     int, snd_pcm_sw_params_set_avail_min,
     (snd_pcm_t * pcm, snd_pcm_sw_params_t* params, snd_pcm_uframes_t val));
+FUNC(
+    int, snd_pcm_sw_params_set_tstamp_mode,
+    (snd_pcm_t * pcm, snd_pcm_sw_params_t* params, snd_pcm_tstamp_t val));
+/* alsa-lib 1.0.29 */
+OPTIONAL_FUNC(
+    int, snd_pcm_sw_params_get_tstamp_type,
+    (const snd_pcm_sw_params_t* params, snd_pcm_tstamp_type_t* val));
+
+#ifdef ALSA9_UNDEF_OPTIONAL_FUNC
+#undef OPTIONAL_FUNC
+#undef ALSA9_UNDEF_OPTIONAL_FUNC
+#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

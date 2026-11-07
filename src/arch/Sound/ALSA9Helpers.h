@@ -1,7 +1,10 @@
 #ifndef ALSA9_HELPERS_H
 #define ALSA9_HELPERS_H
 
+#include <time.h>
+
 #include <cstdint>
+#include <mutex>
 #include <string>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
@@ -11,6 +14,9 @@
 class Alsa9Buf {
  private:
   unsigned samplerate;
+  /* Frames written so far. GetPosition reports positions in this count, so it
+   * must move with the device's write pointer: anything that moves that
+   * pointer without writing (forward) moves this too. */
   int64_t last_cursor_pos;
 
   snd_pcm_uframes_t preferred_writeahead, preferred_chunksize;
@@ -18,8 +24,35 @@ class Alsa9Buf {
 
   snd_pcm_t* pcm;
 
+  /* GetPosition runs on the mixer and main threads. This keeps
+   * last_cursor_pos in step with the write pointer and guards the clock. */
+  mutable std::mutex position_lock;
+
+  /* Clock of the PCM's status timestamps, or -1 if they can't be used. */
+  clockid_t tstamp_clock;
+
+  /* The device reports its position only when its pointer moves, which on
+   * some hardware is once a period. GetPosition extrapolates from the time
+   * the current position was reached, up to max_extrapolation_ns. */
+  struct PositionClock {
+    bool valid = false;
+    int64_t frame = 0;          // position, in last_cursor_pos frames
+    int64_t time_ns = 0;        // when the device reached it
+    int64_t last_query_ns = 0;  // clock just before the last status read
+    int64_t last_moved = 0;     // that status's pointer timestamp
+    int64_t last_returned = 0;
+    /* Positions keep moving without the pointer moving: the driver reports a
+     * delay that changes on its own (USB), so they are current as read. Once
+     * seen, that stays: such a driver also moves its pointer every period. */
+    bool live_delay = false;
+    int strikes = 0;  // new positions without a pointer move
+  };
+  mutable PositionClock position_clock;
+  int64_t max_extrapolation_ns;
+
   bool SetHWParams();
   bool SetSWParams();
+  bool Recover(int err);
 
   static void ErrorHandler(
       const char* file, int line, const char* function, int err,
