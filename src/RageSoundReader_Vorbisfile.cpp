@@ -4,10 +4,13 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <climits>
 #include <cstdarg>
 #include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "RageException.h"
 #include "RageFileBasic.h"
@@ -126,12 +129,35 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_Vorbisfile::Open(
   }
 
   eof = false;
-  read_offset = (int)ov_pcm_tell(vf);
+
+  /* A first audio page whose granule position is larger than the samples it
+   * holds marks a stream that starts at a positive time offset. ffmpeg writes
+   * one (7 ms) when it converts WebM/Opus, as YouTube audio is, to Ogg, while
+   * the samples themselves line up with the source. Like other decoders
+   * (ov_read, ffmpeg, symphonia) and the chart editors built on them, play
+   * the first decoded sample as frame 0. A negative offset (start trim) is
+   * applied by libvorbis itself. Chained files keep the old behaviour. */
+  start_granule = 0;
+  tell_bias = 0;
+  if (vf->seekable && vf->links == 1 && vf->pcmlengths[0] > 0 &&
+      vf->pcmlengths[0] <= INT_MAX) {
+    start_granule = (int)vf->pcmlengths[0];
+  }
+  read_offset = GetDecoderFrame();
 
   vorbis_info* vi = ov_info(vf, -1);
   channels = vi->channels;
 
   return OPEN_OK;
+}
+
+/* libvorbisfile's ov_pcm_tell counts the first logical stream from its first
+ * sample after opening or seeking, but from granule position zero once it has
+ * decoded the last packet of a page, so for a stream that starts at a positive
+ * granule position it jumps ahead by start_granule mid-stream. Read() spots
+ * that jump and sets tell_bias; this returns the position in our numbering. */
+int RageSoundReader_Vorbisfile::GetDecoderFrame() const {
+  return (int)(ov_pcm_tell(vf) - tell_bias);
 }
 
 int RageSoundReader_Vorbisfile::GetLength() const {
@@ -147,10 +173,16 @@ int RageSoundReader_Vorbisfile::GetLength() const {
 
 int RageSoundReader_Vorbisfile::SetPosition(int iFrame) {
   eof = false;
+  tell_bias = 0;
 
   const ogg_int64_t sample = ogg_int64_t(iFrame);
 
-  int ret = ov_pcm_seek(vf, sample);
+  /* With a positive start offset, ov_pcm_seek can return in either of
+   * ov_pcm_tell's numberings, depending on whether it decoded the end of a
+   * page. Seeking to the page always leaves the stream-relative one, so do
+   * that and decode forward to the frame here. */
+  int ret = start_granule > 0 ? ov_pcm_seek_page(vf, sample)
+                              : ov_pcm_seek(vf, sample);
   if (ret < 0) {
     /* Returns OV_EINVAL on EOF. */
     if (ret == OV_EINVAL || ret == OV_EOF) {
@@ -160,7 +192,22 @@ int RageSoundReader_Vorbisfile::SetPosition(int iFrame) {
     SetError(ov_ssprintf(ret, "ogg: SetPosition failed"));
     return -1;
   }
-  read_offset = (int)ov_pcm_tell(vf);
+  read_offset = GetDecoderFrame();
+
+  if (start_granule > 0) {
+    const int iChunk = 1024;
+    std::vector<float> discard(iChunk * channels);
+    while (read_offset < iFrame) {
+      int iGot = Read(discard.data(), std::min(iFrame - read_offset, iChunk));
+      if (iGot == END_OF_FILE) {
+        eof = true;
+        return 0;
+      }
+      if (iGot < 0) {
+        return -1;
+      }
+    }
+  }
 
   return 1;
 }
@@ -174,7 +221,17 @@ int RageSoundReader_Vorbisfile::Read(float* buf, int iFrames) {
     int iFramesRead = 0;
 
     {
-      int curofs = (int)ov_pcm_tell(vf);
+      int curofs = GetDecoderFrame();
+      if (start_granule > 0 && tell_bias == 0 && curofs > read_offset &&
+          std::abs(curofs - read_offset - start_granule) <= 2) {
+        /* ov_pcm_tell switched to granule numbering; not a hole. Some muxers
+         * round granule positions, so allow a sample or two either way and
+         * let the code below handle the rest as before. The switch is always
+         * a jump forward; requiring one keeps a start offset of one or two
+         * samples from matching before it has happened. */
+        tell_bias = start_granule;
+        curofs -= tell_bias;
+      }
       if (curofs < read_offset) {
         /* The timestamps moved backwards.  Ignore it.  This file probably
          * won't sync correctly. */
@@ -271,11 +328,17 @@ int RageSoundReader_Vorbisfile::GetSampleRate() const {
 int RageSoundReader_Vorbisfile::GetNextSourceFrame() const {
   ASSERT(vf != nullptr);
 
-  int iFrame = (int)ov_pcm_tell(vf);
-  return iFrame;
+  /* Read() starts with silence when the decoder is ahead of read_offset (a
+   * hole, or a numbering switch it has not seen yet) and jumps back to the
+   * decoder when it is behind, so its next frame is the smaller of the two. */
+  return std::min(GetDecoderFrame(), read_offset);
 }
 
-RageSoundReader_Vorbisfile::RageSoundReader_Vorbisfile() { vf = nullptr; }
+RageSoundReader_Vorbisfile::RageSoundReader_Vorbisfile() {
+  vf = nullptr;
+  start_granule = 0;
+  tell_bias = 0;
+}
 
 RageSoundReader_Vorbisfile::~RageSoundReader_Vorbisfile() {
   if (vf) {
