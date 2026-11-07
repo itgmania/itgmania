@@ -3,9 +3,14 @@
 #include <pulse/error.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <time.h>
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -39,10 +44,20 @@ RageSoundDriver_PulseAudio::RageSoundDriver_PulseAudio()
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio() {
-  pa_context_disconnect(m_PulseCtx);
-  pa_context_unref(m_PulseCtx);
-  pa_threaded_mainloop_stop(m_PulseMainLoop);
-  pa_threaded_mainloop_free(m_PulseMainLoop);
+  if (m_PulseMainLoop != nullptr) {
+    pa_threaded_mainloop_lock(m_PulseMainLoop);
+    if (m_TimingEvent != nullptr) {
+      pa_threaded_mainloop_get_api(m_PulseMainLoop)->time_free(m_TimingEvent);
+      m_TimingEvent = nullptr;
+    }
+    if (m_PulseCtx != nullptr) {
+      pa_context_disconnect(m_PulseCtx);
+      pa_context_unref(m_PulseCtx);
+    }
+    pa_threaded_mainloop_unlock(m_PulseMainLoop);
+    pa_threaded_mainloop_stop(m_PulseMainLoop);
+    pa_threaded_mainloop_free(m_PulseMainLoop);
+  }
 
   if (m_Error != nullptr) {
     free(m_Error);
@@ -165,6 +180,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void) {
    * change */
   pa_stream_set_state_callback(m_PulseStream, StaticStreamStateCb, this);
 
+  /* called after every timing update, ours and libpulse's own */
+  pa_stream_set_latency_update_callback(
+      m_PulseStream, StaticLatencyUpdateCb, this);
+
   /* configure attributes of the stream */
   pa_buffer_attr attr;
   memset(&attr, 0x00, sizeof(attr));  // Initialize all members to 0/nullptr
@@ -268,10 +287,17 @@ void RageSoundDriver_PulseAudio::CtxStateCb(pa_context* c) {
     case PA_CONTEXT_SETTING_NAME:
       LOG->Trace("Pulse: Context setting name...");
       break;
-    case PA_CONTEXT_READY:
+    case PA_CONTEXT_READY: {
       LOG->Trace("Pulse: Context ready now.");
+      /* Answered before the stream is created; see OffsetWindow. */
+      pa_operation* o =
+          pa_context_get_server_info(m_PulseCtx, StaticServerInfoCb, this);
+      if (o != nullptr) {
+        pa_operation_unref(o);
+      }
       m_InitStream();
       break;
+    }
     case PA_CONTEXT_TERMINATED:
     case PA_CONTEXT_FAILED:
       if (asprintf(
@@ -294,6 +320,10 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream* s) {
       break;
     case PA_STREAM_READY:
       LOG->Trace("Pulse: Stream ready now/");
+      if (m_TimingEvent == nullptr) {
+        m_TimingEvent = pa_context_rttime_new(
+            m_PulseCtx, pa_rtclock_now(), StaticTimingTimerCb, this);
+      }
       m_Sem.Post();
       return;
       break;
@@ -317,7 +347,145 @@ int64_t RageSoundDriver_PulseAudio::GetPosition() const {
   return position;
 }
 
+static int64_t ClockUsec(clockid_t id) {
+  timespec ts;
+  clock_gettime(id, &ts);
+  return int64_t(ts.tv_sec) * 1000000 + ts.tv_nsec / 1000;
+}
+
+/* PulseAudio reads a timing reply's indexes and latency and stamps it a moment
+ * later, so its offsets sit just below the true one, closest at the top of
+ * their spread. pipewire-pulse fills in the read index and delay at the start
+ * of each graph cycle but stamps the reply when it sends it, anywhere in the
+ * cycle, so its offsets spread evenly over one quantum above the true one, and
+ * pa_stream_get_time, which smooths them, runs about half a quantum ahead.
+ * Requested at irregular intervals, those offsets fall uniformly within the
+ * spread, so its lower edge can be estimated from order statistics, which
+ * also ignore a few outliers. */
+void RageSoundDriver_PulseAudio::OffsetWindow::Clear() {
+  m_iCount = m_iNext = m_iLowRun = m_iHighRun = 0;
+  m_fCap = std::numeric_limits<double>::infinity();
+}
+
+void RageSoundDriver_PulseAudio::OffsetWindow::Add(
+    double fOffset, double fJump) {
+  if (m_iCount >= 8) {
+    m_iLowRun = fOffset < m_fLow - fJump ? m_iLowRun + 1 : 0;
+    m_iHighRun = fOffset > m_fHigh + std::max(fJump, m_fHigh - m_fLow)
+                     ? m_iHighRun + 1
+                     : 0;
+    if (m_iLowRun >= 2) {
+      Clear();
+    } else if (m_iHighRun >= 3) {
+      /* Offsets rising out of the spread mean a wider spread (a larger
+       * quantum) or a step forward, so the true edge hasn't dropped: don't
+       * let the restart put it any higher than it was. */
+      const double fCap = m_fLowEdge;
+      Clear();
+      m_fCap = fCap;
+    }
+  }
+
+  m_fSamples[m_iNext] = fOffset;
+  m_iNext = (m_iNext + 1) % kSize;
+  m_iCount = std::min(m_iCount + 1, kSize);
+
+  double sorted[kSize];
+  std::copy(m_fSamples, m_fSamples + m_iCount, sorted);
+  std::sort(sorted, sorted + m_iCount);
+
+  /* For n draws from a uniform spread over [a, a+q], the j-th smallest is
+   * a + q*j/(n+1) on average. Take the (k+1)-th smallest and largest. */
+  const int k = m_iCount / 16;
+  const int span = m_iCount - 2 * k - 1;
+  m_fLow = sorted[k];
+  m_fHigh = sorted[m_iCount - 1 - k];
+  if (m_iCount >= kMinSamples) {
+    m_fLowEdge = m_fLow - (m_fHigh - m_fLow) * (k + 1) / span;
+    m_fSpread = (m_fHigh - m_fLow) * (m_iCount + 1) / span;
+  } else {
+    /* With fewer, that estimate can be most of a spread off either way. The
+     * lower edge is no lower than the highest offset less the last spread
+     * seen, no higher than the lowest offset, and after offsets rose out of
+     * the spread, no higher than it was. */
+    m_fLowEdge =
+        std::min({sorted[m_iCount - 1] - m_fSpread, sorted[0], m_fCap});
+  }
+}
+
+void RageSoundDriver_PulseAudio::LatencyUpdateCb() {
+  const pa_timing_info* info = pa_stream_get_timing_info(m_PulseStream);
+  if (info == nullptr || info->read_index_corrupt ||
+      info->sink_usec > 10 * PA_USEC_PER_SEC) {
+    return;
+  }
+
+  /* The stream frame being heard at info->timestamp. */
+  const double frame = double(info->read_index) / pa_frame_size(&m_ss) -
+                       double(info->sink_usec) * m_ss.rate / PA_USEC_PER_SEC;
+
+  m_bHaveTiming = true;
+  if (!info->playing) {
+    /* Underrun or prebuffering: nothing of ours plays, so the position holds,
+     * and the offset will be different when it plays again. */
+    m_bPlaying = false;
+    m_fHeldFrame = frame;
+    m_Offsets.Clear();
+    return;
+  }
+
+  /* The stamp is the server's wall clock; move it to the monotonic clock. A
+   * stamp that isn't just past was taken across a clock step. */
+  const int64_t ageUsec =
+      ClockUsec(CLOCK_REALTIME) -
+      (int64_t(info->timestamp.tv_sec) * 1000000 + info->timestamp.tv_usec);
+  if (ageUsec < 0 || ageUsec > 100000) {
+    return;
+  }
+  const double fStampSeconds =
+      double(ClockUsec(CLOCK_MONOTONIC) - ageUsec) / 1000000;
+
+  /* m_fHeldFrame stays at the last held position, for GetPositionUnlocked to
+   * hold until the offsets give a position that isn't ahead. */
+  m_bPlaying = true;
+  m_Offsets.Add(frame - m_ss.rate * fStampSeconds, m_ss.rate * 0.003);
+}
+
+void RageSoundDriver_PulseAudio::TimingTimerCb(pa_time_event* e) {
+  /* libpulse asks for timing only every 1.5 seconds once settled, and a
+   * request made on any schedule tied to the server's cycle would see its
+   * replies always at the same point in the cycle. */
+  if (!m_bTimingRequested &&
+      pa_stream_get_state(m_PulseStream) == PA_STREAM_READY) {
+    pa_operation* o =
+        pa_stream_update_timing_info(m_PulseStream, StaticTimingDoneCb, this);
+    if (o != nullptr) {
+      m_bTimingRequested = true;
+      pa_operation_unref(o);
+    }
+  }
+
+  m_iJitter ^= m_iJitter << 13;
+  m_iJitter ^= m_iJitter >> 17;
+  m_iJitter ^= m_iJitter << 5;
+  pa_context_rttime_restart(
+      m_PulseCtx, e, pa_rtclock_now() + 8000 + m_iJitter % 8000);
+}
+
 int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const {
+  if (m_bHaveTiming) {
+    double frame = m_fHeldFrame;
+    if (m_bPlaying &&
+        (m_bPipeWire ? m_Offsets.HaveLowEdge() : !m_Offsets.Empty())) {
+      const double offset =
+          m_bPipeWire ? m_Offsets.LowEdge() : m_Offsets.HighEdge();
+      frame =
+          offset + m_ss.rate * (double(ClockUsec(CLOCK_MONOTONIC)) / 1000000);
+    }
+    /* Nothing plays past what we have written. */
+    return std::min(int64_t(std::floor(frame)), m_LastPosition);
+  }
+
   pa_usec_t usec;
   if (pa_stream_get_time(m_PulseStream, &usec) < 0) {
     int paErrno = pa_context_errno(m_PulseCtx);
@@ -380,6 +548,27 @@ void RageSoundDriver_PulseAudio::StaticStreamWriteCb(
     pa_stream* s, size_t length, void* user) {
   RageSoundDriver_PulseAudio* obj = (RageSoundDriver_PulseAudio*)user;
   obj->StreamWriteCb(s, length);
+}
+void RageSoundDriver_PulseAudio::StaticLatencyUpdateCb(
+    pa_stream* s, void* user) {
+  static_cast<RageSoundDriver_PulseAudio*>(user)->LatencyUpdateCb();
+}
+void RageSoundDriver_PulseAudio::StaticTimingTimerCb(
+    pa_mainloop_api* api, pa_time_event* e, const struct timeval* tv,
+    void* user) {
+  static_cast<RageSoundDriver_PulseAudio*>(user)->TimingTimerCb(e);
+}
+void RageSoundDriver_PulseAudio::StaticTimingDoneCb(
+    pa_stream* s, int success, void* user) {
+  static_cast<RageSoundDriver_PulseAudio*>(user)->m_bTimingRequested = false;
+}
+void RageSoundDriver_PulseAudio::StaticServerInfoCb(
+    pa_context* c, const pa_server_info* i, void* user) {
+  if (i != nullptr && i->server_name != nullptr &&
+      strstr(i->server_name, "PipeWire") != nullptr) {
+    static_cast<RageSoundDriver_PulseAudio*>(user)->m_bPipeWire = true;
+    LOG->Trace("Pulse: server is %s", i->server_name);
+  }
 }
 
 /*
