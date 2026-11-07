@@ -147,9 +147,9 @@ bool ScreenTestSound::Input(const InputEventPlus& input) {
            * RageSound copy itself, then the copy will be owned by
            * RageSoundManager and we won't be allowed to touch it.  Copy it
            * ourself. */
-          RageSound* pCopy = new RageSound(s_[selected_].s_);
-          sound_copies_[selected_].push_back(pCopy);
-          pCopy->Play(false);
+          RageSound* copy = new RageSound(s_[selected_].s_);
+          sound_copies_[selected_].push_back(copy);
+          copy->Play(false);
           break;
         }
         case 's': {

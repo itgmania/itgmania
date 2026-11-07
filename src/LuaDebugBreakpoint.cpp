@@ -58,22 +58,22 @@ Breakpoint Breakpoint::Next(lua_State* L) {
 }
 
 Breakpoint Breakpoint::Function(
-    BreakpointId id, const std::string& functionName) {
+    BreakpointId id, const std::string& function_name) {
   Breakpoint bp;
   bp.id_ = id;
   bp.event_mask_ = LUA_MASKCALL;
-  bp.function_name_ = functionName;
+  bp.function_name_ = function_name;
   bp.reason_ = "function breakpoint";
   return bp;
 }
 
 Breakpoint Breakpoint::Line(
-    BreakpointId id, const std::string& fileName, int lineNumber) {
+    BreakpointId id, const std::string& file_name, int line_number) {
   Breakpoint bp;
   bp.id_ = id;
   bp.event_mask_ = LUA_MASKLINE;
-  bp.file_name_ = fileName;
-  bp.line_number_ = lineNumber;
+  bp.file_name_ = file_name;
+  bp.line_number_ = line_number;
   bp.reason_ = "breakpoint";
   return bp;
 }
@@ -139,19 +139,19 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
 }
 
 bool Breakpoint::EvaluateConditions(
-    DebuggeeState& stackFrame, std::string& evaluationError) {
+    DebuggeeState& stack_frame, std::string& evaluation_error) {
   if (!condition_.empty()) {
-    lua_State* L = stackFrame.GetLua();
-    int resultCount = LuaEvaluate(condition_, stackFrame);
-    if (resultCount < 0) {
-      evaluationError = LuaValueToString(L, -1, false);
+    lua_State* L = stack_frame.GetLua();
+    int result_count = LuaEvaluate(condition_, stack_frame);
+    if (result_count < 0) {
+      evaluation_error = LuaValueToString(L, -1, false);
       lua_pop(L, 1);
       return true;
     }
 
-    bool isTrue = resultCount > 0 && lua_toboolean(L, -resultCount);
-    lua_pop(L, resultCount);
-    if (!isTrue) {
+    bool is_true = result_count > 0 && lua_toboolean(L, -result_count);
+    lua_pop(L, result_count);
+    if (!is_true) {
       return false;
     }
   }
@@ -165,13 +165,13 @@ bool Breakpoint::EvaluateConditions(
 }
 
 std::string Breakpoint::EvaluateLogMessage(
-    DebuggeeState& stackFrame, std::string& evaluationError) {
+    DebuggeeState& stack_frame, std::string& evaluation_error) {
   // Evaluates any Lua expressions inside { } in the log message.
 
   if (log_message_.empty()) {
     return log_message_;
   }
-  lua_State* L = stackFrame.GetLua();
+  lua_State* L = stack_frame.GetLua();
 
   std::string result;
   result.reserve(log_message_.size());
@@ -183,7 +183,7 @@ std::string Breakpoint::EvaluateLogMessage(
         result.push_back('{');
       } else {
         // Try to find the end of the expression.
-        size_t expressionStart = i;
+        size_t expression_start = i;
         for (; i < log_message_.size(); i++) {
           if (log_message_[i] != '}') {
             continue;
@@ -193,47 +193,49 @@ std::string Breakpoint::EvaluateLogMessage(
           // expression.
 
           std::string expression =
-              log_message_.substr(expressionStart, i - expressionStart);
-          std::string returnExpression = "return " + expression;
+              log_message_.substr(expression_start, i - expression_start);
+          std::string return_expression = "return " + expression;
 
-          int loadstringResult = luaL_loadstring(L, returnExpression.c_str());
-          if (loadstringResult == LUA_ERRSYNTAX) {
+          int loadstring_result = luaL_loadstring(L, return_expression.c_str());
+          if (loadstring_result == LUA_ERRSYNTAX) {
             lua_pop(L, 1);
-            loadstringResult = luaL_loadstring(L, expression.c_str());
+            loadstring_result = luaL_loadstring(L, expression.c_str());
           }
 
-          if (loadstringResult == LUA_ERRSYNTAX) {
+          if (loadstring_result == LUA_ERRSYNTAX) {
             lua_pop(L, 1);
             continue;
           }
 
-          if (loadstringResult != 0) {
-            evaluationError = LuaValueToString(L, -1, false);
+          if (loadstring_result != 0) {
+            evaluation_error = LuaValueToString(L, -1, false);
             lua_pop(L, 1);
             return {};
           }
 
           lua_pop(L, 1);
-          int firstResultIndex = lua_gettop(L) + 1;
-          int resultCount = LuaEvaluate(expression, stackFrame);
-          if (resultCount < 0) {
-            evaluationError = LuaValueToString(L, -1, false);
+          int first_result_index = lua_gettop(L) + 1;
+          int result_count = LuaEvaluate(expression, stack_frame);
+          if (result_count < 0) {
+            evaluation_error = LuaValueToString(L, -1, false);
             lua_pop(L, 1);
             return {};
           }
 
-          for (int resultIndex = 0; resultIndex < resultCount; resultIndex++) {
-            if (resultIndex > 0) {
+          for (int result_index = 0; result_index < result_count;
+               result_index++) {
+            if (result_index > 0) {
               result.append(", ");
             }
-            result.append(LuaValueToString(L, firstResultIndex + resultIndex));
+            result.append(
+                LuaValueToString(L, first_result_index + result_index));
           }
-          lua_pop(L, resultCount);
+          lua_pop(L, result_count);
           break;
         }
 
         if (i >= log_message_.size()) {
-          evaluationError = "Unbalanced \"{\"";
+          evaluation_error = "Unbalanced \"{\"";
           return {};
         }
       }
@@ -243,7 +245,7 @@ std::string Breakpoint::EvaluateLogMessage(
         // Double }} escapes it.
         result.push_back('}');
       } else {
-        evaluationError = "Unbalanced \"}\"";
+        evaluation_error = "Unbalanced \"}\"";
         return {};
       }
     } else {

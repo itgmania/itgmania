@@ -20,57 +20,57 @@ void RageVec3ClearBounds(RageVector3& mins, RageVector3& maxs);
 void RageVec3AddToBounds(
     const RageVector3& p, RageVector3& mins, RageVector3& maxs);
 
-void RageVec3Normalize(RageVector3* pOut, const RageVector3* pV);
+void RageVec3Normalize(RageVector3* out, const RageVector3* v);
 void RageVec3Cross(
     RageVector3* ret, const RageVector3* a, const RageVector3* b);
 void RageVec3TransformCoord(
-    RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM);
+    RageVector3* out, const RageVector3* v, const RageMatrix* m);
 void RageVec3TransformNormal(
-    RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM);
+    RageVector3* out, const RageVector3* v, const RageMatrix* m);
 void RageVec4TransformCoord(
-    RageVector4* pOut, const RageVector4* pV, const RageMatrix* pM);
-void RageMatrixIdentity(RageMatrix* pOut);
+    RageVector4* out, const RageVector4* v, const RageMatrix* m);
+void RageMatrixIdentity(RageMatrix* out);
 // pOut = pB * pA
 void RageMatrixMultiply(
-    RageMatrix* pOut, const RageMatrix* pA, const RageMatrix* pB);
-void RageMatrixTranslation(RageMatrix* pOut, float x, float y, float z);
-void RageMatrixScaling(RageMatrix* pOut, float x, float y, float z);
-void RageMatrixSkewX(RageMatrix* pOut, float fAmount);
-void RageMatrixSkewY(RageMatrix* pOut, float fAmount);
+    RageMatrix* out, const RageMatrix* a, const RageMatrix* b);
+void RageMatrixTranslation(RageMatrix* out, float x, float y, float z);
+void RageMatrixScaling(RageMatrix* out, float x, float y, float z);
+void RageMatrixSkewX(RageMatrix* out, float amount);
+void RageMatrixSkewY(RageMatrix* out, float amount);
 void RageMatrixTranslate(
-    RageMatrix* pOut, float fTransX, float fTransY, float fTransZ);
+    RageMatrix* out, float trans_x, float trans_y, float trans_z);
 void RageMatrixScale(
-    RageMatrix* pOut, float fScaleX, float fScaleY, float fScaleZ);
-void RageMatrixRotationY(RageMatrix* pOut, float fTheta);
-void RageMatrixRotationXYZ(RageMatrix* pOut, float rX, float rY, float rZ);
+    RageMatrix* out, float scale_x, float scale_y, float scale_z);
+void RageMatrixRotationY(RageMatrix* out, float theta);
+void RageMatrixRotationXYZ(RageMatrix* out, float r_x, float r_y, float r_z);
 void RageAARotate(RageVector3* inret, const RageVector3* axis, float angle);
-void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr);
-void RageMatrixFromQuat(RageMatrix* pOut, const RageVector4 q);
+void RageQuatFromHPR(RageVector4* out, RageVector3 hpr);
+void RageMatrixFromQuat(RageMatrix* out, const RageVector4 q);
 void RageQuatSlerp(
-    RageVector4* pOut, const RageVector4& from, const RageVector4& to, float t);
+    RageVector4* out, const RageVector4& from, const RageVector4& to, float t);
 RageVector4 RageQuatFromH(float theta);
 RageVector4 RageQuatFromP(float theta);
 RageVector4 RageQuatFromR(float theta);
 void RageQuatMultiply(
-    RageVector4* pOut, const RageVector4& pA, const RageVector4& pB);
+    RageVector4* out, const RageVector4& a, const RageVector4& b);
 RageMatrix RageLookAt(
     float eyex, float eyey, float eyez, float centerx, float centery,
     float centerz, float upx, float upy, float upz);
-void RageMatrixAngles(RageMatrix* pOut, const RageVector3& angles);
-void RageMatrixTranspose(RageMatrix* pOut, const RageMatrix* pIn);
+void RageMatrixAngles(RageMatrix* out, const RageVector3& angles);
+void RageMatrixTranspose(RageMatrix* out, const RageMatrix* in);
 
 float RageSquare(float x) CONST_FUNCTION;
 float RageTriangle(float x) CONST_FUNCTION;
 
 class RageQuadratic {
  public:
-  void SetFromBezier(float fC1, float fC2, float fC3, float fC4);
-  void GetBezier(float& fC1, float& fC2, float& fC3, float& fC4) const;
+  void SetFromBezier(float c1, float c2, float c3, float c4);
+  void GetBezier(float& c1, float& c2, float& c3, float& c4) const;
 
-  void SetFromCubic(float fX1, float fX2, float fX3, float fX4);
+  void SetFromCubic(float x1, float x2, float x3, float x4);
 
-  float Evaluate(float fT) const;
-  float GetSlope(float fT) const;
+  float Evaluate(float t) const;
+  float GetSlope(float t) const;
 
   /* Equivalent to Evaluate(0.0f) and Evaluate(1.0f), but faster: */
   float GetBezierStart() const { return d_; }
@@ -85,11 +85,11 @@ class RageQuadratic {
 class RageBezier2D {
  public:
   void SetFromBezier(
-      float fC1X, float fC2X, float fC3X, float fC4X, float fC1Y, float fC2Y,
-      float fC3Y, float fC4Y);
+      float c1_x, float c2_x, float c3_x, float c4_x, float c1_y, float c2_y,
+      float c3_y, float c4_y);
 
-  void Evaluate(float fT, float* pX, float* pY) const;
-  float EvaluateYFromX(float fX) const;
+  void Evaluate(float t, float* x, float* y) const;
+  float EvaluateYFromX(float x) const;
 
   RageQuadratic& get_x() { return x_; }
   RageQuadratic& get_y() { return y_; }

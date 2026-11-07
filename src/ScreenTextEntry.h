@@ -43,25 +43,25 @@ enum KeyboardRowSpecialKey {
 class ScreenTextEntry : public ScreenWithMenuElements {
  public:
   static void SetTextEntrySettings(
-      std::string sQuestion, std::string sInitialAnswer, int iMaxInputLength,
-      bool (*Validate)(const std::string& sAnswer, std::string& sErrorOut) =
+      std::string question, std::string initial_answer, int max_input_length,
+      bool (*validate)(const std::string& answer, std::string& error_out) =
           nullptr,
-      void (*OnOK)(const std::string& sAnswer) = nullptr,
-      void (*OnCancel)() = nullptr, bool bPassword = false,
-      bool (*ValidateAppend)(
-          const std::string& sAnswerBeforeChar, std::string& sAppend) = nullptr,
-      std::string (*FormatAnswerForDisplay)(const std::string& sAnswer) =
+      void (*on_ok)(const std::string& answer) = nullptr,
+      void (*on_cancel)() = nullptr, bool password = false,
+      bool (*validate_append)(
+          const std::string& answer_before_char, std::string& append) = nullptr,
+      std::string (*format_answer_for_display)(const std::string& answer) =
           nullptr);
   static void TextEntry(
-      ScreenMessage smSendOnPop, std::string sQuestion,
-      std::string sInitialAnswer, int iMaxInputLength,
-      bool (*Validate)(const std::string& sAnswer, std::string& sErrorOut) =
+      ScreenMessage send_on_pop, std::string question,
+      std::string initial_answer, int max_input_length,
+      bool (*validate)(const std::string& answer, std::string& error_out) =
           nullptr,
-      void (*OnOK)(const std::string& sAnswer) = nullptr,
-      void (*OnCancel)() = nullptr, bool bPassword = false,
-      bool (*ValidateAppend)(
-          const std::string& sAnswerBeforeChar, std::string& sAppend) = nullptr,
-      std::string (*FormatAnswerForDisplay)(const std::string& sAnswer) =
+      void (*on_ok)(const std::string& answer) = nullptr,
+      void (*on_cancel)() = nullptr, bool password = false,
+      bool (*validate_append)(
+          const std::string& answer_before_char, std::string& append) = nullptr,
+      std::string (*format_answer_for_display)(const std::string& answer) =
           nullptr);
 
   struct TextEntrySettings {
@@ -99,13 +99,13 @@ class ScreenTextEntry : public ScreenWithMenuElements {
   };
   void LoadFromTextEntrySettings(const TextEntrySettings& settings);
 
-  static bool FloatValidate(const std::string& sAnswer, std::string& sErrorOut);
-  static bool IntValidate(const std::string& sAnswer, std::string& sErrorOut);
+  static bool FloatValidate(const std::string& answer, std::string& error_out);
+  static bool IntValidate(const std::string& answer, std::string& error_out);
 
   virtual void Init();
   virtual void BeginScreen();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual bool Input(const InputEventPlus& input);
 
   static std::string last_answer_;
@@ -119,7 +119,7 @@ class ScreenTextEntry : public ScreenWithMenuElements {
   void BackspaceInAnswer();
   virtual void TextEnteredDirectly() {}
 
-  virtual void End(bool bCancelled);
+  virtual void End(bool cancelled);
 
  private:
   virtual bool MenuStart(const InputEventPlus& input);
@@ -150,8 +150,8 @@ class ScreenTextEntryVisual : public ScreenTextEntry {
   void BeginScreen();
 
  protected:
-  void MoveX(int iDir);
-  void MoveY(int iDir);
+  void MoveX(int dir);
+  void MoveY(int dir);
   void PositionCursor();
 
   virtual void TextEnteredDirectly();

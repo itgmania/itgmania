@@ -38,7 +38,7 @@ struct SSCLoader : public SMLoader {
    * @param out a reference to the Song that will retrieve the song information.
    * @return its success or failure.
    */
-  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
+  virtual bool LoadFromSimfile(const std::string& path, Song& out);
 
   /**
    * @brief Attempt to load an edit from the hard drive.
@@ -49,8 +49,8 @@ struct SSCLoader : public SMLoader {
    * @return its success or failure.
    */
   bool LoadEditFromFile(
-      std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
-      Song* givenSong = nullptr);
+      std::string edit_file_path, ProfileSlot slot, bool add_steps_to_song,
+      Song* given_song = nullptr);
   /**
    * @brief Attempt to parse the edit file in question.
    * @param msd the edit file itself.
@@ -62,8 +62,8 @@ struct SSCLoader : public SMLoader {
    * @return its success or failure.
    */
   bool LoadEditFromMsd(
-      const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
-      bool bAddStepsToSong, Song* givenSong = nullptr);
+      const MsdFile& msd, const std::string& edit_file_path, ProfileSlot slot,
+      bool add_steps_to_song, Song* given_song = nullptr);
 
   /**
    * @brief Retrieve the specific NoteData from the file.

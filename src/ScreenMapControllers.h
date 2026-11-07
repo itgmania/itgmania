@@ -29,10 +29,10 @@ class ScreenMapControllers : public ScreenWithMenuElements {
   virtual void Init();
   virtual void BeginScreen();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
   virtual void HandleMessage(const Message& msg);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
  private:
   Actor* GetActorWithFocus();

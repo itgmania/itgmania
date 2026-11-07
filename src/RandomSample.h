@@ -14,14 +14,14 @@ class RandomSample {
   RandomSample();
   virtual ~RandomSample();
 
-  bool Load(std::string sFilePath, int iMaxToLoad = 1000 /*load all*/);
+  bool Load(std::string file_path, int max_to_load = 1000 /*load all*/);
   void UnloadAll();
   void PlayRandom();
   void Stop();
 
  private:
-  bool LoadSoundDir(std::string sDir, int iMaxToLoad);
-  bool LoadSound(std::string sSoundFilePath);
+  bool LoadSoundDir(std::string dir, int max_to_load);
+  bool LoadSound(std::string sound_file_path);
   int GetNextToPlay();
 
   std::vector<RageSound*> samples_;

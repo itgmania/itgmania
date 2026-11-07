@@ -15,30 +15,30 @@
 DriverList LightsDriver::driver_list_;
 
 void LightsDriver::Create(
-    const std::string& sDrivers, std::vector<LightsDriver*>& Add) {
-  LOG->Trace("Initializing lights drivers: %s", sDrivers.c_str());
+    const std::string& drivers, std::vector<LightsDriver*>& add) {
+  LOG->Trace("Initializing lights drivers: %s", drivers.c_str());
 
-  std::vector<std::string> asDriversToTry;
-  split(sDrivers, ",", asDriversToTry, true);
+  std::vector<std::string> drivers_to_try;
+  split(drivers, ",", drivers_to_try, true);
 
-  for (const std::string& Driver : asDriversToTry) {
-    RageDriver* pRet = driver_list_.Create(Driver);
-    if (pRet == nullptr) {
-      LOG->Trace("Unknown lights driver: %s", Driver.c_str());
+  for (const std::string& driver : drivers_to_try) {
+    RageDriver* ret = driver_list_.Create(driver);
+    if (ret == nullptr) {
+      LOG->Trace("Unknown lights driver: %s", driver.c_str());
       continue;
     }
 
-    LightsDriver* pDriver = dynamic_cast<LightsDriver*>(pRet);
-    ASSERT(pDriver != nullptr);
+    LightsDriver* p_driver = dynamic_cast<LightsDriver*>(ret);
+    ASSERT(p_driver != nullptr);
 
-    LOG->Info("Lights driver: %s", Driver.c_str());
-    Add.push_back(pDriver);
+    LOG->Info("Lights driver: %s", driver.c_str());
+    add.push_back(p_driver);
   }
 
   // ensure these are always available to use for debugging
   // or if InputHandlers that want lighting state.
-  Add.push_back(new LightsDriver_SystemMessage);
-  Add.push_back(new LightsDriver_Export);
+  add.push_back(new LightsDriver_SystemMessage);
+  add.push_back(new LightsDriver_Export);
 }
 
 void LightsDriver::Reset() {

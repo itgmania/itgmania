@@ -22,48 +22,48 @@ static std::string g_sMessage;
 static bool g_bAllowHush;
 
 static INT_PTR CALLBACK
-OKWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+OKWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
     case WM_INITDIALOG: {
       // Disable the parent window, like a modal MessageBox does.
-      EnableWindow(GetParent(hWnd), FALSE);
+      EnableWindow(GetParent(hwnd), FALSE);
 
-      DialogUtil::LocalizeDialogAndContents(hWnd);
+      DialogUtil::LocalizeDialogAndContents(hwnd);
 
       // Hide or display "Don't show this message."
       g_bHush = false;
-      HWND hHushButton = GetDlgItem(hWnd, IDC_HUSH);
-      int iStyle = GetWindowLong(hHushButton, GWL_STYLE);
+      HWND hush_button = GetDlgItem(hwnd, IDC_HUSH);
+      int style = GetWindowLong(hush_button, GWL_STYLE);
 
       if (g_bAllowHush) {
-        iStyle |= WS_VISIBLE;
+        style |= WS_VISIBLE;
       } else {
-        iStyle &= ~WS_VISIBLE;
+        style &= ~WS_VISIBLE;
       }
-      SetWindowLong(hHushButton, GWL_STYLE, iStyle);
+      SetWindowLong(hush_button, GWL_STYLE, style);
 
       // Set static text.
-      std::string sMessage = g_sMessage;
-      Replace(sMessage, "\n", "\r\n");
-      SetWindowText(GetDlgItem(hWnd, IDC_MESSAGE), sMessage.c_str());
+      std::string message = g_sMessage;
+      Replace(message, "\n", "\r\n");
+      SetWindowText(GetDlgItem(hwnd, IDC_MESSAGE), message.c_str());
 
       // Focus is on any of the controls in the dialog by default.
       // I'm not sure why. Set focus to the button manually. -Chris
-      SetFocus(GetDlgItem(hWnd, IDOK));
+      SetFocus(GetDlgItem(hwnd, IDOK));
     } break;
 
     case WM_DESTROY:
       // Re-enable the parent window.
-      EnableWindow(GetParent(hWnd), TRUE);
+      EnableWindow(GetParent(hwnd), TRUE);
       break;
 
     case WM_COMMAND:
-      switch (LOWORD(wParam)) {
+      switch (LOWORD(wparam)) {
         case IDOK:
-          g_bHush = !!IsDlgButtonChecked(hWnd, IDC_HUSH);
+          g_bHush = !!IsDlgButtonChecked(hwnd, IDC_HUSH);
           [[fallthrough]];
         case IDCANCEL:
-          EndDialog(hWnd, 0);
+          EndDialog(hwnd, 0);
           break;
       }
   }
@@ -76,42 +76,42 @@ static std::string GetWindowTitle() {
   return s;
 }
 
-void DialogDriver_Win32::OK(std::string sMessage, std::string sID) {
-  g_bAllowHush = sID != "";
-  g_sMessage = sMessage;
+void DialogDriver_Win32::OK(std::string message, std::string id) {
+  g_bAllowHush = id != "";
+  g_sMessage = message;
   AppInstance handle;
   DialogBox(handle.Get(), MAKEINTRESOURCE(IDD_OK), ::GetHwnd(), OKWndProc);
   if (g_bAllowHush && g_bHush) {
-    Dialog::IgnoreMessage(sID);
+    Dialog::IgnoreMessage(id);
   }
 }
 
 static std::string g_sErrorString;
 
 static INT_PTR CALLBACK
-ErrorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+ErrorWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
     case WM_INITDIALOG: {
-      DialogUtil::SetHeaderFont(hWnd, IDC_STATIC_HEADER_TEXT);
+      DialogUtil::SetHeaderFont(hwnd, IDC_STATIC_HEADER_TEXT);
 
       // Set static text
-      std::string sMessage = g_sErrorString;
-      Replace(sMessage, "\n", "\r\n");
-      SetWindowText(GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage.c_str());
+      std::string message = g_sErrorString;
+      Replace(message, "\n", "\r\n");
+      SetWindowText(GetDlgItem(hwnd, IDC_EDIT_ERROR), message.c_str());
     } break;
     case WM_COMMAND:
-      switch (LOWORD(wParam)) {
+      switch (LOWORD(wparam)) {
         case IDC_BUTTON_VIEW_LOG: {
           PROCESS_INFORMATION pi;
           STARTUPINFO si;
           ZeroMemory(&si, sizeof(si));
 
-          std::string sAppDataDir = SpecialDirs::GetAppDataDir();
-          std::string sCommand =
-              "notepad \"" + sAppDataDir + PRODUCT_ID + "/Logs/log.txt\"";
+          std::string app_data_dir = SpecialDirs::GetAppDataDir();
+          std::string command =
+              "notepad \"" + app_data_dir + PRODUCT_ID + "/Logs/log.txt\"";
           CreateProcess( // TODO: resolve Warning C6335 "leaking process information"
 					nullptr,		// pointer to name of executable module
-					const_cast<char *>(sCommand.c_str()),	// pointer to command line string
+					const_cast<char *>(command.c_str()),	// pointer to command line string
 					nullptr,  // process security attributes
 					nullptr,   // thread security attributes
 					false,  // handle inheritance flag
@@ -128,17 +128,17 @@ ErrorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case IDC_BUTTON_RESTART:
           Win32RestartProgram();
         case IDOK:
-          EndDialog(hWnd, 0);
+          EndDialog(hwnd, 0);
           break;
       }
       break;
     case WM_CTLCOLORSTATIC: {
-      HDC hdc = (HDC)wParam;
-      HWND hwndStatic = (HWND)lParam;
+      HDC hdc = (HDC)wparam;
+      HWND hwnd_static = (HWND)lparam;
       HBRUSH hbr = nullptr;
 
       // TODO:  Change any attributes of the DC here
-      switch (GetDlgCtrlID(hwndStatic)) {
+      switch (GetDlgCtrlID(hwnd_static)) {
         case IDC_STATIC_HEADER_TEXT:
         case IDC_STATIC_ICON:
           hbr = (HBRUSH)::GetStockObject(WHITE_BRUSH);
@@ -154,8 +154,8 @@ ErrorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
   return FALSE;
 }
 
-void DialogDriver_Win32::Error(std::string sError, std::string sID) {
-  g_sErrorString = sError;
+void DialogDriver_Win32::Error(std::string error, std::string id) {
+  g_sErrorString = error;
 
   // throw up a pretty error dialog
   AppInstance handle;
@@ -164,13 +164,13 @@ void DialogDriver_Win32::Error(std::string sError, std::string sID) {
 }
 
 Dialog::Result DialogDriver_Win32::AbortRetryIgnore(
-    std::string sMessage, std::string ID) {
-  int iRet = 0;
-  iRet = ::MessageBox(
-      ::GetHwnd(), ConvertUTF8ToACP(sMessage).c_str(),
+    std::string message, std::string id) {
+  int ret = 0;
+  ret = ::MessageBox(
+      ::GetHwnd(), ConvertUTF8ToACP(message).c_str(),
       ConvertUTF8ToACP(::GetWindowTitle()).c_str(),
       MB_ABORTRETRYIGNORE | MB_DEFBUTTON3);
-  switch (iRet) {
+  switch (ret) {
     case IDABORT:
       return Dialog::abort;
     case IDRETRY:
@@ -179,23 +179,23 @@ Dialog::Result DialogDriver_Win32::AbortRetryIgnore(
       return Dialog::ignore;
     default:
       FAIL_M(ssprintf(
-          "Unexpected response to Abort/Retry/Ignore dialog: %i", iRet));
+          "Unexpected response to Abort/Retry/Ignore dialog: %i", ret));
   }
 }
 
 Dialog::Result DialogDriver_Win32::AbortRetry(
-    std::string sMessage, std::string sID) {
-  int iRet = 0;
-  iRet = ::MessageBox(
-      ::GetHwnd(), ConvertUTF8ToACP(sMessage).c_str(),
+    std::string message, std::string id) {
+  int ret = 0;
+  ret = ::MessageBox(
+      ::GetHwnd(), ConvertUTF8ToACP(message).c_str(),
       ConvertUTF8ToACP(::GetWindowTitle()).c_str(), MB_RETRYCANCEL);
-  switch (iRet) {
+  switch (ret) {
     case IDRETRY:
       return Dialog::retry;
     case IDCANCEL:
       return Dialog::abort;
     default:
-      FAIL_M(ssprintf("Unexpected response to Retry/Cancel dialog: %i", iRet));
+      FAIL_M(ssprintf("Unexpected response to Retry/Cancel dialog: %i", ret));
   }
 }
 

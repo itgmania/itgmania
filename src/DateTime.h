@@ -25,24 +25,24 @@ enum Month {
   Month_Invalid   /**< There should be no month at this point. */
 };
 
-std::string LastDayToString(int iLastDayIndex);
-std::string LastDayToLocalizedString(int iLastDayIndex);
-std::string DayOfWeekToString(int iDayOfWeekIndex);
-std::string DayOfWeekToLocalizedString(int iDayOfWeekIndex);
-std::string HourInDayToString(int iHourIndex);
-std::string HourInDayToLocalizedString(int iHourIndex);
+std::string LastDayToString(int last_day_index);
+std::string LastDayToLocalizedString(int last_day_index);
+std::string DayOfWeekToString(int day_of_week_index);
+std::string DayOfWeekToLocalizedString(int day_of_week_index);
+std::string HourInDayToString(int hour_index);
+std::string HourInDayToLocalizedString(int hour_index);
 const std::string& MonthToString(Month month);
 const std::string& MonthToLocalizedString(Month month);
-std::string LastWeekToString(int iLastWeekIndex);
-std::string LastWeekToLocalizedString(int iLastWeekIndex);
+std::string LastWeekToString(int last_week_index);
+std::string LastWeekToLocalizedString(int last_week_index);
 LuaDeclareType(Month);
 
-tm AddDays(tm start, int iDaysToMove);
+tm AddDays(tm start, int days_to_move);
 tm GetYesterday(tm start);
 int GetDayOfWeek(tm time);
 tm GetNextSunday(tm start);
 
-tm GetDayInYearAndYear(int iDayInYearIndex, int iYear);
+tm GetDayInYearAndYear(int day_in_year_index, int year);
 
 /** @brief A standard way of determining the date and the time. */
 struct DateTime {
@@ -126,7 +126,7 @@ struct DateTime {
    *
    * @param sDateTime the string to attempt to convert.
    * @return true if the conversion worked, or false otherwise. */
-  bool FromString(const std::string sDateTime);
+  bool FromString(const std::string date_time);
 };
 
 #endif

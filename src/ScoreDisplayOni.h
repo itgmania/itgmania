@@ -11,10 +11,10 @@ class ScoreDisplayOni : public ScoreDisplay {
   ScoreDisplayOni();
 
   virtual void Init(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
  protected:
   Sprite spr_frame_;

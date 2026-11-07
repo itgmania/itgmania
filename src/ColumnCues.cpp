@@ -11,21 +11,21 @@
 namespace {
 void CalculateColumnCuesOnePlayer(
     const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
-    float minDuration) {
+    float min_duration) {
   NoteData::all_tracks_const_iterator curr_note =
       in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
   int curr_row = -1;
 
-  std::vector<ColumnCue> allColumnCues;
-  ColumnCue currentCue;
+  std::vector<ColumnCue> all_column_cues;
+  ColumnCue current_cue;
 
   while (!curr_note.IsAtEnd()) {
     if (curr_note.Row() != curr_row) {
-      if (currentCue.start_time_ != -1) {
-        allColumnCues.push_back(currentCue);
+      if (current_cue.start_time_ != -1) {
+        all_column_cues.push_back(current_cue);
       }
-      currentCue = ColumnCue();
-      currentCue.start_time_ =
+      current_cue = ColumnCue();
+      current_cue.start_time_ =
           timing->GetElapsedTimeFromBeat(NoteRowToBeat(curr_note.Row()));
       curr_row = curr_note.Row();
     }
@@ -34,37 +34,39 @@ void CalculateColumnCuesOnePlayer(
         curr_note->type_ == TapNoteType_HoldHead ||
         curr_note->type_ == TapNoteType_Mine ||
         curr_note->type_ == TapNoteType_Lift) {
-      currentCue.columns_.emplace_back(curr_note.Track() + 1, curr_note->type_);
+      current_cue.columns_.emplace_back(
+          curr_note.Track() + 1, curr_note->type_);
     }
 
     ++curr_note;
   }
 
   // If there's a remaining columnCue from the last row, add it
-  if (currentCue.start_time_ != -1) {
-    allColumnCues.push_back(currentCue);
+  if (current_cue.start_time_ != -1) {
+    all_column_cues.push_back(current_cue);
   }
 
-  float previousCueTime = 0;
+  float previous_cue_time = 0;
   out.clear();
-  for (ColumnCue columnCue : allColumnCues) {
-    float duration = columnCue.start_time_ - previousCueTime;
-    if (duration > minDuration || previousCueTime == 0) {
-      out.emplace_back(previousCueTime, duration, columnCue.columns_);
+  for (ColumnCue column_cue : all_column_cues) {
+    float duration = column_cue.start_time_ - previous_cue_time;
+    if (duration > min_duration || previous_cue_time == 0) {
+      out.emplace_back(previous_cue_time, duration, column_cue.columns_);
     }
-    previousCueTime = columnCue.start_time_;
+    previous_cue_time = column_cue.start_time_;
   }
 }
 }  // namespace
 
 void ColumnCue::CalculateColumnCues(
     const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
-    PlayerNumber pn, float minDuration, StepsType stepsType) {
-  std::vector<NoteData> splitNoteData;
+    PlayerNumber pn, float min_duration, StepsType steps_type) {
+  std::vector<NoteData> split_note_data;
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
-          in, splitNoteData, stepsType)) {
-    CalculateColumnCuesOnePlayer(splitNoteData[pn], timing, out, minDuration);
+          in, split_note_data, steps_type)) {
+    CalculateColumnCuesOnePlayer(
+        split_note_data[pn], timing, out, min_duration);
   } else {
-    CalculateColumnCuesOnePlayer(in, timing, out, minDuration);
+    CalculateColumnCuesOnePlayer(in, timing, out, min_duration);
   }
 }

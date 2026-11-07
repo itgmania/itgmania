@@ -25,7 +25,7 @@
 #include "TimingSegments.h"
 #include "global.h"
 
-Difficulty DwiCompatibleStringToDifficulty(const std::string& sDC);
+Difficulty DwiCompatibleStringToDifficulty(const std::string& dc);
 
 /** @brief The different types of core DWI arrows and pads. */
 enum DanceNotes {
@@ -53,106 +53,106 @@ enum DanceNotes {
  * @param sPath the path to the file.
  */
 static void DWIcharToNote(
-    char c, GameController i, int& note1Out, int& note2Out,
-    const std::string& sPath) {
+    char c, GameController i, int& note1_out, int& note2_out,
+    const std::string& path) {
   switch (c) {
     case '0':
-      note1Out = DANCE_NOTE_NONE;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_NONE;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '1':
-      note1Out = DANCE_NOTE_PAD1_DOWN;
-      note2Out = DANCE_NOTE_PAD1_LEFT;
+      note1_out = DANCE_NOTE_PAD1_DOWN;
+      note2_out = DANCE_NOTE_PAD1_LEFT;
       break;
     case '2':
-      note1Out = DANCE_NOTE_PAD1_DOWN;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_DOWN;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '3':
-      note1Out = DANCE_NOTE_PAD1_DOWN;
-      note2Out = DANCE_NOTE_PAD1_RIGHT;
+      note1_out = DANCE_NOTE_PAD1_DOWN;
+      note2_out = DANCE_NOTE_PAD1_RIGHT;
       break;
     case '4':
-      note1Out = DANCE_NOTE_PAD1_LEFT;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_LEFT;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '5':
-      note1Out = DANCE_NOTE_NONE;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_NONE;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '6':
-      note1Out = DANCE_NOTE_PAD1_RIGHT;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_RIGHT;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '7':
-      note1Out = DANCE_NOTE_PAD1_UP;
-      note2Out = DANCE_NOTE_PAD1_LEFT;
+      note1_out = DANCE_NOTE_PAD1_UP;
+      note2_out = DANCE_NOTE_PAD1_LEFT;
       break;
     case '8':
-      note1Out = DANCE_NOTE_PAD1_UP;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_UP;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case '9':
-      note1Out = DANCE_NOTE_PAD1_UP;
-      note2Out = DANCE_NOTE_PAD1_RIGHT;
+      note1_out = DANCE_NOTE_PAD1_UP;
+      note2_out = DANCE_NOTE_PAD1_RIGHT;
       break;
     case 'A':
-      note1Out = DANCE_NOTE_PAD1_UP;
-      note2Out = DANCE_NOTE_PAD1_DOWN;
+      note1_out = DANCE_NOTE_PAD1_UP;
+      note2_out = DANCE_NOTE_PAD1_DOWN;
       break;
     case 'B':
-      note1Out = DANCE_NOTE_PAD1_LEFT;
-      note2Out = DANCE_NOTE_PAD1_RIGHT;
+      note1_out = DANCE_NOTE_PAD1_LEFT;
+      note2_out = DANCE_NOTE_PAD1_RIGHT;
       break;
     case 'C':
-      note1Out = DANCE_NOTE_PAD1_UPLEFT;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_UPLEFT;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case 'D':
-      note1Out = DANCE_NOTE_PAD1_UPRIGHT;
-      note2Out = DANCE_NOTE_NONE;
+      note1_out = DANCE_NOTE_PAD1_UPRIGHT;
+      note2_out = DANCE_NOTE_NONE;
       break;
     case 'E':
-      note1Out = DANCE_NOTE_PAD1_LEFT;
-      note2Out = DANCE_NOTE_PAD1_UPLEFT;
+      note1_out = DANCE_NOTE_PAD1_LEFT;
+      note2_out = DANCE_NOTE_PAD1_UPLEFT;
       break;
     case 'F':
-      note1Out = DANCE_NOTE_PAD1_UPLEFT;
-      note2Out = DANCE_NOTE_PAD1_DOWN;
+      note1_out = DANCE_NOTE_PAD1_UPLEFT;
+      note2_out = DANCE_NOTE_PAD1_DOWN;
       break;
     case 'G':
-      note1Out = DANCE_NOTE_PAD1_UPLEFT;
-      note2Out = DANCE_NOTE_PAD1_UP;
+      note1_out = DANCE_NOTE_PAD1_UPLEFT;
+      note2_out = DANCE_NOTE_PAD1_UP;
       break;
     case 'H':
-      note1Out = DANCE_NOTE_PAD1_UPLEFT;
-      note2Out = DANCE_NOTE_PAD1_RIGHT;
+      note1_out = DANCE_NOTE_PAD1_UPLEFT;
+      note2_out = DANCE_NOTE_PAD1_RIGHT;
       break;
     case 'I':
-      note1Out = DANCE_NOTE_PAD1_LEFT;
-      note2Out = DANCE_NOTE_PAD1_UPRIGHT;
+      note1_out = DANCE_NOTE_PAD1_LEFT;
+      note2_out = DANCE_NOTE_PAD1_UPRIGHT;
       break;
     case 'J':
-      note1Out = DANCE_NOTE_PAD1_DOWN;
-      note2Out = DANCE_NOTE_PAD1_UPRIGHT;
+      note1_out = DANCE_NOTE_PAD1_DOWN;
+      note2_out = DANCE_NOTE_PAD1_UPRIGHT;
       break;
     case 'K':
-      note1Out = DANCE_NOTE_PAD1_UP;
-      note2Out = DANCE_NOTE_PAD1_UPRIGHT;
+      note1_out = DANCE_NOTE_PAD1_UP;
+      note2_out = DANCE_NOTE_PAD1_UPRIGHT;
       break;
     case 'L':
-      note1Out = DANCE_NOTE_PAD1_UPRIGHT;
-      note2Out = DANCE_NOTE_PAD1_RIGHT;
+      note1_out = DANCE_NOTE_PAD1_UPRIGHT;
+      note2_out = DANCE_NOTE_PAD1_RIGHT;
       break;
     case 'M':
-      note1Out = DANCE_NOTE_PAD1_UPLEFT;
-      note2Out = DANCE_NOTE_PAD1_UPRIGHT;
+      note1_out = DANCE_NOTE_PAD1_UPLEFT;
+      note2_out = DANCE_NOTE_PAD1_UPRIGHT;
       break;
     default:
       LOG->UserLog(
-          "Song file", sPath, "has an invalid DWI note character '%c'.", c);
-      note1Out = DANCE_NOTE_NONE;
-      note2Out = DANCE_NOTE_NONE;
+          "Song file", path, "has an invalid DWI note character '%c'.", c);
+      note1_out = DANCE_NOTE_NONE;
+      note2_out = DANCE_NOTE_NONE;
       break;
   }
 
@@ -160,11 +160,11 @@ static void DWIcharToNote(
     case GameController_1:
       break;
     case GameController_2:
-      if (note1Out != DANCE_NOTE_NONE) {
-        note1Out += 6;
+      if (note1_out != DANCE_NOTE_NONE) {
+        note1_out += 6;
       }
-      if (note2Out != DANCE_NOTE_NONE) {
-        note2Out += 6;
+      if (note2_out != DANCE_NOTE_NONE) {
+        note2_out += 6;
       }
       break;
     default:
@@ -181,22 +181,22 @@ static void DWIcharToNote(
  * @param sPath the path to the file.
  */
 static void DWIcharToNoteCol(
-    char c, GameController i, int& col1Out, int& col2Out,
-    const std::string& sPath,
-    const std::map<int, int>& mapDanceNoteToNoteDataColumn) {
+    char c, GameController i, int& col1_out, int& col2_out,
+    const std::string& path,
+    const std::map<int, int>& map_dance_note_to_note_data_column) {
   int note1, note2;
-  DWIcharToNote(c, i, note1, note2, sPath);
+  DWIcharToNote(c, i, note1, note2, path);
 
   if (note1 != DANCE_NOTE_NONE) {
-    col1Out = mapDanceNoteToNoteDataColumn.at(note1);
+    col1_out = map_dance_note_to_note_data_column.at(note1);
   } else {
-    col1Out = -1;
+    col1_out = -1;
   }
 
   if (note2 != DANCE_NOTE_NONE) {
-    col2Out = mapDanceNoteToNoteDataColumn.at(note2);
+    col2_out = map_dance_note_to_note_data_column.at(note2);
   } else {
-    col2Out = -1;
+    col2_out = -1;
   }
 }
 
@@ -212,12 +212,12 @@ static void DWIcharToNoteCol(
  * @param pos the position of the step data.
  * @return true if it's a 192nd note, false otherwise.
  */
-static bool Is192(const std::string& sStepData, size_t pos) {
-  while (pos < sStepData.size()) {
-    if (sStepData[pos] == '>') {
+static bool Is192(const std::string& step_data, size_t pos) {
+  while (pos < step_data.size()) {
+    if (step_data[pos] == '>') {
       return false;
     }
-    if (sStepData[pos] == '0') {
+    if (step_data[pos] == '0') {
       return true;
     }
     ++pos;
@@ -230,8 +230,8 @@ const int BEATS_PER_MEASURE = 4;
 
 /* We prefer the normal names; recognize a number of others, too. (They'll get
  * normalized when written to SMs, etc.) */
-Difficulty DwiCompatibleStringToDifficulty(const std::string& sDC) {
-  std::string s2 = sDC;
+Difficulty DwiCompatibleStringToDifficulty(const std::string& dc) {
+  std::string s2 = dc;
   MakeLower(s2);
   if (s2 == "beginner") {
     return Difficulty_Beginner;
@@ -297,78 +297,78 @@ static NoteData ParseNoteData(
     return NoteData();
   }
 
-  std::map<int, int> mapDanceNoteToNoteDataColumn;
+  std::map<int, int> map_dance_note_to_note_data_column;
   switch (out.steps_type_) {
     case StepsType_dance_single:
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_LEFT] = 0;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_DOWN] = 1;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_UP] = 2;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_RIGHT] = 3;
       break;
     case StepsType_dance_double:
     case StepsType_dance_couple:
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_LEFT] = 4;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_DOWN] = 5;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_UP] = 6;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_RIGHT] = 7;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_LEFT] = 0;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_DOWN] = 1;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_UP] = 2;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_RIGHT] = 3;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD2_LEFT] = 4;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD2_DOWN] = 5;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD2_UP] = 6;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD2_RIGHT] = 7;
       break;
     case StepsType_dance_solo:
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPLEFT] = 1;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 2;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 3;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPRIGHT] = 4;
-      mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 5;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_LEFT] = 0;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_UPLEFT] = 1;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_DOWN] = 2;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_UP] = 3;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_UPRIGHT] = 4;
+      map_dance_note_to_note_data_column[DANCE_NOTE_PAD1_RIGHT] = 5;
       break;
       DEFAULT_FAIL(out.steps_type_);
   }
 
-  NoteData newNoteData;
-  newNoteData.SetNumTracks(mapDanceNoteToNoteDataColumn.size());
+  NoteData new_note_data;
+  new_note_data.SetNumTracks(map_dance_note_to_note_data_column.size());
 
   for (int pad = 0; pad < 2; pad++)  // foreach pad
   {
-    std::string sStepData;
+    std::string step_data;
     switch (pad) {
       case 0:
-        sStepData = step1;
+        step_data = step1;
         break;
       case 1:
         if (step2 == "") {  // no data
           continue;         // skip
         }
-        sStepData = step2;
+        step_data = step2;
         break;
         DEFAULT_FAIL(pad);
     }
 
-    Replace(sStepData, "\n", "");
-    Replace(sStepData, "\r", "");
-    Replace(sStepData, "\t", "");
-    Replace(sStepData, " ", "");
+    Replace(step_data, "\n", "");
+    Replace(step_data, "\r", "");
+    Replace(step_data, "\t", "");
+    Replace(step_data, " ", "");
 
-    double fCurrentBeat = 0;
-    double fCurrentIncrementer = 1.0 / 8 * BEATS_PER_MEASURE;
+    double current_beat = 0;
+    double current_incrementer = 1.0 / 8 * BEATS_PER_MEASURE;
 
-    for (size_t i = 0; i < sStepData.size();) {
-      char c = sStepData[i++];
+    for (size_t i = 0; i < step_data.size();) {
+      char c = step_data[i++];
       switch (c) {
           // begins a series
         case '(':
-          fCurrentIncrementer = 1.0 / 16 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 16 * BEATS_PER_MEASURE;
           break;
         case '[':
-          fCurrentIncrementer = 1.0 / 24 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 24 * BEATS_PER_MEASURE;
           break;
         case '{':
-          fCurrentIncrementer = 1.0 / 64 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 64 * BEATS_PER_MEASURE;
           break;
         case '`':
-          fCurrentIncrementer = 1.0 / 192 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 192 * BEATS_PER_MEASURE;
           break;
 
           // ends a series
@@ -377,7 +377,7 @@ static NoteData ParseNoteData(
         case '}':
         case '\'':
         case '>':
-          fCurrentIncrementer = 1.0 / 8 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 8 * BEATS_PER_MEASURE;
           break;
 
         default:  // this is a note character
@@ -391,106 +391,106 @@ static NoteData ParseNoteData(
           bool jump = false;
           if (c == '<') {
             /* Arr.  Is this a jump or a 1/192 marker? */
-            if (Is192(sStepData, i)) {
-              fCurrentIncrementer = 1.0 / 192 * BEATS_PER_MEASURE;
+            if (Is192(step_data, i)) {
+              current_incrementer = 1.0 / 192 * BEATS_PER_MEASURE;
               break;
             }
 
             /* It's a jump.
              * We need to keep reading notes until we hit a >. */
             jump = true;
-            c = sStepData[i++];
+            c = step_data[i++];
           }
 
-          const int iIndex = BeatToNoteRow((float)fCurrentBeat);
+          const int index = BeatToNoteRow((float)current_beat);
           i--;
           do {
-            c = sStepData[i++];
+            c = step_data[i++];
 
             if (jump && c == '>') {
               break;
             }
 
-            int iCol1, iCol2;
+            int col1, col2;
             DWIcharToNoteCol(
-                c, (GameController)pad, iCol1, iCol2, path,
-                mapDanceNoteToNoteDataColumn);
+                c, (GameController)pad, col1, col2, path,
+                map_dance_note_to_note_data_column);
 
-            if (iCol1 != -1) {
-              newNoteData.SetTapNote(iCol1, iIndex, TAP_ORIGINAL_TAP);
+            if (col1 != -1) {
+              new_note_data.SetTapNote(col1, index, TAP_ORIGINAL_TAP);
             }
-            if (iCol2 != -1) {
-              newNoteData.SetTapNote(iCol2, iIndex, TAP_ORIGINAL_TAP);
+            if (col2 != -1) {
+              new_note_data.SetTapNote(col2, index, TAP_ORIGINAL_TAP);
             }
 
-            if (i >= sStepData.length()) {
+            if (i >= step_data.length()) {
               break;
               // we ran out of data
               // while looking for the ending > mark
             }
 
-            if (sStepData[i] == '!') {
+            if (step_data[i] == '!') {
               i++;
-              const char holdChar = sStepData[i++];
+              const char hold_char = step_data[i++];
 
               DWIcharToNoteCol(
-                  holdChar, (GameController)pad, iCol1, iCol2, path,
-                  mapDanceNoteToNoteDataColumn);
+                  hold_char, (GameController)pad, col1, col2, path,
+                  map_dance_note_to_note_data_column);
 
-              if (iCol1 != -1) {
-                newNoteData.SetTapNote(iCol1, iIndex, TAP_ORIGINAL_HOLD_HEAD);
+              if (col1 != -1) {
+                new_note_data.SetTapNote(col1, index, TAP_ORIGINAL_HOLD_HEAD);
               }
-              if (iCol2 != -1) {
-                newNoteData.SetTapNote(iCol2, iIndex, TAP_ORIGINAL_HOLD_HEAD);
+              if (col2 != -1) {
+                new_note_data.SetTapNote(col2, index, TAP_ORIGINAL_HOLD_HEAD);
               }
             }
 
-            if (jump && i < sStepData.size()) {
-              c = sStepData[i++];
+            if (jump && i < step_data.size()) {
+              c = step_data[i++];
             }
           } while (jump);
-          fCurrentBeat += fCurrentIncrementer;
+          current_beat += current_incrementer;
         } break;
       }
     }
   }
 
   /* Fill in iDuration. */
-  for (int t = 0; t < newNoteData.GetNumTracks(); ++t) {
-    FOREACH_NONEMPTY_ROW_IN_TRACK(newNoteData, t, iHeadRow) {
-      TapNote tn = newNoteData.GetTapNote(t, iHeadRow);
+  for (int t = 0; t < new_note_data.GetNumTracks(); ++t) {
+    FOREACH_NONEMPTY_ROW_IN_TRACK(new_note_data, t, head_row) {
+      TapNote tn = new_note_data.GetTapNote(t, head_row);
       if (tn.type_ != TapNoteType_HoldHead) {
         continue;
       }
 
-      int iTailRow = iHeadRow;
-      bool bFound = false;
-      while (!bFound && newNoteData.GetNextTapNoteRowForTrack(t, iTailRow)) {
-        const TapNote& TailTap = newNoteData.GetTapNote(t, iTailRow);
-        if (TailTap.type_ == TapNoteType_Empty) {
+      int tail_row = head_row;
+      bool found = false;
+      while (!found && new_note_data.GetNextTapNoteRowForTrack(t, tail_row)) {
+        const TapNote& tail_tap = new_note_data.GetTapNote(t, tail_row);
+        if (tail_tap.type_ == TapNoteType_Empty) {
           continue;
         }
 
-        newNoteData.SetTapNote(t, iTailRow, TAP_EMPTY);
-        tn.duration_ = iTailRow - iHeadRow;
-        newNoteData.SetTapNote(t, iHeadRow, tn);
-        bFound = true;
+        new_note_data.SetTapNote(t, tail_row, TAP_EMPTY);
+        tn.duration_ = tail_row - head_row;
+        new_note_data.SetTapNote(t, head_row, tn);
+        found = true;
       }
 
-      if (!bFound) {
+      if (!found) {
         /* The hold was never closed.  */
         LOG->UserLog(
             "Song file", path,
             "failed to close a hold note in \"%s\" on track %i",
             DifficultyToString(out.GetDifficulty()).c_str(), t);
 
-        newNoteData.SetTapNote(t, iHeadRow, TAP_EMPTY);
+        new_note_data.SetTapNote(t, head_row, TAP_EMPTY);
       }
     }
   }
 
-  ASSERT(newNoteData.GetNumTracks() > 0);
-  return newNoteData;
+  ASSERT(new_note_data.GetNumTracks() > 0);
+  return new_note_data;
 }
 
 /**
@@ -505,34 +505,34 @@ static NoteData ParseNoteData(
  * @return the success or failure of the operation.
  */
 static bool LoadFromDWITokens(
-    std::string sMode, std::string sDescription, std::string sNumFeet,
-    std::string sStepData1, std::string sStepData2, Steps& out,
-    const std::string& sPath) {
+    std::string mode, std::string description, std::string num_feet,
+    std::string step_data1, std::string step_data2, Steps& out,
+    const std::string& path) {
   CHECKPOINT_M("DWILoader::LoadFromDWITokens()");
 
   // If there's no step data to load for this chart, bail out here, instead of
   // letting SetNoteData() throw an assertion. If the step data isn't at least 2
   // characters long, ParseNoteData() runs the risk of trying to read past the
   // end of the string.
-  if (sStepData1.size() < 2 && sStepData2.size() < 2) {
+  if (step_data1.size() < 2 && step_data2.size() < 2) {
     LOG->Warn(
         "Song file \"%s\" has malformed chart data for chart %s:%s:%s. "
         "Skipping chart.",
-        sPath.c_str(), sMode.c_str(), sDescription.c_str(), sNumFeet.c_str());
+        path.c_str(), mode.c_str(), description.c_str(), num_feet.c_str());
     return false;
   }
-  out.steps_type_ = GetTypeFromMode(sMode);
+  out.steps_type_ = GetTypeFromMode(mode);
 
   // if the meter is empty, force it to 1.
-  if (sNumFeet.empty()) {
-    sNumFeet = "1";
+  if (num_feet.empty()) {
+    num_feet = "1";
   }
 
-  out.SetMeter(StringToInt(sNumFeet));
+  out.SetMeter(StringToInt(num_feet));
 
-  out.SetDifficulty(DwiCompatibleStringToDifficulty(sDescription));
+  out.SetDifficulty(DwiCompatibleStringToDifficulty(description));
 
-  out.SetNoteData(ParseNoteData(sStepData1, sStepData2, out, sPath));
+  out.SetNoteData(ParseNoteData(step_data1, step_data2, out, path));
 
   out.TidyUpData();
 
@@ -577,8 +577,8 @@ static float ParseBrokenDWITimestamp(
 }
 
 void DWILoader::GetApplicableFiles(
-    const std::string& sPath, std::vector<std::string>& out) {
-  GetDirListing(sPath + std::string("*.dwi"), out);
+    const std::string& path, std::vector<std::string>& out) {
+  GetDirListing(path + std::string("*.dwi"), out);
 }
 
 bool DWILoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
@@ -591,14 +591,15 @@ bool DWILoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
   }
 
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
-    int iNumParams = msd.GetNumParams(i);
+    int num_params = msd.GetNumParams(i);
     const MsdFile::value_t& params = msd.GetValue(i);
-    std::string valueName = params[0];
+    std::string value_name = params[0];
 
-    if (EqualsNoCase(valueName, "SINGLE") ||
-        EqualsNoCase(valueName, "DOUBLE") ||
-        EqualsNoCase(valueName, "COUPLE") || EqualsNoCase(valueName, "SOLO")) {
-      if (out.steps_type_ != GetTypeFromMode(valueName)) {
+    if (EqualsNoCase(value_name, "SINGLE") ||
+        EqualsNoCase(value_name, "DOUBLE") ||
+        EqualsNoCase(value_name, "COUPLE") ||
+        EqualsNoCase(value_name, "SOLO")) {
+      if (out.steps_type_ != GetTypeFromMode(value_name)) {
         continue;
       }
       if (out.GetDifficulty() != DwiCompatibleStringToDifficulty(params[1])) {
@@ -608,7 +609,7 @@ bool DWILoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
         continue;
       }
       std::string step1 = params[3];
-      std::string step2 = (iNumParams == 5) ? params[4] : std::string("");
+      std::string step2 = (num_params == 5) ? params[4] : std::string("");
       out.SetNoteData(ParseNoteData(step1, step2, out, path));
       return true;
     }
@@ -617,55 +618,54 @@ bool DWILoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
 }
 
 bool DWILoader::LoadFromDir(
-    const std::string& sPath_, Song& out,
-    std::set<std::string>& BlacklistedImages) {
-  std::vector<std::string> aFileNames;
-  GetApplicableFiles(sPath_, aFileNames);
+    const std::string& dir, Song& out,
+    std::set<std::string>& blacklisted_images) {
+  std::vector<std::string> file_names;
+  GetApplicableFiles(dir, file_names);
 
-  if (aFileNames.size() > 1) {
+  if (file_names.size() > 1) {
     LOG->UserLog(
-        "Song", sPath_,
-        "has more than one DWI file. There should be only one!");
+        "Song", dir, "has more than one DWI file. There should be only one!");
     return false;
   }
 
   /* We should have exactly one; if we had none, we shouldn't have been called
    * to begin with. */
-  ASSERT(aFileNames.size() == 1);
-  const std::string sPath = sPath_ + aFileNames[0];
+  ASSERT(file_names.size() == 1);
+  const std::string path = dir + file_names[0];
 
-  LOG->Trace("Song::LoadFromDWIFile(%s)", sPath.c_str());
+  LOG->Trace("Song::LoadFromDWIFile(%s)", path.c_str());
 
   MsdFile msd;
-  if (!msd.ReadFile(sPath, false))  // don't unescape
+  if (!msd.ReadFile(path, false))  // don't unescape
   {
     LOG->UserLog(
-        "Song file", sPath, "couldn't be opened: %s", msd.GetError().c_str());
+        "Song file", path, "couldn't be opened: %s", msd.GetError().c_str());
     return false;
   }
 
-  out.song_file_name_ = sPath;
+  out.song_file_name_ = path;
 
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
-    int iNumParams = msd.GetNumParams(i);
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
+    int num_params = msd.GetNumParams(i);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
 
-    if (iNumParams < 1) {
+    if (num_params < 1) {
       LOG->UserLog(
-          "Song file", sPath, "has tag \"%s\" with no parameters.",
-          sValueName.c_str());
+          "Song file", path, "has tag \"%s\" with no parameters.",
+          value_name.c_str());
       continue;
     }
 
     // handle the data
-    if (EqualsNoCase(sValueName, "FILE")) {
-      out.music_file_ = sParams[1];
+    if (EqualsNoCase(value_name, "FILE")) {
+      out.music_file_ = params[1];
     }
 
-    else if (EqualsNoCase(sValueName, "TITLE")) {
+    else if (EqualsNoCase(value_name, "TITLE")) {
       NotesLoader::GetMainAndSubTitlesFromFullTitle(
-          sParams[1], out.main_title_, out.sub_title_);
+          params[1], out.main_title_, out.sub_title_);
 
       /* As far as I know, there's no spec on the encoding of this text. (I
        * didn't look very hard, though.)  I've seen at least one file in
@@ -674,145 +674,145 @@ bool DWILoader::LoadFromDir(
       ConvertString(out.sub_title_, "utf-8,english");
     }
 
-    else if (EqualsNoCase(sValueName, "ARTIST")) {
-      out.artist_ = sParams[1];
+    else if (EqualsNoCase(value_name, "ARTIST")) {
+      out.artist_ = params[1];
       ConvertString(out.artist_, "utf-8,english");
     }
 
-    else if (EqualsNoCase(sValueName, "GENRE")) {
-      out.genre_ = sParams[1];
+    else if (EqualsNoCase(value_name, "GENRE")) {
+      out.genre_ = params[1];
       ConvertString(out.genre_, "utf-8,english");
     }
 
-    else if (EqualsNoCase(sValueName, "CDTITLE")) {
-      out.cd_title_file_ = sParams[1];
+    else if (EqualsNoCase(value_name, "CDTITLE")) {
+      out.cd_title_file_ = params[1];
     }
 
-    else if (EqualsNoCase(sValueName, "BPM")) {
-      const float fBPM = StringToFloat(sParams[1]);
+    else if (EqualsNoCase(value_name, "BPM")) {
+      const float bpm = StringToFloat(params[1]);
 
-      if (unlikely(fBPM <= 0.0f && !PREFSMAN->quirks_mode_)) {
+      if (unlikely(bpm <= 0.0f && !PREFSMAN->quirks_mode_)) {
         LOG->UserLog(
-            "Song file", sPath, "has an invalid BPM change at beat %f, BPM %f.",
-            0.0f, fBPM);
+            "Song file", path, "has an invalid BPM change at beat %f, BPM %f.",
+            0.0f, bpm);
       } else {
-        out.song_timing_.AddSegment(BPMSegment(0, fBPM));
+        out.song_timing_.AddSegment(BPMSegment(0, bpm));
       }
-    } else if (EqualsNoCase(sValueName, "DISPLAYBPM")) {
+    } else if (EqualsNoCase(value_name, "DISPLAYBPM")) {
       // #DISPLAYBPM:[xxx..xxx]|[xxx]|[*];
-      int iMin, iMax;
+      int min, max;
       /* We can't parse this as a float with sscanf, since '.' is a valid
        * character in a float.  (We could do it with a regex, but it's not
        * worth bothering with since we don't display fractional BPM anyway.) */
-      if (sscanf(sParams[1].c_str(), "%i..%i", &iMin, &iMax) == 2) {
+      if (sscanf(params[1].c_str(), "%i..%i", &min, &max) == 2) {
         out.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
-        out.specified_bpm_min_ = (float)iMin;
-        out.specified_bpm_max_ = (float)iMax;
-      } else if (sscanf(sParams[1].c_str(), "%i", &iMin) == 1) {
+        out.specified_bpm_min_ = (float)min;
+        out.specified_bpm_max_ = (float)max;
+      } else if (sscanf(params[1].c_str(), "%i", &min) == 1) {
         out.display_bpm_type_ = DISPLAY_BPM_SPECIFIED;
-        out.specified_bpm_min_ = out.specified_bpm_max_ = (float)iMin;
+        out.specified_bpm_min_ = out.specified_bpm_max_ = (float)min;
       } else {
         out.display_bpm_type_ = DISPLAY_BPM_RANDOM;
       }
     }
 
-    else if (EqualsNoCase(sValueName, "GAP")) {
+    else if (EqualsNoCase(value_name, "GAP")) {
       // the units of GAP is 1/1000 second
       out.song_timing_.beat0_offset_in_seconds_ =
-          -StringToInt(sParams[1]) / 1000.0f;
+          -StringToInt(params[1]) / 1000.0f;
     }
 
-    else if (EqualsNoCase(sValueName, "SAMPLESTART")) {
+    else if (EqualsNoCase(value_name, "SAMPLESTART")) {
       out.music_sample_start_seconds_ =
-          ParseBrokenDWITimestamp(sParams[1], sParams[2], sParams[3]);
+          ParseBrokenDWITimestamp(params[1], params[2], params[3]);
     }
 
-    else if (EqualsNoCase(sValueName, "SAMPLELENGTH")) {
-      float sampleLength =
-          ParseBrokenDWITimestamp(sParams[1], sParams[2], sParams[3]);
-      if (sampleLength > 0 && sampleLength < 1) {
+    else if (EqualsNoCase(value_name, "SAMPLELENGTH")) {
+      float sample_length =
+          ParseBrokenDWITimestamp(params[1], params[2], params[3]);
+      if (sample_length > 0 && sample_length < 1) {
         // there were multiple versions of this tag allegedly: ensure a decent
         // length if requested.
-        sampleLength *= 1000;
+        sample_length *= 1000;
       }
-      out.music_sample_length_seconds_ = sampleLength;
+      out.music_sample_length_seconds_ = sample_length;
 
     }
 
-    else if (EqualsNoCase(sValueName, "FREEZE")) {
-      std::vector<std::string> arrayFreezeExpressions;
-      split(sParams[1], ",", arrayFreezeExpressions);
+    else if (EqualsNoCase(value_name, "FREEZE")) {
+      std::vector<std::string> array_freeze_expressions;
+      split(params[1], ",", array_freeze_expressions);
 
-      for (unsigned f = 0; f < arrayFreezeExpressions.size(); f++) {
-        std::vector<std::string> arrayFreezeValues;
-        split(arrayFreezeExpressions[f], "=", arrayFreezeValues);
-        if (arrayFreezeValues.size() != 2) {
+      for (unsigned f = 0; f < array_freeze_expressions.size(); f++) {
+        std::vector<std::string> array_freeze_values;
+        split(array_freeze_expressions[f], "=", array_freeze_values);
+        if (array_freeze_values.size() != 2) {
           LOG->UserLog(
-              "Song file", sPath, "has an invalid FREEZE: '%s'.",
-              arrayFreezeExpressions[f].c_str());
+              "Song file", path, "has an invalid FREEZE: '%s'.",
+              array_freeze_expressions[f].c_str());
           continue;
         }
-        int iFreezeRow =
-            BeatToNoteRow(StringToFloat(arrayFreezeValues[0]) / 4.0f);
-        float fFreezeSeconds = StringToFloat(arrayFreezeValues[1]) / 1000.0f;
+        int freeze_row =
+            BeatToNoteRow(StringToFloat(array_freeze_values[0]) / 4.0f);
+        float freeze_seconds = StringToFloat(array_freeze_values[1]) / 1000.0f;
 
-        out.song_timing_.AddSegment(StopSegment(iFreezeRow, fFreezeSeconds));
+        out.song_timing_.AddSegment(StopSegment(freeze_row, freeze_seconds));
         //				LOG->Trace( "Adding a freeze segment:
         // beat: %f, seconds = %f", fFreezeBeat, fFreezeSeconds );
       }
     }
 
     else if (
-        EqualsNoCase(sValueName, "CHANGEBPM") ||
-        EqualsNoCase(sValueName, "BPMCHANGE")) {
-      std::vector<std::string> arrayBPMChangeExpressions;
-      split(sParams[1], ",", arrayBPMChangeExpressions);
+        EqualsNoCase(value_name, "CHANGEBPM") ||
+        EqualsNoCase(value_name, "BPMCHANGE")) {
+      std::vector<std::string> array_bpm_change_expressions;
+      split(params[1], ",", array_bpm_change_expressions);
 
-      for (unsigned b = 0; b < arrayBPMChangeExpressions.size(); b++) {
-        std::vector<std::string> arrayBPMChangeValues;
-        split(arrayBPMChangeExpressions[b], "=", arrayBPMChangeValues);
-        if (arrayBPMChangeValues.size() != 2) {
+      for (unsigned b = 0; b < array_bpm_change_expressions.size(); b++) {
+        std::vector<std::string> array_bpm_change_values;
+        split(array_bpm_change_expressions[b], "=", array_bpm_change_values);
+        if (array_bpm_change_values.size() != 2) {
           LOG->UserLog(
-              "Song file", sPath, "has an invalid CHANGEBPM: '%s'.",
-              arrayBPMChangeExpressions[b].c_str());
+              "Song file", path, "has an invalid CHANGEBPM: '%s'.",
+              array_bpm_change_expressions[b].c_str());
           continue;
         }
 
-        int iStartIndex =
-            BeatToNoteRow(StringToFloat(arrayBPMChangeValues[0]) / 4.0f);
-        float fBPM = StringToFloat(arrayBPMChangeValues[1]);
-        if (fBPM > 0.0f) {
-          out.song_timing_.AddSegment(BPMSegment(iStartIndex, fBPM));
+        int start_index =
+            BeatToNoteRow(StringToFloat(array_bpm_change_values[0]) / 4.0f);
+        float bpm = StringToFloat(array_bpm_change_values[1]);
+        if (bpm > 0.0f) {
+          out.song_timing_.AddSegment(BPMSegment(start_index, bpm));
         } else {
           LOG->UserLog(
-              "Song file", sPath,
+              "Song file", path,
               "has an invalid BPM change at beat %f, BPM %f.",
-              NoteRowToBeat(iStartIndex), fBPM);
+              NoteRowToBeat(start_index), bpm);
         }
       }
     }
 
     else if (
-        EqualsNoCase(sValueName, "SINGLE") ||
-        EqualsNoCase(sValueName, "DOUBLE") ||
-        EqualsNoCase(sValueName, "COUPLE") ||
-        EqualsNoCase(sValueName, "SOLO")) {
-      Steps* pNewNotes = out.CreateSteps();
+        EqualsNoCase(value_name, "SINGLE") ||
+        EqualsNoCase(value_name, "DOUBLE") ||
+        EqualsNoCase(value_name, "COUPLE") ||
+        EqualsNoCase(value_name, "SOLO")) {
+      Steps* new_notes = out.CreateSteps();
       LoadFromDWITokens(
-          sParams[0], sParams[1], sParams[2], sParams[3],
-          (iNumParams == 5) ? sParams[4] : std::string(""), *pNewNotes, sPath);
-      if (pNewNotes->steps_type_ != StepsType_Invalid) {
-        pNewNotes->SetFilename(sPath);
-        out.AddSteps(pNewNotes);
+          params[0], params[1], params[2], params[3],
+          (num_params == 5) ? params[4] : std::string(""), *new_notes, path);
+      if (new_notes->steps_type_ != StepsType_Invalid) {
+        new_notes->SetFilename(path);
+        out.AddSteps(new_notes);
       } else {
-        delete pNewNotes;
+        delete new_notes;
       }
     } else if (
-        EqualsNoCase(sValueName, "DISPLAYTITLE") ||
-        EqualsNoCase(sValueName, "DISPLAYARTIST")) {
+        EqualsNoCase(value_name, "DISPLAYTITLE") ||
+        EqualsNoCase(value_name, "DISPLAYARTIST")) {
       /* We don't want to support these tags.  However, we don't want
        * to pick up images used here as song images (eg. banners). */
-      std::string param = sParams[1];
+      std::string param = params[1];
       /* "{foo} ... {foo2}" */
       size_t pos = 0;
       while (pos < std::string::npos) {
@@ -830,7 +830,7 @@ bool DWILoader::LoadFromDir(
         pos = endpos + 1;
 
         MakeLower(sub);
-        BlacklistedImages.insert(sub);
+        blacklisted_images.insert(sub);
       }
     } else {
       // do nothing.  We don't care about this value name

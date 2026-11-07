@@ -45,20 +45,20 @@ static std::string GetNewWindow() {
     return "(NULL)";
   }
 
-  DWORD iProcessID;
-  GetWindowThreadProcessId(h, &iProcessID);
+  DWORD process_id;
+  GetWindowThreadProcessId(h, &process_id);
 
-  std::string sName;
-  GetProcessFileName(iProcessID, sName);
+  std::string name;
+  GetProcessFileName(process_id, name);
 
-  sName = Basename(sName);
+  name = Basename(name);
 
-  return sName;
+  return name;
 }
 
 static LRESULT CALLBACK
-GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-  CHECKPOINT_M(ssprintf("%p, %u, %08x, %08x", hWnd, msg, wParam, lParam));
+GraphicsWindow_WndProc(HWND wnd, UINT msg, WPARAM w_param, LPARAM l_param) {
+  CHECKPOINT_M(ssprintf("%p, %u, %08x, %08x", wnd, msg, w_param, l_param));
 
   // Suppress autorun.
   if (msg == g_iQueryCancelAutoPlayMessage) {
@@ -67,24 +67,24 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
   switch (msg) {
     case WM_ACTIVATE: {
-      const bool bInactive = (LOWORD(wParam) == WA_INACTIVE);
-      const bool bMinimized = (HIWORD(wParam) != 0);
-      const bool bHadFocus = g_bHasFocus;
-      g_bHasFocus = !bInactive && !bMinimized;
+      const bool inactive = (LOWORD(w_param) == WA_INACTIVE);
+      const bool minimized = (HIWORD(w_param) != 0);
+      const bool had_focus = g_bHasFocus;
+      g_bHasFocus = !inactive && !minimized;
       LOG->Trace(
-          "WM_ACTIVATE (%i, %i): %s", bInactive, bMinimized,
+          "WM_ACTIVATE (%i, %i): %s", inactive, minimized,
           g_bHasFocus ? "has focus" : "doesn't have focus");
       if (!g_bHasFocus) {
-        std::string sName = GetNewWindow();
-        static std::set<std::string> sLostFocusTo;
-        sLostFocusTo.insert(sName);
-        std::string sStr;
-        for (std::set<std::string>::const_iterator it = sLostFocusTo.begin();
-             it != sLostFocusTo.end(); ++it) {
-          sStr += (sStr.size() ? ", " : "") + *it;
+        std::string name = GetNewWindow();
+        static std::set<std::string> lost_focus_to;
+        lost_focus_to.insert(name);
+        std::string str;
+        for (std::set<std::string>::const_iterator it = lost_focus_to.begin();
+             it != lost_focus_to.end(); ++it) {
+          str += (str.size() ? ", " : "") + *it;
         }
 
-        LOG->MapLog("LOST_FOCUS", "Lost focus to: %s", sStr.c_str());
+        LOG->MapLog("LOST_FOCUS", "Lost focus to: %s", str.c_str());
       }
 
       if (!g_bD3D && !g_CurrentParams.windowed_ && !g_bRecreatingVideoMode) {
@@ -92,14 +92,14 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
          * full-screen video mode when we focus changes, and to hide
          * and show the window. Hiding is done in WM_KILLFOCUS,
          * because that's where most other apps seem to do it. */
-        if (g_bHasFocus && !bHadFocus) {
+        if (g_bHasFocus && !had_focus) {
           ChangeDisplaySettingsEx(
               g_CurrentParams.display_id_.c_str(), &g_FullScreenDevMode,
               nullptr, CDS_FULLSCREEN, nullptr);
           ShowWindow(g_hWndMain, SW_SHOWNORMAL);
           SetWindowPos(
               g_hWndMain, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-        } else if (!g_bHasFocus && bHadFocus) {
+        } else if (!g_bHasFocus && had_focus) {
           ChangeDisplaySettingsEx(
               g_CurrentParams.display_id_.c_str(), nullptr, nullptr, 0,
               nullptr);
@@ -131,7 +131,7 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
       break;
 
     case WM_SYSCOMMAND:
-      switch (wParam & 0xFFF0) {
+      switch (w_param & 0xFFF0) {
         case SC_MONITORPOWER:
         case SC_SCREENSAVE:
           return 0;
@@ -140,8 +140,8 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     case WM_PAINT: {
       PAINTSTRUCT ps;
-      BeginPaint(hWnd, &ps);
-      EndPaint(hWnd, &ps);
+      BeginPaint(wnd, &ps);
+      EndPaint(wnd, &ps);
       break;
     }
 
@@ -150,7 +150,7 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_SYSKEYDOWN:
     case WM_SYSKEYUP:
     case WM_MOUSEWHEEL:  // might want to use this for
-                         // GET_WHEEL_DELTA_WPARAM(wParam) -aj
+                         // GET_WHEEL_DELTA_WPARAM(w_param) -aj
       // We handle all input ourself, via DirectInput.
       return 0;
 
@@ -167,34 +167,34 @@ GraphicsWindow_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
       }
 
       RECT rect;
-      GetClientRect(hWnd, &rect);
+      GetClientRect(wnd, &rect);
 
-      int iWidth = rect.right - rect.left;
-      int iHeight = rect.bottom - rect.top;
-      if (g_CurrentParams.width_ != iWidth ||
-          g_CurrentParams.height_ != iHeight) {
-        g_CurrentParams.width_ = iWidth;
-        g_CurrentParams.height_ = iHeight;
+      int width = rect.right - rect.left;
+      int height = rect.bottom - rect.top;
+      if (g_CurrentParams.width_ != width ||
+          g_CurrentParams.height_ != height) {
+        g_CurrentParams.width_ = width;
+        g_CurrentParams.height_ = height;
         g_bResolutionChanged = true;
       }
       break;
     }
     case WM_COPYDATA: {
-      PCOPYDATASTRUCT pMyCDS = (PCOPYDATASTRUCT)lParam;
-      std::string sCommandLine((char*)pMyCDS->lpData, pMyCDS->cbData);
+      PCOPYDATASTRUCT my_cds = (PCOPYDATASTRUCT)l_param;
+      std::string command_line((char*)my_cds->lpData, my_cds->cbData);
       CommandLineActions::CommandLineArgs args;
-      split(sCommandLine, "|", args.argv_, false);
+      split(command_line, "|", args.argv_, false);
       CommandLineActions::ToProcess.push_back(args);
       break;
     }
   }
 
-  CHECKPOINT_M(ssprintf("%p, %u, %08x, %08x", hWnd, msg, wParam, lParam));
+  CHECKPOINT_M(ssprintf("%p, %u, %08x, %08x", wnd, msg, w_param, l_param));
 
   if (m_bWideWindowClass) {
-    return DefWindowProcW(hWnd, msg, wParam, lParam);
+    return DefWindowProcW(wnd, msg, w_param, l_param);
   } else {
-    return DefWindowProcA(hWnd, msg, wParam, lParam);
+    return DefWindowProcA(wnd, msg, w_param, l_param);
   }
 }
 
@@ -241,27 +241,27 @@ std::string GraphicsWindow::SetScreenMode(const VideoModeParams& p) {
     return std::string();
   }
 
-  DEVMODE DevMode;
-  ZERO(DevMode);
-  DevMode.dmSize = sizeof(DEVMODE);
-  DevMode.dmPelsWidth = p.width_;
-  DevMode.dmPelsHeight = p.height_;
-  DevMode.dmBitsPerPel = p.bpp_;
-  DevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+  DEVMODE dev_mode;
+  ZERO(dev_mode);
+  dev_mode.dmSize = sizeof(DEVMODE);
+  dev_mode.dmPelsWidth = p.width_;
+  dev_mode.dmPelsHeight = p.height_;
+  dev_mode.dmBitsPerPel = p.bpp_;
+  dev_mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
 
   if (p.rate_ != REFRESH_DEFAULT) {
-    DevMode.dmDisplayFrequency = p.rate_;
-    DevMode.dmFields |= DM_DISPLAYFREQUENCY;
+    dev_mode.dmDisplayFrequency = p.rate_;
+    dev_mode.dmFields |= DM_DISPLAYFREQUENCY;
   }
   ChangeDisplaySettingsEx(p.display_id_.c_str(), nullptr, nullptr, 0, nullptr);
 
   int ret = ChangeDisplaySettingsEx(
-      p.display_id_.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
+      p.display_id_.c_str(), &dev_mode, nullptr, CDS_FULLSCREEN, nullptr);
   if (ret != DISP_CHANGE_SUCCESSFUL &&
-      (DevMode.dmFields & DM_DISPLAYFREQUENCY)) {
-    DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
+      (dev_mode.dmFields & DM_DISPLAYFREQUENCY)) {
+    dev_mode.dmFields &= ~DM_DISPLAYFREQUENCY;
     ret = ChangeDisplaySettingsEx(
-        p.display_id_.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr);
+        p.display_id_.c_str(), &dev_mode, nullptr, CDS_FULLSCREEN, nullptr);
   }
 
   // XXX: append error
@@ -269,12 +269,12 @@ std::string GraphicsWindow::SetScreenMode(const VideoModeParams& p) {
     return "Couldn't set screen mode";
   }
 
-  g_FullScreenDevMode = DevMode;
+  g_FullScreenDevMode = dev_mode;
   return std::string();
 }
 
-static int GetWindowStyle(bool bWindowed, bool bWindowIsFullscreenBorderless) {
-  if (bWindowed && !bWindowIsFullscreenBorderless) {
+static int GetWindowStyle(bool windowed, bool window_is_fullscreen_borderless) {
+  if (windowed && !window_is_fullscreen_borderless) {
     return WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
   } else {
     return WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -284,14 +284,14 @@ static int GetWindowStyle(bool bWindowed, bool bWindowIsFullscreenBorderless) {
 /* Set the final window size, set the window text and icon, and then unhide the
  * window. */
 void GraphicsWindow::CreateGraphicsWindow(
-    const VideoModeParams& p, bool bForceRecreateWindow) {
-  auto resetDeviceMode = [=](DEVMODE& mode) {
+    const VideoModeParams& p, bool force_recreate_window) {
+  auto reset_device_mode = [=](DEVMODE& mode) {
     ZeroMemory(&mode, sizeof(DEVMODE));
     mode.dmSize = sizeof(DEVMODE);
     mode.dmDriverExtra = 0;
   };
 
-  auto deviceModeIsValid = [=](const DEVMODE& mode) {
+  auto device_mode_is_valid = [=](const DEVMODE& mode) {
     return (mode.dmFields & DM_PELSWIDTH) && (mode.dmFields & DM_PELSHEIGHT) &&
            (mode.dmFields & DM_DISPLAYFREQUENCY) &&
            (mode.dmBitsPerPel >= 32 || !(mode.dmFields & DM_BITSPERPEL));
@@ -303,7 +303,7 @@ void GraphicsWindow::CreateGraphicsWindow(
   AdjustVideoModeParams(g_CurrentParams);
 
   DEVMODE devmode;
-  resetDeviceMode(devmode);
+  reset_device_mode(devmode);
 
   // Top left corner of monitor
   POINTL pos;
@@ -315,20 +315,20 @@ void GraphicsWindow::CreateGraphicsWindow(
   // Look for the preferred display's position.
   if (EnumDisplaySettingsEx(
           p.display_id_.c_str(), ENUM_CURRENT_SETTINGS, &devmode, 0) &&
-      deviceModeIsValid(devmode) && (devmode.dmFields & DM_POSITION)) {
+      device_mode_is_valid(devmode) && (devmode.dmFields & DM_POSITION)) {
     pos = devmode.dmPosition;
-    resetDeviceMode(devmode);
+    reset_device_mode(devmode);
   }
 
-  if (g_hWndMain == nullptr || bForceRecreateWindow) {
-    int iWindowStyle =
+  if (g_hWndMain == nullptr || force_recreate_window) {
+    int window_style =
         GetWindowStyle(p.windowed_, p.window_is_fullscreen_borderless_);
 
     AppInstance inst;
-    HWND hWnd = CreateWindow(
-        g_sClassName.c_str(), "app", iWindowStyle, 0, 0, 0, 0, nullptr, nullptr,
+    HWND wnd = CreateWindow(
+        g_sClassName.c_str(), "app", window_style, 0, 0, 0, 0, nullptr, nullptr,
         inst, nullptr);
-    if (hWnd == nullptr) {
+    if (wnd == nullptr) {
       RageException::Throw(
           "%s", werr_ssprintf(GetLastError(), "CreateWindow").c_str());
     }
@@ -340,13 +340,13 @@ void GraphicsWindow::CreateGraphicsWindow(
       // While we change to the new window, don't do ChangeDisplaySettings in
       // WM_ACTIVATE.
       g_bRecreatingVideoMode = true;
-      SetForegroundWindow(hWnd);
+      SetForegroundWindow(wnd);
       g_bRecreatingVideoMode = false;
 
       GraphicsWindow::DestroyGraphicsWindow();
     }
 
-    g_hWndMain = hWnd;
+    g_hWndMain = wnd;
     CrashHandler::SetForegroundWindow(g_hWndMain);
     g_HDC = GetDC(g_hWndMain);
   }
@@ -379,22 +379,22 @@ void GraphicsWindow::CreateGraphicsWindow(
 
   /* The window style may change as a result of switching to or from fullscreen;
    * apply it. Don't change the WS_VISIBLE bit. */
-  int iWindowStyle =
+  int window_style =
       GetWindowStyle(p.windowed_, p.window_is_fullscreen_borderless_);
   if (GetWindowLong(g_hWndMain, GWL_STYLE) & WS_VISIBLE) {
-    iWindowStyle |= WS_VISIBLE;
+    window_style |= WS_VISIBLE;
   }
-  SetWindowLong(g_hWndMain, GWL_STYLE, iWindowStyle);
+  SetWindowLong(g_hWndMain, GWL_STYLE, window_style);
 
   // Set rectangle for window based on the preferred display and resolution
-  RECT WindowRect;
-  SetRect(&WindowRect, pos.x, pos.y, pos.x + p.width_, pos.y + p.height_);
-  AdjustWindowRect(&WindowRect, iWindowStyle, FALSE);
+  RECT window_rect;
+  SetRect(&window_rect, pos.x, pos.y, pos.x + p.width_, pos.y + p.height_);
+  AdjustWindowRect(&window_rect, window_style, FALSE);
 
   // LOG->Warn( "w = %d, h = %d", p.width_, p.height_ );
 
-  const int iWidth = WindowRect.right - WindowRect.left;
-  const int iHeight = WindowRect.bottom - WindowRect.top;
+  const int width = window_rect.right - window_rect.left;
+  const int height = window_rect.bottom - window_rect.top;
 
   int x = pos.x, y = pos.y;
   /* If windowed and not fullscreen borderless, center the window on the primary
@@ -402,23 +402,23 @@ void GraphicsWindow::CreateGraphicsWindow(
    * that was hovered before selecting Windowed in Options*/
   if (p.windowed_ && !p.window_is_fullscreen_borderless_) {
     if (EnumDisplaySettingsEx(NULL, ENUM_CURRENT_SETTINGS, &devmode, 0) &&
-        deviceModeIsValid(devmode) && (devmode.dmFields & DM_POSITION)) {
-      WindowRect.left = devmode.dmPosition.x;
-      WindowRect.top = devmode.dmPosition.y;
-      WindowRect.right = devmode.dmPosition.x + devmode.dmPelsWidth;
-      WindowRect.bottom = devmode.dmPosition.y + devmode.dmPelsHeight;
+        device_mode_is_valid(devmode) && (devmode.dmFields & DM_POSITION)) {
+      window_rect.left = devmode.dmPosition.x;
+      window_rect.top = devmode.dmPosition.y;
+      window_rect.right = devmode.dmPosition.x + devmode.dmPelsWidth;
+      window_rect.bottom = devmode.dmPosition.y + devmode.dmPelsHeight;
     }
 
-    x = WindowRect.left + (WindowRect.right - WindowRect.left - iWidth) / 2;
-    y = WindowRect.top + (WindowRect.bottom - WindowRect.top - iHeight) / 2;
+    x = window_rect.left + (window_rect.right - window_rect.left - width) / 2;
+    y = window_rect.top + (window_rect.bottom - window_rect.top - height) / 2;
   }
 
-  resetDeviceMode(devmode);
+  reset_device_mode(devmode);
 
   /* Move and resize the window. SWP_FRAMECHANGED causes the above
    * SetWindowLong to take effect. */
   if (!SetWindowPos(
-          g_hWndMain, HWND_NOTOPMOST, x, y, iWidth, iHeight,
+          g_hWndMain, HWND_NOTOPMOST, x, y, width, height,
           SWP_FRAMECHANGED | SWP_SHOWWINDOW)) {
     LOG->Warn("%s", werr_ssprintf(GetLastError(), "SetWindowPos").c_str());
   }
@@ -470,14 +470,14 @@ void GraphicsWindow::DestroyGraphicsWindow() {
   CHECKPOINT;
 }
 
-void GraphicsWindow::Initialize(bool bD3D) {
+void GraphicsWindow::Initialize(bool d3d) {
   // A few things need to be handled differently for D3D.
-  g_bD3D = bD3D;
+  g_bD3D = d3d;
 
   AppInstance inst;
   do {
-    const std::wstring wsClassName = RStringToWstring(g_sClassName);
-    WNDCLASSW WindowClassW = {
+    const std::wstring class_name = RStringToWstring(g_sClassName);
+    WNDCLASSW window_class_w = {
         CS_OWNDC | CS_BYTEALIGNCLIENT,
         GraphicsWindow_WndProc,
         0,                              /* cbClsExtra */
@@ -487,15 +487,15 @@ void GraphicsWindow::Initialize(bool bD3D) {
         LoadCursor(nullptr, IDC_ARROW), /* default cursor */
         nullptr,                        /* hbrBackground */
         nullptr,                        /* lpszMenuName */
-        wsClassName.c_str()             /* lpszClassName */
+        class_name.c_str()              /* lpszClassName */
     };
 
     m_bWideWindowClass = true;
-    if (RegisterClassW(&WindowClassW)) {
+    if (RegisterClassW(&window_class_w)) {
       break;
     }
 
-    WNDCLASS WindowClassA = {
+    WNDCLASS window_class_a = {
         CS_OWNDC | CS_BYTEALIGNCLIENT,
         GraphicsWindow_WndProc,
         0,                              /* cbClsExtra */
@@ -509,7 +509,7 @@ void GraphicsWindow::Initialize(bool bD3D) {
     };
 
     m_bWideWindowClass = false;
-    if (!RegisterClassA(&WindowClassA)) {
+    if (!RegisterClassA(&window_class_a)) {
       RageException::Throw(
           "%s", werr_ssprintf(GetLastError(), "RegisterClass").c_str());
     }
@@ -562,71 +562,71 @@ void GraphicsWindow::Update() {
 HWND GraphicsWindow::GetHwnd() { return g_hWndMain; }
 
 void GraphicsWindow::GetDisplaySpecs(DisplaySpecs& out) {
-  auto resetDeviceMode = [=](DEVMODE& mode) {
+  auto reset_device_mode = [=](DEVMODE& mode) {
     ZeroMemory(&mode, sizeof(DEVMODE));
     mode.dmSize = sizeof(DEVMODE);
     mode.dmDriverExtra = 0;
   };
 
-  auto deviceModeIsValid = [=](const DEVMODE& mode) {
+  auto device_mode_is_valid = [=](const DEVMODE& mode) {
     return (mode.dmFields & DM_PELSWIDTH) && (mode.dmFields & DM_PELSHEIGHT) &&
            (mode.dmFields & DM_DISPLAYFREQUENCY) &&
            (mode.dmBitsPerPel >= 32 || !(mode.dmFields & DM_BITSPERPEL));
   };
 
   DEVMODE devmode;
-  resetDeviceMode(devmode);
+  reset_device_mode(devmode);
 
-  DWORD deviceIter = 0;
+  DWORD device_iter = 0;
   DISPLAY_DEVICE dd;
   ZeroMemory(&dd, sizeof(dd));
   dd.cb = sizeof(dd);
 
   // Loop through all displays and their display settings to create a
   // DisplaySpec for each display.
-  while (EnumDisplayDevices(NULL, deviceIter++, &dd, 0)) {
+  while (EnumDisplayDevices(NULL, device_iter++, &dd, 0)) {
     int mode = 0;
-    std::set<DisplayMode> dispModes;
+    std::set<DisplayMode> disp_modes;
 
     while (EnumDisplaySettingsEx(dd.DeviceName, mode++, &devmode, 0)) {
-      if (deviceModeIsValid(devmode)) {
+      if (device_mode_is_valid(devmode)) {
         DisplayMode m = {
             devmode.dmPelsWidth, devmode.dmPelsHeight,
             static_cast<double>(devmode.dmDisplayFrequency)};
-        dispModes.insert(m);
+        disp_modes.insert(m);
       }
-      resetDeviceMode(devmode);
+      reset_device_mode(devmode);
     }
 
     // Clean up the device name to store as the DisplaySpec ID
-    std::string sDeviceName;
-    sDeviceName = dd.DeviceName;
-    TrimRight(sDeviceName);
+    std::string device_name;
+    device_name = dd.DeviceName;
+    TrimRight(device_name);
 
     // Make the DisplaySpec Name more friendly by removing the "\\.\" prefix on
     // most Windows display devices
-    std::string modeName;
-    modeName = sDeviceName;
-    TrimLeft(modeName, "\\");
-    TrimLeft(modeName, ".");
-    TrimLeft(modeName, "\\");
+    std::string mode_name;
+    mode_name = device_name;
+    TrimLeft(mode_name, "\\");
+    TrimLeft(mode_name, ".");
+    TrimLeft(mode_name, "\\");
 
     // Get the current display mode
     // Set the ENUM_CURRENT_SETTINGS flag so that we only store DisplaySpecs for
     // valid displays
     if (EnumDisplaySettingsEx(
             dd.DeviceName, ENUM_CURRENT_SETTINGS, &devmode, 0) &&
-        deviceModeIsValid(devmode) && (devmode.dmFields & DM_POSITION)) {
+        device_mode_is_valid(devmode) && (devmode.dmFields & DM_POSITION)) {
       DisplayMode m = {
           devmode.dmPelsWidth, devmode.dmPelsHeight,
           static_cast<double>(devmode.dmDisplayFrequency)};
       RectI bounds = {
           devmode.dmPosition.x, devmode.dmPosition.y,
           static_cast<int>(m.width_), static_cast<int>(m.height_)};
-      out.insert(DisplaySpec(sDeviceName, modeName, dispModes, m, bounds));
-    } else if (!dispModes.empty()) {
+      out.insert(DisplaySpec(device_name, mode_name, disp_modes, m, bounds));
+    } else if (!disp_modes.empty()) {
       LOG->Warn("Could not retrieve valid current display mode");
-      out.insert(DisplaySpec(sDeviceName, modeName, *dispModes.begin()));
+      out.insert(DisplaySpec(device_name, mode_name, *disp_modes.begin()));
     }
   }
   if (out.size() == 0) {
@@ -634,7 +634,7 @@ void GraphicsWindow::GetDisplaySpecs(DisplaySpecs& out) {
   }
   ZeroMemory(&dd, sizeof(dd));
   dd.cb = sizeof(dd);
-  resetDeviceMode(devmode);
+  reset_device_mode(devmode);
 }
 
 /*

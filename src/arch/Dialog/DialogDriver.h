@@ -12,15 +12,14 @@ class DialogDriver {
  public:
   static DialogDriver* Create();
 
-  virtual void Error(std::string sMessage, std::string sID) {
-    printf("Error: %s\n", sMessage.c_str());
+  virtual void Error(std::string message, std::string id) {
+    printf("Error: %s\n", message.c_str());
   }
-  virtual void OK(std::string sMessage, std::string sID) {}
-  virtual Dialog::Result AbortRetryIgnore(
-      std::string sMessage, std::string sID) {
+  virtual void OK(std::string message, std::string id) {}
+  virtual Dialog::Result AbortRetryIgnore(std::string message, std::string id) {
     return Dialog::ignore;
   }
-  virtual Dialog::Result AbortRetry(std::string sMessage, std::string sID) {
+  virtual Dialog::Result AbortRetry(std::string message, std::string id) {
     return Dialog::abort;
   }
 
@@ -33,7 +32,7 @@ class DialogDriver_Null : public DialogDriver {};
 typedef DialogDriver* (*CreateDialogDriverFn)();
 struct RegisterDialogDriver {
   static std::map<istring, CreateDialogDriverFn>* registrees_;
-  RegisterDialogDriver(const istring& sName, CreateDialogDriverFn pfn);
+  RegisterDialogDriver(const istring& name, CreateDialogDriverFn pfn);
 };
 #define REGISTER_DIALOG_DRIVER_CLASS(name)     \
   static RegisterDialogDriver register_##name( \

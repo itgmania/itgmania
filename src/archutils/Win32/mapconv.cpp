@@ -276,14 +276,14 @@ int main(int argc, char** argv) {
 
                     printf("\nPacking RVA data..."); fflush(stdout);
     */
-    std::vector<RVAEnt>::iterator itRVA = rvabuf.begin(),
-                                  itRVAEnd = rvabuf.end();
+    std::vector<RVAEnt>::iterator it_rva = rvabuf.begin(),
+                                  it_rva_end = rvabuf.end();
     std::vector<char> rvaout;
-    uintptr_t firstrva = (*itRVA++).rva_;
+    uintptr_t firstrva = (*it_rva++).rva_;
     uintptr_t lastrva = firstrva;
 
-    for (; itRVA != itRVAEnd; ++itRVA) {
-      std::ptrdiff_t rvadiff = (*itRVA).rva_ - lastrva;
+    for (; it_rva != it_rva_end; ++it_rva) {
+      std::ptrdiff_t rvadiff = (*it_rva).rva_ - lastrva;
 
       lastrva += rvadiff;
 
@@ -336,9 +336,9 @@ int main(int argc, char** argv) {
 
     // dump data
 
-    static const char header[64] = "symbolic debug information\r\n\x1A";
+    static const char kHeader[64] = "symbolic debug information\r\n\x1A";
 
-    fwrite(header, 64, 1, fo);
+    fwrite(kHeader, 64, 1, fo);
 
     size_t t;
 

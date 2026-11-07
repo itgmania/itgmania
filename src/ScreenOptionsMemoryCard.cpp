@@ -34,28 +34,28 @@ void ScreenOptionsMemoryCard::Init() {
 }
 
 bool ScreenOptionsMemoryCard::UpdateCurrentUsbStorageDevices() {
-  std::vector<UsbStorageDevice> aOldDevices = current_usb_storage_devices_;
+  std::vector<UsbStorageDevice> old_devices = current_usb_storage_devices_;
 
-  const std::vector<UsbStorageDevice>& aNewDevices =
+  const std::vector<UsbStorageDevice>& new_devices =
       MEMCARDMAN->GetStorageDevices();
 
   current_usb_storage_devices_.clear();
-  for (size_t i = 0; i < aNewDevices.size(); ++i) {
-    const UsbStorageDevice& dev = aNewDevices[i];
+  for (size_t i = 0; i < new_devices.size(); ++i) {
+    const UsbStorageDevice& dev = new_devices[i];
     if (dev.state_ == UsbStorageDevice::STATE_CHECKING) {
       continue;
     }
     current_usb_storage_devices_.push_back(dev);
   }
 
-  return aOldDevices != current_usb_storage_devices_;
+  return old_devices != current_usb_storage_devices_;
 }
 
 static LocalizedString NO_LABEL("ScreenOptionsMemoryCard", "(no label)");
 static LocalizedString SIZE_UNKNOWN("ScreenOptionsMemoryCard", "size ???");
 static LocalizedString VOLUME_SIZE("ScreenOptionsMemoryCard", "%dMB");
 void ScreenOptionsMemoryCard::CreateMenu() {
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
 
   for (const UsbStorageDevice& iter : current_usb_storage_devices_) {
     std::vector<std::string> vs;
@@ -71,11 +71,11 @@ void ScreenOptionsMemoryCard::CreateMenu() {
           ssprintf(std::string(VOLUME_SIZE).c_str(), iter.volume_size_mb_));
     }
 
-    vHands.push_back(OptionRowHandlerUtil::MakeNull());
+    hands.push_back(OptionRowHandlerUtil::MakeNull());
 
-    OptionRowDefinition& def = vHands.back()->def_;
-    std::string sDescription = join(", ", vs);
-    def.name_ = sDescription;
+    OptionRowDefinition& def = hands.back()->def_;
+    std::string description = join(", ", vs);
+    def.name_ = description;
     def.choices_.push_back("");
     def.explanation_name_ = "Memory Card";
     def.allow_theme_title_ = false;
@@ -83,8 +83,8 @@ void ScreenOptionsMemoryCard::CreateMenu() {
   }
 
   if (current_usb_storage_devices_.empty()) {
-    vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->def_;
+    hands.push_back(OptionRowHandlerUtil::MakeNull());
+    OptionRowDefinition& def = hands.back()->def_;
     def.name_ = "No USB memory cards found";
     def.explanation_name_ = "No Memory Card";
     def.choices_.push_back("");
@@ -92,7 +92,7 @@ void ScreenOptionsMemoryCard::CreateMenu() {
     def.one_choice_for_all_players_ = true;
   }
 
-  InitMenu(vHands);
+  InitMenu(hands);
 }
 
 void ScreenOptionsMemoryCard::BeginScreen() {
@@ -105,8 +105,8 @@ void ScreenOptionsMemoryCard::BeginScreen() {
   SelectRowWithMemoryCard(MEMCARDMAN->editor_memory_card_os_mount_point_.Get());
 }
 
-void ScreenOptionsMemoryCard::HandleScreenMessage(const ScreenMessage SM) {
-  ScreenOptions::HandleScreenMessage(SM);
+void ScreenOptionsMemoryCard::HandleScreenMessage(const ScreenMessage sm) {
+  ScreenOptions::HandleScreenMessage(sm);
 }
 
 void ScreenOptionsMemoryCard::AfterChangeRow(PlayerNumber pn) {
@@ -115,9 +115,8 @@ void ScreenOptionsMemoryCard::AfterChangeRow(PlayerNumber pn) {
   if (current_usb_storage_devices_.empty()) {
     text_os_mount_dir_.SetText("");
   } else {
-    int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
-    text_os_mount_dir_.SetText(
-        current_usb_storage_devices_[iRow].os_mount_dir_);
+    int row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+    text_os_mount_dir_.SetText(current_usb_storage_devices_[row].os_mount_dir_);
   }
 }
 
@@ -126,11 +125,11 @@ void ScreenOptionsMemoryCard::HandleMessage(const Message& msg) {
     if (!out_.IsTransitioning()) {
       /* Remember the old mountpoint. */
       const std::vector<UsbStorageDevice>& v = current_usb_storage_devices_;
-      int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
-      std::string sOldMountPoint;
-      if (iRow < int(v.size())) {
-        const UsbStorageDevice& dev = v[iRow];
-        sOldMountPoint = dev.os_mount_dir_;
+      int row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+      std::string old_mount_point;
+      if (row < int(v.size())) {
+        const UsbStorageDevice& dev = v[row];
+        old_mount_point = dev.os_mount_dir_;
       }
 
       /* If the devices that we'd actually show haven't changed, don't recreate
@@ -144,7 +143,7 @@ void ScreenOptionsMemoryCard::HandleMessage(const Message& msg) {
 
       /* If the memory card that was selected previously is still there, select
        * it. */
-      SelectRowWithMemoryCard(sOldMountPoint);
+      SelectRowWithMemoryCard(old_mount_point);
     }
   }
 
@@ -152,34 +151,34 @@ void ScreenOptionsMemoryCard::HandleMessage(const Message& msg) {
 }
 
 void ScreenOptionsMemoryCard::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {}
+    int row, const std::vector<PlayerNumber>& vpns) {}
 
 void ScreenOptionsMemoryCard::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  OptionRow& row = *rows_[iRow];
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  OptionRow& row = *rows_[i_row];
   if (row.GetRowType() == OptionRow::RowType_Exit) {
     return;
   }
 
   PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
-  if (current_row_[pn] == iRow) {
+  if (current_row_[pn] == i_row) {
     const std::vector<UsbStorageDevice>& v = current_usb_storage_devices_;
-    if (iRow < int(v.size())) {
-      const UsbStorageDevice& dev = v[iRow];
+    if (i_row < int(v.size())) {
+      const UsbStorageDevice& dev = v[i_row];
       MEMCARDMAN->editor_memory_card_os_mount_point_.Set(dev.os_mount_dir_);
     }
   }
 }
 
 void ScreenOptionsMemoryCard::SelectRowWithMemoryCard(
-    const std::string& sOsMountPoint) {
-  if (sOsMountPoint.empty()) {
+    const std::string& os_mount_point) {
+  if (os_mount_point.empty()) {
     return;
   }
 
   const std::vector<UsbStorageDevice>& v = current_usb_storage_devices_;
   for (unsigned i = 0; i < v.size(); i++) {
-    if (v[i].os_mount_dir_ == sOsMountPoint) {
+    if (v[i].os_mount_dir_ == os_mount_point) {
       this->MoveRowAbsolute(PLAYER_1, i);
       return;
     }
@@ -193,20 +192,20 @@ void ScreenOptionsMemoryCard::ProcessMenuStart(const InputEventPlus&) {
     return;
   }
 
-  int iCurRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+  int cur_row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
 
   const std::vector<UsbStorageDevice>& v = current_usb_storage_devices_;
-  if (iCurRow < int(v.size()))  // a card
+  if (cur_row < int(v.size()))  // a card
   {
     // Why is this statement in twice? Doubt it would change right after the if.
     // -Wolfman2000
-    const std::vector<UsbStorageDevice>& vUSB = current_usb_storage_devices_;
-    const UsbStorageDevice& dev = vUSB[iCurRow];
+    const std::vector<UsbStorageDevice>& usb = current_usb_storage_devices_;
+    const UsbStorageDevice& dev = usb[cur_row];
     MEMCARDMAN->editor_memory_card_os_mount_point_.Set(dev.os_mount_dir_);
 
     /* The destination screen must UnmountCard.  XXX: brittle */
-    bool bSuccess = MEMCARDMAN->MountCard(PLAYER_1, dev);
-    if (bSuccess) {
+    bool success = MEMCARDMAN->MountCard(PLAYER_1, dev);
+    if (success) {
       SCREENMAN->PlayStartSound();
       this->BeginFadingOut();
     } else {

@@ -18,13 +18,13 @@ class ScreenSelectProfile : public ScreenWithMenuElements {
   virtual bool MenuRight(const InputEventPlus& input);
   virtual bool MenuUp(const InputEventPlus& input);
   virtual bool MenuDown(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   GameButton tracking_repeating_input_;
 
   // Lua
   void PushSelf(lua_State* L);
-  bool SetProfileIndex(PlayerNumber pn, int iProfileIndex);
+  bool SetProfileIndex(PlayerNumber pn, int profile_index);
   int GetProfileIndex(PlayerNumber pn) { return selected_profiles_[pn]; }
   bool Finish();
 

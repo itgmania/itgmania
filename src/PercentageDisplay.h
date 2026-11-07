@@ -16,14 +16,14 @@ class PercentageDisplay : public ActorFrame {
  public:
   PercentageDisplay();
   void Load(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
   void Load(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats,
-      const std::string& sMetricsGroup, bool bAutoRefresh);
-  void Update(float fDeltaTime);
-  virtual void LoadFromNode(const XNode* pNode);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats,
+      const std::string& metrics_group, bool auto_refresh);
+  void Update(float delta_time);
+  virtual void LoadFromNode(const XNode* node);
   virtual PercentageDisplay* Copy() const;
 
   bool ShowDancePointsNotPercentage() const;

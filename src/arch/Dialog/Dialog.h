@@ -9,16 +9,16 @@ namespace Dialog {
 void Init();
 void Shutdown();
 
-void SetWindowed(bool bWindowed);
+void SetWindowed(bool windowed);
 
 enum Result { ok, cancel, abort, retry, ignore, yes, no };
-void Error(std::string sError, std::string sID = "");
-void OK(std::string sMessage, std::string sID = "");
-Result AbortRetryIgnore(std::string sMessage, std::string sID = "");
-Result AbortRetry(std::string sMessage, std::string sID = "");
+void Error(std::string error, std::string id = "");
+void OK(std::string message, std::string id = "");
+Result AbortRetryIgnore(std::string message, std::string id = "");
+Result AbortRetry(std::string message, std::string id = "");
 
 /* for DialogDrivers */
-void IgnoreMessage(std::string sID);
+void IgnoreMessage(std::string id);
 }  // namespace Dialog
 
 #endif

@@ -22,55 +22,55 @@ DifficultyIcon::DifficultyIcon() {
   player_number_ = PLAYER_1;
 }
 
-bool DifficultyIcon::Load(std::string sPath) {
-  Sprite::Load(sPath);
-  int iStates = GetNumStates();
-  bool bWarn = iStates != NUM_Difficulty && iStates != NUM_Difficulty * 2;
-  if (sPath.find("_blank") != std::string::npos) {
-    bWarn = false;
+bool DifficultyIcon::Load(std::string path) {
+  Sprite::Load(path);
+  int states = GetNumStates();
+  bool warn = states != NUM_Difficulty && states != NUM_Difficulty * 2;
+  if (path.find("_blank") != std::string::npos) {
+    warn = false;
   }
-  if (bWarn) {
-    std::string sError = ssprintf(
+  if (warn) {
+    std::string error = ssprintf(
         "The difficulty icon graphic '%s' must have %d or %d frames.  It has "
         "%d states.",
-        sPath.c_str(), NUM_Difficulty, NUM_Difficulty * 2, iStates);
-    LuaHelpers::ReportScriptError(sError);
+        path.c_str(), NUM_Difficulty, NUM_Difficulty * 2, states);
+    LuaHelpers::ReportScriptError(error);
   }
   StopAnimating();
   return true;
 }
 
-void DifficultyIcon::LoadFromNode(const XNode* pNode) {
-  std::string sFile;
-  if (!ActorUtil::GetAttrPath(pNode, "File", sFile)) {
+void DifficultyIcon::LoadFromNode(const XNode* node) {
+  std::string file;
+  if (!ActorUtil::GetAttrPath(node, "File", file)) {
     LuaHelpers::ReportScriptErrorFmt(
         "%s: DifficultyIcon: missing the \"File\" attribute.",
-        ActorUtil::GetWhere(pNode).c_str());
+        ActorUtil::GetWhere(node).c_str());
   }
 
-  Load(sFile);
+  Load(file);
 
   // skip Sprite::LoadFromNode
-  Actor::LoadFromNode(pNode);
+  Actor::LoadFromNode(node);
 }
 
 void DifficultyIcon::SetPlayer(PlayerNumber pn) { player_number_ = pn; }
 
-void DifficultyIcon::SetFromSteps(PlayerNumber pn, const Steps* pSteps) {
+void DifficultyIcon::SetFromSteps(PlayerNumber pn, const Steps* steps) {
   SetPlayer(pn);
-  if (pSteps == nullptr) {
+  if (steps == nullptr) {
     Unset();
   } else {
-    SetFromDifficulty(pSteps->GetDifficulty());
+    SetFromDifficulty(steps->GetDifficulty());
   }
 }
 
-void DifficultyIcon::SetFromTrail(PlayerNumber pn, const Trail* pTrail) {
+void DifficultyIcon::SetFromTrail(PlayerNumber pn, const Trail* trail) {
   SetPlayer(pn);
-  if (pTrail == nullptr) {
+  if (trail == nullptr) {
     Unset();
   } else {
-    SetFromDifficulty(pTrail->course_difficulty_);
+    SetFromDifficulty(trail->course_difficulty_);
   }
 }
 
@@ -101,8 +101,8 @@ class LunaDifficultyIcon : public Luna<DifficultyIcon> {
     if (lua_isnil(L, 1)) {
       p->Unset();
     } else {
-      Steps* pS = Luna<Steps>::check(L, 1);
-      p->SetFromSteps(PLAYER_1, pS);
+      Steps* s = Luna<Steps>::check(L, 1);
+      p->SetFromSteps(PLAYER_1, s);
     }
     COMMON_RETURN_SELF;
   }
@@ -110,8 +110,8 @@ class LunaDifficultyIcon : public Luna<DifficultyIcon> {
     if (lua_isnil(L, 1)) {
       p->Unset();
     } else {
-      Trail* pT = Luna<Trail>::check(L, 1);
-      p->SetFromTrail(PLAYER_1, pT);
+      Trail* t = Luna<Trail>::check(L, 1);
+      p->SetFromTrail(PLAYER_1, t);
     }
     COMMON_RETURN_SELF;
   }

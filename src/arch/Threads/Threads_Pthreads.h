@@ -22,7 +22,7 @@ class ThreadImpl_Pthreads : public ThreadImpl {
   uint64_t* thread_id_;
   SemaImpl* start_finished_sem_;
 
-  void Halt(bool Kill);
+  void Halt(bool kill);
   void Resume();
   uint64_t GetThreadId() const;
   int Wait();
@@ -45,10 +45,10 @@ class MutexImpl_Pthreads : public MutexImpl {
 
 class EventImpl_Pthreads : public EventImpl {
  public:
-  EventImpl_Pthreads(MutexImpl_Pthreads* pParent);
+  EventImpl_Pthreads(MutexImpl_Pthreads* parent);
   ~EventImpl_Pthreads();
 
-  bool Wait(RageTimer* pTimeout);
+  bool Wait(RageTimer* timeout);
   void Signal();
   void Broadcast();
   bool WaitTimeoutSupported() const;
@@ -60,7 +60,7 @@ class EventImpl_Pthreads : public EventImpl {
 
 class SemaImpl_Pthreads : public SemaImpl {
  public:
-  SemaImpl_Pthreads(int iInitialValue);
+  SemaImpl_Pthreads(int initial_value);
   ~SemaImpl_Pthreads();
   void Post();
   bool Wait();

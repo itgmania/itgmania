@@ -41,8 +41,8 @@ ThemeMetric<int> CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES(
 ThemeMetric<std::string> CommonMetrics::IMAGES_TO_CACHE("Common", "ImageCache");
 
 ThemeMetricDifficultiesToShow::ThemeMetricDifficultiesToShow(
-    const std::string& sGroup, const std::string& sName)
-    : ThemeMetric<std::string>(sGroup, sName) {
+    const std::string& group, const std::string& name)
+    : ThemeMetric<std::string>(group, name) {
   // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
   // derived one
   if (IsLoaded()) {
@@ -79,8 +79,8 @@ const std::vector<Difficulty>& ThemeMetricDifficultiesToShow::GetValue() const {
 }
 
 ThemeMetricCourseDifficultiesToShow::ThemeMetricCourseDifficultiesToShow(
-    const std::string& sGroup, const std::string& sName)
-    : ThemeMetric<std::string>(sGroup, sName) {
+    const std::string& group, const std::string& name)
+    : ThemeMetric<std::string>(group, name) {
   // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
   // derived one
   if (IsLoaded()) {
@@ -119,9 +119,9 @@ ThemeMetricCourseDifficultiesToShow::GetValue() const {
 }
 
 static void RemoveStepsTypes(
-    std::vector<StepsType>& inout, std::string sStepsTypesToRemove) {
+    std::vector<StepsType>& inout, std::string steps_types_to_remove) {
   std::vector<std::string> v;
-  split(sStepsTypesToRemove, ",", v);
+  split(steps_types_to_remove, ",", v);
   if (v.size() == 0) {
     return;  // Nothing to do!
   }
@@ -132,7 +132,7 @@ static void RemoveStepsTypes(
     if (st == StepsType_Invalid) {
       LuaHelpers::ReportScriptErrorFmt(
           "Invalid StepsType value '%s' in '%s'", i.c_str(),
-          sStepsTypesToRemove.c_str());
+          steps_types_to_remove.c_str());
       continue;
     }
 
@@ -144,8 +144,8 @@ static void RemoveStepsTypes(
   }
 }
 ThemeMetricStepsTypesToShow::ThemeMetricStepsTypesToShow(
-    const std::string& sGroup, const std::string& sName)
-    : ThemeMetric<std::string>(sGroup, sName) {
+    const std::string& group, const std::string& name)
+    : ThemeMetric<std::string>(group, name) {
   // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
   // derived one
   if (IsLoaded()) {
@@ -167,8 +167,8 @@ const std::vector<StepsType>& ThemeMetricStepsTypesToShow::GetValue() const {
 }
 
 std::string CommonMetrics::LocalizeOptionItem(
-    const std::string& s, bool bOptional) {
-  if (bOptional && !THEME->HasString("OptionNames", s)) {
+    const std::string& s, bool optional) {
+  if (optional && !THEME->HasString("OptionNames", s)) {
     return s;
   }
   return THEME->GetString("OptionNames", s);

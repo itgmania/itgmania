@@ -33,22 +33,22 @@ constexpr int kChannels = 2;
 constexpr int kBlockSizeFrames = 512;
 constexpr int kBytesPerFrame = kChannels * 2;  // 16 bit
 
-inline int CalculateNumBlocks(int sampleRate) {
-  return (sampleRate * kTargetLatency + (1000 * kBlockSizeFrames - 1)) /
+inline int CalculateNumBlocks(int sample_rate) {
+  return (sample_rate * kTargetLatency + (1000 * kBlockSizeFrames - 1)) /
          (1000 * kBlockSizeFrames);
 }
 }  // namespace
 
-static std::string wo_ssprintf(MMRESULT err, const char* szFmt, ...) {
-  char szBuf[MAXERRORLENGTH];
-  waveOutGetErrorText(err, szBuf, MAXERRORLENGTH);
+static std::string wo_ssprintf(MMRESULT err, const char* fmt, ...) {
+  char buf[MAXERRORLENGTH];
+  waveOutGetErrorText(err, buf, MAXERRORLENGTH);
 
   va_list va;
-  va_start(va, szFmt);
-  std::string s = vssprintf(szFmt, va);
+  va_start(va, fmt);
+  std::string s = vssprintf(fmt, va);
   va_end(va);
 
-  return s += ssprintf("(%s)", szBuf);
+  return s += ssprintf("(%s)", buf);
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start(void* p) {
@@ -165,21 +165,21 @@ std::string RageSoundDriver_WaveOut::Init() {
   fmt.nBlockAlign = fmt.nChannels * fmt.wBitsPerSample / 8;
   fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
 
-  std::vector<UINT> deviceIds;
+  std::vector<UINT> device_ids;
   if (!PREFSMAN->sound_device_.Get().empty()) {
-    std::vector<std::string> portNames;
-    split(PREFSMAN->sound_device_.Get(), ",", portNames, true);
-    for (const std::string& device : portNames) {
+    std::vector<std::string> port_names;
+    split(PREFSMAN->sound_device_.Get(), ",", port_names, true);
+    for (const std::string& device : port_names) {
       int id = StringToInt(device, /*pos=*/0, /*base=*/10, /*exceptVal=*/-1);
       if (id != -1) {
-        deviceIds.push_back(id);
+        device_ids.push_back(id);
       }
     }
   }
-  deviceIds.push_back(WAVE_MAPPER);  // Fallback to WAVE_MAPPER
+  device_ids.push_back(WAVE_MAPPER);  // Fallback to WAVE_MAPPER
 
   MMRESULT ret = MMSYSERR_ERROR;
-  for (UINT id : deviceIds) {
+  for (UINT id : device_ids) {
     ret = waveOutOpen(
         &waveout_handle_, id, &fmt, (DWORD_PTR)soundevent_handle_, NULL,
         CALLBACK_EVENT);

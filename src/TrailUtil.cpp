@@ -14,12 +14,12 @@
 #include "XmlFile.h"
 #include "global.h"
 
-int TrailUtil::GetNumSongs(const Trail* pTrail) {
-  return pTrail->entries_.size();
+int TrailUtil::GetNumSongs(const Trail* trail) {
+  return trail->entries_.size();
 }
 
-float TrailUtil::GetTotalSeconds(const Trail* pTrail) {
-  const auto& entries = pTrail->entries_;
+float TrailUtil::GetTotalSeconds(const Trail* trail) {
+  const auto& entries = trail->entries_;
   return std::accumulate(
       entries.begin(), entries.end(), 0.f,
       [](float total, const TrailEntry& e) {
@@ -40,24 +40,24 @@ void TrailID::FromTrail(const Trail* p) {
 }
 
 XNode* TrailID::CreateNode() const {
-  XNode* pNode = new XNode("Trail");
+  XNode* node = new XNode("Trail");
 
-  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st_).name_);
-  pNode->AppendAttr("CourseDifficulty", DifficultyToString(cd_));
+  node->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st_).name_);
+  node->AppendAttr("CourseDifficulty", DifficultyToString(cd_));
 
-  return pNode;
+  return node;
 }
 
-void TrailID::LoadFromNode(const XNode* pNode) {
-  ASSERT(pNode->GetName() == "Trail");
+void TrailID::LoadFromNode(const XNode* node) {
+  ASSERT(node->GetName() == "Trail");
 
-  std::string sTemp;
+  std::string temp;
 
-  pNode->GetAttrValue("StepsType", sTemp);
-  st_ = GAMEMAN->StringToStepsType(sTemp);
+  node->GetAttrValue("StepsType", temp);
+  st_ = GAMEMAN->StringToStepsType(temp);
 
-  pNode->GetAttrValue("CourseDifficulty", sTemp);
-  cd_ = StringToDifficulty(sTemp);
+  node->GetAttrValue("CourseDifficulty", temp);
+  cd_ = StringToDifficulty(temp);
 }
 
 bool TrailID::IsValid() const {
@@ -79,15 +79,15 @@ bool TrailID::operator<(const TrailID& rhs) const {
 
 namespace {
 int GetNumSongs(lua_State* L) {
-  Trail* pTrail = Luna<Trail>::check(L, 1, true);
-  int iNum = TrailUtil::GetNumSongs(pTrail);
-  LuaHelpers::Push(L, iNum);
+  Trail* trail = Luna<Trail>::check(L, 1, true);
+  int num = TrailUtil::GetNumSongs(trail);
+  LuaHelpers::Push(L, num);
   return 1;
 }
 int GetTotalSeconds(lua_State* L) {
-  Trail* pTrail = Luna<Trail>::check(L, 1, true);
-  float fSecs = TrailUtil::GetTotalSeconds(pTrail);
-  LuaHelpers::Push(L, fSecs);
+  Trail* trail = Luna<Trail>::check(L, 1, true);
+  float secs = TrailUtil::GetTotalSeconds(trail);
+  LuaHelpers::Push(L, secs);
   return 1;
 }
 

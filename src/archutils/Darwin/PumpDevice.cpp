@@ -16,7 +16,7 @@ void PumpDevice::Open() {
 }
 
 void PumpDevice::GetButtonPresses(
-    std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+    std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
     const RageTimer& now) const {
   DeviceButton db1 = DeviceButton_Invalid;
   DeviceButton db2 = DeviceButton_Invalid;
@@ -49,24 +49,24 @@ void PumpDevice::GetButtonPresses(
       break;
   }
   if (db1 != DeviceButton_Invalid) {
-    vPresses.push_back(DeviceInput(id_, db1, pressed1 ? 1.0f : 0.0f, now));
+    presses.push_back(DeviceInput(id_, db1, pressed1 ? 1.0f : 0.0f, now));
   }
   if (db2 != DeviceButton_Invalid) {
-    vPresses.push_back(DeviceInput(id_, db2, pressed2 ? 1.0f : 0.0f, now));
+    presses.push_back(DeviceInput(id_, db2, pressed2 ? 1.0f : 0.0f, now));
   }
 }
 
-int PumpDevice::AssignIDs(InputDevice startID) {
-  if (!IsPump(startID)) {
+int PumpDevice::AssignIDs(InputDevice start_id) {
+  if (!IsPump(start_id)) {
     return -1;
   }
-  id_ = startID;
+  id_ = start_id;
   return 1;
 }
 
 void PumpDevice::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevices) const {
-  vDevices.push_back(InputDeviceInfo(id_, "Pump USB"));
+    std::vector<InputDeviceInfo>& devices) const {
+  devices.push_back(InputDeviceInfo(id_, "Pump USB"));
 }
 
 /*

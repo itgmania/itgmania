@@ -21,7 +21,7 @@ class BitmapText : public Actor {
   BitmapText& operator=(const BitmapText& cpy);
   virtual ~BitmapText();
 
-  virtual void LoadFromNode(const XNode* pNode) override;
+  virtual void LoadFromNode(const XNode* node) override;
   virtual BitmapText* Copy() const override;
 
   struct BMT_TweenState {
@@ -58,17 +58,17 @@ class BitmapText : public Actor {
   virtual void StopTweening() override;
   virtual void FinishTweening() override;
 
-  bool LoadFromFont(const std::string& sFontName);
+  bool LoadFromFont(const std::string& font_name);
   bool LoadFromTextureAndChars(
-      const std::string& sTexturePath, const std::string& sChars);
+      const std::string& texture_path, const std::string& chars);
   virtual void SetText(
-      const std::string& sText, const std::string& sAlternateText = "",
-      int iWrapWidthPixels = -1);
-  void SetVertSpacing(int iSpacing);
-  void SetMaxWidth(float fMaxWidth);
-  void SetMaxHeight(float fMaxHeight);
+      const std::string& text, const std::string& alternate_text = "",
+      int wrap_width_pixels = -1);
+  void SetVertSpacing(int spacing);
+  void SetMaxWidth(float max_width);
+  void SetMaxHeight(float max_height);
   void SetMaxDimUseZoom(bool use);
-  void SetWrapWidthPixels(int iWrapWidthPixels);
+  void SetWrapWidthPixels(int wrap_width_pixels);
   void CropLineToWidth(size_t l, int width);
   void CropToWidth(int width);
 
@@ -99,7 +99,7 @@ class BitmapText : public Actor {
   std::string GetText() const { return text_; }
   // Return true if the string 's' will use an alternate string, if available.
   bool StringWillUseAlternate(
-      const std::string& sText, const std::string& sAlternateText) const;
+      const std::string& text, const std::string& alternate_text) const;
 
   struct Attribute {
     Attribute() : length_(-1), glow_() {}
@@ -107,11 +107,11 @@ class BitmapText : public Actor {
     RageColor diffuse_[NUM_DIFFUSE_COLORS];
     RageColor glow_;
 
-    void FromStack(lua_State* L, int iPos);
+    void FromStack(lua_State* L, int pos);
   };
 
   Attribute GetDefaultAttribute() const;
-  void AddAttribute(size_t iPos, const Attribute& attr);
+  void AddAttribute(size_t pos, const Attribute& attr);
   void ClearAttributes();
 
   // Commands
@@ -144,7 +144,7 @@ class BitmapText : public Actor {
 
   // recalculate the items in SetText()
   void BuildChars();
-  void DrawChars(bool bUseStrokeTexture);
+  void DrawChars(bool use_stroke_texture);
   void UpdateBaseZoom();
 
  private:

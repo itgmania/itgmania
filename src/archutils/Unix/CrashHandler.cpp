@@ -329,26 +329,25 @@ static void RunCrashHandler(const CrashData* crash) {
 }
 
 static void BacktraceAllThreads(CrashData& crash) {
-  int iCnt = 1;
-  uint64_t iID;
+  int cnt = 1;
+  uint64_t id;
 
-  for (int i = 0; RageThread::EnumThreadIDs(i, iID); ++i) {
-    if (iID == GetInvalidThreadId() ||
-        iID == RageThread::GetCurrentThreadID()) {
+  for (int i = 0; RageThread::EnumThreadIDs(i, id); ++i) {
+    if (id == GetInvalidThreadId() || id == RageThread::GetCurrentThreadID()) {
       continue;
     }
 
     BacktraceContext ctx;
-    if (GetThreadBacktraceContext(iID, &ctx)) {
-      GetBacktrace(crash.backtrace_pointers_[iCnt], BACKTRACE_MAX_SIZE, &ctx);
+    if (GetThreadBacktraceContext(id, &ctx)) {
+      GetBacktrace(crash.backtrace_pointers_[cnt], BACKTRACE_MAX_SIZE, &ctx);
     }
     strncpy(
-        crash.thread_name_[iCnt], RageThread::GetThreadNameByID(iID),
+        crash.thread_name_[cnt], RageThread::GetThreadNameByID(id),
         sizeof(crash.thread_name_[0]) - 1);
 
-    ++iCnt;
+    ++cnt;
 
-    if (iCnt == CrashData::MAX_BACKTRACE_THREADS) {
+    if (cnt == CrashData::MAX_BACKTRACE_THREADS) {
       break;
     }
   }
@@ -367,7 +366,7 @@ void CrashHandler::ForceCrash(const char* reason) {
   RunCrashHandler(&crash);
 }
 
-void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
+void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
   CrashData crash;
   memset(&crash, 0, sizeof(crash));
 
@@ -375,18 +374,18 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
 
   GetBacktrace(crash.backtrace_pointers_[0], BACKTRACE_MAX_SIZE, nullptr);
 
-  if (iID == GetInvalidThreadId()) {
+  if (id == GetInvalidThreadId()) {
     /* Backtrace all threads. */
     BacktraceAllThreads(crash);
   } else {
     BacktraceContext ctx;
-    if (!GetThreadBacktraceContext(iID, &ctx)) {
+    if (!GetThreadBacktraceContext(id, &ctx)) {
       reason += "; GetThreadBacktraceContext failed";
     } else {
       GetBacktrace(crash.backtrace_pointers_[1], BACKTRACE_MAX_SIZE, &ctx);
     }
     strncpy(
-        crash.thread_name_[1], RageThread::GetThreadNameByID(iID),
+        crash.thread_name_[1], RageThread::GetThreadNameByID(id),
         sizeof(crash.thread_name_[0]) - 1);
   }
 
@@ -406,14 +405,14 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
 
 void CrashHandler::CrashSignalHandler(
     int signal, siginfo_t* si, const ucontext_t* uc) {
-  static volatile bool bInCrashSignalHandler = false;
-  if (bInCrashSignalHandler) {
+  static volatile bool in_crash_signal_handler = false;
+  if (in_crash_signal_handler) {
     safe_print(
         2, "Fatal: crash from within the crash signal handler\n", nullptr);
     _exit(1);
   }
 
-  bInCrashSignalHandler = true;
+  in_crash_signal_handler = true;
 
   /* Work around a gcc bug: it reorders the above assignment past other work
    * down here, even if we declare it volatile.  This makes us not catch
@@ -440,7 +439,7 @@ void CrashHandler::CrashSignalHandler(
       crash.thread_name_[0], RageThread::GetCurrentThreadName(),
       sizeof(crash.thread_name_[0]) - 1);
 
-  bInCrashSignalHandler = false;
+  in_crash_signal_handler = false;
 
   /* RunCrashHandler handles any recursive crashes of its own by itself. */
   RunCrashHandler(&crash);

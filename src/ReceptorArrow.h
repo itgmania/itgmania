@@ -10,10 +10,10 @@ class PlayerState;
 class ReceptorArrow : public ActorFrame {
  public:
   ReceptorArrow();
-  void Load(const PlayerState* pPlayerState, int iColNo);
+  void Load(const PlayerState* player_state, int col_no);
 
   virtual void DrawPrimitives();
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   void Step(TapNoteScore score);
   void SetPressed() { is_pressed_ = true; };
   void SetNoteUpcoming(bool b);

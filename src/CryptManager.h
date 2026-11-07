@@ -15,31 +15,30 @@ class CryptManager {
 
   static void GenerateGlobalKeys();
   static void GenerateRSAKey(
-      unsigned int keyLength, std::string& sPrivKey, std::string& sPubKey);
+      unsigned int key_length, std::string& priv_key, std::string& pub_key);
   static void GenerateRSAKeyToFile(
-      unsigned int keyLength, std::string privFilename,
-      std::string pubFilename);
-  static void SignFileToFile(
-      std::string sPath, std::string sSignatureFile = "");
+      unsigned int key_length, std::string priv_filename,
+      std::string pub_filename);
+  static void SignFileToFile(std::string path, std::string signature_file = "");
   static bool Sign(
-      std::string sPath, std::string& sSignatureOut, std::string sPrivateKey);
+      std::string path, std::string& signature_out, std::string private_key);
   static bool VerifyFileWithFile(
-      std::string sPath, std::string sSignatureFile = "");
+      std::string path, std::string signature_file = "");
   static bool VerifyFileWithFile(
-      std::string sPath, std::string sSignatureFile,
-      std::string sPublicKeyFile);
+      std::string path, std::string signature_file,
+      std::string public_key_file);
   static bool Verify(
-      RageFileBasic& file, std::string sSignature, std::string sPublicKey);
+      RageFileBasic& file, std::string signature, std::string public_key);
 
-  static void GetRandomBytes(void* pData, int iBytes);
+  static void GetRandomBytes(void* data, int bytes);
   static std::string GenerateRandomUUID();
 
-  static std::string GetMD5ForFile(std::string fn);          // in binary
-  static std::string GetMD5ForString(std::string sData);     // in binary
-  static std::string GetSHA1ForString(std::string sData);    // in binary
-  static std::string GetSHA1ForFile(std::string fn);         // in binary
-  static std::string GetSHA256ForString(std::string sData);  // in binary
-  static std::string GetSHA256ForFile(std::string fn);       // in binary
+  static std::string GetMD5ForFile(std::string fn);         // in binary
+  static std::string GetMD5ForString(std::string data);     // in binary
+  static std::string GetSHA1ForString(std::string data);    // in binary
+  static std::string GetSHA1ForFile(std::string fn);        // in binary
+  static std::string GetSHA256ForString(std::string data);  // in binary
+  static std::string GetSHA256ForFile(std::string fn);      // in binary
 
   // Lua
   void PushSelf(lua_State* L);

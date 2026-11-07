@@ -46,146 +46,146 @@ static Impl* pImpl = nullptr;
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>
-void Push<bool>(lua_State* L, const bool& Object);
+void Push<bool>(lua_State* L, const bool& object);
 template <>
-void Push<float>(lua_State* L, const float& Object);
+void Push<float>(lua_State* L, const float& object);
 template <>
-void Push<int>(lua_State* L, const int& Object);
+void Push<int>(lua_State* L, const int& object);
 template <>
-void Push<std::string>(lua_State* L, const std::string& Object);
+void Push<std::string>(lua_State* L, const std::string& object);
 
 template <>
-bool FromStack<bool>(Lua* L, bool& Object, int iOffset);
+bool FromStack<bool>(Lua* L, bool& object, int offset);
 template <>
-bool FromStack<float>(Lua* L, float& Object, int iOffset);
+bool FromStack<float>(Lua* L, float& object, int offset);
 template <>
-bool FromStack<int>(Lua* L, int& Object, int iOffset);
+bool FromStack<int>(Lua* L, int& object, int offset);
 template <>
-bool FromStack<unsigned int>(Lua* L, unsigned int& Object, int iOffset);
+bool FromStack<unsigned int>(Lua* L, unsigned int& object, int offset);
 template <>
-bool FromStack<std::string>(Lua* L, std::string& Object, int iOffset);
+bool FromStack<std::string>(Lua* L, std::string& object, int offset);
 
 bool InReportScriptError = false;
 }  // namespace LuaHelpers
 
-void LuaManager::SetGlobal(const std::string& sName, int val) {
+void LuaManager::SetGlobal(const std::string& name, int val) {
   Lua* L = Get();
   LuaHelpers::Push(L, val);
-  lua_setglobal(L, sName.c_str());
+  lua_setglobal(L, name.c_str());
   Release(L);
 }
 
-void LuaManager::UnsetGlobal(const std::string& sName) {
+void LuaManager::UnsetGlobal(const std::string& name) {
   Lua* L = Get();
   lua_pushnil(L);
-  lua_setglobal(L, sName.c_str());
+  lua_setglobal(L, name.c_str());
   Release(L);
 }
 
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>
-void Push<bool>(lua_State* L, const bool& Object) {
-  lua_pushboolean(L, Object);
+void Push<bool>(lua_State* L, const bool& object) {
+  lua_pushboolean(L, object);
 }
 template <>
-void Push<float>(lua_State* L, const float& Object) {
-  lua_pushnumber(L, Object);
+void Push<float>(lua_State* L, const float& object) {
+  lua_pushnumber(L, object);
 }
 template <>
-void Push<double>(lua_State* L, const double& Object) {
-  lua_pushnumber(L, Object);
+void Push<double>(lua_State* L, const double& object) {
+  lua_pushnumber(L, object);
 }
 template <>
-void Push<int>(lua_State* L, const int& Object) {
-  lua_pushinteger(L, Object);
+void Push<int>(lua_State* L, const int& object) {
+  lua_pushinteger(L, object);
 }
 template <>
-void Push<unsigned int>(lua_State* L, const unsigned int& Object) {
-  lua_pushnumber(L, double(Object));
+void Push<unsigned int>(lua_State* L, const unsigned int& object) {
+  lua_pushnumber(L, double(object));
 }
 template <>
-void Push<unsigned long long>(lua_State* L, const unsigned long long& Object) {
-  lua_pushnumber(L, double(Object));
+void Push<unsigned long long>(lua_State* L, const unsigned long long& object) {
+  lua_pushnumber(L, double(object));
 }
 template <>
-void Push<std::string>(lua_State* L, const std::string& Object) {
-  lua_pushlstring(L, Object.data(), Object.size());
+void Push<std::string>(lua_State* L, const std::string& object) {
+  lua_pushlstring(L, object.data(), object.size());
 }
 
 template <>
-bool FromStack<bool>(Lua* L, bool& Object, int iOffset) {
-  Object = !!lua_toboolean(L, iOffset);
+bool FromStack<bool>(Lua* L, bool& object, int offset) {
+  object = !!lua_toboolean(L, offset);
   return true;
 }
 template <>
-bool FromStack<float>(Lua* L, float& Object, int iOffset) {
-  Object = (float)lua_tonumber(L, iOffset);
+bool FromStack<float>(Lua* L, float& object, int offset) {
+  object = (float)lua_tonumber(L, offset);
   return true;
 }
 template <>
-bool FromStack<int>(Lua* L, int& Object, int iOffset) {
-  Object = lua_tointeger(L, iOffset);
+bool FromStack<int>(Lua* L, int& object, int offset) {
+  object = lua_tointeger(L, offset);
   return true;
 }
 template <>
-bool FromStack<unsigned int>(Lua* L, unsigned int& Object, int iOffset) {
-  Object = lua_tointeger(L, iOffset);
+bool FromStack<unsigned int>(Lua* L, unsigned int& object, int offset) {
+  object = lua_tointeger(L, offset);
   return true;
 }
 template <>
-bool FromStack<std::string>(Lua* L, std::string& Object, int iOffset) {
-  size_t iLen;
-  const char* pStr = lua_tolstring(L, iOffset, &iLen);
-  if (pStr != nullptr) {
-    Object.assign(pStr, iLen);
+bool FromStack<std::string>(Lua* L, std::string& object, int offset) {
+  size_t len;
+  const char* str = lua_tolstring(L, offset, &len);
+  if (str != nullptr) {
+    object.assign(str, len);
   } else {
-    Object.clear();
+    object.clear();
   }
 
-  return pStr != nullptr;
+  return str != nullptr;
 }
 }  // namespace LuaHelpers
 
-void LuaHelpers::CreateTableFromArrayB(Lua* L, const std::vector<bool>& aIn) {
+void LuaHelpers::CreateTableFromArrayB(Lua* L, const std::vector<bool>& in) {
   lua_newtable(L);
-  for (unsigned i = 0; i < aIn.size(); ++i) {
-    lua_pushboolean(L, aIn[i]);
+  for (unsigned i = 0; i < in.size(); ++i) {
+    lua_pushboolean(L, in[i]);
     lua_rawseti(L, -2, i + 1);
   }
 }
 
-void LuaHelpers::ReadArrayFromTableB(Lua* L, std::vector<bool>& aOut) {
+void LuaHelpers::ReadArrayFromTableB(Lua* L, std::vector<bool>& out) {
   luaL_checktype(L, -1, LUA_TTABLE);
 
-  for (unsigned i = 0; i < aOut.size(); ++i) {
+  for (unsigned i = 0; i < out.size(); ++i) {
     lua_rawgeti(L, -1, i + 1);
-    bool bOn = !!lua_toboolean(L, -1);
-    aOut[i] = bOn;
+    bool on = !!lua_toboolean(L, -1);
+    out[i] = on;
     lua_pop(L, 1);
   }
 }
 
 namespace {
 // Creates a table from an XNode and leaves it on the stack.
-void CreateTableFromXNodeRecursive(Lua* L, const XNode* pNode) {
+void CreateTableFromXNodeRecursive(Lua* L, const XNode* node) {
   // create our base table
   lua_newtable(L);
 
-  FOREACH_CONST_Attr(pNode, pAttr) {
-    lua_pushstring(L, pAttr->first.c_str());  // push key
-    pNode->PushAttrValue(L, pAttr->first);    // push value
+  FOREACH_CONST_Attr(node, attr) {
+    lua_pushstring(L, attr->first.c_str());  // push key
+    node->PushAttrValue(L, attr->first);     // push value
 
     // add key-value pair to our table
     lua_settable(L, -3);
   }
 
-  FOREACH_CONST_Child(pNode, c) {
-    const XNode* pChild = c;
-    lua_pushstring(L, pChild->name_.c_str());  // push key
+  FOREACH_CONST_Child(node, c) {
+    const XNode* child = c;
+    lua_pushstring(L, child->name_.c_str());  // push key
 
     // push value (more correctly, build this child's table and leave it there)
-    CreateTableFromXNodeRecursive(L, pChild);
+    CreateTableFromXNodeRecursive(L, child);
 
     // add key-value pair to the table
     lua_settable(L, -3);
@@ -193,75 +193,75 @@ void CreateTableFromXNodeRecursive(Lua* L, const XNode* pNode) {
 }
 }  // namespace
 
-void LuaHelpers::CreateTableFromXNode(Lua* L, const XNode* pNode) {
+void LuaHelpers::CreateTableFromXNode(Lua* L, const XNode* node) {
   // This creates our table and leaves it on the stack.
-  CreateTableFromXNodeRecursive(L, pNode);
+  CreateTableFromXNodeRecursive(L, node);
 }
 
 static int GetLuaStack(lua_State* L) {
-  std::string sErr;
-  LuaHelpers::Pop(L, sErr);
+  std::string err;
+  LuaHelpers::Pop(L, err);
 
   lua_Debug ar;
 
-  for (int iLevel = 0; lua_getstack(L, iLevel, &ar); ++iLevel) {
+  for (int level = 0; lua_getstack(L, level, &ar); ++level) {
     if (!lua_getinfo(L, "nSluf", &ar)) {
       break;
     }
     // The function is now on the top of the stack.
     const char* file = ar.source[0] == '@' ? ar.source + 1 : ar.short_src;
     const char* name;
-    std::vector<std::string> vArgs;
+    std::vector<std::string> args;
 
     if (!strcmp(ar.what, "C")) {
       for (int i = 1;
            i <= ar.nups && (name = lua_getupvalue(L, -1, i)) != nullptr; ++i) {
-        vArgs.push_back(ssprintf("%s = %s", name, lua_tostring(L, -1)));
+        args.push_back(ssprintf("%s = %s", name, lua_tostring(L, -1)));
         lua_pop(L, 1);  // pop value
       }
     } else {
       for (int i = 1; (name = lua_getlocal(L, &ar, i)) != nullptr; ++i) {
-        vArgs.push_back(ssprintf("%s = %s", name, lua_tostring(L, -1)));
+        args.push_back(ssprintf("%s = %s", name, lua_tostring(L, -1)));
         lua_pop(L, 1);  // pop value
       }
     }
 
     // If the first call is this function, omit it from the trace.
-    if (iLevel == 0 && lua_iscfunction(L, -1) &&
+    if (level == 0 && lua_iscfunction(L, -1) &&
         lua_tocfunction(L, 1) == GetLuaStack) {
       lua_pop(L, 1);  // pop function
       continue;
     }
     lua_pop(L, 1);  // pop function
 
-    sErr += ssprintf("\n%s:", file);
+    err += ssprintf("\n%s:", file);
     if (ar.currentline != -1) {
-      sErr += ssprintf("%i:", ar.currentline);
+      err += ssprintf("%i:", ar.currentline);
     }
 
     if (ar.name && ar.name[0]) {
-      sErr += ssprintf(" %s", ar.name);
+      err += ssprintf(" %s", ar.name);
     } else if (
         !strcmp(ar.what, "main") || !strcmp(ar.what, "tail") ||
         !strcmp(ar.what, "C")) {
-      sErr += ssprintf(" %s", ar.what);
+      err += ssprintf(" %s", ar.what);
     } else {
-      sErr += ssprintf(" unknown");
+      err += ssprintf(" unknown");
     }
-    sErr += ssprintf("(%s)", join(",", vArgs).c_str());
+    err += ssprintf("(%s)", join(",", args).c_str());
   }
 
-  LuaHelpers::Push(L, sErr);
+  LuaHelpers::Push(L, err);
   return 1;
 }
 
 static int LuaPanic(lua_State* L) {
   GetLuaStack(L);
 
-  std::string sErr;
-  LuaHelpers::Pop(L, sErr);
+  std::string err;
+  LuaHelpers::Pop(L, err);
 
-  RageException::Throw("[Lua panic] %s", sErr.c_str());
+  RageException::Throw("[Lua panic] %s", err.c_str());
 }
 
 // Actor registration
@@ -309,31 +309,31 @@ LuaManager::~LuaManager() {
 }
 
 Lua* LuaManager::Get() {
-  bool bLocked = false;
+  bool locked = false;
   if (!pImpl->lock_.IsLockedByThisThread()) {
     pImpl->lock_.Lock();
-    bLocked = true;
+    locked = true;
   }
 
   ASSERT(lua_gettop(lua_main_) == 1);
 
-  lua_State* pRet;
+  lua_State* ret;
   if (pImpl->free_state_list_.empty()) {
-    pRet = lua_newthread(lua_main_);
+    ret = lua_newthread(lua_main_);
 
     // Store the new thread in THREAD_POOL, so it isn't collected.
-    int iLast = lua_objlen(lua_main_, THREAD_POOL);
-    lua_rawseti(lua_main_, THREAD_POOL, iLast + 1);
+    int last = lua_objlen(lua_main_, THREAD_POOL);
+    lua_rawseti(lua_main_, THREAD_POOL, last + 1);
   } else {
-    pRet = pImpl->free_state_list_.back();
+    ret = pImpl->free_state_list_.back();
     pImpl->free_state_list_.pop_back();
   }
 
-  pImpl->active_states_[pRet] = bLocked;
+  pImpl->active_states_[ret] = locked;
   if (LUADEBUG) {
-    LUADEBUG->ActivateState(pRet);
+    LUADEBUG->ActivateState(ret);
   }
-  return pRet;
+  return ret;
 }
 
 void LuaManager::Release(Lua*& p) {
@@ -344,10 +344,10 @@ void LuaManager::Release(Lua*& p) {
 
   ASSERT(lua_gettop(p) == 0);
   ASSERT(pImpl->active_states_.find(p) != pImpl->active_states_.end());
-  bool bDoUnlock = pImpl->active_states_[p];
+  bool do_unlock = pImpl->active_states_[p];
   pImpl->active_states_.erase(p);
 
-  if (bDoUnlock) {
+  if (do_unlock) {
     pImpl->lock_.Unlock();
   }
   p = nullptr;
@@ -402,28 +402,28 @@ void LuaManager::RegisterTypes() {
 }
 
 LuaThreadVariable::LuaThreadVariable(
-    const std::string& sName, const std::string& sValue) {
+    const std::string& name, const std::string& value) {
   name_ = new LuaReference;
   old_value_ = new LuaReference;
 
   Lua* L = LUA->Get();
-  LuaHelpers::Push(L, sName);
+  LuaHelpers::Push(L, name);
   name_->SetFromStack(L);
-  LuaHelpers::Push(L, sValue);
+  LuaHelpers::Push(L, value);
   SetFromStack(L);
   LUA->Release(L);
 }
 
 LuaThreadVariable::LuaThreadVariable(
-    const std::string& sName, const LuaReference& Value) {
+    const std::string& name, const LuaReference& value) {
   name_ = new LuaReference;
   old_value_ = new LuaReference;
 
   Lua* L = LUA->Get();
-  LuaHelpers::Push(L, sName);
+  LuaHelpers::Push(L, name);
   name_->SetFromStack(L);
 
-  Value.PushSelf(L);
+  value.PushSelf(L);
   SetFromStack(L);
   LUA->Release(L);
 }
@@ -442,15 +442,15 @@ LuaThreadVariable::LuaThreadVariable(lua_State* L) {
 }
 
 std::string LuaThreadVariable::GetCurrentThreadIDString() {
-  uint64_t iID = RageThread::GetCurrentThreadID();
-  return ssprintf("%08x%08x", uint32_t(iID >> 32), uint32_t(iID));
+  uint64_t id = RageThread::GetCurrentThreadID();
+  return ssprintf("%08x%08x", uint32_t(id >> 32), uint32_t(id));
 }
 
-bool LuaThreadVariable::PushThreadTable(lua_State* L, bool bCreate) {
+bool LuaThreadVariable::PushThreadTable(lua_State* L, bool create) {
   lua_getfield(L, LUA_REGISTRYINDEX, "LuaThreadVariableTable");
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
-    if (!bCreate) {
+    if (!create) {
       return false;
     }
     lua_newtable(L);
@@ -459,12 +459,12 @@ bool LuaThreadVariable::PushThreadTable(lua_State* L, bool bCreate) {
     lua_setfield(L, LUA_REGISTRYINDEX, "LuaThreadVariableTable");
   }
 
-  std::string sThreadIDString = GetCurrentThreadIDString();
-  LuaHelpers::Push(L, sThreadIDString);
+  std::string thread_id_string = GetCurrentThreadIDString();
+  LuaHelpers::Push(L, thread_id_string);
   lua_gettable(L, -2);
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
-    if (!bCreate) {
+    if (!create) {
       lua_pop(L, 1);
       return false;
     }
@@ -473,7 +473,7 @@ bool LuaThreadVariable::PushThreadTable(lua_State* L, bool bCreate) {
     lua_pushinteger(L, 0);
     lua_rawseti(L, -2, 0);
 
-    LuaHelpers::Push(L, sThreadIDString);
+    LuaHelpers::Push(L, thread_id_string);
     lua_pushvalue(L, -2);
     lua_settable(L, -4);
   }
@@ -495,20 +495,20 @@ void LuaThreadVariable::GetThreadVariable(lua_State* L) {
   lua_remove(L, -2);
 }
 
-int LuaThreadVariable::AdjustCount(lua_State* L, int iAdd) {
+int LuaThreadVariable::AdjustCount(lua_State* L, int add) {
   ASSERT(lua_istable(L, -1));
 
   lua_rawgeti(L, -1, 0);
   ASSERT(lua_isnumber(L, -1) != 0);
 
-  int iCount = lua_tointeger(L, -1);
+  int count = lua_tointeger(L, -1);
   lua_pop(L, 1);
 
-  iCount += iAdd;
-  lua_pushinteger(L, iCount);
+  count += add;
+  lua_pushinteger(L, count);
   lua_rawseti(L, -2, 0);
 
-  return iCount;
+  return count;
 }
 
 void LuaThreadVariable::SetFromStack(lua_State* L) {
@@ -563,27 +563,27 @@ struct LClass {
 }  // namespace
 
 XNode* LuaHelpers::GetLuaInformation() {
-  XNode* pLuaNode = new XNode("Lua");
+  XNode* lua_node = new XNode("Lua");
 
-  XNode* pGlobalsNode = pLuaNode->AppendChild("GlobalFunctions");
-  XNode* pClassesNode = pLuaNode->AppendChild("Classes");
-  XNode* pNamespacesNode = pLuaNode->AppendChild("Namespaces");
-  XNode* pSingletonsNode = pLuaNode->AppendChild("Singletons");
-  XNode* pEnumsNode = pLuaNode->AppendChild("Enums");
-  XNode* pConstantsNode = pLuaNode->AppendChild("Constants");
+  XNode* globals_node = lua_node->AppendChild("GlobalFunctions");
+  XNode* classes_node = lua_node->AppendChild("Classes");
+  XNode* namespaces_node = lua_node->AppendChild("Namespaces");
+  XNode* singletons_node = lua_node->AppendChild("Singletons");
+  XNode* enums_node = lua_node->AppendChild("Enums");
+  XNode* constants_node = lua_node->AppendChild("Constants");
 
-  std::vector<std::string> vFunctions;
-  std::map<std::string, LClass> mClasses;
-  std::map<std::string, std::vector<std::string>> mNamespaces;
-  std::map<std::string, std::string> mSingletons;
-  std::map<std::string, float> mConstants;
-  std::map<std::string, std::string> mStringConstants;
-  std::map<std::string, std::vector<std::string>> mEnums;
+  std::vector<std::string> functions;
+  std::map<std::string, LClass> classes;
+  std::map<std::string, std::vector<std::string>> namespaces;
+  std::map<std::string, std::string> singletons;
+  std::map<std::string, float> constants;
+  std::map<std::string, std::string> string_constants;
+  std::map<std::string, std::vector<std::string>> enums;
 
   Lua* L = LUA->Get();
   FOREACH_LUATABLE(L, LUA_GLOBALSINDEX) {
-    std::string sKey;
-    LuaHelpers::Pop(L, sKey);
+    std::string key;
+    LuaHelpers::Pop(L, key);
 
     switch (lua_type(L, -1)) {
       case LUA_TTABLE: {
@@ -593,7 +593,7 @@ XNode* LuaHelpers::GetLuaInformation() {
           if (!name) {
             break;
           }
-          LClass& c = mClasses[name];
+          LClass& c = classes[name];
           lua_pop(L, 1);  // pop name
 
           // Get base class.
@@ -609,9 +609,9 @@ XNode* LuaHelpers::GetLuaInformation() {
 
           // Get methods.
           FOREACH_LUATABLE(L, -1) {
-            std::string sMethod;
-            if (LuaHelpers::FromStack(L, sMethod, -1)) {
-              c.methods_.push_back(sMethod);
+            std::string method;
+            if (LuaHelpers::FromStack(L, method, -1)) {
+              c.methods_.push_back(method);
             }
           }
           sort(c.methods_.begin(), c.methods_.end());
@@ -624,25 +624,25 @@ XNode* LuaHelpers::GetLuaInformation() {
         if (!luaL_callmeta(L, -1, "__type")) {
           break;
         }
-        std::string sType;
-        if (!LuaHelpers::Pop(L, sType)) {
+        std::string type;
+        if (!LuaHelpers::Pop(L, type)) {
           break;
         }
-        if (sType == "Enum") {
-          LuaHelpers::ReadArrayFromTable(mEnums[sKey], L);
+        if (type == "Enum") {
+          LuaHelpers::ReadArrayFromTable(enums[key], L);
         } else {
-          mSingletons[sKey] = sType;
+          singletons[key] = type;
         }
         break;
       }
       case LUA_TNUMBER:
-        LuaHelpers::FromStack(L, mConstants[sKey], -1);
+        LuaHelpers::FromStack(L, constants[key], -1);
         break;
       case LUA_TSTRING:
-        LuaHelpers::FromStack(L, mStringConstants[sKey], -1);
+        LuaHelpers::FromStack(L, string_constants[key], -1);
         break;
       case LUA_TFUNCTION:
-        vFunctions.push_back(sKey);
+        functions.push_back(key);
         /*
         {
                 lua_Debug ar;
@@ -665,121 +665,122 @@ XNode* LuaHelpers::GetLuaInformation() {
 
   // const std::string BuiltInPackages[] = { "_G", "coroutine", "debug", "math",
   // "package", "string", "table" };
-  const std::string BuiltInPackages[] = {
+  const std::string built_in_packages[] = {
       "_G", "coroutine", "debug", "math", "package", "string", "table"};
-  const std::string* const end = BuiltInPackages + ARRAYLEN(BuiltInPackages);
+  const std::string* const end =
+      built_in_packages + ARRAYLEN(built_in_packages);
   FOREACH_LUATABLE(L, -1) {
-    std::string sNamespace;
-    LuaHelpers::Pop(L, sNamespace);
-    if (std::find(BuiltInPackages, end, sNamespace) != end) {
+    std::string s_namespace;
+    LuaHelpers::Pop(L, s_namespace);
+    if (std::find(built_in_packages, end, s_namespace) != end) {
       continue;
     }
-    std::vector<std::string>& vNamespaceFunctions = mNamespaces[sNamespace];
+    std::vector<std::string>& namespace_functions = namespaces[s_namespace];
     FOREACH_LUATABLE(L, -1) {
-      std::string sFunction;
-      LuaHelpers::Pop(L, sFunction);
-      vNamespaceFunctions.push_back(sFunction);
+      std::string function;
+      LuaHelpers::Pop(L, function);
+      namespace_functions.push_back(function);
     }
-    sort(vNamespaceFunctions.begin(), vNamespaceFunctions.end());
+    sort(namespace_functions.begin(), namespace_functions.end());
   }
   lua_pop(L, 2);
 
   LUA->Release(L);
 
   /* Globals */
-  sort(vFunctions.begin(), vFunctions.end());
-  for (const std::string& func : vFunctions) {
-    XNode* pFunctionNode = pGlobalsNode->AppendChild("Function");
-    pFunctionNode->AppendAttr("name", func);
+  sort(functions.begin(), functions.end());
+  for (const std::string& func : functions) {
+    XNode* function_node = globals_node->AppendChild("Function");
+    function_node->AppendAttr("name", func);
   }
 
   /* Classes */
-  for (const auto& c : mClasses) {
-    XNode* pClassNode = pClassesNode->AppendChild("Class");
+  for (const auto& c : classes) {
+    XNode* class_node = classes_node->AppendChild("Class");
 
-    pClassNode->AppendAttr("name", c.first);
+    class_node->AppendAttr("name", c.first);
     if (!c.second.base_name_.empty()) {
-      pClassNode->AppendAttr("base", c.second.base_name_);
+      class_node->AppendAttr("base", c.second.base_name_);
     }
     for (const std::string& m : c.second.methods_) {
-      XNode* pMethodNode = pClassNode->AppendChild("Function");
-      pMethodNode->AppendAttr("name", m);
+      XNode* method_node = class_node->AppendChild("Function");
+      method_node->AppendAttr("name", m);
     }
   }
 
   /* Singletons */
-  for (const auto& s : mSingletons) {
-    if (mClasses.find(s.first) != mClasses.end()) {
+  for (const auto& s : singletons) {
+    if (classes.find(s.first) != classes.end()) {
       continue;
     }
-    XNode* pSingletonNode = pSingletonsNode->AppendChild("Singleton");
-    pSingletonNode->AppendAttr("name", s.first);
-    pSingletonNode->AppendAttr("class", s.second);
+    XNode* singleton_node = singletons_node->AppendChild("Singleton");
+    singleton_node->AppendAttr("name", s.first);
+    singleton_node->AppendAttr("class", s.second);
   }
 
   /* Namespaces */
   for (std::map<std::string, std::vector<std::string>>::const_iterator iter =
-           mNamespaces.begin();
-       iter != mNamespaces.end(); ++iter) {
-    XNode* pNamespaceNode = pNamespacesNode->AppendChild("Namespace");
-    const std::vector<std::string>& vNamespace = iter->second;
-    pNamespaceNode->AppendAttr("name", iter->first);
+           namespaces.begin();
+       iter != namespaces.end(); ++iter) {
+    XNode* namespace_node = namespaces_node->AppendChild("Namespace");
+    const std::vector<std::string>& v_namespace = iter->second;
+    namespace_node->AppendAttr("name", iter->first);
 
-    for (const std::string& func : vNamespace) {
-      XNode* pFunctionNode = pNamespaceNode->AppendChild("Function");
-      pFunctionNode->AppendAttr("name", func);
+    for (const std::string& func : v_namespace) {
+      XNode* function_node = namespace_node->AppendChild("Function");
+      function_node->AppendAttr("name", func);
     }
   }
 
   /* Enums */
   for (std::map<std::string, std::vector<std::string>>::const_iterator iter =
-           mEnums.begin();
-       iter != mEnums.end(); ++iter) {
-    XNode* pEnumNode = pEnumsNode->AppendChild("Enum");
+           enums.begin();
+       iter != enums.end(); ++iter) {
+    XNode* enum_node = enums_node->AppendChild("Enum");
 
-    const std::vector<std::string>& vEnum = iter->second;
-    pEnumNode->AppendAttr("name", iter->first);
+    const std::vector<std::string>& v_enum = iter->second;
+    enum_node->AppendAttr("name", iter->first);
 
-    for (unsigned i = 0; i < vEnum.size(); ++i) {
-      XNode* pEnumValueNode = pEnumNode->AppendChild("EnumValue");
-      pEnumValueNode->AppendAttr("name", ssprintf("'%s'", vEnum[i].c_str()));
-      pEnumValueNode->AppendAttr("value", i);
+    for (unsigned i = 0; i < v_enum.size(); ++i) {
+      XNode* enum_value_node = enum_node->AppendChild("EnumValue");
+      enum_value_node->AppendAttr("name", ssprintf("'%s'", v_enum[i].c_str()));
+      enum_value_node->AppendAttr("value", i);
     }
   }
 
   /* Constants, String Constants */
-  for (const auto& c : mConstants) {
-    XNode* pConstantNode = pConstantsNode->AppendChild("Constant");
+  for (const auto& c : constants) {
+    XNode* constant_node = constants_node->AppendChild("Constant");
 
-    pConstantNode->AppendAttr("name", c.first);
+    constant_node->AppendAttr("name", c.first);
     if (c.second == std::trunc(c.second)) {
-      pConstantNode->AppendAttr("value", static_cast<int>(c.second));
+      constant_node->AppendAttr("value", static_cast<int>(c.second));
     } else {
-      pConstantNode->AppendAttr("value", c.second);
+      constant_node->AppendAttr("value", c.second);
     }
   }
-  for (const auto& s : mStringConstants) {
-    XNode* pConstantNode = pConstantsNode->AppendChild("Constant");
-    pConstantNode->AppendAttr("name", s.first);
-    pConstantNode->AppendAttr("value", ssprintf("'%s'", s.second.c_str()));
+  for (const auto& s : string_constants) {
+    XNode* constant_node = constants_node->AppendChild("Constant");
+    constant_node->AppendAttr("name", s.first);
+    constant_node->AppendAttr("value", ssprintf("'%s'", s.second.c_str()));
   }
 
-  return pLuaNode;
+  return lua_node;
 }
 
-bool LuaHelpers::RunScriptFile(const std::string& sFile) {
-  std::string sScript;
-  if (!GetFileContents(sFile, sScript)) {
+bool LuaHelpers::RunScriptFile(const std::string& file) {
+  std::string script;
+  if (!GetFileContents(file, script)) {
     return false;
   }
 
   Lua* L = LUA->Get();
 
-  std::string sError;
-  if (!LuaHelpers::RunScript(L, sScript, "@" + sFile, sError, 0)) {
+  std::string error;
+  if (!LuaHelpers::RunScript(L, script, "@" + file, error, 0)) {
     LUA->Release(L);
-    sError = ssprintf("Lua runtime error: %s", sError.c_str());
-    LuaHelpers::ReportScriptError(sError);
+    error = ssprintf("Lua runtime error: %s", error.c_str());
+    LuaHelpers::ReportScriptError(error);
     return false;
   }
   LUA->Release(L);
@@ -788,38 +789,38 @@ bool LuaHelpers::RunScriptFile(const std::string& sFile) {
 }
 
 bool LuaHelpers::LoadScript(
-    Lua* L, const std::string& sScript, const std::string& sName,
-    std::string& sError) {
+    Lua* L, const std::string& script, const std::string& name,
+    std::string& error) {
   // load string
-  int ret = luaL_loadbuffer(L, sScript.data(), sScript.size(), sName.c_str());
+  int ret = luaL_loadbuffer(L, script.data(), script.size(), name.c_str());
   if (ret) {
-    LuaHelpers::Pop(L, sError);
+    LuaHelpers::Pop(L, error);
     return false;
   }
 
   return true;
 }
 
-void LuaHelpers::ScriptErrorMessage(const std::string& Error) {
+void LuaHelpers::ScriptErrorMessage(const std::string& error) {
   Message msg("ScriptError");
-  msg.SetParam("message", Error);
+  msg.SetParam("message", error);
   MESSAGEMAN->Broadcast(msg);
 }
 
 Dialog::Result LuaHelpers::ReportScriptError(
-    const std::string& Error, std::string ErrorType, bool UseAbort) {
+    const std::string& error, std::string error_type, bool use_abort) {
   // Protect from a recursion loop resulting from a mistake in the error
   // reporting lua.
   if (!InReportScriptError) {
     InReportScriptError = true;
-    ScriptErrorMessage(Error);
+    ScriptErrorMessage(error);
     InReportScriptError = false;
   }
-  LOG->Warn("%s", Error.c_str());
-  if (UseAbort) {
+  LOG->Warn("%s", error.c_str());
+  if (use_abort) {
     std::string with_correct =
-        Error + "  Correct this and click Retry, or Cancel to break.";
-    return Dialog::AbortRetryIgnore(with_correct, ErrorType);
+        error + "  Correct this and click Retry, or Cancel to break.";
+    return Dialog::AbortRetryIgnore(with_correct, error_type);
   }
   // Dialog::OK(Error, ErrorType);
   return Dialog::ok;
@@ -829,134 +830,134 @@ Dialog::Result LuaHelpers::ReportScriptError(
 void LuaHelpers::ReportScriptErrorFmt(const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  std::string Buff = vssprintf(fmt, va);
+  std::string buff = vssprintf(fmt, va);
   va_end(va);
-  ReportScriptError(Buff);
+  ReportScriptError(buff);
 }
 
 bool LuaHelpers::RunScriptOnStack(
-    Lua* L, std::string& Error, int Args, int ReturnValues, bool ReportError) {
+    Lua* L, std::string& error, int args, int return_values,
+    bool report_error) {
   lua_pushcfunction(L, GetLuaStack);
 
   // move the error function above the function and params
-  int ErrFunc = lua_gettop(L) - Args - 1;
-  lua_insert(L, ErrFunc);
+  int err_func = lua_gettop(L) - args - 1;
+  lua_insert(L, err_func);
 
   // evaluate
-  int ret = lua_pcall(L, Args, ReturnValues, ErrFunc);
+  int ret = lua_pcall(L, args, return_values, err_func);
   if (ret) {
-    if (ReportError) {
+    if (report_error) {
       std::string lerror;
       LuaHelpers::Pop(L, lerror);
-      Error += lerror;
-      ReportScriptError(Error);
+      error += lerror;
+      ReportScriptError(error);
     } else {
-      LuaHelpers::Pop(L, Error);
+      LuaHelpers::Pop(L, error);
     }
-    lua_remove(L, ErrFunc);
-    for (int i = 0; i < ReturnValues; ++i) {
+    lua_remove(L, err_func);
+    for (int i = 0; i < return_values; ++i) {
       lua_pushnil(L);
     }
     return false;
   }
 
-  lua_remove(L, ErrFunc);
+  lua_remove(L, err_func);
   return true;
 }
 
 bool LuaHelpers::RunScript(
-    Lua* L, const std::string& Script, const std::string& Name,
-    std::string& Error, int Args, int ReturnValues, bool ReportError) {
+    Lua* L, const std::string& script, const std::string& name,
+    std::string& error, int args, int return_values, bool report_error) {
   std::string lerror;
-  if (!LoadScript(L, Script, Name, lerror)) {
-    Error += lerror;
-    if (ReportError) {
-      ReportScriptError(Error);
+  if (!LoadScript(L, script, name, lerror)) {
+    error += lerror;
+    if (report_error) {
+      ReportScriptError(error);
     }
-    lua_pop(L, Args);
-    for (int i = 0; i < ReturnValues; ++i) {
+    lua_pop(L, args);
+    for (int i = 0; i < return_values; ++i) {
       lua_pushnil(L);
     }
     return false;
   }
 
   // move the function above the params
-  lua_insert(L, lua_gettop(L) - Args);
+  lua_insert(L, lua_gettop(L) - args);
 
   return LuaHelpers::RunScriptOnStack(
-      L, Error, Args, ReturnValues, ReportError);
+      L, error, args, return_values, report_error);
 }
 
 bool LuaHelpers::RunExpression(
-    Lua* L, const std::string& sExpression, const std::string& sName) {
-  std::string sError = ssprintf(
+    Lua* L, const std::string& expression, const std::string& name) {
+  std::string error = ssprintf(
       "Lua runtime error parsing \"%s\": ",
-      sName.size() ? sName.c_str() : sExpression.c_str());
+      name.size() ? name.c_str() : expression.c_str());
   if (!LuaHelpers::RunScript(
-          L, "return " + sExpression, sName.empty() ? std::string("in") : sName,
-          sError, 0, 1, true)) {
+          L, "return " + expression, name.empty() ? std::string("in") : name,
+          error, 0, 1, true)) {
     return false;
   }
   return true;
 }
 
 void LuaHelpers::ParseCommandList(
-    Lua* L, const std::string& sCommands, const std::string& sName,
-    bool bLegacy) {
-  std::string sLuaFunction;
-  if (sCommands.size() > 0 && sCommands[0] == '\033') {
+    Lua* L, const std::string& commands, const std::string& name, bool legacy) {
+  std::string lua_function;
+  if (commands.size() > 0 && commands[0] == '\033') {
     // This is a compiled Lua chunk. Just pass it on directly.
-    sLuaFunction = sCommands;
-  } else if (sCommands.size() > 0 && sCommands[0] == '%') {
-    sLuaFunction = "return ";
-    sLuaFunction.append(sCommands.begin() + 1, sCommands.end());
+    lua_function = commands;
+  } else if (commands.size() > 0 && commands[0] == '%') {
+    lua_function = "return ";
+    lua_function.append(commands.begin() + 1, commands.end());
   } else {
     Commands cmds;
-    ParseCommands(sCommands, cmds, bLegacy);
+    ParseCommands(commands, cmds, legacy);
 
     // Convert cmds to a Lua function
     std::ostringstream s;
 
     s << "return function(self)\n";
 
-    if (bLegacy) {
+    if (legacy) {
       s << "\tparent = self:GetParent();\n";
     }
 
     for (const Command& cmd : cmds.v_) {
-      std::string sCmdName = cmd.GetName();
-      if (bLegacy) {
-        MakeLower(sCmdName);
+      std::string cmd_name = cmd.GetName();
+      if (legacy) {
+        MakeLower(cmd_name);
       }
-      s << "\tself:" << sCmdName << "(";
+      s << "\tself:" << cmd_name << "(";
 
-      bool bFirstParamIsString =
-          bLegacy && (sCmdName == "horizalign" || sCmdName == "vertalign" ||
-                      sCmdName == "effectclock" || sCmdName == "blend" ||
-                      sCmdName == "ztestmode" || sCmdName == "cullmode" ||
-                      sCmdName == "playcommand" || sCmdName == "queuecommand" ||
-                      sCmdName == "queuemessage" || sCmdName == "settext");
+      bool first_param_is_string =
+          legacy && (cmd_name == "horizalign" || cmd_name == "vertalign" ||
+                     cmd_name == "effectclock" || cmd_name == "blend" ||
+                     cmd_name == "ztestmode" || cmd_name == "cullmode" ||
+                     cmd_name == "playcommand" || cmd_name == "queuecommand" ||
+                     cmd_name == "queuemessage" || cmd_name == "settext");
 
       for (unsigned i = 1; i < cmd.args_.size(); i++) {
-        std::string sArg = cmd.args_[i];
+        std::string arg = cmd.args_[i];
 
         // "+200" -> "200"
-        if (sArg[0] == '+') {
-          sArg.erase(sArg.begin());
+        if (arg[0] == '+') {
+          arg.erase(arg.begin());
         }
 
-        if (i == 1 && bFirstParamIsString)  // string literal, legacy only
+        if (i == 1 && first_param_is_string)  // string literal, legacy only
         {
-          Replace(sArg, "'", "\\'");  // escape quote
-          s << "'" << sArg << "'";
-        } else if (sArg[0] == '#')  // HTML color
+          Replace(arg, "'", "\\'");  // escape quote
+          s << "'" << arg << "'";
+        } else if (arg[0] == '#')  // HTML color
         {
           RageColor col;  // in case FromString fails
-          col.FromString(sArg);
+          col.FromString(arg);
           // col is still valid if FromString fails
           s << col.r_ << "," << col.g_ << "," << col.b_ << "," << col.a_;
         } else {
-          s << sArg;
+          s << arg;
         }
 
         if (i != cmd.args_.size() - 1) {
@@ -968,12 +969,12 @@ void LuaHelpers::ParseCommandList(
 
     s << "end\n";
 
-    sLuaFunction = s.str();
+    lua_function = s.str();
   }
 
-  std::string sError;
-  if (!LuaHelpers::RunScript(L, sLuaFunction, sName, sError, 0, 1)) {
-    LOG->Warn("Compiling \"%s\": %s", sLuaFunction.c_str(), sError.c_str());
+  std::string error;
+  if (!LuaHelpers::RunScript(L, lua_function, name, error, 0, 1)) {
+    LOG->Warn("Compiling \"%s\": %s", lua_function.c_str(), error.c_str());
   }
 
   // The function is now on the stack.
@@ -981,20 +982,20 @@ void LuaHelpers::ParseCommandList(
 
 /* Like luaL_typerror, but without the special case for argument 1 being "self"
  * in method calls, so we give a correct error message after we remove self. */
-int LuaHelpers::TypeError(Lua* L, int iArgNo, const char* szName) {
-  std::string sType;
-  luaL_pushtype(L, iArgNo);
-  LuaHelpers::Pop(L, sType);
+int LuaHelpers::TypeError(Lua* L, int arg_no, const char* name) {
+  std::string type;
+  luaL_pushtype(L, arg_no);
+  LuaHelpers::Pop(L, type);
 
   lua_Debug debug;
   if (!lua_getstack(L, 0, &debug)) {
     return luaL_error(
-        L, "invalid type (%s expected, got %s)", szName, sType.c_str());
+        L, "invalid type (%s expected, got %s)", name, type.c_str());
   } else {
     lua_getinfo(L, "n", &debug);
     return luaL_error(
-        L, "bad argument #%d to \"%s\" (%s expected, got %s)", iArgNo,
-        debug.name ? debug.name : "(unknown)", szName, sType.c_str());
+        L, "bad argument #%d to \"%s\" (%s expected, got %s)", arg_no,
+        debug.name ? debug.name : "(unknown)", name, type.c_str());
   }
 }
 
@@ -1015,19 +1016,19 @@ void LuaHelpers::DeepCopy(lua_State* L) {
 
 namespace {
 int lua_pushvalues(lua_State* L) {
-  int iArgs = lua_tointeger(L, lua_upvalueindex(1));
-  for (int i = 0; i < iArgs; ++i) {
+  int args = lua_tointeger(L, lua_upvalueindex(1));
+  for (int i = 0; i < args; ++i) {
     lua_pushvalue(L, lua_upvalueindex(i + 2));
   }
-  return iArgs;
+  return args;
 }
 }  // namespace
 
-void LuaHelpers::PushValueFunc(lua_State* L, int iArgs) {
-  int iTop = lua_gettop(L) - iArgs + 1;
-  lua_pushinteger(L, iArgs);
-  lua_insert(L, iTop);
-  lua_pushcclosure(L, lua_pushvalues, iArgs + 1);
+void LuaHelpers::PushValueFunc(lua_State* L, int args) {
+  int top = lua_gettop(L) - args + 1;
+  lua_pushinteger(L, args);
+  lua_insert(L, top);
+  lua_pushcclosure(L, lua_pushvalues, args + 1);
 }
 
 #include "ProductInfo.h"
@@ -1050,13 +1051,13 @@ LuaFunction(clamp, std::clamp(FArg(1), FArg(2), FArg(3)));
 #include "LuaBinding.h"
 namespace {
 static int Trace(lua_State* L) {
-  std::string sString = SArg(1);
-  LOG->Trace("%s", sString.c_str());
+  std::string string = SArg(1);
+  LOG->Trace("%s", string.c_str());
   return 0;
 }
 static int Warn(lua_State* L) {
-  std::string sString = SArg(1);
-  LOG->Warn("%s", sString.c_str());
+  std::string string = SArg(1);
+  LOG->Warn("%s", string.c_str());
   return 0;
 }
 static int Flush(lua_State* L) {
@@ -1064,28 +1065,28 @@ static int Flush(lua_State* L) {
   return 0;
 }
 static int CheckType(lua_State* L) {
-  std::string sType = SArg(1);
-  bool bRet = LuaBinding::CheckLuaObjectType(L, 2, sType.c_str());
-  LuaHelpers::Push(L, bRet);
+  std::string type = SArg(1);
+  bool ret = LuaBinding::CheckLuaObjectType(L, 2, type.c_str());
+  LuaHelpers::Push(L, ret);
   return 1;
 }
 static int ReadFile(lua_State* L) {
-  std::string sPath = SArg(1);
+  std::string path = SArg(1);
 
   /* Release Lua while we call GetFileContents, so we don't access
    * it while we read from the disk. */
   LUA->YieldLua();
 
-  std::string sFileContents;
-  bool bRet = GetFileContents(sPath, sFileContents);
+  std::string file_contents;
+  bool ret = GetFileContents(path, file_contents);
 
   LUA->UnyieldLua();
-  if (!bRet) {
+  if (!ret) {
     lua_pushnil(L);
     lua_pushstring(L, "error");  // XXX
     return 2;
   } else {
-    LuaHelpers::Push(L, sFileContents);
+    LuaHelpers::Push(L, file_contents);
     return 1;
   }
 }
@@ -1097,25 +1098,25 @@ static int RunWithThreadVariables(lua_State* L) {
   luaL_checktype(L, 1, LUA_TFUNCTION);
   luaL_checktype(L, 2, LUA_TTABLE);
 
-  std::vector<LuaThreadVariable*> apVars;
+  std::vector<LuaThreadVariable*> vars;
   FOREACH_LUATABLE(L, 2) {
     lua_pushvalue(L, -2);
-    LuaThreadVariable* pVar = new LuaThreadVariable(L);
-    apVars.push_back(pVar);
+    LuaThreadVariable* var = new LuaThreadVariable(L);
+    vars.push_back(var);
   }
 
   lua_remove(L, 2);
 
   /* XXX: We want to clean up apVars on errors, but if we lua_pcall,
    * we won't propagate the error upwards. */
-  int iArgs = lua_gettop(L) - 1;
-  lua_call(L, iArgs, LUA_MULTRET);
-  int iVals = lua_gettop(L);
+  int args = lua_gettop(L) - 1;
+  lua_call(L, args, LUA_MULTRET);
+  int vals = lua_gettop(L);
 
-  for (LuaThreadVariable* v : apVars) {
+  for (LuaThreadVariable* v : vars) {
     delete v;
   }
-  return iVals;
+  return vals;
 }
 
 static int GetThreadVariable(lua_State* L) {

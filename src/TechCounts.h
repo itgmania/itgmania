@@ -51,8 +51,8 @@ struct TechCounts {
 
  private:
   static bool isFootswitch(
-      int c, const StepParity::Row& currentRow,
-      const StepParity::Row& previousRow, float elapsedTime);
+      int c, const StepParity::Row& current_row,
+      const StepParity::Row& previous_row, float elapsed_time);
 };
 
 #endif

@@ -10,8 +10,8 @@ class ScrollBar : public ActorFrame {
  public:
   ScrollBar();
 
-  void SetBarHeight(int iHeight);
-  void SetPercentage(float fCenterPercent, float fSizePercent);
+  void SetBarHeight(int height);
+  void SetPercentage(float center_percent, float size_percent);
 
  protected:
   int bar_height_;

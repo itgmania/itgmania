@@ -113,12 +113,12 @@ static int GetShiftFromMask(uint32_t mask) {
     return 0;
   }
 
-  int iShift = 0;
+  int shift = 0;
   while ((mask & 1) == 0) {
     mask >>= 1;
-    ++iShift;
+    ++shift;
   }
-  return iShift;
+  return shift;
 }
 
 static int GetBitsFromMask(uint32_t mask) {
@@ -128,19 +128,19 @@ static int GetBitsFromMask(uint32_t mask) {
 
   mask >>= GetShiftFromMask(mask);
 
-  int iBits = 0;
+  int bits = 0;
   while ((mask & 1) == 1) {
     mask >>= 1;
-    ++iBits;
+    ++bits;
   }
-  return iBits;
+  return bits;
 }
 
 void SetupFormat(
-    RageSurfaceFormat& fmt, int width, int height, int BitsPerPixel,
-    uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask) {
-  fmt.bits_per_pixel_ = BitsPerPixel;
-  fmt.bytes_per_pixel_ = BitsPerPixel / 8;
+    RageSurfaceFormat& fmt, int width, int height, int bits_per_pixel,
+    uint32_t rmask, uint32_t gmask, uint32_t bmask, uint32_t amask) {
+  fmt.bits_per_pixel_ = bits_per_pixel;
+  fmt.bytes_per_pixel_ = bits_per_pixel / 8;
   if (fmt.bytes_per_pixel_ == 1) {
     ZERO(fmt.mask_);
     ZERO(fmt.shift_);
@@ -151,36 +151,36 @@ void SetupFormat(
     fmt.palette_ = std::make_unique<RageSurfacePalette>();
     fmt.palette_->ncolors_ = 256;
   } else {
-    fmt.mask_[0] = Rmask;
-    fmt.mask_[1] = Gmask;
-    fmt.mask_[2] = Bmask;
-    fmt.mask_[3] = Amask;
+    fmt.mask_[0] = rmask;
+    fmt.mask_[1] = gmask;
+    fmt.mask_[2] = bmask;
+    fmt.mask_[3] = amask;
 
-    fmt.shift_[0] = GetShiftFromMask(Rmask);
-    fmt.shift_[1] = GetShiftFromMask(Gmask);
-    fmt.shift_[2] = GetShiftFromMask(Bmask);
-    fmt.shift_[3] = GetShiftFromMask(Amask);
+    fmt.shift_[0] = GetShiftFromMask(rmask);
+    fmt.shift_[1] = GetShiftFromMask(gmask);
+    fmt.shift_[2] = GetShiftFromMask(bmask);
+    fmt.shift_[3] = GetShiftFromMask(amask);
 
-    fmt.loss_[0] = (uint8_t)(8 - GetBitsFromMask(Rmask));
-    fmt.loss_[1] = (uint8_t)(8 - GetBitsFromMask(Gmask));
-    fmt.loss_[2] = (uint8_t)(8 - GetBitsFromMask(Bmask));
-    fmt.loss_[3] = (uint8_t)(8 - GetBitsFromMask(Amask));
+    fmt.loss_[0] = (uint8_t)(8 - GetBitsFromMask(rmask));
+    fmt.loss_[1] = (uint8_t)(8 - GetBitsFromMask(gmask));
+    fmt.loss_[2] = (uint8_t)(8 - GetBitsFromMask(bmask));
+    fmt.loss_[3] = (uint8_t)(8 - GetBitsFromMask(amask));
   }
 }
 
 RageSurface* CreateSurface(
-    int width, int height, int BitsPerPixel, uint32_t Rmask, uint32_t Gmask,
-    uint32_t Bmask, uint32_t Amask) {
-  RageSurface* pImg = new RageSurface;
+    int width, int height, int bits_per_pixel, uint32_t rmask, uint32_t gmask,
+    uint32_t bmask, uint32_t amask) {
+  RageSurface* img = new RageSurface;
 
   SetupFormat(
-      pImg->fmt_, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
+      img->fmt_, width, height, bits_per_pixel, rmask, gmask, bmask, amask);
 
-  pImg->w_ = width;
-  pImg->h_ = height;
-  pImg->flags_ = 0;
-  pImg->pitch_ = width * BitsPerPixel / 8;
-  pImg->pixels_ = new uint8_t[pImg->pitch_ * height];
+  img->w_ = width;
+  img->h_ = height;
+  img->flags_ = 0;
+  img->pitch_ = width * bits_per_pixel / 8;
+  img->pixels_ = new uint8_t[img->pitch_ * height];
 
   /*
   if( BitsPerPixel == 8 )
@@ -189,25 +189,25 @@ RageSurface* CreateSurface(
   }
   */
 
-  return pImg;
+  return img;
 }
 
 RageSurface* CreateSurfaceFrom(
-    int width, int height, int BitsPerPixel, uint32_t Rmask, uint32_t Gmask,
-    uint32_t Bmask, uint32_t Amask, uint8_t* pPixels, uint32_t pitch) {
-  RageSurface* pImg = new RageSurface;
+    int width, int height, int bits_per_pixel, uint32_t rmask, uint32_t gmask,
+    uint32_t bmask, uint32_t amask, uint8_t* pixels, uint32_t pitch) {
+  RageSurface* img = new RageSurface;
 
   SetupFormat(
-      pImg->fmt_, width, height, BitsPerPixel, Rmask, Gmask, Bmask, Amask);
+      img->fmt_, width, height, bits_per_pixel, rmask, gmask, bmask, amask);
 
-  pImg->w_ = width;
-  pImg->h_ = height;
-  pImg->flags_ = 0;
-  pImg->pitch_ = pitch;
-  pImg->pixels_ = pPixels;
-  pImg->pixels_owned_ = false;
+  img->w_ = width;
+  img->h_ = height;
+  img->flags_ = 0;
+  img->pitch_ = pitch;
+  img->pixels_ = pixels;
+  img->pixels_owned_ = false;
 
-  return pImg;
+  return img;
 }
 
 /*

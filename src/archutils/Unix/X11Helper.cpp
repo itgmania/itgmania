@@ -76,35 +76,35 @@ void X11Helper::CloseXConnection() {
 }
 
 bool X11Helper::MakeWindow(
-    Window& win, int screenNum, int depth, Visual* visual, int width,
-    int height, bool overrideRedirect) {
+    Window& win, int screen_num, int depth, Visual* visual, int width,
+    int height, bool override_redirect) {
   if (!Dpy) {
     return false;
   }
 
-  XSetWindowAttributes winAttribs;
-  winAttribs.border_pixel = 0;
-  winAttribs.event_mask = 0L;
+  XSetWindowAttributes win_attribs;
+  win_attribs.border_pixel = 0;
+  win_attribs.event_mask = 0L;
 
   if (win) {
     // Preserve the event mask.
     XWindowAttributes attribs;
     XGetWindowAttributes(Dpy, win, &attribs);
-    winAttribs.event_mask = attribs.your_event_mask;
+    win_attribs.event_mask = attribs.your_event_mask;
     XDestroyWindow(Dpy, win);
   }
   // XXX: Error catching/handling?
-  winAttribs.colormap =
-      XCreateColormap(Dpy, RootWindow(Dpy, screenNum), visual, AllocNone);
+  win_attribs.colormap =
+      XCreateColormap(Dpy, RootWindow(Dpy, screen_num), visual, AllocNone);
   unsigned long mask = CWBorderPixel | CWColormap | CWEventMask;
 
-  if (overrideRedirect) {
-    winAttribs.override_redirect = True;
+  if (override_redirect) {
+    win_attribs.override_redirect = True;
     mask |= CWOverrideRedirect;
   }
   win = XCreateWindow(
-      Dpy, RootWindow(Dpy, screenNum), 0, 0, width, height, 0, depth,
-      InputOutput, visual, mask, &winAttribs);
+      Dpy, RootWindow(Dpy, screen_num), 0, 0, width, height, 0, depth,
+      InputOutput, visual, mask, &win_attribs);
   if (win == None) {
     return false;
   }
@@ -121,16 +121,16 @@ bool X11Helper::MakeWindow(
 
   // Hide the mouse cursor in certain situations.
   if (!PREFSMAN->show_mouse_cursor_) {
-    const char pBlank[] = {0, 0, 0, 0, 0, 0, 0, 0};
-    Pixmap BlankBitmap = XCreateBitmapFromData(Dpy, win, pBlank, 8, 8);
+    const char blank[] = {0, 0, 0, 0, 0, 0, 0, 0};
+    Pixmap blank_bitmap = XCreateBitmapFromData(Dpy, win, blank, 8, 8);
 
     XColor black = {0, 0, 0, 0, 0, 0};
-    Cursor pBlankPointer = XCreatePixmapCursor(
-        Dpy, BlankBitmap, BlankBitmap, &black, &black, 0, 0);
-    XFreePixmap(Dpy, BlankBitmap);
+    Cursor blank_pointer = XCreatePixmapCursor(
+        Dpy, blank_bitmap, blank_bitmap, &black, &black, 0, 0);
+    XFreePixmap(Dpy, blank_bitmap);
 
-    XDefineCursor(Dpy, win, pBlankPointer);
-    XFreeCursor(Dpy, pBlankPointer);
+    XDefineCursor(Dpy, win, blank_pointer);
+    XFreeCursor(Dpy, blank_pointer);
   }
 
   return true;
@@ -157,12 +157,12 @@ void X11Helper::SetWMState(
 }
 
 int ErrorCallback(Display* d, XErrorEvent* err) {
-  char errText[512];
-  XGetErrorText(d, err->error_code, errText, 512);
+  char err_text[512];
+  XGetErrorText(d, err->error_code, err_text, 512);
   LOG->Warn(
       "X11 Protocol error %s (%d) has occurred, caused by request %d,%d, "
       "resource ID %d",
-      errText, err->error_code, err->request_code, err->minor_code,
+      err_text, err->error_code, err->request_code, err->minor_code,
       (int)err->resourceid);
 
   return 0;  // Xlib ignores our return value

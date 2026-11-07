@@ -32,11 +32,11 @@ enum class PreferenceType {
 struct lua_State;
 class IPreference {
  public:
-  IPreference(const std::string& sName, PreferenceType type);
+  IPreference(const std::string& name, PreferenceType type);
   virtual ~IPreference();
-  void ReadFrom(const XNode* pNode, bool bIsStatic);
-  void WriteTo(XNode* pNode) const;
-  void ReadDefaultFrom(const XNode* pNode);
+  void ReadFrom(const XNode* node, bool is_static);
+  void WriteTo(XNode* node) const;
+  void ReadDefaultFrom(const XNode* node);
 
   virtual void LoadDefault() = 0;
   virtual void SetDefaultFromString(const std::string& s) = 0;
@@ -49,11 +49,11 @@ class IPreference {
 
   const std::string& GetName() const { return name_; }
 
-  static IPreference* GetPreferenceByName(const std::string& sName);
+  static IPreference* GetPreferenceByName(const std::string& name);
   static void LoadAllDefaults();
-  static void ReadAllPrefsFromNode(const XNode* pNode, bool bIsStatic);
-  static void SavePrefsToNode(XNode* pNode);
-  static void ReadAllDefaultsFromNode(const XNode* pNode);
+  static void ReadAllPrefsFromNode(const XNode* node, bool is_static);
+  static void SavePrefsToNode(XNode* node);
+  static void ReadAllDefaultsFromNode(const XNode* node);
 
   std::string GetName() { return name_; }
   bool IsImmutable() { return immutable_; }
@@ -64,19 +64,19 @@ class IPreference {
   bool immutable_;
 };
 
-void BroadcastPreferenceChanged(const std::string& sPreferenceName);
+void BroadcastPreferenceChanged(const std::string& preference_name);
 
 template <class T>
 class Preference : public IPreference {
  public:
   Preference(
-      const std::string& sName, const T& defaultValue,
-      void(pfnValidate)(T& val) = nullptr,
+      const std::string& name, const T& default_value,
+      void(validate)(T& val) = nullptr,
       PreferenceType type = PreferenceType::Mutable)
-      : IPreference(sName, type),
-        current_value_(defaultValue),
-        default_value_(defaultValue),
-        validate_(pfnValidate) {
+      : IPreference(name, type),
+        current_value_(default_value),
+        default_value_(default_value),
+        validate_(validate) {
     LoadDefault();
   }
 
@@ -118,10 +118,10 @@ class Preference : public IPreference {
     BroadcastPreferenceChanged(GetName());
   }
 
-  static Preference<T>* GetPreferenceByName(const std::string& sName) {
-    IPreference* pPreference = IPreference::GetPreferenceByName(sName);
-    Preference<T>* pRet = dynamic_cast<Preference<T>*>(pPreference);
-    return pRet;
+  static Preference<T>* GetPreferenceByName(const std::string& name) {
+    IPreference* preference = IPreference::GetPreferenceByName(name);
+    Preference<T>* ret = dynamic_cast<Preference<T>*>(preference);
+    return ret;
   }
 
  private:
@@ -133,8 +133,8 @@ class Preference : public IPreference {
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <typename T>
-void Push(lua_State* L, const Preference<T>& Object) {
-  LuaHelpers::Push<T>(L, Object.Get());
+void Push(lua_State* L, const Preference<T>& object) {
+  LuaHelpers::Push<T>(L, object.Get());
 }
 }  // namespace LuaHelpers
 
@@ -145,13 +145,13 @@ class Preference1D {
   std::vector<PreferenceT*> v_;
 
   Preference1D(
-      void pfn(size_t i, std::string& sNameOut, T& defaultValueOut), size_t N,
+      void pfn(size_t i, std::string& name_out, T& default_value_out), size_t n,
       PreferenceType type = PreferenceType::Mutable) {
-    for (size_t i = 0; i < N; ++i) {
-      std::string sName;
-      T defaultValue;
-      pfn(i, sName, defaultValue);
-      v_.push_back(new Preference<T>(sName, defaultValue, nullptr, type));
+    for (size_t i = 0; i < n; ++i) {
+      std::string name;
+      T default_value;
+      pfn(i, name, default_value);
+      v_.push_back(new Preference<T>(name, default_value, nullptr, type));
     }
   }
 

@@ -12,11 +12,11 @@ class ActorProxy : public Actor {
   virtual bool EarlyAbortDraw() const;
   virtual void DrawPrimitives();
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual ActorProxy* Copy() const;
 
   Actor* GetTarget() { return actor_target_; }
-  void SetTarget(Actor* pTarget) { actor_target_ = pTarget; }
+  void SetTarget(Actor* target) { actor_target_ = target; }
 
   // Lua
   virtual void PushSelf(lua_State* L);

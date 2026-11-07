@@ -86,9 +86,9 @@ RageSoundDriver_ALSA9_Software::RageSoundDriver_ALSA9_Software() {
 }
 
 std::string RageSoundDriver_ALSA9_Software::Init() {
-  std::string sError = LoadALSA();
-  if (sError != "") {
-    return ssprintf("Driver unusable: %s", sError.c_str());
+  std::string error = LoadALSA();
+  if (error != "") {
+    return ssprintf("Driver unusable: %s", error.c_str());
   }
 
   g_iMaxWriteahead = safe_writeahead;
@@ -105,11 +105,11 @@ std::string RageSoundDriver_ALSA9_Software::Init() {
   }
 
   pcm_ = new Alsa9Buf();
-  sError = pcm_->Init(
+  error = pcm_->Init(
       g_iMaxWriteahead, g_iMaxWriteahead / num_chunks,
       PREFSMAN->sound_preferred_sample_rate_);
-  if (sError != "") {
-    return sError;
+  if (error != "") {
+    return error;
   }
 
   sample_rate_ = pcm_->GetSampleRate();

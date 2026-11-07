@@ -16,33 +16,33 @@ class DebuggeeState::Impl {
   }
 
   static void CreateThread(
-      DebuggeeState& root, ThreadId threadId, lua_State* L) {
+      DebuggeeState& root, ThreadId thread_id, lua_State* L) {
     auto thread = new DebuggeeState();
     thread->type_ = Type::Thread;
-    thread->parent_ = &root, thread->lua_ = L, thread->thread_id_ = threadId,
+    thread->parent_ = &root, thread->lua_ = L, thread->thread_id_ = thread_id,
     AddToParent(thread);
   }
 
-  static void CreateStackFrame(DebuggeeState& parentThread, int level) {
-    auto frame = new DebuggeeState(parentThread, Type::StackFrame);
+  static void CreateStackFrame(DebuggeeState& parent_thread, int level) {
+    auto frame = new DebuggeeState(parent_thread, Type::StackFrame);
     frame->stack_level_ = level;
     AddToParent(frame);
   }
 
-  static void CreateGlobals(DebuggeeState& parentThread) {
-    AddToParent(new DebuggeeState(parentThread, Type::GlobalsScope));
+  static void CreateGlobals(DebuggeeState& parent_thread) {
+    AddToParent(new DebuggeeState(parent_thread, Type::GlobalsScope));
   }
 
-  static void CreateUpvalues(DebuggeeState& parentFrame) {
-    AddToParent(new DebuggeeState(parentFrame, Type::UpvaluesScope));
+  static void CreateUpvalues(DebuggeeState& parent_frame) {
+    AddToParent(new DebuggeeState(parent_frame, Type::UpvaluesScope));
   }
 
-  static void CreateLocals(DebuggeeState& parentFrame) {
-    AddToParent(new DebuggeeState(parentFrame, Type::LocalsScope));
+  static void CreateLocals(DebuggeeState& parent_frame) {
+    AddToParent(new DebuggeeState(parent_frame, Type::LocalsScope));
   }
 
-  static void CreateReferences(DebuggeeState& parentThread) {
-    auto references = new DebuggeeState(parentThread, Type::References);
+  static void CreateReferences(DebuggeeState& parent_thread) {
+    auto references = new DebuggeeState(parent_thread, Type::References);
     references->index_ = LUA_NOREF;
     AddToParent(references);
   }
@@ -159,7 +159,7 @@ class DebuggeeState::Impl {
     ASSERT(var.parent_->type_ == Type::UpvaluesScope);
 
     lua_State* L = var.lua_;
-    int topOnReturn = lua_gettop(L) - 1;
+    int top_on_return = lua_gettop(L) - 1;
     bool ok = false;
 
     lua_Debug debug;
@@ -181,7 +181,7 @@ class DebuggeeState::Impl {
     ok = true;
 
   done:
-    lua_settop(L, topOnReturn);
+    lua_settop(L, top_on_return);
     return ok;
   }
 
@@ -309,11 +309,11 @@ class DebuggeeState::Impl {
     // Pops the key from the stack.
     while (lua_next(L, -2)) {
       // lua_next succeeded so the stack contains a key (-2) and a value (-1).
-      int keyType = lua_type(L, -2);
-      if (keyType == LUA_TNUMBER) {
+      int key_type = lua_type(L, -2);
+      if (key_type == LUA_TNUMBER) {
         int index = lua_tonumber(L, -2);
         CreateIndexedVariable(var, std::to_string(index), index);
-      } else if (keyType == LUA_TSTRING) {
+      } else if (key_type == LUA_TSTRING) {
         std::string name = lua_tostring(L, -2);
         CreateNamedVariable(var, name);
       }
@@ -407,10 +407,10 @@ DebuggeeState& DebuggeeState::GetObject(ObjectRef id) {
   return it->second;
 }
 
-DebuggeeState& DebuggeeState::GetThread(ThreadId threadId) {
+DebuggeeState& DebuggeeState::GetThread(ThreadId thread_id) {
   for (DebuggeeState* thread : GetRoot().GetChildren()) {
     if (thread->GetType() == Type::Thread &&
-        thread->GetThreadId() == threadId) {
+        thread->GetThreadId() == thread_id) {
       return *thread;
     }
   }
@@ -545,14 +545,14 @@ bool DebuggeeState::PushValue() {
   lua_State* L = lua_;
   int top = lua_gettop(L);
 
-  std::vector<DebuggeeState*> pathToRoot;
+  std::vector<DebuggeeState*> path_to_root;
   for (DebuggeeState* o = this; o != nullptr && o->IsVariable();
        o = o->parent_) {
-    pathToRoot.push_back(o);
+    path_to_root.push_back(o);
   }
 
   bool ok = false;
-  DebuggeeState& first = *pathToRoot.back();
+  DebuggeeState& first = *path_to_root.back();
   switch (first.parent_->type_) {
     case Type::LocalsScope:
       ok = Impl::PushLocalToStack(first);
@@ -569,9 +569,9 @@ bool DebuggeeState::PushValue() {
     default:
       FAIL_M("invalid type");
   }
-  pathToRoot.pop_back();
+  path_to_root.pop_back();
 
-  while (ok && !pathToRoot.empty()) {
+  while (ok && !path_to_root.empty()) {
     int type = lua_type(L, -1);
     if (type != LUA_TTABLE) {
       lua_pop(L, 1);
@@ -580,7 +580,7 @@ bool DebuggeeState::PushValue() {
       break;
     }
 
-    DebuggeeState& next = *pathToRoot.back();
+    DebuggeeState& next = *path_to_root.back();
     switch (next.type_) {
       case Type::NamedVariable:
         lua_pushstring(L, next.name_.c_str());
@@ -600,7 +600,7 @@ bool DebuggeeState::PushValue() {
       default:
         FAIL_M("invalid type");
     }
-    pathToRoot.pop_back();
+    path_to_root.pop_back();
   }
 
   ASSERT(lua_gettop(L) == top + 1);
@@ -701,35 +701,35 @@ DebuggeeState& DebuggeeState::CreateReferenceFromStack() {
 
 void DebuggeeState::Invalidate() {
   // Keep threads but delete other children.
-  size_t keptItems = 0;
+  size_t kept_items = 0;
   for (size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->GetType() != Type::Thread) {
       delete children_[i];
       children_[i] = nullptr;
     } else {
       children_[i]->Invalidate();
-      if (keptItems != i) {
-        std::swap(children_[keptItems], children_[i]);
+      if (kept_items != i) {
+        std::swap(children_[kept_items], children_[i]);
       }
-      keptItems++;
+      kept_items++;
     }
   }
-  children_.resize(keptItems);
+  children_.resize(kept_items);
   children_initialized_ = false;
 
   // Reset numbering.
   next_id_ = 1;
 }
 
-void DebuggeeState::AddThread(ThreadId threadId, lua_State* lua) {
-  Impl::CreateThread(GetRoot(), threadId, lua);
+void DebuggeeState::AddThread(ThreadId thread_id, lua_State* lua) {
+  Impl::CreateThread(GetRoot(), thread_id, lua);
 }
 
-void DebuggeeState::RemoveThread(ThreadId threadId) {
+void DebuggeeState::RemoveThread(ThreadId thread_id) {
   DebuggeeState& root = GetRoot();
   for (auto it = root.children_.begin(); it != root.children_.end(); ++it) {
     DebuggeeState* thread = *it;
-    if (thread->type_ == Type::Thread && thread->thread_id_ == threadId) {
+    if (thread->type_ == Type::Thread && thread->thread_id_ == thread_id) {
       root.children_.erase(it);
       delete thread;
       return;

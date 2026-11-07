@@ -21,8 +21,8 @@ class ScreenOptionsEditProfile : public ScreenOptions {
   virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
   virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
-  virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
+  virtual void AfterChangeValueInRow(int row, PlayerNumber pn);
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
   Profile original_;  // restore this on revert

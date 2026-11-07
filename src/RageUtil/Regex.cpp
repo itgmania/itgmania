@@ -21,17 +21,17 @@ void Regex::Compile() {
         "Invalid regex: \"%s\" (%s).", pattern_.c_str(), error);
   }
 
-  int iRet =
+  int ret =
       pcre_fullinfo((pcre*)reg_, nullptr, PCRE_INFO_CAPTURECOUNT, &backrefs_);
-  ASSERT(iRet >= 0);
+  ASSERT(ret >= 0);
 
   ++backrefs_;
   ASSERT(backrefs_ < 128);
 }
 
-void Regex::Set(const std::string& sStr) {
+void Regex::Set(const std::string& str) {
   Release();
-  pattern_ = sStr;
+  pattern_ = str;
   Compile();
 }
 
@@ -41,9 +41,9 @@ void Regex::Release() {
   pattern_ = std::string();
 }
 
-Regex::Regex(const std::string& sStr)
+Regex::Regex(const std::string& str)
     : reg_(nullptr), backrefs_(0), pattern_(std::string()) {
-  Set(sStr);
+  Set(str);
 }
 
 Regex::Regex(const Regex& rhs)
@@ -60,42 +60,41 @@ Regex& Regex::operator=(const Regex& rhs) {
 
 Regex::~Regex() { Release(); }
 
-bool Regex::Compare(const std::string& sStr) {
-  int iMat[128 * 3];
-  int iRet = pcre_exec(
-      (pcre*)reg_, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
+bool Regex::Compare(const std::string& str) {
+  int mat[128 * 3];
+  int ret = pcre_exec(
+      (pcre*)reg_, nullptr, str.data(), str.size(), 0, 0, mat, 128 * 3);
 
-  if (iRet < -1) {
+  if (ret < -1) {
     RageException::Throw(
-        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), iRet);
+        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), ret);
   }
 
-  return iRet >= 0;
+  return ret >= 0;
 }
 
-bool Regex::Compare(
-    const std::string& sStr, std::vector<std::string>& asMatches) {
-  asMatches.clear();
+bool Regex::Compare(const std::string& str, std::vector<std::string>& matches) {
+  matches.clear();
 
-  int iMat[128 * 3];
-  int iRet = pcre_exec(
-      (pcre*)reg_, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128 * 3);
+  int mat[128 * 3];
+  int ret = pcre_exec(
+      (pcre*)reg_, nullptr, str.data(), str.size(), 0, 0, mat, 128 * 3);
 
-  if (iRet < -1) {
+  if (ret < -1) {
     RageException::Throw(
-        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), iRet);
+        "Unexpected return from pcre_exec('%s'): %i.", pattern_.c_str(), ret);
   }
 
-  if (iRet == -1) {
+  if (ret == -1) {
     return false;
   }
 
   for (unsigned i = 1; i < backrefs_; ++i) {
-    const int iStart = iMat[i * 2], end = iMat[i * 2 + 1];
-    if (iStart == -1) {
-      asMatches.push_back(std::string()); /* no match */
+    const int start = mat[i * 2], end = mat[i * 2 + 1];
+    if (start == -1) {
+      matches.push_back(std::string()); /* no match */
     } else {
-      asMatches.push_back(sStr.substr(iStart, end - iStart));
+      matches.push_back(str.substr(start, end - start));
     }
   }
 
@@ -105,20 +104,20 @@ bool Regex::Compare(
 // Arguments and behavior are the same are similar to
 // http://us3.php.net/manual/en/function.preg-replace.php
 bool Regex::Replace(
-    const std::string& sReplacement, const std::string& sSubject,
-    std::string& sOut) {
-  std::vector<std::string> asMatches;
-  if (!Compare(sSubject, asMatches)) {
+    const std::string& replacement, const std::string& subject,
+    std::string& out) {
+  std::vector<std::string> matches;
+  if (!Compare(subject, matches)) {
     return false;
   }
 
-  sOut = sReplacement;
+  out = replacement;
 
   // TODO: optimize me by iterating only once over the string
-  for (unsigned i = 0; i < asMatches.size(); i++) {
-    std::string sFrom = ssprintf("\\${%d}", i);
-    std::string sTo = asMatches[i];
-    ::Replace(sOut, sFrom, sTo);
+  for (unsigned i = 0; i < matches.size(); i++) {
+    std::string from = ssprintf("\\${%d}", i);
+    std::string to = matches[i];
+    ::Replace(out, from, to);
   }
 
   return true;

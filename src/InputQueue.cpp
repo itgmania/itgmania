@@ -49,111 +49,113 @@ bool InputQueueCode::CheckPattern(
     return false;
   }
 
-  float fMaxSecondsBack;
+  float max_seconds_back;
   if (presses.size() == 1) {
-    fMaxSecondsBack = 0.55f;
+    max_seconds_back = 0.55f;
   } else {
-    fMaxSecondsBack = (presses.size() - 1) * 0.6f;
+    max_seconds_back = (presses.size() - 1) * 0.6f;
   }
-  RageTimer OldestTimeAllowed;
-  OldestTimeAllowed += -fMaxSecondsBack;
+  RageTimer oldest_time_allowed;
+  oldest_time_allowed += -max_seconds_back;
 
   // iterate newest to oldest
-  int iSequenceIndex = presses.size() - 1;  // count down
-  const std::vector<InputEventPlus>& aQueue = INPUTQUEUE->GetQueue(controller);
-  int iQueueIndex = aQueue.size() - 1;
-  while (iQueueIndex >= 0) {
+  int sequence_index = presses.size() - 1;  // count down
+  const std::vector<InputEventPlus>& queue = INPUTQUEUE->GetQueue(controller);
+  int queue_index = queue.size() - 1;
+  while (queue_index >= 0) {
     /* If the buttons are too old, stop searching because we're not going to
      * find a match. */
-    if (!OldestTimeAllowed.IsZero() &&
-        aQueue[iQueueIndex].device_i_.ts_ < OldestTimeAllowed) {
+    if (!oldest_time_allowed.IsZero() &&
+        queue[queue_index].device_i_.ts_ < oldest_time_allowed) {
       return false;
     }
 
     /* If the last press is an input type we're not interested in, skip it
      * and look again. */
-    const ButtonPress& Press = presses[iSequenceIndex];
-    if (!Press.input_types_[aQueue[iQueueIndex].type_]) {
-      --iQueueIndex;
+    const ButtonPress& press = presses[sequence_index];
+    if (!press.input_types_[queue[queue_index].type_]) {
+      --queue_index;
       continue;
     }
 
     /* Search backwards for all of Press.m_aButtonsToPress pressed within
      * g_fTapThreshold seconds with m_aButtonsToHold pressed.  Start looking at
      * iQueueIndex. */
-    RageTimer OldestTimeAllowedForTap(aQueue[iQueueIndex].device_i_.ts_);
-    OldestTimeAllowedForTap += -g_fSimultaneousThreshold;
+    RageTimer oldest_time_allowed_for_tap(queue[queue_index].device_i_.ts_);
+    oldest_time_allowed_for_tap += -g_fSimultaneousThreshold;
 
-    bool bMatched = false;
-    int iMinSearchIndexUsed = iQueueIndex;
-    for (int b = 0; b < (int)Press.buttons_to_press_.size(); ++b) {
-      const InputEventPlus* pIEP = nullptr;
-      int iQueueSearchIndex = iQueueIndex;
-      for (; iQueueSearchIndex >= 0;
-           --iQueueSearchIndex)  // iterate newest to oldest
+    bool matched = false;
+    int min_search_index_used = queue_index;
+    for (int b = 0; b < (int)press.buttons_to_press_.size(); ++b) {
+      const InputEventPlus* p_iep = nullptr;
+      int queue_search_index = queue_index;
+      for (; queue_search_index >= 0;
+           --queue_search_index)  // iterate newest to oldest
       {
-        const InputEventPlus& iep = aQueue[iQueueSearchIndex];
+        const InputEventPlus& iep = queue[queue_search_index];
         if (iep.device_i_.ts_ <
-            OldestTimeAllowedForTap) {  // buttons are too old.  Stop searching
-                                        // because we're not going to find a
-                                        // match
+            oldest_time_allowed_for_tap) {  // buttons are too old.  Stop
+                                            // searching
+                                            // because we're not going to find a
+                                            // match
           break;
         }
 
-        if (!Press.input_types_[iep.type_]) {
+        if (!press.input_types_[iep.type_]) {
           continue;
         }
 
-        if (iep.game_i_.button_ == Press.buttons_to_press_[b]) {
-          pIEP = &iep;
+        if (iep.game_i_.button_ == press.buttons_to_press_[b]) {
+          p_iep = &iep;
           break;
         }
       }
-      if (pIEP == nullptr) {
+      if (p_iep == nullptr) {
         break;  // didn't find the button
       }
 
       // Check that m_aButtonsToHold were being held when the buttons were
       // pressed.
-      bool bAllHeldButtonsOK = true;
-      for (unsigned i = 0; i < Press.buttons_to_hold_.size(); i++) {
-        GameInput gi(controller, Press.buttons_to_hold_[i]);
-        if (!INPUTMAPPER->IsBeingPressed(gi, &pIEP->input_list_)) {
-          bAllHeldButtonsOK = false;
+      bool all_held_buttons_ok = true;
+      for (unsigned i = 0; i < press.buttons_to_hold_.size(); i++) {
+        GameInput gi(controller, press.buttons_to_hold_[i]);
+        if (!INPUTMAPPER->IsBeingPressed(gi, &p_iep->input_list_)) {
+          all_held_buttons_ok = false;
         }
       }
-      for (unsigned i = 0; i < Press.buttons_to_not_hold_.size(); i++) {
-        GameInput gi(controller, Press.buttons_to_not_hold_[i]);
-        if (INPUTMAPPER->IsBeingPressed(gi, &pIEP->input_list_)) {
-          bAllHeldButtonsOK = false;
+      for (unsigned i = 0; i < press.buttons_to_not_hold_.size(); i++) {
+        GameInput gi(controller, press.buttons_to_not_hold_[i]);
+        if (INPUTMAPPER->IsBeingPressed(gi, &p_iep->input_list_)) {
+          all_held_buttons_ok = false;
         }
       }
-      if (!bAllHeldButtonsOK) {
+      if (!all_held_buttons_ok) {
         continue;
       }
-      iMinSearchIndexUsed = std::min(iMinSearchIndexUsed, iQueueSearchIndex);
-      if (b == (int)Press.buttons_to_press_.size() - 1) {
-        bMatched = true;
+      min_search_index_used =
+          std::min(min_search_index_used, queue_search_index);
+      if (b == (int)press.buttons_to_press_.size() - 1) {
+        matched = true;
       }
     }
 
-    if (!bMatched) {
+    if (!matched) {
       /* The press wasn't matched.  If m_bAllowIntermediatePresses is true,
        * skip the last press, and look again. */
-      if (!Press.allow_intermediate_presses_) {
+      if (!press.allow_intermediate_presses_) {
         return false;
       }
-      --iQueueIndex;
+      --queue_index;
       continue;
     }
 
-    if (iSequenceIndex == 0) {
+    if (sequence_index == 0) {
       return true;
     }
 
     /* The press was matched. */
-    iQueueIndex = iMinSearchIndexUsed - 1;
-    --iSequenceIndex;
+    queue_index = min_search_index_used - 1;
+    --sequence_index;
   }
 
   return false;
@@ -178,56 +180,56 @@ bool InputQueueCode::EnteredCode(GameController controller) const {
 }
 
 bool InputQueueCode::ParseCodeString(
-    const std::string& sAlt, std::vector<ButtonPress>& presses) {
-  std::vector<std::string> asPresses;
-  split(sAlt, ",", asPresses, false);
-  for (std::string& sPress : asPresses) {
-    std::vector<std::string> asButtonNames;
-    split(sPress, "-", asButtonNames, false);
+    const std::string& alt, std::vector<ButtonPress>& presses) {
+  std::vector<std::string> as_presses;
+  split(alt, ",", as_presses, false);
+  for (std::string& press : as_presses) {
+    std::vector<std::string> button_names;
+    split(press, "-", button_names, false);
 
-    if (asButtonNames.size() < 1) {
-      if (sAlt != "") {
-        LOG->Trace("Ignoring empty code \"%s\".", sAlt.c_str());
+    if (button_names.size() < 1) {
+      if (alt != "") {
+        LOG->Trace("Ignoring empty code \"%s\".", alt.c_str());
       }
       return false;
     }
 
     presses.push_back(ButtonPress());
-    for (std::string sButtonName : asButtonNames) {
-      bool bHold = false;
-      bool bNotHold = false;
+    for (std::string button_name : button_names) {
+      bool hold = false;
+      bool not_hold = false;
       for (;;) {
-        if (Left(sButtonName, 1) == "+") {
+        if (Left(button_name, 1) == "+") {
           presses.back().input_types_[IET_REPEAT] = true;
-          sButtonName.erase(0, 1);
-        } else if (Left(sButtonName, 1) == "~") {
+          button_name.erase(0, 1);
+        } else if (Left(button_name, 1) == "~") {
           presses.back().input_types_[IET_FIRST_PRESS] = false;
           presses.back().input_types_[IET_RELEASE] = true;
-          sButtonName.erase(0, 1);
-        } else if (Left(sButtonName, 1) == "@") {
-          sButtonName.erase(0, 1);
-          bHold = true;
-        } else if (Left(sButtonName, 1) == "!") {
-          sButtonName.erase(0, 1);
-          bNotHold = true;
+          button_name.erase(0, 1);
+        } else if (Left(button_name, 1) == "@") {
+          button_name.erase(0, 1);
+          hold = true;
+        } else if (Left(button_name, 1) == "!") {
+          button_name.erase(0, 1);
+          not_hold = true;
         } else {
           break;
         }
       }
 
       const GameButton gb =
-          INPUTMAPPER->GetInputScheme()->ButtonNameToIndex(sButtonName);
+          INPUTMAPPER->GetInputScheme()->ButtonNameToIndex(button_name);
       if (gb == GameButton_Invalid) {
         LOG->Trace(
             "The code \"%s\" contains an unrecognized button \"%s\".",
-            sAlt.c_str(), sButtonName.c_str());
+            alt.c_str(), button_name.c_str());
         presses.clear();
         return false;
       }
 
-      if (bHold) {
+      if (hold) {
         presses.back().buttons_to_hold_.push_back(gb);
-      } else if (bNotHold) {
+      } else if (not_hold) {
         presses.back().buttons_to_not_hold_.push_back(gb);
       } else {
         presses.back().buttons_to_press_.push_back(gb);
@@ -237,18 +239,18 @@ bool InputQueueCode::ParseCodeString(
   return true;
 }
 
-bool InputQueueCode::Load(std::string sButtonsNames) {
+bool InputQueueCode::Load(std::string buttons_names) {
   patterns_.clear();
 
-  std::vector<std::string> asAlternatives;
-  split(sButtonsNames, "|", asAlternatives, true);
-  if (asAlternatives.empty()) {
+  std::vector<std::string> alternatives;
+  split(buttons_names, "|", alternatives, true);
+  if (alternatives.empty()) {
     return true;
   }
 
-  for (const auto& sAlt : asAlternatives) {
+  for (const auto& alt : alternatives) {
     std::vector<ButtonPress> presses;
-    if (ParseCodeString(sAlt, presses) && !presses.empty()) {
+    if (ParseCodeString(alt, presses) && !presses.empty()) {
       patterns_.push_back(std::move(presses));
     }
   }

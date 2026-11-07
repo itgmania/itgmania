@@ -16,48 +16,46 @@ class ActorScroller : public ActorFrame {
   ActorScroller();
 
   void SetTransformFromReference(const LuaReference& ref);
-  void SetTransformFromExpression(const std::string& sTransformFunction);
-  void SetTransformFromWidth(float fItemWidth);
-  void SetTransformFromHeight(float fItemHeight);
+  void SetTransformFromExpression(const std::string& transform_function);
+  void SetTransformFromWidth(float item_width);
+  void SetTransformFromHeight(float item_height);
 
   void Load2();
 
-  void EnableMask(float fWidth, float fHeight);
+  void EnableMask(float width, float height);
   void DisableMask();
 
-  virtual void UpdateInternal(float fDelta);
+  virtual void UpdateInternal(float delta);
   virtual void DrawPrimitives();  // handles drawing and doesn't call
                                   // ActorFrame::DrawPrimitives
 
   void PositionItems();
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual ActorScroller* Copy() const;
 
-  void SetLoop(bool bLoop) { loop_ = bLoop; }
-  void SetWrap(bool bWrap) { wrap_ = bWrap; }
-  void SetNumItemsToDraw(float fNumItemsToDraw) {
-    num_items_to_draw_ = fNumItemsToDraw;
+  void SetLoop(bool loop) { loop_ = loop; }
+  void SetWrap(bool wrap) { wrap_ = wrap; }
+  void SetNumItemsToDraw(float num_items_to_draw) {
+    num_items_to_draw_ = num_items_to_draw;
   }
-  void SetDestinationItem(float fItemIndex) { destination_item_ = fItemIndex; }
-  void SetCurrentAndDestinationItem(float fItemIndex) {
-    current_item_ = destination_item_ = fItemIndex;
+  void SetDestinationItem(float item_index) { destination_item_ = item_index; }
+  void SetCurrentAndDestinationItem(float item_index) {
+    current_item_ = destination_item_ = item_index;
   }
   float GetCurrentItem() const { return current_item_; }
   float GetDestinationItem() const { return destination_item_; }
   void ScrollThroughAllItems();
-  void ScrollWithPadding(float fItemPaddingStart, float fItemPaddingEnd);
-  void SetPauseCountdownSeconds(float fSecs) {
-    pause_countdown_seconds_ = fSecs;
-  }
-  void SetFastCatchup(bool bOn) { fast_catchup_ = bOn; }
-  void SetSecondsPerItem(float fSeconds) { seconds_per_item_ = fSeconds; }
-  void SetSecondsPauseBetweenItems(float fSeconds) {
-    seconds_pause_between_items_ = fSeconds;
+  void ScrollWithPadding(float item_padding_start, float item_padding_end);
+  void SetPauseCountdownSeconds(float secs) { pause_countdown_seconds_ = secs; }
+  void SetFastCatchup(bool on) { fast_catchup_ = on; }
+  void SetSecondsPerItem(float seconds) { seconds_per_item_ = seconds; }
+  void SetSecondsPauseBetweenItems(float seconds) {
+    seconds_pause_between_items_ = seconds;
   }
   float GetSecondsPauseBetweenItems() { return seconds_pause_between_items_; }
-  void SetNumSubdivisions(int iNumSubdivisions) {
-    expr_transform_function_.SetNumSubdivisions(iNumSubdivisions);
+  void SetNumSubdivisions(int num_subdivisions) {
+    expr_transform_function_.SetNumSubdivisions(num_subdivisions);
   }
   float GetSecondsForCompleteScrollThrough() const;
   float GetSecondsToDestination() const;
@@ -67,8 +65,8 @@ class ActorScroller : public ActorFrame {
   void PushSelf(lua_State* L);
 
  protected:
-  void PositionItemsAndDrawPrimitives(bool bDrawPrimitives);
-  virtual void ShiftSubActors(int iDist);
+  void PositionItemsAndDrawPrimitives(bool draw_primitives);
+  virtual void ShiftSubActors(int dist);
 
   int num_items_;
   /**

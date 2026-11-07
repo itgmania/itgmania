@@ -51,7 +51,7 @@ struct TimingTagWriter {
   std::vector<std::string>* lines_;
   std::string next_;
 
-  TimingTagWriter(std::vector<std::string>* pvsLines) : lines_(pvsLines) {}
+  TimingTagWriter(std::vector<std::string>* lines) : lines_(lines) {}
 
   void Write(const int row, const char* value) {
     lines_->push_back(next_ + ssprintf("%.6f=%s", NoteRowToBeat(row), value));
@@ -75,7 +75,7 @@ struct TimingTagWriter {
     Write(row, ssprintf("%.6f=%.6f=%hd", a, b, c).c_str());
   }
 
-  void Init(const std::string sTag) { next_ = "#" + sTag + ":"; }
+  void Init(const std::string tag) { next_ = "#" + tag + ":"; }
   void Finish() {
     lines_->push_back((next_ != "," ? next_ : std::string("")) + ";");
   }
@@ -83,7 +83,7 @@ struct TimingTagWriter {
 
 static void GetTimingTags(
     std::vector<std::string>& lines, const TimingData& timing,
-    bool bIsSong = false) {
+    bool is_song = false) {
   TimingTagWriter w(&lines);
 
   // timing.TidyUpData(); // UGLY: done via const_cast. do we really -need- this
@@ -126,12 +126,12 @@ static void GetTimingTags(
   }
   w.Finish();
 
-  const std::vector<TimingSegment*>& tSigs =
+  const std::vector<TimingSegment*>& t_sigs =
       timing.GetTimingSegments(SEGMENT_TIME_SIG);
-  ASSERT(!tSigs.empty());
+  ASSERT(!t_sigs.empty());
   w.Init("TIMESIGNATURES");
-  for (i = 0; i < tSigs.size(); i++) {
-    const TimeSignatureSegment* ts = ToTimeSignature(tSigs[i]);
+  for (i = 0; i < t_sigs.size(); i++) {
+    const TimeSignatureSegment* ts = ToTimeSignature(t_sigs[i]);
     w.Write(ts->GetRow(), ts->GetNum(), ts->GetDen());
   }
   w.Finish();
@@ -179,7 +179,7 @@ static void GetTimingTags(
   }
   w.Finish();
 
-  if (!bIsSong) {
+  if (!is_song) {
     const std::vector<TimingSegment*>& fakes =
         timing.GetTimingSegments(SEGMENT_FAKE);
     w.Init("FAKES");
@@ -203,7 +203,7 @@ static void GetTimingTags(
 }
 
 static void WriteTimingTags(
-    RageFile& f, const TimingData& timing, bool bIsSong = false) {
+    RageFile& f, const TimingData& timing, bool is_song = false) {
   f.PutLine(ssprintf(
       "#BPMS:%s;",
       join(",\r\n", timing.ToVectorString(SEGMENT_BPM, 6)).c_str()));
@@ -415,14 +415,14 @@ static std::string GetSSCNoteData(const Song& song, const Steps& in) {
     lines.push_back(ssprintf("#MUSIC:%s;", SmEscape(music).c_str()));
   }
 
-  std::vector<std::string> asRadarValues;
+  std::vector<std::string> radar_values;
   FOREACH_PlayerNumber(pn) {
     const RadarValues& rv = in.GetRadarValues(pn);
     FOREACH_ENUM(RadarCategory, rc)
-    asRadarValues.push_back(ssprintf("%.6f", rv[rc]));
+    radar_values.push_back(ssprintf("%.6f", rv[rc]));
   }
   lines.push_back(
-      ssprintf("#RADARVALUES:%s;", join(",", asRadarValues).c_str()));
+      ssprintf("#RADARVALUES:%s;", join(",", radar_values).c_str()));
 
   lines.push_back(ssprintf("#CREDIT:%s;", SmEscape(in.GetCredit()).c_str()));
 
@@ -435,9 +435,9 @@ static std::string GetSSCNoteData(const Song& song, const Steps& in) {
   }
 
   // todo: get this to output similar to course mods -aj
-  std::string stepAttacks = in.GetStepsAttackString();
-  if (!stepAttacks.empty()) {
-    lines.push_back(ssprintf("#ATTACKS:%s;", stepAttacks.c_str()));
+  std::string step_attacks = in.GetStepsAttackString();
+  if (!step_attacks.empty()) {
+    lines.push_back(ssprintf("#ATTACKS:%s;", step_attacks.c_str()));
   }
 
   switch (in.GetDisplayBPM()) {
@@ -460,27 +460,27 @@ static std::string GetSSCNoteData(const Song& song, const Steps& in) {
     default:
       break;
   }
-  std::string sNoteData;
-  in.GetSMNoteData(sNoteData);
+  std::string note_data;
+  in.GetSMNoteData(note_data);
 
   lines.push_back(song.keysound_file_.empty() ? "#NOTES:" : "#NOTES2:");
 
-  TrimLeft(sNoteData);
-  split(sNoteData, "\n", lines, true);
+  TrimLeft(note_data);
+  split(note_data, "\n", lines, true);
   lines.push_back(";");
   return JoinLineList(lines);
 }
 
 bool NotesWriterSSC::Write(
-    std::string sPath, const Song& out,
-    const std::vector<Steps*>& vpStepsToSave) {
+    std::string path, const Song& out,
+    const std::vector<Steps*>& steps_to_save) {
   // Enable SLOW_FLUSH to prevent data loss.
   int flags = RageFile::WRITE | RageFile::SLOW_FLUSH;
 
   RageFile f;
-  if (!f.Open(sPath, flags)) {
+  if (!f.Open(path, flags)) {
     LOG->UserLog(
-        "Song file", sPath, "couldn't be opened for writing: %s",
+        "Song file", path, "couldn't be opened for writing: %s",
         f.GetError().c_str());
     return false;
   }
@@ -488,9 +488,9 @@ bool NotesWriterSSC::Write(
   WriteGlobalTags(f, out);
 
   // Save specified Steps to this file
-  for (const Steps* pSteps : vpStepsToSave) {
-    std::string sTag = GetSSCNoteData(out, *pSteps);
-    f.PutLine(sTag);
+  for (const Steps* steps : steps_to_save) {
+    std::string tag = GetSSCNoteData(out, *steps);
+    f.PutLine(tag);
   }
   if (f.Flush() == -1) {
     return false;

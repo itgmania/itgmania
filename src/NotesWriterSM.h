@@ -15,9 +15,9 @@ namespace NotesWriterSM {
  * @param out the Song to be written out.
  * @return its success or failure. */
 bool Write(
-    RageFileBasic& file, Song& out, const std::vector<Steps*>& vpStepsToSave);
+    RageFileBasic& file, Song& out, const std::vector<Steps*>& steps_to_save);
 bool Write(
-    std::string sPath, Song& out, const std::vector<Steps*>& vpStepsToSave);
+    std::string path, Song& out, const std::vector<Steps*>& steps_to_save);
 /**
  * @brief Get some contents about the edit file first.
  * @param pSong the Song in question.
@@ -25,13 +25,13 @@ bool Write(
  * @param sOut the start of the file contents.
  */
 void GetEditFileContents(
-    const Song* pSong, const Steps* pSteps, std::string& sOut);
+    const Song* song, const Steps* steps, std::string& out);
 /**
  * @brief Get the name of the edit file to use.
  * @param pSong the Song in question.
  * @param pSteps the Steps in question.
  * @return the name of the edit file. */
-std::string GetEditFileName(const Song* pSong, const Steps* pSteps);
+std::string GetEditFileName(const Song* song, const Steps* steps);
 /**
  * @brief Write the edit file to the machine for future use.
  * @param pSong the Song in question.
@@ -39,7 +39,7 @@ std::string GetEditFileName(const Song* pSong, const Steps* pSteps);
  * @param sErrorOut any error messages that may have occurred.
  * @return its success or failure. */
 bool WriteEditFileToMachine(
-    const Song* pSong, Steps* pSteps, std::string& sErrorOut);
+    const Song* song, Steps* steps, std::string& error_out);
 }  // namespace NotesWriterSM
 
 #endif

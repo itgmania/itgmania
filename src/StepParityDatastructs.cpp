@@ -36,16 +36,16 @@ void StageLayout::preCalculateStuff() {
     for (int right = 0; right < column_count_; right++) {
       int idx = left * column_count_ + right;
 
-      StagePoint avgPoint = {
+      StagePoint avg_point = {
           (columns_[left].x_ + columns_[right].x_) / 2.0f,
           (columns_[left].y_ + columns_[right].y_) / 2.0f,
       };
-      avg_points_[idx] = avgPoint;
+      avg_points_[idx] = avg_point;
 
       float dx = columns_[left].x_ - columns_[right].x_;
       float dy = columns_[left].y_ - columns_[right].y_;
-      float distSq = (dx * dx) + (dy * dy);
-      float dist = sqrt(distSq);
+      float dist_sq = (dx * dx) + (dy * dy);
+      float dist = sqrt(dist_sq);
       distances_[idx] = dist;
 
       if (dist == 0) {
@@ -96,10 +96,10 @@ void StageLayout::preGeneratePermutations() {
     if (bits > 4) {
       continue;
     }
-    FootPlacement blankColumns(column_count_, Foot_None);
+    FootPlacement blank_columns(column_count_, Foot_None);
 
     std::vector<FootPlacement> placements =
-        PermuteFootPlacements(i, blankColumns, 0);
+        PermuteFootPlacements(i, blank_columns, 0);
     if (placements.size() > 0) {
       permute_cache_[i] = std::move(placements);
     }
@@ -111,26 +111,26 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
   // If column >= columns.size(), we've reached the end of the row.
   // Perform some final validation before returning the contents of test_columns
   if (column >= test_columns.size()) {
-    int leftHeelIndex = StepParity::INVALID_COLUMN;
-    int leftToeIndex = StepParity::INVALID_COLUMN;
-    int rightHeelIndex = StepParity::INVALID_COLUMN;
-    int rightToeIndex = StepParity::INVALID_COLUMN;
+    int left_heel_index = StepParity::INVALID_COLUMN;
+    int left_toe_index = StepParity::INVALID_COLUMN;
+    int right_heel_index = StepParity::INVALID_COLUMN;
+    int right_toe_index = StepParity::INVALID_COLUMN;
 
     for (unsigned long i = 0; i < test_columns.size(); i++) {
       if (test_columns[i] == Foot_None) {
         continue;
       }
       if (test_columns[i] == Foot_LeftHeel) {
-        leftHeelIndex = i;
+        left_heel_index = i;
       }
       if (test_columns[i] == Foot_LeftToe) {
-        leftToeIndex = i;
+        left_toe_index = i;
       }
       if (test_columns[i] == Foot_RightHeel) {
-        rightHeelIndex = i;
+        right_heel_index = i;
       }
       if (test_columns[i] == Foot_RightToe) {
-        rightToeIndex = i;
+        right_toe_index = i;
       }
     }
 
@@ -138,21 +138,21 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
     // - We don't want permutations where the toe is on an arrow, but not the
     // heel
     // - We don't want impossible brackets (eg you can't bracket up and down)
-    if ((leftHeelIndex == StepParity::INVALID_COLUMN &&
-         leftToeIndex != StepParity::INVALID_COLUMN) ||
-        (rightHeelIndex == StepParity::INVALID_COLUMN &&
-         rightToeIndex != StepParity::INVALID_COLUMN)) {
+    if ((left_heel_index == StepParity::INVALID_COLUMN &&
+         left_toe_index != StepParity::INVALID_COLUMN) ||
+        (right_heel_index == StepParity::INVALID_COLUMN &&
+         right_toe_index != StepParity::INVALID_COLUMN)) {
       return std::vector<FootPlacement>();
     }
-    if (leftHeelIndex != StepParity::INVALID_COLUMN &&
-        leftToeIndex != StepParity::INVALID_COLUMN) {
-      if (!bracketCheck(leftHeelIndex, leftToeIndex)) {
+    if (left_heel_index != StepParity::INVALID_COLUMN &&
+        left_toe_index != StepParity::INVALID_COLUMN) {
+      if (!bracketCheck(left_heel_index, left_toe_index)) {
         return std::vector<FootPlacement>();
       }
     }
-    if (rightHeelIndex != StepParity::INVALID_COLUMN &&
-        rightToeIndex != StepParity::INVALID_COLUMN) {
-      if (!bracketCheck(rightHeelIndex, rightToeIndex)) {
+    if (right_heel_index != StepParity::INVALID_COLUMN &&
+        right_toe_index != StepParity::INVALID_COLUMN) {
+      if (!bracketCheck(right_heel_index, right_toe_index)) {
         return std::vector<FootPlacement>();
       }
     }
@@ -179,11 +179,11 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
         continue;
       }
 
-      FootPlacement newColumns = test_columns;
+      FootPlacement new_columns = test_columns;
 
-      newColumns[column] = foot;
+      new_columns[column] = foot;
       std::vector<FootPlacement> p =
-          PermuteFootPlacements(mask, newColumns, column + 1);
+          PermuteFootPlacements(mask, new_columns, column + 1);
       permutations.insert(permutations.end(), p.begin(), p.end());
     }
     return permutations;

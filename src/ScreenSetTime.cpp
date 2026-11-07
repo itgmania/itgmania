@@ -77,23 +77,23 @@ void ScreenSetTime::Init() {
   ChangeSelection(0);
 }
 
-void ScreenSetTime::Update(float fDelta) {
-  Screen::Update(fDelta);
+void ScreenSetTime::Update(float delta) {
+  Screen::Update(delta);
 
-  time_t iNow = time(nullptr);
-  iNow += time_offset_;
+  time_t i_now = time(nullptr);
+  i_now += time_offset_;
 
   tm now;
-  localtime_r(&iNow, &now);
+  localtime_r(&i_now, &now);
 
-  int iPrettyHour = now.tm_hour % 12;
-  if (iPrettyHour == 0) {
-    iPrettyHour = 12;
+  int i_pretty_hour = now.tm_hour % 12;
+  if (i_pretty_hour == 0) {
+    i_pretty_hour = 12;
   }
-  std::string sPrettyHour =
-      ssprintf("%d %s", iPrettyHour, now.tm_hour >= 12 ? "pm" : "am");
+  std::string s_pretty_hour =
+      ssprintf("%d %s", i_pretty_hour, now.tm_hour >= 12 ? "pm" : "am");
 
-  text_value_[hour].SetText(sPrettyHour);
+  text_value_[hour].SetText(s_pretty_hour);
   text_value_[minute].SetText(ssprintf("%02d", now.tm_min));
   text_value_[second].SetText(ssprintf("%02d", now.tm_sec));
   text_value_[year].SetText(ssprintf("%02d", now.tm_year + 1900));
@@ -113,62 +113,62 @@ bool ScreenSetTime::Input(const InputEventPlus& input) {
   return Screen::Input(input);  // default handler
 }
 
-void ScreenSetTime::ChangeValue(int iDirection) {
-  time_t iNow = time(nullptr);
-  time_t iAdjusted = iNow + time_offset_;
+void ScreenSetTime::ChangeValue(int direction) {
+  time_t now = time(nullptr);
+  time_t i_adjusted = now + time_offset_;
 
   tm adjusted;
-  localtime_r(&iAdjusted, &adjusted);
+  localtime_r(&i_adjusted, &adjusted);
 
   // tm now = GetLocalTime();
   switch (selection_) {
     case hour:
-      adjusted.tm_hour += iDirection;
+      adjusted.tm_hour += direction;
       break;
     case minute:
-      adjusted.tm_min += iDirection;
+      adjusted.tm_min += direction;
       break;
     case second:
-      adjusted.tm_sec += iDirection;
+      adjusted.tm_sec += direction;
       break;
     case year:
-      adjusted.tm_year += iDirection;
+      adjusted.tm_year += direction;
       break;
     case month:
-      adjusted.tm_mon += iDirection;
+      adjusted.tm_mon += direction;
       break;
     case day:
-      adjusted.tm_mday += iDirection;
+      adjusted.tm_mday += direction;
       break;
     default:
       FAIL_M(ssprintf("Invalid SetTimeSelection: %i", selection_));
   }
 
   /* Normalize: */
-  iAdjusted = mktime(&adjusted);
+  i_adjusted = mktime(&adjusted);
 
-  time_offset_ = iAdjusted - iNow;
+  time_offset_ = i_adjusted - now;
 
   sound_change_value_.Play(true);
 }
 
-void ScreenSetTime::ChangeSelection(int iDirection) {
+void ScreenSetTime::ChangeSelection(int direction) {
   // set new value of m_Selection
-  SetTimeSelection OldSelection = selection_;
-  enum_add<SetTimeSelection>(selection_, iDirection);
+  SetTimeSelection old_selection = selection_;
+  enum_add<SetTimeSelection>(selection_, direction);
 
   enum_clamp(
       selection_, SetTimeSelection(0),
       SetTimeSelection(NUM_SetTimeSelection - 1));
-  if (iDirection != 0 && selection_ == OldSelection) {
+  if (direction != 0 && selection_ == old_selection) {
     return;  // can't move any more
   }
 
-  text_value_[OldSelection].StopEffect();
+  text_value_[old_selection].StopEffect();
   text_value_[selection_].SetEffectDiffuseShift(
       1.f, RageColor(0.3f, 0.3f, 0.3f, 1), RageColor(1, 1, 1, 1));
 
-  if (iDirection != 0) {
+  if (direction != 0) {
     sound_change_selection_.Play(true);
   }
 }
@@ -194,20 +194,20 @@ bool ScreenSetTime::MenuRight(const InputEventPlus& input) {
 }
 
 bool ScreenSetTime::MenuStart(const InputEventPlus& input) {
-  bool bHoldingLeftAndRight =
+  bool holding_left_and_right =
       INPUTMAPPER->IsBeingPressed(GAME_BUTTON_RIGHT, input.pn_) &&
       INPUTMAPPER->IsBeingPressed(GAME_BUTTON_LEFT, input.pn_);
 
-  if (bHoldingLeftAndRight) {
+  if (holding_left_and_right) {
     ChangeSelection(-1);
   } else if (selection_ == NUM_SetTimeSelection - 1)  // last row
   {
     /* Save the new time. */
-    time_t iNow = time(nullptr);
-    time_t iAdjusted = iNow + time_offset_;
+    time_t now = time(nullptr);
+    time_t i_adjusted = now + time_offset_;
 
     tm adjusted;
-    localtime_r(&iAdjusted, &adjusted);
+    localtime_r(&i_adjusted, &adjusted);
 
     HOOKS->SetTime(adjusted);
 

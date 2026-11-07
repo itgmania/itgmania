@@ -44,21 +44,21 @@ void RageSoundDriver_DSound_Software::MixerThread() {
   pcm_->Play();
 
   while (!shutdown_mixer_thread_) {
-    char* pLockedBuf;
-    unsigned iLen;
-    const int64_t iPlayPos =
+    char* locked_buf;
+    unsigned len;
+    const int64_t play_pos =
         pcm_->GetOutputPosition(); /* must be called before get_output_buf */
 
-    if (!pcm_->get_output_buf(&pLockedBuf, &iLen, chunksize())) {
+    if (!pcm_->get_output_buf(&locked_buf, &len, chunksize())) {
       Sleep(chunksize() * 1000 / sample_rate_);
       continue;
     }
 
     this->Mix(
-        (int16_t*)pLockedBuf, iLen / bytes_per_frame, iPlayPos,
+        (int16_t*)locked_buf, len / bytes_per_frame, play_pos,
         pcm_->GetPosition());
 
-    pcm_->release_output_buf(pLockedBuf, iLen);
+    pcm_->release_output_buf(locked_buf, len);
   }
 
   /* I'm not sure why, but if we don't stop the stream now, then the thread will
@@ -79,9 +79,9 @@ RageSoundDriver_DSound_Software::RageSoundDriver_DSound_Software()
     : pcm_(nullptr), sample_rate_(0), shutdown_mixer_thread_(false) {}
 
 std::string RageSoundDriver_DSound_Software::Init() {
-  std::string sError = ds_.Init();
-  if (sError != "") {
-    return sError;
+  std::string error = ds_.Init();
+  if (error != "") {
+    return error;
   }
 
   /* If we're emulated, we're better off with the WaveOut driver; DS
@@ -101,13 +101,13 @@ std::string RageSoundDriver_DSound_Software::Init() {
   if (sample_rate_ == 0) {
     sample_rate_ = FALLBACK_SAMPLE_RATE;
   }
-  // This sample_rate_ (driver's) is then passed as the iSampleRate parameter
+  // This sample_rate_ (driver's) is then passed as the sample_rate parameter
   // to DSoundBuf::Init()
-  sError = pcm_->Init(
+  error = pcm_->Init(
       ds_, DSoundBuf::HW_DONT_CARE, channels, sample_rate_, 16,
       g_iMaxWriteahead);
-  if (sError != "") {
-    return sError;
+  if (error != "") {
+    return error;
   }
 
   LOG->Info("Software mixing at %i hz", sample_rate_);

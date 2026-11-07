@@ -144,8 +144,8 @@ class RageSoundReader_Silence : public RageSoundReader {
  public:
   int GetLength() const { return 0; }
   int GetLength_Fast() const { return 0; }
-  int SetPosition(int iFrame) { return 1; }
-  int Read(float* pBuf, int iFrames) { return RageSoundReader::END_OF_FILE; }
+  int SetPosition(int frame) { return 1; }
+  int Read(float* buf, int frames) { return RageSoundReader::END_OF_FILE; }
   RageSoundReader* Copy() const { return new RageSoundReader_Silence; }
   int GetSampleRate() const { return FALLBACK_SAMPLE_RATE; }
   unsigned GetNumChannels() const { return 1; }
@@ -154,127 +154,127 @@ class RageSoundReader_Silence : public RageSoundReader {
   std::string GetError() const { return ""; }
 };
 
-bool RageSound::Load(std::string sSoundFilePath) {
+bool RageSound::Load(std::string sound_file_path) {
   /* Automatically determine whether to precache */
   /* TODO: Hook this up to a pref? */
-  return Load(sSoundFilePath, false);
+  return Load(sound_file_path, false);
 }
 
 bool RageSound::Load(
-    std::string sSoundFilePath, bool bPrecache,
-    const RageSoundLoadParams* pParams) {
+    std::string sound_file_path, bool precache,
+    const RageSoundLoadParams* params) {
   LOG->Trace(
-      "RageSound: Load \"%s\" (precache: %i)", sSoundFilePath.c_str(),
-      bPrecache);
+      "RageSound: Load \"%s\" (precache: %i)", sound_file_path.c_str(),
+      precache);
 
-  if (pParams == nullptr) {
-    static const RageSoundLoadParams Defaults;
-    pParams = &Defaults;
+  if (params == nullptr) {
+    static const RageSoundLoadParams kDefaults;
+    params = &kDefaults;
   }
 
   /* If this sound is already preloaded and held by SOUNDMAN, just make a copy
    * of that.  Since RageSoundReader_Preload is refcounted, this is cheap. */
-  RageSoundReader* pSound = SOUNDMAN->GetLoadedSound(sSoundFilePath);
-  bool bNeedBuffer = true;
-  if (pSound == nullptr) {
+  RageSoundReader* sound = SOUNDMAN->GetLoadedSound(sound_file_path);
+  bool need_buffer = true;
+  if (sound == nullptr) {
     std::string error;
-    bool bPrebuffer;
-    pSound = RageSoundReader_FileReader::OpenFile(
-        sSoundFilePath, error, &bPrebuffer);
-    if (pSound == nullptr) {
+    bool prebuffer;
+    sound = RageSoundReader_FileReader::OpenFile(
+        sound_file_path, error, &prebuffer);
+    if (sound == nullptr) {
       LOG->Warn(
           "RageSound::Load: error opening sound \"%s\": %s",
-          sSoundFilePath.c_str(), error.c_str());
+          sound_file_path.c_str(), error.c_str());
 
-      pSound = new RageSoundReader_Silence;
+      sound = new RageSoundReader_Silence;
     }
 
     /* If the sound is prebuffered into memory, we don't need to buffer reads.
      */
-    if (bPrebuffer) {
-      bNeedBuffer = false;
+    if (prebuffer) {
+      need_buffer = false;
     }
   } else {
     /* The sound we were given from SOUNDMAN is already preloaded. */
-    bPrecache = false;
-    bNeedBuffer = false;
+    precache = false;
+    need_buffer = false;
   }
 
-  LoadSoundReader(pSound);
+  LoadSoundReader(sound);
 
   /* Try to precache.  Do this after calling LoadSoundReader() to put the
    * sound in this->m_pSource, so we preload after resampling. */
-  if (bPrecache) {
+  if (precache) {
     if (RageSoundReader_Preload::PreloadSound(source_)) {
       /* We've preloaded the sound.  Pass it to SOUNDMAN, for reuse. */
       SOUNDMAN->AddLoadedSound(
-          sSoundFilePath, (RageSoundReader_Preload*)source_);
+          sound_file_path, (RageSoundReader_Preload*)source_);
     }
-    bNeedBuffer = false;
+    need_buffer = false;
   }
 
   source_ = new RageSoundReader_Extend(source_);
-  if (bNeedBuffer) {
+  if (need_buffer) {
     source_ = new RageSoundReader_ThreadedBuffer(source_);
   }
   source_ = new RageSoundReader_PostBuffering(source_);
 
-  if (pParams->support_rate_changing_) {
-    RageSoundReader_PitchChange* pRate =
+  if (params->support_rate_changing_) {
+    RageSoundReader_PitchChange* rate =
         new RageSoundReader_PitchChange(source_);
-    source_ = pRate;
+    source_ = rate;
   }
 
-  if (pParams->support_pan_) {
+  if (params->support_pan_) {
     source_ = new RageSoundReader_Pan(source_);
   }
 
-  file_path_ = sSoundFilePath;
+  file_path_ = sound_file_path;
 
-  mutex_.SetName(ssprintf("RageSound (%s)", Basename(sSoundFilePath).c_str()));
+  mutex_.SetName(ssprintf("RageSound (%s)", Basename(sound_file_path).c_str()));
 
   return true;
 }
 
-void RageSound::LoadSoundReader(RageSoundReader* pSound) {
+void RageSound::LoadSoundReader(RageSoundReader* sound) {
   Unload();
 
   stopped_source_frame_ = 0;
 
-  const int iNeededRate = SOUNDMAN->GetDriverSampleRate();
-  bool bSupportRateChange = false;
-  if (iNeededRate != pSound->GetSampleRate() || bSupportRateChange) {
-    RageSoundReader_Resample_Good* Resample =
-        new RageSoundReader_Resample_Good(pSound, iNeededRate);
-    pSound = Resample;
+  const int needed_rate = SOUNDMAN->GetDriverSampleRate();
+  bool support_rate_change = false;
+  if (needed_rate != sound->GetSampleRate() || support_rate_change) {
+    RageSoundReader_Resample_Good* resample =
+        new RageSoundReader_Resample_Good(sound, needed_rate);
+    sound = resample;
   }
 
-  source_ = pSound;
+  source_ = sound;
 }
 
 namespace {
 void AppendMixPosition(
-    RageSoundMixPosition* pPositions, int iMaxPositions, int& iPositionCount,
-    int64_t iSourceFrame, int iGotFrames, float fRate) {
-  if (iPositionCount > 0) {
-    RageSoundMixPosition& previous = pPositions[iPositionCount - 1];
-    const int64_t iExpectedSourceFrame =
+    RageSoundMixPosition* positions, int max_positions, int& position_count,
+    int64_t source_frame, int got_frames, float rate) {
+  if (position_count > 0) {
+    RageSoundMixPosition& previous = positions[position_count - 1];
+    const int64_t expected_source_frame =
         previous.source_frame_ +
         static_cast<int64_t>(std::llround(
             previous.frames_ *
             static_cast<double>(previous.source_to_stream_ratio_)));
-    if (previous.source_to_stream_ratio_ == fRate &&
-        iExpectedSourceFrame == iSourceFrame) {
-      previous.frames_ += iGotFrames;
+    if (previous.source_to_stream_ratio_ == rate &&
+        expected_source_frame == source_frame) {
+      previous.frames_ += got_frames;
       return;
     }
   }
 
-  ASSERT_M(iPositionCount < iMaxPositions, ssprintf("%d", iMaxPositions));
-  RageSoundMixPosition& position = pPositions[iPositionCount++];
-  position.source_frame_ = iSourceFrame;
-  position.frames_ = iGotFrames;
-  position.source_to_stream_ratio_ = fRate;
+  ASSERT_M(position_count < max_positions, ssprintf("%d", max_positions));
+  RageSoundMixPosition& position = positions[position_count++];
+  position.source_frame_ = source_frame;
+  position.frames_ = got_frames;
+  position.source_to_stream_ratio_ = rate;
 }
 }  // namespace
 
@@ -293,26 +293,26 @@ void AppendMixPosition(
  * the requested number of frames will always be returned.
  */
 int RageSound::GetDataToPlay(
-    float* pBuffer, int iFrames, RageSoundMixPosition* pPositions,
-    int iMaxPositions, int& iPositionCount, int& iFramesStored) {
+    float* buffer, int frames, RageSoundMixPosition* positions,
+    int max_positions, int& position_count, int& frames_stored) {
   ASSERT_M(playing_, ssprintf("%p", static_cast<void*>(this)));
   ASSERT(source_ != nullptr);
-  ASSERT(pPositions != nullptr);
-  ASSERT(iMaxPositions > 0);
+  ASSERT(positions != nullptr);
+  ASSERT(max_positions > 0);
 
-  iFramesStored = 0;
-  iPositionCount = 0;
+  frames_stored = 0;
+  position_count = 0;
 
-  while (iFrames > 0) {
-    float fRate = 1.0f;
-    int iSourceFrame = 0;
+  while (frames > 0) {
+    float rate = 1.0f;
+    int source_frame = 0;
 
     /* Read data from our source. */
-    int iGotFrames = source_->RetriedRead(
-        pBuffer + (iFramesStored * source_->GetNumChannels()), iFrames,
-        &iSourceFrame, &fRate);
+    int got_frames = source_->RetriedRead(
+        buffer + (frames_stored * source_->GetNumChannels()), frames,
+        &source_frame, &rate);
 
-    if (iGotFrames == RageSoundReader::ERROR) {
+    if (got_frames == RageSoundReader::ERROR) {
       error_ = source_->GetError();
       // This error probably indicates an I/O error, rather than a decoding
       // error.
@@ -321,25 +321,25 @@ int RageSound::GetDataToPlay(
           error_.c_str());
     }
 
-    if (iGotFrames < 0) {
-      if (!iFramesStored) {
-        return iGotFrames;
+    if (got_frames < 0) {
+      if (!frames_stored) {
+        return got_frames;
       } else {
         break;
       }
     }
 
     AppendMixPosition(
-        pPositions, iMaxPositions, iPositionCount, iSourceFrame, iGotFrames,
-        fRate);
-    iFramesStored += iGotFrames;
-    iFrames -= iGotFrames;
+        positions, max_positions, position_count, source_frame, got_frames,
+        rate);
+    frames_stored += got_frames;
+    frames -= got_frames;
   }
   if (source_->GetNumChannels() == 1) {
-    RageSoundUtil::ConvertMonoToStereoInPlace(pBuffer, iFramesStored);
+    RageSoundUtil::ConvertMonoToStereoInPlace(buffer, frames_stored);
   }
 
-  return iFramesStored;
+  return frames_stored;
 }
 
 /* Start playing from the current position. */
@@ -388,14 +388,14 @@ void RageSound::StopPlaying() {
 }
 
 /* This is called by sound drivers when we're done playing. */
-void RageSound::SoundIsFinishedPlaying(int iSourceFrame) {
+void RageSound::SoundIsFinishedPlaying(int source_frame) {
   if (!playing_) {
     return;
   }
 
   // Make the decision to delete while inside the lock.
   // Do the actual deletion after releasing the mutex.
-  bool bDeleteThis = false;
+  bool delete_this = false;
   {
     // Global sound mutex
     LockMut(mutex_);
@@ -404,23 +404,23 @@ void RageSound::SoundIsFinishedPlaying(int iSourceFrame) {
     // one; otherwise keep the previous stopped position.
     if (delete_when_finished_) {
       delete_when_finished_ = false;
-      bDeleteThis = true;
+      delete_this = true;
     } else {
-      if (iSourceFrame >= 0) {
-        stopped_source_frame_ = iSourceFrame;
+      if (source_frame >= 0) {
+        stopped_source_frame_ = source_frame;
       }
 
       playing_ = false;
     }
   }
 
-  if (bDeleteThis) {
+  if (delete_this) {
     delete this;
     return;
   }
 }
 
-void RageSound::Play(bool is_action, const RageSoundParams* pParams) {
+void RageSound::Play(bool is_action, const RageSoundParams* params) {
   if (source_ == nullptr) {
     LOG->Warn("RageSound::Play: sound not loaded");
     return;
@@ -430,40 +430,40 @@ void RageSound::Play(bool is_action, const RageSoundParams* pParams) {
   }
 
   if (IsPlaying()) {
-    PlayCopy(is_action, pParams);
+    PlayCopy(is_action, params);
     return;
   }
 
-  if (pParams) {
-    SetParams(*pParams);
+  if (params) {
+    SetParams(*params);
   }
 
   StartPlaying();
 }
 
-void RageSound::PlayCopy(bool is_action, const RageSoundParams* pParams) const {
+void RageSound::PlayCopy(bool is_action, const RageSoundParams* params) const {
   if (is_action && PREFSMAN->mute_actions_) {
     return;
   }
-  RageSound* pSound = new RageSound(*this);
+  RageSound* sound = new RageSound(*this);
 
-  if (pParams) {
-    pSound->SetParams(*pParams);
+  if (params) {
+    sound->SetParams(*params);
   }
 
-  pSound->StartPlaying();
-  pSound->DeleteSelfWhenFinishedPlaying();
+  sound->StartPlaying();
+  sound->DeleteSelfWhenFinishedPlaying();
 }
 
 void RageSound::Stop() { StopPlaying(); }
 
-bool RageSound::Pause(bool bPause) {
+bool RageSound::Pause(bool pause) {
   if (source_ == nullptr) {
     LOG->Warn("RageSound::Pause: sound not loaded");
     return false;
   }
 
-  return SOUNDMAN->Pause(this, bPause);
+  return SOUNDMAN->Pause(this, pause);
 }
 
 float RageSound::GetLengthSeconds() {
@@ -472,16 +472,16 @@ float RageSound::GetLengthSeconds() {
     return -1;
   }
 
-  int iLength = source_->GetLength();
+  int length = source_->GetLength();
 
-  if (iLength < 0) {
+  if (length < 0) {
     LOG->Warn(
         "GetLengthSeconds failed on %s: %s", GetLoadedFilePath().c_str(),
         source_->GetError().c_str());
     return -1;
   }
 
-  return iLength / 1000.f;  // ms -> secs
+  return length / 1000.f;  // ms -> secs
 }
 
 /* If non-nullptr, approximate is set to true if the returned time is
@@ -493,48 +493,48 @@ float RageSound::GetLengthSeconds() {
  * grabbing the timestamp (to lock SOUNDMAN); we might lose the scheduler after
  * grabbing it, when releasing SOUNDMAN.
  */
-float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const {
+float RageSound::GetPositionSeconds(RageTimer* timestamp) const {
   // cast the sample rate to be used for the remainder of the function.
-  float fSampleRate = static_cast<float>(source_->GetSampleRate());
+  float sample_rate = static_cast<float>(source_->GetSampleRate());
 
   // Quick check without lock
   if (!IsPlaying()) {
-    return static_cast<float>(stopped_source_frame_) / fSampleRate;
+    return static_cast<float>(stopped_source_frame_) / sample_rate;
   }
 
-  int iSourceFrame = 0;
-  if (!SOUNDMAN->GetPlayingPosition(this, iSourceFrame, pTimestamp)) {
-    return static_cast<float>(stopped_source_frame_) / fSampleRate;
+  int source_frame = 0;
+  if (!SOUNDMAN->GetPlayingPosition(this, source_frame, timestamp)) {
+    return static_cast<float>(stopped_source_frame_) / sample_rate;
   }
 
-  return static_cast<float>(iSourceFrame) / fSampleRate;
+  return static_cast<float>(source_frame) / sample_rate;
 }
 
-bool RageSound::SetPositionFrames(int iFrames) {
+bool RageSound::SetPositionFrames(int frames) {
   LockMut(mutex_);
 
   if (source_ == nullptr) {
-    LOG->Warn("RageSound::SetPositionFrames(%d): sound not loaded", iFrames);
+    LOG->Warn("RageSound::SetPositionFrames(%d): sound not loaded", frames);
     return false;
   }
 
-  int iRet = source_->SetPosition(iFrames);
-  std::string filePath = GetLoadedFilePath();
-  if (iRet == -1) {
+  int ret = source_->SetPosition(frames);
+  std::string file_path = GetLoadedFilePath();
+  if (ret == -1) {
     error_ = source_->GetError();
     LOG->Warn(
-        "SetPositionFrames: seek %s failed: %s", filePath.c_str(),
+        "SetPositionFrames: seek %s failed: %s", file_path.c_str(),
         error_.c_str());
-  } else if (iRet == 0) {
+  } else if (ret == 0) {
     /* Seeked past EOF. */
     LOG->Warn(
-        "SetPositionFrames: %i samples is beyond EOF in %s", iFrames,
-        filePath.c_str());
+        "SetPositionFrames: %i samples is beyond EOF in %s", frames,
+        file_path.c_str());
   } else {
-    stopped_source_frame_ = iFrames;
+    stopped_source_frame_ = frames;
   }
 
-  return iRet == 1;
+  return ret == 1;
 }
 
 float RageSound::GetPlaybackRate() const { return param_.speed_; }
@@ -558,11 +558,11 @@ void RageSound::ApplyParams() {
   source_->SetProperty("FadeInSeconds", param_.fade_in_seconds_);
   source_->SetProperty("FadeSeconds", param_.fade_out_seconds_);
 
-  float fVolume = param_.volume_;
+  float volume = param_.volume_;
   if (!param_.is_critical_sound_) {
-    fVolume *= param_.attract_volume_;
+    volume *= param_.attract_volume_;
   }
-  source_->SetProperty("Volume", fVolume);
+  source_->SetProperty("Volume", volume);
 
   switch (GetStopMode()) {
     case RageSoundParams::M_LOOP:
@@ -579,8 +579,8 @@ void RageSound::ApplyParams() {
   }
 }
 
-bool RageSound::SetProperty(const std::string& sProperty, float fValue) {
-  return source_->SetProperty(sProperty, fValue);
+bool RageSound::SetProperty(const std::string& property, float value) {
+  return source_->SetProperty(property, value);
 }
 
 RageSoundParams::StopMode_t RageSound::GetStopMode() const {
@@ -595,18 +595,18 @@ RageSoundParams::StopMode_t RageSound::GetStopMode() const {
   }
 }
 
-void RageSound::SetStopModeFromString(const std::string& sStopMode) {
-  if (sStopMode.find("stop") != std::string::npos) {
+void RageSound::SetStopModeFromString(const std::string& stop_mode) {
+  if (stop_mode.find("stop") != std::string::npos) {
     param_.stop_mode_ = RageSoundParams::M_STOP;
-  } else if (sStopMode.find("loop") != std::string::npos) {
+  } else if (stop_mode.find("loop") != std::string::npos) {
     param_.stop_mode_ = RageSoundParams::M_LOOP;
-  } else if (sStopMode.find("continue") != std::string::npos) {
+  } else if (stop_mode.find("continue") != std::string::npos) {
     param_.stop_mode_ = RageSoundParams::M_CONTINUE;
-  } else if (sStopMode.find("auto") != std::string::npos) {
+  } else if (stop_mode.find("auto") != std::string::npos) {
     param_.stop_mode_ = RageSoundParams::M_AUTO;
   } else {
     LOG->Warn(
-        "Invalid stop mode \"%s\" for sound \"%s\"", sStopMode.c_str(),
+        "Invalid stop mode \"%s\" for sound \"%s\"", stop_mode.c_str(),
         file_path_.c_str());
   }
 }

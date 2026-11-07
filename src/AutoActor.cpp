@@ -34,14 +34,14 @@ AutoActor& AutoActor::operator=(const AutoActor& cpy) {
   return *this;
 }
 
-void AutoActor::Load(Actor* pActor) {
+void AutoActor::Load(Actor* actor) {
   Unload();
-  actor_ = pActor;
+  actor_ = actor;
 }
 
-void AutoActor::Load(const std::string& sPath) {
+void AutoActor::Load(const std::string& path) {
   Unload();
-  actor_ = ActorUtil::MakeActor(sPath);
+  actor_ = ActorUtil::MakeActor(path);
 
   // If a Condition is false, MakeActor will return nullptr.
   if (actor_ == nullptr) {
@@ -50,19 +50,19 @@ void AutoActor::Load(const std::string& sPath) {
 }
 
 void AutoActor::LoadB(
-    const std::string& sMetricsGroup, const std::string& sElement) {
+    const std::string& metrics_group, const std::string& element) {
   ThemeManager::PathInfo pi;
-  bool b = THEME->GetPathInfo(pi, EC_BGANIMATIONS, sMetricsGroup, sElement);
+  bool b = THEME->GetPathInfo(pi, EC_BGANIMATIONS, metrics_group, element);
   ASSERT(b);
   LuaThreadVariable var1("MatchingMetricsGroup", pi.matching_metrics_group_);
   LuaThreadVariable var2("MatchingElement", pi.matching_element_);
   Load(pi.resolved_path_);
 }
 
-void AutoActor::LoadActorFromNode(const XNode* pNode, Actor* pParent) {
+void AutoActor::LoadActorFromNode(const XNode* node, Actor* parent) {
   Unload();
 
-  actor_ = ActorUtil::LoadFromNode(pNode, pParent);
+  actor_ = ActorUtil::LoadFromNode(node, parent);
 }
 
 /*

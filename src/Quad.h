@@ -13,7 +13,7 @@ class Quad : public Sprite {
    * @brief Load the quad from the specified node.
    * @param pNode the node to load the quad from.
    */
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   /** @brief Copy the quad. */
   virtual Quad* Copy() const;
 };

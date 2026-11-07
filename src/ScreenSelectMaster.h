@@ -47,7 +47,7 @@ class ScreenSelectMaster : public ScreenSelect {
   virtual void TweenOnScreen();
   virtual void TweenOffScreen();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual void HandleMessage(const Message& msg);
   virtual bool AllowLateJoin() const { return true; }
 
@@ -64,7 +64,7 @@ class ScreenSelectMaster : public ScreenSelect {
     NUM_Page
   };  // on PAGE_2, cursors are locked together
   static PlayerNumber GetSharedPlayer();
-  Page GetPage(int iChoiceIndex) const;
+  Page GetPage(int choice_index) const;
   Page GetCurrentPage() const;
 
   ThemeMetric<bool> DO_SWITCH_ANYWAYS;
@@ -100,8 +100,8 @@ class ScreenSelectMaster : public ScreenSelect {
   bool AnyOptionsArePlayable() const;
 
   bool Move(PlayerNumber pn, MenuDir dir);
-  bool ChangePage(int iNewChoice);
-  bool ChangeSelection(PlayerNumber pn, MenuDir dir, int iNewChoice);
+  bool ChangePage(int new_choice);
+  bool ChangeSelection(PlayerNumber pn, MenuDir dir, int new_choice);
   float DoMenuStart(PlayerNumber pn);
   virtual bool ProcessMenuStart(PlayerNumber pn) { return true; }
 

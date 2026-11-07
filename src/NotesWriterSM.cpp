@@ -56,9 +56,9 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
       ssprintf("#OFFSET:%.6f;", out.song_timing_.beat0_offset_in_seconds_));
   f.PutLine(ssprintf("#SAMPLESTART:%.6f;", out.music_sample_start_seconds_));
   f.PutLine(ssprintf("#SAMPLELENGTH:%.6f;", out.music_sample_length_seconds_));
-  float specBeat = out.GetSpecifiedLastBeat();
-  if (specBeat > 0) {
-    f.PutLine(ssprintf("#LASTBEATHINT:%.6f;", specBeat));
+  float spec_beat = out.GetSpecifiedLastBeat();
+  if (spec_beat > 0) {
+    f.PutLine(ssprintf("#LASTBEATHINT:%.6f;", spec_beat));
   }
 
   f.Write("#SELECTABLE:");
@@ -113,17 +113,17 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
   const std::vector<TimingSegment*>& delays =
       timing.GetTimingSegments(SEGMENT_DELAY);
 
-  std::map<float, float> allPauses;
+  std::map<float, float> all_pauses;
   const std::vector<TimingSegment*>& warps =
       timing.GetTimingSegments(SEGMENT_WARP);
-  unsigned wSize = warps.size();
-  if (wSize > 0) {
-    for (unsigned i = 0; i < wSize; i++) {
+  unsigned size = warps.size();
+  if (size > 0) {
+    for (unsigned i = 0; i < size; i++) {
       const WarpSegment* ws = static_cast<WarpSegment*>(warps[i]);
-      int iRow = ws->GetRow();
-      float fBPS = 60 / out.song_timing_.GetBPMAtRow(iRow);
-      float fSkip = fBPS * ws->GetLength();
-      allPauses.insert(std::pair<float, float>(ws->GetBeat(), -fSkip));
+      int row = ws->GetRow();
+      float bps = 60 / out.song_timing_.GetBPMAtRow(row);
+      float skip = bps * ws->GetLength();
+      all_pauses.insert(std::pair<float, float>(ws->GetBeat(), -skip));
     }
   }
 
@@ -132,31 +132,31 @@ static void WriteGlobalTags(RageFileBasic& f, Song& out) {
     // Handle warps on the same row by summing the values.  Not sure this
     // plays out the same. -Kyz
     std::map<float, float>::iterator already_exists =
-        allPauses.find(fs->GetBeat());
-    if (already_exists != allPauses.end()) {
+        all_pauses.find(fs->GetBeat());
+    if (already_exists != all_pauses.end()) {
       already_exists->second += fs->GetPause();
     } else {
-      allPauses.insert(std::pair<float, float>(fs->GetBeat(), fs->GetPause()));
+      all_pauses.insert(std::pair<float, float>(fs->GetBeat(), fs->GetPause()));
     }
   }
   // Delays can't be negative: thus, no effect.
   for (const TimingSegment* ss : delays) {
-    float fBeat = NoteRowToBeat(ss->GetRow() - 1);
-    float fPause = ToDelay(ss)->GetPause();
-    std::map<float, float>::iterator already_exists = allPauses.find(fBeat);
-    if (already_exists != allPauses.end()) {
-      already_exists->second += fPause;
+    float beat = NoteRowToBeat(ss->GetRow() - 1);
+    float pause = ToDelay(ss)->GetPause();
+    std::map<float, float>::iterator already_exists = all_pauses.find(beat);
+    if (already_exists != all_pauses.end()) {
+      already_exists->second += pause;
     } else {
-      allPauses.insert(std::pair<float, float>(fBeat, fPause));
+      all_pauses.insert(std::pair<float, float>(beat, pause));
     }
   }
 
   f.Write("#STOPS:");
-  std::vector<std::string> stopLines;
-  for (std::pair<const float&, const float&> ap : allPauses) {
-    stopLines.push_back(ssprintf("%.6f=%.6f", ap.first, ap.second));
+  std::vector<std::string> stop_lines;
+  for (std::pair<const float&, const float&> ap : all_pauses) {
+    stop_lines.push_back(ssprintf("%.6f=%.6f", ap.first, ap.second));
   }
-  f.PutLine(join(",\n", stopLines));
+  f.PutLine(join(",\n", stop_lines));
 
   f.PutLine(";");
 
@@ -246,7 +246,7 @@ static std::string GetSMNotesTag(const Song& song, const Steps& in) {
       ssprintf("     %s:", DifficultyToString(in.GetDifficulty()).c_str()));
   lines.push_back(ssprintf("     %d:", in.GetMeter()));
 
-  std::vector<std::string> asRadarValues;
+  std::vector<std::string> radar_values;
   // OpenITG simfiles use 11 radar categories.
   int categories = 11;
   FOREACH_PlayerNumber(pn) {
@@ -254,44 +254,44 @@ static std::string GetSMNotesTag(const Song& song, const Steps& in) {
     // Can't use the foreach anymore due to flexible radar lines.
     for (RadarCategory rc = (RadarCategory)0; rc < categories;
          enum_add<RadarCategory>(rc, 1)) {
-      asRadarValues.push_back(ssprintf("%.6f", rv[rc]));
+      radar_values.push_back(ssprintf("%.6f", rv[rc]));
     }
   }
-  lines.push_back(ssprintf("     %s:", join(",", asRadarValues).c_str()));
+  lines.push_back(ssprintf("     %s:", join(",", radar_values).c_str()));
 
-  std::string sNoteData;
-  in.GetSMNoteData(sNoteData);
+  std::string note_data;
+  in.GetSMNoteData(note_data);
 
-  split(sNoteData, "\n", lines, true);
+  split(note_data, "\n", lines, true);
   lines.push_back(";");
 
   return JoinLineList(lines);
 }
 
 bool NotesWriterSM::Write(
-    std::string sPath, Song& out, const std::vector<Steps*>& vpStepsToSave) {
+    std::string path, Song& out, const std::vector<Steps*>& steps_to_save) {
   int flags = RageFile::WRITE;
 
   flags |= RageFile::SLOW_FLUSH;
 
   RageFile f;
-  if (!f.Open(sPath, flags)) {
+  if (!f.Open(path, flags)) {
     LOG->UserLog(
-        "Song file", sPath, "couldn't be opened for writing: %s",
+        "Song file", path, "couldn't be opened for writing: %s",
         f.GetError().c_str());
     return false;
   }
 
-  return Write(f, out, vpStepsToSave);
+  return Write(f, out, steps_to_save);
 }
 
 bool NotesWriterSM::Write(
-    RageFileBasic& f, Song& out, const std::vector<Steps*>& vpStepsToSave) {
+    RageFileBasic& f, Song& out, const std::vector<Steps*>& steps_to_save) {
   WriteGlobalTags(f, out);
 
-  for (const Steps* pSteps : vpStepsToSave) {
-    std::string sTag = GetSMNotesTag(out, *pSteps);
-    f.PutLine(sTag);
+  for (const Steps* steps : steps_to_save) {
+    std::string tag = GetSMNotesTag(out, *steps);
+    f.PutLine(tag);
   }
   if (f.Flush() == -1) {
     return false;
@@ -301,37 +301,37 @@ bool NotesWriterSM::Write(
 }
 
 void NotesWriterSM::GetEditFileContents(
-    const Song* pSong, const Steps* pSteps, std::string& sOut) {
-  sOut = "";
-  std::string sDir = pSong->GetSongDir();
+    const Song* song, const Steps* steps, std::string& out) {
+  out = "";
+  std::string dir = song->GetSongDir();
 
   // "Songs/foo/bar"; strip off "Songs/".
-  std::vector<std::string> asParts;
-  split(sDir, "/", asParts);
-  if (asParts.size()) {
-    sDir = join("/", asParts.begin() + 1, asParts.end());
+  std::vector<std::string> parts;
+  split(dir, "/", parts);
+  if (parts.size()) {
+    dir = join("/", parts.begin() + 1, parts.end());
   }
-  sOut += ssprintf("#SONG:%s;\r\n", sDir.c_str());
-  sOut += GetSMNotesTag(*pSong, *pSteps);
+  out += ssprintf("#SONG:%s;\r\n", dir.c_str());
+  out += GetSMNotesTag(*song, *steps);
 }
 
 std::string NotesWriterSM::GetEditFileName(
-    const Song* pSong, const Steps* pSteps) {
+    const Song* song, const Steps* steps) {
   /* Try to make a unique name. This isn't guaranteed. Edit descriptions are
    * case-sensitive, filenames on disk are usually not, and we decimate certain
    * characters for FAT filesystems. */
-  std::string sFile =
-      pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
+  std::string file =
+      song->GetTranslitFullTitle() + " - " + steps->GetDescription();
 
   // HACK:
-  if (pSteps->steps_type_ == StepsType_dance_double) {
-    sFile += " (doubles)";
+  if (steps->steps_type_ == StepsType_dance_double) {
+    file += " (doubles)";
   }
 
-  sFile += ".edit";
+  file += ".edit";
 
-  MakeValidFilename(sFile);
-  return sFile;
+  MakeValidFilename(file);
+  return file;
 }
 
 static LocalizedString DESTINATION_ALREADY_EXISTS(
@@ -340,32 +340,32 @@ static LocalizedString DESTINATION_ALREADY_EXISTS(
 static LocalizedString ERROR_WRITING_FILE(
     "NotesWriterSM", "Error writing file '%s'.");
 bool NotesWriterSM::WriteEditFileToMachine(
-    const Song* pSong, Steps* pSteps, std::string& sErrorOut) {
-  std::string sDir =
+    const Song* song, Steps* steps, std::string& error_out) {
+  std::string dir =
       PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_STEPS_SUBDIR;
 
-  std::string sPath = sDir + GetEditFileName(pSong, pSteps);
+  std::string path = dir + GetEditFileName(song, steps);
 
   // Check to make sure that we're not clobering an existing file before
   // opening.
-  bool bFileNameChanging =
-      pSteps->GetSavedToDisk() && pSteps->GetFilename() != sPath;
-  if (bFileNameChanging && DoesFileExist(sPath)) {
-    sErrorOut =
-        ssprintf(DESTINATION_ALREADY_EXISTS.GetValue().c_str(), sPath.c_str());
+  bool file_name_changing =
+      steps->GetSavedToDisk() && steps->GetFilename() != path;
+  if (file_name_changing && DoesFileExist(path)) {
+    error_out =
+        ssprintf(DESTINATION_ALREADY_EXISTS.GetValue().c_str(), path.c_str());
     return false;
   }
 
   RageFile f;
-  if (!f.Open(sPath, RageFile::WRITE | RageFile::SLOW_FLUSH)) {
-    sErrorOut = ssprintf(ERROR_WRITING_FILE.GetValue().c_str(), sPath.c_str());
+  if (!f.Open(path, RageFile::WRITE | RageFile::SLOW_FLUSH)) {
+    error_out = ssprintf(ERROR_WRITING_FILE.GetValue().c_str(), path.c_str());
     return false;
   }
 
-  std::string sTag;
-  GetEditFileContents(pSong, pSteps, sTag);
-  if (f.PutLine(sTag) == -1 || f.Flush() == -1) {
-    sErrorOut = ssprintf(ERROR_WRITING_FILE.GetValue().c_str(), sPath.c_str());
+  std::string tag;
+  GetEditFileContents(song, steps, tag);
+  if (f.PutLine(tag) == -1 || f.Flush() == -1) {
+    error_out = ssprintf(ERROR_WRITING_FILE.GetValue().c_str(), path.c_str());
     return false;
   }
 
@@ -373,10 +373,10 @@ bool NotesWriterSM::WriteEditFileToMachine(
    * the old file after saving the new one. If we delete it first, then we'll
    * lose data on error. */
 
-  if (bFileNameChanging) {
-    FILEMAN->Remove(pSteps->GetFilename());
+  if (file_name_changing) {
+    FILEMAN->Remove(steps->GetFilename());
   }
-  pSteps->SetFilename(sPath);
+  steps->SetFilename(path);
 
   return true;
 }

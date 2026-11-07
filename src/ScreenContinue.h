@@ -16,7 +16,7 @@ class ScreenContinue : public ScreenWithMenuElementsSimple {
 
   virtual void BeginScreen();
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual void HandleMessage(const Message& msg);
   virtual bool AllowLateJoin() const { return true; }
 

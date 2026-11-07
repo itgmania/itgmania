@@ -68,55 +68,54 @@ RageSoundReader_Chain* RageSoundReader_Chain::Copy() const {
 /* The same sound may be used several times, and by several different chains.
  * Avoid loading the same sound multiple times.  We need to make a Copy() if we
  * need to read it more than once at a time. */
-void RageSoundReader_Chain::AddSound(
-    int iIndex, float fOffsetSecs, float fPan) {
-  if (iIndex == -1) {
+void RageSoundReader_Chain::AddSound(int index, float offset_secs, float pan) {
+  if (index == -1) {
     return;
   }
 
   Sound s;
-  s.index_ = iIndex;
-  s.offset_ms_ = static_cast<int>((fOffsetSecs * 1000) + 0.5);
-  s.pan_ = fPan;
+  s.index_ = index;
+  s.offset_ms_ = static_cast<int>((offset_secs * 1000) + 0.5);
+  s.pan_ = pan;
   s.sound_ = nullptr;
   sounds_.push_back(s);
 }
 
-int RageSoundReader_Chain::LoadSound(std::string sPath) {
-  MakeLower(sPath);
+int RageSoundReader_Chain::LoadSound(std::string path) {
+  MakeLower(path);
 
   std::map<std::string, RageSoundReader*>::const_iterator it =
-      named_sounds_.find(sPath);
+      named_sounds_.find(path);
   if (it != named_sounds_.end()) {
-    const RageSoundReader* pReader = it->second;
+    const RageSoundReader* reader = it->second;
 
     for (int i = 0; i < (int)loaded_sounds_.size(); ++i) {
-      if (loaded_sounds_[i] == pReader) {
+      if (loaded_sounds_[i] == reader) {
         return i;
       }
     }
-    FAIL_M(sPath);
+    FAIL_M(path);
   }
 
-  std::string sError;
-  bool bPrebuffer;
-  RageSoundReader* pReader =
-      RageSoundReader_FileReader::OpenFile(sPath, sError, &bPrebuffer);
-  if (pReader == nullptr) {
+  std::string error;
+  bool prebuffer;
+  RageSoundReader* reader =
+      RageSoundReader_FileReader::OpenFile(path, error, &prebuffer);
+  if (reader == nullptr) {
     LOG->Warn(
-        "RageSoundReader_Chain: error opening sound \"%s\": %s", sPath.c_str(),
-        sError.c_str());
+        "RageSoundReader_Chain: error opening sound \"%s\": %s", path.c_str(),
+        error.c_str());
     return -1;
   }
 
-  named_sounds_[sPath] = pReader;
+  named_sounds_[path] = reader;
 
-  loaded_sounds_.push_back(named_sounds_[sPath]);
+  loaded_sounds_.push_back(named_sounds_[path]);
   return loaded_sounds_.size() - 1;
 }
 
-int RageSoundReader_Chain::LoadSound(RageSoundReader* pSound) {
-  loaded_sounds_.push_back(pSound);
+int RageSoundReader_Chain::LoadSound(RageSoundReader* sound) {
+  loaded_sounds_.push_back(sound);
   return loaded_sounds_.size() - 1;
 }
 
@@ -126,15 +125,15 @@ int RageSoundReader_Chain::GetSampleRateInternal() const {
     return preferred_sample_rate_;
   }
 
-  int iRate = -1;
+  int rate = -1;
   for (const RageSoundReader* it : loaded_sounds_) {
-    if (iRate == -1) {
-      iRate = it->GetSampleRate();
-    } else if (iRate != it->GetSampleRate()) {
+    if (rate == -1) {
+      rate = it->GetSampleRate();
+    } else if (rate != it->GetSampleRate()) {
       return -1;
     }
   }
-  return iRate;
+  return rate;
 }
 
 int RageSoundReader_Chain::GetSampleRate() const {
@@ -185,51 +184,51 @@ void RageSoundReader_Chain::Finish() {
    */
   actual_sample_rate_ = GetSampleRateInternal();
   if (actual_sample_rate_ == -1) {
-    for (RageSoundReader*& pSound : loaded_sounds_) {
-      RageSoundReader_Resample_Good* pResample =
-          new RageSoundReader_Resample_Good(pSound, preferred_sample_rate_);
-      pSound = pResample;
+    for (RageSoundReader*& p_sound : loaded_sounds_) {
+      RageSoundReader_Resample_Good* resample =
+          new RageSoundReader_Resample_Good(p_sound, preferred_sample_rate_);
+      p_sound = resample;
     }
 
     actual_sample_rate_ = preferred_sample_rate_;
   }
 
   /* Attempt to preload all sounds. */
-  for (RageSoundReader*& pSound : loaded_sounds_) {
-    RageSoundReader_Preload::PreloadSound(pSound);
+  for (RageSoundReader*& p_sound : loaded_sounds_) {
+    RageSoundReader_Preload::PreloadSound(p_sound);
   }
 
   /* Sort the sounds by start time. */
   sort(sounds_.begin(), sounds_.end());
 }
 
-int RageSoundReader_Chain::SetPosition(int iFrame) {
+int RageSoundReader_Chain::SetPosition(int frame) {
   /* Clear m_apActiveSounds. */
   while (!active_sounds_.empty()) {
     ReleaseSound(active_sounds_.front());
   }
 
-  current_frame_ = iFrame;
+  current_frame_ = frame;
 
   /* Run through all sounds in the chain, and activate all sounds which have
    * data at iFrame. */
   for (next_sound_ = 0; next_sound_ < sounds_.size(); ++next_sound_) {
-    Sound* pSound = &sounds_[next_sound_];
-    int iOffsetFrame = pSound->GetOffsetFrame(GetSampleRate());
+    Sound* sound = &sounds_[next_sound_];
+    int offset_frame = sound->GetOffsetFrame(GetSampleRate());
 
     /* If this sound is in the future, skip it. */
-    if (iOffsetFrame > iFrame) {
+    if (offset_frame > frame) {
       break;
     }
 
     /* Find the RageSoundReader. */
-    ActivateSound(pSound);
-    RageSoundReader* pReader = pSound->sound_;
+    ActivateSound(sound);
+    RageSoundReader* reader = sound->sound_;
 
-    int iOffsetFrames = iFrame - iOffsetFrame;
-    if (pReader->SetPosition(iOffsetFrames) == 0) {
+    int offset_frames = frame - offset_frame;
+    if (reader->SetPosition(offset_frames) == 0) {
       /* We're past the end of this sound. */
-      ReleaseSound(pSound);
+      ReleaseSound(sound);
       continue;
     }
   }
@@ -244,8 +243,8 @@ int RageSoundReader_Chain::SetPosition(int iFrame) {
 }
 
 void RageSoundReader_Chain::ActivateSound(Sound* s) {
-  RageSoundReader* pSound = loaded_sounds_[s->index_];
-  s->sound_ = pSound->Copy();
+  RageSoundReader* sound = loaded_sounds_[s->index_];
+  s->sound_ = sound->Copy();
 
   /* Add a balance filter.  If this source has the same number of channels
    * as this sound, and does not need to be panned, we can omit this. */
@@ -262,23 +261,23 @@ void RageSoundReader_Chain::ReleaseSound(Sound* s) {
   std::vector<Sound*>::iterator it =
       find(active_sounds_.begin(), active_sounds_.end(), s);
   ASSERT(it != active_sounds_.end());
-  RageSoundReader*& pSound = s->sound_;
+  RageSoundReader*& sound = s->sound_;
 
-  delete pSound;
-  pSound = nullptr;
+  delete sound;
+  sound = nullptr;
 
   active_sounds_.erase(it);
 }
 
 bool RageSoundReader_Chain::SetProperty(
-    const std::string& sProperty, float fValue) {
-  bool bRet = false;
+    const std::string& property, float value) {
+  bool ret = false;
   for (unsigned i = 0; i < active_sounds_.size(); ++i) {
-    if (active_sounds_[i]->sound_->SetProperty(sProperty, fValue)) {
-      bRet = true;
+    if (active_sounds_[i]->sound_->SetProperty(property, value)) {
+      ret = true;
     }
   }
-  return bRet;
+  return ret;
 }
 
 int RageSoundReader_Chain::GetNextSourceFrame() const {
@@ -307,24 +306,24 @@ float RageSoundReader_Chain::GetStreamToSourceRatio() const {
     return 1.0f;
   }
 
-  float iRate = active_sounds_[0]->sound_->GetStreamToSourceRatio();
+  float rate = active_sounds_[0]->sound_->GetStreamToSourceRatio();
   for (unsigned i = 1; i < active_sounds_.size(); ++i) {
-    if (active_sounds_[i]->sound_->GetStreamToSourceRatio() != iRate) {
+    if (active_sounds_[i]->sound_->GetStreamToSourceRatio() != rate) {
       LOG->Warn("RageSoundReader_Chain: sound rates changing differently");
     }
   }
 
-  return iRate;
+  return rate;
 }
 
 /* As we iterate through the sound tree, we'll find that we need data from
  * different sounds; a sound may be needed by more than one other sound. */
-int RageSoundReader_Chain::Read(float* pBuffer, int iFrames) {
+int RageSoundReader_Chain::Read(float* p_buffer, int frames) {
   while (next_sound_ < sounds_.size() &&
          current_frame_ ==
              sounds_[next_sound_].GetOffsetFrame(actual_sample_rate_)) {
-    Sound* pSound = &sounds_[next_sound_];
-    ActivateSound(pSound);
+    Sound* sound = &sounds_[next_sound_];
+    ActivateSound(sound);
     ++next_sound_;
   }
 
@@ -334,12 +333,12 @@ int RageSoundReader_Chain::Read(float* pBuffer, int iFrames) {
 
   /* Clamp iFrames to the beginning of the next sound we need to start. */
   if (next_sound_ < sounds_.size()) {
-    int iOffsetFrame = sounds_[next_sound_].GetOffsetFrame(actual_sample_rate_);
+    int offset_frame = sounds_[next_sound_].GetOffsetFrame(actual_sample_rate_);
     ASSERT_M(
-        iOffsetFrame >= current_frame_,
-        ssprintf("%i %i", iOffsetFrame, current_frame_));
-    int iFramesToRead = iOffsetFrame - current_frame_;
-    iFrames = std::min(iFramesToRead, iFrames);
+        offset_frame >= current_frame_,
+        ssprintf("%i %i", offset_frame, current_frame_));
+    int frames_to_read = offset_frame - current_frame_;
+    frames = std::min(frames_to_read, frames);
   }
 
   if (active_sounds_.size() == 1 &&
@@ -348,14 +347,14 @@ int RageSoundReader_Chain::Read(float* pBuffer, int iFrames) {
     /* We have only one source, and it matches our target.  Don't mix; read
      * directly from the source into the destination.  This is to optimize
      * the common case of having one BGM track and no autoplay sounds. */
-    iFrames = active_sounds_.front()->sound_->Read(pBuffer, iFrames);
-    if (iFrames < 0) {
+    frames = active_sounds_.front()->sound_->Read(p_buffer, frames);
+    if (frames < 0) {
       ReleaseSound(active_sounds_.front());
     }
-    if (iFrames > 0) {
-      current_frame_ += iFrames;
+    if (frames > 0) {
+      current_frame_ += frames;
     }
-    return iFrames;
+    return frames;
   }
 
   // Note: this is only safe because we know pBuffer is not nullptr
@@ -363,41 +362,41 @@ int RageSoundReader_Chain::Read(float* pBuffer, int iFrames) {
   if (active_sounds_.empty()) {
     /* If we have more sounds ahead of us, pretend we read the entire block,
      * since there's silence in between.  Otherwise, we're at EOF. */
-    size_t pBufferSize =
-        static_cast<size_t>(iFrames) * channels_ * sizeof(float);
-    memset(pBuffer, 0, pBufferSize);
-    current_frame_ += iFrames;
-    return iFrames;
+    size_t buffer_size =
+        static_cast<size_t>(frames) * channels_ * sizeof(float);
+    memset(p_buffer, 0, buffer_size);
+    current_frame_ += frames;
+    return frames;
   }
 
   RageSoundMixBuffer mix;
   /* Read iFrames from each sound. */
-  float Buffer[2048];
-  iFrames = std::min(iFrames, (int)(ARRAYLEN(Buffer) / channels_));
+  float buffer[2048];
+  frames = std::min(frames, (int)(ARRAYLEN(buffer) / channels_));
   for (unsigned i = 0; i < active_sounds_.size();) {
-    RageSoundReader* pSound = active_sounds_[i]->sound_;
+    RageSoundReader* sound = active_sounds_[i]->sound_;
     ASSERT(
-        pSound->GetNumChannels() ==
+        sound->GetNumChannels() ==
         channels_);  // guaranteed by ActivateSound and Finish
 
     /* If we receive less than we were asked for, keep asking for more data.
      * Most filters would simply return what they have in this situation, but we
      * want to deal transparently with separate sounds returning
      * differently-sized partial blocks. */
-    int iFramesRead = 0;
-    while (iFramesRead < iFrames) {
-      int iGotFrames = pSound->RetriedRead(Buffer, iFrames - iFramesRead);
-      if (iGotFrames < 0) {
-        iFramesRead = iGotFrames;
+    int frames_read = 0;
+    while (frames_read < frames) {
+      int got_frames = sound->RetriedRead(buffer, frames - frames_read);
+      if (got_frames < 0) {
+        frames_read = got_frames;
         break;
       }
 
-      mix.SetWriteOffset(iFramesRead * pSound->GetNumChannels());
-      mix.write(Buffer, iGotFrames * pSound->GetNumChannels());
-      iFramesRead += iGotFrames;
+      mix.SetWriteOffset(frames_read * sound->GetNumChannels());
+      mix.write(buffer, got_frames * sound->GetNumChannels());
+      frames_read += got_frames;
     }
 
-    if (iFramesRead < 0) {
+    if (frames_read < 0) {
       ReleaseSound(active_sounds_[i]);
     } else {
       ++i;
@@ -405,37 +404,37 @@ int RageSoundReader_Chain::Read(float* pBuffer, int iFrames) {
   }
 
   /* Read mixed frames into the output buffer. */
-  int iMaxFramesRead = mix.size() / channels_;
-  mix.read(pBuffer);
-  current_frame_ += iMaxFramesRead;
+  int max_frames_read = mix.size() / channels_;
+  mix.read(p_buffer);
+  current_frame_ += max_frames_read;
 
-  return iMaxFramesRead;
+  return max_frames_read;
 }
 
 int RageSoundReader_Chain::GetLength() const {
-  int iLength = 0;
+  int length = 0;
   for (unsigned i = 0; i < sounds_.size(); ++i) {
     const Sound& sound = sounds_[i];
-    const RageSoundReader* pSound = loaded_sounds_[sound.index_];
-    int iThisLength = pSound->GetLength();
-    if (iThisLength) {
-      iLength = std::max(iLength, iThisLength + sound.offset_ms_);
+    const RageSoundReader* p_sound = loaded_sounds_[sound.index_];
+    int this_length = p_sound->GetLength();
+    if (this_length) {
+      length = std::max(length, this_length + sound.offset_ms_);
     }
   }
-  return iLength;
+  return length;
 }
 
 int RageSoundReader_Chain::GetLength_Fast() const {
-  int iLength = 0;
+  int length = 0;
   for (unsigned i = 0; i < sounds_.size(); ++i) {
     const Sound& sound = sounds_[i];
-    const RageSoundReader* pSound = loaded_sounds_[sound.index_];
-    int iThisLength = pSound->GetLength_Fast();
-    if (iThisLength) {
-      iLength = std::max(iLength, iThisLength + sound.offset_ms_);
+    const RageSoundReader* p_sound = loaded_sounds_[sound.index_];
+    int this_length = p_sound->GetLength_Fast();
+    if (this_length) {
+      length = std::max(length, this_length + sound.offset_ms_);
     }
   }
-  return iLength;
+  return length;
 }
 
 /*

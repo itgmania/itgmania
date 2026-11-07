@@ -40,8 +40,8 @@ WheelBase::~WheelBase() {
   wheel_base_items_.clear();
 }
 
-void WheelBase::Load(std::string sType) {
-  LOG->Trace("WheelBase::Load('%s')", sType.c_str());
+void WheelBase::Load(std::string type) {
+  LOG->Trace("WheelBase::Load('%s')", type.c_str());
   ASSERT(this->GetNumChildren() == 0);  // only load once
 
   empty_ = false;
@@ -51,26 +51,26 @@ void WheelBase::Load(std::string sType) {
   switches_left_in_spin_down_ = 0;
   moving_ = 0;
 
-  SWITCH_SECONDS.Load(sType, "SwitchSeconds");
-  LOCKED_INITIAL_VELOCITY.Load(sType, "LockedInitialVelocity");
-  SCROLL_BAR_HEIGHT.Load(sType, "ScrollBarHeight");
+  SWITCH_SECONDS.Load(type, "SwitchSeconds");
+  LOCKED_INITIAL_VELOCITY.Load(type, "LockedInitialVelocity");
+  SCROLL_BAR_HEIGHT.Load(type, "ScrollBarHeight");
   expr_item_transform_function_.SetFromReference(
-      THEME->GetMetricR(sType, "ItemTransformFunction"));
-  NUM_WHEEL_ITEMS_TO_DRAW.Load(sType, "NumWheelItems");
-  WHEEL_ITEM_LOCKED_COLOR.Load(sType, "WheelItemLockedColor");
+      THEME->GetMetricR(type, "ItemTransformFunction"));
+  NUM_WHEEL_ITEMS_TO_DRAW.Load(type, "NumWheelItems");
+  WHEEL_ITEM_LOCKED_COLOR.Load(type, "WheelItemLockedColor");
 
-  sound_change_music_.Load(THEME->GetPathS(sType, "change"), true);
-  sound_locked_.Load(THEME->GetPathS(sType, "locked"), true);
+  sound_change_music_.Load(THEME->GetPathS(type, "change"), true);
+  sound_locked_.Load(THEME->GetPathS(type, "locked"), true);
 
-  WheelItemBase* pTempl = MakeItem();
-  ActorUtil::LoadAllCommands(*pTempl, name_);
-  pTempl->PlayCommand("Init");
+  WheelItemBase* templ = MakeItem();
+  ActorUtil::LoadAllCommands(*templ, name_);
+  templ->PlayCommand("Init");
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
-    WheelItemBase* pItem = pTempl->Copy();
-    DEBUG_ASSERT(pItem);
-    wheel_base_items_.push_back(pItem);
+    WheelItemBase* item = templ->Copy();
+    DEBUG_ASSERT(item);
+    wheel_base_items_.push_back(item);
   }
-  RageUtil::SafeDelete(pTempl);
+  RageUtil::SafeDelete(templ);
 
   // draw outside->inside
   for (int i = 0; i < NUM_WHEEL_ITEMS / 2; i++) {
@@ -80,7 +80,7 @@ void WheelBase::Load(std::string sType) {
     this->AddChild(wheel_base_items_[i]);
   }
 
-  spr_highlight_.Load(THEME->GetPathG(sType, "highlight"));
+  spr_highlight_.Load(THEME->GetPathG(type, "highlight"));
   spr_highlight_->SetName("Highlight");
   this->AddChild(spr_highlight_);
   ActorUtil::LoadAllCommands(*spr_highlight_, name_);
@@ -103,15 +103,15 @@ void WheelBase::SetItemPosition(
 }
 
 void WheelBase::UpdateScrollbar() {
-  int iTotalNumItems = cur_wheel_item_data_.size();
-  float fItemAt = selection_ - position_offset_from_selection_;
+  int total_num_items = cur_wheel_item_data_.size();
+  float item_at = selection_ - position_offset_from_selection_;
 
   {
-    float fSize = float(NUM_WHEEL_ITEMS) / iTotalNumItems;
-    float fCenter = fItemAt / iTotalNumItems;
-    fSize *= 0.5f;
+    float size = float(NUM_WHEEL_ITEMS) / total_num_items;
+    float center = item_at / total_num_items;
+    size *= 0.5f;
 
-    scroll_bar_.SetPercentage(fCenter, fSize);
+    scroll_bar_.SetPercentage(center, size);
   }
 }
 
@@ -131,21 +131,21 @@ bool WheelBase::IsSettled() const {
 
 void WheelBase::SetPositions() {
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
-    WheelItemBase* pDisplay = wheel_base_items_[i];
-    const float fOffsetFromSelection =
+    WheelItemBase* display = wheel_base_items_[i];
+    const float offset_from_selection =
         i - NUM_WHEEL_ITEMS / 2 + position_offset_from_selection_;
-    if (std::abs(fOffsetFromSelection) > NUM_WHEEL_ITEMS_TO_DRAW / 2) {
-      pDisplay->SetVisible(false);
+    if (std::abs(offset_from_selection) > NUM_WHEEL_ITEMS_TO_DRAW / 2) {
+      display->SetVisible(false);
     } else {
-      pDisplay->SetVisible(true);
+      display->SetVisible(true);
     }
 
-    SetItemPosition(*pDisplay, i, fOffsetFromSelection);
+    SetItemPosition(*display, i, offset_from_selection);
   }
 }
 
-void WheelBase::Update(float fDeltaTime) {
-  ActorFrame::Update(fDeltaTime);
+void WheelBase::Update(float delta_time) {
+  ActorFrame::Update(delta_time);
 
   // If tweens aren't controlling the position of the wheel, set positions.
   if (!GetTweenTimeLeft()) {
@@ -153,11 +153,11 @@ void WheelBase::Update(float fDeltaTime) {
   }
 
   for (int i = 0; i < NUM_WHEEL_ITEMS; i++) {
-    WheelItemBase* pDisplay = wheel_base_items_[i];
+    WheelItemBase* display = wheel_base_items_[i];
     if (wheel_state_ == STATE_LOCKED && i != NUM_WHEEL_ITEMS / 2) {
-      pDisplay->color_locked_ = WHEEL_ITEM_LOCKED_COLOR.GetValue();
+      display->color_locked_ = WHEEL_ITEM_LOCKED_COLOR.GetValue();
     } else {
-      pDisplay->color_locked_ = RageColor(0, 0, 0, 0);
+      display->color_locked_ = RageColor(0, 0, 0, 0);
     }
   }
 
@@ -166,12 +166,12 @@ void WheelBase::Update(float fDeltaTime) {
   UpdateScrollbar();
 
   if (moving_) {
-    time_before_moving_begins_ -= fDeltaTime;
+    time_before_moving_begins_ -= delta_time;
     time_before_moving_begins_ = std::max(time_before_moving_begins_, 0.0f);
   }
 
   // update wheel state
-  time_left_in_state_ -= fDeltaTime;
+  time_left_in_state_ -= delta_time;
   if (time_left_in_state_ <= 0) {  // time to go to a new state
     UpdateSwitch();
   }
@@ -180,20 +180,20 @@ void WheelBase::Update(float fDeltaTime) {
     /* Do this in at most .1 sec chunks, so we don't get weird if we stop
      * for some reason (and so it behaves the same when being single stepped).
      */
-    float fTime = fDeltaTime;
-    while (fTime > 0) {
-      float t = std::min(fTime, 0.1f);
-      fTime -= t;
+    float time = delta_time;
+    while (time > 0) {
+      float t = std::min(time, 0.1f);
+      time -= t;
 
       position_offset_from_selection_ =
           std::clamp(position_offset_from_selection_, -0.3f, +0.3f);
 
-      float fSpringForce =
+      float spring_force =
           -position_offset_from_selection_ * LOCKED_INITIAL_VELOCITY;
-      locked_wheel_velocity_ += fSpringForce;
+      locked_wheel_velocity_ += spring_force;
 
-      float fDrag = -locked_wheel_velocity_ * t * 4;
-      locked_wheel_velocity_ += fDrag;
+      float drag = -locked_wheel_velocity_ * t * 4;
+      locked_wheel_velocity_ += drag;
 
       position_offset_from_selection_ += locked_wheel_velocity_ * t;
 
@@ -208,8 +208,8 @@ void WheelBase::Update(float fDeltaTime) {
   if (IsMoving()) {
     // We're automatically moving. Move linearly, and don't clamp to the
     // selection.
-    float fSpinSpeed = spin_speed_ * moving_;
-    position_offset_from_selection_ -= fSpinSpeed * fDeltaTime;
+    float spin_speed = spin_speed_ * moving_;
+    position_offset_from_selection_ -= spin_speed * delta_time;
 
     /* Make sure that we don't go further than 1 away, in case the speed is
      * very high or we miss a lot of frames. */
@@ -233,16 +233,16 @@ void WheelBase::Update(float fDeltaTime) {
     }
   } else {
     // "rotate" wheel toward selected song
-    float fSpinSpeed =
+    float spin_speed =
         0.2f + std::abs(position_offset_from_selection_) / SWITCH_SECONDS;
 
     if (position_offset_from_selection_ > 0) {
-      position_offset_from_selection_ -= fSpinSpeed * fDeltaTime;
+      position_offset_from_selection_ -= spin_speed * delta_time;
       if (position_offset_from_selection_ < 0) {
         position_offset_from_selection_ = 0;
       }
     } else if (position_offset_from_selection_ < 0) {
-      position_offset_from_selection_ += fSpinSpeed * fDeltaTime;
+      position_offset_from_selection_ += spin_speed * delta_time;
       if (position_offset_from_selection_ > 0) {
         position_offset_from_selection_ = 0;
       }
@@ -277,18 +277,18 @@ bool WheelBase::Select()  // return true if this selection can end the screen
       return true;
     case WheelItemDataType_Section:
     case WheelItemDataType_ParentSection: {
-      std::string sThisItemSectionName =
+      std::string this_item_section_name =
           cur_wheel_item_data_[selection_]->text_;
       // Keep track of the open section so that we can restore it
       // when navigating back to ScreenSelectMusic.
-      GAMESTATE->last_open_section_ = sThisItemSectionName;
-      if (expanded_section_name_ == sThisItemSectionName)  // already expanded
+      GAMESTATE->last_open_section_ = this_item_section_name;
+      if (expanded_section_name_ == this_item_section_name)  // already expanded
       {
         SetOpenSection("");  // collapse it
         sound_collapse_.Play(true);
       } else  // already collapsed
       {
-        SetOpenSection(sThisItemSectionName);  // expand it
+        SetOpenSection(this_item_section_name);  // expand it
         sound_expand_.Play(true);
       }
     }
@@ -328,8 +328,8 @@ void WheelBase::TweenOffScreenForSort() {
 void WheelBase::ChangeMusicUnlessLocked(int n) {
   if (wheel_state_ == STATE_LOCKED) {
     if (n) {
-      int iSign = n / std::abs(n);
-      locked_wheel_velocity_ = iSign * LOCKED_INITIAL_VELOCITY;
+      int sign = n / std::abs(n);
+      locked_wheel_velocity_ = sign * LOCKED_INITIAL_VELOCITY;
       sound_locked_.Play(true);
     }
     return;
@@ -345,8 +345,8 @@ void WheelBase::Move(int n) {
 
   if (wheel_state_ == STATE_LOCKED) {
     if (n) {
-      int iSign = n / std::abs(n);
-      locked_wheel_velocity_ = iSign * LOCKED_INITIAL_VELOCITY;
+      int sign = n / std::abs(n);
+      locked_wheel_velocity_ = sign * LOCKED_INITIAL_VELOCITY;
       sound_locked_.Play(true);
     }
     return;
@@ -400,13 +400,13 @@ bool WheelBase::MoveSpecific(int n) {
   return true;
 }
 
-void WheelBase::ChangeMusic(int iDist) {
-  selection_ += iDist;
+void WheelBase::ChangeMusic(int dist) {
+  selection_ += dist;
   wrap(selection_, cur_wheel_item_data_.size());
 
-  RebuildWheelItems(iDist);
+  RebuildWheelItems(dist);
 
-  position_offset_from_selection_ += iDist;
+  position_offset_from_selection_ += dist;
 
   //	SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
 
@@ -417,35 +417,35 @@ void WheelBase::ChangeMusic(int iDist) {
   }
 }
 
-void WheelBase::RebuildWheelItems(int iDist) {
+void WheelBase::RebuildWheelItems(int dist) {
   const std::vector<WheelItemBaseData*>& data = cur_wheel_item_data_;
   std::vector<WheelItemBase*>& items = wheel_base_items_;
 
   // rewind to first index that will be displayed;
-  int iFirstVisibleIndex = selection_;
+  int first_visible_index = selection_;
   if (selection_ > int(data.size() - 1)) {
     selection_ = 0;
   }
 
   // find the first wheel item shown
-  iFirstVisibleIndex -= NUM_WHEEL_ITEMS / 2;
+  first_visible_index -= NUM_WHEEL_ITEMS / 2;
 
   ASSERT(data.size() != 0);
-  wrap(iFirstVisibleIndex, data.size());
+  wrap(first_visible_index, data.size());
 
   // iIndex is now the index of the lowest WheelItem to draw
 
-  if (iDist != INT_MAX) {
+  if (dist != INT_MAX) {
     // Shift items and refresh only those that have changed.
-    CircularShift(items, iDist);
+    CircularShift(items, dist);
   }
 
   for (int i = 0; i < (int)items.size(); i++) {
-    int iIndex = iFirstVisibleIndex + i;
-    wrap(iIndex, data.size());
-    const WheelItemBaseData* pData = data[iIndex];
-    WheelItemBase* pDisplay = items[i];
-    pDisplay->LoadFromWheelItemData(pData, iIndex, selection_ == iIndex, i);
+    int index = first_visible_index + i;
+    wrap(index, data.size());
+    const WheelItemBaseData* p_data = data[index];
+    WheelItemBase* display = items[i];
+    display->LoadFromWheelItemData(p_data, index, selection_ == index, i);
   }
 }
 
@@ -460,13 +460,13 @@ class LunaWheelBase : public Luna<WheelBase> {
     COMMON_RETURN_SELF;
   }
   static int GetWheelItem(T* p, lua_State* L) {
-    int iItem = IArg(1);
+    int i_item = IArg(1);
 
-    WheelItemBase* pItem = p->GetWheelItem(iItem);
-    if (pItem == nullptr) {
-      luaL_error(L, "%i out of bounds", iItem);
+    WheelItemBase* p_item = p->GetWheelItem(i_item);
+    if (p_item == nullptr) {
+      luaL_error(L, "%i out of bounds", i_item);
     }
-    pItem->PushSelf(L);
+    p_item->PushSelf(L);
 
     return 1;
   }

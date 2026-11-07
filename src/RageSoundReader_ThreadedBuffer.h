@@ -14,22 +14,22 @@
 class RageThread;
 class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
  public:
-  RageSoundReader_ThreadedBuffer(RageSoundReader* pSource);
+  RageSoundReader_ThreadedBuffer(RageSoundReader* source);
   RageSoundReader_ThreadedBuffer(const RageSoundReader_ThreadedBuffer& cpy);
   ~RageSoundReader_ThreadedBuffer();
   RageSoundReader_ThreadedBuffer* Copy() const {
     return new RageSoundReader_ThreadedBuffer(*this);
   }
 
-  virtual int SetPosition(int iFrame);
-  virtual int Read(float* pBuffer, int iLength);
+  virtual int SetPosition(int frame);
+  virtual int Read(float* buffer, int length);
   virtual int GetNextSourceFrame() const;
 
   virtual int GetLength() const;
   virtual int GetLength_Fast() const;
   virtual int GetSampleRate() const { return sample_rate_; }
   virtual unsigned GetNumChannels() const { return channels_; }
-  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual bool SetProperty(const std::string& property, float value);
   virtual float GetStreamToSourceRatio() const;
   virtual RageSoundReader* GetSource() { return nullptr; }
 
@@ -47,7 +47,7 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
   }
 
  private:
-  int FillFrames(int iBytes);
+  int FillFrames(int bytes);
   int FillBlock();
   int GetFilledFrames() const;
   int GetEmptyFrames() const;

@@ -11,8 +11,8 @@ class PlayerStageStats;
 class CombinedLifeMeterShared : public CombinedLifeMeter {
  public:
   CombinedLifeMeterShared(
-      const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats,
-      LifeType lifeType);
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats,
+      LifeType life_type);
   ~CombinedLifeMeterShared() override;
 
   void OnLoadSong() override;

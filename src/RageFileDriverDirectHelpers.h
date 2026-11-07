@@ -30,27 +30,27 @@
 #define DoWrite write
 #define DoGetCwd getcwd
 #endif
-std::string DoPathReplace(const std::string& sPath);
+std::string DoPathReplace(const std::string& path);
 
 #if defined(WIN32)
-bool WinMoveFile(std::string sOldPath, std::string sNewPath);
+bool WinMoveFile(std::string old_path, std::string new_path);
 #endif
 
 #if !defined(O_BINARY)
 #define O_BINARY 0
 #endif
 
-bool CreateDirectories(std::string sPath);
+bool CreateDirectories(std::string path);
 
 #include "RageUtil_FileDB.h"
 class DirectFilenameDB : public FilenameDB {
  public:
   DirectFilenameDB(std::string root);
   void SetRoot(std::string root);
-  void CacheFile(const std::string& sPath);
+  void CacheFile(const std::string& path);
 
  protected:
-  virtual void PopulateFileSet(FileSet& fs, const std::string& sPath);
+  virtual void PopulateFileSet(FileSet& fs, const std::string& path);
   std::string root_;
 };
 

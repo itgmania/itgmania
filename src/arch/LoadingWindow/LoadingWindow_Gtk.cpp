@@ -78,43 +78,43 @@ static void DeletePixels(guchar* pixels, gpointer data) {
   delete[] (uint8_t*)pixels;
 }
 
-static GdkPixbuf* MakePixbuf(const RageSurface* pSrc) {
-  RageSurface* pSurface = CreateSurface(
-      pSrc->w_, pSrc->h_, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  RageSurfaceUtils::Blit(pSrc, pSurface, -1, -1);
+static GdkPixbuf* MakePixbuf(const RageSurface* src) {
+  RageSurface* surface = CreateSurface(
+      src->w_, src->h_, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+  RageSurfaceUtils::Blit(src, surface, -1, -1);
 
-  GdkPixbuf* pBuf = gdk_pixbuf_new_from_data(
-      pSurface->pixels_, GDK_COLORSPACE_RGB, true, 8, pSurface->w_,
-      pSurface->h_, pSurface->pitch_, DeletePixels, nullptr);
+  GdkPixbuf* buf = gdk_pixbuf_new_from_data(
+      surface->pixels_, GDK_COLORSPACE_RGB, true, 8, surface->w_, surface->h_,
+      surface->pitch_, DeletePixels, nullptr);
 
-  if (pBuf != nullptr) {
-    pSurface->pixels_owned_ = false;
+  if (buf != nullptr) {
+    surface->pixels_owned_ = false;
   }
 
-  delete pSurface;
-  return pBuf;
+  delete surface;
+  return buf;
 }
 
-void LoadingWindow_Gtk::SetIcon(const RageSurface* pIcon) {
-  GdkPixbuf* pBuf = MakePixbuf(pIcon);
-  if (pBuf != nullptr) {
-    gtk_window_set_icon(GTK_WINDOW(window), pBuf);
-    g_object_unref(pBuf);
-  }
-  gtk_main_iteration_do(FALSE);
-}
-
-void LoadingWindow_Gtk::SetSplash(const RageSurface* pSplash) {
-  GdkPixbuf* pBuf = MakePixbuf(pSplash);
-  if (pBuf != nullptr) {
-    gtk_image_set_from_pixbuf(GTK_IMAGE(splash), pBuf);
-    g_object_unref(pBuf);
+void LoadingWindow_Gtk::SetIcon(const RageSurface* icon) {
+  GdkPixbuf* buf = MakePixbuf(icon);
+  if (buf != nullptr) {
+    gtk_window_set_icon(GTK_WINDOW(window), buf);
+    g_object_unref(buf);
   }
   gtk_main_iteration_do(FALSE);
 }
 
-static void UpdateProgress(int progress, int totalWork) {
-  gdouble fraction = (totalWork > 0 ? progress / (gdouble)totalWork : 0);
+void LoadingWindow_Gtk::SetSplash(const RageSurface* p_splash) {
+  GdkPixbuf* buf = MakePixbuf(p_splash);
+  if (buf != nullptr) {
+    gtk_image_set_from_pixbuf(GTK_IMAGE(splash), buf);
+    g_object_unref(buf);
+  }
+  gtk_main_iteration_do(FALSE);
+}
+
+static void UpdateProgress(int progress, int total_work) {
+  gdouble fraction = (total_work > 0 ? progress / (gdouble)total_work : 0);
   if (fraction > 1.0) {
     fraction = 1.0;
   }
@@ -130,8 +130,8 @@ void LoadingWindow_Gtk::SetProgress(const int progress) {
   UpdateProgress(progress_, total_work_);
 }
 
-void LoadingWindow_Gtk::SetTotalWork(const int totalWork) {
-  LoadingWindow::SetTotalWork(totalWork);
+void LoadingWindow_Gtk::SetTotalWork(const int total_work) {
+  LoadingWindow::SetTotalWork(total_work);
   UpdateProgress(progress_, total_work_);
 }
 

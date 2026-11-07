@@ -23,24 +23,24 @@ extern const char* g_CRSDifficultyNames[];  // in CourseLoaderCRS
  * @param iVal the course difficulty.
  * @return the string.
  */
-static std::string DifficultyToCRSString(CourseDifficulty iVal) {
-  return g_CRSDifficultyNames[iVal];
+static std::string DifficultyToCRSString(CourseDifficulty val) {
+  return g_CRSDifficultyNames[val];
 }
 
 bool CourseWriterCRS::Write(
-    const Course& course, const std::string& sPath, bool bSavingCache) {
+    const Course& course, const std::string& path, bool saving_cache) {
   RageFile f;
-  if (!f.Open(sPath, RageFile::WRITE)) {
+  if (!f.Open(path, RageFile::WRITE)) {
     LOG->UserLog(
-        "Course file", sPath, "couldn't be written: %s", f.GetError().c_str());
+        "Course file", path, "couldn't be written: %s", f.GetError().c_str());
     return false;
   }
 
-  return CourseWriterCRS::Write(course, f, bSavingCache);
+  return CourseWriterCRS::Write(course, f, saving_cache);
 }
 
 bool CourseWriterCRS::Write(
-    const Course& course, RageFileBasic& f, bool bSavingCache) {
+    const Course& course, RageFileBasic& f, bool saving_cache) {
   ASSERT(!course.is_autogen_);
 
   f.PutLine(ssprintf("#COURSE:%s;", course.main_title_.c_str()));
@@ -65,10 +65,10 @@ bool CourseWriterCRS::Write(
   }
 
   if (!course.set_styles_.empty()) {
-    std::vector<std::string> asStyles;
-    asStyles.insert(
-        asStyles.begin(), course.set_styles_.begin(), course.set_styles_.end());
-    f.PutLine(ssprintf("#STYLE:%s;", join(",", asStyles).c_str()));
+    std::vector<std::string> styles;
+    styles.insert(
+        styles.begin(), course.set_styles_.begin(), course.set_styles_.end());
+    f.PutLine(ssprintf("#STYLE:%s;", join(",", styles).c_str()));
   }
 
   FOREACH_ENUM(CourseDifficulty, cd) {
@@ -80,7 +80,7 @@ bool CourseWriterCRS::Write(
         course.custom_meter_[cd]));
   }
 
-  if (bSavingCache) {
+  if (saving_cache) {
     f.PutLine("// cache tags:");
 
     Course::RadarCache_t::const_iterator it;
@@ -91,14 +91,14 @@ bool CourseWriterCRS::Write(
       StepsType st = entry.first;
       CourseDifficulty cd = entry.second;
 
-      std::vector<std::string> asRadarValues;
+      std::vector<std::string> radar_values;
       const RadarValues& rv = it->second;
       for (int r = 0; r < NUM_RadarCategory; r++) {
-        asRadarValues.push_back(ssprintf("%.3f", rv[r]));
+        radar_values.push_back(ssprintf("%.3f", rv[r]));
       }
-      std::string sLine = ssprintf("#RADAR:%i:%i:", st, cd);
-      sLine += join(",", asRadarValues) + ";";
-      f.PutLine(sLine);
+      std::string line = ssprintf("#RADAR:%i:%i:", st, cd);
+      line += join(",", radar_values) + ";";
+      f.PutLine(line);
     }
     f.PutLine("// end cache tags");
   }
@@ -151,14 +151,14 @@ bool CourseWriterCRS::WriteCourseEntry(
       entry.song_sort_ == SongSort_LowestGrades && entry.choose_index_ != -1) {
     f.Write(ssprintf("#SONG:GRADEWORST%d", entry.choose_index_ + 1));
   } else if (entry.song_id_.ToSong()) {
-    Song* pSong = entry.song_id_.ToSong();
-    const std::string& sSong = Basename(pSong->GetSongDir());
+    Song* p_song = entry.song_id_.ToSong();
+    const std::string& s_song = Basename(p_song->GetSongDir());
 
     f.Write("#SONG:");
     if (entry.song_criteria_.group_names_.size() > 0) {
       f.Write(entry.song_criteria_.group_names_[0] + '/');
     }
-    f.Write(sSong);
+    f.Write(s_song);
   } else if (entry.song_criteria_.group_names_.size() > 0) {
     f.Write(
         ssprintf("#SONG:%s/*", entry.song_criteria_.group_names_[0].c_str()));
@@ -178,30 +178,30 @@ bool CourseWriterCRS::WriteCourseEntry(
   }
   f.Write(":");
 
-  std::string sModifiers = entry.modifiers_;
+  std::string modifiers = entry.modifiers_;
 
   if (entry.secret_) {
-    if (sModifiers != "") {
-      sModifiers += ",";
+    if (modifiers != "") {
+      modifiers += ",";
     }
-    sModifiers += entry.secret_ ? "noshowcourse" : "showcourse";
+    modifiers += entry.secret_ ? "noshowcourse" : "showcourse";
   }
 
   if (entry.no_difficult_) {
-    if (sModifiers != "") {
-      sModifiers += ",";
+    if (modifiers != "") {
+      modifiers += ",";
     }
-    sModifiers += "nodifficult";
+    modifiers += "nodifficult";
   }
 
   if (entry.gain_lives_ > -1) {
-    if (!sModifiers.empty()) {
-      sModifiers += ',';
+    if (!modifiers.empty()) {
+      modifiers += ',';
     }
-    sModifiers += ssprintf("award%d", entry.gain_lives_);
+    modifiers += ssprintf("award%d", entry.gain_lives_);
   }
 
-  f.Write(sModifiers);
+  f.Write(modifiers);
 
   f.PutLine(";");
   return true;
@@ -227,37 +227,37 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry(
     f.PutLine("");
   }
 
-  std::vector<std::string> songSelectParams;
+  std::vector<std::string> song_select_params;
 
   // TODO: Re-escape everything
   if (entry.song_criteria_.song_names_.size() > 0) {
-    std::string songNames = join(
+    std::string song_names = join(
         ",",
         SmEscape(
             entry.song_criteria_.song_names_, {'\\', ':', ';', '#', ',', '='}));
-    songSelectParams.push_back(ssprintf("TITLE=%s", songNames.c_str()));
+    song_select_params.push_back(ssprintf("TITLE=%s", song_names.c_str()));
   }
   if (entry.song_criteria_.group_names_.size() > 0) {
-    std::string groupNames = join(
+    std::string group_names = join(
         ",", SmEscape(
                  entry.song_criteria_.group_names_,
                  {'\\', ':', ';', '#', ',', '='}));
-    songSelectParams.push_back(ssprintf("GROUP=%s", groupNames.c_str()));
+    song_select_params.push_back(ssprintf("GROUP=%s", group_names.c_str()));
   }
   if (entry.song_criteria_.artist_names_.size() > 0) {
-    std::string artistNames = join(
+    std::string artist_names = join(
         ",", SmEscape(
                  entry.song_criteria_.artist_names_,
                  {'\\', ':', ';', '#', ',', '='}));
-    songSelectParams.push_back(ssprintf("ARTIST=%s", artistNames.c_str()));
+    song_select_params.push_back(ssprintf("ARTIST=%s", artist_names.c_str()));
   }
   if (entry.song_criteria_.use_song_allowed_list_ &&
       entry.song_criteria_.song_genre_allowed_list_.size() > 0) {
-    std::string genreNames = join(
+    std::string genre_names = join(
         ",", SmEscape(
                  entry.song_criteria_.song_genre_allowed_list_,
                  {'\\', ':', ';', '#', ',', '='}));
-    songSelectParams.push_back(ssprintf("GENRE=%s", genreNames.c_str()));
+    song_select_params.push_back(ssprintf("GENRE=%s", genre_names.c_str()));
   }
   if (entry.steps_criteria_.difficulties_.size() > 0) {
     std::vector<std::string> difficulties;
@@ -267,35 +267,36 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry(
         difficulties.push_back(DifficultyToString(diff));
       }
     }
-    songSelectParams.push_back("DIFFICULTY=" + join(",", difficulties));
+    song_select_params.push_back("DIFFICULTY=" + join(",", difficulties));
   }
   if (entry.song_sort_ != SongSort_Randomize && entry.choose_index_ > -1) {
-    std::string songSort = SongSortToString(entry.song_sort_);
-    songSelectParams.push_back(
-        ssprintf("SORT=%s,%d", songSort.c_str(), entry.choose_index_ + 1));
+    std::string song_sort = SongSortToString(entry.song_sort_);
+    song_select_params.push_back(
+        ssprintf("SORT=%s,%d", song_sort.c_str(), entry.choose_index_ + 1));
   }
   if (entry.song_criteria_.min_duration_seconds_ > 0 &&
       entry.song_criteria_.max_duration_seconds_ > 0) {
-    songSelectParams.push_back(ssprintf(
+    song_select_params.push_back(ssprintf(
         "DURATION=%d-%d", (int)entry.song_criteria_.min_duration_seconds_,
         (int)entry.song_criteria_.max_duration_seconds_));
   }
   if (entry.song_criteria_.min_bpm_ > 0 && entry.song_criteria_.max_bpm_ > 0) {
-    songSelectParams.push_back(ssprintf(
+    song_select_params.push_back(ssprintf(
         "BPMRANGE=%f-%f", entry.song_criteria_.min_bpm_,
         entry.song_criteria_.max_bpm_));
   }
   if (entry.steps_criteria_.low_meter_ > 0 &&
       entry.steps_criteria_.high_meter_ > 0) {
-    songSelectParams.push_back(ssprintf(
+    song_select_params.push_back(ssprintf(
         "METER=%d-%d", entry.steps_criteria_.low_meter_,
         entry.steps_criteria_.high_meter_));
   }
   if (entry.gain_lives_ > 0) {
-    songSelectParams.push_back(ssprintf("GAINLIVES=%d", entry.gain_lives_));
+    song_select_params.push_back(ssprintf("GAINLIVES=%d", entry.gain_lives_));
   }
   if (entry.gain_seconds_ > 0) {
-    songSelectParams.push_back(ssprintf("GAINSECONDS=%f", entry.gain_seconds_));
+    song_select_params.push_back(
+        ssprintf("GAINSECONDS=%f", entry.gain_seconds_));
   }
 
   std::vector<std::string> mods;
@@ -309,10 +310,10 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry(
   if (entry.no_difficult_) {
     mods.push_back("nodifficult");
   }
-  songSelectParams.push_back("MODS=" + join(",", mods));
+  song_select_params.push_back("MODS=" + join(",", mods));
 
-  std::string songSelect = join(":", songSelectParams);
-  f.PutLine(ssprintf("#SONGSELECT:%s;", songSelect.c_str()));
+  std::string song_select = join(":", song_select_params);
+  f.PutLine(ssprintf("#SONGSELECT:%s;", song_select.c_str()));
 
   return true;
 }

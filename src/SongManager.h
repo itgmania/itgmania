@@ -49,12 +49,12 @@ class SongManager {
    * @param onlyAdditions only load songs added after the last
    *        invocation of this function
    */
-  void InitSongsFromDisk(LoadingWindow* ld, bool onlyAdditions);
+  void InitSongsFromDisk(LoadingWindow* ld, bool only_additions);
   void FreeSongs();
   void UnlistSong(Song* song);
   void Cleanup();
 
-  void Invalidate(const Song* pStaleSong);
+  void Invalidate(const Song* stale_song);
 
   void RegenerateNonFixedCourses();
   void SetPreferences();
@@ -62,13 +62,13 @@ class SongManager {
   void LoadEnabledSongsFromPref();
 
   void LoadStepEditsFromProfileDir(
-      const std::string& sProfileDir, ProfileSlot slot);
+      const std::string& profile_dir, ProfileSlot slot);
   void LoadCourseEditsFromProfileDir(
-      const std::string& sProfileDir, ProfileSlot slot);
+      const std::string& profile_dir, ProfileSlot slot);
   int GetNumStepsLoadedFromProfile();
   void FreeAllLoadedFromProfile(ProfileSlot slot = ProfileSlot_Invalid);
 
-  void LoadGroupSymLinks(std::string sDir, std::string sGroupFolder);
+  void LoadGroupSymLinks(std::string dir, std::string group_folder);
 
   /**
    * @brief Initialize all courses from disk
@@ -76,12 +76,12 @@ class SongManager {
    * @param onlyAdditions only load courses added after the last
    *        invocation of this function
    */
-  void InitCoursesFromDisk(LoadingWindow* ld, bool onlyAdditions);
+  void InitCoursesFromDisk(LoadingWindow* ld, bool only_additions);
   void InitAutogenCourses();
   void InitRandomAttacks();
   void FreeCourses();
-  void AddCourse(Course* pCourse);     // transfers ownership of pCourse
-  void DeleteCourse(Course* pCourse);  // transfers ownership of pCourse
+  void AddCourse(Course* course);     // transfers ownership of pCourse
+  void DeleteCourse(Course* course);  // transfers ownership of pCourse
   /** @brief Remove all of the auto generated courses. */
   void DeleteAutogenCourses();
   void InvalidateCachedTrails();
@@ -93,39 +93,39 @@ class SongManager {
    * @param onlyAdditions only load songs and courses added after the
    *        last invocation of this function
    */
-  void InitAll(LoadingWindow* ld, bool onlyAdditions);
-  void Reload(bool bAllowFastLoad, LoadingWindow* ld = nullptr);
+  void InitAll(LoadingWindow* ld, bool only_additions);
+  void Reload(bool allow_fast_load, LoadingWindow* ld = nullptr);
   void LoadAdditions(LoadingWindow* ld = nullptr);
   void PreloadSongImages();
 
   bool IsGroupNeverCached(const std::string& group) const;
 
-  std::string GetSongGroupBannerPath(std::string sSongGroup) const;
-  std::string GetSeriesBannerPath(std::string sSeriesName) const;
-  void GetSongGroupNames(std::vector<std::string>& AddTo) const;
-  bool DoesSongGroupExist(std::string sSongGroup) const;
-  RageColor GetSongGroupColor(const std::string& sSongGroupName) const;
-  RageColor GetSongColor(const Song* pSong) const;
+  std::string GetSongGroupBannerPath(std::string song_group) const;
+  std::string GetSeriesBannerPath(std::string series_name) const;
+  void GetSongGroupNames(std::vector<std::string>& add_to) const;
+  bool DoesSongGroupExist(std::string song_group) const;
+  RageColor GetSongGroupColor(const std::string& song_group_name) const;
+  RageColor GetSongColor(const Song* song) const;
 
-  std::string GetCourseGroupBannerPath(const std::string& sCourseGroup) const;
+  std::string GetCourseGroupBannerPath(const std::string& course_group) const;
   // std::string GetCourseGroupBackgroundPath( const std::string &sCourseGroup )
   // const;
-  void GetCourseGroupNames(std::vector<std::string>& AddTo) const;
-  bool DoesCourseGroupExist(const std::string& sCourseGroup) const;
-  RageColor GetCourseGroupColor(const std::string& sCourseGroupName) const;
-  RageColor GetCourseColor(const Course* pCourse) const;
+  void GetCourseGroupNames(std::vector<std::string>& add_to) const;
+  bool DoesCourseGroupExist(const std::string& course_group) const;
+  RageColor GetCourseGroupColor(const std::string& course_group_name) const;
+  RageColor GetCourseColor(const Course* course) const;
 
   void ResetGroupColors();
 
-  static std::string ShortenGroupName(std::string sLongGroupName);
-  static std::string ShortenSeriesName(std::string sLongSeriesName);
+  static std::string ShortenGroupName(std::string long_group_name);
+  static std::string ShortenSeriesName(std::string long_series_name);
 
   // Lookup
   /**
    * @brief Retrieve all of the songs that belong to a particular group.
    * @param sGroupName the name of the group.
    * @return the songs that belong in the group. */
-  const std::vector<Song*>& GetSongs(const std::string& sGroupName) const;
+  const std::vector<Song*>& GetSongs(const std::string& group_name) const;
   /**
    * @brief Retrieve all of the songs in the game.
    * @return all of the songs. */
@@ -141,29 +141,29 @@ class SongManager {
   std::map<int, std::vector<Song*>> GetMeterToSongsMap() const {
     return map_songs_by_difficulty_;
   }
-  void GetPreferredSortSongs(std::vector<Song*>& AddTo) const;
+  void GetPreferredSortSongs(std::vector<Song*>& add_to) const;
   std::map<std::string, std::vector<Song*>> GetPreferredSortSongsMap() const {
     return map_preferred_section_to_songs_;
   };
-  std::string SongToPreferredSortSectionName(const Song* pSong) const;
+  std::string SongToPreferredSortSectionName(const Song* song) const;
   struct Series {
     std::string name_;
     std::unordered_set<Group*> groups_;
     std::string banner_path_;
   };
   std::unordered_set<Group*> GetGroupsInSeries(
-      const std::string& sSeriesName) const;
-  Group* GetGroupFromName(const std::string& sGroupName) const;
-  Group* GetGroup(const Song* pSong) const;
+      const std::string& series_name) const;
+  Group* GetGroupFromName(const std::string& group_name) const;
+  Group* GetGroup(const Song* song) const;
   void GetPreferredSortSongsBySectionName(
-      const std::string& sSectionName, std::vector<Song*>& AddTo) const;
+      const std::string& section_name, std::vector<Song*>& add_to) const;
   const std::vector<Course*>& GetPopularCourses(CourseType ct) const {
     return popular_courses_[ct];
   }
-  Song* FindSong(std::string sPath) const;
-  Song* FindSong(std::string sGroup, std::string sSong) const;
-  Course* FindCourse(std::string sPath) const;
-  Course* FindCourse(std::string sGroup, std::string sName) const;
+  Song* FindSong(std::string path) const;
+  Song* FindSong(std::string group, std::string song) const;
+  Course* FindCourse(std::string path) const;
+  Course* FindCourse(std::string group, std::string name) const;
   /**
    * @brief Retrieve the number of songs in the game.
    * @return the number of songs. */
@@ -183,39 +183,39 @@ class SongManager {
   std::string GetSongGroupByIndex(unsigned index) {
     return song_group_names_[index];
   }
-  int GetSongRank(Song* pSong);
+  int GetSongRank(Song* song);
 
   void GetStepsLoadedFromProfile(
-      std::vector<Steps*>& AddTo, ProfileSlot slot) const;
-  void DeleteSteps(Steps* pSteps);  // transfers ownership of pSteps
+      std::vector<Steps*>& add_to, ProfileSlot slot) const;
+  void DeleteSteps(Steps* steps);  // transfers ownership of pSteps
 
-  void GetAllCourses(std::vector<Course*>& AddTo, bool bIncludeAutogen) const;
+  void GetAllCourses(std::vector<Course*>& add_to, bool include_autogen) const;
   void GetCourses(
-      CourseType ct, std::vector<Course*>& AddTo, bool bIncludeAutogen) const;
+      CourseType ct, std::vector<Course*>& add_to, bool include_autogen) const;
   void GetCoursesInGroup(
-      std::vector<Course*>& AddTo, const std::string& sCourseGroup,
-      bool bIncludeAutogen) const;
+      std::vector<Course*>& add_to, const std::string& course_group,
+      bool include_autogen) const;
   void GetPreferredSortCourses(
-      CourseType ct, std::vector<Course*>& AddTo, bool bIncludeAutogen) const;
+      CourseType ct, std::vector<Course*>& add_to, bool include_autogen) const;
 
   void GetExtraStageInfo(
-      bool bExtra2, const Style* s, Song*& pSongOut, Steps*& pStepsOut);
-  Song* GetSongFromDir(std::string sDir) const;
+      bool extra2, const Style* s, Song*& song_out, Steps*& steps_out);
+  Song* GetSongFromDir(std::string dir) const;
   Course* GetCourseFromPath(
-      std::string sPath) const;  // path to .crs file, or path to song group dir
-  Course* GetCourseFromName(std::string sName) const;
+      std::string path) const;  // path to .crs file, or path to song group dir
+  Course* GetCourseFromName(std::string name) const;
 
   void UpdatePopular();
   void UpdateShuffled();  // re-shuffle songs and courses
   std::map<int, std::vector<Song*>> UpdateMeterSort(std::vector<Song*> songs);
-  void SetPreferredSongs(std::string sPreferredSongs, bool bIsAbsolute = false);
+  void SetPreferredSongs(std::string preferred_songs, bool is_absolute = false);
   void SetPreferredSongsFromTable(
-      std::map<std::string, std::vector<Song*>> mapSectionToSongs);
+      std::map<std::string, std::vector<Song*>> map_section_to_songs);
   void SetPreferredCourses(
-      std::string sPreferredCourses, bool bIsAbsolute = false);
+      std::string preferred_courses, bool is_absolute = false);
   void UpdatePreferredSort(
-      std::string sPreferredSongs = "PreferredSongs.txt",
-      std::string sPreferredCourses = "PreferredCourses.txt");
+      std::string preferred_songs = "PreferredSongs.txt",
+      std::string preferred_courses = "PreferredCourses.txt");
   void SortSongs();  // sort m_pSongs by CompareSongPointersByTitle
 
   void UpdateRankingCourses();  // courses shown on the ranking screen
@@ -232,12 +232,12 @@ class SongManager {
    * @param onlyAdditions only load songs added after the last
    *        invocation of this function
    */
-  void LoadSongDir(std::string sDir, LoadingWindow* ld, bool onlyAdditions);
+  void LoadSongDir(std::string dir, LoadingWindow* ld, bool only_additions);
   bool GetExtraStageInfoFromCourse(
-      bool bExtra2, std::string sPreferredGroup, Song*& pSongOut,
-      Steps*& pStepsOut, StepsType stype);
-  bool SanityCheckGroupDir(std::string sDir) const;
-  void AddGroup(std::string sDir, std::string sGroupDirName, Group* group);
+      bool extra2, std::string preferred_group, Song*& song_out,
+      Steps*& steps_out, StepsType stype);
+  bool SanityCheckGroupDir(std::string dir) const;
+  void AddGroup(std::string dir, std::string group_dir_name, Group* group);
   int GetNumEditsLoadedFromProfile(ProfileSlot slot) const;
 
   void AddSongToList(Song* new_song);

@@ -34,8 +34,8 @@ static std::string ClearBookkeepingData() {
 static LocalizedString MACHINE_STATS_CLEARED(
     "ScreenServiceAction", "Machine stats cleared.");
 std::string ClearMachineStats() {
-  Profile* pProfile = PROFILEMAN->GetMachineProfile();
-  pProfile->ClearStats();
+  Profile* profile = PROFILEMAN->GetMachineProfile();
+  profile->ClearStats();
   PROFILEMAN->SaveMachineProfile();
   return MACHINE_STATS_CLEARED.GetValue();
 }
@@ -43,28 +43,28 @@ std::string ClearMachineStats() {
 static LocalizedString MACHINE_EDITS_CLEARED(
     "ScreenServiceAction", "%d edits cleared, %d errors.");
 static std::string ClearMachineEdits() {
-  std::vector<std::string> vsEditFiles;
+  std::vector<std::string> edit_files;
   GetDirListing(
       PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_STEPS_SUBDIR +
           "*.edit",
-      vsEditFiles, false, true);
+      edit_files, false, true);
   GetDirListing(
       PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_COURSES_SUBDIR +
           "*.crs",
-      vsEditFiles, false, true);
+      edit_files, false, true);
 
-  int editCount = vsEditFiles.size();
-  int removedCount = std::count_if(
-      vsEditFiles.begin(), vsEditFiles.end(),
+  int edit_count = edit_files.size();
+  int removed_count = std::count_if(
+      edit_files.begin(), edit_files.end(),
       [](const std::string& i) { return FILEMAN->Remove(i); });
 
   // reload the machine profile
   PROFILEMAN->SaveMachineProfile();
   PROFILEMAN->LoadMachineProfile();
 
-  int errorCount = editCount - removedCount;
+  int error_count = edit_count - removed_count;
   return ssprintf(
-      MACHINE_EDITS_CLEARED.GetValue().c_str(), editCount, errorCount);
+      MACHINE_EDITS_CLEARED.GetValue().c_str(), edit_count, error_count);
 }
 
 static PlayerNumber GetFirstReadyMemoryCard() {
@@ -96,20 +96,20 @@ static std::string ClearMemoryCardEdits() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string sDir = MEM_CARD_MOUNT_POINT[pn] +
-                     (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
-  std::vector<std::string> vsEditFiles;
-  GetDirListing(sDir + EDIT_STEPS_SUBDIR + "*.edit", vsEditFiles, false, true);
-  GetDirListing(sDir + EDIT_COURSES_SUBDIR + "*.crs", vsEditFiles, false, true);
-  int editCount = vsEditFiles.size();
-  int removedCount = std::count_if(
-      vsEditFiles.begin(), vsEditFiles.end(),
+  std::string dir = MEM_CARD_MOUNT_POINT[pn] +
+                    (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
+  std::vector<std::string> edit_files;
+  GetDirListing(dir + EDIT_STEPS_SUBDIR + "*.edit", edit_files, false, true);
+  GetDirListing(dir + EDIT_COURSES_SUBDIR + "*.crs", edit_files, false, true);
+  int edit_count = edit_files.size();
+  int removed_count = std::count_if(
+      edit_files.begin(), edit_files.end(),
       [](const std::string& i) { return FILEMAN->Remove(i); });
 
   MEMCARDMAN->UnmountCard(pn);
 
   return ssprintf(
-      EDITS_CLEARED.GetValue().c_str(), editCount, editCount - removedCount);
+      EDITS_CLEARED.GetValue().c_str(), edit_count, edit_count - removed_count);
 }
 
 static LocalizedString STATS_NOT_SAVED(
@@ -128,15 +128,15 @@ static std::string TransferStatsMachineToMemoryCard() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string sDir = MEM_CARD_MOUNT_POINT[pn];
-  sDir += "MachineProfile/";
+  std::string dir = MEM_CARD_MOUNT_POINT[pn];
+  dir += "MachineProfile/";
 
-  bool bSaved = PROFILEMAN->GetMachineProfile()->SaveAllToDir(
-      sDir, PREFSMAN->sign_profile_data_);
+  bool saved = PROFILEMAN->GetMachineProfile()->SaveAllToDir(
+      dir, PREFSMAN->sign_profile_data_);
 
   MEMCARDMAN->UnmountCard(pn);
 
-  if (bSaved) {
+  if (saved) {
     return ssprintf(MACHINE_STATS_SAVED.GetValue().c_str(), pn + 1);
   } else {
     return ssprintf(ERROR_SAVING_MACHINE_STATS.GetValue().c_str(), pn + 1);
@@ -162,13 +162,13 @@ static std::string TransferStatsMemoryCardToMachine() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string sDir = MEM_CARD_MOUNT_POINT[pn];
-  sDir += "MachineProfile/";
+  std::string dir = MEM_CARD_MOUNT_POINT[pn];
+  dir += "MachineProfile/";
 
   Profile backup = *PROFILEMAN->GetMachineProfile();
 
   ProfileLoadResult lr = PROFILEMAN->GetMachineProfile()->LoadAllFromDir(
-      sDir, PREFSMAN->sign_profile_data_);
+      dir, PREFSMAN->sign_profile_data_);
   std::string s;
   switch (lr) {
     case ProfileLoadResult_Success:
@@ -192,37 +192,37 @@ static std::string TransferStatsMemoryCardToMachine() {
 }
 
 static void CopyEdits(
-    const std::string& sFromProfileDir, const std::string& sToProfileDir,
-    int& iNumSucceeded, int& iNumOverwritten, int& iNumIgnored,
-    int& iNumErrored) {
-  iNumSucceeded = 0;
-  iNumOverwritten = 0;
-  iNumIgnored = 0;
-  iNumErrored = 0;
+    const std::string& from_profile_dir, const std::string& to_profile_dir,
+    int& num_succeeded, int& num_overwritten, int& num_ignored,
+    int& num_errored) {
+  num_succeeded = 0;
+  num_overwritten = 0;
+  num_ignored = 0;
+  num_errored = 0;
 
   {
-    std::string sFromDir = sFromProfileDir + EDIT_STEPS_SUBDIR;
-    std::string sToDir = sToProfileDir + EDIT_STEPS_SUBDIR;
+    std::string from_dir = from_profile_dir + EDIT_STEPS_SUBDIR;
+    std::string to_dir = to_profile_dir + EDIT_STEPS_SUBDIR;
 
-    std::vector<std::string> vsFiles;
-    GetDirListing(sFromDir + "*.edit", vsFiles, false, false);
-    for (const std::string& i : vsFiles) {
-      if (DoesFileExist(sToDir + i)) {
-        iNumOverwritten++;
+    std::vector<std::string> files;
+    GetDirListing(from_dir + "*.edit", files, false, false);
+    for (const std::string& i : files) {
+      if (DoesFileExist(to_dir + i)) {
+        num_overwritten++;
       }
-      bool bSuccess = FileCopy(sFromDir + i, sToDir + i);
-      if (bSuccess) {
-        iNumSucceeded++;
+      bool success = FileCopy(from_dir + i, to_dir + i);
+      if (success) {
+        num_succeeded++;
       } else {
-        iNumErrored++;
+        num_errored++;
       }
 
       // Test whether the song we need for this edit is present and ignore this
       // edit if not present.
-      SSCLoader loaderSSC;
-      if (!loaderSSC.LoadEditFromFile(
-              sFromDir + i, ProfileSlot_Machine, false)) {
-        iNumIgnored++;
+      SSCLoader loader_ssc;
+      if (!loader_ssc.LoadEditFromFile(
+              from_dir + i, ProfileSlot_Machine, false)) {
+        num_ignored++;
         continue;
       }
     }
@@ -231,20 +231,20 @@ static void CopyEdits(
   // TODO: Seprarate copying stats for steps and courses
 
   {
-    std::string sFromDir = sFromProfileDir + EDIT_COURSES_SUBDIR;
-    std::string sToDir = sToProfileDir + EDIT_COURSES_SUBDIR;
+    std::string from_dir = from_profile_dir + EDIT_COURSES_SUBDIR;
+    std::string to_dir = to_profile_dir + EDIT_COURSES_SUBDIR;
 
-    std::vector<std::string> vsFiles;
-    GetDirListing(sFromDir + "*.crs", vsFiles, false, false);
-    for (const std::string& i : vsFiles) {
-      if (DoesFileExist(sToDir + i)) {
-        iNumOverwritten++;
+    std::vector<std::string> files;
+    GetDirListing(from_dir + "*.crs", files, false, false);
+    for (const std::string& i : files) {
+      if (DoesFileExist(to_dir + i)) {
+        num_overwritten++;
       }
-      bool bSuccess = FileCopy(sFromDir + i, sToDir + i);
-      if (bSuccess) {
-        iNumSucceeded++;
+      bool success = FileCopy(from_dir + i, to_dir + i);
+      if (success) {
+        num_succeeded++;
       } else {
-        iNumErrored++;
+        num_errored++;
       }
     }
   }
@@ -262,88 +262,88 @@ static LocalizedString FAILED("ScreenServiceAction", "%d failed");
 static LocalizedString DELETED("ScreenServiceAction", "%d deleted");
 
 static std::string CopyEdits(
-    const std::string& sFromProfileDir, const std::string& sToProfileDir,
-    const std::string& sDisplayDir) {
-  int iNumSucceeded = 0;
-  int iNumOverwritten = 0;
-  int iNumIgnored = 0;
-  int iNumErrored = 0;
+    const std::string& from_profile_dir, const std::string& to_profile_dir,
+    const std::string& display_dir) {
+  int num_succeeded = 0;
+  int num_overwritten = 0;
+  int num_ignored = 0;
+  int num_errored = 0;
 
   CopyEdits(
-      sFromProfileDir, sToProfileDir, iNumSucceeded, iNumOverwritten,
-      iNumIgnored, iNumErrored);
+      from_profile_dir, to_profile_dir, num_succeeded, num_overwritten,
+      num_ignored, num_errored);
 
   std::vector<std::string> vs;
-  vs.push_back(sDisplayDir);
+  vs.push_back(display_dir);
   vs.push_back(
-      ssprintf(COPIED.GetValue().c_str(), iNumSucceeded) + ", " +
-      ssprintf(OVERWRITTEN.GetValue().c_str(), iNumOverwritten));
-  if (iNumIgnored) {
-    vs.push_back(ssprintf(IGNORED.GetValue().c_str(), iNumIgnored));
+      ssprintf(COPIED.GetValue().c_str(), num_succeeded) + ", " +
+      ssprintf(OVERWRITTEN.GetValue().c_str(), num_overwritten));
+  if (num_ignored) {
+    vs.push_back(ssprintf(IGNORED.GetValue().c_str(), num_ignored));
   }
-  if (iNumErrored) {
-    vs.push_back(ssprintf(FAILED.GetValue().c_str(), iNumErrored));
+  if (num_errored) {
+    vs.push_back(ssprintf(FAILED.GetValue().c_str(), num_errored));
   }
   return join("\n", vs);
 }
 
 static void SyncFiles(
-    const std::string& sFromDir, const std::string& sToDir,
-    const std::string& sMask, int& iNumAdded, int& iNumDeleted,
-    int& iNumOverwritten, int& iNumFailed) {
-  std::vector<std::string> vsFilesSource;
-  GetDirListing(sFromDir + sMask, vsFilesSource, false, false);
+    const std::string& from_dir, const std::string& to_dir,
+    const std::string& mask, int& num_added, int& num_deleted,
+    int& num_overwritten, int& num_failed) {
+  std::vector<std::string> files_source;
+  GetDirListing(from_dir + mask, files_source, false, false);
 
-  std::vector<std::string> vsFilesDest;
-  GetDirListing(sToDir + sMask, vsFilesDest, false, false);
+  std::vector<std::string> files_dest;
+  GetDirListing(to_dir + mask, files_dest, false, false);
 
-  std::vector<std::string> vsToDelete;
-  GetAsNotInBs(vsFilesDest, vsFilesSource, vsToDelete);
+  std::vector<std::string> to_delete;
+  GetAsNotInBs(files_dest, files_source, to_delete);
 
-  for (unsigned i = 0; i < vsToDelete.size(); ++i) {
-    std::string sFile = sToDir + vsToDelete[i];
-    LOG->Trace("Delete \"%s\"", sFile.c_str());
+  for (unsigned i = 0; i < to_delete.size(); ++i) {
+    std::string file = to_dir + to_delete[i];
+    LOG->Trace("Delete \"%s\"", file.c_str());
 
-    if (FILEMAN->Remove(sFile)) {
-      ++iNumDeleted;
+    if (FILEMAN->Remove(file)) {
+      ++num_deleted;
     } else {
-      ++iNumFailed;
+      ++num_failed;
     }
   }
 
-  for (unsigned i = 0; i < vsFilesSource.size(); ++i) {
-    std::string sFileFrom = sFromDir + vsFilesSource[i];
-    std::string sFileTo = sToDir + vsFilesSource[i];
-    LOG->Trace("Copy \"%s\"", sFileFrom.c_str());
-    bool bOverwrite = DoesFileExist(sFileTo);
-    bool bSuccess = FileCopy(sFileFrom, sFileTo);
-    if (bSuccess) {
-      if (bOverwrite) {
-        ++iNumOverwritten;
+  for (unsigned i = 0; i < files_source.size(); ++i) {
+    std::string file_from = from_dir + files_source[i];
+    std::string file_to = to_dir + files_source[i];
+    LOG->Trace("Copy \"%s\"", file_from.c_str());
+    bool overwrite = DoesFileExist(file_to);
+    bool success = FileCopy(file_from, file_to);
+    if (success) {
+      if (overwrite) {
+        ++num_overwritten;
       } else {
-        ++iNumAdded;
+        ++num_added;
       }
     } else {
-      ++iNumFailed;
+      ++num_failed;
     }
   }
-  FILEMAN->FlushDirCache(sToDir);
+  FILEMAN->FlushDirCache(to_dir);
 }
 
 static void SyncEdits(
-    const std::string& sFromDir, const std::string& sToDir, int& iNumAdded,
-    int& iNumDeleted, int& iNumOverwritten, int& iNumFailed) {
-  iNumAdded = 0;
-  iNumDeleted = 0;
-  iNumOverwritten = 0;
-  iNumFailed = 0;
+    const std::string& from_dir, const std::string& to_dir, int& num_added,
+    int& num_deleted, int& num_overwritten, int& num_failed) {
+  num_added = 0;
+  num_deleted = 0;
+  num_overwritten = 0;
+  num_failed = 0;
 
   SyncFiles(
-      sFromDir + EDIT_STEPS_SUBDIR, sToDir + EDIT_STEPS_SUBDIR, "*.edit",
-      iNumAdded, iNumDeleted, iNumOverwritten, iNumFailed);
+      from_dir + EDIT_STEPS_SUBDIR, to_dir + EDIT_STEPS_SUBDIR, "*.edit",
+      num_added, num_deleted, num_overwritten, num_failed);
   SyncFiles(
-      sFromDir + EDIT_COURSES_SUBDIR, sToDir + EDIT_COURSES_SUBDIR, "*.crs",
-      iNumAdded, iNumDeleted, iNumOverwritten, iNumFailed);
+      from_dir + EDIT_COURSES_SUBDIR, to_dir + EDIT_COURSES_SUBDIR, "*.crs",
+      num_added, num_deleted, num_overwritten, num_failed);
 }
 
 static std::string CopyEditsMachineToMemoryCard() {
@@ -356,14 +356,14 @@ static std::string CopyEditsMachineToMemoryCard() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string sFromDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
-  std::string sToDir = MEM_CARD_MOUNT_POINT[pn] +
+  std::string from_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
+  std::string to_dir = MEM_CARD_MOUNT_POINT[pn] +
                        (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
 
   std::vector<std::string> vs;
   vs.push_back(ssprintf(COPIED_TO_CARD.GetValue().c_str(), pn + 1));
   std::string s =
-      CopyEdits(sFromDir, sToDir, PREFSMAN->memory_card_profile_subdir_);
+      CopyEdits(from_dir, to_dir, PREFSMAN->memory_card_profile_subdir_);
   vs.push_back(s);
 
   MEMCARDMAN->UnmountCard(pn);
@@ -381,30 +381,29 @@ static std::string SyncEditsMachineToMemoryCard() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  int iNumAdded = 0;
-  int iNumDeleted = 0;
-  int iNumOverwritten = 0;
-  int iNumFailed = 0;
+  int num_added = 0;
+  int num_deleted = 0;
+  int num_overwritten = 0;
+  int num_failed = 0;
 
-  std::string sFromDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
-  std::string sToDir = MEM_CARD_MOUNT_POINT[pn] +
+  std::string from_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
+  std::string to_dir = MEM_CARD_MOUNT_POINT[pn] +
                        (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
   SyncEdits(
-      sFromDir, sToDir, iNumAdded, iNumDeleted, iNumOverwritten, iNumFailed);
+      from_dir, to_dir, num_added, num_deleted, num_overwritten, num_failed);
 
   MEMCARDMAN->UnmountCard(pn);
 
-  std::string sRet = ssprintf(COPIED_TO_CARD.GetValue().c_str(), pn + 1) + " ";
-  sRet += ssprintf(ADDED.GetValue().c_str(), iNumAdded) + ", " +
-          ssprintf(OVERWRITTEN.GetValue().c_str(), iNumOverwritten);
-  if (iNumDeleted) {
-    sRet +=
-        std::string(" ") + ssprintf(DELETED.GetValue().c_str(), iNumDeleted);
+  std::string ret = ssprintf(COPIED_TO_CARD.GetValue().c_str(), pn + 1) + " ";
+  ret += ssprintf(ADDED.GetValue().c_str(), num_added) + ", " +
+         ssprintf(OVERWRITTEN.GetValue().c_str(), num_overwritten);
+  if (num_deleted) {
+    ret += std::string(" ") + ssprintf(DELETED.GetValue().c_str(), num_deleted);
   }
-  if (iNumFailed) {
-    sRet += std::string("; ") + ssprintf(FAILED.GetValue().c_str(), iNumFailed);
+  if (num_failed) {
+    ret += std::string("; ") + ssprintf(FAILED.GetValue().c_str(), num_failed);
   }
-  return sRet;
+  return ret;
 }
 
 static LocalizedString COPIED_FROM_CARD(
@@ -419,17 +418,17 @@ static std::string CopyEditsMemoryCardToMachine() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::vector<std::string> vsSubDirs;
-  ProfileManager::GetMemoryCardProfileDirectoriesToTry(vsSubDirs);
+  std::vector<std::string> sub_dirs;
+  ProfileManager::GetMemoryCardProfileDirectoriesToTry(sub_dirs);
 
   std::vector<std::string> vs;
   vs.push_back(ssprintf(COPIED_FROM_CARD.GetValue().c_str(), pn + 1));
 
-  for (const std::string& sSubDir : vsSubDirs) {
-    std::string sFromDir = MEM_CARD_MOUNT_POINT[pn] + sSubDir + "/";
-    std::string sToDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
+  for (const std::string& sub_dir : sub_dirs) {
+    std::string from_dir = MEM_CARD_MOUNT_POINT[pn] + sub_dir + "/";
+    std::string to_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
 
-    std::string s = CopyEdits(sFromDir, sToDir, sSubDir);
+    std::string s = CopyEdits(from_dir, to_dir, sub_dir);
     vs.push_back(s);
   }
 
@@ -451,12 +450,12 @@ static std::string ResetPreferences() {
 
 REGISTER_SCREEN_CLASS(ScreenServiceAction);
 void ScreenServiceAction::BeginScreen() {
-  std::string sActions = THEME->GetMetric(name_, "Actions");
-  std::vector<std::string> vsActions;
-  split(sActions, ",", vsActions);
+  std::string s_actions = THEME->GetMetric(name_, "Actions");
+  std::vector<std::string> vs_actions;
+  split(s_actions, ",", vs_actions);
 
-  std::vector<std::string> vsResults;
-  for (const std::string& s : vsActions) {
+  std::vector<std::string> results;
+  for (const std::string& s : vs_actions) {
     std::string (*pfn)() = nullptr;
 
     if (s == "ClearBookkeepingData") {
@@ -483,11 +482,11 @@ void ScreenServiceAction::BeginScreen() {
 
     ASSERT_M(pfn != nullptr, s);
 
-    std::string sResult = pfn();
-    vsResults.push_back(sResult);
+    std::string result = pfn();
+    results.push_back(result);
   }
 
-  ScreenPrompt::SetPromptSettings(join("\n", vsResults), PROMPT_OK);
+  ScreenPrompt::SetPromptSettings(join("\n", results), PROMPT_OK);
 
   ScreenPrompt::BeginScreen();
 }

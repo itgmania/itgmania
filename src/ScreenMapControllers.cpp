@@ -76,8 +76,8 @@ void ScreenMapControllers::Init() {
   LOAD_ALL_COMMANDS_AND_SET_XY(text_devices_);
   this->AddChild(&text_devices_);
 
-  std::string sButtons = BUTTONS_TO_MAP;
-  if (sButtons.empty()) {
+  std::string buttons = BUTTONS_TO_MAP;
+  if (buttons.empty()) {
     /* Map all buttons for this game. */
     FOREACH_GameButtonInScheme(INPUTMAPPER->GetInputScheme(), gb) {
       KeyToMap k;
@@ -86,12 +86,12 @@ void ScreenMapControllers::Init() {
     }
   } else {
     /* Map the specified buttons. */
-    std::vector<std::string> asBits;
-    split(sButtons, ",", asBits);
-    for (unsigned i = 0; i < asBits.size(); ++i) {
+    std::vector<std::string> bits;
+    split(buttons, ",", bits);
+    for (unsigned i = 0; i < bits.size(); ++i) {
       KeyToMap k;
       k.game_button_ =
-          StringToGameButton(INPUTMAPPER->GetInputScheme(), asBits[i]);
+          StringToGameButton(INPUTMAPPER->GetInputScheme(), bits[i]);
       keys_to_map_.push_back(k);
     }
   }
@@ -104,10 +104,10 @@ void ScreenMapControllers::Init() {
       text.LoadFromFont(THEME->GetPathF(name_, "title"));
       PlayerNumber pn = (PlayerNumber)c;
       text.SetName("Label" + PlayerNumberToString(pn));
-      std::string sText = ssprintf(
+      std::string s_text = ssprintf(
           PLAYER_SLOTS.GetValue().c_str(),
           PlayerNumberToLocalizedString(pn).c_str());
-      text.SetText(sText);
+      text.SetText(s_text);
       ActorUtil::LoadAllCommands(text, name_);
       line_.back()->AddChild(&text_label_[c]);
     }
@@ -139,42 +139,42 @@ void ScreenMapControllers::Init() {
   // normal rows
   for (unsigned b = 0; b < keys_to_map_.size(); b++) {
     line_.push_back(new ActorFrame);
-    KeyToMap* pKey = &keys_to_map_[b];
+    KeyToMap* key = &keys_to_map_[b];
 
     {
-      BitmapText* pName = new BitmapText;
-      pName->SetName("Primary");
-      pName->LoadFromFont(THEME->GetPathF(name_, "title"));
-      std::string sText = GameButtonToLocalizedString(
-          INPUTMAPPER->GetInputScheme(), pKey->game_button_);
-      pName->SetText(sText);
-      ActorUtil::LoadAllCommands(*pName, name_);
-      line_.back()->AddChild(pName);
+      BitmapText* name = new BitmapText;
+      name->SetName("Primary");
+      name->LoadFromFont(THEME->GetPathF(name_, "title"));
+      std::string s_text = GameButtonToLocalizedString(
+          INPUTMAPPER->GetInputScheme(), key->game_button_);
+      name->SetText(s_text);
+      ActorUtil::LoadAllCommands(*name, name_);
+      line_.back()->AddChild(name);
     }
     {
-      BitmapText* pSecondary = new BitmapText;
-      pSecondary->SetName("Secondary");
-      pSecondary->LoadFromFont(THEME->GetPathF(name_, "title"));
+      BitmapText* secondary = new BitmapText;
+      secondary->SetName("Secondary");
+      secondary->LoadFromFont(THEME->GetPathF(name_, "title"));
       GameButton mb = INPUTMAPPER->GetInputScheme()->GameButtonToMenuButton(
-          pKey->game_button_);
-      std::string sText;
-      if (mb != GameButton_Invalid && mb != pKey->game_button_) {
-        sText = GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), mb);
+          key->game_button_);
+      std::string s_text;
+      if (mb != GameButton_Invalid && mb != key->game_button_) {
+        s_text = GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), mb);
       }
-      ActorUtil::LoadAllCommands(*pSecondary, name_);
-      pSecondary->SetText(sText);
-      line_.back()->AddChild(pSecondary);
+      ActorUtil::LoadAllCommands(*secondary, name_);
+      secondary->SetText(s_text);
+      line_.back()->AddChild(secondary);
     }
 
     FOREACH_ENUM(GameController, c) {
       for (int s = 0; s < NUM_SHOWN_GAME_TO_DEVICE_SLOTS; s++) {
-        pKey->text_mapped_to_[c][s] = new BitmapText;
-        pKey->text_mapped_to_[c][s]->SetName("MappedTo");
-        pKey->text_mapped_to_[c][s]->LoadFromFont(
+        key->text_mapped_to_[c][s] = new BitmapText;
+        key->text_mapped_to_[c][s]->SetName("MappedTo");
+        key->text_mapped_to_[c][s]->LoadFromFont(
             THEME->GetPathF(name_, "entry"));
-        pKey->text_mapped_to_[c][s]->RunCommands(MAPPED_TO_COMMAND(c, s));
-        ActorUtil::LoadAllCommands(*pKey->text_mapped_to_[c][s], name_);
-        line_.back()->AddChild(pKey->text_mapped_to_[c][s]);
+        key->text_mapped_to_[c][s]->RunCommands(MAPPED_TO_COMMAND(c, s));
+        ActorUtil::LoadAllCommands(*key->text_mapped_to_[c][s], name_);
+        line_.back()->AddChild(key->text_mapped_to_[c][s]);
       }
     }
     line_.back()->DeleteChildrenWhenDone();
@@ -256,24 +256,24 @@ void ScreenMapControllers::BeginScreen() {
   }
 }
 
-void ScreenMapControllers::Update(float fDeltaTime) {
-  ScreenWithMenuElements::Update(fDeltaTime);
+void ScreenMapControllers::Update(float delta_time) {
+  ScreenWithMenuElements::Update(delta_time);
 
   if (lock_input_secs_ <= 0.0f) {
     bool was_above = auto_dismiss_warning_secs_ > 0.0f;
-    auto_dismiss_warning_secs_ -= fDeltaTime;
+    auto_dismiss_warning_secs_ -= delta_time;
     if (was_above && auto_dismiss_warning_secs_ <= 0.0f) {
       DismissWarning();
     }
   }
   if (auto_dismiss_no_set_list_prompt_secs_ > 0.0f) {
-    auto_dismiss_no_set_list_prompt_secs_ -= fDeltaTime;
+    auto_dismiss_no_set_list_prompt_secs_ -= delta_time;
     if (auto_dismiss_no_set_list_prompt_secs_ <= 0.0f) {
       no_set_list_prompt_->PlayCommand("TweenOff");
     }
   }
   if (auto_dismiss_sanity_secs_ > 0.0f) {
-    auto_dismiss_sanity_secs_ -= fDeltaTime;
+    auto_dismiss_sanity_secs_ -= delta_time;
     if (auto_dismiss_sanity_secs_ <= 0.0f) {
       sanity_message_->PlayCommand("TweenOff");
     }
@@ -294,18 +294,18 @@ void ScreenMapControllers::Update(float fDeltaTime) {
     waiting_for_press_.SetZero();
 
     ASSERT(CursorOnKey());
-    const KeyToMap* pKey = &keys_to_map_[CurKeyIndex()];
+    const KeyToMap* key = &keys_to_map_[CurKeyIndex()];
 
-    GameInput curGameI((GameController)cur_controller_, pKey->game_button_);
+    GameInput cur_game_i((GameController)cur_controller_, key->game_button_);
 
-    INPUTMAPPER->SetInputMap(device_i_to_map_, curGameI, cur_slot_);
+    INPUTMAPPER->SetInputMap(device_i_to_map_, cur_game_i, cur_slot_);
     INPUTMAPPER->AddDefaultMappingsForCurrentGameIfUnmapped();
     change_occurred_ = true;
 
-    BitmapText* pText = pKey->text_mapped_to_[cur_controller_][cur_slot_];
-    pText->PlayCommand("MappedInput");
+    BitmapText* text = key->text_mapped_to_[cur_controller_][cur_slot_];
+    text->PlayCommand("MappedInput");
     if (in_set_list_mode_) {
-      pText->PlayCommand("LoseMark");
+      text->PlayCommand("LoseMark");
       ++set_list_current_;
       if (set_list_current_ == set_list_.end()) {
         in_set_list_mode_ = false;
@@ -326,8 +326,8 @@ void ScreenMapControllers::Update(float fDeltaTime) {
  * actually be a D-pad and not an axis.  All this is actually doing is giving
  * priority to some inputs over others; this function is unsuitable for other
  * use. */
-static bool IsAxis(const DeviceInput& DeviceI) {
-  if (!DeviceI.IsJoystick()) {
+static bool IsAxis(const DeviceInput& device_i) {
+  if (!device_i.IsJoystick()) {
     return false;
   }
 
@@ -339,7 +339,7 @@ static bool IsAxis(const DeviceInput& DeviceI) {
       JOY_AUX_1,      JOY_AUX_2,    JOY_AUX_3,     JOY_AUX_4,     -1};
 
   for (int ax = 0; axes[ax] != -1; ++ax) {
-    if (DeviceI.button_ == axes[ax]) {
+    if (device_i.button_ == axes[ax]) {
       return true;
     }
   }
@@ -394,7 +394,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
   // 	input.DeviceI.device, input.DeviceI.button );
 
   int button = input.device_i_.button_;
-  bool bHandled = false;
+  bool handled = false;
 
   /* TRICKY: Some adapters map the PlayStation digital d-pad to both axes and
    * buttons. We want buttons to be used for any mappings where possible
@@ -441,17 +441,17 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
           break;
         }
         {
-          const KeyToMap* pKey = &keys_to_map_[CurKeyIndex()];
-          GameInput curGameI(
-              (GameController)cur_controller_, pKey->game_button_);
-          if (!INPUTMAPPER->ClearFromInputMap(curGameI, cur_slot_)) {
+          const KeyToMap* key = &keys_to_map_[CurKeyIndex()];
+          GameInput cur_game_i(
+              (GameController)cur_controller_, key->game_button_);
+          if (!INPUTMAPPER->ClearFromInputMap(cur_game_i, cur_slot_)) {
             break;
           }
 
           INPUTMAPPER->AddDefaultMappingsForCurrentGameIfUnmapped();
 
           sound_delete_.Play(true);
-          bHandled = true;
+          handled = true;
         }
         break;
       case KEY_LEFT:  // Move the selection left, wrapping up.
@@ -467,7 +467,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         }
         AfterChangeFocus();
         sound_change_.Play(true);
-        bHandled = true;
+        handled = true;
         break;
       case KEY_RIGHT:  // Move the selection right, wrapping down.
         if (!CursorCanGoRight()) {
@@ -481,7 +481,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         }
         AfterChangeFocus();
         sound_change_.Play(true);
-        bHandled = true;
+        handled = true;
         break;
       case KEY_UP:  // Move the selection up.
         if (!CursorCanGoUp()) {
@@ -491,7 +491,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         cur_button_--;
         AfterChangeFocus();
         sound_change_.Play(true);
-        bHandled = true;
+        handled = true;
         break;
       case KEY_DOWN:  // Move the selection down.
         if (!CursorCanGoDown()) {
@@ -501,11 +501,11 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         cur_button_++;
         AfterChangeFocus();
         sound_change_.Play(true);
-        bHandled = true;
+        handled = true;
         break;
       case KEY_ESC:  // Quit the screen.
         ExitAction();
-        bHandled = true;
+        handled = true;
         break;
       case KEY_Cm:
         if (CursorOnKey()) {
@@ -523,7 +523,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         break;
       case KEY_ENTER:  // Change the selection.
       case KEY_KP_ENTER:
-        bHandled = true;
+        handled = true;
         if (CursorOnAction()) {
           (this->*actions_[CurActionIndex()].action_)();
           SCREENMAN->PlayStartSound();
@@ -546,7 +546,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
   // m_CurController, m_CurButton );
 
   Refresh();
-  return bHandled;
+  return handled;
 }
 
 Actor* ScreenMapControllers::GetActorWithFocus() {
@@ -557,33 +557,33 @@ Actor* ScreenMapControllers::GetActorWithFocus() {
     return &(list_header_labels_[cur_controller_][cur_slot_]);
   }
 
-  const KeyToMap* pKey = &keys_to_map_[CurKeyIndex()];
-  return pKey->text_mapped_to_[cur_controller_][cur_slot_];
+  const KeyToMap* key = &keys_to_map_[CurKeyIndex()];
+  return key->text_mapped_to_[cur_controller_][cur_slot_];
 }
 
 void ScreenMapControllers::BeforeChangeFocus() {
-  Actor* pActor = GetActorWithFocus();
-  pActor->PlayCommand("LoseFocus");
+  Actor* actor = GetActorWithFocus();
+  actor->PlayCommand("LoseFocus");
 }
 
 void ScreenMapControllers::AfterChangeFocus() {
-  Actor* pActor = GetActorWithFocus();
-  pActor->PlayCommand("GainFocus");
+  Actor* actor = GetActorWithFocus();
+  actor->PlayCommand("GainFocus");
 }
 
 void ScreenMapControllers::Refresh() {
   FOREACH_ENUM(GameController, p) {
     for (unsigned b = 0; b < keys_to_map_.size(); b++) {
-      const KeyToMap* pKey = &keys_to_map_[b];
+      const KeyToMap* key = &keys_to_map_[b];
       for (int s = 0; s < NUM_SHOWN_GAME_TO_DEVICE_SLOTS; s++) {
-        BitmapText* pText = pKey->text_mapped_to_[p][s];
-        GameInput cur_gi(p, pKey->game_button_);
+        BitmapText* p_text = key->text_mapped_to_[p][s];
+        GameInput cur_gi(p, key->game_button_);
         DeviceInput di;
-        std::string sText = "-----------";
+        std::string s_text = "-----------";
         if (INPUTMAPPER->GameToDevice(cur_gi, s, di)) {
-          sText = INPUTMAN->GetDeviceSpecificInputString(di);
+          s_text = INPUTMAN->GetDeviceSpecificInputString(di);
         }
-        pText->SetText(sText);
+        p_text->SetText(s_text);
       }
     }
   }
@@ -644,15 +644,15 @@ void ScreenMapControllers::SetCursorFromSetListCurrent() {
 }
 
 void ScreenMapControllers::StartWaitingForPress() {
-  const KeyToMap* pKey = &keys_to_map_[CurKeyIndex()];
-  BitmapText* pText = pKey->text_mapped_to_[cur_controller_][cur_slot_];
-  pText->PlayCommand("Waiting");
+  const KeyToMap* key = &keys_to_map_[CurKeyIndex()];
+  BitmapText* text = key->text_mapped_to_[cur_controller_][cur_slot_];
+  text->PlayCommand("Waiting");
   waiting_for_press_.Touch();
   device_i_to_map_.MakeInvalid();
 }
 
-void ScreenMapControllers::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_DoSaveAndExit) {
+void ScreenMapControllers::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_DoSaveAndExit) {
     switch (ScreenPrompt::last_answer_) {
       DEFAULT_FAIL(ScreenPrompt::last_answer_);
       case ANSWER_YES:
@@ -667,7 +667,7 @@ void ScreenMapControllers::HandleScreenMessage(const ScreenMessage SM) {
         break;
     }
   } else {
-    ScreenWithMenuElements::HandleScreenMessage(SM);
+    ScreenWithMenuElements::HandleScreenMessage(sm);
   }
 }
 

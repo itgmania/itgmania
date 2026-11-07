@@ -14,17 +14,17 @@
 static const int WINDOW_SIZE_MS = 30;
 
 RageSoundReader_SpeedChange::RageSoundReader_SpeedChange(
-    RageSoundReader* pSource)
-    : RageSoundReader_Filter(pSource) {
-  channels_.resize(pSource->GetNumChannels());
+    RageSoundReader* source)
+    : RageSoundReader_Filter(source) {
+  channels_.resize(source->GetNumChannels());
   speed_ratio_ = trailing_speed_ratio_ = 1.0f;
   data_buffer_avail_frames_ = 0;
   SetSpeedRatio(1.0f);
   Reset();
 }
 
-void RageSoundReader_SpeedChange::SetSpeedRatio(float fRatio) {
-  speed_ratio_ = fRatio;
+void RageSoundReader_SpeedChange::SetSpeedRatio(float ratio) {
+  speed_ratio_ = ratio;
 
   /* If we haven't read any data yet, put the new delta into effect immediately.
    */
@@ -51,98 +51,98 @@ void RageSoundReader_SpeedChange::Reset() {
 }
 
 static int FindClosestMatch(
-    const float* pBuffer, int iBufferSize, const float* pCorrelateBuffer,
-    int iCorrelateBufferSize, int iStride) {
-  if (iBufferSize <= iCorrelateBufferSize) {
+    const float* buffer, int buffer_size, const float* correlate_buffer,
+    int correlate_buffer_size, int stride) {
+  if (buffer_size <= correlate_buffer_size) {
     return 0;
   }
 
   /* Optimization: if the buffers are the same, they always corellate at 0. */
-  if (pBuffer == pCorrelateBuffer) {
+  if (buffer == correlate_buffer) {
     return 0;
   }
 
-  int iBufferDistanceToSearch = iBufferSize - iCorrelateBufferSize;
-  int iBestOffset = 0;
-  float fBestScore = 0;
-  for (int i = 0; i < iBufferDistanceToSearch; i += iStride) {
-    float fScore = 0;
-    const float* pFrames = pBuffer + i;
-    for (int j = 0; j < iCorrelateBufferSize; j += iStride) {
-      float fDiff = pFrames[j] - pCorrelateBuffer[j];
-      fScore += std::abs(fDiff);
+  int buffer_distance_to_search = buffer_size - correlate_buffer_size;
+  int best_offset = 0;
+  float best_score = 0;
+  for (int i = 0; i < buffer_distance_to_search; i += stride) {
+    float score = 0;
+    const float* frames = buffer + i;
+    for (int j = 0; j < correlate_buffer_size; j += stride) {
+      float diff = frames[j] - correlate_buffer[j];
+      score += std::abs(diff);
     }
 
-    if (i == 0 || fScore < fBestScore) {
-      fBestScore = fScore;
-      iBestOffset = i;
+    if (i == 0 || score < best_score) {
+      best_score = score;
+      best_offset = i;
     }
   }
-  return iBestOffset;
+  return best_offset;
 }
 
-int RageSoundReader_SpeedChange::FillData(int iMaxFrames) {
+int RageSoundReader_SpeedChange::FillData(int max_frames) {
   /* XXX: If the rate or source frame offset changes in the source, we should
    * stop at that point, so the changes propagate upward.  That's tricky, since
    * we want to process a block at a time.  We could just flush what we have,
    * and maybe tweak m_iDeltaFrames for the next block based on how much we
    * processed, so we average out the short block. */
-  while (iMaxFrames > 0) {
-    int iFramesToRead = iMaxFrames - data_buffer_avail_frames_;
-    int iBytesToRead = iFramesToRead * channels_.size() * sizeof(float);
-    if (iBytesToRead <= 0) {
+  while (max_frames > 0) {
+    int frames_to_read = max_frames - data_buffer_avail_frames_;
+    int bytes_to_read = frames_to_read * channels_.size() * sizeof(float);
+    if (bytes_to_read <= 0) {
       return data_buffer_avail_frames_;
     }
 
-    float* pTempBuffer = new float[iBytesToRead / sizeof(float)];
-    int iGotFrames = source_->Read(pTempBuffer, iFramesToRead);
-    if (iGotFrames < 0) {
-      delete[] pTempBuffer;
-      if (iGotFrames == END_OF_FILE && data_buffer_avail_frames_) {
+    float* temp_buffer = new float[bytes_to_read / sizeof(float)];
+    int got_frames = source_->Read(temp_buffer, frames_to_read);
+    if (got_frames < 0) {
+      delete[] temp_buffer;
+      if (got_frames == END_OF_FILE && data_buffer_avail_frames_) {
         return data_buffer_avail_frames_;
       }
-      return iGotFrames;
+      return got_frames;
     }
 
     for (size_t i = 0; i < channels_.size(); ++i) {
       ChannelInfo& c = channels_[i];
 
-      if ((int)c.data_buffer_.size() < iMaxFrames) {
-        c.data_buffer_.resize(iMaxFrames);
+      if ((int)c.data_buffer_.size() < max_frames) {
+        c.data_buffer_.resize(max_frames);
       }
 
-      const float* pIn = pTempBuffer + i;
-      float* pOut = &c.data_buffer_[data_buffer_avail_frames_];
-      for (int j = 0; j < iGotFrames; ++j) {
-        *pOut = *pIn;
-        pIn += channels_.size();
-        ++pOut;
+      const float* in = temp_buffer + i;
+      float* out = &c.data_buffer_[data_buffer_avail_frames_];
+      for (int j = 0; j < got_frames; ++j) {
+        *out = *in;
+        in += channels_.size();
+        ++out;
       }
     }
-    delete[] pTempBuffer;
+    delete[] temp_buffer;
 
-    data_buffer_avail_frames_ += iGotFrames;
+    data_buffer_avail_frames_ += got_frames;
   }
   return data_buffer_avail_frames_;
 }
 
-void RageSoundReader_SpeedChange::EraseData(int iFramesToDelete) {
-  ASSERT(iFramesToDelete <= data_buffer_avail_frames_);
-  ASSERT(data_buffer_avail_frames_ >= iFramesToDelete);
-  ASSERT(uncorrelated_pos_ >= iFramesToDelete);
+void RageSoundReader_SpeedChange::EraseData(int frames_to_delete) {
+  ASSERT(frames_to_delete <= data_buffer_avail_frames_);
+  ASSERT(data_buffer_avail_frames_ >= frames_to_delete);
+  ASSERT(uncorrelated_pos_ >= frames_to_delete);
 
-  int iFramesToMove = data_buffer_avail_frames_ - iFramesToDelete;
-  data_buffer_avail_frames_ -= iFramesToDelete;
-  uncorrelated_pos_ -= iFramesToDelete;
+  int frames_to_move = data_buffer_avail_frames_ - frames_to_delete;
+  data_buffer_avail_frames_ -= frames_to_delete;
+  uncorrelated_pos_ -= frames_to_delete;
   for (size_t i = 0; i < channels_.size(); ++i) {
     ChannelInfo& c = channels_[i];
-    if (iFramesToMove) {
+    if (frames_to_move) {
       memmove(
-          &c.data_buffer_[0], &c.data_buffer_[iFramesToDelete],
-          iFramesToMove * sizeof(float));
+          &c.data_buffer_[0], &c.data_buffer_[frames_to_delete],
+          frames_to_move * sizeof(float));
     }
-    ASSERT(c.correlated_pos_ >= iFramesToDelete);
-    c.correlated_pos_ -= iFramesToDelete;
+    ASSERT(c.correlated_pos_ >= frames_to_delete);
+    c.correlated_pos_ -= frames_to_delete;
   }
 }
 
@@ -167,11 +167,11 @@ int RageSoundReader_SpeedChange::Step() {
      * Record the amount of error introduced here.  If we want to advance by 2.3
      * frames, we'll advance by 2.0 frames, and advance by 0.3 more the next
      * time around. */
-    float fAdvanceFrames = GetWindowSizeFrames() * trailing_speed_ratio_;
-    fAdvanceFrames += error_frames_;
-    int iTrailingDeltaFrames = static_cast<int>((fAdvanceFrames) + 0.5);
-    error_frames_ = fAdvanceFrames - iTrailingDeltaFrames;
-    uncorrelated_pos_ += iTrailingDeltaFrames;
+    float advance_frames = GetWindowSizeFrames() * trailing_speed_ratio_;
+    advance_frames += error_frames_;
+    int trailing_delta_frames = static_cast<int>((advance_frames) + 0.5);
+    error_frames_ = advance_frames - trailing_delta_frames;
+    uncorrelated_pos_ += trailing_delta_frames;
 
     pos_ = 0;
   }
@@ -182,31 +182,31 @@ int RageSoundReader_SpeedChange::Step() {
 
   /* We don't need any data before the earlier of m_iUncorrelatedPos or
    * m_iCorrelatedPos. */
-  int iToDelete = uncorrelated_pos_;
+  int to_delete = uncorrelated_pos_;
   for (size_t i = 0; i < channels_.size(); ++i) {
     ChannelInfo& c = channels_[i];
     ASSERT(c.correlated_pos_ <= data_buffer_avail_frames_);
-    iToDelete = std::min(iToDelete, c.correlated_pos_);
+    to_delete = std::min(to_delete, c.correlated_pos_);
     // iToDelete = std::min( iToDelete, m_iDataBufferAvailFrames );
   }
-  EraseData(iToDelete);
+  EraseData(to_delete);
 
   /* Fill as much data as we might need to do the search and use the result. */
   {
-    int iMaxPositionNeeded =
+    int max_position_needed =
         uncorrelated_pos_ + GetToleranceFrames() + GetWindowSizeFrames();
     for (size_t i = 0; i < channels_.size(); ++i) {
-      iMaxPositionNeeded = std::max(
-          iMaxPositionNeeded,
+      max_position_needed = std::max(
+          max_position_needed,
           channels_[i].correlated_pos_ + GetWindowSizeFrames());
     }
 
-    int iGot = FillData(iMaxPositionNeeded);
-    if (iGot < 0) {
-      return iGot;
+    int got = FillData(max_position_needed);
+    if (got < 0) {
+      return got;
     }
 
-    if (iMaxPositionNeeded > data_buffer_avail_frames_) {
+    if (max_position_needed > data_buffer_avail_frames_) {
       /* We're at EOF.  Flush the remaining data, if any. */
       uncorrelated_pos_ = channels_[0].correlated_pos_;
       return data_buffer_avail_frames_;
@@ -217,21 +217,21 @@ int RageSoundReader_SpeedChange::Step() {
    * GetToleranceFrames(), search for data that looks like the sound we would
    * have continued playing if we kept going from the old position
    * (m_iCorrelatedPos). */
-  int iCorrelatedToMatch = GetWindowSizeFrames() / 4;
-  int iUncorrelatedToMatch =
-      GetToleranceFrames() + iCorrelatedToMatch;  // maximum distance to search
+  int correlated_to_match = GetWindowSizeFrames() / 4;
+  int uncorrelated_to_match =
+      GetToleranceFrames() + correlated_to_match;  // maximum distance to search
 
   for (size_t i = 0; i < channels_.size(); ++i) {
     ChannelInfo& c = channels_[i];
     ASSERT(c.correlated_pos_ >= 0);
     ASSERT(c.correlated_pos_ < data_buffer_avail_frames_);
 
-    int iBest = FindClosestMatch(
-        &c.data_buffer_[uncorrelated_pos_], iUncorrelatedToMatch,
-        &c.data_buffer_[c.correlated_pos_], iCorrelatedToMatch,
+    int best = FindClosestMatch(
+        &c.data_buffer_[uncorrelated_pos_], uncorrelated_to_match,
+        &c.data_buffer_[c.correlated_pos_], correlated_to_match,
         channels_.size());
     c.last_correlated_pos_ = c.correlated_pos_;
-    c.correlated_pos_ = iBest + uncorrelated_pos_;
+    c.correlated_pos_ = best + uncorrelated_pos_;
     ASSERT(
         channels_[i].correlated_pos_ + GetWindowSizeFrames() <=
         data_buffer_avail_frames_);
@@ -240,32 +240,32 @@ int RageSoundReader_SpeedChange::Step() {
 }
 
 int RageSoundReader_SpeedChange::GetCursorAvail() const {
-  int iCursorAvail = GetWindowSizeFrames() - pos_;
+  int cursor_avail = GetWindowSizeFrames() - pos_;
   for (size_t i = 0; i < channels_.size(); ++i) {
-    int iCursorAvailForChannel =
+    int cursor_avail_for_channel =
         (data_buffer_avail_frames_ - channels_[i].correlated_pos_) - pos_;
-    iCursorAvail = std::min(iCursorAvail, iCursorAvailForChannel);
+    cursor_avail = std::min(cursor_avail, cursor_avail_for_channel);
   }
 
-  return iCursorAvail;
+  return cursor_avail;
 }
 
-int RageSoundReader_SpeedChange::Read(float* pBuf, int iFrames) {
+int RageSoundReader_SpeedChange::Read(float* buf, int frames) {
   for (;;) {
     if (data_buffer_avail_frames_ == 0 &&
         trailing_speed_ratio_ == speed_ratio_ && speed_ratio_ == 1.0f) {
       /* Fast path: the buffer is empty, and we're not scaling the audio.  Read
        * directly into the output buffer, to eliminate memory and copying
        * overhead. */
-      return source_->Read(pBuf, iFrames);
+      return source_->Read(buf, frames);
     }
 
-    int iCursorAvail = GetCursorAvail();
+    int cursor_avail = GetCursorAvail();
 
-    if (iCursorAvail == 0) {
-      int iRet = Step();
-      if (iRet < 0) {
-        return iRet;
+    if (cursor_avail == 0) {
+      int ret = Step();
+      if (ret < 0) {
+        return ret;
       }
       if (!GetCursorAvail()) {
         return END_OF_FILE;
@@ -274,25 +274,25 @@ int RageSoundReader_SpeedChange::Read(float* pBuf, int iFrames) {
     }
 
     /* copy GetWindowSizeFrames() from iCorrelatedPos */
-    int iFramesLen = iFrames;
-    int iFramesAvail = std::min(iCursorAvail, iFramesLen);
+    int frames_len = frames;
+    int frames_avail = std::min(cursor_avail, frames_len);
 
-    iFrames -= iFramesAvail;
-    int iFramesRead = iFramesAvail;
+    frames -= frames_avail;
+    int frames_read = frames_avail;
 
-    int iWindowSizeFrames = GetWindowSizeFrames();
-    while (iFramesAvail--) {
+    int window_size_frames = GetWindowSizeFrames();
+    while (frames_avail--) {
       for (size_t i = 0; i < channels_.size(); ++i) {
         ChannelInfo& c = channels_[i];
         float i1 = c.data_buffer_[c.correlated_pos_ + pos_];
         float i2 = c.data_buffer_[c.last_correlated_pos_ + pos_];
-        *pBuf++ = SCALE(pos_, 0, iWindowSizeFrames, i2, i1);
+        *buf++ = SCALE(pos_, 0, window_size_frames, i2, i1);
       }
 
       ++pos_;
     }
 
-    return iFramesRead;
+    return frames_read;
   }
 }
 
@@ -300,30 +300,30 @@ int RageSoundReader_SpeedChange::Read(float* pBuf, int iFrames) {
  * data equal to what you'd get if you read data up to that point.  This filter
  * can't do that, because the exact selection of slices is dependent on the
  * previous selection. */
-int RageSoundReader_SpeedChange::SetPosition(int iFrame) {
+int RageSoundReader_SpeedChange::SetPosition(int frame) {
   Reset();
-  return RageSoundReader_Filter::SetPosition(iFrame);
+  return RageSoundReader_Filter::SetPosition(frame);
 }
 
 bool RageSoundReader_SpeedChange::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "Speed") {
-    SetSpeedRatio(fValue);
+    const std::string& property, float value) {
+  if (property == "Speed") {
+    SetSpeedRatio(value);
     return true;
   }
 
-  return RageSoundReader_Filter::SetProperty(sProperty, fValue);
+  return RageSoundReader_Filter::SetProperty(property, value);
 }
 
 int RageSoundReader_SpeedChange::GetNextSourceFrame() const {
-  float fRatio = trailing_speed_ratio_;
+  float ratio = trailing_speed_ratio_;
 
-  int iSourceFrame = RageSoundReader_Filter::GetNextSourceFrame();
-  int iPos = static_cast<int>((pos_ * fRatio) + 0.5);
+  int source_frame = RageSoundReader_Filter::GetNextSourceFrame();
+  int pos = static_cast<int>((pos_ * ratio) + 0.5);
 
-  iSourceFrame -= data_buffer_avail_frames_;
-  iSourceFrame += uncorrelated_pos_ + iPos;
-  return iSourceFrame;
+  source_frame -= data_buffer_avail_frames_;
+  source_frame += uncorrelated_pos_ + pos;
+  return source_frame;
 }
 
 float RageSoundReader_SpeedChange::GetStreamToSourceRatio() const {

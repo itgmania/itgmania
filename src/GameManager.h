@@ -31,28 +31,27 @@ class GameManager {
   ~GameManager();
 
   void GetStylesForGame(
-      const Game* pGame, std::vector<const Style*>& aStylesAddTo,
+      const Game* game, std::vector<const Style*>& styles_add_to,
       bool editor = false);
-  const Game* GetGameForStyle(const Style* pStyle);
+  const Game* GetGameForStyle(const Style* style);
   void GetStepsTypesForGame(
-      const Game* pGame, std::vector<StepsType>& aStepsTypeAddTo);
+      const Game* game, std::vector<StepsType>& steps_type_add_to);
   const Style* GetEditorStyleForStepsType(StepsType st);
   void GetDemonstrationStylesForGame(
-      const Game* pGame, std::vector<const Style*>& vpStylesOut);
-  const Style* GetHowToPlayStyleForGame(const Game* pGame);
+      const Game* game, std::vector<const Style*>& styles_out);
+  const Style* GetHowToPlayStyleForGame(const Game* game);
   void GetCompatibleStyles(
-      const Game* pGame, int iNumPlayers,
-      std::vector<const Style*>& vpStylesOut);
+      const Game* game, int num_players, std::vector<const Style*>& styles_out);
   const Style* GetFirstCompatibleStyle(
-      const Game* pGame, int iNumPlayers, StepsType st);
+      const Game* game, int num_players, StepsType st);
 
-  void GetEnabledGames(std::vector<const Game*>& aGamesOut);
+  void GetEnabledGames(std::vector<const Game*>& games_out);
   const Game* GetDefaultGame();
-  bool IsGameEnabled(const Game* pGame);
+  bool IsGameEnabled(const Game* game);
   static const StepsTypeInfo& GetStepsTypeInfo(StepsType st);
-  StepsType StringToStepsType(std::string sStepsType);
-  const Game* StringToGame(std::string sGame);
-  const Style* GameAndStringToStyle(const Game* pGame, std::string sStyle);
+  StepsType StringToStepsType(std::string steps_type);
+  const Game* StringToGame(std::string game);
+  const Style* GameAndStringToStyle(const Game* game, std::string style);
   std::string StyleToLocalizedString(const Style* s);
 
   // Lua

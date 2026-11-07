@@ -107,12 +107,12 @@ out_close:
 }
 
 std::string RageSoundDriver_JACK::ConnectPorts() {
-  std::vector<std::string> portNames;
-  split(PREFSMAN->sound_device_.Get(), ",", portNames, true);
+  std::vector<std::string> port_names;
+  split(PREFSMAN->sound_device_.Get(), ",", port_names, true);
 
   const char *port_out_l = nullptr, *port_out_r = nullptr;
   const char** ports = nullptr;
-  if (portNames.size() == 0) {
+  if (port_names.size() == 0) {
     // The user has NOT specified any ports to connect to. Search
     // for all physical sinks and use the first two.
     ports = jack_get_ports(
@@ -140,8 +140,8 @@ std::string RageSoundDriver_JACK::ConnectPorts() {
     // jack_port_name to use their canonical name.  (I'm not sure
     // if that second step is necessary, I've seen something about
     // "aliases" in the docs.)
-    for (const std::string& portName : portNames) {
-      jack_port_t* out = jack_port_by_name(client_, portName.c_str());
+    for (const std::string& port_name : port_names) {
+      jack_port_t* out = jack_port_by_name(client_, port_name.c_str());
       // Make sure the port is a sink.
       if (!(jack_port_flags(out) & JackPortIsInput)) {
         continue;

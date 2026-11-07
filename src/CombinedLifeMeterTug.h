@@ -13,12 +13,12 @@
 class CombinedLifeMeterTug : public CombinedLifeMeter {
  public:
   CombinedLifeMeterTug();
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
   virtual void ChangeLife(PlayerNumber pn, TapNoteScore score);
   virtual void ChangeLife(
       PlayerNumber pn, HoldNoteScore score, TapNoteScore tscore);
-  virtual void ChangeLife(PlayerNumber pn, float fPercentToMove);
+  virtual void ChangeLife(PlayerNumber pn, float percent_to_move);
   virtual void SetLife(PlayerNumber pn, float value);
   virtual void HandleTapScoreNone(PlayerNumber pn);
 

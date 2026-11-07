@@ -9,7 +9,7 @@ class ScreenSyncOverlay : public Screen {
   virtual void Init();
 
   bool Input(const InputEventPlus& input);
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
  private:
   void UpdateText();

@@ -21,11 +21,11 @@ const std::string XNode::kTextAttribute = "__TEXT__";
 
 XNode::XNode() {}
 
-XNode::XNode(const std::string& sName) { name_ = sName; }
+XNode::XNode(const std::string& name) { name_ = name; }
 
 XNode::XNode(const XNode& cpy) : name_(cpy.name_) {
-  FOREACH_CONST_Attr(&cpy, pAttr) this->AppendAttrFrom(
-      pAttr->first, pAttr->second->Copy());
+  FOREACH_CONST_Attr(&cpy, attr) this->AppendAttrFrom(
+      attr->first, attr->second->Copy());
   FOREACH_CONST_Child(&cpy, c) this->AppendChild(new XNode(*c));
 }
 
@@ -33,7 +33,7 @@ void XNode::Clear() { Free(); }
 
 void XNode::Free() {
   FOREACH_Child(this, p) delete p;
-  FOREACH_Attr(this, pAttr) delete pAttr->second;
+  FOREACH_Attr(this, attr) delete attr->second;
   childs_.clear();
   children_by_name_.clear();
   attrs_.clear();
@@ -70,13 +70,13 @@ const XNodeValue* XNode::GetAttr(const std::string& attrname) const {
   return nullptr;
 }
 
-bool XNode::PushAttrValue(lua_State* L, const std::string& sName) const {
-  const XNodeValue* pAttr = GetAttr(sName);
-  if (pAttr == nullptr) {
+bool XNode::PushAttrValue(lua_State* L, const std::string& name) const {
+  const XNodeValue* attr = GetAttr(name);
+  if (attr == nullptr) {
     lua_pushnil(L);
     return false;
   }
-  pAttr->PushValue(L);
+  attr->PushValue(L);
   return true;
 }
 
@@ -88,21 +88,21 @@ XNodeValue* XNode::GetAttr(const std::string& attrname) {
   return nullptr;
 }
 
-XNode* XNode::GetChild(const std::string& sName) {
+XNode* XNode::GetChild(const std::string& name) {
   std::multimap<std::string, XNode*>::iterator by_name =
-      children_by_name_.lower_bound(sName);
+      children_by_name_.lower_bound(name);
   if (by_name != children_by_name_.end() &&
-      sName == by_name->second->GetName()) {
+      name == by_name->second->GetName()) {
     return by_name->second;
   }
   return nullptr;
 }
 
-const XNode* XNode::GetChild(const std::string& sName) const {
+const XNode* XNode::GetChild(const std::string& name) const {
   std::multimap<std::string, XNode*>::const_iterator by_name =
-      children_by_name_.lower_bound(sName);
+      children_by_name_.lower_bound(name);
   if (by_name != children_by_name_.end() &&
-      sName == by_name->second->GetName()) {
+      name == by_name->second->GetName()) {
     return by_name->second;
   }
   return nullptr;
@@ -116,13 +116,13 @@ XNode* XNode::AppendChild(XNode* node) {
 }
 
 // detach node and delete object
-bool XNode::RemoveChild(XNode* node, bool bDelete) {
+bool XNode::RemoveChild(XNode* node, bool b_delete) {
   XNodes::iterator it = find(childs_.begin(), childs_.end(), node);
   if (it == childs_.end()) {
     return false;
   }
   RemoveChildFromByName(node);
-  if (bDelete) {
+  if (b_delete) {
     delete node;
   }
   childs_.erase(it);
@@ -152,29 +152,29 @@ void XNode::RenameChildInByName(XNode* node) {
  * will be deleted. If bOverwrite is false and a node already exists with that
  * name, the new value will be deleted. */
 XNodeValue* XNode::AppendAttrFrom(
-    const std::string& sName, XNodeValue* pValue, bool bOverwrite) {
-  DEBUG_ASSERT(sName.size());
+    const std::string& name, XNodeValue* value, bool overwrite) {
+  DEBUG_ASSERT(name.size());
   std::pair<XAttrs::iterator, bool> ret =
-      attrs_.insert(std::make_pair(sName, (XNodeValue*)nullptr));
+      attrs_.insert(std::make_pair(name, (XNodeValue*)nullptr));
   if (!ret.second)  // already existed
   {
-    if (bOverwrite) {
+    if (overwrite) {
       delete ret.first->second;
     } else {
-      delete pValue;
-      pValue = ret.first->second;
+      delete value;
+      value = ret.first->second;
     }
   }
 
-  ret.first->second = pValue;
+  ret.first->second = value;
 
   return ret.first->second;
 };
 
-XNodeValue* XNode::AppendAttr(const std::string& sName) {
-  DEBUG_ASSERT(sName.size());
+XNodeValue* XNode::AppendAttr(const std::string& name) {
+  DEBUG_ASSERT(name.size());
   std::pair<XAttrs::iterator, bool> ret =
-      attrs_.insert(std::make_pair(sName, (XNodeValue*)nullptr));
+      attrs_.insert(std::make_pair(name, (XNodeValue*)nullptr));
   if (ret.second) {
     ret.first->second = new XNodeStringValue;
   }

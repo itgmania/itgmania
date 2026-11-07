@@ -18,18 +18,18 @@ void InputQueueCodeSet::Load(const std::string& sType) {
   split(CODE_NAMES, ",", code_names_, true);
 
   for (unsigned c = 0; c < code_names_.size(); c++) {
-    std::vector<std::string> asBits;
-    split(code_names_[c], "=", asBits, true);
-    std::string sCodeName = asBits[0];
-    if (asBits.size() > 1) {
-      code_names_[c] = asBits[1];
+    std::vector<std::string> bits;
+    split(code_names_[c], "=", bits, true);
+    std::string code_name = bits[0];
+    if (bits.size() > 1) {
+      code_names_[c] = bits[1];
     }
 
     InputQueueCode code;
 
     // Invalid codes are empty and we still want to make sure m_asCodeNames
     // and m_aCodes are the same size to prevent off by ones.
-    code.Load(CODE(sCodeName));
+    code.Load(CODE(code_name));
 
     codes_.push_back(code);
   }
@@ -48,14 +48,14 @@ std::string InputQueueCodeSet::Input(const InputEventPlus& input) const {
 
 bool InputQueueCodeSet::InputMessage(
     const InputEventPlus& input, Message& msg) const {
-  std::string sCodeName = Input(input);
-  if (sCodeName.empty()) {
+  std::string code_name = Input(input);
+  if (code_name.empty()) {
     return false;
   }
 
   msg.SetName("Code");
   msg.SetParam("PlayerNumber", input.pn_);
-  msg.SetParam("Name", sCodeName);
+  msg.SetParam("Name", code_name);
   return true;
 }
 

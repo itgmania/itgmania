@@ -56,7 +56,7 @@ struct TimingSegment {
   virtual bool IsNotable() const = 0;
 
   // don't allow base TimingSegments to be instantiated directly
-  TimingSegment(int iRow = ROW_INVALID) : start_row_(iRow) {}
+  TimingSegment(int row = ROW_INVALID) : start_row_(row) {}
 
   TimingSegment(const TimingSegment& other) : start_row_(other.GetRow()) {}
 
@@ -77,10 +77,10 @@ struct TimingSegment {
    * @param length Length in rows
    * @param newLength The new length in rows
    */
-  virtual void Scale(int start, int length, int newLength);
+  virtual void Scale(int start, int length, int new_length);
 
   int GetRow() const { return start_row_; }
-  void SetRow(int iRow) { start_row_ = iRow; }
+  void SetRow(int row) { start_row_ = row; }
 
   float GetBeat() const { return NoteRowToBeat(start_row_); }
 
@@ -126,8 +126,8 @@ struct FakeSegment : public TimingSegment {
 
   FakeSegment() : TimingSegment(), length_rows_(-1) {}
 
-  FakeSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), length_rows_(BeatToNoteRow(fBeats)) {}
+  FakeSegment(int start_row, float beats)
+      : TimingSegment(start_row), length_rows_(BeatToNoteRow(beats)) {}
 
   FakeSegment(const FakeSegment& other)
       : TimingSegment(other.GetRow()), length_rows_(other.GetLengthRows()) {}
@@ -136,9 +136,9 @@ struct FakeSegment : public TimingSegment {
   float GetLengthBeats() const { return NoteRowToBeat(length_rows_); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(float fBeats) { length_rows_ = BeatToNoteRow(fBeats); }
+  void SetLength(float beats) { length_rows_ = BeatToNoteRow(beats); }
 
-  void Scale(int start, int length, int newLength);
+  void Scale(int start, int length, int new_length);
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -184,16 +184,16 @@ struct WarpSegment : public TimingSegment {
   WarpSegment(const WarpSegment& other)
       : TimingSegment(other.GetRow()), length_rows_(other.GetLengthRows()) {}
 
-  WarpSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), length_rows_(BeatToNoteRow(fBeats)) {}
+  WarpSegment(int start_row, float beats)
+      : TimingSegment(start_row), length_rows_(BeatToNoteRow(beats)) {}
 
   int GetLengthRows() const { return length_rows_; }
   float GetLengthBeats() const { return NoteRowToBeat(length_rows_); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(float fBeats) { length_rows_ = BeatToNoteRow(fBeats); }
+  void SetLength(float beats) { length_rows_ = BeatToNoteRow(beats); }
 
-  void Scale(int start, int length, int newLength);
+  void Scale(int start, int length, int new_length);
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
     return std::vector<float>(1, GetLength());
@@ -243,8 +243,8 @@ struct TickcountSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new TickcountSegment(*this); }
 
-  TickcountSegment(int iStartRow = ROW_INVALID, int iTicks = kDefaultTickCount)
-      : TimingSegment(iStartRow), ticks_per_beat_(iTicks) {}
+  TickcountSegment(int start_row = ROW_INVALID, int ticks = kDefaultTickCount)
+      : TimingSegment(start_row), ticks_per_beat_(ticks) {}
 
   TickcountSegment(const TickcountSegment& other)
       : TimingSegment(other.GetRow()), ticks_per_beat_(other.GetTicks()) {}
@@ -294,8 +294,8 @@ struct ComboSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new ComboSegment(*this); }
 
-  ComboSegment(int iStartRow = ROW_INVALID, int iCombo = 1, int iMissCombo = 1)
-      : TimingSegment(iStartRow), combo_(iCombo), miss_combo_(iMissCombo) {}
+  ComboSegment(int start_row = ROW_INVALID, int combo = 1, int miss_combo = 1)
+      : TimingSegment(start_row), combo_(combo), miss_combo_(miss_combo) {}
 
   ComboSegment(const ComboSegment& other)
       : TimingSegment(other.GetRow()),
@@ -353,8 +353,8 @@ struct LabelSegment : public TimingSegment {
   TimingSegment* Copy() const { return new LabelSegment(*this); }
 
   LabelSegment(
-      int iStartRow = ROW_INVALID, const std::string& sLabel = std::string())
-      : TimingSegment(iStartRow), label_(sLabel) {}
+      int start_row = ROW_INVALID, const std::string& label = std::string())
+      : TimingSegment(start_row), label_(label) {}
 
   LabelSegment(const LabelSegment& other)
       : TimingSegment(other.GetRow()), label_(other.GetLabel()) {}
@@ -402,9 +402,9 @@ struct BPMSegment : public TimingSegment {
   TimingSegment* Copy() const { return new BPMSegment(*this); }
 
   // note that this takes a BPM, not a BPS (compatibility)
-  BPMSegment(int iStartRow = ROW_INVALID, float fBPM = 0.0f)
-      : TimingSegment(iStartRow) {
-    SetBPM(fBPM);
+  BPMSegment(int start_row = ROW_INVALID, float bpm = 0.0f)
+      : TimingSegment(start_row) {
+    SetBPM(bpm);
   }
 
   BPMSegment(const BPMSegment& other)
@@ -413,8 +413,8 @@ struct BPMSegment : public TimingSegment {
   float GetBPS() const { return bps_; }
   float GetBPM() const { return bps_ * 60.0f; }
 
-  void SetBPS(float fBPS) { bps_ = fBPS; }
-  void SetBPM(float fBPM) { bps_ = fBPM / 60.0f; }
+  void SetBPS(float bps) { bps_ = bps; }
+  void SetBPM(float bpm) { bps_ = bpm / 60.0f; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -457,9 +457,8 @@ struct TimeSignatureSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new TimeSignatureSegment(*this); }
 
-  TimeSignatureSegment(
-      int iStartRow = ROW_INVALID, int iNum = 4, int iDenom = 4)
-      : TimingSegment(iStartRow), numerator_(iNum), denominator_(iDenom) {}
+  TimeSignatureSegment(int start_row = ROW_INVALID, int num = 4, int denom = 4)
+      : TimingSegment(start_row), numerator_(num), denominator_(denom) {}
 
   TimeSignatureSegment(const TimeSignatureSegment& other)
       : TimingSegment(other.GetRow()),
@@ -537,9 +536,9 @@ struct SpeedSegment : public TimingSegment {
   enum BaseUnit { UNIT_BEATS, UNIT_SECONDS };
 
   SpeedSegment(
-      int iStartRow = ROW_INVALID, float fRatio = 1.0f, float fDelay = 0.0f,
+      int start_row = ROW_INVALID, float ratio = 1.0f, float delay = 0.0f,
       BaseUnit unit = UNIT_BEATS)
-      : TimingSegment(iStartRow), ratio_(fRatio), delay_(fDelay), unit_(unit) {}
+      : TimingSegment(start_row), ratio_(ratio), delay_(delay), unit_(unit) {}
 
   SpeedSegment(const SpeedSegment& other)
       : TimingSegment(other.GetRow()),
@@ -550,11 +549,11 @@ struct SpeedSegment : public TimingSegment {
   float GetRatio() const { return ratio_; }
 
   float GetDelay() const { return delay_; }
-  void SetDelay(float fDelay) { delay_ = fDelay; }
+  void SetDelay(float delay) { delay_ = delay; }
 
   BaseUnit GetUnit() const { return unit_; }
 
-  void Scale(int start, int length, int newLength);
+  void Scale(int start, int length, int new_length);
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
@@ -613,8 +612,8 @@ struct ScrollSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new ScrollSegment(*this); }
 
-  ScrollSegment(int iStartRow = ROW_INVALID, float fRatio = 1.0f)
-      : TimingSegment(iStartRow), ratio_(fRatio) {}
+  ScrollSegment(int start_row = ROW_INVALID, float ratio = 1.0f)
+      : TimingSegment(start_row), ratio_(ratio) {}
 
   ScrollSegment(const ScrollSegment& other)
       : TimingSegment(other.GetRow()), ratio_(other.GetRatio()) {}
@@ -654,14 +653,14 @@ struct StopSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new StopSegment(*this); }
 
-  StopSegment(int iStartRow = ROW_INVALID, float fSeconds = 0.0f)
-      : TimingSegment(iStartRow), seconds_(fSeconds) {}
+  StopSegment(int start_row = ROW_INVALID, float seconds = 0.0f)
+      : TimingSegment(start_row), seconds_(seconds) {}
 
   StopSegment(const StopSegment& other)
       : TimingSegment(other.GetRow()), seconds_(other.GetPause()) {}
 
   float GetPause() const { return seconds_; }
-  void SetPause(float fSeconds) { seconds_ = fSeconds; }
+  void SetPause(float seconds) { seconds_ = seconds; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -696,14 +695,14 @@ struct DelaySegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new DelaySegment(*this); }
 
-  DelaySegment(int iStartRow = ROW_INVALID, float fSeconds = 0)
-      : TimingSegment(iStartRow), seconds_(fSeconds) {}
+  DelaySegment(int start_row = ROW_INVALID, float seconds = 0)
+      : TimingSegment(start_row), seconds_(seconds) {}
 
   DelaySegment(const DelaySegment& other)
       : TimingSegment(other.GetRow()), seconds_(other.GetPause()) {}
 
   float GetPause() const { return seconds_; }
-  void SetPause(float fSeconds) { seconds_ = fSeconds; }
+  void SetPause(float seconds) { seconds_ = seconds; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {

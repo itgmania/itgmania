@@ -16,16 +16,16 @@ void ScreenSplash::Init() {
 
 void ScreenSplash::BeginScreen() { ScreenWithMenuElements::BeginScreen(); }
 
-void ScreenSplash::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_DoneFadingIn) {
+void ScreenSplash::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_DoneFadingIn) {
     if (PREPARE_SCREEN) {
       SCREENMAN->PrepareScreen(GetNextScreenName());
     }
-  } else if (SM == SM_MenuTimer) {
+  } else if (sm == SM_MenuTimer) {
     StartTransitioningScreen(SM_GoToNextScreen);
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 bool ScreenSplash::MenuBack(const InputEventPlus& input) {

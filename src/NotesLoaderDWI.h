@@ -17,8 +17,7 @@ namespace DWILoader {
  * @param sPath a const reference to the path on the hard drive to check.
  * @param out a vector of files found in the path.
  */
-void GetApplicableFiles(
-    const std::string& sPath, std::vector<std::string>& out);
+void GetApplicableFiles(const std::string& path, std::vector<std::string>& out);
 /**
  * @brief Attempt to load a song from a specified path.
  * @param sPath a const reference to the path on the hard drive to check.
@@ -27,8 +26,8 @@ void GetApplicableFiles(
  * @return its success or failure.
  */
 bool LoadFromDir(
-    const std::string& sPath, Song& out,
-    std::set<std::string>& BlacklistedImages);
+    const std::string& path, Song& out,
+    std::set<std::string>& blacklisted_images);
 
 bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
 }  // namespace DWILoader

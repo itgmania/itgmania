@@ -6,17 +6,17 @@
 
 class Regex {
  public:
-  Regex(const std::string& sPat = "");
+  Regex(const std::string& pat = "");
   Regex(const Regex& rhs);
   Regex& operator=(const Regex& rhs);
   ~Regex();
   bool IsSet() const { return !pattern_.empty(); }
   void Set(const std::string& str);
-  bool Compare(const std::string& sStr);
-  bool Compare(const std::string& sStr, std::vector<std::string>& asMatches);
+  bool Compare(const std::string& str);
+  bool Compare(const std::string& str, std::vector<std::string>& matches);
   bool Replace(
-      const std::string& sReplacement, const std::string& sSubject,
-      std::string& sOut);
+      const std::string& replacement, const std::string& subject,
+      std::string& out);
 
  private:
   void Compile();

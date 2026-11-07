@@ -52,21 +52,21 @@ void BacktraceNames::Demangle() {}
 #endif
 
 std::string BacktraceNames::Format() const {
-  std::string ShortenedPath = file_;
-  if (ShortenedPath != "") {
+  std::string shortened_path = file_;
+  if (shortened_path != "") {
     /* Abbreviate the module name. */
-    size_t slash = ShortenedPath.rfind('/');
-    if (slash != ShortenedPath.npos) {
-      ShortenedPath = ShortenedPath.substr(slash + 1);
+    size_t slash = shortened_path.rfind('/');
+    if (slash != shortened_path.npos) {
+      shortened_path = shortened_path.substr(slash + 1);
     }
-    ShortenedPath = std::string("(") + ShortenedPath + ")";
+    shortened_path = std::string("(") + shortened_path + ")";
   }
 
   std::string ret = ssprintf("%0*lx: ", int(sizeof(void*) * 2), (long)address_);
   if (symbol_ != "") {
     ret += symbol_ + " ";
   }
-  ret += ShortenedPath;
+  ret += shortened_path;
 
   return ret;
 }

@@ -13,10 +13,10 @@ class LoadingWindow_Gtk : public LoadingWindow {
   std::string Init();
   ~LoadingWindow_Gtk();
   void SetText(std::string str);
-  void SetIcon(const RageSurface* pIcon);
-  void SetSplash(const RageSurface* pSplash);
+  void SetIcon(const RageSurface* icon);
+  void SetSplash(const RageSurface* splash);
   void SetProgress(const int progress);
-  void SetTotalWork(const int totalWork);
+  void SetTotalWork(const int total_work);
   void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_GTK

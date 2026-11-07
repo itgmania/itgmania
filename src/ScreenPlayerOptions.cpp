@@ -64,7 +64,7 @@ void ScreenPlayerOptions::BeginScreen() {
 }
 
 bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
-  bool bHandled = false;
+  bool handled = false;
 
   if (ask_options_message_ && input.type_ == IET_FIRST_PRESS &&
       !in_.IsTransitioning() && input.menu_i_ == GAME_BUTTON_START) {
@@ -72,7 +72,7 @@ bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
       go_to_options_ = true;
       this->PlayCommand("GoToOptions");
       SCREENMAN->PlayStartSound();
-      bHandled = true;
+      handled = true;
     }
   }
 
@@ -89,27 +89,27 @@ bool ScreenPlayerOptions::Input(const InputEventPlus& input) {
     for (unsigned r = 0; r < rows_.size(); r++) {
       std::vector<PlayerNumber> v;
       v.push_back(pn);
-      int iOldFocus = rows_[r]->GetChoiceInRowWithFocus(pn);
+      int old_focus = rows_[r]->GetChoiceInRowWithFocus(pn);
       this->ImportOptions(r, v);
       rows_[r]->AfterImportOptions(pn);
       this->UpdateDisqualified(r, pn);
-      rows_[r]->SetChoiceInRowWithFocus(pn, iOldFocus);
+      rows_[r]->SetChoiceInRowWithFocus(pn, old_focus);
     }
-    bHandled = true;
+    handled = true;
   }
 
-  bHandled = ScreenOptionsMaster::Input(input) || bHandled;
+  handled = ScreenOptionsMaster::Input(input) || handled;
 
   // UGLY: Update m_Disqualified whenever Start is pressed
   if (GAMESTATE->IsHumanPlayer(pn) && input.menu_i_ == GAME_BUTTON_START) {
     int row = current_row_[pn];
     UpdateDisqualified(row, pn);
   }
-  return bHandled;
+  return handled;
 }
 
-void ScreenPlayerOptions::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_BeginFadingOut &&
+void ScreenPlayerOptions::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_BeginFadingOut &&
       ask_options_message_)  // user accepts the page of options
   {
     accepted_choices_ = true;
@@ -118,14 +118,14 @@ void ScreenPlayerOptions::HandleScreenMessage(const ScreenMessage SM) {
     this->PlayCommand("AskForGoToOptions");
   }
 
-  ScreenOptionsMaster::HandleScreenMessage(SM);
+  ScreenOptionsMaster::HandleScreenMessage(sm);
 }
 
 void ScreenPlayerOptions::UpdateDisqualified(int row, PlayerNumber pn) {
   ASSERT(GAMESTATE->IsHumanPlayer(pn));
 
   // save original player options
-  PlayerOptions poOrig =
+  PlayerOptions orig =
       GAMESTATE->player_state_[pn]->player_options_.GetPreferred();
 
   // Find out if the current row when exported causes disqualification.
@@ -135,8 +135,8 @@ void ScreenPlayerOptions::UpdateDisqualified(int row, PlayerNumber pn) {
   std::vector<PlayerNumber> v;
   v.push_back(pn);
   ExportOptions(row, v);
-  bool bRowCausesDisqualified = GAMESTATE->CurrentOptionsDisqualifyPlayer(pn);
-  row_causes_disqualified_[pn][row] = bRowCausesDisqualified;
+  bool row_causes_disqualified = GAMESTATE->CurrentOptionsDisqualifyPlayer(pn);
+  row_causes_disqualified_[pn][row] = row_causes_disqualified;
 
   // Update disqualified graphic
   bool disqualified = std::any_of(
@@ -147,7 +147,7 @@ void ScreenPlayerOptions::UpdateDisqualified(int row, PlayerNumber pn) {
 
   // restore previous player options in case the user escapes back after this
   GAMESTATE->player_state_[pn]->player_options_.Assign(
-      ModsLevel_Preferred, poOrig);
+      ModsLevel_Preferred, orig);
 }
 
 // lua start

@@ -17,10 +17,10 @@ class ScreenOptionsMaster : public ScreenOptions {
   int change_mask_;
 
  protected:
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
-  virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
-  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 };
 
 #endif

@@ -13,8 +13,9 @@ class InputHandler_DInput : public InputHandler {
  public:
   InputHandler_DInput();
   ~InputHandler_DInput();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
-  wchar_t DeviceButtonToChar(DeviceButton button, bool bUseCurrentKeyModifiers);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
+  wchar_t DeviceButtonToChar(
+      DeviceButton button, bool use_current_key_modifiers);
   void Update();
   bool DevicesChanged();
   void WindowReset();
@@ -31,7 +32,7 @@ class InputHandler_DInput : public InputHandler {
   void UpdatePolled(DIDevice& device, const RageTimer& tm);
   void UpdateBuffered(DIDevice& device, const RageTimer& tm);
   void UpdateXInput(XIDevice& device, const RageTimer& tm);
-  void PollAndAcquireDevices(bool bBuffered);
+  void PollAndAcquireDevices(bool buffered);
 
   static int InputThread_Start(void* p) {
     ((InputHandler_DInput*)p)->InputThreadMain();

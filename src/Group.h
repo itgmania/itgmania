@@ -10,7 +10,7 @@ struct lua_State;
 class Group {
  public:
   Group(
-      const std::string& sDir, const std::string& sGroupDirName,
+      const std::string& dir, const std::string& group_dir_name,
       ProfileSlot prof_slot = ProfileSlot_Invalid);
   ~Group() = default;
   // Lua

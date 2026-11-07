@@ -49,7 +49,7 @@ struct ThreadSlot {
     char formatted_buf_[1024];
 
     ThreadCheckpoint() { Set(nullptr, 0, nullptr); }
-    void Set(const char* szFile, int iLine, const char* szMessage = nullptr);
+    void Set(const char* file, int line, const char* message = nullptr);
     const char* GetFormattedCheckpoint();
   };
   ThreadCheckpoint checkpoints_[CHECKPOINT_COUNT];
@@ -80,10 +80,10 @@ struct ThreadSlot {
 };
 
 void ThreadSlot::ThreadCheckpoint::Set(
-    const char* szFile, int iLine, const char* szMessage) {
-  file_ = szFile;
-  line_ = iLine;
-  message_ = szMessage;
+    const char* file, int line, const char* message) {
+  file_ = file;
+  line_ = line;
+  message_ = message;
 
   /* Skip any path components. */
   if (file_ != nullptr) {
@@ -132,15 +132,15 @@ struct ThreadSlot* g_pUnknownThreadSlot = nullptr;
  * identifiers, so possibly racing over them is harmless (simply using a stale
  * thread ID, etc). */
 static RageMutex& GetThreadSlotsLock() {
-  static RageMutex* pLock = new RageMutex("ThreadSlots");
-  return *pLock;
+  static RageMutex* lock = new RageMutex("ThreadSlots");
+  return *lock;
 }
 
 /* All unkown threads are put into the same slot in g_ThreadSlots. This
  * mutex synchronizes access to that slot. */
 static RageMutex& GetUnknownThreadSlotLock() {
-  static RageMutex* pLock = new RageMutex("UnknownThreadSlot");
-  return *pLock;
+  static RageMutex* lock = new RageMutex("UnknownThreadSlot");
+  return *lock;
 }
 
 static int FindEmptyThreadSlot() {
@@ -160,8 +160,8 @@ static int FindEmptyThreadSlot() {
 static void InitThreads() {
   /* We don't have to worry about two threads calling this at once, since it's
    * called when we create a thread. */
-  static bool bInitialized = false;
-  if (bInitialized) {
+  static bool initialized = false;
+  if (initialized) {
     return;
   }
 
@@ -170,11 +170,11 @@ static void InitThreads() {
   /* Libraries might start threads on their own, which might call user
    * callbacks, which could come back here.  Make sure we don't accidentally
    * initialize twice. */
-  if (bInitialized) {
+  if (initialized) {
     return;
   }
 
-  bInitialized = true;
+  initialized = true;
 
   /* Register the "unknown thread" slot. */
   int slot = FindEmptyThreadSlot();
@@ -184,14 +184,14 @@ static void InitThreads() {
   g_pUnknownThreadSlot = &g_ThreadSlots[slot];
 }
 
-static ThreadSlot* GetThreadSlotFromID(uint64_t iID) {
+static ThreadSlot* GetThreadSlotFromID(uint64_t id) {
   InitThreads();
 
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
     if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (g_ThreadSlots[entry].id_ == iID) {
+    if (g_ThreadSlots[entry].id_ == id) {
       return &g_ThreadSlots[entry];
     }
   }
@@ -249,16 +249,16 @@ void RageThread::Create(int (*fn)(void*), void* data) {
   slot_->impl_ = MakeThread(fn, data, &slot_->id_);
 }
 
-RageThreadRegister::RageThreadRegister(const std::string& sName) {
+RageThreadRegister::RageThreadRegister(const std::string& name) {
   InitThreads();
   LockMut(GetThreadSlotsLock());
 
-  int iSlot = FindEmptyThreadSlot();
+  int slot = FindEmptyThreadSlot();
 
-  slot_ = &g_ThreadSlots[iSlot];
+  slot_ = &g_ThreadSlots[slot];
 
-  strcpy(slot_->name_, sName.c_str());
-  sprintf(slot_->thread_formatted_output_, "Thread: %s", sName.c_str());
+  strcpy(slot_->name_, name.c_str());
+  sprintf(slot_->thread_formatted_output_, "Thread: %s", name.c_str());
 
   slot_->id_ = GetThisThreadId();
   slot_->impl_ = MakeThisThread();
@@ -275,8 +275,8 @@ const char* RageThread::GetCurrentThreadName() {
   return GetThreadNameByID(GetCurrentThreadID());
 }
 
-const char* RageThread::GetThreadNameByID(uint64_t iID) {
-  ThreadSlot* slot = GetThreadSlotFromID(iID);
+const char* RageThread::GetThreadNameByID(uint64_t id) {
+  ThreadSlot* slot = GetThreadSlotFromID(id);
   if (slot == nullptr) {
     return "???";
   }
@@ -284,7 +284,7 @@ const char* RageThread::GetThreadNameByID(uint64_t iID) {
   return slot->GetThreadName();
 }
 
-bool RageThread::EnumThreadIDs(int n, uint64_t& iID) {
+bool RageThread::EnumThreadIDs(int n, uint64_t& id) {
   if (n >= MAX_THREADS) {
     return false;
   }
@@ -293,9 +293,9 @@ bool RageThread::EnumThreadIDs(int n, uint64_t& iID) {
   const ThreadSlot* slot = &g_ThreadSlots[n];
 
   if (slot->used_.load(std::memory_order_acquire)) {
-    iID = slot->id_;
+    id = slot->id_;
   } else {
-    iID = GetInvalidThreadId();
+    id = GetInvalidThreadId();
   }
 
   return true;
@@ -314,10 +314,10 @@ int RageThread::Wait() {
   return ret;
 }
 
-void RageThread::Halt(bool Kill) {
+void RageThread::Halt(bool kill) {
   ASSERT(slot_ != nullptr);
   ASSERT(slot_->impl_ != nullptr);
-  slot_->impl_->Halt(Kill);
+  slot_->impl_->Halt(kill);
 }
 
 void RageThread::Resume() {
@@ -326,27 +326,27 @@ void RageThread::Resume() {
   slot_->impl_->Resume();
 }
 
-void RageThread::HaltAllThreads(bool Kill) {
-  const uint64_t ThisThreadID = GetThisThreadId();
+void RageThread::HaltAllThreads(bool kill) {
+  const uint64_t this_thread_id = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
     if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (ThisThreadID == g_ThreadSlots[entry].id_ ||
+    if (this_thread_id == g_ThreadSlots[entry].id_ ||
         g_ThreadSlots[entry].impl_ == nullptr) {
       continue;
     }
-    g_ThreadSlots[entry].impl_->Halt(Kill);
+    g_ThreadSlots[entry].impl_->Halt(kill);
   }
 }
 
 void RageThread::ResumeAllThreads() {
-  const uint64_t ThisThreadID = GetThisThreadId();
+  const uint64_t this_thread_id = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
     if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (ThisThreadID == g_ThreadSlots[entry].id_ ||
+    if (this_thread_id == g_ThreadSlots[entry].id_ ||
         g_ThreadSlots[entry].impl_ == nullptr) {
       continue;
     }
@@ -370,10 +370,10 @@ void Checkpoints::SetCheckpoint(
 
 void Checkpoints::SetCheckpoint(
     const char* file, int line, const char* message) {
-  bool bUnknownThread = false;
+  bool unknown_thread = false;
   ThreadSlot* slot = GetCurThreadSlot();
   if (slot == nullptr) {
-    bUnknownThread = true;
+    unknown_thread = true;
     slot = GetUnknownThreadSlot();
     /* We can't ASSERT here, since that uses checkpoints. */
     if (slot == nullptr) {
@@ -387,7 +387,7 @@ void Checkpoints::SetCheckpoint(
     file = temp + 4;
   }
 
-  if (bUnknownThread) {
+  if (unknown_thread) {
     GetUnknownThreadSlotLock().Lock();
   }
 
@@ -402,7 +402,7 @@ void Checkpoints::SetCheckpoint(
       std::max(slot->num_checkpoints_, slot->cur_checkpoint_);
   slot->cur_checkpoint_ %= CHECKPOINT_COUNT;
 
-  if (bUnknownThread) {
+  if (unknown_thread) {
     GetUnknownThreadSlotLock().Unlock();
   }
 }
@@ -429,21 +429,21 @@ static const char* GetCheckpointLog(int slotno, int lineno) {
 }
 
 /* XXX: iSize check unimplemented */
-void Checkpoints::GetLogs(char* pBuf, int iSize, const char* delim) {
-  pBuf[0] = 0;
+void Checkpoints::GetLogs(char* p_buf, int size, const char* delim) {
+  p_buf[0] = 0;
 
   for (int slotno = 0; slotno < MAX_THREADS; ++slotno) {
     const char* buf = GetCheckpointLog(slotno, 0);
     if (buf == nullptr) {
       continue;
     }
-    strcat(pBuf, buf);
-    strcat(pBuf, delim);
+    strcat(p_buf, buf);
+    strcat(p_buf, delim);
 
     for (int line = 1; (buf = GetCheckpointLog(slotno, line)) != nullptr;
          ++line) {
-      strcat(pBuf, buf);
-      strcat(pBuf, delim);
+      strcat(p_buf, buf);
+      strcat(p_buf, delim);
     }
   }
 }
@@ -524,46 +524,46 @@ RageMutex::~RageMutex() {
 }
 
 void RageMutex::Lock() {
-  uint64_t iThisThreadId = GetThisThreadId();
-  if (locked_by_ == iThisThreadId) {
+  uint64_t this_thread_id = GetThisThreadId();
+  if (locked_by_ == this_thread_id) {
     ++lock_cnt_;
     return;
   }
 
   if (!mutex_->Lock()) {
-    const ThreadSlot* ThisSlot = GetThreadSlotFromID(GetThisThreadId());
-    const ThreadSlot* OtherSlot = GetThreadSlotFromID(locked_by_);
+    const ThreadSlot* this_slot = GetThreadSlotFromID(GetThisThreadId());
+    const ThreadSlot* other_slot = GetThreadSlotFromID(locked_by_);
 
-    std::string ThisSlotName =
+    std::string this_slot_name =
         "(???"
         ")";  // stupid trigraph warnings
-    std::string OtherSlotName =
+    std::string other_slot_name =
         "(???"
         ")";  // stupid trigraph warnings
-    if (ThisSlot) {
-      ThisSlotName =
-          ssprintf("%s (%i)", ThisSlot->GetThreadName(), (int)ThisSlot->id_);
+    if (this_slot) {
+      this_slot_name =
+          ssprintf("%s (%i)", this_slot->GetThreadName(), (int)this_slot->id_);
     }
-    if (OtherSlot) {
-      OtherSlotName =
-          ssprintf("%s (%i)", OtherSlot->GetThreadName(), (int)OtherSlot->id_);
+    if (other_slot) {
+      other_slot_name = ssprintf(
+          "%s (%i)", other_slot->GetThreadName(), (int)other_slot->id_);
     }
-    const std::string sReason = ssprintf(
+    const std::string reason = ssprintf(
         "Thread deadlock on mutex %s between %s and %s", GetName().c_str(),
-        ThisSlotName.c_str(), OtherSlotName.c_str());
+        this_slot_name.c_str(), other_slot_name.c_str());
 
     /* Don't leave GetThreadSlotsLock() locked when we call
      * ForceCrashHandlerDeadlock. */
     GetThreadSlotsLock().Lock();
-    uint64_t CrashHandle = OtherSlot ? OtherSlot->id_ : 0;
+    uint64_t crash_handle = other_slot ? other_slot->id_ : 0;
     GetThreadSlotsLock().Unlock();
 
     /* Pass the crash handle of the other thread, so it can backtrace that
      * thread. */
-    CrashHandler::ForceDeadlock(sReason, CrashHandle);
+    CrashHandler::ForceDeadlock(reason, crash_handle);
   }
 
-  locked_by_ = iThisThreadId;
+  locked_by_ = this_thread_id;
 }
 
 bool RageMutex::TryLock() {
@@ -596,10 +596,10 @@ bool RageMutex::IsLockedByThisThread() const {
   return locked_by_ == GetThisThreadId();
 }
 
-LockMutex::LockMutex(RageMutex& pMutex, const char* file_, int line_)
-    : mutex_(pMutex),
-      file_(file_),
-      line_(line_),
+LockMutex::LockMutex(RageMutex& mutex, const char* file, int line)
+    : mutex_(mutex),
+      file_(file),
+      line_(line),
       locked_at_(RageTimer::GetTimeSinceStartMicroseconds()),
       locked_(false)  // ensure it gets locked inside.
 {
@@ -619,13 +619,13 @@ void LockMutex::Unlock() {
 
   mutex_.Unlock();
 
-  constexpr uint64_t THRESHOLD_USEC = 15000;
+  constexpr uint64_t kThresholdUsec = 15000;
 
   if (file_ && locked_at_ != UINT64_MAX) {
     const uint64_t current_usecs = RageTimer::GetTimeSinceStartMicroseconds();
     const uint64_t dur_usecs = current_usecs - locked_at_;
 
-    if (dur_usecs > THRESHOLD_USEC) {
+    if (dur_usecs > kThresholdUsec) {
       LOG->Trace(
           "Lock at %s:%i took %" PRIu64 " microseconds", file_, line_,
           dur_usecs);
@@ -640,18 +640,18 @@ RageEvent::~RageEvent() { delete event_; }
 
 /* For each of these calls, the mutex must be locked, and must not be locked
  * recursively. */
-bool RageEvent::Wait(RageTimer* pTimeout) {
+bool RageEvent::Wait(RageTimer* timeout) {
   ASSERT(IsLockedByThisThread());
   ASSERT(lock_cnt_ == 0);
 
   /* A zero RageTimer also means no timeout. */
-  if (pTimeout != nullptr && pTimeout->IsZero()) {
-    pTimeout = nullptr;
+  if (timeout != nullptr && timeout->IsZero()) {
+    timeout = nullptr;
   }
-  bool bRet = event_->Wait(pTimeout);
+  bool ret = event_->Wait(timeout);
 
   locked_by_ = GetThisThreadId();
-  return bRet;
+  return ret;
 }
 
 void RageEvent::Signal() {
@@ -670,29 +670,29 @@ bool RageEvent::WaitTimeoutSupported() const {
   return event_->WaitTimeoutSupported();
 }
 
-RageSemaphore::RageSemaphore(std::string sName, int iInitialValue)
-    : sema_(MakeSemaphore(iInitialValue)), name_(sName) {}
+RageSemaphore::RageSemaphore(std::string name, int initial_value)
+    : sema_(MakeSemaphore(initial_value)), name_(name) {}
 
 RageSemaphore::~RageSemaphore() { delete sema_; }
 
 void RageSemaphore::Post() { sema_->Post(); }
 
-void RageSemaphore::Wait(bool bFailOnTimeout) {
+void RageSemaphore::Wait(bool fail_on_timeout) {
   do {
     if (sema_->Wait()) {
       return;
     }
-  } while (!bFailOnTimeout || RageThread::GetIsShowingDialog());
+  } while (!fail_on_timeout || RageThread::GetIsShowingDialog());
 
   /* We waited too long.  We're probably deadlocked, though unlike mutexes, we
    * can't tell which thread we're stuck on. */
-  const ThreadSlot* ThisSlot = GetThreadSlotFromID(GetThisThreadId());
-  const std::string sReason = ssprintf(
+  const ThreadSlot* this_slot = GetThreadSlotFromID(GetThisThreadId());
+  const std::string reason = ssprintf(
       "Semaphore timeout on mutex %s on thread %s", GetName().c_str(),
-      ThisSlot ? ThisSlot->GetThreadName()
-               : "(???"
-                 ")");  // stupid trigraph warnings
-  CrashHandler::ForceDeadlock(sReason, GetInvalidThreadId());
+      this_slot ? this_slot->GetThreadName()
+                : "(???"
+                  ")");  // stupid trigraph warnings
+  CrashHandler::ForceDeadlock(reason, GetInvalidThreadId());
 }
 
 /*

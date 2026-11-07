@@ -12,19 +12,19 @@ static const int ROWS_PER_MEASURE = ROWS_PER_BEAT * BEATS_PER_MEASURE;
 
 void MeasureInfo::CalculateMeasureInfo(
     const NoteData& in, TimingData* timing, MeasureInfo& out) {
-  int lastRow = in.GetLastRow();
-  int totalMeasureCount = lastRow / ROWS_PER_MEASURE + 1;
+  int last_row = in.GetLastRow();
+  int total_measure_count = last_row / ROWS_PER_MEASURE + 1;
 
   out.notes_per_measure_.clear();
   out.nps_per_measure_.clear();
 
-  out.notes_per_measure_.resize(totalMeasureCount, 0);
-  out.nps_per_measure_.resize(totalMeasureCount, 0);
+  out.notes_per_measure_.resize(total_measure_count, 0);
+  out.nps_per_measure_.resize(total_measure_count, 0);
 
   NoteData::all_tracks_const_iterator curr_note =
       in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
-  int iMeasureIndexOut = 0;
+  int measure_index_out = 0;
 
   float peak_nps = 0;
   int curr_row = -1;
@@ -38,9 +38,9 @@ void MeasureInfo::CalculateMeasureInfo(
       }
       // Before moving on to a new row, update the notes per measure for the
       // current measure.
-      out.notes_per_measure_[iMeasureIndexOut] += notes_this_row;
+      out.notes_per_measure_[measure_index_out] += notes_this_row;
       // Update iMeasureIndex for the current row.
-      iMeasureIndexOut = curr_note.Row() / ROWS_PER_MEASURE;
+      measure_index_out = curr_note.Row() / ROWS_PER_MEASURE;
       curr_row = curr_note.Row();
       notes_this_row = 0;
     }
@@ -56,16 +56,16 @@ void MeasureInfo::CalculateMeasureInfo(
   }
 
   // And handle the final note...
-  out.notes_per_measure_[iMeasureIndexOut] += notes_this_row;
+  out.notes_per_measure_[measure_index_out] += notes_this_row;
 
   // Now that all of the notes have been parsed, calculate nps for each measure
-  for (int m = 0; m < totalMeasureCount; m++) {
+  for (int m = 0; m < total_measure_count; m++) {
     if (out.notes_per_measure_[m] == 0) {
       out.nps_per_measure_[m] = 0;
       continue;
     }
 
-    float measureDuration =
+    float measure_duration =
         timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * (m + 1)) -
         timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * m);
 
@@ -86,9 +86,9 @@ void MeasureInfo::CalculateMeasureInfo(
     // As a hold over for this case, we check that the duration is <= 0.12
     // (instead of 0), so this only breaks for cases where charts are of 2,000
     // BPM (which are likely rarer than those with warps).
-    float nps = measureDuration < 0.12
+    float nps = measure_duration < 0.12
                     ? 0
-                    : (out.notes_per_measure_[m] / measureDuration);
+                    : (out.notes_per_measure_[m] / measure_duration);
     out.nps_per_measure_[m] = nps;
 
     if (nps > peak_nps) {
@@ -97,5 +97,5 @@ void MeasureInfo::CalculateMeasureInfo(
   }
 
   out.peak_nps_ = peak_nps;
-  out.measure_count_ = totalMeasureCount;
+  out.measure_count_ = total_measure_count;
 }

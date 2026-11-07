@@ -76,12 +76,12 @@ static bool EmergencyShutdown(int signal, siginfo_t* si, const ucontext_t* uc) {
 namespace {
 clockid_t g_Clock = CLOCK_REALTIME;
 void OpenGetTime() {
-  static bool bInitialized = false;
+  static bool initialized = false;
 
-  if (bInitialized) {
+  if (initialized) {
     return;
   }
-  bInitialized = true;
+  initialized = true;
 
   /* Check whether CLOCK_MONOTONIC is supported.
    * If it isn't available, use CLOCK_REALTIME.*/
@@ -105,20 +105,20 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   timespec ts;
   clock_gettime(g_Clock, &ts);
 
-  int64_t iRet = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec) / 1000;
+  int64_t ret = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec) / 1000;
   if (g_Clock != CLOCK_MONOTONIC) {
-    iRet = ArchHooks::FixupTimeIfBackwards(iRet);
+    ret = ArchHooks::FixupTimeIfBackwards(ret);
   }
-  return iRet;
+  return ret;
 }
 #else
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   struct timeval tv;
   gettimeofday(&tv, nullptr);
 
-  int64_t iRet = int64_t(tv.tv_sec) * 1000000 + int64_t(tv.tv_usec);
+  int64_t ret = int64_t(tv.tv_sec) * 1000000 + int64_t(tv.tv_usec);
   ret = FixupTimeIfBackwards(ret);
-  return iRet;
+  return ret;
 }
 #endif
 
@@ -196,14 +196,14 @@ void ArchHooks_Unix::DumpDebugInfo() {
 }
 
 void ArchHooks_Unix::SetTime(tm newtime) {
-  std::string sCommand = ssprintf(
+  std::string command = ssprintf(
       "date %02d%02d%02d%02d%04d.%02d", newtime.tm_mon + 1, newtime.tm_mday,
       newtime.tm_hour, newtime.tm_min, newtime.tm_year + 1900, newtime.tm_sec);
 
-  LOG->Trace("executing '%s'", sCommand.c_str());
-  int ret = system(sCommand.c_str());
+  LOG->Trace("executing '%s'", command.c_str());
+  int ret = system(command.c_str());
   if (ret == -1 || ret == 127 || !WIFEXITED(ret) || WEXITSTATUS(ret)) {
-    LOG->Trace("'%s' failed", sCommand.c_str());
+    LOG->Trace("'%s' failed", command.c_str());
   }
 
   ret = system("hwclock --systohc");
@@ -219,62 +219,62 @@ std::string ArchHooks_Unix::GetClipboard() {
   return "";
 }
 
-void ArchHooks::MountInitialFilesystems(const std::string& sDirOfExecutable) {
-  FILEMAN->Mount("dirro", sDirOfExecutable, "/");
+void ArchHooks::MountInitialFilesystems(const std::string& dir_of_executable) {
+  FILEMAN->Mount("dirro", dir_of_executable, "/");
 
   bool portable = DoesFileExist("/Portable.ini");
   if (portable) {
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Announcers", "/Announcers");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/BGAnimations", "/BGAnimations");
+    FILEMAN->Mount("dir", dir_of_executable + "/Announcers", "/Announcers");
+    FILEMAN->Mount("dir", dir_of_executable + "/BGAnimations", "/BGAnimations");
     FILEMAN->Mount(
-        "dir", sDirOfExecutable + "/BackgroundEffects", "/BackgroundEffects");
+        "dir", dir_of_executable + "/BackgroundEffects", "/BackgroundEffects");
     FILEMAN->Mount(
-        "dir", sDirOfExecutable + "/BackgroundTransitions",
+        "dir", dir_of_executable + "/BackgroundTransitions",
         "/BackgroundTransitions");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Cache", "/Cache");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/CDTitles", "/CDTitles");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Characters", "/Characters");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Courses", "/Courses");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Downloads", "/Downloads");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Logs", "/Logs");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/NoteSkins", "/NoteSkins");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Packages", "/Packages");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Save", "/Save");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Screenshots", "/Screenshots");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Songs", "/Songs");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/RandomMovies", "/RandomMovies");
-    FILEMAN->Mount("dir", sDirOfExecutable + "/Themes", "/Themes");
+    FILEMAN->Mount("dir", dir_of_executable + "/Cache", "/Cache");
+    FILEMAN->Mount("dir", dir_of_executable + "/CDTitles", "/CDTitles");
+    FILEMAN->Mount("dir", dir_of_executable + "/Characters", "/Characters");
+    FILEMAN->Mount("dir", dir_of_executable + "/Courses", "/Courses");
+    FILEMAN->Mount("dir", dir_of_executable + "/Downloads", "/Downloads");
+    FILEMAN->Mount("dir", dir_of_executable + "/Logs", "/Logs");
+    FILEMAN->Mount("dir", dir_of_executable + "/NoteSkins", "/NoteSkins");
+    FILEMAN->Mount("dir", dir_of_executable + "/Packages", "/Packages");
+    FILEMAN->Mount("dir", dir_of_executable + "/Save", "/Save");
+    FILEMAN->Mount("dir", dir_of_executable + "/Screenshots", "/Screenshots");
+    FILEMAN->Mount("dir", dir_of_executable + "/Songs", "/Songs");
+    FILEMAN->Mount("dir", dir_of_executable + "/RandomMovies", "/RandomMovies");
+    FILEMAN->Mount("dir", dir_of_executable + "/Themes", "/Themes");
   }
 }
 
-void ArchHooks::MountUserFilesystems(const std::string& sDirOfExecutable) {
+void ArchHooks::MountUserFilesystems(const std::string& dir_of_executable) {
   /* Path to write general mutable user data when not Portable
    * Lowercase the PRODUCT_ID; dotfiles and directories are almost always
    * lowercase.
    */
-  const char* szHome = getenv("HOME");
-  std::string sUserDataPath =
-      ssprintf("%s/.%s", szHome ? szHome : ".", "itgmania");
-  FILEMAN->Mount("dir", sUserDataPath + "/Announcers", "/Announcers");
-  FILEMAN->Mount("dir", sUserDataPath + "/BGAnimations", "/BGAnimations");
+  const char* home = getenv("HOME");
+  std::string user_data_path =
+      ssprintf("%s/.%s", home ? home : ".", "itgmania");
+  FILEMAN->Mount("dir", user_data_path + "/Announcers", "/Announcers");
+  FILEMAN->Mount("dir", user_data_path + "/BGAnimations", "/BGAnimations");
   FILEMAN->Mount(
-      "dir", sUserDataPath + "/BackgroundEffects", "/BackgroundEffects");
+      "dir", user_data_path + "/BackgroundEffects", "/BackgroundEffects");
   FILEMAN->Mount(
-      "dir", sUserDataPath + "/BackgroundTransitions",
+      "dir", user_data_path + "/BackgroundTransitions",
       "/BackgroundTransitions");
-  FILEMAN->Mount("dir", sUserDataPath + "/Cache", "/Cache");
-  FILEMAN->Mount("dir", sUserDataPath + "/CDTitles", "/CDTitles");
-  FILEMAN->Mount("dir", sUserDataPath + "/Characters", "/Characters");
-  FILEMAN->Mount("dir", sUserDataPath + "/Courses", "/Courses");
-  FILEMAN->Mount("dir", sUserDataPath + "/Downloads", "/Downloads");
-  FILEMAN->Mount("dir", sUserDataPath + "/Logs", "/Logs");
-  FILEMAN->Mount("dir", sUserDataPath + "/NoteSkins", "/NoteSkins");
-  FILEMAN->Mount("dir", sUserDataPath + "/Packages", "/Packages");
-  FILEMAN->Mount("dir", sUserDataPath + "/Save", "/Save");
-  FILEMAN->Mount("dir", sUserDataPath + "/Screenshots", "/Screenshots");
-  FILEMAN->Mount("dir", sUserDataPath + "/Songs", "/Songs");
-  FILEMAN->Mount("dir", sUserDataPath + "/RandomMovies", "/RandomMovies");
-  FILEMAN->Mount("dir", sUserDataPath + "/Themes", "/Themes");
+  FILEMAN->Mount("dir", user_data_path + "/Cache", "/Cache");
+  FILEMAN->Mount("dir", user_data_path + "/CDTitles", "/CDTitles");
+  FILEMAN->Mount("dir", user_data_path + "/Characters", "/Characters");
+  FILEMAN->Mount("dir", user_data_path + "/Courses", "/Courses");
+  FILEMAN->Mount("dir", user_data_path + "/Downloads", "/Downloads");
+  FILEMAN->Mount("dir", user_data_path + "/Logs", "/Logs");
+  FILEMAN->Mount("dir", user_data_path + "/NoteSkins", "/NoteSkins");
+  FILEMAN->Mount("dir", user_data_path + "/Packages", "/Packages");
+  FILEMAN->Mount("dir", user_data_path + "/Save", "/Save");
+  FILEMAN->Mount("dir", user_data_path + "/Screenshots", "/Screenshots");
+  FILEMAN->Mount("dir", user_data_path + "/Songs", "/Songs");
+  FILEMAN->Mount("dir", user_data_path + "/RandomMovies", "/RandomMovies");
+  FILEMAN->Mount("dir", user_data_path + "/Themes", "/Themes");
 }
 
 /*

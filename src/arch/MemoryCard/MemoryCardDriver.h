@@ -40,9 +40,9 @@ struct UsbStorageDevice {
   State state_{STATE_NONE};
   std::string error_{};
 
-  void SetError(const std::string& sError) {
+  void SetError(const std::string& error) {
     state_ = STATE_ERROR;
-    error_ = sError;
+    error_ = error;
   }
 
   bool is_name_available_{false};  // Name in the profile on the memory card.
@@ -69,13 +69,13 @@ class MemoryCardDriver {
 
   /* Make a device accessible via its pDevice->sOsMountDir.  This will be called
    * before any access to the device, and before TestWrite. */
-  virtual bool Mount(UsbStorageDevice* pDevice) = 0;
-  virtual void Unmount(UsbStorageDevice* pDevice) = 0;
+  virtual bool Mount(UsbStorageDevice* device) = 0;
+  virtual void Unmount(UsbStorageDevice* device) = 0;
 
   /* Poll for memory card changes.  If anything has changed, fill in
    * vStorageDevicesOut and return true. */
   bool DoOneUpdate(
-      bool bMount, std::vector<UsbStorageDevice>& vStorageDevicesOut);
+      bool mount, std::vector<UsbStorageDevice>& storage_devices_out);
 
  protected:
   /* This may be called before GetUSBStorageDevices; return false if the results
@@ -90,7 +90,7 @@ class MemoryCardDriver {
 
  private:
   std::vector<UsbStorageDevice> devices_last_seen_;
-  bool NeedUpdate(bool bMount);
+  bool NeedUpdate(bool mount);
 };
 
 #endif

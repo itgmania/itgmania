@@ -58,46 +58,46 @@ static const char* LightsModeNames[] = {
 XToString(LightsMode);
 LuaXType(LightsMode);
 
-static void GetUsedGameInputs(std::vector<GameInput>& vGameInputsOut) {
-  vGameInputsOut.clear();
+static void GetUsedGameInputs(std::vector<GameInput>& game_inputs_out) {
+  game_inputs_out.clear();
 
-  std::vector<std::string> asGameButtons;
-  split(GAME_BUTTONS_TO_SHOW.GetValue(), ",", asGameButtons);
+  std::vector<std::string> game_buttons;
+  split(GAME_BUTTONS_TO_SHOW.GetValue(), ",", game_buttons);
   FOREACH_ENUM(GameController, gc) {
-    for (const std::string& button : asGameButtons) {
+    for (const std::string& button : game_buttons) {
       GameButton gb = StringToGameButton(INPUTMAPPER->GetInputScheme(), button);
       if (gb != GameButton_Invalid) {
         GameInput gi = GameInput(gc, gb);
-        vGameInputsOut.push_back(gi);
+        game_inputs_out.push_back(gi);
       }
     }
   }
 
-  std::set<GameInput> vGIs;
-  std::vector<const Style*> vStyles;
-  GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_, vStyles);
+  std::set<GameInput> game_inputs;
+  std::vector<const Style*> styles;
+  GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_, styles);
   const auto& value = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
-  for (const Style* style : vStyles) {
-    bool bFound =
+  for (const Style* style : styles) {
+    bool found =
         find(value.begin(), value.end(), style->steps_type_) != value.end();
-    if (!bFound) {
+    if (!found) {
       continue;
     }
     FOREACH_PlayerNumber(pn) {
-      for (int iCol = 0; iCol < style->cols_per_player_; ++iCol) {
+      for (int col = 0; col < style->cols_per_player_; ++col) {
         std::vector<GameInput> gi;
-        style->StyleInputToGameInput(iCol, pn, gi);
+        style->StyleInputToGameInput(col, pn, gi);
         for (size_t i = 0; i < gi.size(); ++i) {
           if (gi[i].IsValid()) {
-            vGIs.insert(gi[i]);
+            game_inputs.insert(gi[i]);
           }
         }
       }
     }
   }
 
-  for (const GameInput& input : vGIs) {
-    vGameInputsOut.push_back(input);
+  for (const GameInput& input : game_inputs) {
+    game_inputs_out.push_back(input);
   }
 }
 
@@ -113,11 +113,11 @@ LightsManager::LightsManager() {
   coin_counter_timer_.SetZero();
 
   lights_mode_ = LIGHTSMODE_JOINING;
-  std::string sDriver = g_sLightsDriver.Get();
-  if (sDriver.empty()) {
-    sDriver = DEFAULT_LIGHTS_DRIVER;
+  std::string driver = g_sLightsDriver.Get();
+  if (driver.empty()) {
+    driver = DEFAULT_LIGHTS_DRIVER;
   }
-  LightsDriver::Create(sDriver, drivers_);
+  LightsDriver::Create(driver, drivers_);
 
   SetLightsMode(LIGHTSMODE_ATTRACT);
 
@@ -177,22 +177,22 @@ int LightsManager::LightsManThreadMain() {
 static const float g_fLightEffectRiseSeconds = 0.075f;
 static const float g_fLightEffectFalloffSeconds = 0.35f;
 static const float g_fCoinPulseTime = 0.100f;
-void LightsManager::Update(float fDeltaTime) {
+void LightsManager::Update(float delta_time) {
   // Update actor effect lights.
   FOREACH_CabinetLight(cl) {
-    float fTime = fDeltaTime;
-    float& fDuration = secs_left_in_actor_light_blink_[cl];
-    if (fDuration > 0) {
+    float time = delta_time;
+    float& duration = secs_left_in_actor_light_blink_[cl];
+    if (duration > 0) {
       // The light has power left.  Brighten it.
-      float fSeconds = std::min(fDuration, fTime);
-      fDuration -= fSeconds;
-      fTime -= fSeconds;
-      fapproach(actor_lights_[cl], 1, fSeconds / g_fLightEffectRiseSeconds);
+      float seconds = std::min(duration, time);
+      duration -= seconds;
+      time -= seconds;
+      fapproach(actor_lights_[cl], 1, seconds / g_fLightEffectRiseSeconds);
     }
 
-    if (fTime > 0) {
+    if (time > 0) {
       // The light is out of power.  Dim it.
-      fapproach(actor_lights_[cl], 0, fTime / g_fLightEffectFalloffSeconds);
+      fapproach(actor_lights_[cl], 0, time / g_fLightEffectFalloffSeconds);
     }
 
     Actor::SetBGMLight(cl, actor_lights_[cl]);
@@ -205,10 +205,10 @@ void LightsManager::Update(float fDeltaTime) {
   // update lights falloff
   {
     FOREACH_CabinetLight(cl)
-        fapproach(secs_left_in_cabinet_light_blink_[cl], 0, fDeltaTime);
+        fapproach(secs_left_in_cabinet_light_blink_[cl], 0, delta_time);
     FOREACH_ENUM(GameController, gc)
     FOREACH_ENUM(GameButton, gb)
-    fapproach(secs_left_in_game_button_blink_[gc][gb], 0, fDeltaTime);
+    fapproach(secs_left_in_game_button_blink_[gc][gb], 0, delta_time);
   }
 
   // Set new lights state cabinet lights
@@ -220,10 +220,10 @@ void LightsManager::Update(float fDeltaTime) {
   {
     lights_state_.coin_counter_ = false;
     if (!coin_counter_timer_.IsZero()) {
-      float fAgo = coin_counter_timer_.Ago();
-      if (fAgo < g_fCoinPulseTime) {
+      float ago = coin_counter_timer_.Ago();
+      if (ago < g_fCoinPulseTime) {
         lights_state_.coin_counter_ = true;
-      } else if (fAgo >= g_fCoinPulseTime * 2) {
+      } else if (ago >= g_fCoinPulseTime * 2) {
         coin_counter_timer_.SetZero();
       }
     } else if (queued_coin_counter_pulses_) {
@@ -233,7 +233,7 @@ void LightsManager::Update(float fDeltaTime) {
   }
 
   if (lights_mode_ == LIGHTSMODE_TEST_AUTO_CYCLE) {
-    test_auto_cycle_current_index_ += fDeltaTime;
+    test_auto_cycle_current_index_ += delta_time;
     test_auto_cycle_current_index_ =
         std::fmod(test_auto_cycle_current_index_, NUM_CabinetLight * 100);
   }
@@ -242,14 +242,14 @@ void LightsManager::Update(float fDeltaTime) {
     DEFAULT_FAIL(lights_mode_);
 
     case LIGHTSMODE_ATTRACT: {
-      int iSec = RageTimer::GetTimeSinceStartSeconds();
-      int iTopIndex = iSec % 4;
+      int sec = RageTimer::GetTimeSinceStartSeconds();
+      int top_index = sec % 4;
 
       // Aldo: Disabled this line, apparently it was a forgotten initialization
       // CabinetLight cl = CabinetLight_Invalid;
 
-      switch (iTopIndex) {
-        DEFAULT_FAIL(iTopIndex);
+      switch (top_index) {
+        DEFAULT_FAIL(top_index);
         case 0:
           lights_state_.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT] = true;
           break;
@@ -264,7 +264,7 @@ void LightsManager::Update(float fDeltaTime) {
           break;
       }
 
-      if (iTopIndex == 0) {
+      if (top_index == 0) {
         lights_state_.cabinet_lights_[LIGHT_BASS_LEFT] = true;
         lights_state_.cabinet_lights_[LIGHT_BASS_RIGHT] = true;
       }
@@ -274,25 +274,25 @@ void LightsManager::Update(float fDeltaTime) {
     case LIGHTSMODE_MENU_START_ONLY:
     case LIGHTSMODE_MENU_START_AND_DIRECTIONS:
     case LIGHTSMODE_JOINING: {
-      static int iLight;
+      static int light;
 
       // if we've crossed a beat boundary, advance the light index
       {
-        static float fLastBeat;
-        float fLightSongBeat = GAMESTATE->position_.light_song_beat_;
+        static float last_beat;
+        float light_song_beat = GAMESTATE->position_.light_song_beat_;
 
-        if (fracf(fLightSongBeat) < fracf(fLastBeat)) {
-          ++iLight;
-          wrap(iLight, 4);
+        if (fracf(light_song_beat) < fracf(last_beat)) {
+          ++light;
+          wrap(light, 4);
         }
 
-        fLastBeat = fLightSongBeat;
+        last_beat = light_song_beat;
       }
 
       CabinetLight cl = CabinetLight_Invalid;
 
-      switch (iLight) {
-        DEFAULT_FAIL(iLight);
+      switch (light) {
+        DEFAULT_FAIL(light);
         case 0:
           cl = LIGHT_MARQUEE_UP_LEFT;
           break;
@@ -315,50 +315,52 @@ void LightsManager::Update(float fDeltaTime) {
     case LIGHTSMODE_DEMONSTRATION:
     case LIGHTSMODE_GAMEPLAY: {
       FOREACH_CabinetLight(cl) {
-        int currLightPlayerNumber = (cl & 1) == 1 ? 1 : 0;
-        bool skipLightActivation = false;
+        int curr_light_player_number = (cl & 1) == 1 ? 1 : 0;
+        bool skip_light_activation = false;
 
-        auto playerOptions = GAMESTATE->player_state_[currLightPlayerNumber]
-                                 ->player_options_.GetCurrent();
+        auto player_options = GAMESTATE->player_state_[curr_light_player_number]
+                                  ->player_options_.GetCurrent();
 
         if (cl == LIGHT_MARQUEE_UP_LEFT || cl == LIGHT_MARQUEE_UP_RIGHT ||
             cl == LIGHT_MARQUEE_LR_LEFT || cl == LIGHT_MARQUEE_LR_RIGHT) {
-          if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber)) {
-            skipLightActivation =
-                playerOptions.hide_light_type_ ==
+          if (GAMESTATE->IsHumanPlayer(
+                  (PlayerNumber)curr_light_player_number)) {
+            skip_light_activation =
+                player_options.hide_light_type_ ==
                     HideLightType::HideLightType_HideMarqueeLights ||
-                playerOptions.hide_light_type_ ==
+                player_options.hide_light_type_ ==
                     HideLightType::HideLightType_HideAllLights;
           }
         } else {
-          bool lightsBassParallel = PREFSMAN->lights_bass_parallel_;
+          bool lights_bass_parallel = PREFSMAN->lights_bass_parallel_;
 
-          int otherPn = currLightPlayerNumber == 0 ? 1 : 0;
-          auto otherPlayerOptions =
-              GAMESTATE->player_state_[otherPn]->player_options_.GetCurrent();
+          int other_pn = curr_light_player_number == 0 ? 1 : 0;
+          auto other_player_options =
+              GAMESTATE->player_state_[other_pn]->player_options_.GetCurrent();
 
-          if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber)) {
-            skipLightActivation =
-                playerOptions.hide_light_type_ ==
+          if (GAMESTATE->IsHumanPlayer(
+                  (PlayerNumber)curr_light_player_number)) {
+            skip_light_activation =
+                player_options.hide_light_type_ ==
                     HideLightType::HideLightType_HideBassLights ||
-                playerOptions.hide_light_type_ ==
+                player_options.hide_light_type_ ==
                     HideLightType::HideLightType_HideAllLights ||
-                (lightsBassParallel &&
-                 (otherPlayerOptions.hide_light_type_ ==
+                (lights_bass_parallel &&
+                 (other_player_options.hide_light_type_ ==
                       HideLightType::HideLightType_HideBassLights ||
-                  otherPlayerOptions.hide_light_type_ ==
+                  other_player_options.hide_light_type_ ==
                       HideLightType::HideLightType_HideAllLights));
           } else {
-            skipLightActivation =
-                lightsBassParallel &&
-                (otherPlayerOptions.hide_light_type_ ==
+            skip_light_activation =
+                lights_bass_parallel &&
+                (other_player_options.hide_light_type_ ==
                      HideLightType::HideLightType_HideBassLights ||
-                 otherPlayerOptions.hide_light_type_ ==
+                 other_player_options.hide_light_type_ ==
                      HideLightType::HideLightType_HideAllLights);
           }
         }
 
-        if (!skipLightActivation) {
+        if (!skip_light_activation) {
           lights_state_.cabinet_lights_[cl] =
               secs_left_in_cabinet_light_blink_[cl] > 0;
         }
@@ -374,9 +376,9 @@ void LightsManager::Update(float fDeltaTime) {
     }
 
     case LIGHTSMODE_TEST_AUTO_CYCLE: {
-      int iSec = GetTestAutoCycleCurrentIndex();
+      int sec = GetTestAutoCycleCurrentIndex();
 
-      CabinetLight cl = CabinetLight(iSec % NUM_CabinetLight);
+      CabinetLight cl = CabinetLight(sec % NUM_CabinetLight);
       lights_state_.cabinet_lights_[cl] = true;
 
       break;
@@ -409,10 +411,10 @@ void LightsManager::Update(float fDeltaTime) {
 
     case LIGHTSMODE_MENU_START_ONLY:
     case LIGHTSMODE_MENU_START_AND_DIRECTIONS: {
-      float fLightSongBeat = GAMESTATE->position_.light_song_beat_;
+      float light_song_beat = GAMESTATE->position_.light_song_beat_;
 
       /* Blink menu lights on the first half of the beat */
-      if (fracf(fLightSongBeat) <= 0.5f) {
+      if (fracf(light_song_beat) <= 0.5f) {
         FOREACH_PlayerNumber(pn) {
           if (!GAMESTATE->side_is_joined_[pn]) {
             continue;
@@ -439,11 +441,11 @@ void LightsManager::Update(float fDeltaTime) {
 
     case LIGHTSMODE_DEMONSTRATION:
     case LIGHTSMODE_GAMEPLAY: {
-      bool bGameplay = (lights_mode_ == LIGHTSMODE_DEMONSTRATION) ||
-                       (lights_mode_ == LIGHTSMODE_GAMEPLAY);
+      bool gameplay = (lights_mode_ == LIGHTSMODE_DEMONSTRATION) ||
+                      (lights_mode_ == LIGHTSMODE_GAMEPLAY);
 
       // Blink on notes during gameplay.
-      if (bGameplay && g_bBlinkGameplayButtonLightsOnNote) {
+      if (gameplay && g_bBlinkGameplayButtonLightsOnNote) {
         FOREACH_ENUM(GameController, gc) {
           FOREACH_ENUM(GameButton, gb) {
             lights_state_.game_button_lights_[gc][gb] =
@@ -462,9 +464,9 @@ void LightsManager::Update(float fDeltaTime) {
       // GAME_BUTTON_CUSTOM_01 -> NUM_GameButton
       FOREACH_ENUM(GameController, gc) {
         FOREACH_GameButton_Custom(gb) {
-          bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
+          bool on = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
           // or them in the event the game wants to turn them on too.
-          lights_state_.game_button_lights_[gc][gb] |= bOn;
+          lights_state_.game_button_lights_[gc][gb] |= on;
         }
       }
 
@@ -473,9 +475,9 @@ void LightsManager::Update(float fDeltaTime) {
       // left, right, up, down, start, select, and back.
       FOREACH_ENUM(GameController, gc) {
         FOREACH_GameButton_Menu(gb) {
-          bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
+          bool on = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
           // or them in the event the game wants to turn them on too.
-          lights_state_.game_button_lights_[gc][gb] |= bOn;
+          lights_state_.game_button_lights_[gc][gb] |= on;
         }
       }
 
@@ -485,14 +487,14 @@ void LightsManager::Update(float fDeltaTime) {
     case LIGHTSMODE_TEST_AUTO_CYCLE: {
       int index = GetTestAutoCycleCurrentIndex();
 
-      std::vector<GameInput> vGI;
-      GetUsedGameInputs(vGI);
-      wrap(index, vGI.size());
+      std::vector<GameInput> gi;
+      GetUsedGameInputs(gi);
+      wrap(index, gi.size());
 
       ZERO(lights_state_.game_button_lights_);
 
-      GameController gc = vGI[index].controller_;
-      GameButton gb = vGI[index].button_;
+      GameController gc = gi[index].controller_;
+      GameButton gb = gi[index].button_;
       lights_state_.game_button_lights_[gc][gb] = true;
 
       break;
@@ -501,13 +503,13 @@ void LightsManager::Update(float fDeltaTime) {
     case LIGHTSMODE_TEST_MANUAL_CYCLE: {
       ZERO(lights_state_.game_button_lights_);
 
-      std::vector<GameInput> vGI;
-      GetUsedGameInputs(vGI);
+      std::vector<GameInput> gi;
+      GetUsedGameInputs(gi);
 
       if (controller_test_manual_cycle_current_ != -1) {
         GameController gc =
-            vGI[controller_test_manual_cycle_current_].controller_;
-        GameButton gb = vGI[controller_test_manual_cycle_current_].button_;
+            gi[controller_test_manual_cycle_current_].controller_;
+        GameButton gb = gi[controller_test_manual_cycle_current_].button_;
         lights_state_.game_button_lights_[gc][gb] = true;
       }
 
@@ -518,12 +520,12 @@ void LightsManager::Update(float fDeltaTime) {
   // If not joined, has enough credits, and not too late to join, then
   // blink the menu buttons rapidly so they'll press Start
   {
-    int iBeat = (int)(GAMESTATE->position_.light_song_beat_ * 4);
-    bool bBlinkOn = (iBeat % 2) == 0;
+    int beat = (int)(GAMESTATE->position_.light_song_beat_ * 4);
+    bool blink_on = (beat % 2) == 0;
     FOREACH_PlayerNumber(pn) {
       if (!GAMESTATE->side_is_joined_[pn] && GAMESTATE->PlayersCanJoin() &&
           GAMESTATE->EnoughCreditsToJoin()) {
-        lights_state_.game_button_lights_[pn][GAME_BUTTON_START] = bBlinkOn;
+        lights_state_.game_button_lights_[pn][GAME_BUTTON_START] = blink_on;
       }
     }
   }
@@ -560,21 +562,21 @@ void LightsManager::SetLightsMode(LightsMode lm) {
 
 LightsMode LightsManager::GetLightsMode() { return lights_mode_; }
 
-void LightsManager::ChangeTestCabinetLight(int iDir) {
+void LightsManager::ChangeTestCabinetLight(int dir) {
   controller_test_manual_cycle_current_ = -1;
 
-  enum_add(test_manual_cycle_current_, iDir);
+  enum_add(test_manual_cycle_current_, dir);
   wrap(*ConvertValue<int>(&test_manual_cycle_current_), NUM_CabinetLight);
 }
 
-void LightsManager::ChangeTestGameButtonLight(int iDir) {
+void LightsManager::ChangeTestGameButtonLight(int dir) {
   test_manual_cycle_current_ = CabinetLight_Invalid;
 
-  std::vector<GameInput> vGI;
-  GetUsedGameInputs(vGI);
+  std::vector<GameInput> gi;
+  GetUsedGameInputs(gi);
 
-  controller_test_manual_cycle_current_ += iDir;
-  wrap(controller_test_manual_cycle_current_, vGI.size());
+  controller_test_manual_cycle_current_ += dir;
+  wrap(controller_test_manual_cycle_current_, gi.size());
 }
 
 CabinetLight LightsManager::GetFirstLitCabinetLight() {

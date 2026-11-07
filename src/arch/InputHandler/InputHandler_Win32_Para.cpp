@@ -28,19 +28,19 @@ static void InitHack(HANDLE h) {
 }
 
 InputHandler_Win32_Para::InputHandler_Win32_Para() {
-  const int para_usb_vid = 0x0507;
-  const int para_usb_pid = 0x0011;
+  const int kParaUsbVid = 0x0507;
+  const int kParaUsbPid = 0x0011;
 
   USBDevice* dev = new USBDevice;
 
-  if (dev->Open(para_usb_vid, para_usb_pid, sizeof(long), 0, InitHack)) {
+  if (dev->Open(kParaUsbVid, kParaUsbPid, sizeof(long), 0, InitHack)) {
     LOG->Info("Para controller initialized");
   }
   RageUtil::SafeDelete(dev);
 }
 
 void InputHandler_Win32_Para::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   // The device appears as a HID joystick
 }
 

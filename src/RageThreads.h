@@ -18,12 +18,12 @@ class RageThread {
   std::string GetName() const { return name_; }
   void Create(int (*fn)(void*), void* data);
 
-  void Halt(bool Kill = false);
+  void Halt(bool kill = false);
   void Resume();
 
   /* For crash handlers: kill or suspend all threads (except for
    * the running one) immediately. */
-  static void HaltAllThreads(bool Kill = false);
+  static void HaltAllThreads(bool kill = false);
 
   /* If HaltAllThreads was called (with Kill==false), resume. */
   static void ResumeAllThreads();
@@ -31,8 +31,8 @@ class RageThread {
   static uint64_t GetCurrentThreadID();
 
   static const char* GetCurrentThreadName();
-  static const char* GetThreadNameByID(uint64_t iID);
-  static bool EnumThreadIDs(int n, uint64_t& iID);
+  static const char* GetThreadNameByID(uint64_t id);
+  static bool EnumThreadIDs(int n, uint64_t& id);
   int Wait();
   bool IsCreated() const { return slot_ != nullptr; }
 
@@ -57,7 +57,7 @@ class RageThread {
  * and allocates a slot for checkpoints. */
 class RageThreadRegister {
  public:
-  RageThreadRegister(const std::string& sName);
+  RageThreadRegister(const std::string& name);
   ~RageThreadRegister();
 
  private:
@@ -71,7 +71,7 @@ namespace Checkpoints {
 void LogCheckpoints(bool yes = true);
 void SetCheckpoint(const char* file, int line, const char* message);
 void SetCheckpoint(const char* file, int line, const std::string& message);
-void GetLogs(char* pBuf, int iSize, const char* delim);
+void GetLogs(char* buf, int size, const char* delim);
 };  // namespace Checkpoints
 
 #define CHECKPOINT_M(m) (Checkpoints::SetCheckpoint(__FILE__, __LINE__, m))
@@ -165,7 +165,7 @@ class RageEvent : public RageMutex {
    * archs support it. If false is returned, the wait timed out (and the mutex
    * is locked, as if the event had been signalled).
    */
-  bool Wait(RageTimer* pTimeout = nullptr);
+  bool Wait(RageTimer* timeout = nullptr);
   void Signal();
   void Broadcast();
   bool WaitTimeoutSupported() const;
@@ -180,12 +180,12 @@ class RageEvent : public RageMutex {
 class SemaImpl;
 class RageSemaphore {
  public:
-  RageSemaphore(std::string sName, int iInitialValue = 0);
+  RageSemaphore(std::string name, int initial_value = 0);
   ~RageSemaphore();
 
   std::string GetName() const { return name_; }
   void Post();
-  void Wait(bool bFailOnTimeout = true);
+  void Wait(bool fail_on_timeout = true);
 
  private:
   SemaImpl* sema_;

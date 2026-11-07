@@ -144,9 +144,7 @@ NoteType GetNoteType(int row) {
   }
 };
 
-NoteType BeatToNoteType(float fBeat) {
-  return GetNoteType(BeatToNoteRow(fBeat));
-}
+NoteType BeatToNoteType(float beat) { return GetNoteType(BeatToNoteRow(beat)); }
 
 XNode* TapNoteResult::CreateNode() const {
   XNode* p = new XNode("TapNoteResult");

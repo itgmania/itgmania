@@ -30,57 +30,57 @@ const float PARTICLE_SPEED = 300;
 #define MAX_TILES_HIGH int(SCREEN_HEIGHT / 32 + 2)
 #define MAX_SPRITES (MAX_TILES_WIDE * MAX_TILES_HIGH)
 
-inline float GetOffScreenLeft(Actor* pActor) {
-  return SCREEN_LEFT - pActor->GetZoomedWidth() / 2;
+inline float GetOffScreenLeft(Actor* actor) {
+  return SCREEN_LEFT - actor->GetZoomedWidth() / 2;
 }
-inline float GetOffScreenRight(Actor* pActor) {
-  return SCREEN_RIGHT + pActor->GetZoomedWidth() / 2;
+inline float GetOffScreenRight(Actor* actor) {
+  return SCREEN_RIGHT + actor->GetZoomedWidth() / 2;
 }
-inline float GetOffScreenTop(Actor* pActor) {
-  return SCREEN_TOP - pActor->GetZoomedHeight() / 2;
+inline float GetOffScreenTop(Actor* actor) {
+  return SCREEN_TOP - actor->GetZoomedHeight() / 2;
 }
-inline float GetOffScreenBottom(Actor* pActor) {
-  return SCREEN_BOTTOM + pActor->GetZoomedHeight() / 2;
+inline float GetOffScreenBottom(Actor* actor) {
+  return SCREEN_BOTTOM + actor->GetZoomedHeight() / 2;
 }
 
-inline bool IsOffScreenLeft(Actor* pActor) {
-  return pActor->GetX() < GetOffScreenLeft(pActor);
+inline bool IsOffScreenLeft(Actor* actor) {
+  return actor->GetX() < GetOffScreenLeft(actor);
 }
-inline bool IsOffScreenRight(Actor* pActor) {
-  return pActor->GetX() > GetOffScreenRight(pActor);
+inline bool IsOffScreenRight(Actor* actor) {
+  return actor->GetX() > GetOffScreenRight(actor);
 }
-inline bool IsOffScreenTop(Actor* pActor) {
-  return pActor->GetY() < GetOffScreenTop(pActor);
+inline bool IsOffScreenTop(Actor* actor) {
+  return actor->GetY() < GetOffScreenTop(actor);
 }
-inline bool IsOffScreenBottom(Actor* pActor) {
-  return pActor->GetY() > GetOffScreenBottom(pActor);
+inline bool IsOffScreenBottom(Actor* actor) {
+  return actor->GetY() > GetOffScreenBottom(actor);
 }
 
 // guard rail is the area that keeps particles from going off screen
-inline float GetGuardRailLeft(Actor* pActor) {
-  return SCREEN_LEFT + pActor->GetZoomedWidth() / 2;
+inline float GetGuardRailLeft(Actor* actor) {
+  return SCREEN_LEFT + actor->GetZoomedWidth() / 2;
 }
-inline float GetGuardRailRight(Actor* pActor) {
-  return SCREEN_RIGHT - pActor->GetZoomedWidth() / 2;
+inline float GetGuardRailRight(Actor* actor) {
+  return SCREEN_RIGHT - actor->GetZoomedWidth() / 2;
 }
-inline float GetGuardRailTop(Actor* pActor) {
-  return SCREEN_TOP + pActor->GetZoomedHeight() / 2;
+inline float GetGuardRailTop(Actor* actor) {
+  return SCREEN_TOP + actor->GetZoomedHeight() / 2;
 }
-inline float GetGuardRailBottom(Actor* pActor) {
-  return SCREEN_BOTTOM - pActor->GetZoomedHeight() / 2;
+inline float GetGuardRailBottom(Actor* actor) {
+  return SCREEN_BOTTOM - actor->GetZoomedHeight() / 2;
 }
 
-inline bool HitGuardRailLeft(Actor* pActor) {
-  return pActor->GetX() < GetGuardRailLeft(pActor);
+inline bool HitGuardRailLeft(Actor* actor) {
+  return actor->GetX() < GetGuardRailLeft(actor);
 }
-inline bool HitGuardRailRight(Actor* pActor) {
-  return pActor->GetX() > GetGuardRailRight(pActor);
+inline bool HitGuardRailRight(Actor* actor) {
+  return actor->GetX() > GetGuardRailRight(actor);
 }
-inline bool HitGuardRailTop(Actor* pActor) {
-  return pActor->GetY() < GetGuardRailTop(pActor);
+inline bool HitGuardRailTop(Actor* actor) {
+  return actor->GetY() < GetGuardRailTop(actor);
 }
-inline bool HitGuardRailBottom(Actor* pActor) {
-  return pActor->GetY() > GetGuardRailBottom(pActor);
+inline bool HitGuardRailBottom(Actor* actor) {
+  return actor->GetY() > GetGuardRailBottom(actor);
 }
 
 BGAnimationLayer::BGAnimationLayer() {
@@ -103,25 +103,25 @@ BGAnimationLayer::BGAnimationLayer() {
 
 BGAnimationLayer::~BGAnimationLayer() { ActorFrame::DeleteAllChildren(); }
 
-void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
+void BGAnimationLayer::LoadFromAniLayerFile(const std::string& s_path) {
   /* Generic BGAs are new.  Animation directories with no INI are old and
    * obsolete. Don't combine them. */
-  std::string lcPath = sPath;
-  MakeLower(lcPath);
+  std::string lc_path = s_path;
+  MakeLower(lc_path);
 
-  if (lcPath.find("usesongbg") != std::string::npos) {
-    const Song* pSong = GAMESTATE->cur_song_;
-    std::string sSongBGPath;
-    if (pSong && pSong->HasBackground()) {
-      sSongBGPath = pSong->GetBackgroundPath();
+  if (lc_path.find("usesongbg") != std::string::npos) {
+    const Song* song = GAMESTATE->cur_song_;
+    std::string song_bg_path;
+    if (song && song->HasBackground()) {
+      song_bg_path = song->GetBackgroundPath();
     } else {
-      sSongBGPath = THEME->GetPathG("Common", "fallback background");
+      song_bg_path = THEME->GetPathG("Common", "fallback background");
     }
 
-    Sprite* pSprite = new Sprite;
-    pSprite->Load(Sprite::SongBGTexture(sSongBGPath));
-    pSprite->StretchTo(FullScreenRectF);
-    this->AddChild(pSprite);
+    Sprite* sprite = new Sprite;
+    sprite->Load(Sprite::SongBGTexture(song_bg_path));
+    sprite->StretchTo(FullScreenRectF);
+    this->AddChild(sprite);
 
     return;  // this will ignore other effects in the file name
   }
@@ -156,7 +156,7 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
     EFFECT_INVALID
   };
 
-  const std::string EFFECT_STRING[NUM_EFFECTS] = {
+  const std::string kEffectString[NUM_EFFECTS] = {
       "center",
       "stretchstill",
       "stretchscrollleft",
@@ -187,7 +187,7 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
   Effect effect = EFFECT_CENTER;
 
   for (int i = 0; i < NUM_EFFECTS; i++) {
-    if (lcPath.find(EFFECT_STRING[i]) != std::string::npos) {
+    if (lc_path.find(kEffectString[i]) != std::string::npos) {
       effect = (Effect)i;
     }
   }
@@ -195,10 +195,10 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
   switch (effect) {
     case EFFECT_CENTER: {
       type_ = TYPE_SPRITE;
-      Sprite* pSprite = new Sprite;
-      this->AddChild(pSprite);
-      pSprite->Load(sPath);
-      pSprite->SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
+      Sprite* sprite = new Sprite;
+      this->AddChild(sprite);
+      sprite->Load(s_path);
+      sprite->SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
     } break;
     case EFFECT_STRETCH_STILL:
     case EFFECT_STRETCH_SCROLL_LEFT:
@@ -209,13 +209,13 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
     case EFFECT_STRETCH_BUBBLE:
     case EFFECT_STRETCH_TWIST: {
       type_ = TYPE_SPRITE;
-      Sprite* pSprite = new Sprite;
-      this->AddChild(pSprite);
-      RageTextureID ID(sPath);
-      ID.stretch_ = true;
-      pSprite->Load(Sprite::SongBGTexture(ID));
-      pSprite->StretchTo(FullScreenRectF);
-      pSprite->SetCustomTextureRect(RectF(0, 0, 1, 1));
+      Sprite* sprite = new Sprite;
+      this->AddChild(sprite);
+      RageTextureID id(s_path);
+      id.stretch_ = true;
+      sprite->Load(Sprite::SongBGTexture(id));
+      sprite->StretchTo(FullScreenRectF);
+      sprite->SetCustomTextureRect(RectF(0, 0, 1, 1));
 
       switch (effect) {
         case EFFECT_STRETCH_SCROLL_LEFT:
@@ -240,15 +240,15 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
     } break;
     case EFFECT_STRETCH_SPIN: {
       type_ = TYPE_SPRITE;
-      Sprite* pSprite = new Sprite;
-      this->AddChild(pSprite);
-      pSprite->Load(Sprite::SongBGTexture(sPath));
-      const RectF StretchedFullScreenRectF(
+      Sprite* sprite = new Sprite;
+      this->AddChild(sprite);
+      sprite->Load(Sprite::SongBGTexture(s_path));
+      const RectF stretched_full_screen_rect_f(
           FullScreenRectF.left_ - 200, FullScreenRectF.top_ - 200,
           FullScreenRectF.right_ + 200, FullScreenRectF.bottom_ + 200);
 
-      pSprite->ScaleToCover(StretchedFullScreenRectF);
-      pSprite->SetEffectSpin(RageVector3(0, 0, 60));
+      sprite->ScaleToCover(stretched_full_screen_rect_f);
+      sprite->SetEffectSpin(RageVector3(0, 0, 60));
     } break;
     case EFFECT_PARTICLES_SPIRAL_OUT:
     case EFFECT_PARTICLES_SPIRAL_IN:
@@ -259,29 +259,29 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
     case EFFECT_PARTICLES_BOUNCE: {
       type_ = TYPE_PARTICLES;
       Sprite s;
-      s.Load(sPath);
-      int iSpriteArea = int(s.GetUnzoomedWidth() * s.GetUnzoomedHeight());
-      const int iMaxArea = int(SCREEN_WIDTH * SCREEN_HEIGHT);
-      int iNumParticles = iMaxArea / iSpriteArea;
-      iNumParticles = std::min(iNumParticles, MAX_SPRITES);
+      s.Load(s_path);
+      int sprite_area = int(s.GetUnzoomedWidth() * s.GetUnzoomedHeight());
+      const int max_area = int(SCREEN_WIDTH * SCREEN_HEIGHT);
+      int num_particles = max_area / sprite_area;
+      num_particles = std::min(num_particles, MAX_SPRITES);
 
-      for (int i = 0; i < iNumParticles; i++) {
-        Sprite* pSprite = new Sprite;
-        this->AddChild(pSprite);
-        pSprite->Load(sPath);
-        pSprite->SetZoom(0.7f + 0.6f * i / (float)iNumParticles);
+      for (int i = 0; i < num_particles; i++) {
+        Sprite* sprite = new Sprite;
+        this->AddChild(sprite);
+        sprite->Load(s_path);
+        sprite->SetZoom(0.7f + 0.6f * i / (float)num_particles);
         switch (effect) {
           case EFFECT_PARTICLES_BOUNCE:
-            pSprite->SetX(
-                randomf(GetGuardRailLeft(pSprite), GetGuardRailRight(pSprite)));
-            pSprite->SetY(
-                randomf(GetGuardRailTop(pSprite), GetGuardRailBottom(pSprite)));
+            sprite->SetX(
+                randomf(GetGuardRailLeft(sprite), GetGuardRailRight(sprite)));
+            sprite->SetY(
+                randomf(GetGuardRailTop(sprite), GetGuardRailBottom(sprite)));
             break;
           default:
-            pSprite->SetX(
-                randomf(GetOffScreenLeft(pSprite), GetOffScreenRight(pSprite)));
-            pSprite->SetY(
-                randomf(GetOffScreenTop(pSprite), GetOffScreenBottom(pSprite)));
+            sprite->SetX(
+                randomf(GetOffScreenLeft(sprite), GetOffScreenRight(sprite)));
+            sprite->SetY(
+                randomf(GetOffScreenTop(sprite), GetOffScreenBottom(sprite)));
             break;
         }
 
@@ -289,24 +289,24 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
           case EFFECT_PARTICLES_FLOAT_UP:
           case EFFECT_PARTICLES_SPIRAL_OUT:
             particle_velocity_.push_back(
-                RageVector3(0, -PARTICLE_SPEED * pSprite->GetZoom(), 0));
+                RageVector3(0, -PARTICLE_SPEED * sprite->GetZoom(), 0));
             break;
           case EFFECT_PARTICLES_FLOAT_DOWN:
           case EFFECT_PARTICLES_SPIRAL_IN:
             particle_velocity_.push_back(
-                RageVector3(0, PARTICLE_SPEED * pSprite->GetZoom(), 0));
+                RageVector3(0, PARTICLE_SPEED * sprite->GetZoom(), 0));
             break;
           case EFFECT_PARTICLES_FLOAT_LEFT:
             particle_velocity_.push_back(
-                RageVector3(-PARTICLE_SPEED * pSprite->GetZoom(), 0, 0));
+                RageVector3(-PARTICLE_SPEED * sprite->GetZoom(), 0, 0));
             break;
           case EFFECT_PARTICLES_FLOAT_RIGHT:
             particle_velocity_.push_back(
-                RageVector3(+PARTICLE_SPEED * pSprite->GetZoom(), 0, 0));
+                RageVector3(+PARTICLE_SPEED * sprite->GetZoom(), 0, 0));
             break;
           case EFFECT_PARTICLES_BOUNCE:
             particles_bounce_ = true;
-            pSprite->SetZoom(1);
+            sprite->SetZoom(1);
             particle_velocity_.push_back(RageVector3(randomf(), randomf(), 0));
             RageVec3Normalize(&particle_velocity_[i], &particle_velocity_[i]);
             particle_velocity_[i].x_ *= PARTICLE_SPEED;
@@ -326,10 +326,10 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
     case EFFECT_TILE_FLIP_Y:
     case EFFECT_TILE_PULSE: {
       type_ = TYPE_TILES;
-      RageTextureID ID(sPath);
-      ID.stretch_ = true;
+      RageTextureID id(s_path);
+      id.stretch_ = true;
       Sprite s;
-      s.Load(ID);
+      s.Load(id);
       num_tiles_wide_ = 2 + int(SCREEN_WIDTH / s.GetUnzoomedWidth());
       num_tiles_wide_ = std::min(num_tiles_wide_, MAX_TILES_WIDE);
       num_tiles_high_ = 2 + int(SCREEN_HEIGHT / s.GetUnzoomedHeight());
@@ -340,10 +340,10 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
       tiles_spacing_y_ = s.GetUnzoomedHeight();
       for (int x = 0; x < num_tiles_wide_; x++) {
         for (int y = 0; y < num_tiles_high_; y++) {
-          Sprite* pSprite = new Sprite;
-          this->AddChild(pSprite);
-          pSprite->Load(ID);
-          pSprite->SetTextureWrapping(true);  // gets rid of some "cracks"
+          Sprite* sprite = new Sprite;
+          this->AddChild(sprite);
+          sprite->Load(id);
+          sprite->SetTextureWrapping(true);  // gets rid of some "cracks"
 
           switch (effect) {
             case EFFECT_TILE_STILL:
@@ -361,13 +361,13 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
               tile_velocity_y_ = +PARTICLE_SPEED;
               break;
             case EFFECT_TILE_FLIP_X:
-              pSprite->SetEffectSpin(RageVector3(180, 0, 0));
+              sprite->SetEffectSpin(RageVector3(180, 0, 0));
               break;
             case EFFECT_TILE_FLIP_Y:
-              pSprite->SetEffectSpin(RageVector3(0, 180, 0));
+              sprite->SetEffectSpin(RageVector3(0, 180, 0));
               break;
             case EFFECT_TILE_PULSE:
-              pSprite->SetEffectPulse(1, 0.3f, 1.f);
+              sprite->SetEffectPulse(1, 0.3f, 1.f);
               break;
             default:
               FAIL_M(ssprintf("Not a tile effect: %i", effect));
@@ -379,59 +379,59 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& sPath) {
       FAIL_M(ssprintf("Unrecognized layer effect: %i", effect));
   }
 
-  std::string sHint = sPath;
-  MakeLower(sHint);
+  std::string hint = s_path;
+  MakeLower(hint);
 
-  if (sHint.find("cyclecolor") != std::string::npos) {
+  if (hint.find("cyclecolor") != std::string::npos) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->SetEffectRainbow(5);
     }
   }
 
-  if (sHint.find("cyclealpha") != std::string::npos) {
+  if (hint.find("cyclealpha") != std::string::npos) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->SetEffectDiffuseShift(
           2, RageColor(1, 1, 1, 1), RageColor(1, 1, 1, 0));
     }
   }
 
-  if (sHint.find("startonrandomframe") != std::string::npos) {
+  if (hint.find("startonrandomframe") != std::string::npos) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->SetState(RandomInt(sub_actors_[i]->GetNumStates()));
     }
   }
 
-  if (sHint.find("dontanimate") != std::string::npos) {
+  if (hint.find("dontanimate") != std::string::npos) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->StopAnimating();
     }
   }
 
-  if (sHint.find("add") != std::string::npos) {
+  if (hint.find("add") != std::string::npos) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->SetBlendMode(BLEND_ADD);
     }
   }
 }
 
-void BGAnimationLayer::LoadFromNode(const XNode* pNode) {
+void BGAnimationLayer::LoadFromNode(const XNode* node) {
   {
-    bool bCond;
-    if (pNode->GetAttrValue("Condition", bCond) && !bCond) {
+    bool cond;
+    if (node->GetAttrValue("Condition", cond) && !cond) {
       return;
     }
   }
 
-  bool bStretch = false;
+  bool stretch = false;
   {
     std::string type = "sprite";
-    pNode->GetAttrValue("Type", type);
+    node->GetAttrValue("Type", type);
     MakeLower(type);
 
     /* The preferred way of stretching a sprite to fit the screen is
      * "Type=sprite" and "stretch=1".  "type=1" is for backwards-compatibility.
      */
-    pNode->GetAttrValue("Stretch", bStretch);
+    node->GetAttrValue("Stretch", stretch);
 
     // Check for string match first, then do integer match.
     // "if(StringType(type)==0)" was matching against all string matches.
@@ -444,7 +444,7 @@ void BGAnimationLayer::LoadFromNode(const XNode* pNode) {
       type_ = TYPE_TILES;
     } else if (StringToInt(type) == 1) {
       type_ = TYPE_SPRITE;
-      bStretch = true;
+      stretch = true;
     } else if (StringToInt(type) == 2) {
       type_ = TYPE_PARTICLES;
     } else if (StringToInt(type) == 3) {
@@ -454,91 +454,91 @@ void BGAnimationLayer::LoadFromNode(const XNode* pNode) {
     }
   }
 
-  pNode->GetAttrValue("FOV", fov_);
-  pNode->GetAttrValue("Lighting", lighting_);
+  node->GetAttrValue("FOV", fov_);
+  node->GetAttrValue("Lighting", lighting_);
 
-  pNode->GetAttrValue("TexCoordVelocityX", tex_coord_velocity_x_);
-  pNode->GetAttrValue("TexCoordVelocityY", tex_coord_velocity_y_);
+  node->GetAttrValue("TexCoordVelocityX", tex_coord_velocity_x_);
+  node->GetAttrValue("TexCoordVelocityY", tex_coord_velocity_y_);
 
   // compat:
-  pNode->GetAttrValue("StretchTexCoordVelocityX", tex_coord_velocity_x_);
-  pNode->GetAttrValue("StretchTexCoordVelocityY", tex_coord_velocity_y_);
+  node->GetAttrValue("StretchTexCoordVelocityX", tex_coord_velocity_x_);
+  node->GetAttrValue("StretchTexCoordVelocityY", tex_coord_velocity_y_);
 
   // particle and tile stuff
-  float fZoomMin = 1;
-  float fZoomMax = 1;
-  pNode->GetAttrValue("ZoomMin", fZoomMin);
-  pNode->GetAttrValue("ZoomMax", fZoomMax);
+  float zoom_min = 1;
+  float zoom_max = 1;
+  node->GetAttrValue("ZoomMin", zoom_min);
+  node->GetAttrValue("ZoomMax", zoom_max);
 
-  float fVelocityXMin = 10, fVelocityXMax = 10;
-  float fVelocityYMin = 0, fVelocityYMax = 0;
-  float fVelocityZMin = 0, fVelocityZMax = 0;
-  float fOverrideSpeed = 0;  // 0 means don't override speed
-  pNode->GetAttrValue("VelocityXMin", fVelocityXMin);
-  pNode->GetAttrValue("VelocityXMax", fVelocityXMax);
-  pNode->GetAttrValue("VelocityYMin", fVelocityYMin);
-  pNode->GetAttrValue("VelocityYMax", fVelocityYMax);
-  pNode->GetAttrValue("VelocityZMin", fVelocityZMin);
-  pNode->GetAttrValue("VelocityZMax", fVelocityZMax);
-  pNode->GetAttrValue("OverrideSpeed", fOverrideSpeed);
+  float velocity_x_min = 10, velocity_x_max = 10;
+  float velocity_y_min = 0, velocity_y_max = 0;
+  float velocity_z_min = 0, velocity_z_max = 0;
+  float override_speed = 0;  // 0 means don't override speed
+  node->GetAttrValue("VelocityXMin", velocity_x_min);
+  node->GetAttrValue("VelocityXMax", velocity_x_max);
+  node->GetAttrValue("VelocityYMin", velocity_y_min);
+  node->GetAttrValue("VelocityYMax", velocity_y_max);
+  node->GetAttrValue("VelocityZMin", velocity_z_min);
+  node->GetAttrValue("VelocityZMax", velocity_z_max);
+  node->GetAttrValue("OverrideSpeed", override_speed);
 
-  int iNumParticles = 10;
-  pNode->GetAttrValue("NumParticles", iNumParticles);
+  int num_particles = 10;
+  node->GetAttrValue("NumParticles", num_particles);
 
-  pNode->GetAttrValue("ParticlesBounce", particles_bounce_);
-  pNode->GetAttrValue("TilesStartX", tiles_start_x_);
-  pNode->GetAttrValue("TilesStartY", tiles_start_y_);
-  pNode->GetAttrValue("TilesSpacingX", tiles_spacing_x_);
-  pNode->GetAttrValue("TilesSpacingY", tiles_spacing_y_);
-  pNode->GetAttrValue("TileVelocityX", tile_velocity_x_);
-  pNode->GetAttrValue("TileVelocityY", tile_velocity_y_);
+  node->GetAttrValue("ParticlesBounce", particles_bounce_);
+  node->GetAttrValue("TilesStartX", tiles_start_x_);
+  node->GetAttrValue("TilesStartY", tiles_start_y_);
+  node->GetAttrValue("TilesSpacingX", tiles_spacing_x_);
+  node->GetAttrValue("TilesSpacingY", tiles_spacing_y_);
+  node->GetAttrValue("TileVelocityX", tile_velocity_x_);
+  node->GetAttrValue("TileVelocityY", tile_velocity_y_);
 
   switch (type_) {
     case TYPE_SPRITE: {
-      Actor* pActor = ActorUtil::LoadFromNode(pNode, this);
-      this->AddChild(pActor);
-      if (bStretch) {
-        pActor->StretchTo(FullScreenRectF);
+      Actor* actor = ActorUtil::LoadFromNode(node, this);
+      this->AddChild(actor);
+      if (stretch) {
+        actor->StretchTo(FullScreenRectF);
       }
     } break;
     case TYPE_PARTICLES: {
-      std::string sFile;
-      ActorUtil::GetAttrPath(pNode, "File", sFile);
-      FixSlashesInPlace(sFile);
+      std::string file;
+      ActorUtil::GetAttrPath(node, "File", file);
+      FixSlashesInPlace(file);
 
-      CollapsePath(sFile);
+      CollapsePath(file);
 
-      for (int i = 0; i < iNumParticles; i++) {
-        Actor* pActor = ActorUtil::MakeActor(sFile, this);
-        if (pActor == nullptr) {
+      for (int i = 0; i < num_particles; i++) {
+        Actor* actor = ActorUtil::MakeActor(file, this);
+        if (actor == nullptr) {
           continue;
         }
-        this->AddChild(pActor);
-        pActor->SetXY(
+        this->AddChild(actor);
+        actor->SetXY(
             randomf(
                 float(FullScreenRectF.left_), float(FullScreenRectF.right_)),
             randomf(
                 float(FullScreenRectF.top_), float(FullScreenRectF.bottom_)));
-        pActor->SetZoom(randomf(fZoomMin, fZoomMax));
+        actor->SetZoom(randomf(zoom_min, zoom_max));
         particle_velocity_.push_back(RageVector3(
-            randomf(fVelocityXMin, fVelocityXMax),
-            randomf(fVelocityYMin, fVelocityYMax),
-            randomf(fVelocityZMin, fVelocityZMax)));
-        if (fOverrideSpeed != 0) {
+            randomf(velocity_x_min, velocity_x_max),
+            randomf(velocity_y_min, velocity_y_max),
+            randomf(velocity_z_min, velocity_z_max)));
+        if (override_speed != 0) {
           RageVec3Normalize(&particle_velocity_[i], &particle_velocity_[i]);
-          particle_velocity_[i] *= fOverrideSpeed;
+          particle_velocity_[i] *= override_speed;
         }
       }
     } break;
     case TYPE_TILES: {
-      std::string sFile;
-      ActorUtil::GetAttrPath(pNode, "File", sFile);
-      FixSlashesInPlace(sFile);
+      std::string file;
+      ActorUtil::GetAttrPath(node, "File", file);
+      FixSlashesInPlace(file);
 
-      CollapsePath(sFile);
+      CollapsePath(file);
 
       AutoActor s;
-      s.Load(sFile);
+      s.Load(file);
       if (tiles_spacing_x_ == -1) {
         tiles_spacing_x_ = s->GetUnzoomedWidth();
       }
@@ -547,94 +547,94 @@ void BGAnimationLayer::LoadFromNode(const XNode* pNode) {
       }
       num_tiles_wide_ = 2 + (int)(SCREEN_WIDTH / tiles_spacing_x_);
       num_tiles_high_ = 2 + (int)(SCREEN_HEIGHT / tiles_spacing_y_);
-      unsigned NumSprites = num_tiles_wide_ * num_tiles_high_;
-      for (unsigned i = 0; i < NumSprites; i++) {
-        Actor* pSprite = ActorUtil::MakeActor(sFile, this);
-        if (pSprite == nullptr) {
+      unsigned num_sprites = num_tiles_wide_ * num_tiles_high_;
+      for (unsigned i = 0; i < num_sprites; i++) {
+        Actor* sprite = ActorUtil::MakeActor(file, this);
+        if (sprite == nullptr) {
           continue;
         }
-        this->AddChild(pSprite);
-        pSprite->SetTextureWrapping(true);  // gets rid of some "cracks"
-        pSprite->SetZoom(randomf(fZoomMin, fZoomMax));
+        this->AddChild(sprite);
+        sprite->SetTextureWrapping(true);  // gets rid of some "cracks"
+        sprite->SetZoom(randomf(zoom_min, zoom_max));
       }
     } break;
     default:
       FAIL_M(ssprintf("Unrecognized layer type: %i", type_));
   }
 
-  bool bStartOnRandomFrame = false;
-  pNode->GetAttrValue("StartOnRandomFrame", bStartOnRandomFrame);
-  if (bStartOnRandomFrame) {
+  bool start_on_random_frame = false;
+  node->GetAttrValue("StartOnRandomFrame", start_on_random_frame);
+  if (start_on_random_frame) {
     for (unsigned i = 0; i < sub_actors_.size(); i++) {
       sub_actors_[i]->SetState(RandomInt(sub_actors_[i]->GetNumStates()));
     }
   }
 }
 
-void BGAnimationLayer::UpdateInternal(float fDeltaTime) {
-  ActorFrame::UpdateInternal(fDeltaTime);
+void BGAnimationLayer::UpdateInternal(float delta_time) {
+  ActorFrame::UpdateInternal(delta_time);
 
-  fDeltaTime *= update_rate_;
+  delta_time *= update_rate_;
 
   switch (type_) {
     case TYPE_SPRITE:
       if (tex_coord_velocity_x_ || tex_coord_velocity_y_) {
         for (unsigned i = 0; i < sub_actors_.size(); i++) {
           // XXX: there's no longer any guarantee that this is a Sprite
-          Sprite* pSprite = (Sprite*)sub_actors_[i];
-          pSprite->StretchTexCoords(
-              fDeltaTime * tex_coord_velocity_x_,
-              fDeltaTime * tex_coord_velocity_y_);
+          Sprite* sprite = (Sprite*)sub_actors_[i];
+          sprite->StretchTexCoords(
+              delta_time * tex_coord_velocity_x_,
+              delta_time * tex_coord_velocity_y_);
         }
       }
       break;
     case TYPE_PARTICLES:
       for (unsigned i = 0; i < sub_actors_.size(); i++) {
-        Actor* pActor = sub_actors_[i];
+        Actor* actor = sub_actors_[i];
         RageVector3& vel = particle_velocity_[i];
 
-        sub_actors_[i]->SetX(pActor->GetX() + fDeltaTime * vel.x_);
-        sub_actors_[i]->SetY(pActor->GetY() + fDeltaTime * vel.y_);
-        pActor->SetZ(pActor->GetZ() + fDeltaTime * vel.z_);
+        sub_actors_[i]->SetX(actor->GetX() + delta_time * vel.x_);
+        sub_actors_[i]->SetY(actor->GetY() + delta_time * vel.y_);
+        actor->SetZ(actor->GetZ() + delta_time * vel.z_);
         if (particles_bounce_) {
-          if (HitGuardRailLeft(pActor)) {
+          if (HitGuardRailLeft(actor)) {
             vel.x_ *= -1;
-            pActor->SetX(GetGuardRailLeft(pActor));
+            actor->SetX(GetGuardRailLeft(actor));
           }
-          if (HitGuardRailRight(pActor)) {
+          if (HitGuardRailRight(actor)) {
             vel.x_ *= -1;
-            pActor->SetX(GetGuardRailRight(pActor));
+            actor->SetX(GetGuardRailRight(actor));
           }
-          if (HitGuardRailTop(pActor)) {
+          if (HitGuardRailTop(actor)) {
             vel.y_ *= -1;
-            pActor->SetY(GetGuardRailTop(pActor));
+            actor->SetY(GetGuardRailTop(actor));
           }
-          if (HitGuardRailBottom(pActor)) {
+          if (HitGuardRailBottom(actor)) {
             vel.y_ *= -1;
-            pActor->SetY(GetGuardRailBottom(pActor));
+            actor->SetY(GetGuardRailBottom(actor));
           }
         } else  // !m_bParticlesBounce
         {
-          if (vel.x_ < 0 && IsOffScreenLeft(pActor)) {
-            pActor->SetX(GetOffScreenRight(pActor));
+          if (vel.x_ < 0 && IsOffScreenLeft(actor)) {
+            actor->SetX(GetOffScreenRight(actor));
           }
-          if (vel.x_ > 0 && IsOffScreenRight(pActor)) {
-            pActor->SetX(GetOffScreenLeft(pActor));
+          if (vel.x_ > 0 && IsOffScreenRight(actor)) {
+            actor->SetX(GetOffScreenLeft(actor));
           }
-          if (vel.y_ < 0 && IsOffScreenTop(pActor)) {
-            pActor->SetY(GetOffScreenBottom(pActor));
+          if (vel.y_ < 0 && IsOffScreenTop(actor)) {
+            actor->SetY(GetOffScreenBottom(actor));
           }
-          if (vel.y_ > 0 && IsOffScreenBottom(pActor)) {
-            pActor->SetY(GetOffScreenTop(pActor));
+          if (vel.y_ > 0 && IsOffScreenBottom(actor)) {
+            actor->SetY(GetOffScreenTop(actor));
           }
         }
       }
       break;
     case TYPE_TILES: {
-      double fSecs = RageTimer::GetTimeSinceStart();
-      double fTotalWidth =
+      double secs = RageTimer::GetTimeSinceStart();
+      double total_width =
           static_cast<double>(num_tiles_wide_) * tiles_spacing_x_;
-      double fTotalHeight =
+      double total_height =
           static_cast<double>(num_tiles_high_) * tiles_spacing_y_;
 
       ASSERT(int(sub_actors_.size()) == num_tiles_wide_ * num_tiles_high_);
@@ -643,29 +643,29 @@ void BGAnimationLayer::UpdateInternal(float fDeltaTime) {
         for (int y = 0; y < num_tiles_high_; y++) {
           int i = y * num_tiles_wide_ + x;
 
-          double fX =
-              tiles_start_x_ + tiles_spacing_x_ * x + fSecs * tile_velocity_x_;
-          double fY =
-              tiles_start_y_ + tiles_spacing_y_ * y + fSecs * tile_velocity_y_;
+          double f_x =
+              tiles_start_x_ + tiles_spacing_x_ * x + secs * tile_velocity_x_;
+          double f_y =
+              tiles_start_y_ + tiles_spacing_y_ * y + secs * tile_velocity_y_;
 
-          fX += tiles_spacing_x_ / 2;
-          fY += tiles_spacing_y_ / 2;
+          f_x += tiles_spacing_x_ / 2;
+          f_y += tiles_spacing_y_ / 2;
 
-          fX = std::fmod(fX, fTotalWidth);
-          fY = std::fmod(fY, fTotalHeight);
+          f_x = std::fmod(f_x, total_width);
+          f_y = std::fmod(f_y, total_height);
 
-          if (fX < 0) {
-            fX += fTotalWidth;
+          if (f_x < 0) {
+            f_x += total_width;
           }
-          if (fY < 0) {
-            fY += fTotalHeight;
+          if (f_y < 0) {
+            f_y += total_height;
           }
 
-          fX -= tiles_spacing_x_ / 2;
-          fY -= tiles_spacing_y_ / 2;
+          f_x -= tiles_spacing_x_ / 2;
+          f_y -= tiles_spacing_y_ / 2;
 
-          sub_actors_[i]->SetX(static_cast<float>(fX));
-          sub_actors_[i]->SetY(static_cast<float>(fY));
+          sub_actors_[i]->SetX(static_cast<float>(f_x));
+          sub_actors_[i]->SetY(static_cast<float>(f_y));
         }
       }
     } break;

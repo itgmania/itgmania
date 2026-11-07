@@ -51,7 +51,7 @@ class TimingData {
   /**
    * @brief Sets up initial timing data with a defined offset.
    * @param fOffset the offset from the 0th beat. */
-  TimingData(float fOffset = 0);
+  TimingData(float offset = 0);
   ~TimingData();
 
   void Copy(const TimingData& other);
@@ -149,7 +149,7 @@ class TimingData {
    * @param highest the highest allowed max BPM.
    */
   void GetActualBPM(
-      float& fMinBPMOut, float& fMaxBPMOut, float highest = FLT_MAX) const;
+      float& min_bpm_out, float& max_bpm_out, float highest = FLT_MAX) const;
 
   /**
    * @brief Retrieve the TimingSegment at the specified row.
@@ -158,8 +158,8 @@ class TimingData {
    * @return the segment in question.
    */
   const TimingSegment* GetSegmentAtRow(
-      int iNoteRow, TimingSegmentType tst) const;
-  TimingSegment* GetSegmentAtRow(int iNoteRow, TimingSegmentType tst);
+      int note_row, TimingSegmentType tst) const;
+  TimingSegment* GetSegmentAtRow(int note_row, TimingSegmentType tst);
 
   /**
    * @brief Retrieve the TimingSegment at the given beat.
@@ -168,11 +168,11 @@ class TimingData {
    * @return the segment in question.
    */
   const TimingSegment* GetSegmentAtBeat(
-      float fBeat, TimingSegmentType tst) const {
-    return GetSegmentAtRow(BeatToNoteRow(fBeat), tst);
+      float beat, TimingSegmentType tst) const {
+    return GetSegmentAtRow(BeatToNoteRow(beat), tst);
   }
-  TimingSegment* GetSegmentAtBeat(float fBeat, TimingSegmentType tst) {
-    return GetSegmentAtRow(BeatToNoteRow(fBeat), tst);
+  TimingSegment* GetSegmentAtBeat(float beat, TimingSegmentType tst) {
+    return GetSegmentAtRow(BeatToNoteRow(beat), tst);
   }
 
 #define DefineSegmentWithName(Seg, SegName, SegType)             \
@@ -216,136 +216,136 @@ class TimingData {
 #undef DefineSegment
 
   /* convenience aliases (Set functions are deprecated) */
-  float GetBPMAtRow(int iNoteRow) const {
-    return GetBPMSegmentAtRow(iNoteRow)->GetBPM();
+  float GetBPMAtRow(int note_row) const {
+    return GetBPMSegmentAtRow(note_row)->GetBPM();
   }
-  float GetBPMAtBeat(float fBeat) const {
-    return GetBPMAtRow(BeatToNoteRow(fBeat));
+  float GetBPMAtBeat(float beat) const {
+    return GetBPMAtRow(BeatToNoteRow(beat));
   }
-  void SetBPMAtRow(int iNoteRow, float fBPM) {
-    AddSegment(BPMSegment(iNoteRow, fBPM));
-  }
-
-  float GetStopAtRow(int iNoteRow) const {
-    return GetStopSegmentAtRow(iNoteRow)->GetPause();
-  }
-  float GetStopAtBeat(float fBeat) const {
-    return GetStopAtRow(BeatToNoteRow(fBeat));
-  }
-  void SetStopAtRow(int iNoteRow, float fSeconds) {
-    AddSegment(StopSegment(iNoteRow, fSeconds));
-  }
-  void SetStopAtBeat(float fBeat, float fSeconds) {
-    SetStopAtRow(BeatToNoteRow(fBeat), fSeconds);
+  void SetBPMAtRow(int note_row, float bpm) {
+    AddSegment(BPMSegment(note_row, bpm));
   }
 
-  float GetDelayAtRow(int iNoteRow) const {
-    return GetDelaySegmentAtRow(iNoteRow)->GetPause();
+  float GetStopAtRow(int note_row) const {
+    return GetStopSegmentAtRow(note_row)->GetPause();
   }
-  float GetDelayAtBeat(float fBeat) const {
-    return GetDelayAtRow(BeatToNoteRow(fBeat));
+  float GetStopAtBeat(float beat) const {
+    return GetStopAtRow(BeatToNoteRow(beat));
   }
-  void SetDelayAtRow(int iNoteRow, float fSeconds) {
-    AddSegment(DelaySegment(iNoteRow, fSeconds));
+  void SetStopAtRow(int note_row, float seconds) {
+    AddSegment(StopSegment(note_row, seconds));
   }
-
-  float GetWarpAtRow(int iNoteRow) const {
-    return GetWarpSegmentAtRow(iNoteRow)->GetLength();
-  }
-  float GetWarpAtBeat(float fBeat) const {
-    return GetWarpAtRow(BeatToNoteRow(fBeat));
-  }
-  void SetWarpAtBeat(float fBeat, float fLength) {
-    AddSegment(WarpSegment(BeatToNoteRow(fBeat), fLength));
+  void SetStopAtBeat(float beat, float seconds) {
+    SetStopAtRow(BeatToNoteRow(beat), seconds);
   }
 
-  int GetTickcountAtRow(int iNoteRow) const {
-    return GetTickcountSegmentAtRow(iNoteRow)->GetTicks();
+  float GetDelayAtRow(int note_row) const {
+    return GetDelaySegmentAtRow(note_row)->GetPause();
   }
-  int GetTickcountAtBeat(float fBeat) const {
-    return GetTickcountAtRow(BeatToNoteRow(fBeat));
+  float GetDelayAtBeat(float beat) const {
+    return GetDelayAtRow(BeatToNoteRow(beat));
   }
-
-  int GetComboAtRow(int iNoteRow) const {
-    return GetComboSegmentAtRow(iNoteRow)->GetCombo();
-  }
-  int GetMissComboAtRow(int iNoteRow) const {
-    return GetComboSegmentAtRow(iNoteRow)->GetMissCombo();
+  void SetDelayAtRow(int note_row, float seconds) {
+    AddSegment(DelaySegment(note_row, seconds));
   }
 
-  const std::string& GetLabelAtRow(int iNoteRow) const {
-    return GetLabelSegmentAtRow(iNoteRow)->GetLabel();
+  float GetWarpAtRow(int note_row) const {
+    return GetWarpSegmentAtRow(note_row)->GetLength();
   }
-  const std::string& GetLabelAtBeat(float fBeat) const {
-    return GetLabelAtRow(BeatToNoteRow(fBeat));
+  float GetWarpAtBeat(float beat) const {
+    return GetWarpAtRow(BeatToNoteRow(beat));
   }
-  bool DoesLabelExist(const std::string& sLabel) const;
-
-  float GetSpeedPercentAtRow(int iNoteRow) const {
-    return GetSpeedSegmentAtRow(iNoteRow)->GetRatio();
+  void SetWarpAtBeat(float beat, float length) {
+    AddSegment(WarpSegment(BeatToNoteRow(beat), length));
   }
 
-  float GetSpeedWaitAtRow(int iNoteRow) const {
-    return GetSpeedSegmentAtRow(iNoteRow)->GetDelay();
+  int GetTickcountAtRow(int note_row) const {
+    return GetTickcountSegmentAtRow(note_row)->GetTicks();
+  }
+  int GetTickcountAtBeat(float beat) const {
+    return GetTickcountAtRow(BeatToNoteRow(beat));
+  }
+
+  int GetComboAtRow(int note_row) const {
+    return GetComboSegmentAtRow(note_row)->GetCombo();
+  }
+  int GetMissComboAtRow(int note_row) const {
+    return GetComboSegmentAtRow(note_row)->GetMissCombo();
+  }
+
+  const std::string& GetLabelAtRow(int note_row) const {
+    return GetLabelSegmentAtRow(note_row)->GetLabel();
+  }
+  const std::string& GetLabelAtBeat(float beat) const {
+    return GetLabelAtRow(BeatToNoteRow(beat));
+  }
+  bool DoesLabelExist(const std::string& label) const;
+
+  float GetSpeedPercentAtRow(int note_row) const {
+    return GetSpeedSegmentAtRow(note_row)->GetRatio();
+  }
+
+  float GetSpeedWaitAtRow(int note_row) const {
+    return GetSpeedSegmentAtRow(note_row)->GetDelay();
   }
 
   // XXX: is there any point to having specific unit types?
-  SpeedSegment::BaseUnit GetSpeedModeAtRow(int iNoteRow) const {
-    return GetSpeedSegmentAtRow(iNoteRow)->GetUnit();
+  SpeedSegment::BaseUnit GetSpeedModeAtRow(int note_row) const {
+    return GetSpeedSegmentAtRow(note_row)->GetUnit();
   }
 
   void SetSpeedAtRow(
-      int iNoteRow, float fPercent, float fWait, SpeedSegment::BaseUnit unit) {
-    AddSegment(SpeedSegment(iNoteRow, fPercent, fWait, unit));
+      int note_row, float percent, float wait, SpeedSegment::BaseUnit unit) {
+    AddSegment(SpeedSegment(note_row, percent, wait, unit));
   }
 
-  void SetSpeedPercentAtRow(int iNoteRow, float fPercent) {
-    const SpeedSegment* seg = GetSpeedSegmentAtRow(iNoteRow);
-    SetSpeedAtRow(iNoteRow, fPercent, seg->GetDelay(), seg->GetUnit());
+  void SetSpeedPercentAtRow(int note_row, float percent) {
+    const SpeedSegment* seg = GetSpeedSegmentAtRow(note_row);
+    SetSpeedAtRow(note_row, percent, seg->GetDelay(), seg->GetUnit());
   }
 
-  void SetSpeedWaitAtRow(int iNoteRow, float fWait) {
-    const SpeedSegment* seg = GetSpeedSegmentAtRow(iNoteRow);
-    SetSpeedAtRow(iNoteRow, seg->GetRatio(), fWait, seg->GetUnit());
+  void SetSpeedWaitAtRow(int note_row, float wait) {
+    const SpeedSegment* seg = GetSpeedSegmentAtRow(note_row);
+    SetSpeedAtRow(note_row, seg->GetRatio(), wait, seg->GetUnit());
   }
 
-  void SetSpeedModeAtRow(int iNoteRow, SpeedSegment::BaseUnit unit) {
-    const SpeedSegment* seg = GetSpeedSegmentAtRow(iNoteRow);
-    SetSpeedAtRow(iNoteRow, seg->GetRatio(), seg->GetDelay(), unit);
+  void SetSpeedModeAtRow(int note_row, SpeedSegment::BaseUnit unit) {
+    const SpeedSegment* seg = GetSpeedSegmentAtRow(note_row);
+    SetSpeedAtRow(note_row, seg->GetRatio(), seg->GetDelay(), unit);
   }
 
-  void SetSpeedPercentAtBeat(float fBeat, float fPercent) {
-    SetSpeedPercentAtRow(BeatToNoteRow(fBeat), fPercent);
+  void SetSpeedPercentAtBeat(float beat, float percent) {
+    SetSpeedPercentAtRow(BeatToNoteRow(beat), percent);
   }
-  void SetSpeedWaitAtBeat(float fBeat, float fWait) {
-    SetSpeedWaitAtRow(BeatToNoteRow(fBeat), fWait);
+  void SetSpeedWaitAtBeat(float beat, float wait) {
+    SetSpeedWaitAtRow(BeatToNoteRow(beat), wait);
   }
-  void SetSpeedModeAtBeat(float fBeat, SpeedSegment::BaseUnit unit) {
-    SetSpeedModeAtRow(BeatToNoteRow(fBeat), unit);
-  }
-
-  float GetDisplayedSpeedPercent(float fBeat, float fMusicSeconds) const;
-
-  float GetScrollAtRow(int iNoteRow) const {
-    return GetScrollSegmentAtRow(iNoteRow)->GetRatio();
+  void SetSpeedModeAtBeat(float beat, SpeedSegment::BaseUnit unit) {
+    SetSpeedModeAtRow(BeatToNoteRow(beat), unit);
   }
 
-  void SetScrollAtRow(int iNoteRow, float fPercent) {
-    AddSegment(ScrollSegment(iNoteRow, fPercent));
-  }
-  void SetScrollAtBeat(float fBeat, float fPercent) {
-    SetScrollAtRow(BeatToNoteRow(fBeat), fPercent);
+  float GetDisplayedSpeedPercent(float beat, float music_seconds) const;
+
+  float GetScrollAtRow(int note_row) const {
+    return GetScrollSegmentAtRow(note_row)->GetRatio();
   }
 
-  float GetFakeAtRow(int iRow) const {
-    return GetFakeSegmentAtRow(iRow)->GetLength();
+  void SetScrollAtRow(int note_row, float percent) {
+    AddSegment(ScrollSegment(note_row, percent));
   }
-  float GetFakeAtBeat(float fBeat) const {
-    return GetFakeAtRow(BeatToNoteRow(fBeat));
+  void SetScrollAtBeat(float beat, float percent) {
+    SetScrollAtRow(BeatToNoteRow(beat), percent);
   }
 
-  bool IsWarpAtRow(int iRow) const;
-  bool IsFakeAtRow(int iRow) const;
+  float GetFakeAtRow(int row) const {
+    return GetFakeSegmentAtRow(row)->GetLength();
+  }
+  float GetFakeAtBeat(float beat) const {
+    return GetFakeAtRow(BeatToNoteRow(beat));
+  }
+
+  bool IsWarpAtRow(int row) const;
+  bool IsFakeAtRow(int row) const;
 
   /**
    * @brief Determine if this notes on this row can be judged.
@@ -366,8 +366,8 @@ class TimingData {
    *                       the last full beat to iNoteRow
    */
   void NoteRowToMeasureAndBeat(
-      int iNoteRow, int& iMeasureIndexOut, int& iBeatIndexOut,
-      int& iRowsRemainder) const;
+      int note_row, int& measure_index_out, int& beat_index_out,
+      int& rows_remainder) const;
 
   void GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args) const;
   float GetElapsedTimeInternal(GetBeatStarts& start, float beat) const;
@@ -380,7 +380,7 @@ class TimingData {
     GetBeatAndBPSFromElapsedTime(args);
     return args.beat_;
   }
-  float GetElapsedTimeFromBeat(float fBeat) const;
+  float GetElapsedTimeFromBeat(float beat) const;
 
   void GetBeatAndBPSFromElapsedTimeNoOffset(GetBeatArgs& args) const;
   float GetBeatFromElapsedTimeNoOffset(float elapsed_time)
@@ -391,7 +391,7 @@ class TimingData {
     GetBeatAndBPSFromElapsedTimeNoOffset(args);
     return args.beat_;
   }
-  float GetElapsedTimeFromBeatNoOffset(float fBeat) const;
+  float GetElapsedTimeFromBeatNoOffset(float beat) const;
 
   bool HasBpmChanges() const {
     return GetTimingSegments(SEGMENT_BPM).size() > 1;
@@ -445,10 +445,10 @@ class TimingData {
   bool operator!=(const TimingData& other) const { return !operator==(other); }
 
   void ScaleRegion(
-      float fScale = 1, int iStartRow = 0, int iEndRow = MAX_NOTE_ROW,
-      bool bAdjustBPM = false);
-  void InsertRows(int iStartRow, int iRowsToAdd);
-  void DeleteRows(int iStartRow, int iRowsToDelete);
+      float scale = 1, int start_row = 0, int end_row = MAX_NOTE_ROW,
+      bool adjust_bpm = false);
+  void InsertRows(int start_row, int rows_to_add);
+  void DeleteRows(int start_row, int rows_to_delete);
 
   const std::vector<TimingSegment*>& GetTimingSegments(
       TimingSegmentType tst) const {
@@ -464,7 +464,7 @@ class TimingData {
    * @param allowEmpty true if completely empty TimingData should be left
    *                   alone, false if it should be changed
    */
-  void TidyUpData(bool allowEmpty);
+  void TidyUpData(bool allow_empty);
 
   // Lua
   void PushSelf(lua_State* L);

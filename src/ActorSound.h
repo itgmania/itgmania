@@ -12,11 +12,11 @@ class ActorSound : public Actor {
   virtual ~ActorSound() {}
   virtual ActorSound* Copy() const;
 
-  void Load(const std::string& sPath);
+  void Load(const std::string& path);
   void Play();
-  void Pause(bool bPause);
+  void Pause(bool pause);
   void Stop();
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   void PushSound(lua_State* L) { sound_.PushSelf(L); }
 
   bool is_action_;

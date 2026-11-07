@@ -38,7 +38,7 @@ class PlayerState {
   /**
    * @brief Update the PlayerState based on the present time.
    * @param fDelta the current time. */
-  void Update(float fDelta);
+  void Update(float delta);
 
   void SetPlayerNumber(PlayerNumber pn);
 

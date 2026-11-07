@@ -40,31 +40,31 @@ static void GetMemoryDebugInfo() {
 }
 
 static void GetDisplayDriverDebugInfo() {
-  std::string sPrimaryDeviceName = GetPrimaryVideoName();
+  std::string primary_device_name = GetPrimaryVideoName();
 
-  if (sPrimaryDeviceName == "") {
+  if (primary_device_name == "") {
     LOG->Info("Primary display driver could not be determined.");
   }
 
-  bool LoggedSomething = false;
+  bool logged_something = false;
   for (int i = 0; true; i++) {
     VideoDriverInfo info;
     if (!GetVideoDriverInfo(i, info)) {
       break;
     }
 
-    if (sPrimaryDeviceName == "")  // failed to get primary display name (NT4)
+    if (primary_device_name == "")  // failed to get primary display name (NT4)
     {
       LogVideoDriverInfo(info);
-      LoggedSomething = true;
-    } else if (info.description_ == sPrimaryDeviceName) {
+      logged_something = true;
+    } else if (info.description_ == primary_device_name) {
       LogVideoDriverInfo(info);
-      LoggedSomething = true;
+      logged_something = true;
       break;
     }
   }
-  if (!LoggedSomething) {
-    LOG->Info("Primary display driver: %s", sPrimaryDeviceName.c_str());
+  if (!logged_something) {
+    LOG->Info("Primary display driver: %s", primary_device_name.c_str());
     LOG->Warn("Couldn't find primary display driver; logging all drivers");
 
     for (int i = 0; true; i++) {
@@ -102,48 +102,48 @@ static void GetDriveDebugInfo() {
    *		     Identifier  "WDC WD1200JB-75CRA0"
    *			 Type        "DiskPeripheral"
    */
-  std::vector<std::string> Ports;
+  std::vector<std::string> ports;
   if (!RegistryAccess::GetRegSubKeys(
-          "HKEY_LOCAL_MACHINE\\HARDWARE\\DEVICEMAP\\Scsi", Ports)) {
+          "HKEY_LOCAL_MACHINE\\HARDWARE\\DEVICEMAP\\Scsi", ports)) {
     return;
   }
 
-  for (unsigned i = 0; i < Ports.size(); ++i) {
-    int DMAEnabled = -1;
-    RegistryAccess::GetRegValue(Ports[i], "DMAEnabled", DMAEnabled);
+  for (unsigned i = 0; i < ports.size(); ++i) {
+    int dma_enabled = -1;
+    RegistryAccess::GetRegValue(ports[i], "DMAEnabled", dma_enabled);
 
-    std::string Driver;
-    RegistryAccess::GetRegValue(Ports[i], "Driver", Driver);
+    std::string driver;
+    RegistryAccess::GetRegValue(ports[i], "Driver", driver);
 
-    std::vector<std::string> Busses;
-    if (!RegistryAccess::GetRegSubKeys(Ports[i], Busses, "Scsi Bus .*")) {
+    std::vector<std::string> busses;
+    if (!RegistryAccess::GetRegSubKeys(ports[i], busses, "Scsi Bus .*")) {
       continue;
     }
 
-    for (unsigned bus = 0; bus < Busses.size(); ++bus) {
-      std::vector<std::string> TargetIDs;
+    for (unsigned bus = 0; bus < busses.size(); ++bus) {
+      std::vector<std::string> target_ids;
       if (!RegistryAccess::GetRegSubKeys(
-              Busses[bus], TargetIDs, "Target Id .*")) {
+              busses[bus], target_ids, "Target Id .*")) {
         continue;
       }
 
-      for (unsigned tid = 0; tid < TargetIDs.size(); ++tid) {
-        std::vector<std::string> LUIDs;
+      for (unsigned tid = 0; tid < target_ids.size(); ++tid) {
+        std::vector<std::string> luids;
         if (!RegistryAccess::GetRegSubKeys(
-                TargetIDs[tid], LUIDs, "Logical Unit Id .*")) {
+                target_ids[tid], luids, "Logical Unit Id .*")) {
           continue;
         }
 
-        for (unsigned luid = 0; luid < LUIDs.size(); ++luid) {
-          std::string Identifier;
-          RegistryAccess::GetRegValue(LUIDs[luid], "Identifier", Identifier);
-          TrimRight(Identifier);
+        for (unsigned luid = 0; luid < luids.size(); ++luid) {
+          std::string identifier;
+          RegistryAccess::GetRegValue(luids[luid], "Identifier", identifier);
+          TrimRight(identifier);
           LOG->Info(
-              "Drive: \"%s\" Driver: %s DMA: %s", Identifier.c_str(),
-              Driver.c_str(),
-              DMAEnabled == 1    ? "yes"
-              : DMAEnabled == -1 ? "N/A"
-                                 : "NO");
+              "Drive: \"%s\" Driver: %s DMA: %s", identifier.c_str(),
+              driver.c_str(),
+              dma_enabled == 1    ? "yes"
+              : dma_enabled == -1 ? "N/A"
+                                  : "NO");
         }
       }
     }
@@ -152,37 +152,37 @@ static void GetDriveDebugInfo() {
 
 static void GetWindowsVersionDebugInfo() {
   typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-  HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
-  if (hMod) {
-    RtlGetVersionPtr pRtlGetVersion =
-        (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
-    if (pRtlGetVersion) {
+  HMODULE mod = GetModuleHandleW(L"ntdll.dll");
+  if (mod) {
+    RtlGetVersionPtr rtl_get_version =
+        (RtlGetVersionPtr)GetProcAddress(mod, "RtlGetVersion");
+    if (rtl_get_version) {
       OSVERSIONINFOEXW osvi = {0};
       osvi.dwOSVersionInfoSize = sizeof(osvi);
-      if (pRtlGetVersion((PRTL_OSVERSIONINFOW)&osvi) == 0) {
-        std::string Ver = ssprintf(
+      if (rtl_get_version((PRTL_OSVERSIONINFOW)&osvi) == 0) {
+        std::string ver = ssprintf(
             "Windows %lu.%lu (", osvi.dwMajorVersion, osvi.dwMinorVersion);
         if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1) {
-          Ver += "Win7";
+          ver += "Win7";
         } else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 2) {
-          Ver += "Win8";
+          ver += "Win8";
         } else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 3) {
-          Ver += "Win8.1";
+          ver += "Win8.1";
         } else if (
             osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 &&
             osvi.dwBuildNumber < 22000) {
-          Ver += "Win10";
+          ver += "Win10";
         } else if (
             osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 &&
             osvi.dwBuildNumber >= 22000) {
-          Ver += "Win11";
+          ver += "Win11";
         } else {
-          Ver += "unknown";
+          ver += "unknown";
         }
 
-        Ver +=
+        ver +=
             ssprintf(") build %lu [%s]", osvi.dwBuildNumber, osvi.szCSDVersion);
-        LOG->Info("%s", Ver.c_str());
+        LOG->Info("%s", ver.c_str());
         return;
       }
     }

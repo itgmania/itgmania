@@ -51,9 +51,9 @@ void ScreenBookkeeping::Init() {
     text_data_[i].LoadFromFont(THEME->GetPathF(name_, "data"));
     text_data_[i].SetName("Data");
     LOAD_ALL_COMMANDS_AND_SET_XY(text_data_[i]);
-    float fX = SCALE(
+    float x = SCALE(
         i, 0.f, NUM_BOOKKEEPING_COLS - 1, SCREEN_LEFT + 50, SCREEN_RIGHT - 160);
-    text_data_[i].SetX(fX);
+    text_data_[i].SetX(x);
     this->AddChild(&text_data_[i]);
   }
 
@@ -68,8 +68,8 @@ void ScreenBookkeeping::Init() {
   UpdateView();
 }
 
-void ScreenBookkeeping::Update(float fDelta) {
-  ScreenWithMenuElements::Update(fDelta);
+void ScreenBookkeeping::Update(float delta) {
+  ScreenWithMenuElements::Update(delta);
 }
 
 bool ScreenBookkeeping::Input(const InputEventPlus& input) {
@@ -144,36 +144,36 @@ void ScreenBookkeeping::UpdateView() {
 
   switch (view) {
     case BookkeepingView_SongPlays: {
-      Profile* pProfile = PROFILEMAN->GetMachineProfile();
+      Profile* profile = PROFILEMAN->GetMachineProfile();
 
-      std::vector<Song*> vpSongs;
-      int iCount = 0;
-      for (Song* pSong : SONGMAN->GetAllSongs()) {
-        if (UNLOCKMAN->SongIsLocked(pSong) & ~LOCKED_DISABLED) {
+      std::vector<Song*> songs;
+      int count = 0;
+      for (Song* song : SONGMAN->GetAllSongs()) {
+        if (UNLOCKMAN->SongIsLocked(song) & ~LOCKED_DISABLED) {
           continue;
         }
-        iCount += pProfile->GetSongNumTimesPlayed(pSong);
-        vpSongs.push_back(pSong);
+        count += profile->GetSongNumTimesPlayed(song);
+        songs.push_back(song);
       }
-      text_title_.SetText(ssprintf(SONG_PLAYS.GetValue().c_str(), iCount));
-      SongUtil::SortSongPointerArrayByNumPlays(vpSongs, pProfile, true);
+      text_title_.SetText(ssprintf(SONG_PLAYS.GetValue().c_str(), count));
+      SongUtil::SortSongPointerArrayByNumPlays(songs, profile, true);
 
-      const int iSongPerCol = 15;
+      const int song_per_col = 15;
 
-      int iSongIndex = 0;
+      int song_index = 0;
       for (int i = 0; i < NUM_BOOKKEEPING_COLS; i++) {
         std::string s;
-        for (int j = 0; j < iSongPerCol; j++) {
-          if (iSongIndex < (int)vpSongs.size()) {
-            Song* pSong = vpSongs[iSongIndex];
-            iCount = pProfile->GetSongNumTimesPlayed(pSong);
-            std::string sTitle =
-                ssprintf("%4d", iCount) + " " + pSong->GetDisplayFullTitle();
-            if (sTitle.length() > 22) {
-              sTitle = Left(sTitle, 20) + "...";
+        for (int j = 0; j < song_per_col; j++) {
+          if (song_index < (int)songs.size()) {
+            Song* song = songs[song_index];
+            count = profile->GetSongNumTimesPlayed(song);
+            std::string title =
+                ssprintf("%4d", count) + " " + song->GetDisplayFullTitle();
+            if (title.length() > 22) {
+              title = Left(title, 20) + "...";
             }
-            s += sTitle + "\n";
-            iSongIndex++;
+            s += title + "\n";
+            song_index++;
           }
         }
         text_data_[i].SetText(s);
@@ -186,24 +186,24 @@ void ScreenBookkeeping::UpdateView() {
 
       int coins[NUM_LAST_DAYS];
       BOOKKEEPER->GetCoinsLastDays(coins);
-      int iTotalLast = 0;
+      int total_last = 0;
 
-      std::string sTitle, sData;
+      std::string title, data;
       for (int i = 0; i < NUM_LAST_DAYS; i++) {
-        sTitle += LastDayToLocalizedString(i) + "\n";
-        sData += ssprintf("%d", coins[i]) + "\n";
-        iTotalLast += coins[i];
+        title += LastDayToLocalizedString(i) + "\n";
+        data += ssprintf("%d", coins[i]) + "\n";
+        total_last += coins[i];
       }
 
-      sTitle += ALL_TIME.GetValue() + "\n";
-      sData += ssprintf("%i\n", iTotalLast);
+      title += ALL_TIME.GetValue() + "\n";
+      data += ssprintf("%i\n", total_last);
 
       text_data_[0].SetText("");
       text_data_[1].SetHorizAlign(align_left);
-      text_data_[1].SetText(sTitle);
+      text_data_[1].SetText(title);
       text_data_[2].SetText("");
       text_data_[3].SetHorizAlign(align_right);
-      text_data_[3].SetText(sData);
+      text_data_[3].SetText(data);
     } break;
     case BookkeepingView_LastWeeks: {
       text_title_.SetText(
@@ -212,17 +212,17 @@ void ScreenBookkeeping::UpdateView() {
       int coins[NUM_LAST_WEEKS];
       BOOKKEEPER->GetCoinsLastWeeks(coins);
 
-      std::string sTitle, sData;
+      std::string title, data;
       for (int col = 0; col < 4; col++) {
-        std::string sTemp;
+        std::string temp;
         for (int row = 0; row < 52 / 4; row++) {
           int week = row * 4 + col;
-          sTemp += LastWeekToLocalizedString(week) +
-                   ssprintf(": %d", coins[week]) + "\n";
+          temp += LastWeekToLocalizedString(week) +
+                  ssprintf(": %d", coins[week]) + "\n";
         }
 
         text_data_[col].SetHorizAlign(align_left);
-        text_data_[col].SetText(sTemp);
+        text_data_[col].SetText(temp);
       }
     } break;
     case BookkeepingView_DayOfWeek: {
@@ -231,18 +231,18 @@ void ScreenBookkeeping::UpdateView() {
       int coins[DAYS_IN_WEEK];
       BOOKKEEPER->GetCoinsByDayOfWeek(coins);
 
-      std::string sTitle, sData;
+      std::string title, data;
       for (int i = 0; i < DAYS_IN_WEEK; i++) {
-        sTitle += DayOfWeekToString(i) + "\n";
-        sData += ssprintf("%d", coins[i]) + "\n";
+        title += DayOfWeekToString(i) + "\n";
+        data += ssprintf("%d", coins[i]) + "\n";
       }
 
       text_data_[0].SetText("");
       text_data_[1].SetHorizAlign(align_left);
-      text_data_[1].SetText(sTitle);
+      text_data_[1].SetText(title);
       text_data_[2].SetText("");
       text_data_[3].SetHorizAlign(align_right);
-      text_data_[3].SetText(sData);
+      text_data_[3].SetText(data);
     } break;
     case BookkeepingView_HourOfDay: {
       text_title_.SetText(HOUR_OF_DAY);
@@ -250,26 +250,26 @@ void ScreenBookkeeping::UpdateView() {
       int coins[HOURS_IN_DAY];
       BOOKKEEPER->GetCoinsByHour(coins);
 
-      std::string sTitle1, sData1;
+      std::string title1, data1;
       for (int i = 0; i < HOURS_IN_DAY / 2; i++) {
-        sTitle1 += HourInDayToLocalizedString(i) + "\n";
-        sData1 += ssprintf("%d", coins[i]) + "\n";
+        title1 += HourInDayToLocalizedString(i) + "\n";
+        data1 += ssprintf("%d", coins[i]) + "\n";
       }
 
-      std::string sTitle2, sData2;
+      std::string title2, data2;
       for (int i = (HOURS_IN_DAY / 2); i < HOURS_IN_DAY; i++) {
-        sTitle2 += HourInDayToLocalizedString(i) + "\n";
-        sData2 += ssprintf("%d", coins[i]) + "\n";
+        title2 += HourInDayToLocalizedString(i) + "\n";
+        data2 += ssprintf("%d", coins[i]) + "\n";
       }
 
       text_data_[0].SetHorizAlign(align_left);
-      text_data_[0].SetText(sTitle1);
+      text_data_[0].SetText(title1);
       text_data_[1].SetHorizAlign(align_right);
-      text_data_[1].SetText(sData1);
+      text_data_[1].SetText(data1);
       text_data_[2].SetHorizAlign(align_left);
-      text_data_[2].SetText(sTitle2);
+      text_data_[2].SetText(title2);
       text_data_[3].SetHorizAlign(align_right);
-      text_data_[3].SetText(sData2);
+      text_data_[3].SetText(data2);
     } break;
     default:
       FAIL_M(ssprintf("Invalid BookkeepingView: %i", view));

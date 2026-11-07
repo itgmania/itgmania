@@ -10,8 +10,8 @@
 static Preference<float> g_fVisualDelaySeconds("VisualDelaySeconds", 0.0f);
 
 void SongPosition::UpdateSongPosition(
-    float fPositionSeconds, const TimingData& timing,
-    const RageTimer& timestamp, float fAdditionalVisualDelay) {
+    float position_seconds, const TimingData& timing,
+    const RageTimer& timestamp, float additional_visual_delay) {
   if (!timestamp.IsZero()) {
     last_beat_update_ = timestamp;
   } else {
@@ -19,7 +19,7 @@ void SongPosition::UpdateSongPosition(
   }
 
   TimingData::GetBeatArgs beat_info;
-  beat_info.elapsed_time_ = fPositionSeconds;
+  beat_info.elapsed_time_ = position_seconds;
   timing.GetBeatAndBPSFromElapsedTime(beat_info);
   song_beat_ = beat_info.beat_;
   cur_bps_ = beat_info.bps_out_;
@@ -33,18 +33,18 @@ void SongPosition::UpdateSongPosition(
   ASSERT_M(
       song_beat_ > -2000, ssprintf(
                               "Song beat %f at %f seconds is less than -2000!",
-                              song_beat_, fPositionSeconds));
+                              song_beat_, position_seconds));
 
-  music_seconds_ = fPositionSeconds;
+  music_seconds_ = position_seconds;
 
   light_song_beat_ =
-      timing.GetBeatFromElapsedTime(fPositionSeconds + g_fLightsAheadSeconds);
+      timing.GetBeatFromElapsedTime(position_seconds + g_fLightsAheadSeconds);
 
   song_beat_no_offset_ =
-      timing.GetBeatFromElapsedTimeNoOffset(fPositionSeconds);
+      timing.GetBeatFromElapsedTimeNoOffset(position_seconds);
 
   music_seconds_visible_ =
-      fPositionSeconds - g_fVisualDelaySeconds.Get() - fAdditionalVisualDelay;
+      position_seconds - g_fVisualDelaySeconds.Get() - additional_visual_delay;
   beat_info.elapsed_time_ = music_seconds_visible_;
   timing.GetBeatAndBPSFromElapsedTime(beat_info);
   song_beat_visible_ = beat_info.beat_;

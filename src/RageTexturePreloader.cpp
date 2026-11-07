@@ -10,11 +10,11 @@
 #include "RageTextureManager.h"
 #include "global.h"
 
-void RageTexturePreloader::Load(const RageTextureID& ID) {
+void RageTexturePreloader::Load(const RageTextureID& id) {
   ASSERT(TEXTUREMAN != nullptr);
 
-  RageTexture* pTexture = TEXTUREMAN->LoadTexture(ID);
-  textures_.push_back(pTexture);
+  RageTexture* texture = TEXTUREMAN->LoadTexture(id);
+  textures_.push_back(texture);
 }
 
 void RageTexturePreloader::UnloadAll() {

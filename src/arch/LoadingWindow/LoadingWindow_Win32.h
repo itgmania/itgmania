@@ -16,11 +16,11 @@ class LoadingWindow_Win32 : public LoadingWindow {
   ~LoadingWindow_Win32();
 
   void Paint();
-  void SetText(std::string sText);
-  void SetIcon(const RageSurface* pIcon);
-  void SetSplash(const RageSurface* pSplash);
+  void SetText(std::string text);
+  void SetIcon(const RageSurface* icon);
+  void SetSplash(const RageSurface* splash);
   void SetProgress(const int progress);
-  void SetTotalWork(const int totalWork);
+  void SetTotalWork(const int total_work);
   void SetIndeterminate(bool indeterminate);
 
  private:
@@ -30,7 +30,7 @@ class LoadingWindow_Win32 : public LoadingWindow {
   HICON icon_;
 
   static INT_PTR CALLBACK
-  WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  WndProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 };
 #define USE_LOADING_WINDOW_WIN32
 

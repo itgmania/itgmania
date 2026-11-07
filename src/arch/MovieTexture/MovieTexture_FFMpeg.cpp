@@ -29,11 +29,11 @@ static void FixLilEndian() {
     return;
   }
 
-  static bool Initialized = false;
-  if (Initialized) {
+  static bool initialized = false;
+  if (initialized) {
     return;
   }
-  Initialized = true;
+  initialized = true;
 
   for (int i = 0; i < AVPixelFormats[i].bpp_; ++i) {
     AVPixelFormat_t& pf = AVPixelFormats[i];
@@ -59,7 +59,7 @@ static void FixLilEndian() {
   }
 }
 
-static int FindCompatibleAVFormat(bool bHighColor) {
+static int FindCompatibleAVFormat(bool high_color) {
   if (DISPLAY == nullptr) {
     return -1;
   }
@@ -70,7 +70,7 @@ static int FindCompatibleAVFormat(bool bHighColor) {
       if (!DISPLAY->IsEffectModeSupported(em)) {
         continue;
       }
-    } else if (fmt.high_color_ != bHighColor) {
+    } else if (fmt.high_color_ != high_color) {
       continue;
     }
 
@@ -90,42 +90,42 @@ static int FindCompatibleAVFormat(bool bHighColor) {
 }
 
 RageSurface* RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
-    int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
-    int& iAVTexfmt, MovieDecoderPixelFormatYCbCr& fmtout) {
+    int texture_width, int texture_height, bool prefer_high_color,
+    int& av_texfmt, MovieDecoderPixelFormatYCbCr& fmtout) {
   FixLilEndian();
 
-  int iAVTexfmtIndex = FindCompatibleAVFormat(bPreferHighColor);
-  if (iAVTexfmtIndex == -1) {
-    iAVTexfmtIndex = FindCompatibleAVFormat(!bPreferHighColor);
+  int av_texfmt_index = FindCompatibleAVFormat(prefer_high_color);
+  if (av_texfmt_index == -1) {
+    av_texfmt_index = FindCompatibleAVFormat(!prefer_high_color);
   }
 
-  if (iAVTexfmtIndex == -1) {
+  if (av_texfmt_index == -1) {
     /* No dice.  Use the first avcodec format of the preferred bit depth,
      * and let the display system convert. */
-    for (iAVTexfmtIndex = 0; AVPixelFormats[iAVTexfmtIndex].bpp_;
-         ++iAVTexfmtIndex) {
-      if (AVPixelFormats[iAVTexfmtIndex].high_color_ == bPreferHighColor) {
+    for (av_texfmt_index = 0; AVPixelFormats[av_texfmt_index].bpp_;
+         ++av_texfmt_index) {
+      if (AVPixelFormats[av_texfmt_index].high_color_ == prefer_high_color) {
         break;
       }
     }
-    ASSERT(AVPixelFormats[iAVTexfmtIndex].bpp_ != 0);
+    ASSERT(AVPixelFormats[av_texfmt_index].bpp_ != 0);
   }
 
-  const AVPixelFormat_t* pfd = &AVPixelFormats[iAVTexfmtIndex];
-  iAVTexfmt = pfd->pf_;
+  const AVPixelFormat_t* pfd = &AVPixelFormats[av_texfmt_index];
+  av_texfmt = pfd->pf_;
   fmtout = pfd->yuv_;
 
   LOG->Trace(
-      "Texture pixel format: %i %i (%ibpp, %08x %08x %08x %08x)", iAVTexfmt,
+      "Texture pixel format: %i %i (%ibpp, %08x %08x %08x %08x)", av_texfmt,
       fmtout, pfd->bpp_, pfd->masks_[0], pfd->masks_[1], pfd->masks_[2],
       pfd->masks_[3]);
 
   if (pfd->yuv_ == PixelFormatYCbCr_YUYV422) {
-    iTextureWidth /= 2;
+    texture_width /= 2;
   }
 
   return CreateSurface(
-      iTextureWidth, iTextureHeight, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
+      texture_width, texture_height, pfd->bpp_, pfd->masks_[0], pfd->masks_[1],
       pfd->masks_[2], pfd->masks_[3]);
 }
 
@@ -506,10 +506,10 @@ static std::string averr_ssprintf(int err, const char* fmt, ...) {
   size_t errbuf_size = 512;
   char* errbuf = new char[errbuf_size];
   avcodec::av_strerror(err, errbuf, errbuf_size);
-  std::string Error = ssprintf("%i: %s", err, errbuf);
+  std::string error = ssprintf("%i: %s", err, errbuf);
   delete[] errbuf;
 
-  return s + " (" + Error + ")";
+  return s + " (" + error + ")";
 }
 
 static int AVIORageFile_ReadPacket(void* opaque, uint8_t* buf, int buf_size) {
@@ -544,10 +544,10 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
   RageFile* f = new RageFile;
 
   if (!f->Open(file, RageFile::READ)) {
-    std::string errorMessage = f->GetError();
+    std::string error_message = f->GetError();
     std::string error = ssprintf(
         "MovieDecoder_FFMpeg: Error opening \"%s\": %s", file.c_str(),
-        errorMessage.c_str());
+        error_message.c_str());
     delete f;
     return error;
   }
@@ -590,9 +590,9 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
     return ssprintf("Unsupported codec %08x", av_stream_codec_->codec_tag);
   }
 
-  std::string sError = OpenCodec();
-  if (!sError.empty()) {
-    return ssprintf("AVCodec (%s): %s", file.c_str(), sError.c_str());
+  std::string s_error = OpenCodec();
+  if (!s_error.empty()) {
+    return ssprintf("AVCodec (%s): %s", file.c_str(), s_error.c_str());
   }
 
   LOG->Trace("Bitrate: %i", static_cast<int>(av_stream_codec_->bit_rate));
@@ -609,9 +609,9 @@ std::string MovieDecoder_FFMpeg::OpenCodec() {
     avcodec::avcodec_close(av_stream_codec_);
   }
 
-  const avcodec::AVCodec* pCodec =
+  const avcodec::AVCodec* codec =
       avcodec::avcodec_find_decoder(av_stream_codec_->codec_id);
-  if (pCodec == nullptr) {
+  if (codec == nullptr) {
     return ssprintf("Couldn't find decoder %i", av_stream_codec_->codec_id);
   }
 
@@ -619,12 +619,12 @@ std::string MovieDecoder_FFMpeg::OpenCodec() {
   av_stream_codec_->idct_algo = FF_IDCT_AUTO;
   av_stream_codec_->error_concealment = 3;
 
-  LOG->Trace("Opening codec %s", pCodec->name);
+  LOG->Trace("Opening codec %s", codec->name);
 
-  int ret = avcodec::avcodec_open2(av_stream_codec_, pCodec, nullptr);
+  int ret = avcodec::avcodec_open2(av_stream_codec_, codec, nullptr);
   if (ret < 0) {
     return std::string(
-        averr_ssprintf(ret, "Couldn't open codec \"%s\"", pCodec->name));
+        averr_ssprintf(ret, "Couldn't open codec \"%s\"", codec->name));
   }
   ASSERT(av_stream_codec_->codec != nullptr);
 
@@ -672,33 +672,33 @@ void MovieDecoder_FFMpeg::Close() {
 }
 
 RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(
-    int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
+    int texture_width, int texture_height, bool prefer_high_color,
     MovieDecoderPixelFormatYCbCr& fmtout) {
-  RageSurface* pSurf =
+  RageSurface* surf =
       RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
-          iTextureWidth, iTextureHeight, bPreferHighColor,
+          texture_width, texture_height, prefer_high_color,
           *ConvertValue<int>(&av_pixel_format_), fmtout);
 
-  if (pSurf != nullptr) {
-    target_width_ = pSurf->w_;
-    target_height_ = pSurf->h_;
-    target_pitch_ = pSurf->pitch_;
+  if (surf != nullptr) {
+    target_width_ = surf->w_;
+    target_height_ = surf->h_;
+    target_pitch_ = surf->pitch_;
   }
 
-  return pSurf;
+  return surf;
 }
 
-MovieTexture_FFMpeg::MovieTexture_FFMpeg(RageTextureID ID)
-    : MovieTexture_Generic(ID, std::make_unique<MovieDecoder_FFMpeg>()) {}
+MovieTexture_FFMpeg::MovieTexture_FFMpeg(RageTextureID id)
+    : MovieTexture_Generic(id, std::make_unique<MovieDecoder_FFMpeg>()) {}
 
 RageMovieTexture* RageMovieTextureDriver_FFMpeg::Create(
-    RageTextureID ID, std::string& sError) {
-  MovieTexture_FFMpeg* pRet = new MovieTexture_FFMpeg(ID);
-  sError = pRet->Init();
-  if (!sError.empty()) {
-    RageUtil::SafeDelete(pRet);
+    RageTextureID id, std::string& error) {
+  MovieTexture_FFMpeg* ret = new MovieTexture_FFMpeg(id);
+  error = ret->Init();
+  if (!error.empty()) {
+    RageUtil::SafeDelete(ret);
   }
-  return pRet;
+  return ret;
 }
 
 REGISTER_MOVIE_TEXTURE_CLASS(FFMpeg);

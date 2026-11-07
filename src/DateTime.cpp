@@ -101,9 +101,9 @@ DateTime DateTime::GetNowDateTime() {
 }
 
 DateTime DateTime::GetNowDate() {
-  DateTime tNow = GetNowDateTime();
-  tNow.StripTime();
-  return tNow;
+  DateTime t_now = GetNowDateTime();
+  t_now.StripTime();
+  return t_now;
 }
 
 void DateTime::StripTime() {
@@ -124,16 +124,16 @@ std::string DateTime::GetString() const {
   return s;
 }
 
-bool DateTime::FromString(const std::string sDateTime) {
+bool DateTime::FromString(const std::string date_time) {
   Init();
 
   int ret;
 
   ret = sscanf(
-      sDateTime.c_str(), "%d-%d-%d %d:%d:%d", &tm_year_, &tm_mon_, &tm_mday_,
+      date_time.c_str(), "%d-%d-%d %d:%d:%d", &tm_year_, &tm_mon_, &tm_mday_,
       &tm_hour_, &tm_min_, &tm_sec_);
   if (ret != 6) {
-    ret = sscanf(sDateTime.c_str(), "%d-%d-%d", &tm_year_, &tm_mon_, &tm_mday_);
+    ret = sscanf(date_time.c_str(), "%d-%d-%d", &tm_year_, &tm_mon_, &tm_mday_);
     if (ret != 3) {
       return false;
     }
@@ -148,8 +148,8 @@ static const std::string LAST_DAYS_NAME[NUM_LAST_DAYS] = {
     "Today", "Yesterday", "Day2Ago", "Day3Ago", "Day4Ago", "Day5Ago", "Day6Ago",
 };
 
-std::string LastDayToString(int iLastDayIndex) {
-  return LAST_DAYS_NAME[iLastDayIndex];
+std::string LastDayToString(int last_day_index) {
+  return LAST_DAYS_NAME[last_day_index];
 }
 
 static const char* DAY_OF_WEEK_TO_NAME[DAYS_IN_WEEK] = {
@@ -157,12 +157,12 @@ static const char* DAY_OF_WEEK_TO_NAME[DAYS_IN_WEEK] = {
     "Thursday", "Friday", "Saturday",
 };
 
-std::string DayOfWeekToString(int iDayOfWeekIndex) {
-  return DAY_OF_WEEK_TO_NAME[iDayOfWeekIndex];
+std::string DayOfWeekToString(int day_of_week_index) {
+  return DAY_OF_WEEK_TO_NAME[day_of_week_index];
 }
 
-std::string HourInDayToString(int iHourInDayIndex) {
-  return ssprintf("Hour%02d", iHourInDayIndex);
+std::string HourInDayToString(int hour_in_day_index) {
+  return ssprintf("Hour%02d", hour_in_day_index);
 }
 
 static const char* MonthNames[] = {
@@ -173,8 +173,8 @@ XToString(Month);
 XToLocalizedString(Month);
 LuaXType(Month);
 
-std::string LastWeekToString(int iLastWeekIndex) {
-  switch (iLastWeekIndex) {
+std::string LastWeekToString(int last_week_index) {
+  switch (last_week_index) {
     case 0:
       return "ThisWeek";
       break;
@@ -182,35 +182,35 @@ std::string LastWeekToString(int iLastWeekIndex) {
       return "LastWeek";
       break;
     default:
-      return ssprintf("Week%02dAgo", iLastWeekIndex);
+      return ssprintf("Week%02dAgo", last_week_index);
       break;
   }
 }
 
-std::string LastDayToLocalizedString(int iLastDayIndex) {
-  std::string s = LastDayToString(iLastDayIndex);
+std::string LastDayToLocalizedString(int last_day_index) {
+  std::string s = LastDayToString(last_day_index);
   Replace(s, "Day", "");
   Replace(s, "Ago", " Ago");
   return s;
 }
 
-std::string LastWeekToLocalizedString(int iLastWeekIndex) {
-  std::string s = LastWeekToString(iLastWeekIndex);
+std::string LastWeekToLocalizedString(int last_week_index) {
+  std::string s = LastWeekToString(last_week_index);
   Replace(s, "Week", "");
   Replace(s, "Ago", " Ago");
   return s;
 }
 
-std::string HourInDayToLocalizedString(int iHourIndex) {
-  int iBeginHour = iHourIndex;
-  iBeginHour--;
-  wrap(iBeginHour, 24);
-  iBeginHour++;
+std::string HourInDayToLocalizedString(int hour_index) {
+  int begin_hour = hour_index;
+  begin_hour--;
+  wrap(begin_hour, 24);
+  begin_hour++;
 
-  return ssprintf("%02d:00+", iBeginHour);
+  return ssprintf("%02d:00+", begin_hour);
 }
 
-tm AddDays(tm start, int iDaysToMove) {
+tm AddDays(tm start, int days_to_move) {
   /*
    * This causes problems on macOS, which doesn't correctly handle range that
    * are below their normal values (eg. mday = 0).  According to the manpage, it
@@ -239,7 +239,7 @@ tm AddDays(tm start, int iDaysToMove) {
    * of day.  I prefer the above behavior, but I'm not sure that it
    * mattersmatters. */
   time_t seconds = mktime(&start);
-  seconds += iDaysToMove * 60 * 60 * 24;
+  seconds += days_to_move * 60 * 60 * 24;
 
   tm time;
   localtime_r(&seconds, &time);
@@ -249,24 +249,24 @@ tm AddDays(tm start, int iDaysToMove) {
 tm GetYesterday(tm start) { return AddDays(start, -1); }
 
 int GetDayOfWeek(tm time) {
-  int iDayOfWeek = time.tm_wday;
-  ASSERT(iDayOfWeek < DAYS_IN_WEEK);
-  return iDayOfWeek;
+  int day_of_week = time.tm_wday;
+  ASSERT(day_of_week < DAYS_IN_WEEK);
+  return day_of_week;
 }
 
 tm GetNextSunday(tm start) {
   return AddDays(start, DAYS_IN_WEEK - GetDayOfWeek(start));
 }
 
-tm GetDayInYearAndYear(int iDayInYearIndex, int iYear) {
+tm GetDayInYearAndYear(int day_in_year_index, int year) {
   /* If iDayInYearIndex is 200, set the date to Jan 200th, and let mktime
    * round it.  This shouldn't suffer from the macOS mktime() issue described
    * above, since we're not giving it negative values. */
   tm when;
   ZERO(when);
   when.tm_mon = 0;
-  when.tm_mday = iDayInYearIndex + 1;
-  when.tm_year = iYear - 1900;
+  when.tm_mday = day_in_year_index + 1;
+  when.tm_year = year - 1900;
   time_t then = mktime(&when);
 
   localtime_r(&then, &when);

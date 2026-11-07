@@ -21,7 +21,7 @@ class ScreenSelectCharacter : public ScreenWithMenuElements {
   virtual ~ScreenSelectCharacter();
 
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
   bool MenuLeft(const InputEventPlus& input);
   bool MenuRight(const InputEventPlus& input);
@@ -40,7 +40,7 @@ class ScreenSelectCharacter : public ScreenWithMenuElements {
   void BeforeRowChange(PlayerNumber pn);
   void AfterRowChange(PlayerNumber pn);
   void AfterValueChange(PlayerNumber pn);
-  void Move(PlayerNumber pn, int deltaValue);
+  void Move(PlayerNumber pn, int delta_value);
   bool AllAreFinishedChoosing() const;
   void MakeSelection(PlayerNumber pn);
 

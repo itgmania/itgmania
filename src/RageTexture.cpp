@@ -35,21 +35,21 @@ void RageTexture::CreateFrameRects() {
   texture_coord_rects_.reserve(
       static_cast<size_t>(frames_wide_ * frames_high_));
 
-  float frameWidth =
+  float frame_width =
       (image_width_ / static_cast<float>(texture_width_)) / frames_wide_;
-  float frameHeight =
+  float frame_height =
       (image_height_ / static_cast<float>(texture_height_)) / frames_high_;
 
   for (int j = 0; j < frames_high_; j++)  // traverse along Y
   {
-    float top = j * frameHeight;
-    float bottom = (j + 1) * frameHeight;
+    float top = j * frame_height;
+    float bottom = (j + 1) * frame_height;
 
     for (int i = 0; i < frames_wide_;
          i++)  // traverse along X (important that this is the inner loop)
     {
-      float left = i * frameWidth;
-      float right = (i + 1) * frameWidth;
+      float left = i * frame_width;
+      float right = (i + 1) * frame_width;
 
       RectF frect(
           left, top, right,
@@ -64,19 +64,19 @@ void RageTexture::CreateFrameRects() {
 }
 
 void RageTexture::GetFrameDimensionsFromFileName(
-    std::string sPath, int* piFramesWide, int* piFramesHigh, int source_width,
+    std::string path, int* frames_wide, int* frames_high, int source_width,
     int source_height) {
   static Regex match(" ([0-9]+)x([0-9]+)([\\. ]|$)");
-  std::vector<std::string> asMatch;
-  if (!match.Compare(sPath, asMatch)) {
-    *piFramesWide = *piFramesHigh = 1;
+  std::vector<std::string> as_match;
+  if (!match.Compare(path, as_match)) {
+    *frames_wide = *frames_high = 1;
     return;
   }
   // Check for nonsense values.  Some people might not intend the hint. -Kyz
-  int maybe_width = StringToInt(asMatch[0]);
-  int maybe_height = StringToInt(asMatch[1]);
+  int maybe_width = StringToInt(as_match[0]);
+  int maybe_height = StringToInt(as_match[1]);
   if (maybe_width <= 0 || maybe_height <= 0) {
-    *piFramesWide = *piFramesHigh = 1;
+    *frames_wide = *frames_high = 1;
     return;
   }
   // Font.cpp uses this function, but can't pass in a texture size.  Other
@@ -84,16 +84,16 @@ void RageTexture::GetFrameDimensionsFromFileName(
   // makes no sense. -Kyz
   if (source_width > 0 && source_height > 0) {
     if (maybe_width > source_width || maybe_height > source_height) {
-      *piFramesWide = *piFramesHigh = 1;
+      *frames_wide = *frames_high = 1;
       return;
     }
   }
-  *piFramesWide = maybe_width;
-  *piFramesHigh = maybe_height;
+  *frames_wide = maybe_width;
+  *frames_high = maybe_height;
 }
 
-const RectF* RageTexture::GetTextureCoordRect(int iFrameNo) const {
-  return &texture_coord_rects_[iFrameNo % GetNumFrames()];
+const RectF* RageTexture::GetTextureCoordRect(int frame_no) const {
+  return &texture_coord_rects_[frame_no % GetNumFrames()];
 }
 
 // lua start
@@ -115,11 +115,11 @@ class LunaRageTexture : public Luna<RageTexture> {
     COMMON_RETURN_SELF;
   }
   static int GetTextureCoordRect(T* p, lua_State* L) {
-    const RectF* pRect = p->GetTextureCoordRect(IArg(1));
-    lua_pushnumber(L, pRect->left_);
-    lua_pushnumber(L, pRect->top_);
-    lua_pushnumber(L, pRect->right_);
-    lua_pushnumber(L, pRect->bottom_);
+    const RectF* rect = p->GetTextureCoordRect(IArg(1));
+    lua_pushnumber(L, rect->left_);
+    lua_pushnumber(L, rect->top_);
+    lua_pushnumber(L, rect->right_);
+    lua_pushnumber(L, rect->bottom_);
     return 4;
   }
   static int GetNumFrames(T* p, lua_State* L) {

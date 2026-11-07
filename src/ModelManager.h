@@ -10,7 +10,7 @@ struct ModelManagerPrefs {
   bool delayed_unload_;
 
   ModelManagerPrefs() { delayed_unload_ = false; }
-  ModelManagerPrefs(bool bDelayedUnload) { delayed_unload_ = bDelayedUnload; }
+  ModelManagerPrefs(bool delayed_unload) { delayed_unload_ = delayed_unload; }
 
   bool operator!=(const ModelManagerPrefs& rhs) {
     return delayed_unload_ != rhs.delayed_unload_;
@@ -26,7 +26,7 @@ class ModelManager {
   ~ModelManager();
 
   RageModelGeometry* LoadMilkshapeAscii(
-      const std::string& sFile, bool bNeedNormals);
+      const std::string& file, bool need_normals);
   void UnloadModel(RageModelGeometry* m);
   //	void ReloadAll();
 

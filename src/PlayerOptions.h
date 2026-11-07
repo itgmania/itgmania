@@ -162,8 +162,8 @@ class PlayerOptions {
     ONE(speed_reverse_);
   };
   void Init();
-  void Approach(const PlayerOptions& other, float fDeltaSeconds);
-  std::string GetString(bool bForceNoteSkin = false) const;
+  void Approach(const PlayerOptions& other, float delta_seconds);
+  std::string GetString(bool force_note_skin = false) const;
   std::string GetSavedPrefsString()
       const;  // only the basic options that players would want for every song
   enum ResetPrefsType { saved_prefs, saved_prefs_invalid_for_course };
@@ -173,13 +173,13 @@ class PlayerOptions {
     ResetPrefs(saved_prefs_invalid_for_course);
   }
   void GetMods(
-      std::vector<std::string>& AddTo, bool bForceNoteSkin = false) const;
-  void GetLocalizedMods(std::vector<std::string>& AddTo) const;
-  void FromString(const std::string& sMultipleMods);
+      std::vector<std::string>& add_to, bool force_note_skin = false) const;
+  void GetLocalizedMods(std::vector<std::string>& add_to) const;
+  void FromString(const std::string& multiple_mods);
   bool FromOneModString(
-      const std::string& sOneMod,
-      std::string& sErrorDetailOut);  // On error, return false and optionally
-                                      // set sErrorDetailOut
+      const std::string& one_mod,
+      std::string& error_detail_out);  // On error, return false and optionally
+                                       // set sErrorDetailOut
   void ChooseRandomModifiers();
   bool ContainsTransformOrTurn() const;
 
@@ -402,7 +402,7 @@ class PlayerOptions {
   };
 
   float GetReversePercentForColumn(
-      int iCol) const;  // accounts for all Directions
+      int col) const;  // accounts for all Directions
 
   PlayerNumber pn_;  // Needed for fetching the style.
 
@@ -494,9 +494,8 @@ class PlayerOptions {
   void ToggleOneTurn(Turn t);
 
   // return true if any mods being used will make the song(s) easier
-  bool IsEasierForSongAndSteps(
-      Song* pSong, Steps* pSteps, PlayerNumber pn) const;
-  bool IsEasierForCourseAndTrail(Course* pCourse, Trail* pTrail) const;
+  bool IsEasierForSongAndSteps(Song* song, Steps* steps, PlayerNumber pn) const;
+  bool IsEasierForCourseAndTrail(Course* course, Trail* trail) const;
 };
 
 #define ADD_MULTICOL_METHOD(method_name) \

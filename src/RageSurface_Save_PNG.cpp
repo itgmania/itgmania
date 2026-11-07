@@ -6,8 +6,8 @@
 #include "RageSurface_Save_STB.h"
 
 bool RageSurfaceUtils::SavePNG(
-    RageSurface* pImg, RageFile& f, std::string& sError) {
-  return RageSurface_Save_STB(pImg, f, sError, RageSurfaceSTBWriteFormat::PNG);
+    RageSurface* img, RageFile& f, std::string& error) {
+  return RageSurface_Save_STB(img, f, error, RageSurfaceSTBWriteFormat::PNG);
 }
 
 /*

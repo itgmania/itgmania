@@ -15,7 +15,7 @@ class Character {
   Character();
   ~Character() {}
 
-  bool Load(std::string sCharDir);  // return true if successful
+  bool Load(std::string char_dir);  // return true if successful
 
   std::string GetCardPath() const { return card_path_; }
   std::string GetIconPath() const { return icon_path_; }

@@ -7,8 +7,8 @@
 AppInstance::AppInstance() {
   // Little trick to get an HINSTANCE of ourself without having access to the
   // hwnd.
-  WCHAR szFullAppPath[MAX_PATH];
-  if (GetModuleFileNameW(nullptr, szFullAppPath, MAX_PATH) == 0) {
+  WCHAR full_app_path[MAX_PATH];
+  if (GetModuleFileNameW(nullptr, full_app_path, MAX_PATH) == 0) {
     LOG->Warn(
         "GetModuleFileName failed: %s",
         werr_ssprintf(GetLastError(), "GetModuleFileName").c_str());
@@ -16,7 +16,7 @@ AppInstance::AppInstance() {
     return;
   }
 
-  h_ = LoadLibraryW(szFullAppPath);
+  h_ = LoadLibraryW(full_app_path);
   if (h_ == nullptr) {
     LOG->Warn(
         "LoadLibrary failed: %s",

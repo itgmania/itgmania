@@ -24,9 +24,9 @@ Command::Arg Command::GetArg(unsigned index) const {
   return a;
 }
 
-void Command::Load(const std::string& sCommand) {
+void Command::Load(const std::string& command) {
   args_.clear();
-  split(sCommand, ",", args_, false);  // don't ignore empty
+  split(command, ",", args_, false);  // don't ignore empty
 }
 
 std::string Command::GetOriginalCommandString() const {
@@ -34,27 +34,27 @@ std::string Command::GetOriginalCommandString() const {
 }
 
 static void SplitWithQuotes(
-    const std::string sSource, const char Delimitor,
-    std::vector<std::string>& asOut, const bool bIgnoreEmpty) {
+    const std::string source, const char delimitor,
+    std::vector<std::string>& out, const bool ignore_empty) {
   /* Short-circuit if the source is empty; we want to return an empty vector if
    * the string is empty, even if bIgnoreEmpty is true. */
-  if (sSource.empty()) {
+  if (source.empty()) {
     return;
   }
 
   size_t startpos = 0;
   do {
     size_t pos = startpos;
-    while (pos < sSource.size()) {
-      if (sSource[pos] == Delimitor) {
+    while (pos < source.size()) {
+      if (source[pos] == delimitor) {
         break;
       }
 
-      if (sSource[pos] == '"' || sSource[pos] == '\'') {
+      if (source[pos] == '"' || source[pos] == '\'') {
         /* We've found a quote.  Search for the close. */
-        pos = sSource.find(sSource[pos], pos + 1);
+        pos = source.find(source[pos], pos + 1);
         if (pos == std::string::npos) {
-          pos = sSource.size();
+          pos = source.size();
         } else {
           ++pos;
         }
@@ -63,19 +63,20 @@ static void SplitWithQuotes(
       }
     }
 
-    if (pos - startpos > 0 || !bIgnoreEmpty) {
+    if (pos - startpos > 0 || !ignore_empty) {
       /* Optimization: if we're copying the whole string, avoid substr; this
        * allows this copy to be refcounted, which is much faster. */
-      if (startpos == 0 && pos - startpos == sSource.size()) {
-        asOut.push_back(sSource);
+      if (startpos == 0 && pos - startpos == source.size()) {
+        out.push_back(source);
       } else {
-        const std::string AddCString = sSource.substr(startpos, pos - startpos);
-        asOut.push_back(AddCString);
+        const std::string add_c_string =
+            source.substr(startpos, pos - startpos);
+        out.push_back(add_c_string);
       }
     }
 
     startpos = pos + 1;
-  } while (startpos <= sSource.size());
+  } while (startpos <= source.size());
 }
 
 std::string Commands::GetOriginalCommandString() const {
@@ -87,25 +88,25 @@ std::string Commands::GetOriginalCommandString() const {
 }
 
 void ParseCommands(
-    const std::string& sCommands, Commands& vCommandsOut, bool bLegacy) {
-  std::vector<std::string> vsCommands;
-  if (bLegacy) {
-    split(sCommands, ";", vsCommands, true);
+    const std::string& s_commands, Commands& commands_out, bool legacy) {
+  std::vector<std::string> vs_commands;
+  if (legacy) {
+    split(s_commands, ";", vs_commands, true);
   } else {
-    SplitWithQuotes(sCommands, ';', vsCommands, true);  // do ignore empty
+    SplitWithQuotes(s_commands, ';', vs_commands, true);  // do ignore empty
   }
-  vCommandsOut.v_.resize(vsCommands.size());
+  commands_out.v_.resize(vs_commands.size());
 
-  for (unsigned i = 0; i < vsCommands.size(); i++) {
-    Command& cmd = vCommandsOut.v_[i];
-    cmd.Load(vsCommands[i]);
+  for (unsigned i = 0; i < vs_commands.size(); i++) {
+    Command& cmd = commands_out.v_[i];
+    cmd.Load(vs_commands[i]);
   }
 }
 
-Commands ParseCommands(const std::string& sCommands) {
-  Commands vCommands;
-  ParseCommands(sCommands, vCommands, false);
-  return vCommands;
+Commands ParseCommands(const std::string& s_commands) {
+  Commands v_commands;
+  ParseCommands(s_commands, v_commands, false);
+  return v_commands;
 }
 
 /*

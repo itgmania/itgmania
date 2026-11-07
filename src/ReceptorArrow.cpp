@@ -19,40 +19,40 @@ ReceptorArrow::ReceptorArrow() {
   was_reverse_ = false;
 }
 
-void ReceptorArrow::Load(const PlayerState* pPlayerState, int iColNo) {
-  player_state_ = pPlayerState;
-  col_no_ = iColNo;
+void ReceptorArrow::Load(const PlayerState* player_state, int col_no) {
+  player_state_ = player_state;
+  col_no_ = col_no;
 
   const PlayerNumber pn = player_state_->player_number_;
-  std::vector<GameInput> GameI;
-  GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(iColNo, pn, GameI);
+  std::vector<GameInput> game_i;
+  GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(col_no, pn, game_i);
   NOTESKIN->SetPlayerNumber(pn);
   // FIXME?  Does this cause a problem when game inputs on different
   // controllers are mapped to the same column?  Such a thing could be set
   // up in a style that uses two controllers and has a mapping that fits the
   // requirements. -Kyz
-  NOTESKIN->SetGameController(GameI[0].controller_);
+  NOTESKIN->SetGameController(game_i[0].controller_);
 
-  std::string sButton = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName(iColNo);
-  receptor_.Load(NOTESKIN->LoadActor(sButton, "Receptor"));
+  std::string button = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName(col_no);
+  receptor_.Load(NOTESKIN->LoadActor(button, "Receptor"));
   this->AddChild(receptor_);
 
-  bool bReverse =
+  bool reverse =
       player_state_->player_options_.GetCurrent().GetReversePercentForColumn(
           col_no_) > 0.5f;
-  receptor_->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
-  was_reverse_ = bReverse;
+  receptor_->PlayCommand(reverse ? "ReverseOn" : "ReverseOff");
+  was_reverse_ = reverse;
 }
 
-void ReceptorArrow::Update(float fDeltaTime) {
-  ActorFrame::Update(fDeltaTime);
+void ReceptorArrow::Update(float delta_time) {
+  ActorFrame::Update(delta_time);
 
-  bool bReverse =
+  bool reverse =
       player_state_->player_options_.GetCurrent().GetReversePercentForColumn(
           col_no_) > 0.5f;
-  if (bReverse != was_reverse_) {
-    receptor_->PlayCommand(bReverse ? "ReverseOn" : "ReverseOff");
-    was_reverse_ = bReverse;
+  if (reverse != was_reverse_) {
+    receptor_->PlayCommand(reverse ? "ReverseOn" : "ReverseOff");
+    was_reverse_ = reverse;
   }
 }
 
@@ -72,8 +72,8 @@ void ReceptorArrow::DrawPrimitives() {
 void ReceptorArrow::Step(TapNoteScore score) {
   is_pressed_ = true;
 
-  std::string sJudge = TapNoteScoreToString(score);
-  receptor_->PlayCommand(Capitalize(sJudge));
+  std::string judge = TapNoteScoreToString(score);
+  receptor_->PlayCommand(Capitalize(judge));
 }
 
 void ReceptorArrow::SetNoteUpcoming(bool b) {

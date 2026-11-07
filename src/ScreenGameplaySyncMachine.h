@@ -13,12 +13,12 @@ class ScreenGameplaySyncMachine : public ScreenGameplayNormal {
  public:
   virtual void Init();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual bool Input(const InputEventPlus& input);
 
   virtual ScreenType GetScreenType() const { return system_menu; }
 
-  void HandleScreenMessage(const ScreenMessage SM);
+  void HandleScreenMessage(const ScreenMessage sm);
   void ResetAndRestartCurrentSong();
 
  protected:

@@ -20,18 +20,19 @@ class LuaExpressionTransform {
   ~LuaExpressionTransform();
 
   void SetFromReference(const LuaReference& ref);
-  void SetNumSubdivisions(int iNumSubdivisions) {
-    ASSERT(iNumSubdivisions > 0);
-    num_subdivisions_ = iNumSubdivisions;
+  void SetNumSubdivisions(int num_subdivisions) {
+    ASSERT(num_subdivisions > 0);
+    num_subdivisions_ = num_subdivisions;
   }
 
   void TransformItemCached(
-      Actor& a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems);
+      Actor& a, float position_offset_from_center, int item_index,
+      int num_items);
   void TransformItemDirect(
-      Actor& a, float fPositionOffsetFromCenter, int iItemIndex,
-      int iNumItems) const;
+      Actor& a, float position_offset_from_center, int item_index,
+      int num_items) const;
   const Actor::TweenState& GetTransformCached(
-      float fPositionOffsetFromCenter, int iItemIndex, int iNumItems) const;
+      float position_offset_from_center, int item_index, int num_items) const;
   void ClearCache() { map_position_to_tween_state_cache_.clear(); }
 
  protected:

@@ -92,7 +92,7 @@ class LightsManager {
   LightsManager();
   ~LightsManager();
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
   bool IsEnabled() const;
 
   void BlinkCabinetLight(CabinetLight cl);
@@ -111,8 +111,8 @@ class LightsManager {
   GameInput GetFirstLitGameButtonLight();
 
  private:
-  void ChangeTestCabinetLight(int iDir);
-  void ChangeTestGameButtonLight(int iDir);
+  void ChangeTestCabinetLight(int dir);
+  void ChangeTestGameButtonLight(int dir);
 
   float secs_left_in_cabinet_light_blink_[NUM_CabinetLight];
   float secs_left_in_game_button_blink_[NUM_GameController][NUM_GameButton];

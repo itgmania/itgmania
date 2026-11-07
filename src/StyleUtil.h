@@ -18,7 +18,7 @@ class StyleID {
   bool operator<(const StyleID& rhs) const;
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   bool IsValid() const;
 };
 

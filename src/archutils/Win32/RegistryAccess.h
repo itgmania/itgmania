@@ -8,22 +8,22 @@
 
 namespace RegistryAccess {
 bool GetRegValue(
-    const std::string& sKey, const std::string& sName, std::string& val);
+    const std::string& key, const std::string& name, std::string& val);
 bool GetRegValue(
-    const std::string& sKey, const std::string& sName, int& val,
-    bool bWarnOnError = true);
-bool GetRegValue(const std::string& sKey, const std::string& sName, bool& val);
+    const std::string& key, const std::string& name, int& val,
+    bool warn_on_error = true);
+bool GetRegValue(const std::string& key, const std::string& name, bool& val);
 
 bool GetRegSubKeys(
-    const std::string& sKey, std::vector<std::string>& asList,
-    const std::string& sRegex = ".*", bool bReturnPathToo = true);
+    const std::string& key, std::vector<std::string>& list,
+    const std::string& regex = ".*", bool return_path_too = true);
 
 bool SetRegValue(
-    const std::string& sKey, const std::string& sName, const std::string& val);
-bool SetRegValue(const std::string& sKey, const std::string& sName, int val);
-bool SetRegValue(const std::string& sKey, const std::string& sName, bool val);
+    const std::string& key, const std::string& name, const std::string& val);
+bool SetRegValue(const std::string& key, const std::string& name, int val);
+bool SetRegValue(const std::string& key, const std::string& name, bool val);
 
-bool CreateKey(const std::string& sKey);
+bool CreateKey(const std::string& key);
 }  // namespace RegistryAccess
 
 #endif

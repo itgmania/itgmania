@@ -21,8 +21,8 @@
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxEvent, Linux_Event);
 
-static std::string BustypeToString(int iBus) {
-  switch (iBus) {
+static std::string BustypeToString(int bus) {
+  switch (bus) {
       //	case BUS_ADB:
       //	case BUS_AMIGA: return "amiga input";
     case BUS_BLUETOOTH:
@@ -49,14 +49,14 @@ static std::string BustypeToString(int iBus) {
     case BUS_XTKBD:
       return "XT keyboard";
     default:
-      return ssprintf("unknown bus %x", iBus);
+      return ssprintf("unknown bus %x", bus);
   }
 }
 
 struct EventDevice {
   EventDevice();
   ~EventDevice();
-  bool Open(std::string sFile, InputDevice dev);
+  bool Open(std::string file, InputDevice dev);
   bool IsOpen() const { return fd_ != -1; }
   void Close() {
     if (fd_ != -1) {
@@ -78,16 +78,16 @@ struct EventDevice {
 
 static std::vector<EventDevice*> g_apEventDevices;
 
-static bool BitIsSet(const uint8_t* pArray, uint32_t iBit) {
-  return !!(pArray[iBit / 8] & (1 << (iBit % 8)));
+static bool BitIsSet(const uint8_t* array, uint32_t bit) {
+  return !!(array[bit / 8] & (1 << (bit % 8)));
 }
 
 EventDevice::EventDevice() { fd_ = -1; }
 
-bool EventDevice::Open(std::string sFile, InputDevice dev) {
-  path_ = sFile;
+bool EventDevice::Open(std::string file, InputDevice dev) {
+  path_ = file;
   dev_ = dev;
-  fd_ = open(sFile.c_str(), O_RDWR);
+  fd_ = open(file.c_str(), O_RDWR);
   if (fd_ == -1) {
     // HACK: Let the caller handle errno.
     return false;
@@ -99,61 +99,61 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
         "ioctl(EVIOCSCLOCKID, CLOCK_MONOTONIC) failed: %s", strerror(errno));
   }
 
-  static bool bLogged = false;
-  if (!bLogged) {
-    bLogged = true;
-    int iVersion;
-    if (ioctl(fd_, EVIOCGVERSION, &iVersion) == -1) {
+  static bool logged = false;
+  if (!logged) {
+    logged = true;
+    int version;
+    if (ioctl(fd_, EVIOCGVERSION, &version) == -1) {
       LOG->Warn("ioctl(EVIOCGVERSION): %s", strerror(errno));
     } else {
       LOG->Info(
-          "Event driver: v%i.%i.%i", (iVersion >> 16) & 0xFF,
-          (iVersion >> 8) & 0xFF, iVersion & 0xFF);
+          "Event driver: v%i.%i.%i", (version >> 16) & 0xFF,
+          (version >> 8) & 0xFF, version & 0xFF);
     }
   }
 
-  char szName[1024];
-  if (ioctl(fd_, EVIOCGNAME(sizeof(szName)), szName) == -1) {
+  char name[1024];
+  if (ioctl(fd_, EVIOCGNAME(sizeof(name)), name) == -1) {
     LOG->Warn("ioctl(EVIOCGNAME): %s", strerror(errno));
 
     name_ = "(unknown)";
   } else {
-    name_ = szName;
+    name_ = name;
   }
 
-  input_id DevInfo;
-  if (ioctl(fd_, EVIOCGID, &DevInfo) == -1) {
+  input_id dev_info;
+  if (ioctl(fd_, EVIOCGID, &dev_info) == -1) {
     LOG->Warn("ioctl(EVIOCGID): %s", strerror(errno));
   } else {
     LOG->Info(
         "Input device: %s: %s device, ID %04x:%04x, version %x: %s",
-        sFile.c_str(), BustypeToString(DevInfo.bustype).c_str(), DevInfo.vendor,
-        DevInfo.product, DevInfo.version, name_.c_str());
+        file.c_str(), BustypeToString(dev_info.bustype).c_str(),
+        dev_info.vendor, dev_info.product, dev_info.version, name_.c_str());
   }
 
-  uint8_t iABSMask[ABS_MAX / 8 + 1];
-  memset(iABSMask, 0, sizeof(iABSMask));
-  if (ioctl(fd_, EVIOCGBIT(EV_ABS, sizeof(iABSMask)), iABSMask) < 0) {
+  uint8_t abs_mask[ABS_MAX / 8 + 1];
+  memset(abs_mask, 0, sizeof(abs_mask));
+  if (ioctl(fd_, EVIOCGBIT(EV_ABS, sizeof(abs_mask)), abs_mask) < 0) {
     LOG->Warn("ioctl(EVIOCGBIT(EV_ABS)): %s", strerror(errno));
   }
 
   // If more exceptions need to be added, please add them here.
   // The code below will check the device name against this list
   // and apply an exception if a match is found.
-  static const char* kJoystickExceptions[] = {
+  static const char* k_joystick_exceptions[] = {
       "RedOctane USB Pad", "Cobalt Flux Controller"};
 
-  if (!BitIsSet(iABSMask, ABS_X) && !BitIsSet(iABSMask, ABS_THROTTLE) &&
-      !BitIsSet(iABSMask, ABS_WHEEL)) {
+  if (!BitIsSet(abs_mask, ABS_X) && !BitIsSet(abs_mask, ABS_THROTTLE) &&
+      !BitIsSet(abs_mask, ABS_WHEEL)) {
     LOG->Info("    Not a joystick; ignoring [%s]", name_.c_str());
-    bool bIsException = false;
-    for (const char* sException : kJoystickExceptions) {
-      if (name_ == sException) {
-        bIsException = true;
+    bool is_exception = false;
+    for (const char* exception : k_joystick_exceptions) {
+      if (name_ == exception) {
+        is_exception = true;
         break;
       }
     }
-    if (bIsException) {
+    if (is_exception) {
       LOG->Info("%s detected, making an exception.", name_.c_str());
     } else {
       Close();
@@ -161,75 +161,75 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
     }
   }
 
-  uint8_t iKeyMask[KEY_MAX / 8 + 1];
-  memset(iKeyMask, 0, sizeof(iKeyMask));
-  if (ioctl(fd_, EVIOCGBIT(EV_KEY, sizeof(iKeyMask)), iKeyMask) < 0) {
+  uint8_t key_mask[KEY_MAX / 8 + 1];
+  memset(key_mask, 0, sizeof(key_mask));
+  if (ioctl(fd_, EVIOCGBIT(EV_KEY, sizeof(key_mask)), key_mask) < 0) {
     LOG->Warn("ioctl(EVIOCGBIT(EV_KEY)): %s", strerror(errno));
   }
 
-  uint8_t iEventTypes[EV_MAX / 8];
-  memset(iEventTypes, 0, sizeof(iEventTypes));
-  if (ioctl(fd_, EVIOCGBIT(0, EV_MAX), iEventTypes) == -1) {
+  uint8_t event_types[EV_MAX / 8];
+  memset(event_types, 0, sizeof(event_types));
+  if (ioctl(fd_, EVIOCGBIT(0, EV_MAX), event_types) == -1) {
     LOG->Warn("ioctl(EV_MAX): %s", strerror(errno));
   }
 
   {
-    std::vector<std::string> setEventTypes;
+    std::vector<std::string> set_event_types;
 
-    if (BitIsSet(iEventTypes, EV_SYN)) {
-      setEventTypes.push_back("syn");
+    if (BitIsSet(event_types, EV_SYN)) {
+      set_event_types.push_back("syn");
     }
-    if (BitIsSet(iEventTypes, EV_KEY)) {
-      setEventTypes.push_back("key");
+    if (BitIsSet(event_types, EV_KEY)) {
+      set_event_types.push_back("key");
     }
-    if (BitIsSet(iEventTypes, EV_REL)) {
-      setEventTypes.push_back("rel");
+    if (BitIsSet(event_types, EV_REL)) {
+      set_event_types.push_back("rel");
     }
-    if (BitIsSet(iEventTypes, EV_ABS)) {
-      setEventTypes.push_back("abs");
+    if (BitIsSet(event_types, EV_ABS)) {
+      set_event_types.push_back("abs");
     }
-    if (BitIsSet(iEventTypes, EV_MSC)) {
-      setEventTypes.push_back("misc");
+    if (BitIsSet(event_types, EV_MSC)) {
+      set_event_types.push_back("misc");
     }
-    if (BitIsSet(iEventTypes, EV_SW)) {
-      setEventTypes.push_back("sw");
+    if (BitIsSet(event_types, EV_SW)) {
+      set_event_types.push_back("sw");
     }
-    if (BitIsSet(iEventTypes, EV_LED)) {
-      setEventTypes.push_back("led");
+    if (BitIsSet(event_types, EV_LED)) {
+      set_event_types.push_back("led");
     }
-    if (BitIsSet(iEventTypes, EV_SND)) {
-      setEventTypes.push_back("snd");
+    if (BitIsSet(event_types, EV_SND)) {
+      set_event_types.push_back("snd");
     }
-    if (BitIsSet(iEventTypes, EV_REP)) {
-      setEventTypes.push_back("rep");
+    if (BitIsSet(event_types, EV_REP)) {
+      set_event_types.push_back("rep");
     }
-    if (BitIsSet(iEventTypes, EV_FF)) {
-      setEventTypes.push_back("ff");
+    if (BitIsSet(event_types, EV_FF)) {
+      set_event_types.push_back("ff");
     }
-    if (BitIsSet(iEventTypes, EV_PWR)) {
-      setEventTypes.push_back("pwr");
+    if (BitIsSet(event_types, EV_PWR)) {
+      set_event_types.push_back("pwr");
     }
-    if (BitIsSet(iEventTypes, EV_FF_STATUS)) {
-      setEventTypes.push_back("ff_status");
+    if (BitIsSet(event_types, EV_FF_STATUS)) {
+      set_event_types.push_back("ff_status");
     }
 
-    LOG->Info("    Event types: %s", join(", ", setEventTypes).c_str());
+    LOG->Info("    Event types: %s", join(", ", set_event_types).c_str());
   }
 
-  int iTotalKeys = 0;
+  int total_keys = 0;
   for (int i = 0; i < KEY_MAX; ++i) {
-    if (!BitIsSet(iKeyMask, i)) {
+    if (!BitIsSet(key_mask, i)) {
       continue;
     }
-    ++iTotalKeys;
+    ++total_keys;
   }
 
-  int iTotalAxes = 0;
-  const DeviceButton iExtraAxes[] = {
+  int total_axes = 0;
+  const DeviceButton extra_axes[] = {
       JOY_LEFT_2, JOY_UP_2, JOY_AUX_1, JOY_AUX_3};
-  int iNextExtraAxis = 0;
+  int next_extra_axis = 0;
   for (int i = 0; i < ABS_MAX; ++i) {
-    if (!BitIsSet(iABSMask, i)) {
+    if (!BitIsSet(abs_mask, i)) {
       continue;
     }
     struct input_absinfo absinfo;
@@ -271,16 +271,16 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
       abs_mapping_high_[i] = JOY_HAT_UP;
       abs_mapping_low_[i] = JOY_HAT_DOWN;
     } else {
-      if (iNextExtraAxis < (int)ARRAYLEN(iExtraAxes)) {
-        abs_mapping_low_[i] = iExtraAxes[iNextExtraAxis];
+      if (next_extra_axis < (int)ARRAYLEN(extra_axes)) {
+        abs_mapping_low_[i] = extra_axes[next_extra_axis];
         abs_mapping_high_[i] = enum_add2(abs_mapping_low_[i], 1);
-        ++iNextExtraAxis;
+        ++next_extra_axis;
       }
     }
 
-    ++iTotalAxes;
+    ++total_axes;
   }
-  LOG->Info("    Total keys: %i; total axes: %i", iTotalKeys, iTotalAxes);
+  LOG->Info("    Total keys: %i; total axes: %i", total_keys, total_axes);
 
   return true;
 }
@@ -346,8 +346,8 @@ void InputHandler_Linux_Event::StopThread() {
 }
 
 bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
-  EventDevice* pDev = new EventDevice;
-  if (pDev->Open(devfile, next_device_)) {
+  EventDevice* dev = new EventDevice;
+  if (dev->Open(devfile, next_device_)) {
     bool hotplug = false;
     if (input_thread_.IsCreated()) {
       StopThread();
@@ -355,7 +355,7 @@ bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
     }
     /* Thread is stopped! DO NOT RETURN */
     {
-      g_apEventDevices.push_back(pDev);
+      g_apEventDevices.push_back(dev);
     }
     if (hotplug) {
       StartThread();
@@ -369,7 +369,7 @@ bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
 
     return true;
   } else {
-    delete pDev;
+    delete dev;
     // This is likely to fail; most systems still forbid ALL eventNN regardless
     // of their type. Info it anyway, it could be useful for end-user
     // troubleshooting.
@@ -388,29 +388,29 @@ void InputHandler_Linux_Event::InputThread() {
   while (!shutdown_) {
     fd_set fdset;
     FD_ZERO(&fdset);
-    int iMaxFD = -1;
+    int max_fd = -1;
 
     if (udev_fd_ >= 0) {
       FD_SET(udev_fd_, &fdset);
-      iMaxFD = std::max(iMaxFD, udev_fd_);
+      max_fd = std::max(max_fd, udev_fd_);
     }
 
     for (int i = 0; i < (int)g_apEventDevices.size(); ++i) {
-      int iFD = g_apEventDevices[i]->fd_;
+      int fd = g_apEventDevices[i]->fd_;
       if (!g_apEventDevices[i]->IsOpen()) {
         continue;
       }
 
-      FD_SET(iFD, &fdset);
-      iMaxFD = std::max(iMaxFD, iFD);
+      FD_SET(fd, &fdset);
+      max_fd = std::max(max_fd, fd);
     }
 
-    if (iMaxFD == -1) {
+    if (max_fd == -1) {
       break;
     }
 
     struct timeval zero = {0, 100000};
-    if (select(iMaxFD + 1, &fdset, nullptr, nullptr, &zero) <= 0) {
+    if (select(max_fd + 1, &fdset, nullptr, nullptr, &zero) <= 0) {
       continue;
     }
 
@@ -469,38 +469,38 @@ void InputHandler_Linux_Event::InputThread() {
         continue;
       }
 
-      RageTimer eventTime(event.time.tv_sec, event.time.tv_usec);
+      RageTimer event_time(event.time.tv_sec, event.time.tv_usec);
 
       switch (event.type) {
         case EV_KEY: {
-          int iNum;
+          int num;
           if (event.code >= BTN_JOYSTICK && event.code <= BTN_JOYSTICK + 0xf) {
             // These guys have arbitrary names, but the kernel code in
             // hid-input.c maps exactly 0xf of them.
-            iNum = event.code - BTN_JOYSTICK;
+            num = event.code - BTN_JOYSTICK;
           } else if (
               event.code >= BTN_GAMEPAD && event.code <= BTN_GAMEPAD + 0x0f) {
-            iNum = event.code - BTN_GAMEPAD;
+            num = event.code - BTN_GAMEPAD;
           } else if (
               event.code >= BTN_TRIGGER_HAPPY1 &&
               event.code <= BTN_TRIGGER_HAPPY40) {
             // Actually, we only have 32 buttons defined.
-            iNum = event.code - BTN_TRIGGER_HAPPY1 + 0x10;
+            num = event.code - BTN_TRIGGER_HAPPY1 + 0x10;
           } else if (
               event.code >= BTN_DPAD_UP && event.code <= BTN_DPAD_RIGHT) {
-            iNum = event.code - BTN_DPAD_UP + 0x10;
+            num = event.code - BTN_DPAD_UP + 0x10;
           } else {
             // If the button number is >40+0xf, it gets mapped to a code with no
             // #define. I don't know if this is appropriate at all, but what
             // else to do?
-            iNum = event.code;
+            num = event.code;
           }
           wrap(
-              iNum,
+              num,
               32);  // max number of joystick buttons.  Make this a constant?
           ButtonPressed(DeviceInput(
-              g_apEventDevices[i]->dev_, enum_add2(JOY_BUTTON_1, iNum),
-              event.value != 0, eventTime));
+              g_apEventDevices[i]->dev_, enum_add2(JOY_BUTTON_1, num),
+              event.value != 0, event_time));
           break;
         }
 
@@ -517,16 +517,18 @@ void InputHandler_Linux_Event::InputThread() {
             // Up if between 0.0001 and 0.5 or if less than -0.5
             ButtonPressed(DeviceInput(
                 g_apEventDevices[i]->dev_, neg,
-                (l < -0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
+                (l < -0.5) || ((l > 0.0001) && (l < 0.5)), event_time));
             // Down if between 0.0001 and 0.5 or if more than 0.5
             ButtonPressed(DeviceInput(
                 g_apEventDevices[i]->dev_, pos,
-                (l > 0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
+                (l > 0.5) || ((l > 0.0001) && (l < 0.5)), event_time));
           } else {
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, neg, std::max(-l, 0.0f), eventTime));
+                g_apEventDevices[i]->dev_, neg, std::max(-l, 0.0f),
+                event_time));
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, pos, std::max(+l, 0.0f), eventTime));
+                g_apEventDevices[i]->dev_, pos, std::max(+l, 0.0f),
+                event_time));
           }
           break;
         }
@@ -538,10 +540,10 @@ void InputHandler_Linux_Event::InputThread() {
 }
 
 void InputHandler_Linux_Event::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   for (unsigned i = 0; i < g_apEventDevices.size(); ++i) {
-    EventDevice* pDev = g_apEventDevices[i];
-    vDevicesOut.push_back(InputDeviceInfo(pDev->dev_, pDev->name_));
+    EventDevice* dev = g_apEventDevices[i];
+    devices_out.push_back(InputDeviceInfo(dev->dev_, dev->name_));
   }
 
   input_mutex_.Lock();

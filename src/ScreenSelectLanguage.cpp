@@ -24,14 +24,14 @@ void ScreenSelectLanguage::Init() {
 
   int index = 0;
   for (const std::string& s : vs) {
-    const LanguageInfo* pLI = GetLanguageInfo(s);
+    const LanguageInfo* li = GetLanguageInfo(s);
 
     GameCommand gc;
     gc.index_ = index++;
     gc.name_ = s;
     gc.invalid_ = false;
-    if (pLI) {
-      gc.text_ = THEME->GetString("NativeLanguageNames", pLI->english_name_);
+    if (li) {
+      gc.text_ = THEME->GetString("NativeLanguageNames", li->english_name_);
     } else {
       gc.text_ = s;
     }
@@ -45,9 +45,9 @@ void ScreenSelectLanguage::Init() {
 void ScreenSelectLanguage::BeginScreen() { ScreenSelectMaster::BeginScreen(); }
 
 bool ScreenSelectLanguage::MenuStart(const InputEventPlus& input) {
-  int iIndex = this->GetSelectionIndex(input.pn_);
-  std::string sLangCode = game_commands_[iIndex].name_;
-  PREFSMAN->language_.Set(sLangCode);
+  int index = this->GetSelectionIndex(input.pn_);
+  std::string lang_code = game_commands_[index].name_;
+  PREFSMAN->language_.Set(lang_code);
   PREFSMAN->SavePrefsToDisk();
   THEME->SwitchThemeAndLanguage(
       THEME->GetCurThemeName(), PREFSMAN->language_,

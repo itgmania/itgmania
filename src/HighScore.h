@@ -67,9 +67,9 @@ struct HighScore {
   /**
    * @brief Set the name of the Player that earned the score.
    * @param sName the name of the Player. */
-  void SetName(const std::string& sName);
+  void SetName(const std::string& name);
   void SetGrade(Grade g);
-  void SetScore(unsigned int iScore);
+  void SetScore(unsigned int score);
   void SetPercentDP(float f);
   void SetAliveSeconds(float f);
   void SetMaxCombo(unsigned int i);
@@ -90,14 +90,14 @@ struct HighScore {
   // Getters for player attributes
   std::string GetPlayerGuid(const PlayerNumber& pn) const;
   void SetPlayerGrade(const PlayerNumber& pn, const Grade g);
-  void SetPlayerScore(const PlayerNumber& pn, unsigned int iScore);
+  void SetPlayerScore(const PlayerNumber& pn, unsigned int score);
   void SetPlayerPercentDP(const PlayerNumber& pn, float f);
   void SetPlayerMaxCombo(const PlayerNumber& pn, unsigned int i);
   void SetPlayerGuid(const PlayerNumber& pn, const std::string& guid);
   void SetPlayerTapNoteScore(
-      const PlayerNumber& pn, const TapNoteScore tapNoteScore, int i);
+      const PlayerNumber& pn, const TapNoteScore tap_note_score, int i);
   void SetPlayerHoldNoteScore(
-      const PlayerNumber& pn, const HoldNoteScore holdNoteScore, int i);
+      const PlayerNumber& pn, const HoldNoteScore hold_note_score, int i);
 
   std::string* GetNameMutable();
   const std::string* GetNameMutable() const {
@@ -110,7 +110,7 @@ struct HighScore {
   bool operator==(const HighScore& other) const;
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
 
   std::string GetDisplayName() const;
 
@@ -145,15 +145,15 @@ struct HighScoreList {
   }
   const HighScore& GetTopScore() const;
 
-  void AddHighScore(HighScore hs, int& iIndexOut, bool bIsMachine);
-  void IncrementPlayCount(DateTime dtLastPlayed);
+  void AddHighScore(HighScore hs, int& index_out, bool is_machine);
+  void IncrementPlayCount(DateTime last_played);
   void RemoveAllButOneOfEachName();
-  void ClampSize(bool bIsMachine);
+  void ClampSize(bool is_machine);
 
   void MergeFromOtherHSL(HighScoreList& other, bool is_machine);
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
 
   std::vector<HighScore> high_scores_;
   Grade high_grade_;
@@ -176,7 +176,7 @@ struct Screenshot {
   HighScore high_score_;
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   bool operator<(const Screenshot& rhs) const {
     return high_score_.GetDateTime() < rhs.high_score_.GetDateTime();
   }

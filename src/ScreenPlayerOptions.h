@@ -17,7 +17,7 @@ class ScreenPlayerOptions : public ScreenOptionsMaster {
   virtual void BeginScreen();
 
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   bool GetGoToOptions() const { return go_to_options_; }
 
   // Lua

@@ -10,43 +10,43 @@
 
 std::map<istring, CreateDialogDriverFn>* RegisterDialogDriver::registrees_;
 RegisterDialogDriver::RegisterDialogDriver(
-    const istring& sName, CreateDialogDriverFn pfn) {
+    const istring& name, CreateDialogDriverFn pfn) {
   if (registrees_ == nullptr) {
     registrees_ = new std::map<istring, CreateDialogDriverFn>;
   }
 
-  ASSERT(registrees_->find(sName) == registrees_->end());
-  (*registrees_)[sName] = pfn;
+  ASSERT(registrees_->find(name) == registrees_->end());
+  (*registrees_)[name] = pfn;
 }
 
 REGISTER_DIALOG_DRIVER_CLASS(Null);
 
 DialogDriver* DialogDriver::Create() {
-  std::string sDrivers = "win32,macosx,null";
-  std::vector<std::string> asDriversToTry;
-  split(sDrivers, ",", asDriversToTry, true);
+  std::string drivers = "win32,macosx,null";
+  std::vector<std::string> drivers_to_try;
+  split(drivers, ",", drivers_to_try, true);
 
-  ASSERT(asDriversToTry.size() != 0);
+  ASSERT(drivers_to_try.size() != 0);
 
-  for (const std::string& Driver : asDriversToTry) {
+  for (const std::string& driver : drivers_to_try) {
     std::map<istring, CreateDialogDriverFn>::const_iterator iter =
-        RegisterDialogDriver::registrees_->find(istring(Driver.c_str()));
+        RegisterDialogDriver::registrees_->find(istring(driver.c_str()));
 
     if (iter == RegisterDialogDriver::registrees_->end()) {
       continue;
     }
 
-    DialogDriver* pRet = (iter->second)();
-    DEBUG_ASSERT(pRet);
-    const std::string sError = pRet->Init();
+    DialogDriver* ret = (iter->second)();
+    DEBUG_ASSERT(ret);
+    const std::string error = ret->Init();
 
-    if (sError.empty()) {
-      return pRet;
+    if (error.empty()) {
+      return ret;
     }
     if (LOG) {
-      LOG->Info("Couldn't load driver %s: %s", Driver.c_str(), sError.c_str());
+      LOG->Info("Couldn't load driver %s: %s", driver.c_str(), error.c_str());
     }
-    RageUtil::SafeDelete(pRet);
+    RageUtil::SafeDelete(ret);
   }
   return nullptr;
 }

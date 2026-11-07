@@ -12,7 +12,7 @@ class InputHandler_MonkeyKeyboard : public InputHandler {
   void Update();
   InputHandler_MonkeyKeyboard();
   ~InputHandler_MonkeyKeyboard();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   RageTimer timer_press_button_;

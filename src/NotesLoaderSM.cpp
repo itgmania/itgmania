@@ -164,11 +164,11 @@ void SMSetBGChanges(SMSongTagInfo& info) {
       *info.song_, (*info.params_)[0], info.path_, (*info.params_)[1]);
 }
 void SMSetFGChanges(SMSongTagInfo& info) {
-  std::vector<std::vector<std::string>> aFGChanges;
+  std::vector<std::vector<std::string>> fg_changes;
   info.loader_->ParseBGChangesString(
-      (*info.params_)[1], aFGChanges, info.song_->GetSongDir());
+      (*info.params_)[1], fg_changes, info.song_->GetSongDir());
 
-  for (const auto& b : aFGChanges) {
+  for (const auto& b : fg_changes) {
     BackgroundChange change;
     if (info.loader_->LoadFromBGChangesVector(change, b)) {
       info.song_->AddForegroundChange(change);
@@ -251,103 +251,103 @@ void SMLoader::SetSongTitle(const std::string& title) {
 std::string SMLoader::GetSongTitle() const { return this->song_title_; }
 
 bool SMLoader::LoadFromDir(
-    const std::string& sPath, Song& out, bool load_autosave) {
-  std::vector<std::string> aFileNames;
-  GetApplicableFiles(sPath, aFileNames, load_autosave);
-  return LoadFromSimfile(sPath + aFileNames[0], out);
+    const std::string& path, Song& out, bool load_autosave) {
+  std::vector<std::string> file_names;
+  GetApplicableFiles(path, file_names, load_autosave);
+  return LoadFromSimfile(path + file_names[0], out);
 }
 
-float SMLoader::RowToBeat(std::string line, const int rowsPerBeat) {
+float SMLoader::RowToBeat(std::string line, const int rows_per_beat) {
   std::string backup = line;
   Trim(line, "r");
   Trim(line, "R");
   if (backup != line) {
-    return StringToFloat(line) / rowsPerBeat;
+    return StringToFloat(line) / rows_per_beat;
   } else {
     return StringToFloat(line);
   }
 }
 
 void SMLoader::LoadFromTokens(
-    std::string sStepsType, std::string sDescription, std::string sDifficulty,
-    std::string sMeter, std::string sRadarValues, std::string sNoteData,
+    std::string steps_type, std::string description, std::string difficulty,
+    std::string meter, std::string radar_values, std::string note_data,
     Steps& out) {
   // we're loading from disk, so this is by definition already saved:
   out.SetSavedToDisk(true);
 
-  Trim(sStepsType);
-  Trim(sDescription);
-  Trim(sDifficulty);
-  Trim(sNoteData);
+  Trim(steps_type);
+  Trim(description);
+  Trim(difficulty);
+  Trim(note_data);
 
   // LOG->Trace( "Steps::LoadFromTokens(), %s", sStepsType.c_str() );
 
   // backwards compatibility hacks:
   // HACK: We eliminated "ez2-single-hard", but we should still handle it.
-  if (sStepsType == "ez2-single-hard") {
-    sStepsType = "ez2-single";
+  if (steps_type == "ez2-single-hard") {
+    steps_type = "ez2-single";
   }
 
   // HACK: "para-single" used to be called just "para"
-  if (sStepsType == "para") {
-    sStepsType = "para-single";
+  if (steps_type == "para") {
+    steps_type = "para-single";
   }
 
-  out.steps_type_ = GAMEMAN->StringToStepsType(sStepsType);
-  out.steps_type_str_ = sStepsType;
-  out.SetDescription(sDescription);
-  out.SetCredit(sDescription);     // this is often used for both.
-  out.SetChartName(sDescription);  // yeah, one more for good measure.
-  out.SetDifficulty(OldStyleStringToDifficulty(sDifficulty));
+  out.steps_type_ = GAMEMAN->StringToStepsType(steps_type);
+  out.steps_type_str_ = steps_type;
+  out.SetDescription(description);
+  out.SetCredit(description);     // this is often used for both.
+  out.SetChartName(description);  // yeah, one more for good measure.
+  out.SetDifficulty(OldStyleStringToDifficulty(difficulty));
 
   // Handle hacks that originated back when StepMania didn't have
   // Difficulty_Challenge. (At least v1.64, possibly v3.0 final...)
   if (out.GetDifficulty() == Difficulty_Hard) {
     // HACK: SMANIAC used to be Difficulty_Hard with a special description.
-    if (CompareNoCase(sDescription, "smaniac") == 0) {
+    if (CompareNoCase(description, "smaniac") == 0) {
       out.SetDifficulty(Difficulty_Challenge);
     }
 
     // HACK: CHALLENGE used to be Difficulty_Hard with a special description.
-    if (CompareNoCase(sDescription, "challenge") == 0) {
+    if (CompareNoCase(description, "challenge") == 0) {
       out.SetDifficulty(Difficulty_Challenge);
     }
   }
 
-  if (sMeter.empty()) {
+  if (meter.empty()) {
     // some simfiles (e.g. X-SPECIALs from Zenius-I-Vanisher) don't
     // have a meter on certain steps. Make the meter 1 in these instances.
-    sMeter = "1";
+    meter = "1";
   }
-  out.SetMeter(StringToInt(sMeter));
+  out.SetMeter(StringToInt(meter));
 
-  out.SetSMNoteData(sNoteData);
+  out.SetSMNoteData(note_data);
 
   out.TidyUpData();
 }
 
 void SMLoader::ProcessBGChanges(
-    Song& out, const std::string& sValueName, const std::string& sPath,
-    const std::string& sParam) {
-  BackgroundLayer iLayer = BACKGROUND_LAYER_1;
-  if (sscanf(sValueName.c_str(), "BGCHANGES%d", &*ConvertValue<int>(&iLayer)) ==
+    Song& out, const std::string& value_name, const std::string& path,
+    const std::string& param) {
+  BackgroundLayer layer = BACKGROUND_LAYER_1;
+  if (sscanf(value_name.c_str(), "BGCHANGES%d", &*ConvertValue<int>(&layer)) ==
       1) {
-    enum_add(iLayer, -1);  // #BGCHANGES2 = BACKGROUND_LAYER_2
+    enum_add(layer, -1);  // #BGCHANGES2 = BACKGROUND_LAYER_2
   }
 
-  bool bValid = iLayer >= 0 && iLayer < NUM_BackgroundLayer;
-  if (!bValid) {
+  bool valid = layer >= 0 && layer < NUM_BackgroundLayer;
+  if (!valid) {
     LOG->UserLog(
-        "Song file", sPath, "has a #BGCHANGES tag \"%s\" that is out of range.",
-        sValueName.c_str());
+        "Song file", path, "has a #BGCHANGES tag \"%s\" that is out of range.",
+        value_name.c_str());
   } else {
-    std::vector<std::vector<std::string>> aBGChanges;
-    ParseBGChangesString(sParam, aBGChanges, out.GetSongDir());
+    std::vector<std::vector<std::string>> bg_changes;
+    ParseBGChangesString(param, bg_changes, out.GetSongDir());
 
-    for (const auto& b : aBGChanges) {
+    for (const auto& b : bg_changes) {
       BackgroundChange change;
       if (LoadFromBGChangesVector(change, b)) {
-        out.AddBackgroundChange(iLayer, change);
+        out.AddBackgroundChange(layer, change);
       }
     }
   }
@@ -369,25 +369,25 @@ void SMLoader::ProcessAttacks(AttackArray& attacks, MsdFile::value_t params) {
   float end = -9999;
 
   for (unsigned j = 1; j < params.params_.size(); ++j) {
-    std::vector<std::string> sBits;
-    split(params[j], "=", sBits, false);
+    std::vector<std::string> bits;
+    split(params[j], "=", bits, false);
 
     // Need an identifer and a value for this to work
-    if (sBits.size() < 2) {
+    if (bits.size() < 2) {
       continue;
     }
 
-    Trim(sBits[0]);
+    Trim(bits[0]);
 
-    if (!CompareNoCase(sBits[0], "TIME")) {
-      attack.start_second_ = strtof(sBits[1].c_str(), nullptr);
-    } else if (!CompareNoCase(sBits[0], "LEN")) {
-      attack.secs_remaining_ = strtof(sBits[1].c_str(), nullptr);
-    } else if (!CompareNoCase(sBits[0], "END")) {
-      end = strtof(sBits[1].c_str(), nullptr);
-    } else if (!CompareNoCase(sBits[0], "MODS")) {
-      Trim(sBits[1]);
-      attack.modifiers_ = sBits[1];
+    if (!CompareNoCase(bits[0], "TIME")) {
+      attack.start_second_ = strtof(bits[1].c_str(), nullptr);
+    } else if (!CompareNoCase(bits[0], "LEN")) {
+      attack.secs_remaining_ = strtof(bits[1].c_str(), nullptr);
+    } else if (!CompareNoCase(bits[0], "END")) {
+      end = strtof(bits[1].c_str(), nullptr);
+    } else if (!CompareNoCase(bits[0], "MODS")) {
+      Trim(bits[1]);
+      attack.modifiers_ = bits[1];
 
       if (end != -9999) {
         attack.secs_remaining_ = end - attack.start_second_;
@@ -405,70 +405,70 @@ void SMLoader::ProcessAttacks(AttackArray& attacks, MsdFile::value_t params) {
 
 void SMLoader::ParseBPMs(
     std::vector<std::pair<float, float>>& out, const std::string line,
-    const int rowsPerBeat) {
-  std::vector<std::string> arrayBPMChangeExpressions;
-  split(line, ",", arrayBPMChangeExpressions);
+    const int rows_per_beat) {
+  std::vector<std::string> array_bpm_change_expressions;
+  split(line, ",", array_bpm_change_expressions);
 
-  for (unsigned b = 0; b < arrayBPMChangeExpressions.size(); b++) {
-    std::vector<std::string> arrayBPMChangeValues;
-    Trim(arrayBPMChangeExpressions[b]);
-    if (arrayBPMChangeExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_bpm_change_expressions.size(); b++) {
+    std::vector<std::string> array_bpm_change_values;
+    Trim(array_bpm_change_expressions[b]);
+    if (array_bpm_change_expressions[b].empty()) {
       continue;
     }
-    split(arrayBPMChangeExpressions[b], "=", arrayBPMChangeValues);
-    if (arrayBPMChangeValues.size() != 2) {
+    split(array_bpm_change_expressions[b], "=", array_bpm_change_values);
+    if (array_bpm_change_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #BPMs value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayBPMChangeExpressions[b].c_str());
+          array_bpm_change_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = RowToBeat(arrayBPMChangeValues[0], rowsPerBeat);
-    const float fNewBPM = StringToFloat(arrayBPMChangeValues[1]);
-    if (fNewBPM == 0) {
+    const float beat = RowToBeat(array_bpm_change_values[0], rows_per_beat);
+    const float new_bpm = StringToFloat(array_bpm_change_values[1]);
+    if (new_bpm == 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(), "has a zero BPM; ignored.");
       continue;
     }
 
-    out.push_back(std::make_pair(fBeat, fNewBPM));
+    out.push_back(std::make_pair(beat, new_bpm));
   }
 }
 
 void SMLoader::ParseStops(
     std::vector<std::pair<float, float>>& out, const std::string line,
-    const int rowsPerBeat) {
-  std::vector<std::string> arrayFreezeExpressions;
-  split(line, ",", arrayFreezeExpressions);
+    const int rows_per_beat) {
+  std::vector<std::string> array_freeze_expressions;
+  split(line, ",", array_freeze_expressions);
 
-  for (unsigned f = 0; f < arrayFreezeExpressions.size(); f++) {
-    std::vector<std::string> arrayFreezeValues;
-    Trim(arrayFreezeExpressions[f]);
-    if (arrayFreezeExpressions[f].empty()) {
+  for (unsigned f = 0; f < array_freeze_expressions.size(); f++) {
+    std::vector<std::string> array_freeze_values;
+    Trim(array_freeze_expressions[f]);
+    if (array_freeze_expressions[f].empty()) {
       continue;
     }
-    split(arrayFreezeExpressions[f], "=", arrayFreezeValues);
-    if (arrayFreezeValues.size() != 2) {
+    split(array_freeze_expressions[f], "=", array_freeze_values);
+    if (array_freeze_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #STOPS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayFreezeExpressions[f].c_str());
+          array_freeze_expressions[f].c_str());
       continue;
     }
 
-    const float fFreezeBeat = RowToBeat(arrayFreezeValues[0], rowsPerBeat);
-    const float fFreezeSeconds = StringToFloat(arrayFreezeValues[1]);
-    if (fFreezeSeconds == 0) {
+    const float freeze_beat = RowToBeat(array_freeze_values[0], rows_per_beat);
+    const float freeze_seconds = StringToFloat(array_freeze_values[1]);
+    if (freeze_seconds == 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has a zero-length stop; ignored.");
       continue;
     }
 
-    out.push_back(std::make_pair(fFreezeBeat, fFreezeSeconds));
+    out.push_back(std::make_pair(freeze_beat, freeze_seconds));
   }
 }
 
@@ -484,8 +484,8 @@ bool compare_first(std::pair<float, float> a, std::pair<float, float> b) {
 // Postcondition: all BPM changes, stops, and warps are added to the out
 //     parameter, already sorted by beat.
 void SMLoader::ProcessBPMsAndStops(
-    TimingData& out, std::vector<std::pair<float, float>>& vBPMs,
-    std::vector<std::pair<float, float>>& vStops) {
+    TimingData& out, std::vector<std::pair<float, float>>& bp_ms,
+    std::vector<std::pair<float, float>>& stops) {
   std::vector<std::pair<float, float>>::const_iterator ibpm, ibpmend;
   std::vector<std::pair<float, float>>::const_iterator istop, istopend;
 
@@ -505,14 +505,14 @@ void SMLoader::ProcessBPMsAndStops(
   // TODO: Make sorted lists a precondition rather than sorting them here.
   // The caller may know that the lists are sorted already (e.g. if
   // loaded from cache).
-  stable_sort(vBPMs.begin(), vBPMs.end(), compare_first);
-  stable_sort(vStops.begin(), vStops.end(), compare_first);
+  stable_sort(bp_ms.begin(), bp_ms.end(), compare_first);
+  stable_sort(stops.begin(), stops.end(), compare_first);
 
   // Convert stops that come before beat 0.  All these really do is affect
   // where the arrows are with respect to the music, i.e. the song offset.
   // Positive stops subtract from the offset, and negative add to it.
-  istop = vStops.begin();
-  istopend = vStops.end();
+  istop = stops.begin();
+  istopend = stops.end();
   for (/* istop */; istop != istopend && istop->first < 0; istop++) {
     out.beat0_offset_in_seconds_ -= istop->second;
   }
@@ -521,8 +521,8 @@ void SMLoader::ProcessBPMsAndStops(
   // the chart don't really do anything, so we just ignore them.  Negative
   // BPMs cause unpredictable behavior, so ignore them as well and issue a
   // warning.
-  ibpm = vBPMs.begin();
-  ibpmend = vBPMs.end();
+  ibpm = bp_ms.begin();
+  ibpmend = bp_ms.end();
   for (/* ibpm */; ibpm != ibpmend && ibpm->first <= 0; ibpm++) {
     bpm = ibpm->second;
     if (bpm < 0 && ibpm->first < 0) {
@@ -562,9 +562,9 @@ void SMLoader::ProcessBPMsAndStops(
   while (ibpm != ibpmend || istop != istopend) {
     // Get the next change in order, with BPMs taking precedence
     // when they fall on the same beat.
-    bool changeIsBpm =
+    bool change_is_bpm =
         istop == istopend || (ibpm != ibpmend && ibpm->first <= istop->first);
-    const std::pair<float, float>& change = changeIsBpm ? *ibpm : *istop;
+    const std::pair<float, float>& change = change_is_bpm ? *ibpm : *istop;
 
     // Calculate the effects of time at the current BPM.  "Infinite"
     // BPMs (SM4 warps) imply that zero time passes, so skip this
@@ -594,7 +594,7 @@ void SMLoader::ProcessBPMsAndStops(
     prevbeat = change.first;
 
     // Now handle the timing changes themselves
-    if (changeIsBpm) {
+    if (change_is_bpm) {
       // Does this BPM change start a new warp?
       if (warpstart < 0 &&
           (change.second < 0 || change.second > FAST_BPM_WARP)) {
@@ -679,43 +679,43 @@ void SMLoader::ProcessBPMsAndStops(
 }
 
 void SMLoader::ProcessDelays(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
-  std::vector<std::string> arrayDelayExpressions;
-  split(line, ",", arrayDelayExpressions);
+    TimingData& out, const std::string line, const int rows_per_beat) {
+  std::vector<std::string> array_delay_expressions;
+  split(line, ",", array_delay_expressions);
 
-  for (unsigned f = 0; f < arrayDelayExpressions.size(); f++) {
-    std::vector<std::string> arrayDelayValues;
-    Trim(arrayDelayExpressions[f]);
-    if (arrayDelayExpressions[f].empty()) {
+  for (unsigned f = 0; f < array_delay_expressions.size(); f++) {
+    std::vector<std::string> array_delay_values;
+    Trim(array_delay_expressions[f]);
+    if (array_delay_expressions[f].empty()) {
       continue;
     }
-    split(arrayDelayExpressions[f], "=", arrayDelayValues);
-    if (arrayDelayValues.size() != 2) {
+    split(array_delay_expressions[f], "=", array_delay_values);
+    if (array_delay_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #DELAYS value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayDelayExpressions[f].c_str());
+          array_delay_expressions[f].c_str());
       continue;
     }
-    const float fFreezeBeat = RowToBeat(arrayDelayValues[0], rowsPerBeat);
-    const float fFreezeSeconds = StringToFloat(arrayDelayValues[1]);
+    const float freeze_beat = RowToBeat(array_delay_values[0], rows_per_beat);
+    const float freeze_seconds = StringToFloat(array_delay_values[1]);
     // LOG->Trace( "Adding a delay segment: beat: %f, seconds = %f",
     // new_seg.m_fStartBeat, new_seg.m_fStopSeconds );
 
-    if (fFreezeSeconds > 0.0f) {
-      out.AddSegment(DelaySegment(BeatToNoteRow(fFreezeBeat), fFreezeSeconds));
+    if (freeze_seconds > 0.0f) {
+      out.AddSegment(DelaySegment(BeatToNoteRow(freeze_beat), freeze_seconds));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid delay at beat %f, length %f.", fFreezeBeat,
-          fFreezeSeconds);
+          "has an invalid delay at beat %f, length %f.", freeze_beat,
+          freeze_seconds);
     }
   }
 }
 
 void SMLoader::ProcessTimeSignatures(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
+    TimingData& out, const std::string line, const int rows_per_beat) {
   std::vector<std::string> vs1;
   std::vector<TimeSignatureSegment> segments;
   split(line, ",", vs1);
@@ -732,34 +732,34 @@ void SMLoader::ProcessTimeSignatures(
       continue;
     }
 
-    const float fBeat = RowToBeat(vs2[0], rowsPerBeat);
-    const int iNumerator = StringToInt(vs2[1]);
-    const int iDenominator = StringToInt(vs2[2]);
+    const float beat = RowToBeat(vs2[0], rows_per_beat);
+    const int numerator = StringToInt(vs2[1]);
+    const int denominator = StringToInt(vs2[2]);
 
-    if (fBeat < 0) {
+    if (beat < 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid time signature change with beat %f.", fBeat);
+          "has an invalid time signature change with beat %f.", beat);
       continue;
     }
 
-    if (iNumerator < 1) {
+    if (numerator < 1) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid time signature change with beat %f, iNumerator %i.",
-          fBeat, iNumerator);
+          beat, numerator);
       continue;
     }
 
-    if (iDenominator < 1) {
+    if (denominator < 1) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid time signature change with beat %f, iDenominator %i.",
-          fBeat, iDenominator);
+          beat, denominator);
       continue;
     }
     segments.push_back(
-        TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator, iDenominator));
+        TimeSignatureSegment(BeatToNoteRow(beat), numerator, denominator));
   }
 
   // If there are any time signatures defined, but there isn't one
@@ -776,37 +776,37 @@ void SMLoader::ProcessTimeSignatures(
 }
 
 void SMLoader::ProcessTickcounts(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
-  std::vector<std::string> arrayTickcountExpressions;
-  split(line, ",", arrayTickcountExpressions);
+    TimingData& out, const std::string line, const int rows_per_beat) {
+  std::vector<std::string> array_tickcount_expressions;
+  split(line, ",", array_tickcount_expressions);
 
-  for (unsigned f = 0; f < arrayTickcountExpressions.size(); f++) {
-    std::vector<std::string> arrayTickcountValues;
-    Trim(arrayTickcountExpressions[f]);
-    if (arrayTickcountExpressions[f].empty()) {
+  for (unsigned f = 0; f < array_tickcount_expressions.size(); f++) {
+    std::vector<std::string> array_tickcount_values;
+    Trim(array_tickcount_expressions[f]);
+    if (array_tickcount_expressions[f].empty()) {
       continue;
     }
-    split(arrayTickcountExpressions[f], "=", arrayTickcountValues);
-    if (arrayTickcountValues.size() != 2) {
+    split(array_tickcount_expressions[f], "=", array_tickcount_values);
+    if (array_tickcount_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #TICKCOUNTS value \"%s\" (must have exactly one "
           "'='), ignored.",
-          arrayTickcountExpressions[f].c_str());
+          array_tickcount_expressions[f].c_str());
       continue;
     }
 
-    const float fTickcountBeat =
-        RowToBeat(arrayTickcountValues[0], rowsPerBeat);
-    int iTicks =
-        std::clamp(atoi(arrayTickcountValues[1].c_str()), 0, ROWS_PER_BEAT);
+    const float tickcount_beat =
+        RowToBeat(array_tickcount_values[0], rows_per_beat);
+    int ticks =
+        std::clamp(atoi(array_tickcount_values[1].c_str()), 0, ROWS_PER_BEAT);
 
-    out.AddSegment(TickcountSegment(BeatToNoteRow(fTickcountBeat), iTicks));
+    out.AddSegment(TickcountSegment(BeatToNoteRow(tickcount_beat), ticks));
   }
 }
 
 void SMLoader::ProcessSpeeds(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
+    TimingData& out, const std::string line, const int rows_per_beat) {
   std::vector<std::string> vs1;
   split(line, ",", vs1);
 
@@ -831,108 +831,108 @@ void SMLoader::ProcessSpeeds(
       continue;
     }
 
-    const float fBeat = RowToBeat(vs2[0], rowsPerBeat);
-    const float fRatio = StringToFloat(vs2[1]);
-    const float fDelay = StringToFloat(vs2[2]);
+    const float beat = RowToBeat(vs2[0], rows_per_beat);
+    const float ratio = StringToFloat(vs2[1]);
+    const float delay = StringToFloat(vs2[2]);
 
     // XXX: ugly...
-    int iUnit = StringToInt(vs2[3]);
+    int i_unit = StringToInt(vs2[3]);
     SpeedSegment::BaseUnit unit =
-        (iUnit == 0) ? SpeedSegment::UNIT_BEATS : SpeedSegment::UNIT_SECONDS;
+        (i_unit == 0) ? SpeedSegment::UNIT_BEATS : SpeedSegment::UNIT_SECONDS;
 
-    if (fBeat < 0) {
+    if (beat < 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an speed change with beat %f.", fBeat);
+          "has an speed change with beat %f.", beat);
       continue;
     }
 
-    if (fDelay < 0) {
+    if (delay < 0) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an speed change with beat %f, length %f.", fBeat, fDelay);
+          "has an speed change with beat %f, length %f.", beat, delay);
       continue;
     }
 
-    out.AddSegment(SpeedSegment(BeatToNoteRow(fBeat), fRatio, fDelay, unit));
+    out.AddSegment(SpeedSegment(BeatToNoteRow(beat), ratio, delay, unit));
   }
 }
 
 void SMLoader::ProcessFakes(
-    TimingData& out, const std::string line, const int rowsPerBeat) {
-  std::vector<std::string> arrayFakeExpressions;
-  split(line, ",", arrayFakeExpressions);
+    TimingData& out, const std::string line, const int rows_per_beat) {
+  std::vector<std::string> array_fake_expressions;
+  split(line, ",", array_fake_expressions);
 
-  for (unsigned b = 0; b < arrayFakeExpressions.size(); b++) {
-    std::vector<std::string> arrayFakeValues;
-    Trim(arrayFakeExpressions[b]);
-    if (arrayFakeExpressions[b].empty()) {
+  for (unsigned b = 0; b < array_fake_expressions.size(); b++) {
+    std::vector<std::string> array_fake_values;
+    Trim(array_fake_expressions[b]);
+    if (array_fake_expressions[b].empty()) {
       continue;
     }
-    split(arrayFakeExpressions[b], "=", arrayFakeValues);
-    if (arrayFakeValues.size() != 2) {
+    split(array_fake_expressions[b], "=", array_fake_values);
+    if (array_fake_values.size() != 2) {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
           "has an invalid #FAKES value \"%s\" (must have exactly one '='), "
           "ignored.",
-          arrayFakeExpressions[b].c_str());
+          array_fake_expressions[b].c_str());
       continue;
     }
 
-    const float fBeat = RowToBeat(arrayFakeValues[0], rowsPerBeat);
-    const float fSkippedBeats = StringToFloat(arrayFakeValues[1]);
+    const float beat = RowToBeat(array_fake_values[0], rows_per_beat);
+    const float skipped_beats = StringToFloat(array_fake_values[1]);
 
-    if (fSkippedBeats > 0) {
-      out.AddSegment(FakeSegment(BeatToNoteRow(fBeat), fSkippedBeats));
+    if (skipped_beats > 0) {
+      out.AddSegment(FakeSegment(BeatToNoteRow(beat), skipped_beats));
     } else {
       LOG->UserLog(
           "Song file", this->GetSongTitle(),
-          "has an invalid Fake at beat %f, beats to skip %f.", fBeat,
-          fSkippedBeats);
+          "has an invalid Fake at beat %f, beats to skip %f.", beat,
+          skipped_beats);
     }
   }
 }
 
 bool SMLoader::LoadFromBGChangesVector(
-    BackgroundChange& change, std::vector<std::string> aBGChangeValues) {
-  aBGChangeValues.resize(std::min((int)aBGChangeValues.size(), 11));
+    BackgroundChange& change, std::vector<std::string> bg_change_values) {
+  bg_change_values.resize(std::min((int)bg_change_values.size(), 11));
 
-  switch (aBGChangeValues.size()) {
+  switch (bg_change_values.size()) {
     case 11:
-      change.def_.color2_ = aBGChangeValues[10];
+      change.def_.color2_ = bg_change_values[10];
       Replace(change.def_.color2_, '^', ',');
       change.def_.color2_ =
           RageColor::NormalizeColorString(change.def_.color2_);
       [[fallthrough]];
     case 10:
-      change.def_.color1_ = aBGChangeValues[9];
+      change.def_.color1_ = bg_change_values[9];
       Replace(change.def_.color1_, '^', ',');
       change.def_.color1_ =
           RageColor::NormalizeColorString(change.def_.color1_);
       [[fallthrough]];
     case 9:
-      change.transition_ = aBGChangeValues[8];
+      change.transition_ = bg_change_values[8];
       [[fallthrough]];
     case 8: {
-      std::string tmp = aBGChangeValues[7];
+      std::string tmp = bg_change_values[7];
       MakeLower(tmp);
       if ((tmp.find(".ini") != std::string::npos ||
            tmp.find(".xml") != std::string::npos) &&
           !PREFSMAN->quirks_mode_) {
         return false;
       }
-      change.def_.file2_ = aBGChangeValues[7];
+      change.def_.file2_ = bg_change_values[7];
       [[fallthrough]];
     }
     case 7:
-      change.def_.effect_ = aBGChangeValues[6];
+      change.def_.effect_ = bg_change_values[6];
       [[fallthrough]];
     case 6:
       // param 7 overrides this.
       // Backward compatibility:
       if (change.def_.effect_.empty()) {
-        bool bLoop = StringToInt(aBGChangeValues[5]) != 0;
-        if (!bLoop) {
+        bool loop = StringToInt(bg_change_values[5]) != 0;
+        if (!loop) {
           change.def_.effect_ = SBE_StretchNoLoop;
         }
       }
@@ -941,8 +941,8 @@ bool SMLoader::LoadFromBGChangesVector(
       // param 7 overrides this.
       // Backward compatibility:
       if (change.def_.effect_.empty()) {
-        bool bRewindMovie = StringToInt(aBGChangeValues[4]) != 0;
-        if (bRewindMovie) {
+        bool rewind_movie = StringToInt(bg_change_values[4]) != 0;
+        if (rewind_movie) {
           change.def_.effect_ = SBE_StretchRewind;
         }
       }
@@ -952,28 +952,28 @@ bool SMLoader::LoadFromBGChangesVector(
       // Backward compatibility:
       if (change.transition_.empty()) {
         change.transition_ =
-            (StringToInt(aBGChangeValues[3]) != 0) ? "CrossFade" : "";
+            (StringToInt(bg_change_values[3]) != 0) ? "CrossFade" : "";
       }
       [[fallthrough]];
     case 3:
-      change.rate_ = StringToFloat(aBGChangeValues[2]);
+      change.rate_ = StringToFloat(bg_change_values[2]);
       [[fallthrough]];
     case 2: {
-      std::string tmp = aBGChangeValues[1];
+      std::string tmp = bg_change_values[1];
       MakeLower(tmp);
       if ((tmp.find(".ini") != std::string::npos ||
            tmp.find(".xml") != std::string::npos) &&
           !PREFSMAN->quirks_mode_) {
         return false;
       }
-      change.def_.file1_ = aBGChangeValues[1];
+      change.def_.file1_ = bg_change_values[1];
       [[fallthrough]];
     }
     case 1:
-      change.start_beat_ = StringToFloat(aBGChangeValues[0]);
+      change.start_beat_ = StringToFloat(bg_change_values[0]);
   }
 
-  return aBGChangeValues.size() >= 2;
+  return bg_change_values.size() >= 2;
 }
 
 bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
@@ -985,31 +985,31 @@ bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
     return false;
   }
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
-    int iNumParams = msd.GetNumParams(i);
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    int num_params = msd.GetNumParams(i);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
 
     // The only tag we care about is the #NOTES tag.
-    if (sValueName == "NOTES" || sValueName == "NOTES2") {
-      if (iNumParams < 7) {
+    if (value_name == "NOTES" || value_name == "NOTES2") {
+      if (num_params < 7) {
         LOG->UserLog(
             "Song file", path,
             "has %d fields in a #NOTES tag, but should have at least 7.",
-            iNumParams);
+            num_params);
         continue;
       }
 
-      std::string stepsType = sParams[1];
-      std::string description = sParams[2];
-      std::string difficulty = sParams[3];
+      std::string steps_type = params[1];
+      std::string description = params[2];
+      std::string difficulty = params[3];
 
       // HACK?: If this is a .edit fudge the edit difficulty
       if (CompareNoCase(Right(path, 5), ".edit") == 0) {
         difficulty = "edit";
       }
 
-      Trim(stepsType);
+      Trim(steps_type);
       Trim(description);
       Trim(difficulty);
       // Remember our old versions.
@@ -1030,16 +1030,16 @@ bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
         }
       }
 
-      if (!(out.steps_type_ == GAMEMAN->StringToStepsType(stepsType) &&
+      if (!(out.steps_type_ == GAMEMAN->StringToStepsType(steps_type) &&
             out.GetDescription() == description &&
             (out.GetDifficulty() == StringToDifficulty(difficulty) ||
              out.GetDifficulty() == OldStyleStringToDifficulty(difficulty)))) {
         continue;
       }
 
-      std::string noteData = sParams[6];
-      Trim(noteData);
-      out.SetSMNoteData(noteData);
+      std::string note_data = params[6];
+      Trim(note_data);
+      out.SetSMNoteData(note_data);
       out.TidyUpData();
       return true;
     }
@@ -1047,58 +1047,58 @@ bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
   return false;
 }
 
-bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
+bool SMLoader::LoadFromSimfile(const std::string& path, Song& out) {
   // LOG->Trace( "Song::LoadFromSMFile(%s)", sPath.c_str() );
 
   MsdFile msd;
-  if (!msd.ReadFile(sPath, true))  // unescape
+  if (!msd.ReadFile(path, true))  // unescape
   {
     LOG->UserLog(
-        "Song file", sPath, "couldn't be opened: %s", msd.GetError().c_str());
+        "Song file", path, "couldn't be opened: %s", msd.GetError().c_str());
     return false;
   }
 
-  out.song_timing_.file_ = sPath;
-  out.song_file_name_ = sPath;
+  out.song_timing_.file_ = path;
+  out.song_file_name_ = path;
 
-  SMSongTagInfo reused_song_info(&*this, &out, sPath);
+  SMSongTagInfo reused_song_info(&*this, &out, path);
 
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
-    int iNumParams = msd.GetNumParams(i);
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    int num_params = msd.GetNumParams(i);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
 
-    reused_song_info.params_ = &sParams;
+    reused_song_info.params_ = &params;
     song_handler_map_t::iterator handler =
-        sm_parser_helper.song_tag_handlers_.find(sValueName);
+        sm_parser_helper.song_tag_handlers_.find(value_name);
     if (handler != sm_parser_helper.song_tag_handlers_.end()) {
       /* Don't use GetMainAndSubTitlesFromFullTitle; that's only for
        * heuristically splitting other formats that *don't* natively support
        * #SUBTITLE. */
       handler->second(reused_song_info);
-    } else if (Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES") {
+    } else if (Left(value_name, strlen("BGCHANGES")) == "BGCHANGES") {
       SMSetBGChanges(reused_song_info);
-    } else if (sValueName == "NOTES" || sValueName == "NOTES2") {
-      if (iNumParams < 7) {
+    } else if (value_name == "NOTES" || value_name == "NOTES2") {
+      if (num_params < 7) {
         LOG->UserLog(
-            "Song file", sPath,
+            "Song file", path,
             "has %d fields in a #NOTES tag, but should have at least 7.",
-            iNumParams);
+            num_params);
         continue;
       }
 
-      Steps* pNewNotes = out.CreateSteps();
+      Steps* new_notes = out.CreateSteps();
       LoadFromTokens(
-          sParams[1], sParams[2], sParams[3], sParams[4], sParams[5],
-          sParams[6], *pNewNotes);
+          params[1], params[2], params[3], params[4], params[5], params[6],
+          *new_notes);
 
-      pNewNotes->SetFilename(sPath);
-      out.AddSteps(pNewNotes);
+      new_notes->SetFilename(path);
+      out.AddSteps(new_notes);
     } else {
       LOG->UserLog(
-          "Song file", sPath, "has an unexpected value named \"%s\".",
-          sValueName.c_str());
+          "Song file", path, "has an unexpected value named \"%s\".",
+          value_name.c_str());
     }
   }
 
@@ -1111,44 +1111,45 @@ bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
 }
 
 bool SMLoader::LoadEditFromFile(
-    std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
-    Song* givenSong /* =nullptr */) {
-  LOG->Trace("SMLoader::LoadEditFromFile(%s)", sEditFilePath.c_str());
+    std::string edit_file_path, ProfileSlot slot, bool add_steps_to_song,
+    Song* given_song /* =nullptr */) {
+  LOG->Trace("SMLoader::LoadEditFromFile(%s)", edit_file_path.c_str());
 
-  int iBytes = FILEMAN->GetFileSizeInBytes(sEditFilePath);
-  if (iBytes > MAX_EDIT_STEPS_SIZE_BYTES) {
+  int bytes = FILEMAN->GetFileSizeInBytes(edit_file_path);
+  if (bytes > MAX_EDIT_STEPS_SIZE_BYTES) {
     LOG->UserLog(
-        "Edit file", sEditFilePath,
+        "Edit file", edit_file_path,
         "is unreasonably large. It won't be loaded.");
     return false;
   }
 
   MsdFile msd;
-  if (!msd.ReadFile(sEditFilePath, true))  // unescape
+  if (!msd.ReadFile(edit_file_path, true))  // unescape
   {
     LOG->UserLog(
-        "Edit file", sEditFilePath, "couldn't be opened: %s",
+        "Edit file", edit_file_path, "couldn't be opened: %s",
         msd.GetError().c_str());
     return false;
   }
 
-  return LoadEditFromMsd(msd, sEditFilePath, slot, bAddStepsToSong, givenSong);
+  return LoadEditFromMsd(
+      msd, edit_file_path, slot, add_steps_to_song, given_song);
 }
 
 bool SMLoader::LoadEditFromMsd(
-    const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
-    bool bAddStepsToSong, Song* givenSong /* = nullptr */) {
-  Song* pSong = givenSong;
+    const MsdFile& msd, const std::string& edit_file_path, ProfileSlot slot,
+    bool add_steps_to_song, Song* given_song /* = nullptr */) {
+  Song* song = given_song;
 
   for (unsigned i = 0; i < msd.GetNumValues(); i++) {
-    int iNumParams = msd.GetNumParams(i);
-    const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    int num_params = msd.GetNumParams(i);
+    const MsdFile::value_t& params = msd.GetValue(i);
+    std::string value_name = params[0];
+    MakeUpper(value_name);
 
     // handle the data
-    if (sValueName == "SONG") {
-      if (pSong) {
+    if (value_name == "SONG") {
+      if (song) {
         /* LOG->UserLog( "Edit file", sEditFilePath, "has more than one #SONG
         tag." ); return false; */
         // May have been given the song from outside the file. Not worth
@@ -1156,23 +1157,23 @@ bool SMLoader::LoadEditFromMsd(
         continue;
       }
 
-      std::string sSongFullTitle = sParams[1];
-      this->SetSongTitle(sParams[1]);
-      Replace(sSongFullTitle, '\\', '/');
+      std::string song_full_title = params[1];
+      this->SetSongTitle(params[1]);
+      Replace(song_full_title, '\\', '/');
 
-      pSong = SONGMAN->FindSong(sSongFullTitle);
-      if (pSong == nullptr) {
+      song = SONGMAN->FindSong(song_full_title);
+      if (song == nullptr) {
         LOG->UserLog(
-            "Edit file", sEditFilePath,
+            "Edit file", edit_file_path,
             "requires a song \"%s\" that isn't present.",
-            sSongFullTitle.c_str());
+            song_full_title.c_str());
         return false;
       }
 
-      if (pSong->GetNumStepsLoadedFromProfile(slot) >=
+      if (song->GetNumStepsLoadedFromProfile(slot) >=
           MAX_EDITS_PER_SONG_PER_PROFILE) {
         LOG->UserLog(
-            "Song file", sSongFullTitle,
+            "Song file", song_full_title,
             "already has the maximum number of edits allowed for "
             "ProfileSlotP%d.",
             slot + 1);
@@ -1180,50 +1181,50 @@ bool SMLoader::LoadEditFromMsd(
       }
     }
 
-    else if (sValueName == "NOTES") {
-      if (pSong == nullptr) {
+    else if (value_name == "NOTES") {
+      if (song == nullptr) {
         LOG->UserLog(
-            "Edit file", sEditFilePath,
+            "Edit file", edit_file_path,
             "doesn't have a #SONG tag preceeding the first #NOTES tag, and is "
             "not in a valid song-specific folder.");
         return false;
       }
 
-      if (iNumParams < 7) {
+      if (num_params < 7) {
         LOG->UserLog(
-            "Edit file", sEditFilePath,
+            "Edit file", edit_file_path,
             "has %d fields in a #NOTES tag, but should have at least 7.",
-            iNumParams);
+            num_params);
         continue;
       }
 
-      if (!bAddStepsToSong) {
+      if (!add_steps_to_song) {
         return true;
       }
 
-      Steps* pNewNotes = pSong->CreateSteps();
+      Steps* new_notes = song->CreateSteps();
       LoadFromTokens(
-          sParams[1], sParams[2], sParams[3], sParams[4], sParams[5],
-          sParams[6], *pNewNotes);
+          params[1], params[2], params[3], params[4], params[5], params[6],
+          *new_notes);
 
-      pNewNotes->SetLoadedFromProfile(slot);
-      pNewNotes->SetDifficulty(Difficulty_Edit);
-      pNewNotes->SetFilename(sEditFilePath);
+      new_notes->SetLoadedFromProfile(slot);
+      new_notes->SetDifficulty(Difficulty_Edit);
+      new_notes->SetFilename(edit_file_path);
 
-      if (pSong->IsEditAlreadyLoaded(pNewNotes)) {
+      if (song->IsEditAlreadyLoaded(new_notes)) {
         LOG->UserLog(
-            "Edit file", sEditFilePath,
+            "Edit file", edit_file_path,
             "is a duplicate of another edit that was already loaded.");
-        RageUtil::SafeDelete(pNewNotes);
+        RageUtil::SafeDelete(new_notes);
         return false;
       }
 
-      pSong->AddSteps(pNewNotes);
+      song->AddSteps(new_notes);
       return true;  // Only allow one Steps per edit file!
     } else {
       LOG->UserLog(
-          "Edit file", sEditFilePath, "has an unexpected value \"%s\".",
-          sValueName.c_str());
+          "Edit file", edit_file_path, "has an unexpected value \"%s\".",
+          value_name.c_str());
     }
   }
 
@@ -1232,39 +1233,39 @@ bool SMLoader::LoadEditFromMsd(
 }
 
 void SMLoader::GetApplicableFiles(
-    const std::string& sPath, std::vector<std::string>& out,
+    const std::string& path, std::vector<std::string>& out,
     bool load_autosave) {
   if (load_autosave) {
-    GetDirListing(sPath + std::string("*.ats"), out);
+    GetDirListing(path + std::string("*.ats"), out);
   } else {
-    GetDirListing(sPath + std::string("*" + this->GetFileExtension()), out);
+    GetDirListing(path + std::string("*" + this->GetFileExtension()), out);
   }
 }
 
 std::vector<std::string> SMLoader::GetSongDirFiles(
-    const std::string& sSongDir) {
+    const std::string& song_dir) {
   if (!song_dir_files_.empty()) {
     return song_dir_files_;
   }
 
-  ASSERT(!sSongDir.empty());
+  ASSERT(!song_dir.empty());
 
-  std::vector<std::string> vsDirs;
-  vsDirs.push_back(sSongDir);
+  std::vector<std::string> dirs;
+  dirs.push_back(song_dir);
 
-  while (!vsDirs.empty()) {
-    std::string d = vsDirs.back();
-    vsDirs.pop_back();
+  while (!dirs.empty()) {
+    std::string d = dirs.back();
+    dirs.pop_back();
 
-    std::vector<std::string> vsFiles;
-    GetDirListing(d + "*", vsFiles, false, true);
+    std::vector<std::string> files;
+    GetDirListing(d + "*", files, false, true);
 
-    for (const std::string& f : vsFiles) {
+    for (const std::string& f : files) {
       if (IsADirectory(f)) {
-        vsDirs.push_back(f + "/");
+        dirs.push_back(f + "/");
       }
 
-      song_dir_files_.push_back(f.substr(sSongDir.size()));
+      song_dir_files_.push_back(f.substr(song_dir.size()));
     }
   }
 
@@ -1272,11 +1273,10 @@ std::vector<std::string> SMLoader::GetSongDirFiles(
 }
 
 void SMLoader::ParseBGChangesString(
-    const std::string& _sChanges,
-    std::vector<std::vector<std::string>>& vvsAddTo,
-    const std::string& sSongDir) {
+    const std::string& s_changes, std::vector<std::vector<std::string>>& add_to,
+    const std::string& song_dir) {
   // short circuit: empty string
-  if (_sChanges.empty()) {
+  if (s_changes.empty()) {
     return;
   }
 
@@ -1284,20 +1284,20 @@ void SMLoader::ParseBGChangesString(
   std::string sChanges;
   size_t start = 0;
   do {
-    size_t pos = _sChanges.find_first_of("\r\n", start);
+    size_t pos = s_changes.find_first_of("\r\n", start);
     if (std::string::npos == pos) {
-      pos = _sChanges.size();
+      pos = s_changes.size();
     }
 
     if (pos != start) {
-      if ((start == 0) && (pos == _sChanges.size())) {
-        sChanges = _sChanges;
+      if ((start == 0) && (pos == s_changes.size())) {
+        sChanges = s_changes;
       } else {
-        sChanges += _sChanges.substr(start, pos - start);
+        sChanges += s_changes.substr(start, pos - start);
       }
     }
     start = pos + 1;
-  } while (start <= _sChanges.size());
+  } while (start <= s_changes.size());
 
   // after removing newlines, do we have anything?
   if (sChanges.empty()) {
@@ -1305,7 +1305,7 @@ void SMLoader::ParseBGChangesString(
   }
 
   // get the list of possible files/directories for the file parameters
-  std::vector<std::string> vsFiles = GetSongDirFiles(sSongDir);
+  std::vector<std::string> files = GetSongDirFiles(song_dir);
 
   start = 0;
   int pnum = 0;
@@ -1316,7 +1316,7 @@ void SMLoader::ParseBGChangesString(
       case 7: {
         // see if one of the files in the song directory are listed.
         std::string found;
-        for (const auto& f : vsFiles) {
+        for (const auto& f : files) {
           // there aren't enough characters for this to match
           if ((sChanges.size() - start) < f.size()) {
             continue;
@@ -1337,7 +1337,7 @@ void SMLoader::ParseBGChangesString(
         // yes. use that as this parameter, even if it has commas or equals
         // signs in it
         if (!found.empty()) {
-          vvsAddTo.back().push_back(found);
+          add_to.back().push_back(found);
           start += found.size();
           // the next character should be a comma or equals. skip it
           if (start < sChanges.size()) {
@@ -1359,7 +1359,7 @@ void SMLoader::ParseBGChangesString(
       // everything else should be safe
       default:
         if (0 == pnum) {
-          vvsAddTo.push_back(
+          add_to.push_back(
               std::vector<std::string>());  // first value of this set. create
                                             // our vector
         }
@@ -1371,30 +1371,30 @@ void SMLoader::ParseBGChangesString(
           if ((eqpos == std::string::npos) && (compos == std::string::npos)) {
             // neither = nor , were found in the remainder of the string.
             // consume the rest of the string.
-            vvsAddTo.back().push_back(sChanges.substr(start));
+            add_to.back().push_back(sChanges.substr(start));
             start = sChanges.size() + 1;
           } else if (
               (eqpos != std::string::npos) && (compos != std::string::npos)) {
             // both were found. which came first?
             if (eqpos < compos) {
               // equals. consume value and move to next value
-              vvsAddTo.back().push_back(sChanges.substr(start, eqpos - start));
+              add_to.back().push_back(sChanges.substr(start, eqpos - start));
               start = eqpos + 1;
               ++pnum;
             } else {
               // comma. consume value and move to next set
-              vvsAddTo.back().push_back(sChanges.substr(start, compos - start));
+              add_to.back().push_back(sChanges.substr(start, compos - start));
               start = compos + 1;
               pnum = 0;
             }
           } else if (eqpos != std::string::npos) {
             // found only equals. consume and move on.
-            vvsAddTo.back().push_back(sChanges.substr(start, eqpos - start));
+            add_to.back().push_back(sChanges.substr(start, eqpos - start));
             start = eqpos + 1;
             ++pnum;
           } else {
             // only foudn comma. consume and move on.
-            vvsAddTo.back().push_back(sChanges.substr(start, compos - start));
+            add_to.back().push_back(sChanges.substr(start, compos - start));
             start = compos + 1;
             pnum = 0;
           }

@@ -110,7 +110,7 @@ struct FontPageSettings {
    * @param iCount the range to map. If -1, the range is the entire map.
    * @return the empty string on success, or an error message on failure. */
   std::string MapRange(
-      std::string sMapping, int iMapOffset, int iGlyphOffset, int iCount);
+      std::string mapping, int map_offset, int glyph_offset, int count);
 };
 
 class FontPage {
@@ -140,9 +140,9 @@ class FontPage {
   std::map<wchar_t, int> char_to_glyph_no_;
 
  private:
-  void SetExtraPixels(int iDrawExtraPixelsLeft, int DrawExtraPixelsRight);
+  void SetExtraPixels(int draw_extra_pixels_left, int draw_extra_pixels_right);
   void SetTextureCoords(
-      const std::vector<int>& aiWidths, int iAdvanceExtraPixels);
+      const std::vector<int>& widths, int advance_extra_pixels);
 };
 
 class Font {
@@ -155,7 +155,7 @@ class Font {
 
   const glyph& GetGlyph(wchar_t c) const;
 
-  int GetLineWidthInSourcePixels(const std::wstring& szLine) const;
+  int GetLineWidthInSourcePixels(const std::wstring& line) const;
   size_t GetGlyphsThatFit(const std::wstring& line, int* width) const;
 
   bool FontCompleteForString(const std::wstring& str) const;
@@ -171,7 +171,7 @@ class Font {
    * @param f the font whose pages we are stealing. */
   void MergeFont(Font& f);
 
-  void Load(const std::string& sFontOrTextureFilePath, std::string sChars);
+  void Load(const std::string& font_or_texture_file_path, std::string chars);
   void Unload();
 
   // Load font-wide settings.
@@ -181,7 +181,7 @@ class Font {
   int GetCenter() const { return default_->GetCenter(); }
   int GetLineSpacing() const { return default_->line_spacing_; }
 
-  void SetDefaultGlyph(FontPage* pPage);
+  void SetDefaultGlyph(FontPage* page);
 
   bool IsRightToLeft() const { return right_to_left_; };
   bool IsDistanceField() const { return distance_field_; };
@@ -221,12 +221,12 @@ class Font {
   std::string chars_;
 
   void LoadFontPageSettings(
-      FontPageSettings& cfg, IniFile& ini, const std::string& sTexturePath,
-      const std::string& PageName, std::string sChars);
+      FontPageSettings& cfg, IniFile& ini, const std::string& texture_path,
+      const std::string& page_name, std::string chars);
   static void GetFontPaths(
-      const std::string& sFontOrTextureFilePath,
-      std::vector<std::string>& sTexturePaths);
-  std::string GetPageNameFromFileName(const std::string& sFilename);
+      const std::string& font_or_texture_file_path,
+      std::vector<std::string>& texture_paths);
+  std::string GetPageNameFromFileName(const std::string& filename);
 
   Font(const Font& rhs);
   Font& operator=(const Font& rhs);

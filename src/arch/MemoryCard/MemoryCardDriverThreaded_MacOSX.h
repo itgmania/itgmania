@@ -10,13 +10,13 @@ class MemoryCardDriverThreaded_MacOSX : public MemoryCardDriver {
  public:
   MemoryCardDriverThreaded_MacOSX();
   ~MemoryCardDriverThreaded_MacOSX();
-  bool Mount(UsbStorageDevice* pDevice) { return true; }
-  void Unmount(UsbStorageDevice* pDevice);
+  bool Mount(UsbStorageDevice* device) { return true; }
+  void Unmount(UsbStorageDevice* device);
 
  protected:
   bool USBStorageDevicesChanged();
-  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& vStorageDevicesOut);
-  bool TestWrite(UsbStorageDevice* pDevice);
+  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& storage_devices_out);
+  bool TestWrite(UsbStorageDevice* device);
 
  private:
   MemoryCardDriverThreaded_MacOSX(const MemoryCardDriverThreaded_MacOSX& m);

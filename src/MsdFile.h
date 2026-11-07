@@ -44,14 +44,14 @@ class MsdFile {
    * @param bUnescape a flag to see if we need to unescape values.
    * @return its success or failure.
    */
-  bool ReadFile(std::string sFilePath, bool bUnescape);
+  bool ReadFile(std::string file_path, bool unescape);
   /**
    * @brief Attempt to read an MSD file.
    * @param sString the path to the file.
    * @param bUnescape a flag to see if we need to unescape values.
    * @return its success or failure.
    */
-  void ReadFromString(const std::string& sString, bool bUnescape);
+  void ReadFromString(const std::string& string, bool unescape);
 
   /**
    * @brief Should an error take place, have an easy place to get it.
@@ -97,7 +97,7 @@ class MsdFile {
    * @param len the length of the buffer.
    * @param bUnescape a flag to see if we need to unescape values.
    */
-  void ReadBuf(const char* buf, int len, bool bUnescape);
+  void ReadBuf(const char* buf, int len, bool unescape);
   /**
    * @brief Add a new parameter.
    * @param buf the new parameter.

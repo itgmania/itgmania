@@ -5,16 +5,16 @@
 #include <cstdio>
 #include <string>
 
-void GetKernel(std::string& sys, int& iVersion) {
+void GetKernel(std::string& sys, int& version) {
   struct utsname uts;
   uname(&uts);
 
   sys = uts.sysname;
-  iVersion = 0;
+  version = 0;
 
-  int iMajor = 0, iMinor = 0, iRevision = 0;
-  if (sscanf(uts.release, "%d.%d.%d", &iMajor, &iMinor, &iRevision) >= 2) {
-    iVersion = (iMajor * 10000) + (iMinor * 100) + (iRevision);
+  int major = 0, minor = 0, revision = 0;
+  if (sscanf(uts.release, "%d.%d.%d", &major, &minor, &revision) >= 2) {
+    version = (major * 10000) + (minor * 100) + (revision);
   }
 }
 

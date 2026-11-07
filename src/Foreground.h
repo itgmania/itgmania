@@ -13,9 +13,9 @@ class Foreground : public ActorFrame {
  public:
   ~Foreground();
   void Unload();
-  void LoadFromSong(const Song* pSong);
+  void LoadFromSong(const Song* song);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual void HandleMessage(const Message& msg);
 
  protected:

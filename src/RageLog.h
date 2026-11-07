@@ -17,8 +17,8 @@ class RageLog {
   void Warn(const char* fmt, ...) PRINTF(2, 3);
   void Info(const char* fmt, ...) PRINTF(2, 3);
   void UserLog(
-      const std::string& sType, const std::string& sElement, const char* fmt,
-      ...) PRINTF(4, 5);
+      const std::string& type, const std::string& element, const char* fmt, ...)
+      PRINTF(4, 5);
   void Flush();
 
   void MapLog(const std::string& key, const char* fmt, ...) PRINTF(3, 4);

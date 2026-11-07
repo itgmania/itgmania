@@ -20,13 +20,13 @@ class RageInput {
   void LoadDrivers();
   void Update();
   bool DevicesChanged();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vOut) const;
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& out) const;
   void WindowReset();
-  void AddHandler(InputHandler* pHandler);
+  void AddHandler(InputHandler* handler);
   InputHandler* GetHandlerForDevice(const InputDevice id);
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   std::string GetLocalizedInputString(const DeviceInput& di);
-  wchar_t DeviceInputToChar(DeviceInput di, bool bUseCurrentKeyModifiers);
+  wchar_t DeviceInputToChar(DeviceInput di, bool use_current_key_modifiers);
   std::string GetDisplayDevicesString() const;
 
   void StartSensorTest();

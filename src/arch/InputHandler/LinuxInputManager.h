@@ -26,7 +26,7 @@ class LinuxInputManager {
  private:
   std::vector<LinuxInputSort> pre_sort_;
   void PresortPhysical(
-      std::vector<std::string>& sortingArray, std::string sortBy);
+      std::vector<std::string>& sorting_array, std::string sort_by);
 
   bool event_enabled_;
   std::vector<std::string> pending_event_devices_;

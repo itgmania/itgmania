@@ -67,7 +67,7 @@ class StageStats {
   PlayerStageStats player_[NUM_PLAYERS];
   PlayerStageStats routine_player_;
 
-  void FinalizeScores(bool bSummary);
+  void FinalizeScores(bool summary);
   /**
    * @brief Determine if the PlayerNumber has a high score.
    * @param pn the PlayerNumber in question.

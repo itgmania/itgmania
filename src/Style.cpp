@@ -40,37 +40,38 @@ bool Style::GetUsesCenteredArrows() const {
 }
 
 void Style::GetTransformedNoteDataForStyle(
-    PlayerNumber pn, const NoteData& original, NoteData& noteDataOut) const {
+    PlayerNumber pn, const NoteData& original, NoteData& note_data_out) const {
   ASSERT(pn >= 0 && pn <= NUM_PLAYERS);
 
-  int iNewToOriginalTrack[MAX_COLS_PER_PLAYER];
+  int new_to_original_track[MAX_COLS_PER_PLAYER];
   for (int col = 0; col < cols_per_player_; col++) {
-    ColumnInfo colInfo = column_info_[pn][col];
-    iNewToOriginalTrack[col] = colInfo.track_;
+    ColumnInfo col_info = column_info_[pn][col];
+    new_to_original_track[col] = col_info.track_;
   }
 
-  noteDataOut.LoadTransformed(original, cols_per_player_, iNewToOriginalTrack);
+  note_data_out.LoadTransformed(
+      original, cols_per_player_, new_to_original_track);
 }
 
 void Style::StyleInputToGameInput(
-    int iCol, PlayerNumber pn, std::vector<GameInput>& ret) const {
+    int col, PlayerNumber pn, std::vector<GameInput>& ret) const {
   ASSERT_M(
-      pn < NUM_PLAYERS && iCol < MAX_COLS_PER_PLAYER,
-      ssprintf("P%i C%i", pn, iCol));
-  bool bUsingOneSide = style_type_ != StyleType_OnePlayerTwoSides &&
-                       style_type_ != StyleType_TwoPlayersSharedSides;
+      pn < NUM_PLAYERS && col < MAX_COLS_PER_PLAYER,
+      ssprintf("P%i C%i", pn, col));
+  bool using_one_side = style_type_ != StyleType_OnePlayerTwoSides &&
+                        style_type_ != StyleType_TwoPlayersSharedSides;
 
   FOREACH_ENUM(GameController, gc) {
-    if (bUsingOneSide && gc != (int)pn) {
+    if (using_one_side && gc != (int)pn) {
       continue;
     }
 
-    int iButtonsPerController =
+    int buttons_per_controller =
         INPUTMAPPER->GetInputScheme()->buttons_per_controller_;
-    for (GameButton gb = GAME_BUTTON_NEXT; gb < iButtonsPerController;
+    for (GameButton gb = GAME_BUTTON_NEXT; gb < buttons_per_controller;
          gb = (GameButton)(gb + 1)) {
-      int iThisInputCol = input_column_[gc][gb - GAME_BUTTON_NEXT];
-      if (iThisInputCol == END_MAPPING) {
+      int this_input_col = input_column_[gc][gb - GAME_BUTTON_NEXT];
+      if (this_input_col == END_MAPPING) {
         break;
       }
 
@@ -78,45 +79,45 @@ void Style::StyleInputToGameInput(
       // we have to return all the game inputs that are valid.  If only the
       // first is returned, then holds will drop on other inputs that should
       // be valid. -Kyz
-      if (iThisInputCol == iCol) {
+      if (this_input_col == col) {
         ret.push_back(GameInput(gc, gb));
       }
     }
   }
   if (unlikely(ret.empty())) {
     FAIL_M(ssprintf(
-        "Invalid column number %i for player %i in the style %s", iCol, pn,
+        "Invalid column number %i for player %i in the style %s", col, pn,
         name_));
   }
 };
 
-int Style::GameInputToColumn(const GameInput& GameI) const {
-  if (GameI.button_ < GAME_BUTTON_NEXT) {
+int Style::GameInputToColumn(const GameInput& game_i) const {
+  if (game_i.button_ < GAME_BUTTON_NEXT) {
     return Column_Invalid;
   }
-  int iColumnIndex = GameI.button_ - GAME_BUTTON_NEXT;
-  if (input_column_[GameI.controller_][iColumnIndex] == NO_MAPPING) {
+  int column_index = game_i.button_ - GAME_BUTTON_NEXT;
+  if (input_column_[game_i.controller_][column_index] == NO_MAPPING) {
     return Column_Invalid;
   }
 
-  for (int i = 0; i <= iColumnIndex; ++i) {
-    if (input_column_[GameI.controller_][i] == END_MAPPING) {
+  for (int i = 0; i <= column_index; ++i) {
+    if (input_column_[game_i.controller_][i] == END_MAPPING) {
       return Column_Invalid;
     }
   }
 
-  return input_column_[GameI.controller_][iColumnIndex];
+  return input_column_[game_i.controller_][column_index];
 }
 
 void Style::GetMinAndMaxColX(
-    PlayerNumber pn, float& fMixXOut, float& fMaxXOut) const {
+    PlayerNumber pn, float& mix_x_out, float& max_x_out) const {
   ASSERT(pn != PLAYER_INVALID);
 
-  fMixXOut = FLT_MAX;
-  fMaxXOut = FLT_MIN;
+  mix_x_out = FLT_MAX;
+  max_x_out = FLT_MIN;
   for (int i = 0; i < cols_per_player_; i++) {
-    fMixXOut = std::min(fMixXOut, column_info_[pn][i].x_offset_);
-    fMaxXOut = std::max(fMaxXOut, column_info_[pn][i].x_offset_);
+    mix_x_out = std::min(mix_x_out, column_info_[pn][i].x_offset_);
+    max_x_out = std::max(max_x_out, column_info_[pn][i].x_offset_);
   }
 }
 
@@ -129,15 +130,15 @@ float Style::GetWidth(PlayerNumber pn) const {
   return width + (width / static_cast<float>(cols_per_player_ - 1));
 }
 
-std::string Style::ColToButtonName(int iCol) const {
-  const char* pzColumnName = column_info_[PLAYER_1][iCol].name_;
-  if (pzColumnName != nullptr) {
-    return pzColumnName;
+std::string Style::ColToButtonName(int col) const {
+  const char* column_name = column_info_[PLAYER_1][col].name_;
+  if (column_name != nullptr) {
+    return column_name;
   }
 
-  std::vector<GameInput> GI;
-  StyleInputToGameInput(iCol, PLAYER_1, GI);
-  return INPUTMAPPER->GetInputScheme()->GetGameButtonName(GI[0].button_);
+  std::vector<GameInput> gi;
+  StyleInputToGameInput(col, PLAYER_1, gi);
+  return INPUTMAPPER->GetInputScheme()->GetGameButtonName(gi[0].button_);
 }
 
 // Lua bindings
@@ -169,20 +170,20 @@ class LunaStyle : public Luna<Style> {
 
   static int GetColumnInfo(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    int iCol = IArg(2) - 1;
-    if (iCol < 0 || iCol >= p->cols_per_player_) {
+    int col = IArg(2) - 1;
+    if (col < 0 || col >= p->cols_per_player_) {
       LuaHelpers::ReportScriptErrorFmt(
           "Style:GetColumnDrawOrder(): column %i out of range( 1 to %i )",
-          iCol + 1, p->cols_per_player_);
+          col + 1, p->cols_per_player_);
       return 0;
     }
 
     LuaTable ret;
-    lua_pushnumber(L, p->column_info_[pn][iCol].track_ + 1);
+    lua_pushnumber(L, p->column_info_[pn][col].track_ + 1);
     ret.Set(L, "Track");
-    lua_pushnumber(L, p->column_info_[pn][iCol].x_offset_);
+    lua_pushnumber(L, p->column_info_[pn][col].x_offset_);
     ret.Set(L, "XOffset");
-    lua_pushstring(L, p->ColToButtonName(iCol).c_str());
+    lua_pushstring(L, p->ColToButtonName(col).c_str());
     ret.Set(L, "Name");
 
     ret.PushSelf(L);
@@ -190,14 +191,14 @@ class LunaStyle : public Luna<Style> {
   }
 
   static int GetColumnDrawOrder(T* p, lua_State* L) {
-    int iCol = IArg(1) - 1;
-    if (iCol < 0 || iCol >= p->cols_per_player_ * NUM_PLAYERS) {
+    int col = IArg(1) - 1;
+    if (col < 0 || col >= p->cols_per_player_ * NUM_PLAYERS) {
       LuaHelpers::ReportScriptErrorFmt(
           "Style:GetColumnDrawOrder(): column %i out of range( 1 to %i )",
-          iCol + 1, p->cols_per_player_ * NUM_PLAYERS);
+          col + 1, p->cols_per_player_ * NUM_PLAYERS);
       return 0;
     }
-    lua_pushnumber(L, p->column_draw_order_[iCol] + 1);
+    lua_pushnumber(L, p->column_draw_order_[col] + 1);
     return 1;
   }
 

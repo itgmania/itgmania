@@ -55,66 +55,66 @@ struct LoadedDriver {
     driver_ = nullptr;
     refs_ = 0;
   }
-  std::string GetPath(const std::string& sPath) const;
+  std::string GetPath(const std::string& path) const;
 };
 
 static std::vector<LoadedDriver*> g_pDrivers;
 static std::map<const RageFileBasic*, LoadedDriver*> g_mFileDriverMap;
 
-static void ReferenceAllDrivers(std::vector<LoadedDriver*>& apDriverList) {
+static void ReferenceAllDrivers(std::vector<LoadedDriver*>& driver_list) {
   g_Mutex->Lock();
-  apDriverList = g_pDrivers;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    ++apDriverList[i]->refs_;
+  driver_list = g_pDrivers;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    ++driver_list[i]->refs_;
   }
   g_Mutex->Unlock();
 }
 
-static void UnreferenceAllDrivers(std::vector<LoadedDriver*>& apDriverList) {
+static void UnreferenceAllDrivers(std::vector<LoadedDriver*>& driver_list) {
   g_Mutex->Lock();
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    --apDriverList[i]->refs_;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    --driver_list[i]->refs_;
   }
   g_Mutex->Broadcast();
   g_Mutex->Unlock();
 
   /* Clear the temporary list, to make it clear that the drivers may no longer
    * be accessed. */
-  apDriverList.clear();
+  driver_list.clear();
 }
 
-RageFileDriver* RageFileManager::GetFileDriver(std::string sMountpoint) {
-  FixSlashesInPlace(sMountpoint);
-  if (sMountpoint.size() && Right(sMountpoint, 1) != "/") {
-    sMountpoint += '/';
+RageFileDriver* RageFileManager::GetFileDriver(std::string mountpoint) {
+  FixSlashesInPlace(mountpoint);
+  if (mountpoint.size() && Right(mountpoint, 1) != "/") {
+    mountpoint += '/';
   }
 
   g_Mutex->Lock();
-  RageFileDriver* pRet = nullptr;
+  RageFileDriver* ret = nullptr;
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
     if (g_pDrivers[i]->type_ == "mountpoints") {
       continue;
     }
-    if (CompareNoCase(g_pDrivers[i]->mount_point_, sMountpoint)) {
+    if (CompareNoCase(g_pDrivers[i]->mount_point_, mountpoint)) {
       continue;
     }
 
-    pRet = g_pDrivers[i]->driver_;
+    ret = g_pDrivers[i]->driver_;
     ++g_pDrivers[i]->refs_;
     break;
   }
   g_Mutex->Unlock();
 
-  return pRet;
+  return ret;
 }
 
-void RageFileManager::ReleaseFileDriver(RageFileDriver* pDriver) {
-  ASSERT(pDriver != nullptr);
+void RageFileManager::ReleaseFileDriver(RageFileDriver* driver) {
+  ASSERT(driver != nullptr);
 
   g_Mutex->Lock();
   unsigned i;
   for (i = 0; i < g_pDrivers.size(); ++i) {
-    if (g_pDrivers[i]->driver_ == pDriver) {
+    if (g_pDrivers[i]->driver_ == driver) {
       break;
     }
   }
@@ -126,20 +126,20 @@ void RageFileManager::ReleaseFileDriver(RageFileDriver* pDriver) {
   g_Mutex->Unlock();
 }
 
-size_t zipRead(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size_t n) {
-  RageFile* f = static_cast<RageFile*>(pOpaque);
+size_t zipRead(void* opaque, mz_uint64 file_ofs, void* buf, size_t n) {
+  RageFile* f = static_cast<RageFile*>(opaque);
 
   const int pos = f->Seek(file_ofs);
   if (pos >= 0 && static_cast<uint64_t>(pos) != file_ofs) {
     return 0;
   }
 
-  return f->Read(pBuf, n);
+  return f->Read(buf, n);
 }
 
 size_t zipWriteFile(
-    void* pOpaque, mz_uint64 file_ofs, const void* pBuf, size_t n) {
-  RageFile* f = static_cast<RageFile*>(pOpaque);
+    void* opaque, mz_uint64 file_ofs, const void* buf, size_t n) {
+  RageFile* f = static_cast<RageFile*>(opaque);
 
   /*
    * XXX: RageFile doesn't allow to Seek() in a file open for writing. We
@@ -155,29 +155,29 @@ size_t zipWriteFile(
   }
   */
 
-  return f->Write(pBuf, n);
+  return f->Write(buf, n);
 }
 
 bool RageFileManager::Unzip(
-    const std::string& zipPath, std::string targetPath, int strip) {
-  if (targetPath.empty() || targetPath.back() != '/') {
-    targetPath.push_back('/');
+    const std::string& zip_path, std::string target_path, int strip) {
+  if (target_path.empty() || target_path.back() != '/') {
+    target_path.push_back('/');
   }
 
-  RageFile zipFile;
-  if (!zipFile.Open(zipPath, RageFile::READ)) {
-    std::string error = zipFile.GetError();
-    LOG->Warn("Could not unzip %s: %s", zipPath.c_str(), error.c_str());
+  RageFile zip_file;
+  if (!zip_file.Open(zip_path, RageFile::READ)) {
+    std::string error = zip_file.GetError();
+    LOG->Warn("Could not unzip %s: %s", zip_path.c_str(), error.c_str());
     return false;
   }
 
   mz_zip_archive zip = {};
   zip.m_pRead = zipRead;
-  zip.m_pIO_opaque = &zipFile;
+  zip.m_pIO_opaque = &zip_file;
 
-  if (!mz_zip_reader_init(&zip, zipFile.GetFileSize(), 0)) {
+  if (!mz_zip_reader_init(&zip, zip_file.GetFileSize(), 0)) {
     LOG->Warn(
-        "Could not unzip %s: %s", zipPath.c_str(),
+        "Could not unzip %s: %s", zip_path.c_str(),
         mz_zip_get_error_string(zip.m_last_error));
     mz_zip_reader_end(&zip);
     return false;
@@ -186,11 +186,11 @@ bool RageFileManager::Unzip(
   bool success = true;
   mz_uint file_count = mz_zip_reader_get_num_files(&zip);
 
-  for (mz_uint fileIndex = 0; fileIndex < file_count; fileIndex++) {
+  for (mz_uint file_index = 0; file_index < file_count; file_index++) {
     mz_zip_archive_file_stat info;
-    if (!mz_zip_reader_file_stat(&zip, fileIndex, &info)) {
+    if (!mz_zip_reader_file_stat(&zip, file_index, &info)) {
       LOG->Warn(
-          "Could not unzip %s: %s", zipPath.c_str(),
+          "Could not unzip %s: %s", zip_path.c_str(),
           mz_zip_get_error_string(zip.m_last_error));
       success = false;
       break;
@@ -212,7 +212,7 @@ bool RageFileManager::Unzip(
       continue;
     }
 
-    std::string filepath = targetPath + filename;
+    std::string filepath = target_path + filename;
 
     if (FILEMAN->IsPathProtected(filepath)) {
       LOG->Warn("Overwriting %s is not allowed", filepath.c_str());
@@ -224,14 +224,14 @@ bool RageFileManager::Unzip(
     } else {
       RageFile f;
       if (!f.Open(filepath, RageFile::WRITE | RageFile::STREAMED)) {
-        std::string error = zipFile.GetError();
+        std::string error = zip_file.GetError();
         LOG->Warn("Could not write to %s: %s", filepath.c_str(), error.c_str());
         success = false;
         break;
       }
 
       success = mz_zip_reader_extract_to_callback(
-          &zip, fileIndex, zipWriteFile, &f, 0);
+          &zip, file_index, zipWriteFile, &f, 0);
       if (!success) {
         std::string error = f.GetError();
         LOG->Warn("Could not write to %s: %s", filepath.c_str(), error.c_str());
@@ -245,30 +245,30 @@ bool RageFileManager::Unzip(
   return success;
 }
 
-static void NormalizePath(std::string& sPath) {
-  FixSlashesInPlace(sPath);
-  CollapsePath(sPath, true);
-  if (sPath.size() == 0) {
-    sPath = '/';
-  } else if (sPath[0] != '/') {
-    sPath = '/' + sPath;
+static void NormalizePath(std::string& path) {
+  FixSlashesInPlace(path);
+  CollapsePath(path, true);
+  if (path.size() == 0) {
+    path = '/';
+  } else if (path[0] != '/') {
+    path = '/' + path;
   }
 }
 
 void RageFileManager::ProtectPath(const std::string& path) {
-  std::string normalizedPath(path);
-  NormalizePath(normalizedPath);
-  MakeLower(normalizedPath);
+  std::string normalized_path(path);
+  NormalizePath(normalized_path);
+  MakeLower(normalized_path);
 
-  protected_paths_.insert(normalizedPath);
+  protected_paths_.insert(normalized_path);
 }
 
 bool RageFileManager::IsPathProtected(const std::string& path) {
-  std::string normalizedPath(path);
-  NormalizePath(normalizedPath);
-  MakeLower(normalizedPath);
+  std::string normalized_path(path);
+  NormalizePath(normalized_path);
+  MakeLower(normalized_path);
 
-  return protected_paths_.count(normalizedPath) > 0;
+  return protected_paths_.count(normalized_path) > 0;
 }
 
 // Mountpoints as directories cause a problem.  If "Themes/default" is a
@@ -279,90 +279,89 @@ bool RageFileManager::IsPathProtected(const std::string& path) {
 class RageFileDriverMountpoints : public RageFileDriver {
  public:
   RageFileDriverMountpoints() : RageFileDriver(new FilenameDB) {}
-  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError) {
-    iError = (iMode == RageFile::WRITE) ? ERROR_WRITING_NOT_SUPPORTED : ENOENT;
+  RageFileBasic* Open(const std::string& path, int mode, int& error) {
+    error = (mode == RageFile::WRITE) ? ERROR_WRITING_NOT_SUPPORTED : ENOENT;
     return nullptr;
   }
   /* Never flush FDB, except in LoadFromDrivers. */
-  void FlushDirCache(const std::string& sPath) {}
+  void FlushDirCache(const std::string& path) {}
 
-  void LoadFromDrivers(const std::vector<LoadedDriver*>& apDrivers) {
+  void LoadFromDrivers(const std::vector<LoadedDriver*>& drivers) {
     /* XXX: Even though these two operations lock on their own, lock around
      * them, too.  That way, nothing can sneak in and get incorrect
      * results between the flush and the re-population. */
     fdb_->FlushDirCache();
-    for (unsigned i = 0; i < apDrivers.size(); ++i) {
-      if (apDrivers[i]->mount_point_ != "/") {
-        fdb_->AddFile(apDrivers[i]->mount_point_, 0, 0);
+    for (unsigned i = 0; i < drivers.size(); ++i) {
+      if (drivers[i]->mount_point_ != "/") {
+        fdb_->AddFile(drivers[i]->mount_point_, 0, 0);
       }
     }
   }
 };
 static RageFileDriverMountpoints* g_Mountpoints = nullptr;
 
-static std::string ExtractDirectory(std::string sPath) {
+static std::string ExtractDirectory(std::string path) {
   // return the directory containing sPath
-  size_t n = sPath.find_last_of("/");
-  if (n != sPath.npos) {
-    sPath.erase(n);
+  size_t n = path.find_last_of("/");
+  if (n != path.npos) {
+    path.erase(n);
   } else {
-    sPath.erase();
+    path.erase();
   }
-  return sPath;
+  return path;
 }
 
 #if defined(UNIX) || defined(MACOSX)
-static std::string ReadlinkRecursive(std::string sPath) {
+static std::string ReadlinkRecursive(std::string path) {
   // unices support symbolic links; dereference them
-  std::string dereferenced = sPath;
+  std::string dereferenced = path;
   do {
-    sPath = dereferenced;
-    char derefPath[512];
-    ssize_t linkSize = readlink(sPath.c_str(), derefPath, sizeof(derefPath));
-    if (linkSize != -1 && linkSize != sizeof(derefPath)) {
-      dereferenced = std::string(derefPath, linkSize);
-      if (derefPath[0] != '/') {
+    path = dereferenced;
+    char deref_path[512];
+    ssize_t link_size = readlink(path.c_str(), deref_path, sizeof(deref_path));
+    if (link_size != -1 && link_size != sizeof(deref_path)) {
+      dereferenced = std::string(deref_path, link_size);
+      if (deref_path[0] != '/') {
         // relative link
-        dereferenced =
-            std::string(ExtractDirectory(sPath) + "/" + dereferenced);
+        dereferenced = std::string(ExtractDirectory(path) + "/" + dereferenced);
       }
     }
-  } while (sPath != dereferenced);
+  } while (path != dereferenced);
 
-  return sPath;
+  return path;
 }
 #endif
 
 static std::string GetDirOfExecutable(std::string argv0) {
   // argv[0] can be wrong in most OS's; try to avoid using it.
 
-  std::string sPath;
+  std::string s_path;
 #if defined(_WIN32)
-  char szBuf[MAX_PATH];
-  GetModuleFileName(nullptr, szBuf, sizeof(szBuf));
-  sPath = szBuf;
+  char buf[MAX_PATH];
+  GetModuleFileName(nullptr, buf, sizeof(buf));
+  s_path = buf;
 #else
-  sPath = argv0;
+  s_path = argv0;
 #endif
 
-  Replace(sPath, "\\", "/");
+  Replace(s_path, "\\", "/");
 
-  bool bIsAbsolutePath = false;
-  if (sPath.size() == 0 || sPath[0] == '/') {
-    bIsAbsolutePath = true;
+  bool is_absolute_path = false;
+  if (s_path.size() == 0 || s_path[0] == '/') {
+    is_absolute_path = true;
   }
 #if defined(_WIN32)
-  if (sPath.size() > 2 && sPath[1] == ':' && sPath[2] == '/') {
-    bIsAbsolutePath = true;
+  if (s_path.size() > 2 && s_path[1] == ':' && s_path[2] == '/') {
+    is_absolute_path = true;
   }
 #endif
 
   // strip off executable name
-  sPath = ExtractDirectory(sPath);
+  s_path = ExtractDirectory(s_path);
 
-  if (!bIsAbsolutePath) {
+  if (!is_absolute_path) {
 #if defined(UNIX) || defined(MACOSX)
-    if (sPath.empty()) {
+    if (s_path.empty()) {
       // This is in our path so look for it.
       const char* path = getenv("PATH");
 
@@ -370,30 +369,30 @@ static std::string GetDirOfExecutable(std::string argv0) {
         path = _PATH_DEFPATH;
       }
 
-      std::vector<std::string> vPath;
-      split(path, ":", vPath);
-      for (std::string& i : vPath) {
+      std::vector<std::string> v_path;
+      split(path, ":", v_path);
+      for (std::string& i : v_path) {
         if (access((i + "/" + argv0).c_str(), X_OK | R_OK)) {
           continue;
         }
-        sPath = ExtractDirectory(ReadlinkRecursive(i + "/" + argv0));
+        s_path = ExtractDirectory(ReadlinkRecursive(i + "/" + argv0));
         break;
       }
-      if (sPath.empty()) {
-        sPath = GetCwd();            // What?
-      } else if (sPath[0] != '/') {  // For example, if . is in $PATH.
-        sPath = GetCwd() + "/" + sPath;
+      if (s_path.empty()) {
+        s_path = GetCwd();            // What?
+      } else if (s_path[0] != '/') {  // For example, if . is in $PATH.
+        s_path = GetCwd() + "/" + s_path;
       }
 
     } else {
-      sPath = ExtractDirectory(ReadlinkRecursive(GetCwd() + "/" + argv0));
+      s_path = ExtractDirectory(ReadlinkRecursive(GetCwd() + "/" + argv0));
     }
 #else
-    sPath = GetCwd() + "/" + sPath;
-    Replace(sPath, "\\", "/");
+    s_path = GetCwd() + "/" + s_path;
+    Replace(s_path, "\\", "/");
 #endif
   }
-  return sPath;
+  return s_path;
 }
 
 static void ChangeToDirOfExecutable(const std::string& argv0) {
@@ -430,11 +429,11 @@ RageFileManager::RageFileManager(const std::string& argv0) {
   g_Mutex = new RageEvent("RageFileManager");
 
   g_Mountpoints = new RageFileDriverMountpoints;
-  LoadedDriver* pLoadedDriver = new LoadedDriver;
-  pLoadedDriver->driver_ = g_Mountpoints;
-  pLoadedDriver->mount_point_ = "/";
-  pLoadedDriver->type_ = "mountpoints";
-  g_pDrivers.push_back(pLoadedDriver);
+  LoadedDriver* loaded_driver = new LoadedDriver;
+  loaded_driver->driver_ = g_Mountpoints;
+  loaded_driver->mount_point_ = "/";
+  loaded_driver->type_ = "mountpoints";
+  g_pDrivers.push_back(loaded_driver);
 
   /* The mount path is unused, but must be nonempty. */
   RageFileManager::Mount("mem", "(cache)", "/@mem");
@@ -477,21 +476,21 @@ RageFileManager::~RageFileManager() {
 }
 
 /* path must be normalized (FixSlashesInPlace, CollapsePath). */
-std::string LoadedDriver::GetPath(const std::string& sPath) const {
+std::string LoadedDriver::GetPath(const std::string& path) const {
   /* If the path begins with /@, only match mountpoints that begin with /@. */
-  if (sPath.size() >= 2 && sPath[1] == '@') {
+  if (path.size() >= 2 && path[1] == '@') {
     if (mount_point_.size() < 2 || mount_point_[1] != '@') {
       return std::string();
     }
   }
 
-  if (CompareNoCase(Left(sPath, mount_point_.size()), mount_point_)) {
+  if (CompareNoCase(Left(path, mount_point_.size()), mount_point_)) {
     return std::string(); /* no match */
   }
 
   /* Add one, so we don't cut off the leading slash. */
-  std::string sRet = Right(sPath, sPath.size() - mount_point_.size() + 1);
-  return sRet;
+  std::string ret = Right(path, path.size() - mount_point_.size() + 1);
+  return ret;
 }
 
 bool ilt(const std::string& a, const std::string& b) {
@@ -501,295 +500,297 @@ bool ieq(const std::string& a, const std::string& b) {
   return CompareNoCase(a, b) == 0;
 }
 void RageFileManager::GetDirListing(
-    const std::string& sPath_, std::vector<std::string>& AddTo, bool bOnlyDirs,
-    bool bReturnPathToo) {
-  std::string sPath = sPath_;
-  NormalizePath(sPath);
+    const std::string& raw_path, std::vector<std::string>& add_to,
+    bool only_dirs, bool return_path_too) {
+  std::string path = raw_path;
+  NormalizePath(path);
 
   // NormalizePath() calls CollapsePath() which will remove "dir/.." pairs.
   // So if a "/.." is still present, they're trying to go below the root,
   // which isn't valid.
-  if (sPath.find("/..") != std::string::npos) {
+  if (path.find("/..") != std::string::npos) {
     return;
   }
 
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  int iDriversThatReturnedFiles = 0;
-  int iOldSize = AddTo.size();
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    LoadedDriver* pLoadedDriver = apDriverList[i];
-    const std::string p = pLoadedDriver->GetPath(sPath);
+  int drivers_that_returned_files = 0;
+  int old_size = add_to.size();
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    LoadedDriver* loaded_driver = driver_list[i];
+    const std::string p = loaded_driver->GetPath(path);
     if (p.size() == 0) {
       continue;
     }
 
-    const unsigned OldStart = AddTo.size();
+    const unsigned old_start = add_to.size();
 
-    pLoadedDriver->driver_->GetDirListing(p, AddTo, bOnlyDirs, bReturnPathToo);
-    if (AddTo.size() != OldStart) {
-      ++iDriversThatReturnedFiles;
+    loaded_driver->driver_->GetDirListing(
+        p, add_to, only_dirs, return_path_too);
+    if (add_to.size() != old_start) {
+      ++drivers_that_returned_files;
     }
 
     /* If returning the path, prepend the mountpoint name to the files this
      * driver returned. */
-    if (bReturnPathToo && pLoadedDriver->mount_point_.size() > 0) {
-      const std::string& mountPoint = pLoadedDriver->mount_point_;
+    if (return_path_too && loaded_driver->mount_point_.size() > 0) {
+      const std::string& mount_point = loaded_driver->mount_point_;
       /* Skip the trailing slash on the mountpoint; there's already a slash
        * there. */
-      const std::string& trimPoint =
-          mountPoint.substr(0, mountPoint.size() - 1);
-      for (unsigned j = OldStart; j < AddTo.size(); ++j) {
-        AddTo[j] = trimPoint + AddTo[j];
+      const std::string& trim_point =
+          mount_point.substr(0, mount_point.size() - 1);
+      for (unsigned j = old_start; j < add_to.size(); ++j) {
+        add_to[j] = trim_point + add_to[j];
       }
     }
   }
 
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
   // Remove files that start with ._ from the list because these are special
   // macOS files that cause interference on other platforms. -Kyz
-  StripMacResourceForks(AddTo);
+  StripMacResourceForks(add_to);
 
-  if (iDriversThatReturnedFiles > 1) {
+  if (drivers_that_returned_files > 1) {
     /* More than one driver returned files.  Remove duplicates
      * (case-insensitively). */
-    sort(AddTo.begin() + iOldSize, AddTo.end(), ilt);
+    sort(add_to.begin() + old_size, add_to.end(), ilt);
     std::vector<std::string>::iterator it =
-        unique(AddTo.begin() + iOldSize, AddTo.end(), ieq);
-    AddTo.erase(it, AddTo.end());
+        unique(add_to.begin() + old_size, add_to.end(), ieq);
+    add_to.erase(it, add_to.end());
   }
 }
 
 void RageFileManager::GetDirListingWithMultipleExtensions(
-    const std::string& sPath, const std::vector<std::string>& ExtensionList,
-    std::vector<std::string>& AddTo, bool bOnlyDirs, bool bReturnPathToo) {
+    const std::string& path, const std::vector<std::string>& extension_list,
+    std::vector<std::string>& add_to, bool only_dirs, bool return_path_too) {
   for (std::vector<std::string>::const_iterator curr_ext =
-           ExtensionList.begin();
-       curr_ext != ExtensionList.end(); ++curr_ext) {
-    GetDirListing(sPath + "*." + (*curr_ext), AddTo, bOnlyDirs, bReturnPathToo);
+           extension_list.begin();
+       curr_ext != extension_list.end(); ++curr_ext) {
+    GetDirListing(
+        path + "*." + (*curr_ext), add_to, only_dirs, return_path_too);
   }
 }
 
 /* Files may only be moved within the same file driver. */
 bool RageFileManager::Move(
-    const std::string& fromPath_, const std::string& toPath_) {
-  std::string fromPath = fromPath_;
-  std::string toPath = toPath_;
+    const std::string& raw_from_path, const std::string& raw_to_path) {
+  std::string from_path = raw_from_path;
+  std::string to_path = raw_to_path;
 
-  std::vector<LoadedDriver*> aDriverList;
-  ReferenceAllDrivers(aDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  NormalizePath(fromPath);
-  NormalizePath(toPath);
+  NormalizePath(from_path);
+  NormalizePath(to_path);
 
   /* Multiple drivers may have the same file. */
-  bool Deleted = false;
-  for (unsigned i = 0; i < aDriverList.size(); ++i) {
-    const std::string sOldDriverPath = aDriverList[i]->GetPath(fromPath);
-    const std::string sNewDriverPath = aDriverList[i]->GetPath(toPath);
-    if (sOldDriverPath.size() == 0 || sNewDriverPath.size() == 0) {
+  bool deleted = false;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    const std::string old_driver_path = driver_list[i]->GetPath(from_path);
+    const std::string new_driver_path = driver_list[i]->GetPath(to_path);
+    if (old_driver_path.size() == 0 || new_driver_path.size() == 0) {
       continue;
     }
 
-    bool ret = aDriverList[i]->driver_->Move(sOldDriverPath, sNewDriverPath);
+    bool ret = driver_list[i]->driver_->Move(old_driver_path, new_driver_path);
     if (ret) {
-      Deleted = true;
+      deleted = true;
     }
   }
 
-  UnreferenceAllDrivers(aDriverList);
+  UnreferenceAllDrivers(driver_list);
 
-  return Deleted;
+  return deleted;
 }
 
 bool RageFileManager::Copy(
-    const std::string& fromPath, const std::string& toPath) {
-  RageFile fromFile, toFile;
+    const std::string& from_path, const std::string& to_path) {
+  RageFile from_file, to_file;
 
-  if (!fromFile.Open(fromPath, RageFile::READ)) {
+  if (!from_file.Open(from_path, RageFile::READ)) {
     return false;
   }
 
-  if (!toFile.Open(toPath, RageFile::WRITE)) {
+  if (!to_file.Open(to_path, RageFile::WRITE)) {
     return false;
   }
 
   char buf[4096];
   for (;;) {
-    int readBytes = fromFile.Read(buf, sizeof(buf));
-    if (readBytes <= 0) {
+    int read_bytes = from_file.Read(buf, sizeof(buf));
+    if (read_bytes <= 0) {
       break;
     }
 
-    int writtenBytes = toFile.Write(buf, readBytes);
-    if (writtenBytes != readBytes) {
+    int written_bytes = to_file.Write(buf, read_bytes);
+    if (written_bytes != read_bytes) {
       break;
     }
   }
 
-  if (!fromFile.GetError().empty() || !toFile.GetError().empty()) {
+  if (!from_file.GetError().empty() || !to_file.GetError().empty()) {
     return false;
   }
 
   return true;
 }
 
-bool RageFileManager::Remove(const std::string& sPath_) {
-  std::string sPath = sPath_;
+bool RageFileManager::Remove(const std::string& raw_path) {
+  std::string path = raw_path;
 
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  NormalizePath(sPath);
+  NormalizePath(path);
 
   /* Multiple drivers may have the same file. */
-  bool bDeleted = false;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    const std::string p = apDriverList[i]->GetPath(sPath);
+  bool deleted = false;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    const std::string p = driver_list[i]->GetPath(path);
     if (p.size() == 0) {
       continue;
     }
 
-    bool ret = apDriverList[i]->driver_->Remove(p);
+    bool ret = driver_list[i]->driver_->Remove(p);
     if (ret) {
-      bDeleted = true;
+      deleted = true;
     }
   }
 
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
-  return bDeleted;
+  return deleted;
 }
 
-bool RageFileManager::DeleteRecursive(const std::string& sPath) {
+bool RageFileManager::DeleteRecursive(const std::string& path) {
   // On some OS's, non-empty directories cannot be deleted.
   // This is a work-around that can delete both files and non-empty directories
-  return ::DeleteRecursive(sPath);
+  return ::DeleteRecursive(path);
 }
 
-void RageFileManager::CreateDir(const std::string& sDir) {
-  if (DoesFileExist(sDir)) {
+void RageFileManager::CreateDir(const std::string& dir) {
+  if (DoesFileExist(dir)) {
     return;
   }
-  std::string sTempFile = sDir + "newdir.temp.newdir";
+  std::string temp_file = dir + "newdir.temp.newdir";
   RageFile f;
-  f.Open(sTempFile, RageFile::WRITE);
+  f.Open(temp_file, RageFile::WRITE);
   f.Close();
 
-  Remove(sTempFile);
+  Remove(temp_file);
 }
 
-static void AdjustMountpoint(std::string& sMountPoint) {
-  FixSlashesInPlace(sMountPoint);
+static void AdjustMountpoint(std::string& mount_point) {
+  FixSlashesInPlace(mount_point);
 
   ASSERT_M(
-      Left(sMountPoint, 1) == "/",
-      "Mountpoints must be absolute: " + sMountPoint);
+      Left(mount_point, 1) == "/",
+      "Mountpoints must be absolute: " + mount_point);
 
-  if (sMountPoint.size() && Right(sMountPoint, 1) != "/") {
-    sMountPoint += '/';
+  if (mount_point.size() && Right(mount_point, 1) != "/") {
+    mount_point += '/';
   }
 
-  if (Left(sMountPoint, 1) != "/") {
-    sMountPoint = "/" + sMountPoint;
+  if (Left(mount_point, 1) != "/") {
+    mount_point = "/" + mount_point;
   }
 }
 
-static void AddFilesystemDriver(LoadedDriver* pLoadedDriver) {
+static void AddFilesystemDriver(LoadedDriver* loaded_driver) {
   g_Mutex->Lock();
-  g_pDrivers.insert(g_pDrivers.begin(), pLoadedDriver);
+  g_pDrivers.insert(g_pDrivers.begin(), loaded_driver);
   g_Mountpoints->LoadFromDrivers(g_pDrivers);
   g_Mutex->Unlock();
 }
 
 bool RageFileManager::Mount(
-    const std::string& sType, const std::string& sRoot_,
-    const std::string& sMountPoint_) {
-  std::string sRoot = sRoot_;
-  std::string sMountPoint = sMountPoint_;
+    const std::string& type, const std::string& raw_root,
+    const std::string& raw_mount_point) {
+  std::string root = raw_root;
+  std::string mount_point = raw_mount_point;
 
-  FixSlashesInPlace(sRoot);
-  AdjustMountpoint(sMountPoint);
+  FixSlashesInPlace(root);
+  AdjustMountpoint(mount_point);
 
-  ASSERT(!sRoot.empty());
+  ASSERT(!root.empty());
 
-  const std::string& sPaths = ssprintf(
-      "\"%s\", \"%s\", \"%s\"", sType.c_str(), sRoot.c_str(),
-      sMountPoint.c_str());
-  CHECKPOINT_M(sPaths);
+  const std::string& paths = ssprintf(
+      "\"%s\", \"%s\", \"%s\"", type.c_str(), root.c_str(),
+      mount_point.c_str());
+  CHECKPOINT_M(paths);
 #if defined(DEBUG)
-  puts(sPaths.c_str());
+  puts(paths.c_str());
 #endif
 
   // Unmount anything that was previously mounted here.
-  Unmount(sType, sRoot, sMountPoint);
+  Unmount(type, root, mount_point);
 
   CHECKPOINT_M(ssprintf(
-      "About to make a driver with \"%s\", \"%s\"", sType.c_str(),
-      sRoot.c_str()));
-  RageFileDriver* pDriver = MakeFileDriver(sType, sRoot);
-  if (pDriver == nullptr) {
+      "About to make a driver with \"%s\", \"%s\"", type.c_str(),
+      root.c_str()));
+  RageFileDriver* driver = MakeFileDriver(type, root);
+  if (driver == nullptr) {
     CHECKPOINT_M(ssprintf(
-        "Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(),
-        sRoot.c_str()));
+        "Can't mount unknown VFS type \"%s\", root \"%s\"", type.c_str(),
+        root.c_str()));
 
     if (LOG) {
       LOG->Warn(
-          "Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(),
-          sRoot.c_str());
+          "Can't mount unknown VFS type \"%s\", root \"%s\"", type.c_str(),
+          root.c_str());
     } else {
       fprintf(
           stderr, "Can't mount unknown VFS type \"%s\", root \"%s\"\n",
-          sType.c_str(), sRoot.c_str());
+          type.c_str(), root.c_str());
     }
     return false;
   }
 
-  CHECKPOINT_M(ssprintf("Driver %s successfully made.", sType.c_str()));
+  CHECKPOINT_M(ssprintf("Driver %s successfully made.", type.c_str()));
 
-  LoadedDriver* pLoadedDriver = new LoadedDriver;
-  pLoadedDriver->driver_ = pDriver;
-  pLoadedDriver->type_ = sType;
-  pLoadedDriver->root_ = sRoot;
-  pLoadedDriver->mount_point_ = sMountPoint;
+  LoadedDriver* loaded_driver = new LoadedDriver;
+  loaded_driver->driver_ = driver;
+  loaded_driver->type_ = type;
+  loaded_driver->root_ = root;
+  loaded_driver->mount_point_ = mount_point;
 
-  AddFilesystemDriver(pLoadedDriver);
+  AddFilesystemDriver(loaded_driver);
   return true;
 }
 
 void RageFileManager::Unmount(
-    const std::string& sType, const std::string& sRoot_,
-    const std::string& sMountPoint_) {
-  std::string sRoot = sRoot_;
-  std::string sMountPoint = sMountPoint_;
+    const std::string& type, const std::string& raw_root,
+    const std::string& raw_mount_point) {
+  std::string root = raw_root;
+  std::string mount_point = raw_mount_point;
 
-  FixSlashesInPlace(sRoot);
-  FixSlashesInPlace(sMountPoint);
+  FixSlashesInPlace(root);
+  FixSlashesInPlace(mount_point);
 
-  if (sMountPoint.size() && Right(sMountPoint, 1) != "/") {
-    sMountPoint += '/';
+  if (mount_point.size() && Right(mount_point, 1) != "/") {
+    mount_point += '/';
   }
 
   /* Find all drivers we want to delete.  Remove them from g_pDrivers, and move
    * them into aDriverListToUnmount. */
-  std::vector<LoadedDriver*> apDriverListToUnmount;
+  std::vector<LoadedDriver*> driver_list_to_unmount;
   g_Mutex->Lock();
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (!sType.empty() && CompareNoCase(g_pDrivers[i]->type_, sType)) {
+    if (!type.empty() && CompareNoCase(g_pDrivers[i]->type_, type)) {
       continue;
     }
-    if (!sRoot.empty() && CompareNoCase(g_pDrivers[i]->root_, sRoot)) {
+    if (!root.empty() && CompareNoCase(g_pDrivers[i]->root_, root)) {
       continue;
     }
-    if (!sMountPoint.empty() &&
-        CompareNoCase(g_pDrivers[i]->mount_point_, sMountPoint)) {
+    if (!mount_point.empty() &&
+        CompareNoCase(g_pDrivers[i]->mount_point_, mount_point)) {
       continue;
     }
 
     ++g_pDrivers[i]->refs_;
-    apDriverListToUnmount.push_back(g_pDrivers[i]);
+    driver_list_to_unmount.push_back(g_pDrivers[i]);
     g_pDrivers.erase(g_pDrivers.begin() + i);
     --i;
   }
@@ -799,23 +800,23 @@ void RageFileManager::Unmount(
   g_Mutex->Unlock();
 
   /* Now we have a list of drivers to remove. */
-  while (apDriverListToUnmount.size()) {
+  while (driver_list_to_unmount.size()) {
     /* If the driver has more than one reference, somebody other than us is
      * using it; wait for that operation to complete. Note that two Unmount()
      * calls that want to remove the same mountpoint will deadlock here. */
     g_Mutex->Lock();
-    while (apDriverListToUnmount[0]->refs_ > 1) {
+    while (driver_list_to_unmount[0]->refs_ > 1) {
       g_Mutex->Wait();
     }
     g_Mutex->Unlock();
 
-    delete apDriverListToUnmount[0]->driver_;
-    delete apDriverListToUnmount[0];
-    apDriverListToUnmount.erase(apDriverListToUnmount.begin());
+    delete driver_list_to_unmount[0]->driver_;
+    delete driver_list_to_unmount[0];
+    driver_list_to_unmount.erase(driver_list_to_unmount.begin());
   }
 }
 
-void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& asMounts) {
+void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& mounts) {
   LockMut(*g_Mutex);
 
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
@@ -823,16 +824,16 @@ void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& asMounts) {
     l.mount_point_ = g_pDrivers[i]->mount_point_;
     l.type_ = g_pDrivers[i]->type_;
     l.root_ = g_pDrivers[i]->root_;
-    asMounts.push_back(l);
+    mounts.push_back(l);
   }
 }
 
-void RageFileManager::FlushDirCache(const std::string& sPath_) {
-  std::string sPath = sPath_;
+void RageFileManager::FlushDirCache(const std::string& raw_path) {
+  std::string path = raw_path;
 
   LockMut(*g_Mutex);
 
-  if (sPath == "") {
+  if (path == "") {
     for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
       g_pDrivers[i]->driver_->FlushDirCache("");
     }
@@ -840,88 +841,88 @@ void RageFileManager::FlushDirCache(const std::string& sPath_) {
   }
 
   /* Flush a specific path. */
-  NormalizePath(sPath);
+  NormalizePath(path);
   for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    const std::string& path = g_pDrivers[i]->GetPath(sPath);
-    if (path.size() == 0) {
+    const std::string& driver_path = g_pDrivers[i]->GetPath(path);
+    if (driver_path.size() == 0) {
       continue;
     }
-    g_pDrivers[i]->driver_->FlushDirCache(path);
+    g_pDrivers[i]->driver_->FlushDirCache(driver_path);
   }
 }
 
 RageFileManager::FileType RageFileManager::GetFileType(
-    const std::string& sPath_) {
-  std::string sPath = sPath_;
+    const std::string& raw_path) {
+  std::string path = raw_path;
 
-  NormalizePath(sPath);
+  NormalizePath(path);
 
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
   RageFileManager::FileType ret = TYPE_NONE;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    const std::string p = apDriverList[i]->GetPath(sPath);
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    const std::string p = driver_list[i]->GetPath(path);
     if (p.size() == 0) {
       continue;
     }
-    ret = apDriverList[i]->driver_->GetFileType(p);
+    ret = driver_list[i]->driver_->GetFileType(p);
     if (ret != TYPE_NONE) {
       break;
     }
   }
 
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
   return ret;
 }
 
-int RageFileManager::GetFileSizeInBytes(const std::string& sPath_) {
-  std::string sPath = sPath_;
+int RageFileManager::GetFileSizeInBytes(const std::string& raw_path) {
+  std::string path = raw_path;
 
-  NormalizePath(sPath);
+  NormalizePath(path);
 
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  int iRet = -1;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    const std::string p = apDriverList[i]->GetPath(sPath);
+  int ret = -1;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    const std::string p = driver_list[i]->GetPath(path);
     if (p.size() == 0) {
       continue;
     }
-    iRet = apDriverList[i]->driver_->GetFileSizeInBytes(p);
-    if (iRet != -1) {
+    ret = driver_list[i]->driver_->GetFileSizeInBytes(p);
+    if (ret != -1) {
       break;
     }
   }
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
-  return iRet;
+  return ret;
 }
 
-int RageFileManager::GetFileHash(const std::string& sPath_) {
-  std::string sPath = sPath_;
+int RageFileManager::GetFileHash(const std::string& raw_path) {
+  std::string path = raw_path;
 
-  NormalizePath(sPath);
+  NormalizePath(path);
 
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  int iRet = -1;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    const std::string p = apDriverList[i]->GetPath(sPath);
+  int ret = -1;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    const std::string p = driver_list[i]->GetPath(path);
     if (p.size() == 0) {
       continue;
     }
-    iRet = apDriverList[i]->driver_->GetFileHash(p);
-    if (iRet != -1) {
+    ret = driver_list[i]->driver_->GetFileHash(p);
+    if (ret != -1) {
       break;
     }
   }
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
-  return iRet;
+  return ret;
 }
 
 static bool SortBySecond(
@@ -937,11 +938,11 @@ static bool SortBySecond(
  * somewhere and not notice), and easier (don't have to pass flags down to
  * IniFile::Write, etc).
  */
-static bool PathUsesSlowFlush(const std::string& sPath) {
-  static const char* FlushPaths[] = {"/Save/", "Save/"};
+static bool PathUsesSlowFlush(const std::string& path) {
+  static const char* flush_paths[] = {"/Save/", "Save/"};
 
-  for (unsigned i = 0; i < ARRAYLEN(FlushPaths); ++i) {
-    if (!strncmp(sPath.c_str(), FlushPaths[i], strlen(FlushPaths[i]))) {
+  for (unsigned i = 0; i < ARRAYLEN(flush_paths); ++i) {
+    if (!strncmp(path.c_str(), flush_paths[i], strlen(flush_paths[i]))) {
       return true;
     }
   }
@@ -950,59 +951,59 @@ static bool PathUsesSlowFlush(const std::string& sPath) {
 
 /* Used only by RageFile: */
 RageFileBasic* RageFileManager::Open(
-    const std::string& sPath_, int mode, int& err) {
-  std::string sPath = sPath_;
+    const std::string& raw_path, int mode, int& err) {
+  std::string path = raw_path;
 
   err = ENOENT;
 
-  if ((mode & RageFile::WRITE) && PathUsesSlowFlush(sPath)) {
+  if ((mode & RageFile::WRITE) && PathUsesSlowFlush(path)) {
     mode |= RageFile::SLOW_FLUSH;
   }
 
-  NormalizePath(sPath);
+  NormalizePath(path);
 
   /* If writing, we need to do a heuristic to figure out which driver to write
    * with--there may be several that will work. */
   if (mode & RageFile::WRITE) {
-    return OpenForWriting(sPath, mode, err);
+    return OpenForWriting(path, mode, err);
   } else {
-    return OpenForReading(sPath, mode, err);
+    return OpenForReading(path, mode, err);
   }
 }
 
 void RageFileManager::CacheFile(
-    const RageFileBasic* fb, const std::string& sPath_) {
+    const RageFileBasic* fb, const std::string& raw_path) {
   g_Mutex->Lock();
   std::map<const RageFileBasic*, LoadedDriver*>::iterator it =
       g_mFileDriverMap.find(fb);
 
   ASSERT_M(
       it != g_mFileDriverMap.end(),
-      ssprintf("No recorded driver for file: %s", sPath_.c_str()));
+      ssprintf("No recorded driver for file: %s", raw_path.c_str()));
 
-  std::string sPath = sPath_;
-  NormalizePath(sPath);
-  sPath = it->second->GetPath(sPath);
-  it->second->driver_->fdb_->CacheFile(sPath);
+  std::string path = raw_path;
+  NormalizePath(path);
+  path = it->second->GetPath(path);
+  it->second->driver_->fdb_->CacheFile(path);
   g_mFileDriverMap.erase(it);
   g_Mutex->Unlock();
 }
 
 RageFileBasic* RageFileManager::OpenForReading(
-    const std::string& sPath, int mode, int& err) {
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+    const std::string& path, int mode, int& err) {
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    LoadedDriver& ld = *apDriverList[i];
-    const std::string path = ld.GetPath(sPath);
-    if (path.size() == 0) {
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    LoadedDriver& ld = *driver_list[i];
+    const std::string driver_path = ld.GetPath(path);
+    if (driver_path.size() == 0) {
       continue;
     }
     int error;
-    RageFileBasic* ret = ld.driver_->Open(path, mode, error);
+    RageFileBasic* ret = ld.driver_->Open(driver_path, mode, error);
     if (ret) {
-      UnreferenceAllDrivers(apDriverList);
+      UnreferenceAllDrivers(driver_list);
       return ret;
     }
 
@@ -1012,13 +1013,13 @@ RageFileBasic* RageFileManager::OpenForReading(
       err = error;
     }
   }
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
   return nullptr;
 }
 
 RageFileBasic* RageFileManager::OpenForWriting(
-    const std::string& sPath, int mode, int& iError) {
+    const std::string& s_path, int mode, int& error) {
   /*
    * The value for a driver to open a file is the number of directories and/or
    * files that would have to be created in order to write it, or 0 if the file
@@ -1038,13 +1039,13 @@ RageFileBasic* RageFileManager::OpenForWriting(
    * If the given path can not be created, return -1.  This happens if a path
    * that needs to be a directory is a file, or vice versa.
    */
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
+  std::vector<LoadedDriver*> driver_list;
+  ReferenceAllDrivers(driver_list);
 
-  std::vector<std::pair<int, int>> Values;
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    LoadedDriver& ld = *apDriverList[i];
-    const std::string path = ld.GetPath(sPath);
+  std::vector<std::pair<int, int>> values;
+  for (unsigned i = 0; i < driver_list.size(); ++i) {
+    LoadedDriver& ld = *driver_list[i];
+    const std::string path = ld.GetPath(s_path);
     if (path.size() == 0) {
       continue;
     }
@@ -1054,108 +1055,108 @@ RageFileBasic* RageFileManager::OpenForWriting(
       continue;
     }
 
-    Values.push_back(std::make_pair(i, value));
+    values.push_back(std::make_pair(i, value));
   }
 
-  stable_sort(Values.begin(), Values.end(), SortBySecond);
+  stable_sort(values.begin(), values.end(), SortBySecond);
 
   /* Only write files if they'll be read.  If a file exists in any driver, don't
    * create or write files in any driver mounted after it, because when we later
    * try to read it, we'll get that file and not the one we wrote. */
-  int iMaximumDriver = apDriverList.size();
-  if (Values.size() > 0 && Values[0].second == 0) {
-    iMaximumDriver = Values[0].first;
+  int maximum_driver = driver_list.size();
+  if (values.size() > 0 && values[0].second == 0) {
+    maximum_driver = values[0].first;
   }
 
-  iError = 0;
-  for (unsigned i = 0; i < Values.size(); ++i) {
-    const int iDriver = Values[i].first;
-    if (iDriver > iMaximumDriver) {
+  error = 0;
+  for (unsigned i = 0; i < values.size(); ++i) {
+    const int driver = values[i].first;
+    if (driver > maximum_driver) {
       continue;
     }
-    LoadedDriver& ld = *apDriverList[iDriver];
-    const std::string sDriverPath = ld.GetPath(sPath);
-    ASSERT(!sDriverPath.empty());
+    LoadedDriver& ld = *driver_list[driver];
+    const std::string driver_path = ld.GetPath(s_path);
+    ASSERT(!driver_path.empty());
 
-    int iThisError;
-    RageFileBasic* pRet = ld.driver_->Open(sDriverPath, mode, iThisError);
-    if (pRet) {
+    int this_error;
+    RageFileBasic* ret = ld.driver_->Open(driver_path, mode, this_error);
+    if (ret) {
       g_Mutex->Lock();
-      g_mFileDriverMap[pRet] = &ld;
+      g_mFileDriverMap[ret] = &ld;
       g_Mutex->Unlock();
-      UnreferenceAllDrivers(apDriverList);
-      return pRet;
+      UnreferenceAllDrivers(driver_list);
+      return ret;
     }
 
     /* The drivers are in order of priority; if they all return error, return
      * the first.  Never return ERROR_WRITING_NOT_SUPPORTED. */
-    if (!iError && iThisError != RageFileDriver::ERROR_WRITING_NOT_SUPPORTED) {
-      iError = iThisError;
+    if (!error && this_error != RageFileDriver::ERROR_WRITING_NOT_SUPPORTED) {
+      error = this_error;
     }
   }
 
-  if (!iError) {
-    iError = EEXIST; /* no driver could write */
+  if (!error) {
+    error = EEXIST; /* no driver could write */
   }
 
-  UnreferenceAllDrivers(apDriverList);
+  UnreferenceAllDrivers(driver_list);
 
   return nullptr;
 }
 
-bool RageFileManager::IsAFile(const std::string& sPath) {
-  return GetFileType(sPath) == TYPE_FILE;
+bool RageFileManager::IsAFile(const std::string& path) {
+  return GetFileType(path) == TYPE_FILE;
 }
-bool RageFileManager::IsADirectory(const std::string& sPath) {
-  return GetFileType(sPath) == TYPE_DIR;
+bool RageFileManager::IsADirectory(const std::string& path) {
+  return GetFileType(path) == TYPE_DIR;
 }
-bool RageFileManager::DoesFileExist(const std::string& sPath) {
-  return GetFileType(sPath) != TYPE_NONE;
-}
-
-bool DoesFileExist(const std::string& sPath) {
-  return FILEMAN->DoesFileExist(sPath);
+bool RageFileManager::DoesFileExist(const std::string& path) {
+  return GetFileType(path) != TYPE_NONE;
 }
 
-bool IsAFile(const std::string& sPath) { return FILEMAN->IsAFile(sPath); }
+bool DoesFileExist(const std::string& path) {
+  return FILEMAN->DoesFileExist(path);
+}
 
-bool IsADirectory(const std::string& sPath) {
-  return FILEMAN->IsADirectory(sPath);
+bool IsAFile(const std::string& path) { return FILEMAN->IsAFile(path); }
+
+bool IsADirectory(const std::string& path) {
+  return FILEMAN->IsADirectory(path);
 }
 
 void GetDirListing(
-    const std::string& sPath, std::vector<std::string>& AddTo, bool bOnlyDirs,
-    bool bReturnPathToo) {
-  FILEMAN->GetDirListing(sPath, AddTo, bOnlyDirs, bReturnPathToo);
+    const std::string& path, std::vector<std::string>& add_to, bool only_dirs,
+    bool return_path_too) {
+  FILEMAN->GetDirListing(path, add_to, only_dirs, return_path_too);
 }
 
 void GetDirListingRecursive(
-    const std::string& sDir, const std::string& sMatch,
-    std::vector<std::string>& AddTo) {
-  ASSERT(Right(sDir, 1) == "/");
-  std::vector<std::string> vsFiles;
-  GetDirListing(sDir + sMatch, vsFiles, false, true);
-  std::vector<std::string> vsDirs;
-  GetDirListing(sDir + "*", vsDirs, true, true);
-  for (int i = 0; i < (int)vsDirs.size(); i++) {
-    GetDirListing(vsDirs[i] + "/" + sMatch, vsFiles, false, true);
-    GetDirListing(vsDirs[i] + "/*", vsDirs, true, true);
-    vsDirs.erase(vsDirs.begin() + i);
+    const std::string& dir, const std::string& match,
+    std::vector<std::string>& add_to) {
+  ASSERT(Right(dir, 1) == "/");
+  std::vector<std::string> files;
+  GetDirListing(dir + match, files, false, true);
+  std::vector<std::string> dirs;
+  GetDirListing(dir + "*", dirs, true, true);
+  for (int i = 0; i < (int)dirs.size(); i++) {
+    GetDirListing(dirs[i] + "/" + match, files, false, true);
+    GetDirListing(dirs[i] + "/*", dirs, true, true);
+    dirs.erase(dirs.begin() + i);
     i--;
   }
-  for (int i = vsFiles.size() - 1; i >= 0; i--) {
-    if (!IsADirectory(vsFiles[i])) {
-      AddTo.push_back(vsFiles[i]);
+  for (int i = files.size() - 1; i >= 0; i--) {
+    if (!IsADirectory(files[i])) {
+      add_to.push_back(files[i]);
     }
   }
 }
 
-bool DeleteRecursive(const std::string& sDir) {
-  ASSERT(Right(sDir, 1) == "/");
+bool DeleteRecursive(const std::string& dir) {
+  ASSERT(Right(dir, 1) == "/");
 
-  std::vector<std::string> vsFiles;
-  GetDirListing(sDir + "*", vsFiles, false, true);
-  for (const std::string& s : vsFiles) {
+  std::vector<std::string> files;
+  GetDirListing(dir + "*", files, false, true);
+  for (const std::string& s : files) {
     if (IsADirectory(s)) {
       DeleteRecursive(s + "/");
     } else {
@@ -1163,23 +1164,23 @@ bool DeleteRecursive(const std::string& sDir) {
     }
   }
 
-  return FILEMAN->Remove(sDir);
+  return FILEMAN->Remove(dir);
 }
 
-unsigned int GetHashForFile(const std::string& sPath) {
-  return FILEMAN->GetFileHash(sPath);
+unsigned int GetHashForFile(const std::string& path) {
+  return FILEMAN->GetFileHash(path);
 }
 
-unsigned int GetHashForDirectory(const std::string& sDir) {
+unsigned int GetHashForDirectory(const std::string& dir) {
   unsigned int hash = 0;
 
-  hash += GetHashForString(sDir);
+  hash += GetHashForString(dir);
 
-  std::vector<std::string> arrayFiles;
-  GetDirListing(sDir + "*", arrayFiles, false);
-  for (unsigned i = 0; i < arrayFiles.size(); i++) {
-    const std::string sFilePath = sDir + arrayFiles[i];
-    hash += GetHashForFile(sFilePath);
+  std::vector<std::string> array_files;
+  GetDirListing(dir + "*", array_files, false);
+  for (unsigned i = 0; i < array_files.size(); i++) {
+    const std::string file_path = dir + array_files[i];
+    hash += GetHashForFile(file_path);
   }
 
   return hash;
@@ -1192,16 +1193,16 @@ unsigned int GetHashForDirectory(const std::string& sDir) {
 class LunaRageFileManager : public Luna<RageFileManager> {
  public:
   static int Copy(T* p, lua_State* L) {
-    const std::string fromPath = SArg(1);
-    const std::string toPath = SArg(2);
+    const std::string from_path = SArg(1);
+    const std::string to_path = SArg(2);
 
-    if (p->IsPathProtected(toPath)) {
-      LOG->Warn("Overwriting %s is not allowed", toPath.c_str());
+    if (p->IsPathProtected(to_path)) {
+      LOG->Warn("Overwriting %s is not allowed", to_path.c_str());
       lua_pushboolean(L, false);
       return 1;
     }
 
-    lua_pushboolean(L, p->Copy(fromPath, toPath));
+    lua_pushboolean(L, p->Copy(from_path, to_path));
     return 1;
   }
   static int DoesFileExist(T* p, lua_State* L) {
@@ -1217,33 +1218,33 @@ class LunaRageFileManager : public Luna<RageFileManager> {
     return 1;
   }
   static int GetDirListing(T* p, lua_State* L) {
-    std::vector<std::string> vDirs;
-    bool bOnlyDirs = false;
-    bool bReturnPathToo = false;
+    std::vector<std::string> dirs;
+    bool only_dirs = false;
+    bool return_path_too = false;
 
     // the last two arguments of GetDirListing are optional;
     // let's reflect that in the Lua too. -aj
     if (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) {
-      bOnlyDirs = BArg(2);
+      only_dirs = BArg(2);
       if (!lua_isnil(L, 3)) {
-        bReturnPathToo = BArg(3);
+        return_path_too = BArg(3);
       }
     }
     //( Path, addTo, OnlyDirs=false, ReturnPathToo=false );
-    p->GetDirListing(SArg(1), vDirs, bOnlyDirs, bReturnPathToo);
-    LuaHelpers::CreateTableFromArray(vDirs, L);
+    p->GetDirListing(SArg(1), dirs, only_dirs, return_path_too);
+    LuaHelpers::CreateTableFromArray(dirs, L);
     return 1;
   }
   static int Unzip(T* p, lua_State* L) {
-    std::string zipPath = SArg(1);
-    std::string targetPath = SArg(2);
+    std::string zip_path = SArg(1);
+    std::string target_path = SArg(2);
 
     int strip = 0;
     if (lua_gettop(L) >= 3) {
       strip = IArg(3);
     }
 
-    bool success = p->Unzip(zipPath, targetPath, strip);
+    bool success = p->Unzip(zip_path, target_path, strip);
 
     lua_pushboolean(L, success);
     return 1;

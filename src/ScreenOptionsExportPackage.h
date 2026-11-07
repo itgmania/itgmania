@@ -23,8 +23,8 @@ class ScreenOptionsExportPackage : public ScreenOptions {
   virtual void BeginScreen();
 
  protected:
-  virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
-  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
   virtual void ProcessMenuStart(const InputEventPlus& input);
 
@@ -37,8 +37,8 @@ class ScreenOptionsExportPackageSubPage : public ScreenOptions {
   virtual void BeginScreen();
 
  protected:
-  virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
-  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
   virtual void ProcessMenuStart(const InputEventPlus& input);
 

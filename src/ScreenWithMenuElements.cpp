@@ -94,14 +94,14 @@ void ScreenWithMenuElements::Init() {
     decorations.LoadB(name_, "decorations");
     decorations->SetName("Decorations");
     decorations->SetDrawOrder(DRAW_ORDER_DECORATIONS);
-    ActorFrame* pFrame =
+    ActorFrame* frame =
         dynamic_cast<ActorFrame*>(static_cast<Actor*>(decorations));
-    if (pFrame) {
-      decorations_ = pFrame->GetChildren();
+    if (frame) {
+      decorations_ = frame->GetChildren();
       for (Actor* child : decorations_) {
         this->AddChild(child);
       }
-      pFrame->RemoveAllChildren();
+      frame->RemoveAllChildren();
     }
   }
 
@@ -156,8 +156,8 @@ void ScreenWithMenuElements::BeginScreen() {
   }
 }
 
-void ScreenWithMenuElements::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_MenuTimer) {
+void ScreenWithMenuElements::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_MenuTimer) {
     FOREACH_HumanPlayer(p) {
       InputEventPlus iep;
       iep.pn_ = p;
@@ -165,7 +165,7 @@ void ScreenWithMenuElements::HandleScreenMessage(const ScreenMessage SM) {
     }
   }
 
-  Screen::HandleScreenMessage(SM);
+  Screen::HandleScreenMessage(sm);
 }
 
 ScreenWithMenuElements::~ScreenWithMenuElements() {
@@ -235,8 +235,8 @@ void ScreenWithMenuElements::StartPlayingMusic() {
   }
 }
 
-void ScreenWithMenuElements::Update(float fDeltaTime) {
-  Screen::Update(fDeltaTime);
+void ScreenWithMenuElements::Update(float delta_time) {
+  Screen::Update(delta_time);
 }
 
 void ScreenWithMenuElements::ResetTimer() {
@@ -253,17 +253,17 @@ void ScreenWithMenuElements::ResetTimer() {
 }
 
 void ScreenWithMenuElements::StartTransitioningScreen(
-    ScreenMessage smSendWhenDone) {
+    ScreenMessage send_when_done) {
   TweenOffScreen();
 
-  out_.StartTransitioning(smSendWhenDone);
+  out_.StartTransitioning(send_when_done);
   if (WAIT_FOR_CHILDREN_BEFORE_TWEENING_OUT) {
     // Time the transition so that it finishes exactly when all actors have
     // finished tweening.
-    float fSecondsUntilFinished = GetTweenTimeLeft();
-    float fSecondsUntilBeginOff =
-        std::max(fSecondsUntilFinished - out_.GetTweenTimeLeft(), 0.0f);
-    out_.SetHibernate(fSecondsUntilBeginOff);
+    float seconds_until_finished = GetTweenTimeLeft();
+    float seconds_until_begin_off =
+        std::max(seconds_until_finished - out_.GetTweenTimeLeft(), 0.0f);
+    out_.SetHibernate(seconds_until_begin_off);
   }
 }
 
@@ -284,11 +284,11 @@ void ScreenWithMenuElements::TweenOffScreen() {
   }
 }
 
-void ScreenWithMenuElements::Cancel(ScreenMessage smSendWhenDone) {
+void ScreenWithMenuElements::Cancel(ScreenMessage send_when_done) {
   next_screen_ = GetPrevScreen();
 
   if (CANCEL_TRANSITIONS_OUT) {
-    StartTransitioningScreen(smSendWhenDone);
+    StartTransitioningScreen(send_when_done);
     COMMAND(out_, "Cancel");
     return;
   }
@@ -306,7 +306,7 @@ void ScreenWithMenuElements::Cancel(ScreenMessage smSendWhenDone) {
   if (menu_timer_) {
     menu_timer_->Stop();
   }
-  cancel_.StartTransitioning(smSendWhenDone);
+  cancel_.StartTransitioning(send_when_done);
   COMMAND(cancel_, "Cancel");
 }
 
@@ -366,9 +366,9 @@ class LunaScreenWithMenuElements : public Luna<ScreenWithMenuElements> {
   }
 
   static int StartTransitioningScreen(T* p, lua_State* L) {
-    std::string sMessage = SArg(1);
-    ScreenMessage SM = ScreenMessageHelpers::ToScreenMessage(sMessage);
-    p->StartTransitioningScreen(SM);
+    std::string message = SArg(1);
+    ScreenMessage sm = ScreenMessageHelpers::ToScreenMessage(message);
+    p->StartTransitioningScreen(sm);
     COMMON_RETURN_SELF;
   }
 

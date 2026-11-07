@@ -9,16 +9,16 @@ CocoaEventDispatcher::CocoaEventDispatcher()
 unsigned CocoaEventDispatcher::AddResponder(const std::function<void(EVENT_TYPE)>& resp) {
   LockMut(mutex_);
 
-  const unsigned respID = next_responder_id_++;
-  responders_.push_back(CocoaEventDispatcher::Responder{respID, resp});
+  const unsigned resp_id = next_responder_id_++;
+  responders_.push_back(CocoaEventDispatcher::Responder{resp_id, resp});
 
-  return respID;
+  return resp_id;
 }
 
-void CocoaEventDispatcher::RemoveResponder(unsigned respID) {
+void CocoaEventDispatcher::RemoveResponder(unsigned resp_id) {
   LockMut(mutex_);
   responders_.erase(find_if(responders_.begin(), responders_.end(), [=](const auto& resp) {
-    return resp.id_ == respID;
+    return resp.id_ == resp_id;
   }));
 }
 

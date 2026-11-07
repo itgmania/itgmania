@@ -8,7 +8,7 @@
 
 class RageMovieTextureDriver_Null : public RageMovieTextureDriver {
  public:
-  virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError);
+  virtual RageMovieTexture* Create(RageTextureID id, std::string& error);
 };
 
 #endif

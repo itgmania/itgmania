@@ -13,51 +13,51 @@
 #include "StdString.h"
 
 void NotesLoader::GetMainAndSubTitlesFromFullTitle(
-    const std::string& sFullTitle, std::string& sMainTitleOut,
-    std::string& sSubTitleOut) {
-  static const std::string_view sLeftSeps[] = {"\t", " -", " ~", " (", " ["};
-  size_t fullTitleSize = sFullTitle.size();
+    const std::string& full_title, std::string& main_title_out,
+    std::string& sub_title_out) {
+  static const std::string_view kLeftSeps[] = {"\t", " -", " ~", " (", " ["};
+  size_t full_title_size = full_title.size();
 
-  for (const auto& sep : sLeftSeps) {
-    size_t iBeginIndex = sFullTitle.find(sep);
-    if (iBeginIndex != std::string::npos) {
-      sMainTitleOut = Left(sFullTitle, static_cast<int>(iBeginIndex));
-      sSubTitleOut = sFullTitle.substr(
-          iBeginIndex + sep.size(), fullTitleSize - iBeginIndex - sep.size());
+  for (const auto& sep : kLeftSeps) {
+    size_t begin_index = full_title.find(sep);
+    if (begin_index != std::string::npos) {
+      main_title_out = Left(full_title, static_cast<int>(begin_index));
+      sub_title_out = full_title.substr(
+          begin_index + sep.size(), full_title_size - begin_index - sep.size());
       return;
     }
   }
-  sMainTitleOut = sFullTitle;
-  sSubTitleOut = "";
+  main_title_out = full_title;
+  sub_title_out = "";
 }
 
 bool NotesLoader::LoadFromDir(
-    const std::string& sPath, Song& out,
-    std::set<std::string>& BlacklistedImages, bool load_autosave) {
+    const std::string& path, Song& out,
+    std::set<std::string>& blacklisted_images, bool load_autosave) {
   std::vector<std::string> list;
 
-  BlacklistedImages.clear();
-  SSCLoader loaderSSC;
-  loaderSSC.GetApplicableFiles(sPath, list, load_autosave);
+  blacklisted_images.clear();
+  SSCLoader loader_ssc;
+  loader_ssc.GetApplicableFiles(path, list, load_autosave);
   if (!list.empty()) {
-    if (!loaderSSC.LoadFromDir(sPath, out, load_autosave)) {
+    if (!loader_ssc.LoadFromDir(path, out, load_autosave)) {
       return false;
     }
     return true;
   }
-  SMALoader loaderSMA;
-  loaderSMA.GetApplicableFiles(sPath, list);
+  SMALoader loader_sma;
+  loader_sma.GetApplicableFiles(path, list);
   if (!list.empty()) {
-    return loaderSMA.LoadFromDir(sPath, out);
+    return loader_sma.LoadFromDir(path, out);
   }
-  SMLoader loaderSM;
-  loaderSM.GetApplicableFiles(sPath, list);
+  SMLoader loader_sm;
+  loader_sm.GetApplicableFiles(path, list);
   if (!list.empty()) {
-    return loaderSM.LoadFromDir(sPath, out);
+    return loader_sm.LoadFromDir(path, out);
   }
-  DWILoader::GetApplicableFiles(sPath, list);
+  DWILoader::GetApplicableFiles(path, list);
   if (!list.empty()) {
-    return DWILoader::LoadFromDir(sPath, out, BlacklistedImages);
+    return DWILoader::LoadFromDir(path, out, blacklisted_images);
   }
   return false;
 }

@@ -199,24 +199,24 @@ struct TapNote {
         duration_(0),
         hold_result_() {}
   TapNote(
-      TapNoteType type_, TapNoteSubType subType_, TapNoteSource source_,
-      std::string sAttackModifiers_, float fAttackDurationSeconds_,
-      int iKeysoundIndex_)
-      : type_(type_),
-        sub_type_(subType_),
-        source_(source_),
+      TapNoteType type, TapNoteSubType sub_type, TapNoteSource source,
+      std::string attack_modifiers, float attack_duration_seconds,
+      int keysound_index)
+      : type_(type),
+        sub_type_(sub_type),
+        source_(source),
         result_(),
         pn_(PLAYER_INVALID),
-        attack_modifiers_(sAttackModifiers_),
-        attack_duration_seconds_(fAttackDurationSeconds_),
-        keysound_index_(iKeysoundIndex_),
+        attack_modifiers_(attack_modifiers),
+        attack_duration_seconds_(attack_duration_seconds),
+        keysound_index_(keysound_index),
         duration_(0),
         hold_result_() {
-    if (type_ > TapNoteType_Fake) {
+    if (type > TapNoteType_Fake) {
       LOG->Trace(
           "Invalid tap note type %s (most likely) due to random vanish issues. "
           "Assume it doesn't need judging.",
-          TapNoteTypeToString(type_).c_str());
+          TapNoteTypeToString(type).c_str());
       type_ = TapNoteType_Empty;
     }
   }
@@ -313,7 +313,7 @@ const std::string& NoteTypeToLocalizedString(NoteType nt);
 LuaDeclareType(NoteType);
 float NoteTypeToBeat(NoteType nt);
 NoteType GetNoteType(int row);
-NoteType BeatToNoteType(float fBeat);
+NoteType BeatToNoteType(float beat);
 
 /* This is more accurate: by computing the integer and fractional parts
  * separately, we can avoid storing very large numbers in a float and possibly
@@ -331,21 +331,21 @@ inline int   BeatToNoteRow( float fBeatNum )
  * @brief Convert the beat into a note row.
  * @param fBeatNum the beat to convert.
  * @return the note row. */
-inline int BeatToNoteRow(float fBeatNum) {
-  return std::lrint(fBeatNum * ROWS_PER_BEAT);
+inline int BeatToNoteRow(float beat_num) {
+  return std::lrint(beat_num * ROWS_PER_BEAT);
 }  // round
 /**
  * @brief Convert the beat into a note row without rounding.
  * @param fBeatNum the beat to convert.
  * @return the note row. */
-inline int BeatToNoteRowNotRounded(float fBeatNum) {
-  return (int)(fBeatNum * ROWS_PER_BEAT);
+inline int BeatToNoteRowNotRounded(float beat_num) {
+  return (int)(beat_num * ROWS_PER_BEAT);
 }
 /**
  * @brief Convert the note row to a beat.
  * @param iRow the row to convert.
  * @return the beat. */
-inline float NoteRowToBeat(int iRow) { return iRow / (float)ROWS_PER_BEAT; }
+inline float NoteRowToBeat(int row) { return row / (float)ROWS_PER_BEAT; }
 
 /**
  * @brief Scales the position.
@@ -356,14 +356,14 @@ inline float NoteRowToBeat(int iRow) { return iRow / (float)ROWS_PER_BEAT; }
  * @return T the scaled position
  */
 template <typename T>
-inline T ScalePosition(T start, T length, T newLength, T position) {
+inline T ScalePosition(T start, T length, T new_length, T position) {
   if (position < start) {
     return position;
   }
   if (position >= start + length) {
-    return position - length + newLength;
+    return position - length + new_length;
   }
-  return start + (position - start) * newLength / length;
+  return start + (position - start) * new_length / length;
 }
 
 #endif

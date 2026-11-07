@@ -13,7 +13,7 @@ class RageTexturePreloader {
   RageTexturePreloader(const RageTexturePreloader& cpy)
       : textures_(cpy.textures_) {}
   ~RageTexturePreloader();
-  void Load(const RageTextureID& ID);
+  void Load(const RageTextureID& id);
   void UnloadAll();
   void Swap(RageTexturePreloader& rhs) { swap(textures_, rhs.textures_); }
 

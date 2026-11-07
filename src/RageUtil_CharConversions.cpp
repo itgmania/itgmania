@@ -14,34 +14,34 @@
 #include "archutils/Win32/ErrorStrings.h"
 
 /* Convert from the given codepage to UTF-8.  Return true if successful. */
-static bool CodePageConvert(std::string& sText, int iCodePage) {
-  int iSize = MultiByteToWideChar(
-      iCodePage, MB_ERR_INVALID_CHARS, sText.data(), sText.size(), nullptr, 0);
-  if (iSize == 0) {
+static bool CodePageConvert(std::string& text, int code_page) {
+  int size = MultiByteToWideChar(
+      code_page, MB_ERR_INVALID_CHARS, text.data(), text.size(), nullptr, 0);
+  if (size == 0) {
     LOG->Trace("%s\n", werr_ssprintf(GetLastError(), "err: ").c_str());
     return false; /* error */
   }
 
-  std::wstring sOut;
-  sOut.append(iSize, ' ');
+  std::wstring out;
+  out.append(size, ' ');
   /* Nonportable: */
-  iSize = MultiByteToWideChar(
-      iCodePage, MB_ERR_INVALID_CHARS, sText.data(), sText.size(),
-      (wchar_t*)sOut.data(), iSize);
-  ASSERT(iSize != 0);
+  size = MultiByteToWideChar(
+      code_page, MB_ERR_INVALID_CHARS, text.data(), text.size(),
+      (wchar_t*)out.data(), size);
+  ASSERT(size != 0);
 
-  sText = WStringToRString(sOut);
+  text = WStringToRString(out);
   return true;
 }
 
-static bool AttemptEnglishConversion(std::string& sText) {
-  return CodePageConvert(sText, 1252);
+static bool AttemptEnglishConversion(std::string& text) {
+  return CodePageConvert(text, 1252);
 }
-static bool AttemptKoreanConversion(std::string& sText) {
-  return CodePageConvert(sText, 949);
+static bool AttemptKoreanConversion(std::string& text) {
+  return CodePageConvert(text, 949);
 }
-static bool AttemptJapaneseConversion(std::string& sText) {
-  return CodePageConvert(sText, 932);
+static bool AttemptJapaneseConversion(std::string& text) {
+  return CodePageConvert(text, 932);
 }
 
 #elif defined(MACOSX)
@@ -49,16 +49,16 @@ static bool AttemptJapaneseConversion(std::string& sText) {
 
 #include <cstddef>
 
-static bool ConvertFromCP(std::string& sText, int iCodePage) {
+static bool ConvertFromCP(std::string& text, int code_page) {
   CFStringEncoding encoding =
-      CFStringConvertWindowsCodepageToEncoding(iCodePage);
+      CFStringConvertWindowsCodepageToEncoding(code_page);
 
   if (encoding == kCFStringEncodingInvalidId) {
     return false;
   }
 
   CFStringRef old =
-      CFStringCreateWithCString(kCFAllocatorDefault, sText.c_str(), encoding);
+      CFStringCreateWithCString(kCFAllocatorDefault, text.c_str(), encoding);
 
   if (old == nullptr) {
     return false;
@@ -69,28 +69,28 @@ static bool ConvertFromCP(std::string& sText, int iCodePage) {
   char* buf = new char[size + 1];
   buf[0] = '\0';
   bool result = CFStringGetCString(old, buf, size, kCFStringEncodingUTF8);
-  sText = buf;
+  text = buf;
   delete[] buf;
   CFRelease(old);
   return result;
 }
 
-static bool AttemptEnglishConversion(std::string& sText) {
-  return ConvertFromCP(sText, 1252);
+static bool AttemptEnglishConversion(std::string& text) {
+  return ConvertFromCP(text, 1252);
 }
-static bool AttemptKoreanConversion(std::string& sText) {
-  return ConvertFromCP(sText, 949);
+static bool AttemptKoreanConversion(std::string& text) {
+  return ConvertFromCP(text, 949);
 }
-static bool AttemptJapaneseConversion(std::string& sText) {
-  return ConvertFromCP(sText, 932);
+static bool AttemptJapaneseConversion(std::string& text) {
+  return ConvertFromCP(text, 932);
 }
 
 #else
 
 /* No converters are available, so all fail--we only accept UTF-8. */
-static bool AttemptEnglishConversion(std::string& sText) { return false; }
-static bool AttemptKoreanConversion(std::string& sText) { return false; }
-static bool AttemptJapaneseConversion(std::string& sText) { return false; }
+static bool AttemptEnglishConversion(std::string& text) { return false; }
+static bool AttemptKoreanConversion(std::string& text) { return false; }
+static bool AttemptJapaneseConversion(std::string& text) { return false; }
 
 #endif
 

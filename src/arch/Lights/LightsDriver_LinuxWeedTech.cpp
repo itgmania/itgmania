@@ -127,7 +127,7 @@ LightsDriver_LinuxWeedTech::~LightsDriver_LinuxWeedTech() {
 void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
   // Re-used var's
   char str[6] = {0x00, 0x00, 0x00, '1', 0x0d, 0x00};
-  bool bOn = false;
+  bool on = false;
 
   {
     LightsMode lm = LIGHTSMAN->GetLightsMode();
@@ -137,14 +137,14 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
       // section allows us to turn on multiple lights without bogging down the
       // system with delays. ((2ms between commands req.))
       FOREACH_CabinetLight(cl) {
-        bOn |= ls->cabinet_lights_[cl];
+        on |= ls->cabinet_lights_[cl];
         CurLights.cabinet_lights_[cl] = ls->cabinet_lights_[cl];
       }
 
       str[0] = 'A';
       str[1] = 'W';
 
-      if (bOn) {
+      if (on) {
         str[2] = 'C';
         str[3] = 'F';
       } else {
@@ -160,8 +160,8 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
 
     FOREACH_CabinetLight(cl) {
       // Only send the command if the light has changed states (on/off)
-      bOn = ls->cabinet_lights_[cl];
-      if (bOn != CurLights.cabinet_lights_[cl]) {
+      on = ls->cabinet_lights_[cl];
+      if (on != CurLights.cabinet_lights_[cl]) {
         if (cl == LIGHT_MARQUEE_UP_LEFT) {
           str[0] = 'A';
           str[2] = 'A';
@@ -182,7 +182,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
           str[2] = 'H';
         }
 
-        if (bOn) {
+        if (on) {
           str[1] = 'L';
         } else {
           str[1] = 'H';
@@ -192,7 +192,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
           SerialOut(str, 6);
           str[0] = 0x00;
         }
-        CurLights.cabinet_lights_[cl] = bOn;
+        CurLights.cabinet_lights_[cl] = on;
       }
     }
   }
@@ -200,8 +200,8 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
   FOREACH_ENUM(GameController, gc) {
     FOREACH_ENUM(GameButton, gb) {
       // Only send the command if the light has changed states (on/off)
-      bool bOn = ls->game_button_lights_[gc][gb];
-      if (bOn != CurLights.game_button_lights_[gc][gb]) {
+      on = ls->game_button_lights_[gc][gb];
+      if (on != CurLights.game_button_lights_[gc][gb]) {
         if (gc == GameController_1) {
           if (gb == DANCE_BUTTON_LEFT) {
             str[0] = 'A';
@@ -246,13 +246,13 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
           }
         }
 
-        str[1] = bOn ? 'L' : 'H';
+        str[1] = on ? 'L' : 'H';
 
         if (str[0] != 0x00) {
           // SerialOut(str, 6);
           str[0] = 0x00;
         }
-        CurLights.game_button_lights_[gc][gb] = bOn;
+        CurLights.game_button_lights_[gc][gb] = on;
       }
     }
   }

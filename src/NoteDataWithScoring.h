@@ -18,13 +18,13 @@ namespace NoteDataWithScoring {
  * @plnum If valid, only consider notes for that PlayerNumber
  * @return true if it has been completley judged, or false otherwise. */
 bool IsRowCompletelyJudged(
-    const NoteData& in, unsigned iRow,
+    const NoteData& in, unsigned row,
     PlayerNumber plnum = PlayerNumber_Invalid);
 TapNoteScore MinTapNoteScore(
-    const NoteData& in, unsigned iRow,
+    const NoteData& in, unsigned row,
     PlayerNumber plnum = PlayerNumber_Invalid);
 const TapNote& LastTapNoteWithResult(
-    const NoteData& in, unsigned iRow,
+    const NoteData& in, unsigned row,
     PlayerNumber plnum = PlayerNumber_Invalid);
 
 void GetActualRadarValues(

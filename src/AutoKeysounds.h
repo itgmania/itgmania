@@ -10,7 +10,7 @@ class RageSoundReader_Chain;
 /** @brief Handle playback of auto keysound notes. */
 class AutoKeysounds {
  public:
-  void Load(PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly);
+  void Load(PlayerNumber pn, const NoteData& auto_keysounds_only);
   /** @brief Finish loading the main sounds, and setup the auto keysounds if
    * any. */
   void FinishLoading();
@@ -18,8 +18,8 @@ class AutoKeysounds {
   RageSoundReader* GetSharedSound() { return shared_sound_; }
 
  protected:
-  void LoadAutoplaySoundsInto(RageSoundReader_Chain* pChain);
-  static void LoadTracks(RageSoundReader*& pShared);
+  void LoadAutoplaySoundsInto(RageSoundReader_Chain* chain);
+  static void LoadTracks(RageSoundReader*& shared);
 
   NoteData auto_keysounds_only_[NUM_PLAYERS];
   RageSound sound_;

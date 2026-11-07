@@ -72,22 +72,22 @@ Grade GradeToOldGrade(Grade g) {
   return g;
 }
 
-Grade StringToGrade(const std::string& sGrade) {
-  std::string s = sGrade;
+Grade StringToGrade(const std::string& grade) {
+  std::string s = grade;
   MakeUpper(s);
 
   // new style
-  int iTier;
-  if (sscanf(sGrade.c_str(), "Tier%02d", &iTier) == 1 && iTier >= 0 &&
-      iTier < NUM_Grade) {
-    return (Grade)(iTier - 1);
+  int tier;
+  if (sscanf(grade.c_str(), "Tier%02d", &tier) == 1 && tier >= 0 &&
+      tier < NUM_Grade) {
+    return (Grade)(tier - 1);
   } else if (s == "FAILED") {
     return Grade_Failed;
   } else if (s == "NODATA") {
     return Grade_NoData;
   }
 
-  LOG->Warn("Invalid grade: %s", sGrade.c_str());
+  LOG->Warn("Invalid grade: %s", grade.c_str());
   return Grade_NoData;
 };
 

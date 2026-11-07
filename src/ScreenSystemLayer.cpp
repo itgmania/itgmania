@@ -44,32 +44,32 @@ std::string GetCreditsMessage(PlayerNumber pn) {
     return std::string();
   }
 
-  bool bShowCreditsMessage;
+  bool show_credits_message;
   if (SCREENMAN && SCREENMAN->GetTopScreen() &&
       SCREENMAN->GetTopScreen()->GetScreenType() == system_menu) {
-    bShowCreditsMessage = true;
+    show_credits_message = true;
   } else if (MEMCARDMAN->GetCardLocked(pn)) {
-    bShowCreditsMessage = !GAMESTATE->IsPlayerEnabled(pn);
+    show_credits_message = !GAMESTATE->IsPlayerEnabled(pn);
   } else {
-    bShowCreditsMessage = !GAMESTATE->side_is_joined_[pn];
+    show_credits_message = !GAMESTATE->side_is_joined_[pn];
   }
 
-  if (!bShowCreditsMessage) {
+  if (!show_credits_message) {
     MemoryCardState mcs = MEMCARDMAN->GetCardState(pn);
-    const Profile* pProfile = PROFILEMAN->GetProfile(pn);
+    const Profile* profile = PROFILEMAN->GetProfile(pn);
     switch (mcs) {
       DEFAULT_FAIL(mcs);
       case MemoryCardState_NoCard:
         // this is a local machine profile
         if (PROFILEMAN->LastLoadWasFromLastGood(pn)) {
-          return pProfile->GetDisplayNameOrHighScoreName() +
+          return profile->GetDisplayNameOrHighScoreName() +
                  CREDITS_LOADED_FROM_LAST_GOOD_APPEND.GetValue();
         } else if (PROFILEMAN->LastLoadWasTamperedOrCorrupt(pn)) {
           return CREDITS_LOAD_FAILED.GetValue();
         }
         // Prefer the name of the profile over the name of the card.
         else if (PROFILEMAN->IsPersistentProfile(pn)) {
-          return pProfile->GetDisplayNameOrHighScoreName();
+          return profile->GetDisplayNameOrHighScoreName();
         } else if (GAMESTATE->PlayersCanJoin()) {
           return CREDITS_INSERT_CARD.GetValue();
         } else {
@@ -95,7 +95,7 @@ std::string GetCreditsMessage(PlayerNumber pn) {
         // If there is a local profile loaded, prefer it over the name of the
         // memory card.
         if (PROFILEMAN->IsPersistentProfile(pn)) {
-          std::string s = pProfile->GetDisplayNameOrHighScoreName();
+          std::string s = profile->GetDisplayNameOrHighScoreName();
           if (s.empty()) {
             s = CREDITS_CARD_NO_NAME.GetValue();
           }
@@ -125,21 +125,21 @@ std::string GetCreditsMessage(PlayerNumber pn) {
       case CoinMode_Pay:
         // GCC is picky and needs this to be bracketed
         {
-          int iCredits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
-          int iCoins = GAMESTATE->coins_ % PREFSMAN->coins_per_credit_;
-          std::string sCredits = CREDITS_CREDITS;
+          int i_credits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
+          int coins = GAMESTATE->coins_ % PREFSMAN->coins_per_credit_;
+          std::string s_credits = CREDITS_CREDITS;
           // todo: allow themers to change these strings -aj
-          if (iCredits > 0 || PREFSMAN->coins_per_credit_ == 1) {
-            sCredits += ssprintf("  %d", iCredits);
+          if (i_credits > 0 || PREFSMAN->coins_per_credit_ == 1) {
+            s_credits += ssprintf("  %d", i_credits);
           }
           if (PREFSMAN->coins_per_credit_ > 1) {
-            sCredits +=
-                ssprintf("  %d/%d", iCoins, PREFSMAN->coins_per_credit_.Get());
+            s_credits +=
+                ssprintf("  %d/%d", coins, PREFSMAN->coins_per_credit_.Get());
           }
-          if (iCredits >= PREFSMAN->max_num_credits_) {
-            sCredits += "  " + CREDITS_MAX.GetValue();
+          if (i_credits >= PREFSMAN->max_num_credits_) {
+            s_credits += "  " + CREDITS_MAX.GetValue();
           }
-          return sCredits;
+          return s_credits;
         }
       default:  // CoinMode_Free
         if (GAMESTATE->PlayersCanJoin()) {
@@ -160,8 +160,8 @@ std::string GetCreditsMessage(PlayerNumber pn) {
 namespace {
 int GetCreditsMessage(lua_State* L) {
   PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-  std::string sText = GetCreditsMessage(pn);
-  LuaHelpers::Push(L, sText);
+  std::string text = GetCreditsMessage(pn);
+  LuaHelpers::Push(L, text);
   return 1;
 }
 

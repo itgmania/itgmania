@@ -23,7 +23,7 @@ class RageFileBasic {
   /* Seek to the given absolute offset.  Return to the position actually
    * seeked to; if the position given was beyond the end of the file, the
    * return value will be the size of the file. */
-  virtual int Seek(int iOffset) = 0;
+  virtual int Seek(int offset) = 0;
   virtual int Seek(int offset, int whence) = 0;
   virtual int Tell() const = 0;
 
@@ -31,13 +31,13 @@ class RageFileBasic {
    * 0 on end of stream, or -1 on error.  Note that reading less than iSize
    * does not necessarily mean that the end of the stream has been reached;
    * keep reading until 0 is returned. */
-  virtual int Read(void* pBuffer, size_t iBytes) = 0;
+  virtual int Read(void* buffer, size_t bytes) = 0;
   virtual int Read(std::string& buffer, int bytes = -1) = 0;
   virtual int Read(void* buffer, size_t bytes, int nmemb) = 0;
 
   /* Write iSize bytes of data from pBuf.  Return 0 on success, -1 on error. */
-  virtual int Write(const void* pBuffer, size_t iBytes) = 0;
-  virtual int Write(const std::string& sString) = 0;
+  virtual int Write(const void* buffer, size_t bytes) = 0;
+  virtual int Write(const std::string& string) = 0;
   virtual int Write(const void* buffer, size_t bytes, int nmemb) = 0;
 
   /* Due to buffering, writing may not happen by the end of a Write() call, so
@@ -56,7 +56,7 @@ class RageFileBasic {
   virtual int PutLine(const std::string& str) = 0;
 
   virtual void EnableCRC32(bool on = true) = 0;
-  virtual bool GetCRC32(uint32_t* iRet) = 0;
+  virtual bool GetCRC32(uint32_t* ret) = 0;
 
   virtual int GetFileSize() const = 0;
 
@@ -77,17 +77,17 @@ class RageFileObj : public RageFileBasic {
 
   bool AtEOF() const { return eof_; }
 
-  int Seek(int iOffset);
+  int Seek(int offset);
   int Seek(int offset, int whence);
   int Tell() const { return file_pos_; }
 
-  int Read(void* pBuffer, size_t iBytes);
+  int Read(void* buffer, size_t bytes);
   int Read(std::string& buffer, int bytes = -1);
   int Read(void* buffer, size_t bytes, int nmemb);
 
-  int Write(const void* pBuffer, size_t iBytes);
-  int Write(const std::string& sString) {
-    return Write(sString.data(), sString.size());
+  int Write(const void* buffer, size_t bytes);
+  int Write(const std::string& string) {
+    return Write(string.data(), string.size());
   }
   int Write(const void* buffer, size_t bytes, int nmemb);
 
@@ -97,7 +97,7 @@ class RageFileObj : public RageFileBasic {
   int PutLine(const std::string& str);
 
   void EnableCRC32(bool on = true);
-  bool GetCRC32(uint32_t* iRet);
+  bool GetCRC32(uint32_t* ret);
 
   virtual int GetFileSize() const = 0;
   virtual int GetFD() { return -1; }
@@ -108,14 +108,14 @@ class RageFileObj : public RageFileBasic {
   virtual int SeekInternal(int /* iOffset */) {
     FAIL_M("Seeking unimplemented");
   }
-  virtual int ReadInternal(void* pBuffer, size_t iBytes) = 0;
-  virtual int WriteInternal(const void* pBuffer, size_t iBytes) = 0;
+  virtual int ReadInternal(void* buffer, size_t bytes) = 0;
+  virtual int WriteInternal(const void* buffer, size_t bytes) = 0;
   virtual int FlushInternal() { return 0; }
 
   void EnableReadBuffering();
-  void EnableWriteBuffering(int iBytes = 1024 * 64);
+  void EnableWriteBuffering(int bytes = 1024 * 64);
 
-  void SetError(const std::string& sError) { error_ = sError; }
+  void SetError(const std::string& error) { error_ = error; }
   std::string error_;
 
  private:

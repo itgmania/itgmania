@@ -7,7 +7,7 @@
 #include "RageTexturePreloader.h"
 #include "Sprite.h"
 
-std::string GetAttackPieceName(const std::string& sAttack);
+std::string GetAttackPieceName(const std::string& attack);
 
 class PlayerState;
 /** @brief A graphical display for attacks. */
@@ -15,10 +15,10 @@ class AttackDisplay : public ActorFrame {
  public:
   AttackDisplay();
 
-  void Init(const PlayerState* pPlayerState);
+  void Init(const PlayerState* player_state);
   void SetAttack(const std::string& mod);
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
  protected:
   const PlayerState* player_state_;

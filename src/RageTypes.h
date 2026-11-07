@@ -374,11 +374,11 @@ struct RageColor {
   }
 
   std::string ToString() const;
-  static std::string NormalizeColorString(std::string sColor);
+  static std::string NormalizeColorString(std::string color);
 
   void PushTable(lua_State* L) const;
-  void FromStack(lua_State* L, int iPos);
-  void FromStackCompat(lua_State* L, int iPos);
+  void FromStack(lua_State* L, int pos);
+  void FromStackCompat(lua_State* L, int pos);
 
   float r_, g_, b_, a_;
 };
@@ -508,8 +508,8 @@ struct RageMatrix {
       float v30, float v31, float v32, float v33);
 
   // access grants
-  float& operator()(int iRow, int iCol) { return m_[iCol][iRow]; }
-  float operator()(int iRow, int iCol) const { return m_[iCol][iRow]; }
+  float& operator()(int row, int col) { return m_[col][row]; }
+  float operator()(int row, int col) const { return m_[col][row]; }
 
   // casting operators
   operator float*() { return m_[0].data(); }

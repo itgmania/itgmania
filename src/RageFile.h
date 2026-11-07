@@ -80,7 +80,7 @@ class RageFile : public RageFileBasic {
   int PutLine(const std::string& str);
 
   void EnableCRC32(bool on = true);
-  bool GetCRC32(uint32_t* iRet);
+  bool GetCRC32(uint32_t* ret);
 
   // Lua
   virtual void PushSelf(lua_State* L);
@@ -104,15 +104,15 @@ class RageFile : public RageFileBasic {
 namespace FileReading {
 /* On error, these set sError to the error message.  If sError is already
  * non-empty, nothing happens. */
-void ReadBytes(RageFileBasic& f, void* buf, int size, std::string& sError);
-void SkipBytes(RageFileBasic& f, int size, std::string& sError);
-void Seek(RageFileBasic& f, int iOffset, std::string& sError);
-std::string ReadString(RageFileBasic& f, int size, std::string& sError);
-uint8_t read_8(RageFileBasic& f, std::string& sError);
-int16_t read_16_le(RageFileBasic& f, std::string& sError);
-uint16_t read_u16_le(RageFileBasic& f, std::string& sError);
-int32_t read_32_le(RageFileBasic& f, std::string& sError);
-uint32_t read_u32_le(RageFileBasic& f, std::string& sError);
+void ReadBytes(RageFileBasic& f, void* buf, int size, std::string& error);
+void SkipBytes(RageFileBasic& f, int size, std::string& error);
+void Seek(RageFileBasic& f, int offset, std::string& error);
+std::string ReadString(RageFileBasic& f, int size, std::string& error);
+uint8_t read_8(RageFileBasic& f, std::string& error);
+int16_t read_16_le(RageFileBasic& f, std::string& error);
+uint16_t read_u16_le(RageFileBasic& f, std::string& error);
+int32_t read_32_le(RageFileBasic& f, std::string& error);
+uint32_t read_u32_le(RageFileBasic& f, std::string& error);
 };  // namespace FileReading
 
 #endif

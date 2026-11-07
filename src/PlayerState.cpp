@@ -49,13 +49,13 @@ void PlayerState::Reset() {
   super_meter_growth_scale_ = 1;
 }
 
-void PlayerState::Update(float fDelta) {
+void PlayerState::Update(float delta) {
   // TRICKY: GAMESTATE->Update is run before any of the Screen update's,
   // so we'll clear these flags here and let them get turned on later
   attack_began_this_update_ = false;
   attack_ended_this_update_ = false;
 
-  bool bRebuildPlayerOptions = false;
+  bool rebuild_player_options = false;
 
   // See if any delayed attacks are starting or ending.
   for (unsigned s = 0; s < active_attacks_.size(); s++) {
@@ -66,36 +66,36 @@ void PlayerState::Update(float fDelta) {
     // converted into the current music time.
     ASSERT(attack.start_second_ != ATTACK_STARTS_NOW);
 
-    bool bCurrentlyEnabled =
+    bool currently_enabled =
         attack.global_ || (attack.start_second_ < position_.music_seconds_ &&
                            position_.music_seconds_ <
                                attack.start_second_ + attack.secs_remaining_);
 
-    if (active_attacks_[s].on_ == bCurrentlyEnabled) {
+    if (active_attacks_[s].on_ == currently_enabled) {
       continue;  // OK
     }
 
-    if (active_attacks_[s].on_ && !bCurrentlyEnabled) {
+    if (active_attacks_[s].on_ && !currently_enabled) {
       attack_ended_this_update_ = true;
-    } else if (!active_attacks_[s].on_ && bCurrentlyEnabled) {
+    } else if (!active_attacks_[s].on_ && currently_enabled) {
       attack_began_this_update_ = true;
     }
 
-    bRebuildPlayerOptions = true;
+    rebuild_player_options = true;
 
-    active_attacks_[s].on_ = bCurrentlyEnabled;
+    active_attacks_[s].on_ = currently_enabled;
   }
 
-  if (bRebuildPlayerOptions) {
+  if (rebuild_player_options) {
     RebuildPlayerOptionsFromActiveAttacks();
   }
 
   // Update after enabling attacks, so we approach the new state.
-  player_options_.Update(fDelta);
+  player_options_.Update(delta);
 
   if (seconds_until_attacks_phased_out_ > 0) {
     seconds_until_attacks_phased_out_ =
-        std::max(0.0f, seconds_until_attacks_phased_out_ - fDelta);
+        std::max(0.0f, seconds_until_attacks_phased_out_ - delta);
   }
 }
 
@@ -168,9 +168,9 @@ void PlayerState::RebuildPlayerOptionsFromActiveAttacks() {
     GAMESTATE->song_options_.Assign(ModsLevel_Song, so);
   }
 
-  int iSumOfAttackLevels = GetSumOfActiveAttackLevels();
-  if (iSumOfAttackLevels > 0) {
-    last_positive_sum_of_attack_levels_ = iSumOfAttackLevels;
+  int sum_of_attack_levels = GetSumOfActiveAttackLevels();
+  if (sum_of_attack_levels > 0) {
+    last_positive_sum_of_attack_levels_ = sum_of_attack_levels;
     seconds_until_attacks_phased_out_ =
         10000;  // any positive number that won't run out before the attacks
   } else {
@@ -180,16 +180,16 @@ void PlayerState::RebuildPlayerOptionsFromActiveAttacks() {
 }
 
 int PlayerState::GetSumOfActiveAttackLevels() const {
-  int iSum = 0;
+  int sum = 0;
 
   for (unsigned s = 0; s < active_attacks_.size(); s++) {
     if (active_attacks_[s].secs_remaining_ > 0 &&
         active_attacks_[s].level_ != NUM_ATTACK_LEVELS) {
-      iSum += active_attacks_[s].level_;
+      sum += active_attacks_[s].level_;
     }
   }
 
-  return iSum;
+  return sum;
 }
 
 const SongPosition& PlayerState::GetDisplayedPosition() const {

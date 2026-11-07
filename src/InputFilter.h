@@ -100,8 +100,8 @@ struct PadSensorState {
         value;
   }
 
-  void SetBinary(PadPanel panel, PadSensor sensor, bool isPressed) {
-    Set(panel, sensor, isPressed ? max_ : min_);
+  void SetBinary(PadPanel panel, PadSensor sensor, bool is_pressed) {
+    Set(panel, sensor, is_pressed ? max_ : min_);
   }
 
   void SetMax(unsigned int value) { max_ = std::max(value, min_); }
@@ -119,10 +119,10 @@ class InputFilter {
   InputFilter();
   ~InputFilter();
   void Reset();
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
-  void SetRepeatRate(float fRepeatRate);
-  void SetRepeatDelay(float fDelay);
+  void SetRepeatRate(float repeat_rate);
+  void SetRepeatDelay(float delay);
   void ResetRepeatRate();
   void ResetKeyRepeat(const DeviceInput& di);
   void RepeatStopKey(const DeviceInput& di);
@@ -130,21 +130,21 @@ class InputFilter {
   // If aButtonState is nullptr, use the last reported state.
   bool IsBeingPressed(
       const DeviceInput& di,
-      const DeviceInputList* pButtonState = nullptr) const;
+      const DeviceInputList* button_state = nullptr) const;
   float GetSecsHeld(
       const DeviceInput& di,
-      const DeviceInputList* pButtonState = nullptr) const;
+      const DeviceInputList* button_state = nullptr) const;
   float GetLevel(
       const DeviceInput& di,
-      const DeviceInputList* pButtonState = nullptr) const;
+      const DeviceInputList* button_state = nullptr) const;
   std::string GetButtonComment(const DeviceInput& di) const;
 
-  void GetInputEvents(std::vector<InputEvent>& aEventOut);
+  void GetInputEvents(std::vector<InputEvent>& event_out);
   void GetPressedButtons(std::vector<DeviceInput>& array) const;
 
   // cursor
-  void UpdateCursorLocation(float _fX, float _fY);
-  void UpdateMouseWheel(float _fZ);
+  void UpdateCursorLocation(float x, float y);
+  void UpdateMouseWheel(float z);
   float GetCursorX() { return mouse_coords_.x_; }
   float GetCursorY() { return mouse_coords_.y_; }
   float GetMouseWheel() { return mouse_coords_.z_; }
@@ -157,7 +157,7 @@ class InputFilter {
   }
 
   bool setFullSensorStateBinary(
-      PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed);
+      PlayerNumber pn, PadPanel panel, PadSensor sensor, bool is_pressed);
 
   // Lua
   void PushSelf(lua_State* L);
@@ -165,7 +165,7 @@ class InputFilter {
  private:
   void CheckButtonChange(ButtonState& bs, DeviceInput di, const RageTimer& now);
   void ReportButtonChange(const DeviceInput& di, InputEventType t);
-  void MakeButtonStateList(std::vector<DeviceInput>& aInputOut) const;
+  void MakeButtonStateList(std::vector<DeviceInput>& input_out) const;
 
   std::vector<InputEvent> queue_;
   RageMutex* queuemutex_;

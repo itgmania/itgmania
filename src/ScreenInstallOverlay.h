@@ -11,7 +11,7 @@ class ScreenInstallOverlay : public Screen {
   virtual ~ScreenInstallOverlay();
   virtual void Init();
 
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
   bool Input(const InputEventPlus& input);
 
  private:

@@ -57,9 +57,9 @@ void AddAttacks(AttackArray& attacks, std::vector<std::string>& strings) {
 
 void ExpectAttacksEqual(
     const AttackArray& expected,
-    const std::vector<std::string>& expectedStrings, const AttackArray& actual,
-    const std::vector<std::string>& actualStrings) {
-  ASSERT_EQ(expectedStrings, actualStrings);
+    const std::vector<std::string>& expected_strings, const AttackArray& actual,
+    const std::vector<std::string>& actual_strings) {
+  ASSERT_EQ(expected_strings, actual_strings);
   ASSERT_EQ(expected.size(), actual.size());
   for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_EQ(expected[i].level_, actual[i].level_);
@@ -107,11 +107,11 @@ void AddTimingSegments(TimingData& timing) {
 
 Steps* MakeBasicSteps(
     Song& song, StepsType type, Difficulty difficulty,
-    const std::string& chartName) {
+    const std::string& chart_name) {
   Steps* steps = song.CreateSteps();
   steps->steps_type_ = type;
   steps->steps_type_str_ = "dance-single";
-  steps->SetChartName(chartName);
+  steps->SetChartName(chart_name);
   steps->SetDescription("Description");
   steps->SetChartStyle("Style");
   steps->SetDifficulty(difficulty);
@@ -145,10 +145,10 @@ Steps* MakeFullSteps(Song& song) {
 
   std::vector<std::vector<float>> nps = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f}};
   std::vector<std::vector<int>> notes = {{10, 20, 30}, {40, 50}};
-  std::vector<float> peakNps = {1.5f, 4.5f};
+  std::vector<float> peak_nps = {1.5f, 4.5f};
   steps->SetNpsPerMeasure(nps);
   steps->SetNotesPerMeasure(notes);
-  steps->SetPeakNps(peakNps);
+  steps->SetPeakNps(peak_nps);
 
   std::vector<StreamBreakdown> breakdowns(notes.size());
   breakdowns[0].texts_ = {"first-a", "first-b", "first-c"};
@@ -280,30 +280,30 @@ void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
   EXPECT_EQ(expected.GetAllNotesPerMeasures(), actual.GetAllNotesPerMeasures());
   EXPECT_EQ(expected.GetAllPeakNps(), actual.GetAllPeakNps());
 
-  const std::vector<StreamBreakdown>& expectedBreakdowns =
+  const std::vector<StreamBreakdown>& expected_breakdowns =
       expected.GetAllStreamBreakdowns();
-  const std::vector<StreamBreakdown>& actualBreakdowns =
+  const std::vector<StreamBreakdown>& actual_breakdowns =
       actual.GetAllStreamBreakdowns();
-  ASSERT_EQ(expectedBreakdowns.size(), actualBreakdowns.size());
-  for (size_t i = 0; i < expectedBreakdowns.size(); ++i) {
-    EXPECT_EQ(expectedBreakdowns[i].texts_, actualBreakdowns[i].texts_);
+  ASSERT_EQ(expected_breakdowns.size(), actual_breakdowns.size());
+  for (size_t i = 0; i < expected_breakdowns.size(); ++i) {
+    EXPECT_EQ(expected_breakdowns[i].texts_, actual_breakdowns[i].texts_);
     EXPECT_EQ(
-        expectedBreakdowns[i].total_stream_measures_,
-        actualBreakdowns[i].total_stream_measures_);
+        expected_breakdowns[i].total_stream_measures_,
+        actual_breakdowns[i].total_stream_measures_);
     EXPECT_EQ(
-        expectedBreakdowns[i].total_break_measures_,
-        actualBreakdowns[i].total_break_measures_);
+        expected_breakdowns[i].total_break_measures_,
+        actual_breakdowns[i].total_break_measures_);
   }
 
-  const std::vector<NoteAnnotationCache>& expectedAnnotations =
+  const std::vector<NoteAnnotationCache>& expected_annotations =
       expected.GetNoteAnnotationCaches();
-  const std::vector<NoteAnnotationCache>& actualAnnotations =
+  const std::vector<NoteAnnotationCache>& actual_annotations =
       actual.GetNoteAnnotationCaches();
-  ASSERT_EQ(expectedAnnotations.size(), actualAnnotations.size());
-  for (size_t i = 0; i < expectedAnnotations.size(); ++i) {
+  ASSERT_EQ(expected_annotations.size(), actual_annotations.size());
+  for (size_t i = 0; i < expected_annotations.size(); ++i) {
     EXPECT_EQ(
-        expectedAnnotations[i].GetCompressed(),
-        actualAnnotations[i].GetCompressed());
+        expected_annotations[i].GetCompressed(),
+        actual_annotations[i].GetCompressed());
   }
 
   EXPECT_EQ(expected.GetGrooveStatsHash(), actual.GetGrooveStatsHash());

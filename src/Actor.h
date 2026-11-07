@@ -116,13 +116,13 @@ class Actor : public MessageSubscriber {
   virtual ~Actor();
   virtual Actor* Copy() const;
   virtual void InitState();
-  virtual void LoadFromNode(const XNode* pNode);
+  virtual void LoadFromNode(const XNode* node);
 
   static void SetBGMTime(
-      float fTime, float fBeat, float fTimeNoOffset, float fBeatNoOffset);
+      float time, float beat, float time_no_offset, float beat_no_offset);
   static void SetPlayerBGMBeat(
-      PlayerNumber pn, float fBeat, float fBeatNoOffset);
-  static void SetBGMLight(int iLightNumber, float fCabinetLights);
+      PlayerNumber pn, float beat, float beat_no_offset);
+  static void SetBGMLight(int light_number, float cabinet_lights);
 
   /**
    * @brief The list of the different effects.
@@ -216,7 +216,7 @@ class Actor : public MessageSubscriber {
     void Init();
     static void MakeWeightedAverage(
         TweenState& average_out, const TweenState& ts1, const TweenState& ts2,
-        float fPercentBetween);
+        float percent_between);
     bool operator==(const TweenState& other) const;
     bool operator!=(const TweenState& other) const {
       return !operator==(other);
@@ -298,15 +298,15 @@ class Actor : public MessageSubscriber {
   // UpdateInternal instead.
   bool IsFirstUpdate() const;
   virtual void Update(
-      float fDeltaTime);  // this can short circuit UpdateInternal
-  virtual void UpdateInternal(float fDeltaTime);  // override this
-  void UpdateTweening(float fDeltaTime);
+      float delta_time);  // this can short circuit UpdateInternal
+  virtual void UpdateInternal(float delta_time);  // override this
+  void UpdateTweening(float delta_time);
   void CalcPercentThroughTween();
   // These next functions should all be overridden by a derived class that has
   // its own tweening states to handle.
   virtual void SetCurrentTweenStart() {}
   virtual void EraseHeadTween() {}
-  virtual void UpdatePercentThroughTween(float PercentThroughTween) {}
+  virtual void UpdatePercentThroughTween(float percent_through_tween) {}
   bool get_tween_uses_effect_delta() { return tween_uses_effect_delta_; }
   void set_tween_uses_effect_delta(bool t) { tween_uses_effect_delta_ = t; }
 
@@ -321,12 +321,12 @@ class Actor : public MessageSubscriber {
   /**
    * @brief Set the Actor's name to a new one.
    * @param sName the new name for the Actor. */
-  virtual void SetName(const std::string& sName) { name_ = sName; }
+  virtual void SetName(const std::string& name) { name_ = name; }
   virtual void SetAlias(const std::string alias) { alias_ = alias; }
   /**
    * @brief Give this Actor a new parent.
    * @param pParent the new parent Actor. */
-  void SetParent(Actor* pParent);
+  void SetParent(Actor* parent);
   /**
    * @brief Retrieve the Actor's parent.
    * @return the Actor's parent. */
@@ -402,7 +402,7 @@ class Actor : public MessageSubscriber {
   void SetBaseRotationX(float rot) { base_rotation_.x_ = rot; }
   void SetBaseRotationY(float rot) { base_rotation_.y_ = rot; }
   void SetBaseRotationZ(float rot) { base_rotation_.z_ = rot; }
-  virtual void SetBaseAlpha(float fAlpha) { base_alpha_ = fAlpha; }
+  virtual void SetBaseAlpha(float alpha) { base_alpha_ = alpha; }
   void SetInternalDiffuse(const RageColor& c) { internal_diffuse_ = c; }
   void SetInternalGlow(const RageColor& c) { internal_glow_ = c; }
 
@@ -445,9 +445,9 @@ class Actor : public MessageSubscriber {
    * @brief Set the zoom factor for the z dimension of the Actor.
    * @param zoom the zoom factor for the z dimension. */
   void SetZoomZ(float zoom) { DestTweenState().scale_.z_ = zoom; }
-  void ZoomTo(float fX, float fY) {
-    ZoomToWidth(fX);
-    ZoomToHeight(fY);
+  void ZoomTo(float x, float y) {
+    ZoomToWidth(x);
+    ZoomToHeight(y);
   }
   void ZoomToWidth(float zoom) { SetZoomX(zoom / GetUnzoomedWidth()); }
   void ZoomToHeight(float zoom) { SetZoomY(zoom / GetUnzoomedHeight()); }
@@ -467,8 +467,8 @@ class Actor : public MessageSubscriber {
   void AddRotationP(float rot);
   void AddRotationR(float rot);
 
-  void SetSkewX(float fAmount) { DestTweenState().skew_x_ = fAmount; }
-  void SetSkewY(float fAmount) { DestTweenState().skew_y_ = fAmount; }
+  void SetSkewX(float amount) { DestTweenState().skew_x_ = amount; }
+  void SetSkewY(float amount) { DestTweenState().skew_y_ = amount; }
   void SetCropLeft(float percent) { DestTweenState().crop_.left_ = percent; }
   void SetCropTop(float percent) { DestTweenState().crop_.top_ = percent; }
   void SetCropRight(float percent) { DestTweenState().crop_.right_ = percent; }
@@ -525,12 +525,12 @@ class Actor : public MessageSubscriber {
   void SetAux(float f) { DestTweenState().aux_ = f; }
   float GetAux() const { return current_.aux_; }
 
-  virtual void BeginTweening(float time, ITween* pInterp);
+  virtual void BeginTweening(float time, ITween* interp);
   virtual void BeginTweening(float time, TweenType tt = TWEEN_LINEAR);
   virtual void StopTweening();
   void Sleep(float time);
-  void QueueCommand(const std::string& sCommandName);
-  void QueueMessage(const std::string& sMessageName);
+  void QueueCommand(const std::string& command_name);
+  void QueueMessage(const std::string& message_name);
   virtual void FinishTweening();
   virtual void HurryTweening(float factor);
   // Let ActorFrame and BGAnimation override
@@ -590,13 +590,13 @@ class Actor : public MessageSubscriber {
   void SetEffectColor1(RageColor c) { effect_color1_ = c; }
   void SetEffectColor2(RageColor c) { effect_color2_ = c; }
   void RecalcEffectPeriod();
-  void SetEffectPeriod(float fTime);
+  void SetEffectPeriod(float time);
   float GetEffectPeriod() const { return effect_period_; }
   bool SetEffectTiming(
       float ramp_toh, float at_half, float ramp_tof, float at_zero,
       float at_full, std::string& err);
   bool SetEffectHoldAtFull(float haf, std::string& err);
-  void SetEffectOffset(float fTime) { effect_offset_ = fTime; }
+  void SetEffectOffset(float time) { effect_offset_ = time; }
   void SetEffectClock(EffectClock c) { effect_clock_ = c; }
   void SetEffectClockString(const std::string& s);  // convenience
 
@@ -605,22 +605,22 @@ class Actor : public MessageSubscriber {
 
   void ResetEffectTimeIfDifferent(Effect new_effect);
   void SetEffectDiffuseBlink(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
+      float effect_period_seconds, RageColor c1, RageColor c2);
   void SetEffectDiffuseShift(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
+      float effect_period_seconds, RageColor c1, RageColor c2);
   void SetEffectDiffuseRamp(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
+      float effect_period_seconds, RageColor c1, RageColor c2);
   void SetEffectGlowBlink(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
+      float effect_period_seconds, RageColor c1, RageColor c2);
   void SetEffectGlowShift(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
+      float effect_period_seconds, RageColor c1, RageColor c2);
   void SetEffectGlowRamp(
-      float fEffectPeriodSeconds, RageColor c1, RageColor c2);
-  void SetEffectRainbow(float fEffectPeriodSeconds);
-  void SetEffectWag(float fPeriod, RageVector3 vect);
-  void SetEffectBounce(float fPeriod, RageVector3 vect);
-  void SetEffectBob(float fPeriod, RageVector3 vect);
-  void SetEffectPulse(float fPeriod, float fMinZoom, float fMaxZoom);
+      float effect_period_seconds, RageColor c1, RageColor c2);
+  void SetEffectRainbow(float effect_period_seconds);
+  void SetEffectWag(float period, RageVector3 vect);
+  void SetEffectBounce(float period, RageVector3 vect);
+  void SetEffectBob(float period, RageVector3 vect);
+  void SetEffectPulse(float period, float min_zoom, float max_zoom);
   void SetEffectSpin(RageVector3 vect);
   void SetEffectVibrate(RageVector3 vect);
 
@@ -630,16 +630,16 @@ class Actor : public MessageSubscriber {
    * @return true if it's visible, false otherwise. */
   bool GetVisible() const { return visible_; }
   void SetVisible(bool b) { visible_ = b; }
-  void SetShadowLength(float fLength) {
-    shadow_length_x_ = fLength;
-    shadow_length_y_ = fLength;
+  void SetShadowLength(float length) {
+    shadow_length_x_ = length;
+    shadow_length_y_ = length;
   }
-  void SetShadowLengthX(float fLengthX) { shadow_length_x_ = fLengthX; }
-  void SetShadowLengthY(float fLengthY) { shadow_length_y_ = fLengthY; }
+  void SetShadowLengthX(float length_x) { shadow_length_x_ = length_x; }
+  void SetShadowLengthY(float length_y) { shadow_length_y_ = length_y; }
   void SetShadowColor(RageColor c) { shadow_color_ = c; }
   // TODO: Implement hibernate as a tween type?
-  void SetHibernate(float fSecs) { hibernate_seconds_left_ = fSecs; }
-  void SetDrawOrder(int iOrder) { draw_order_ = iOrder; }
+  void SetHibernate(float secs) { hibernate_seconds_left_ = secs; }
+  void SetDrawOrder(int order) { draw_order_ = order; }
   int GetDrawOrder() const { return draw_order_; }
 
   virtual void EnableAnimation(bool b) {
@@ -671,29 +671,29 @@ class Actor : public MessageSubscriber {
 
   // Named commands
   void AddCommand(
-      const std::string& sCmdName, apActorCommands apac, bool warn = true);
-  bool HasCommand(const std::string& sCmdName) const;
-  const apActorCommands* GetCommand(const std::string& sCommandName) const;
-  void PlayCommand(const std::string& sCommandName) {
-    HandleMessage(Message(sCommandName));
+      const std::string& cmd_name, apActorCommands apac, bool warn = true);
+  bool HasCommand(const std::string& cmd_name) const;
+  const apActorCommands* GetCommand(const std::string& command_name) const;
+  void PlayCommand(const std::string& command_name) {
+    HandleMessage(Message(command_name));
   }  // convenience
   void PlayCommandNoRecurse(const Message& msg);
 
   // Commands by reference
   virtual void RunCommands(
-      const LuaReference& cmds, const LuaReference* pParamTable = nullptr);
+      const LuaReference& cmds, const LuaReference* param_table = nullptr);
   void RunCommands(
-      const apActorCommands& cmds, const LuaReference* pParamTable = nullptr) {
-    this->RunCommands(*cmds, pParamTable);
+      const apActorCommands& cmds, const LuaReference* param_table = nullptr) {
+    this->RunCommands(*cmds, param_table);
   }  // convenience
   virtual void RunCommandsRecursively(
-      const LuaReference& cmds, const LuaReference* pParamTable = nullptr) {
-    RunCommands(cmds, pParamTable);
+      const LuaReference& cmds, const LuaReference* param_table = nullptr) {
+    RunCommands(cmds, param_table);
   }
   // If we're a leaf, then execute this command.
   virtual void RunCommandsOnLeaves(
-      const LuaReference& cmds, const LuaReference* pParamTable = nullptr) {
-    RunCommands(cmds, pParamTable);
+      const LuaReference& cmds, const LuaReference* param_table = nullptr) {
+    RunCommands(cmds, param_table);
   }
 
   // Messages

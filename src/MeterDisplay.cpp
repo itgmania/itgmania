@@ -18,79 +18,79 @@ REGISTER_ACTOR_CLASS(SongMeterDisplay);
 MeterDisplay::MeterDisplay() {}
 
 void MeterDisplay::Load(
-    std::string sStreamPath, float fStreamWidth, std::string sTipPath) {
-  spr_stream_.Load(sStreamPath);
+    std::string stream_path, float stream_width, std::string tip_path) {
+  spr_stream_.Load(stream_path);
   this->AddChild(spr_stream_);
 
-  spr_tip_.Load(sTipPath);
+  spr_tip_.Load(tip_path);
   this->AddChild(spr_tip_);
 
-  SetStreamWidth(fStreamWidth);
+  SetStreamWidth(stream_width);
   SetPercent(0.5f);
 }
 
-void MeterDisplay::LoadFromNode(const XNode* pNode) {
+void MeterDisplay::LoadFromNode(const XNode* node) {
   LOG->Trace(
-      "MeterDisplay::LoadFromNode(%s)", ActorUtil::GetWhere(pNode).c_str());
+      "MeterDisplay::LoadFromNode(%s)", ActorUtil::GetWhere(node).c_str());
 
-  const XNode* pStream = pNode->GetChild("Stream");
-  if (pStream == nullptr) {
+  const XNode* stream = node->GetChild("Stream");
+  if (stream == nullptr) {
     LuaHelpers::ReportScriptErrorFmt(
         "%s: MeterDisplay: missing the \"Stream\" attribute",
-        ActorUtil::GetWhere(pNode).c_str());
+        ActorUtil::GetWhere(node).c_str());
     return;
   }
-  spr_stream_.LoadActorFromNode(pStream, this);
+  spr_stream_.LoadActorFromNode(stream, this);
   spr_stream_->SetName("Stream");
   // LOAD_ALL_COMMANDS( m_sprStream );
   this->AddChild(spr_stream_);
 
-  const XNode* pChild = pNode->GetChild("Tip");
-  if (pChild != nullptr) {
-    spr_tip_.LoadActorFromNode(pChild, this);
+  const XNode* child = node->GetChild("Tip");
+  if (child != nullptr) {
+    spr_tip_.LoadActorFromNode(child, this);
     spr_tip_->SetName("Tip");
     // LOAD_ALL_COMMANDS( m_sprTip );
     this->AddChild(spr_tip_);
   }
 
-  float fStreamWidth = 0;
-  pNode->GetAttrValue("StreamWidth", fStreamWidth);
-  SetStreamWidth(fStreamWidth);
+  float stream_width = 0;
+  node->GetAttrValue("StreamWidth", stream_width);
+  SetStreamWidth(stream_width);
 
   SetPercent(0.5f);
 
-  ActorFrame::LoadFromNode(pNode);
+  ActorFrame::LoadFromNode(node);
 }
 
-void MeterDisplay::SetPercent(float fPercent) {
-  ASSERT(fPercent >= 0 && fPercent <= 1);
+void MeterDisplay::SetPercent(float percent) {
+  ASSERT(percent >= 0 && percent <= 1);
 
-  spr_stream_->SetCropRight(1 - fPercent);
+  spr_stream_->SetCropRight(1 - percent);
 
   if (spr_tip_.IsLoaded()) {
     spr_tip_->SetX(
-        SCALE(fPercent, 0.f, 1.f, -stream_width_ / 2, stream_width_ / 2));
+        SCALE(percent, 0.f, 1.f, -stream_width_ / 2, stream_width_ / 2));
   }
 }
 
-void MeterDisplay::SetStreamWidth(float fStreamWidth) {
-  stream_width_ = fStreamWidth;
+void MeterDisplay::SetStreamWidth(float stream_width) {
+  stream_width_ = stream_width;
   spr_stream_->SetZoomX(stream_width_ / spr_stream_->GetUnzoomedWidth());
 }
 
-void SongMeterDisplay::Update(float fDeltaTime) {
+void SongMeterDisplay::Update(float delta_time) {
   if (GAMESTATE->cur_song_) {
-    float fSongStartSeconds = GAMESTATE->cur_song_->GetFirstSecond();
-    float fSongEndSeconds = GAMESTATE->cur_song_->GetLastSecond();
-    float fPercentPositionSong = SCALE(
-        GAMESTATE->position_.music_seconds_, fSongStartSeconds, fSongEndSeconds,
-        0.0f, 1.0f);
-    rage_clamp(fPercentPositionSong, 0, 1);
+    float song_start_seconds = GAMESTATE->cur_song_->GetFirstSecond();
+    float song_end_seconds = GAMESTATE->cur_song_->GetLastSecond();
+    float percent_position_song = SCALE(
+        GAMESTATE->position_.music_seconds_, song_start_seconds,
+        song_end_seconds, 0.0f, 1.0f);
+    rage_clamp(percent_position_song, 0, 1);
 
-    SetPercent(fPercentPositionSong);
+    SetPercent(percent_position_song);
   }
 
-  MeterDisplay::Update(fDeltaTime);
+  MeterDisplay::Update(delta_time);
 }
 
 // lua start

@@ -25,9 +25,8 @@ class DSound {
 
  private:
   IDirectSound* ds_;
-  static BOOL CALLBACK EnumCallback(
-      LPGUID lpGuid, LPCSTR lpcstrDescription, LPCSTR lpcstrModule,
-      LPVOID lpContext);
+  static BOOL CALLBACK
+  EnumCallback(LPGUID guid, LPCSTR description, LPCSTR module, LPVOID context);
 
   void SetPrimaryBufferMode();
 };
@@ -42,16 +41,16 @@ class DSoundBuf {
 
   DSoundBuf();
   std::string Init(
-      DSound& ds, hw hardware, int iChannels, int iSampleRate, int iSampleBits,
-      int iWriteAhead);
+      DSound& ds, hw hardware, int channels, int sample_rate, int sample_bits,
+      int write_ahead);
 
-  bool get_output_buf(char** pBuffer, unsigned* iBuffersize, int iChunksize);
-  void release_output_buf(char* pBuffer, unsigned iBuffersize);
+  bool get_output_buf(char** buffer, unsigned* buffersize, int chunksize);
+  void release_output_buf(char* buffer, unsigned buffersize);
 
   void Play();
   void Stop();
-  void SetVolume(float fVolume);
-  void SetSampleRate(int iRate);
+  void SetVolume(float volume);
+  void SetSampleRate(int rate);
   int GetSampleRate() const { return sample_rate_; }
 
   ~DSoundBuf();
@@ -62,8 +61,8 @@ class DSoundBuf {
   int buffersize_frames() const { return buffer_size_ / bytes_per_frame(); }
   int bytes_per_frame() const { return channels_ * sample_bits_ / 8; }
 
-  void CheckWriteahead(int iCursorStart, int iCursorEnd);
-  void CheckUnderrun(int iCursorStart, int iCursorEnd);
+  void CheckWriteahead(int cursor_start, int cursor_end);
+  void CheckUnderrun(int cursor_start, int cursor_end);
 
   IDirectSoundBuffer* buffer_;
 

@@ -52,27 +52,27 @@ class DisplaySpec {
    */
   DisplaySpec(
       const std::string& id, const std::string& name,
-      const std::set<DisplayMode>& modes, const DisplayMode& curMode,
-      const RectI& curBounds, const bool isVirtual = false)
+      const std::set<DisplayMode>& modes, const DisplayMode& cur_mode,
+      const RectI& cur_bounds, const bool is_virtual = false)
       : id_(id),
         name_(name),
         modes_(modes),
         cur_mode_active_(true),
-        cur_mode_(curMode),
-        rect_bounds_(curBounds),
-        is_virtual_(isVirtual) {
-    if (modes_.find(curMode) == modes_.end()) {
+        cur_mode_(cur_mode),
+        rect_bounds_(cur_bounds),
+        is_virtual_(is_virtual) {
+    if (modes_.find(cur_mode) == modes_.end()) {
       // This is an error, make a failing assertion with a descriptive error
       // message
-      std::stringstream msgStream;
-      msgStream << "DisplaySpec current mode (" << curMode.width_ << "x"
-                << curMode.height_ << "@" << curMode.refresh_rate_
-                << ") not in given list of supported modes: ";
+      std::stringstream msg_stream;
+      msg_stream << "DisplaySpec current mode (" << cur_mode.width_ << "x"
+                 << cur_mode.height_ << "@" << cur_mode.refresh_rate_
+                 << ") not in given list of supported modes: ";
       for (auto& m : modes) {
-        msgStream << m.width_ << "x" << m.height_ << "@" << m.refresh_rate_
-                  << ", ";
+        msg_stream << m.width_ << "x" << m.height_ << "@" << m.refresh_rate_
+                   << ", ";
       }
-      auto msg = msgStream.str();
+      auto msg = msg_stream.str();
       // Drop the trailing ", "
       msg.resize(msg.size() - 2);
 
@@ -86,13 +86,13 @@ class DisplaySpec {
    */
   DisplaySpec(
       const std::string id, const std::string name,
-      const std::set<DisplayMode> modes, const bool isVirtual = false)
+      const std::set<DisplayMode> modes, const bool is_virtual = false)
       : id_(id),
         name_(name),
         modes_(modes),
         cur_mode_active_(false),
         cur_mode_({}),
-        is_virtual_(isVirtual) {}
+        is_virtual_(is_virtual) {}
 
   // Create a specification for a display supporting a single (and currently
   // active) mode

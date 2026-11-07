@@ -15,12 +15,12 @@ ScoreDisplayPercentage::ScoreDisplayPercentage() {
 }
 
 void ScoreDisplayPercentage::Init(
-    const PlayerState* pPlayerState,
-    const PlayerStageStats* pPlayerStageStats) {
-  ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
+    const PlayerState* player_state,
+    const PlayerStageStats* player_stage_stats) {
+  ScoreDisplay::Init(player_state, player_stage_stats);
 
   percent_.Load(
-      pPlayerState, pPlayerStageStats, "ScoreDisplayPercentage Percent", true);
+      player_state, player_stage_stats, "ScoreDisplayPercentage Percent", true);
 }
 
 /*

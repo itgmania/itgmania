@@ -29,17 +29,17 @@ enum WheelState {
   WheelState_Invalid,
 };
 const std::string& WheelStateToString(WheelState ws);
-WheelState StringToWheelState(const std::string& sDC);
+WheelState StringToWheelState(const std::string& dc);
 LuaDeclareType(WheelState);
 
 /** @brief A wheel with data elements. */
 class WheelBase : public ActorFrame {
  public:
   virtual ~WheelBase();
-  virtual void Load(std::string sType);
+  virtual void Load(std::string type);
   void BeginScreen();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   virtual void Move(int n);
   void ChangeMusicUnlessLocked(int n); /* +1 or -1 */

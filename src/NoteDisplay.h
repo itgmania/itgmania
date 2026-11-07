@@ -54,9 +54,9 @@ struct NoteColorActor {
   NoteColorActor();
   ~NoteColorActor();
   void Load(
-      const std::string& sButton, const std::string& sElement, PlayerNumber,
-      GameController, const std::string& sColor);
-  Actor* Get(const std::string& Color);
+      const std::string& button, const std::string& element, PlayerNumber,
+      GameController, const std::string& color);
+  Actor* Get(const std::string& color);
 
  private:
   std::map<std::string, NoteResource*> p_;
@@ -66,9 +66,9 @@ struct NoteColorSprite {
   NoteColorSprite();
   ~NoteColorSprite();
   void Load(
-      const std::string& sButton, const std::string& sElement, PlayerNumber,
-      GameController, const std::string& sColor);
-  Sprite* Get(const std::string& Color);
+      const std::string& button, const std::string& element, PlayerNumber,
+      GameController, const std::string& color);
+  Sprite* Get(const std::string& color);
 
  private:
   std::map<std::string, NoteResource*> p_;
@@ -177,14 +177,14 @@ class NoteDisplay {
   ~NoteDisplay();
 
   void Load(
-      int iColNum, const PlayerState* pPlayerState,
-      float fYReverseOffsetPixels);
+      int col_num, const PlayerState* player_state,
+      float y_reverse_offset_pixels);
 
-  static void Update(float fDeltaTime);
+  static void Update(float delta_time);
 
   bool IsOnScreen(
-      float fBeat, int iCol, int iDrawDistanceAfterTargetsPixels,
-      int iDrawDistanceBeforeTargetsPixels) const;
+      float beat, int col, int draw_distance_after_targets_pixels,
+      int draw_distance_before_targets_pixels) const;
 
   bool DrawHoldsInRange(
       const NoteFieldRenderArgs& field_args,
@@ -211,27 +211,28 @@ class NoteDisplay {
    * @param fFadeInPercentOfDrawFar when to start fading in. */
   void DrawTap(
       const TapNote& tn, const NoteFieldRenderArgs& field_args,
-      const NoteColumnRenderArgs& column_args, float fBeat,
-      bool bOnSameRowAsHoldStart, bool bOnSameRowAsRollBeat, bool bIsAddition,
-      float fPercentFadeToFail);
+      const NoteColumnRenderArgs& column_args, float beat,
+      bool on_same_row_as_hold_start, bool on_same_row_as_roll_beat,
+      bool is_addition, float percent_fade_to_fail);
   void DrawHold(
       const TapNote& tn, const NoteFieldRenderArgs& field_args,
-      const NoteColumnRenderArgs& column_args, int iRow, bool bIsBeingHeld,
-      const HoldNoteResult& Result, bool bIsAddition, float fPercentFadeToFail);
+      const NoteColumnRenderArgs& column_args, int row, bool is_being_held,
+      const HoldNoteResult& result, bool is_addition,
+      float percent_fade_to_fail);
 
   bool DrawHoldHeadForTapsOnSameRow() const;
   bool DrawRollHeadForTapsOnSameRow() const;
 
  private:
   void SetActiveFrame(
-      float fNoteBeat, Actor& actorToSet, float fAnimationLength, bool bVivid);
-  Actor* GetTapActor(NoteColorActor& nca, NotePart part, float fNoteBeat);
+      float note_beat, Actor& actor_to_set, float animation_length, bool vivid);
+  Actor* GetTapActor(NoteColorActor& nca, NotePart part, float note_beat);
   Actor* GetHoldActor(
       NoteColorActor nca[NUM_HoldType][NUM_ActiveType], NotePart part,
-      float fNoteBeat, bool bIsRoll, bool bIsBeingHeld);
+      float note_beat, bool is_roll, bool is_being_held);
   Sprite* GetHoldSprite(
       NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part,
-      float fNoteBeat, bool bIsRoll, bool bIsBeingHeld);
+      float note_beat, bool is_roll, bool is_being_held);
 
   struct draw_hold_part_args {
     int y_step_;
@@ -250,13 +251,13 @@ class NoteDisplay {
   };
 
   void DrawActor(
-      const TapNote& tn, Actor* pActor, NotePart part,
+      const TapNote& tn, Actor* actor, NotePart part,
       const NoteFieldRenderArgs& field_args,
-      const NoteColumnRenderArgs& column_args, float fYOffset, float fBeat,
-      bool bIsAddition, float fPercentFadeToFail, float fColorScale,
+      const NoteColumnRenderArgs& column_args, float y_offset, float beat,
+      bool is_addition, float percent_fade_to_fail, float color_scale,
       bool is_being_held);
   void DrawHoldPart(
-      std::vector<Sprite*>& vpSpr, const NoteFieldRenderArgs& field_args,
+      std::vector<Sprite*>& spr, const NoteFieldRenderArgs& field_args,
       const NoteColumnRenderArgs& column_args,
       const draw_hold_part_args& part_args, bool glow, int part_type);
   void DrawHoldBodyInternal(

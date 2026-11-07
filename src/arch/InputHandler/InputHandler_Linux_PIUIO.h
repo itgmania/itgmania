@@ -11,7 +11,7 @@ class InputHandler_Linux_PIUIO : public InputHandler {
  public:
   InputHandler_Linux_PIUIO();
   ~InputHandler_Linux_PIUIO();
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   static int InputThread_Start(void* p);

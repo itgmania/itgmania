@@ -22,10 +22,10 @@ struct RageSoundMixPosition {
 class RageSoundBase {
  public:
   virtual ~RageSoundBase() {}
-  virtual void SoundIsFinishedPlaying(int iSourceFrame) = 0;
+  virtual void SoundIsFinishedPlaying(int source_frame) = 0;
   virtual int GetDataToPlay(
-      float* buffer, int size, RageSoundMixPosition* pPositions,
-      int iMaxPositions, int& iPositionCount, int& gotFrames) = 0;
+      float* buffer, int size, RageSoundMixPosition* positions,
+      int max_positions, int& position_count, int& got_frames) = 0;
   virtual RageTimer GetStartTime() const { return RageZeroTimer; }
   virtual std::string GetLoadedFilePath() const = 0;
 };
@@ -106,16 +106,16 @@ class RageSound : public RageSoundBase {
    * is broken or missing.
    */
   bool Load(
-      std::string sFile, bool bPrecache,
-      const RageSoundLoadParams* pParams = nullptr);
+      std::string file, bool precache,
+      const RageSoundLoadParams* params = nullptr);
 
   /* Using this version means the "don't care" about caching. Currently,
    * this always will not cache the sound; this may become a preference. */
-  bool Load(std::string sFile);
+  bool Load(std::string file);
 
   /* Load a RageSoundReader that you've set up yourself. Sample rate conversion
    * will be set up only if needed. Doesn't fail. */
-  void LoadSoundReader(RageSoundReader* pSound);
+  void LoadSoundReader(RageSoundReader* sound);
 
   // Get the loaded RageSoundReader. While playing, only properties can be set.
   RageSoundReader* GetSoundReader() { return source_; }
@@ -130,15 +130,15 @@ class RageSound : public RageSoundBase {
   std::string GetError() const { return error_; }
 
   void Play(bool is_action, const RageSoundParams* params = nullptr);
-  void PlayCopy(bool is_action, const RageSoundParams* pParams = nullptr) const;
+  void PlayCopy(bool is_action, const RageSoundParams* params = nullptr) const;
   void Stop();
 
   /* Cleanly pause or unpause the sound. If the sound wasn't already playing,
    * return true and do nothing. */
-  bool Pause(bool bPause);
+  bool Pause(bool pause);
 
   float GetLengthSeconds();
-  float GetPositionSeconds(RageTimer* Timestamp = nullptr) const;
+  float GetPositionSeconds(RageTimer* timestamp = nullptr) const;
   std::string GetLoadedFilePath() const { return file_path_; }
   bool IsPlaying() const { return playing_; }
 
@@ -146,8 +146,8 @@ class RageSound : public RageSoundBase {
   RageTimer GetStartTime() const;
   void SetParams(const RageSoundParams& p);
   const RageSoundParams& GetParams() const { return param_; }
-  bool SetProperty(const std::string& sProperty, float fValue);
-  void SetStopModeFromString(const std::string& sStopMode);
+  bool SetProperty(const std::string& property, float value);
+  void SetStopModeFromString(const std::string& stop_mode);
 
   // Lua
   virtual void PushSelf(lua_State* L);
@@ -177,7 +177,7 @@ class RageSound : public RageSoundBase {
   bool SetPositionFrames(int frames = -1);
   RageSoundParams::StopMode_t GetStopMode() const;  // resolves M_AUTO
 
-  void SoundIsFinishedPlaying(int iSourceFrame);  // called by sound drivers
+  void SoundIsFinishedPlaying(int source_frame);  // called by sound drivers
 
  public:
   // These functions are called only by sound drivers.
@@ -188,8 +188,8 @@ class RageSound : public RageSoundBase {
    * the returned audio. Until then, SOUNDMAN position queries can still be
    * called; the sound is still playing. */
   int GetDataToPlay(
-      float* pBuffer, int iSize, RageSoundMixPosition* pPositions,
-      int iMaxPositions, int& iPositionCount, int& iFramesRead);
+      float* buffer, int size, RageSoundMixPosition* positions,
+      int max_positions, int& position_count, int& frames_read);
 };
 
 #endif

@@ -6,11 +6,11 @@
 /* Get the current thread's ThreadID. */
 uint64_t GetCurrentThreadId();
 
-int SuspendThread(uint64_t ThreadID);
-int ResumeThread(uint64_t ThreadID);
+int SuspendThread(uint64_t thread_id);
+int ResumeThread(uint64_t thread_id);
 
 struct BacktraceContext;
-int GetThreadContext(uint64_t ThreadID, BacktraceContext* ctx);
+int GetThreadContext(uint64_t thread_id, BacktraceContext* ctx);
 
 #endif
 

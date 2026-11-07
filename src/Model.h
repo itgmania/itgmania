@@ -22,36 +22,36 @@ class Model : public Actor {
   void Clear();
 
   void LoadPieces(
-      const std::string& sMeshesPath, const std::string& sMaterialsPath,
-      const std::string& sBomesPath);
-  void LoadMilkshapeAscii(const std::string& sFile);
-  void LoadMaterialsFromMilkshapeAscii(const std::string& sPath);
+      const std::string& meshes_path, const std::string& materials_path,
+      const std::string& bomes_path);
+  void LoadMilkshapeAscii(const std::string& file);
+  void LoadMaterialsFromMilkshapeAscii(const std::string& path);
   bool LoadMilkshapeAsciiBones(
-      const std::string& sAniName, const std::string& sPath);
+      const std::string& ani_name, const std::string& path);
 
-  void LoadFromNode(const XNode* pNode) override;
+  void LoadFromNode(const XNode* node) override;
 
-  void PlayAnimation(const std::string& sAniName, float fPlayRate = 1);
-  void SetRate(float fRate) { cur_animation_rate_ = fRate; }
+  void PlayAnimation(const std::string& ani_name, float play_rate = 1);
+  void SetRate(float rate) { cur_animation_rate_ = rate; }
   void SetLoop(bool b) { loop_ = b; }
-  void SetPosition(float fSeconds);
+  void SetPosition(float seconds);
 
-  virtual void Update(float fDelta) override;
+  virtual void Update(float delta) override;
   virtual bool EarlyAbortDraw() const override;
   virtual void DrawPrimitives() override;
 
   void DrawCelShaded();
 
   virtual int GetNumStates() const override;
-  virtual void SetState(int iNewState) override;
+  virtual void SetState(int new_state) override;
   virtual float GetAnimationLengthSeconds() const override {
     return animation_length_seconds_;
   }
   virtual void RecalcAnimationLengthSeconds();
-  virtual void SetSecondsIntoAnimation(float fSeconds) override;
+  virtual void SetSecondsIntoAnimation(float seconds) override;
 
   std::string GetDefaultAnimation() const { return default_animation_; };
-  void SetDefaultAnimation(std::string sAnimation, float fPlayRate = 1);
+  void SetDefaultAnimation(std::string animation, float play_rate = 1);
 
   bool MaterialsNeedNormals() const;
 
@@ -69,8 +69,7 @@ class Model : public Actor {
   const msAnimation* cur_animation_;
 
   static void SetBones(
-      const msAnimation* pAnimation, float fFrame,
-      std::vector<myBone_t>& vpBones);
+      const msAnimation* animation, float frame, std::vector<myBone_t>& bones);
   std::vector<myBone_t> bones_;
 
   // If any vertex has a bone weight, then then render from m_pTempGeometry.
@@ -84,7 +83,7 @@ class Model : public Actor {
   std::vector<msMesh> temp_meshes_;
 
   void DrawMesh(int i) const;
-  void AdvanceFrame(float fDeltaTime);
+  void AdvanceFrame(float delta_time);
 
   float cur_frame_;
   std::string default_animation_;

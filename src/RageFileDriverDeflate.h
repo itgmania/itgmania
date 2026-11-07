@@ -16,15 +16,15 @@ class RageFileObjInflate : public RageFileObj {
  public:
   /* By default, pFile will not be freed.  To implement GetFileSize(), the
    * container format must store the file size. */
-  RageFileObjInflate(RageFileBasic* pFile, int iUncompressedSize);
+  RageFileObjInflate(RageFileBasic* file, int uncompressed_size);
   RageFileObjInflate(const RageFileObjInflate& cpy);
   ~RageFileObjInflate();
-  int ReadInternal(void* pBuffer, size_t iBytes);
+  int ReadInternal(void* buffer, size_t bytes);
   int WriteInternal(const void* /* pBuffer */, size_t /* iBytes */) {
     SetError("Not implemented");
     return -1;
   }
-  int SeekInternal(int iOffset);
+  int SeekInternal(int offset);
   int GetFileSize() const { return uncompressed_size_; }
   int GetFD() { return file_->GetFD(); }
   RageFileObjInflate* Copy() const;
@@ -46,7 +46,7 @@ class RageFileObjInflate : public RageFileObj {
 class RageFileObjDeflate : public RageFileObj {
  public:
   /* By default, pFile will not be freed. */
-  RageFileObjDeflate(RageFileBasic* pOutput);
+  RageFileObjDeflate(RageFileBasic* output);
   ~RageFileObjDeflate();
 
   int GetFileSize() const { return file_->GetFileSize(); }
@@ -57,7 +57,7 @@ class RageFileObjDeflate : public RageFileObj {
     SetError("Not implemented");
     return -1;
   }
-  int WriteInternal(const void* pBuffer, size_t iBytes);
+  int WriteInternal(const void* buffer, size_t bytes);
   int FlushInternal();
 
   RageFileBasic* file_;
@@ -67,7 +67,7 @@ class RageFileObjDeflate : public RageFileObj {
 
 class RageFileObjGzip : public RageFileObjDeflate {
  public:
-  RageFileObjGzip(RageFileBasic* pFile);
+  RageFileObjGzip(RageFileBasic* file);
   int Start();
   int Finish();
 
@@ -76,11 +76,11 @@ class RageFileObjGzip : public RageFileObjDeflate {
 };
 
 RageFileObjInflate* GunzipFile(
-    RageFileBasic* pFile, std::string& sError, uint32_t* iCRC32);
+    RageFileBasic* file, std::string& error, uint32_t* crc32);
 
 bool GunzipString(
-    const std::string& sIn, std::string& sOut,
-    std::string& sError);  // returns false on CRC, etc. error
+    const std::string& in, std::string& out,
+    std::string& error);  // returns false on CRC, etc. error
 
 #endif
 

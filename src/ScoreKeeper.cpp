@@ -11,25 +11,25 @@
 #include "global.h"
 
 ScoreKeeper::ScoreKeeper(
-    PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
-  player_state_ = pPlayerState;
-  player_stage_stats_ = pPlayerStageStats;
+    PlayerState* player_state, PlayerStageStats* player_stage_stats) {
+  player_state_ = player_state;
+  player_stage_stats_ = player_stage_stats;
 }
 
 void ScoreKeeper::GetScoreOfLastTapInRow(
-    const NoteData& nd, int iRow, TapNoteScore& tnsOut, int& iNumTapsInRowOut) {
-  int iNum = 0;
+    const NoteData& nd, int row, TapNoteScore& out, int& num_taps_in_row_out) {
+  int num = 0;
 
   for (int track = 0; track < nd.GetNumTracks(); ++track) {
-    const TapNote& tn = nd.GetTapNote(track, iRow);
+    const TapNote& tn = nd.GetTapNote(track, row);
 
     if (tn.type_ != TapNoteType_Tap && tn.type_ != TapNoteType_HoldHead) {
       continue;
     }
-    ++iNum;
+    ++num;
   }
-  tnsOut = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result_.tns_;
-  iNumTapsInRowOut = iNum;
+  out = NoteDataWithScoring::LastTapNoteWithResult(nd, row).result_.tns_;
+  num_taps_in_row_out = num;
 }
 
 #include "ScoreKeeperNormal.h"
@@ -37,16 +37,16 @@ void ScoreKeeper::GetScoreOfLastTapInRow(
 #include "ScoreKeeperShared.h"
 
 ScoreKeeper* ScoreKeeper::MakeScoreKeeper(
-    std::string sClassName, PlayerState* pPlayerState,
-    PlayerStageStats* pPlayerStageStats) {
-  if (sClassName == "ScoreKeeperNormal") {
-    return new ScoreKeeperNormal(pPlayerState, pPlayerStageStats);
-  } else if (sClassName == "ScoreKeeperRave") {
-    return new ScoreKeeperRave(pPlayerState, pPlayerStageStats);
-  } else if (sClassName == "ScoreKeeperShared") {
-    return new ScoreKeeperShared(pPlayerState, pPlayerStageStats);
+    std::string class_name, PlayerState* player_state,
+    PlayerStageStats* player_stage_stats) {
+  if (class_name == "ScoreKeeperNormal") {
+    return new ScoreKeeperNormal(player_state, player_stage_stats);
+  } else if (class_name == "ScoreKeeperRave") {
+    return new ScoreKeeperRave(player_state, player_stage_stats);
+  } else if (class_name == "ScoreKeeperShared") {
+    return new ScoreKeeperShared(player_state, player_stage_stats);
   }
-  FAIL_M(ssprintf("Invalid ScoreKeeper named %s!", sClassName.c_str()));
+  FAIL_M(ssprintf("Invalid ScoreKeeper named %s!", class_name.c_str()));
 }
 
 /*

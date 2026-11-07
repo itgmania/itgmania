@@ -33,69 +33,69 @@ StreamDisplay::StreamDisplay() {
 void StreamDisplay::Load(
     const std::string& /* unreferenced: _sMetricsGroup  */) {
   // XXX: actually load from the metrics group passed in -aj
-  std::string sMetricsGroup = "StreamDisplay";
+  std::string metrics_group = "StreamDisplay";
 
   transform_pill_.SetFromReference(
-      THEME->GetMetricR(sMetricsGroup, "PillTransformFunction"));
-  VELOCITY_MULTIPLIER.Load(sMetricsGroup, "VelocityMultiplier");
-  VELOCITY_MIN.Load(sMetricsGroup, "VelocityMin");
-  VELOCITY_MAX.Load(sMetricsGroup, "VelocityMax");
-  SPRING_MULTIPLIER.Load(sMetricsGroup, "SpringMultiplier");
-  VISCOSITY_MULTIPLIER.Load(sMetricsGroup, "ViscosityMultiplier");
+      THEME->GetMetricR(metrics_group, "PillTransformFunction"));
+  VELOCITY_MULTIPLIER.Load(metrics_group, "VelocityMultiplier");
+  VELOCITY_MIN.Load(metrics_group, "VelocityMin");
+  VELOCITY_MAX.Load(metrics_group, "VelocityMax");
+  SPRING_MULTIPLIER.Load(metrics_group, "SpringMultiplier");
+  VISCOSITY_MULTIPLIER.Load(metrics_group, "ViscosityMultiplier");
 
-  float fTextureCoordScaleX =
-      THEME->GetMetricF(sMetricsGroup, "TextureCoordScaleX");
-  int iNumPills =
-      static_cast<int>(THEME->GetMetricF(sMetricsGroup, "NumPills"));
-  always_bounce_ = THEME->GetMetricB(sMetricsGroup, "AlwaysBounceNormalBar");
+  float texture_coord_scale_x =
+      THEME->GetMetricF(metrics_group, "TextureCoordScaleX");
+  int num_pills =
+      static_cast<int>(THEME->GetMetricF(metrics_group, "NumPills"));
+  always_bounce_ = THEME->GetMetricB(metrics_group, "AlwaysBounceNormalBar");
 
   FOREACH_ENUM(StreamType, st) {
     ASSERT(spr_pill_[st].empty());
 
-    for (int i = 0; i < iNumPills; i++) {
-      Sprite* pSpr = new Sprite;
+    for (int i = 0; i < num_pills; i++) {
+      Sprite* spr = new Sprite;
 
-      pSpr->Load(THEME->GetPathG(sMetricsGroup, StreamTypeToString(st)));
-      spr_pill_[st].push_back(pSpr);
+      spr->Load(THEME->GetPathG(metrics_group, StreamTypeToString(st)));
+      spr_pill_[st].push_back(spr);
 
-      transform_pill_.TransformItemDirect(*pSpr, -1, i, iNumPills);
-      float f = 1 / fTextureCoordScaleX;
-      pSpr->SetCustomTextureRect(RectF(f * i, 0, f * (i + 1), 1));
+      transform_pill_.TransformItemDirect(*spr, -1, i, num_pills);
+      float f = 1 / texture_coord_scale_x;
+      spr->SetCustomTextureRect(RectF(f * i, 0, f * (i + 1), 1));
 
-      this->AddChild(pSpr);
+      this->AddChild(spr);
     }
   }
 }
 
-void StreamDisplay::Update(float fDeltaSecs) {
-  ActorFrame::Update(fDeltaSecs);
+void StreamDisplay::Update(float delta_secs) {
+  ActorFrame::Update(delta_secs);
 
   // HACK:  Tweaking these values is very difficult.  Update the
   // "physics" many times so that the spring motion appears faster
   for (int i = 0; i < 10; i++) {
-    const float fDelta = percent_ - trailing_percent_;
+    const float delta = percent_ - trailing_percent_;
 
     // Don't apply spring and viscous forces if we're full or empty.
     // Just move straight to either full or empty.
     if (percent_ <= 0 || percent_ >= 1) {
-      if (std::abs(fDelta) < 0.00001f) {
+      if (std::abs(delta) < 0.00001f) {
         velocity_ = 0;  // prevent div/0
       } else {
-        velocity_ = (fDelta / std::abs(fDelta)) * VELOCITY_MULTIPLIER;
+        velocity_ = (delta / std::abs(delta)) * VELOCITY_MULTIPLIER;
       }
     } else {
-      const float fSpringForce = fDelta * SPRING_MULTIPLIER;
-      velocity_ += fSpringForce * fDeltaSecs;
+      const float spring_force = delta * SPRING_MULTIPLIER;
+      velocity_ += spring_force * delta_secs;
 
-      const float fViscousForce = -velocity_ * VISCOSITY_MULTIPLIER;
+      const float viscous_force = -velocity_ * VISCOSITY_MULTIPLIER;
       if (!always_bounce_) {
-        velocity_ += fViscousForce * fDeltaSecs;
+        velocity_ += viscous_force * delta_secs;
       }
     }
 
     rage_clamp(velocity_, VELOCITY_MIN, VELOCITY_MAX);
 
-    trailing_percent_ += velocity_ * fDeltaSecs;
+    trailing_percent_ += velocity_ * delta_secs;
   }
 
   // Don't clamp life percentage a little outside the visible range so
@@ -103,56 +103,56 @@ void StreamDisplay::Update(float fDeltaSecs) {
   rage_clamp(trailing_percent_, -0.1f, 1.1f);
 
   // set crop of pills
-  const float fPillWidthPercent = 1.0f / spr_pill_[0].size();
+  const float pill_width_percent = 1.0f / spr_pill_[0].size();
   FOREACH_ENUM(StreamType, st) {
     for (int i = 0; i < (int)spr_pill_[st].size(); i++) {
-      Sprite* pSpr = spr_pill_[st][i];
-      float fPercentFilledThisPill = SCALE(
-          trailing_percent_, fPillWidthPercent * i, fPillWidthPercent * (i + 1),
-          0.0f, 1.0f);
-      rage_clamp(fPercentFilledThisPill, 0.0f, 1.0f);
+      Sprite* spr = spr_pill_[st][i];
+      float percent_filled_this_pill = SCALE(
+          trailing_percent_, pill_width_percent * i,
+          pill_width_percent * (i + 1), 0.0f, 1.0f);
+      rage_clamp(percent_filled_this_pill, 0.0f, 1.0f);
 
       // XXX scale by current song speed
 
-      pSpr->SetCropRight(1.0f - fPercentFilledThisPill);
-      pSpr->SetTexCoordVelocity(-1, 0);
+      spr->SetCropRight(1.0f - percent_filled_this_pill);
+      spr->SetTexCoordVelocity(-1, 0);
 
       // Optimization: Don't draw pills that are covered up
       switch (st) {
         DEFAULT_FAIL(st);
         case StreamType_Normal:
-          pSpr->SetVisible(passing_alpha_ < 1 || hot_alpha_ < 1);
-          pSpr->SetDiffuseAlpha(1);
+          spr->SetVisible(passing_alpha_ < 1 || hot_alpha_ < 1);
+          spr->SetDiffuseAlpha(1);
           break;
         case StreamType_Passing:
-          pSpr->SetDiffuseAlpha(passing_alpha_);
-          pSpr->SetVisible(hot_alpha_ < 1);
+          spr->SetDiffuseAlpha(passing_alpha_);
+          spr->SetVisible(hot_alpha_ < 1);
           break;
         case StreamType_Hot:
-          pSpr->SetDiffuseAlpha(hot_alpha_);
+          spr->SetDiffuseAlpha(hot_alpha_);
           break;
       }
     }
   }
 }
 
-void StreamDisplay::SetPercent(float fPercent) {
+void StreamDisplay::SetPercent(float percent) {
 #ifdef DEBUG
-  float fLifeMultiplier = THEME->GetMetricF("LifeMeterBar", "LifeMultiplier");
+  float life_multiplier = THEME->GetMetricF("LifeMeterBar", "LifeMultiplier");
 #endif
-  DEBUG_ASSERT(fPercent >= 0.0f && fPercent <= 1.0f * fLifeMultiplier);
-  if (std::isnan(fPercent)) {
+  DEBUG_ASSERT(percent >= 0.0f && percent <= 1.0f * life_multiplier);
+  if (std::isnan(percent)) {
     DEBUG_ASSERT_M(0, "fPercent is NaN");
-    fPercent = 1;
+    percent = 1;
   }
-  if (!std::isfinite(fPercent)) {
+  if (!std::isfinite(percent)) {
     DEBUG_ASSERT_M(0, "fPercent is infinite");
-    fPercent = 1;
+    percent = 1;
   }
 
-  float fDeltaPercent = fPercent - percent_;
-  velocity_ += fDeltaPercent;
-  percent_ = fPercent;
+  float delta_percent = percent - percent_;
+  velocity_ += delta_percent;
+  percent_ = percent;
 }
 
 /*

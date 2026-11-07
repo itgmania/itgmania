@@ -92,51 +92,51 @@ static LocalizedString MOVIE_DRIVERS_EMPTY(
     "Arch", "Movie Drivers cannot be empty.");
 static LocalizedString COULDNT_CREATE_MOVIE_DRIVER(
     "Arch", "Couldn't create a movie driver.");
-RageMovieTexture* RageMovieTexture::Create(RageTextureID ID) {
-  DumpAVIDebugInfo(ID.filename_);
+RageMovieTexture* RageMovieTexture::Create(RageTextureID id) {
+  DumpAVIDebugInfo(id.filename_);
 
-  std::string sDrivers = g_sMovieDrivers;
-  std::vector<std::string> DriversToTry;
+  std::string drivers = g_sMovieDrivers;
+  std::vector<std::string> drivers_to_try;
 
-  if (sDrivers.empty()) {
-    DriversToTry = GetDefaultMovieDriverList();
+  if (drivers.empty()) {
+    drivers_to_try = GetDefaultMovieDriverList();
   } else {
-    DriversToTry = split(sDrivers, ',');
+    drivers_to_try = split(drivers, ',');
   }
 
-  if (DriversToTry.empty()) {
+  if (drivers_to_try.empty()) {
     RageException::Throw("%s", MOVIE_DRIVERS_EMPTY.GetValue().c_str());
   }
 
   RageMovieTexture* ret = nullptr;
 
-  for (const std::string& Driver : DriversToTry) {
-    const char* driverString = Driver.c_str();
-    LOG->Trace("Initializing driver: %s", driverString);
-    RageDriver* pDriverBase =
-        RageMovieTextureDriver::driver_list_.Create(Driver);
+  for (const std::string& driver : drivers_to_try) {
+    const char* driver_string = driver.c_str();
+    LOG->Trace("Initializing driver: %s", driver_string);
+    RageDriver* driver_base =
+        RageMovieTextureDriver::driver_list_.Create(driver);
 
-    if (pDriverBase == nullptr) {
-      LOG->Trace("Unknown movie driver name: %s", driverString);
+    if (driver_base == nullptr) {
+      LOG->Trace("Unknown movie driver name: %s", driver_string);
       continue;
     }
 
-    RageMovieTextureDriver* pDriver =
-        dynamic_cast<RageMovieTextureDriver*>(pDriverBase);
-    ASSERT(pDriver != nullptr);
+    RageMovieTextureDriver* p_driver =
+        dynamic_cast<RageMovieTextureDriver*>(driver_base);
+    ASSERT(p_driver != nullptr);
 
-    std::string sError;
-    ret = pDriver->Create(ID, sError);
-    delete pDriver;
+    std::string error;
+    ret = p_driver->Create(id, error);
+    delete p_driver;
 
     if (ret == nullptr) {
-      LOG->Trace("Couldn't load driver %s: %s", driverString, sError.c_str());
+      LOG->Trace("Couldn't load driver %s: %s", driver_string, error.c_str());
       RageUtil::SafeDelete(ret);
       continue;
     }
     LOG->Trace(
-        "Created movie texture \"%s\" with driver \"%s\"", ID.filename_.c_str(),
-        driverString);
+        "Created movie texture \"%s\" with driver \"%s\"", id.filename_.c_str(),
+        driver_string);
     break;
   }
   if (!ret) {

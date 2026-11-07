@@ -9,18 +9,18 @@
 #include "RageUtil_AutoPtr.h"
 class RageSoundReader_Filter : public RageSoundReader {
  public:
-  RageSoundReader_Filter(RageSoundReader* pSource) : source_(pSource) {}
+  RageSoundReader_Filter(RageSoundReader* source) : source_(source) {}
 
   virtual int GetLength() const { return source_->GetLength(); }
   virtual int GetLength_Fast() const { return source_->GetLength_Fast(); }
-  virtual int SetPosition(int iFrame) { return source_->SetPosition(iFrame); }
-  virtual int Read(float* pBuf, int iFrames) {
-    return source_->Read(pBuf, iFrames);
+  virtual int SetPosition(int frame) { return source_->SetPosition(frame); }
+  virtual int Read(float* buf, int frames) {
+    return source_->Read(buf, frames);
   }
   virtual int GetSampleRate() const { return source_->GetSampleRate(); }
   virtual unsigned GetNumChannels() const { return source_->GetNumChannels(); }
-  virtual bool SetProperty(const std::string& sProperty, float fValue) {
-    return source_->SetProperty(sProperty, fValue);
+  virtual bool SetProperty(const std::string& property, float value) {
+    return source_->SetProperty(property, value);
   }
   virtual int GetNextSourceFrame() const {
     return source_->GetNextSourceFrame();

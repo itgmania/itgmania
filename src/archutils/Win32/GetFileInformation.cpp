@@ -17,55 +17,55 @@
 
 #pragma comment(lib, "version.lib")
 
-bool GetFileVersion(const std::string& sFile, std::string& sOut) {
+bool GetFileVersion(const std::string& file, std::string& out) {
   do {
     DWORD ignore;
-    DWORD iSize = GetFileVersionInfoSize(sFile.c_str(), &ignore);
-    if (!iSize) {
+    DWORD size = GetFileVersionInfoSize(file.c_str(), &ignore);
+    if (!size) {
       break;
     }
 
-    std::vector<char> VersionBuffer(iSize);
-    if (!GetFileVersionInfo(sFile.c_str(), 0, iSize, VersionBuffer.data())) {
+    std::vector<char> version_buffer(size);
+    if (!GetFileVersionInfo(file.c_str(), 0, size, version_buffer.data())) {
       break;
     }
 
-    WORD* iTrans;
-    UINT iTransCnt;
+    WORD* trans;
+    UINT trans_cnt;
 
     if (!VerQueryValue(
-            VersionBuffer.data(), "\\VarFileInfo\\Translation", (void**)&iTrans,
-            &iTransCnt)) {
+            version_buffer.data(), "\\VarFileInfo\\Translation", (void**)&trans,
+            &trans_cnt)) {
       break;
     }
 
-    if (iTransCnt == 0) {
+    if (trans_cnt == 0) {
       break;
     }
 
     char* str;
     UINT len;
 
-    std::string sRes = ssprintf(
-        "\\StringFileInfo\\%04x%04x\\FileVersion", iTrans[0], iTrans[1]);
+    std::string res =
+        ssprintf("\\StringFileInfo\\%04x%04x\\FileVersion", trans[0], trans[1]);
     if (!VerQueryValue(
-            VersionBuffer.data(), sRes.c_str(), (void**)&str, &len) ||
+            version_buffer.data(), res.c_str(), (void**)&str, &len) ||
         len < 1) {
       break;
     }
 
-    sOut = std::string(str, len - 1);
+    out = std::string(str, len - 1);
   } while (0);
 
   // Get the size and date.
   struct stat st;
-  if (stat(sFile.c_str(), &st) != -1) {
+  if (stat(file.c_str(), &st) != -1) {
     struct tm t;
     gmtime_r(&st.st_mtime, &t);
-    if (!sOut.empty()) {
-      sOut += " ";
+    if (!out.empty()) {
+      out += " ";
     }
-    sOut += ssprintf(
+    out += ssprintf(
         "[%ib, %02i-%02i-%04i]", st.st_size, t.tm_mon + 1, t.tm_mday,
         t.tm_year + 1900);
   }
@@ -73,45 +73,44 @@ bool GetFileVersion(const std::string& sFile, std::string& sOut) {
   return true;
 }
 
-std::string FindSystemFile(const std::string& sFile) {
-  char szWindowsPath[MAX_PATH];
-  GetWindowsDirectory(szWindowsPath, MAX_PATH);
+std::string FindSystemFile(const std::string& file) {
+  char windows_path[MAX_PATH];
+  GetWindowsDirectory(windows_path, MAX_PATH);
 
-  const char* szPaths[] = {"\\system32\\", "\\system32\\drivers\\",
-                           "\\system\\",   "\\system\\drivers\\",
-                           "\\",           nullptr};
+  const char* paths[] = {"\\system32\\", "\\system32\\drivers\\",
+                         "\\system\\",   "\\system\\drivers\\",
+                         "\\",           nullptr};
 
-  for (int i = 0; szPaths[i]; ++i) {
-    std::string sPath =
-        ssprintf("%s%s%s", szWindowsPath, szPaths[i], sFile.c_str());
+  for (int i = 0; paths[i]; ++i) {
+    std::string path = ssprintf("%s%s%s", windows_path, paths[i], file.c_str());
     struct stat buf;
-    if (!stat(sPath.c_str(), &buf)) {
-      return sPath;
+    if (!stat(path.c_str(), &buf)) {
+      return path;
     }
   }
 
   return std::string();
 }
 
-/* Get the full path of the process running in iProcessID. On error, false is
- * returned and an error message is placed in sName. */
-bool GetProcessFileName(uint32_t iProcessID, std::string& sName) {
-  HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, iProcessID);
-  if (hSnap == INVALID_HANDLE_VALUE) {
-    sName = werr_ssprintf(GetLastError(), "CreateToolhelp32Snapshot");
+/* Get the full path of the process running in process_id. On error, false is
+ * returned and an error message is placed in name. */
+bool GetProcessFileName(uint32_t process_id, std::string& name) {
+  HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, process_id);
+  if (snap == INVALID_HANDLE_VALUE) {
+    name = werr_ssprintf(GetLastError(), "CreateToolhelp32Snapshot");
     return false;
   }
 
   MODULEENTRY32 me;
   me.dwSize = sizeof(MODULEENTRY32);
-  if (Module32First(hSnap, &me)) {
-    sName = me.szExePath;
-    CloseHandle(hSnap);
+  if (Module32First(snap, &me)) {
+    name = me.szExePath;
+    CloseHandle(snap);
     return true;
   }
 
-  CloseHandle(hSnap);
-  sName = werr_ssprintf(GetLastError(), "Module32First");
+  CloseHandle(snap);
+  name = werr_ssprintf(GetLastError(), "Module32First");
   return false;
 }
 

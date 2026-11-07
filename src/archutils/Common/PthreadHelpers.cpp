@@ -27,29 +27,29 @@
 
 /* waitpid(); ThreadID can be a PID or (in NPTL) a TID; doesn't care if the ID
  * is a clone() or not. */
-static int waittid(int ThreadID, int* status, int options) {
-  static bool bSupportsWall = true;
+static int waittid(int thread_id, int* status, int options) {
+  static bool supports_wall = true;
 
-  if (bSupportsWall) {
-    int ret = waitpid(ThreadID, status, options | __WALL);
+  if (supports_wall) {
+    int ret = waitpid(thread_id, status, options | __WALL);
     if (ret != -1 || errno != EINVAL) {
       return ret;
     }
-    bSupportsWall = false;
+    supports_wall = false;
   }
 
   /* XXX: on 2.2, we need to use __WCLONE only if ThreadID isn't the main
    * thread; perhaps wait and retry without it if errno == ECHILD? */
   int ret;
-  ret = waitpid(ThreadID, status, options);
+  ret = waitpid(thread_id, status, options);
 
   return ret;
 }
 
 /* Attempt to PTRACE_ATTACH to a thread, and wait for the SIGSTOP. */
-static int PtraceAttach(int ThreadID) {
+static int PtraceAttach(int thread_id) {
   int ret;
-  ret = ptrace(PTRACE_ATTACH, ThreadID, nullptr, nullptr);
+  ret = ptrace(PTRACE_ATTACH, thread_id, nullptr, nullptr);
   if (ret == -1) {
     printf("ptrace failed: %s\n", strerror(errno));
     return -1;
@@ -57,7 +57,7 @@ static int PtraceAttach(int ThreadID) {
 
   /* Wait for the SIGSTOP from the ptrace call. */
   int status;
-  ret = waittid(ThreadID, &status, 0);
+  ret = waittid(thread_id, &status, 0);
   if (ret == -1) {
     return -1;
   }
@@ -68,8 +68,8 @@ static int PtraceAttach(int ThreadID) {
   return 0;
 }
 
-static int PtraceDetach(int ThreadID) {
-  return ptrace(PTRACE_DETACH, ThreadID, nullptr, nullptr);
+static int PtraceDetach(int thread_id) {
+  return ptrace(PTRACE_DETACH, thread_id, nullptr, nullptr);
 }
 
 uint64_t GetCurrentThreadId() {
@@ -82,27 +82,27 @@ uint64_t GetCurrentThreadId() {
   return cached_tid;
 }
 
-int SuspendThread(uint64_t ThreadID) {
+int SuspendThread(uint64_t thread_id) {
   /*
    * Linux: We can't simply kill(SIGSTOP) (or tkill), since that will stop all
    * processes (grr).  We can ptrace(PTRACE_ATTACH) the process to stop it, and
    * PTRACE_DETACH to restart it.
    */
-  return PtraceAttach(int(ThreadID));
+  return PtraceAttach(int(thread_id));
   // kill( ThreadID, SIGSTOP );
 }
 
-int ResumeThread(uint64_t ThreadID) {
-  return PtraceDetach(int(ThreadID));
+int ResumeThread(uint64_t thread_id) {
+  return PtraceDetach(int(thread_id));
   // kill( ThreadID, SIGSTOP );
 }
 
 /* Get a BacktraceContext for a thread.  ThreadID must not be the current
  * thread. This call leaves the given thread suspended; use ResumeThread() to
  * resume it after. */
-bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
+bool GetThreadBacktraceContext(uint64_t thread_id, BacktraceContext* ctx) {
   /* Can't GetThreadBacktraceContext the current thread. */
-  ASSERT(ThreadID != GetCurrentThreadId());
+  ASSERT(thread_id != GetCurrentThreadId());
 
   /* Attach to the thread.  This may fail with EPERM.  This can happen for at
    * least two common reasons: the process might be in a debugger already, or
@@ -110,20 +110,20 @@ bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
    *
    * If it's in a debugger, we won't be able to ptrace(PTRACE_GETREGS). If
    * it's us that attached, we will. */
-  if (PtraceAttach(int(ThreadID)) == -1 && errno != EPERM) {
+  if (PtraceAttach(int(thread_id)) == -1 && errno != EPERM) {
     CHECKPOINT_M(ssprintf(
         "%s (pid %i tid %i locking tid %i)", strerror(errno), getpid(),
-        (int)GetCurrentThreadId(), int(ThreadID)));
+        (int)GetCurrentThreadId(), int(thread_id)));
     return false;
   }
 
 #if defined(CPU_X86_64) || defined(CPU_X86)
   user_regs_struct regs;
-  if (ptrace(PTRACE_GETREGS, pid_t(ThreadID), nullptr, &regs) == -1) {
+  if (ptrace(PTRACE_GETREGS, pid_t(thread_id), nullptr, &regs) == -1) {
     return false;
   }
 
-  ctx->pid_ = pid_t(ThreadID);
+  ctx->pid_ = pid_t(thread_id);
 #if defined(CPU_X86_64)
   ctx->ip_ = (void*)regs.rip;
   ctx->bp_ = (void*)regs.rbp;

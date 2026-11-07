@@ -8,6 +8,6 @@ struct LanguageInfo {
   const char* iso_code_;
   const char* english_name_;
 };
-const LanguageInfo* GetLanguageInfo(const std::string& sIsoCode);
+const LanguageInfo* GetLanguageInfo(const std::string& iso_code);
 
 #endif

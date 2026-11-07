@@ -23,7 +23,7 @@ typedef Screen* (*CreateScreenFn)(const std::string& sClassName);
  * Each Screen class should have a REGISTER_SCREEN_CLASS in its CPP file.
  */
 struct RegisterScreenClass {
-  RegisterScreenClass(const std::string& sClassName, CreateScreenFn pfn);
+  RegisterScreenClass(const std::string& class_name, CreateScreenFn pfn);
 };
 #define REGISTER_SCREEN_CLASS(className)                       \
   static Screen* Create##className(const std::string& sName) { \
@@ -50,7 +50,7 @@ LuaDeclareType(ScreenType);
 /** @brief Class that holds a screen-full of Actors. */
 class Screen : public ActorFrame {
  public:
-  static void InitScreen(Screen* pScreen);
+  static void InitScreen(Screen* screen);
 
   virtual ~Screen();
 
@@ -67,22 +67,22 @@ class Screen : public ActorFrame {
   /** @brief This is called when the screen is popped. */
   virtual void EndScreen();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   void SetLockInputSecs(float f) { lock_input_secs_ = f; }
 
   /**
    * @brief Put the specified message onto the screen for a specified time.
    * @param SM the message to put on the screen.
    * @param fDelay The length of time it stays up. */
-  void PostScreenMessage(const ScreenMessage SM, float fDelay);
+  void PostScreenMessage(const ScreenMessage sm, float delay);
   /** @brief Clear the entire message queue. */
   void ClearMessageQueue();
   /**
    * @brief Clear the message queue of a specific ScreenMessage.
    * @param SM the specific ScreenMessage to get out of the Queue. */
-  void ClearMessageQueue(const ScreenMessage SM);
+  void ClearMessageQueue(const ScreenMessage sm);
 
   virtual ScreenType GetScreenType() const {
     return ALLOW_OPERATOR_MENU_BUTTON ? game_menu : system_menu;

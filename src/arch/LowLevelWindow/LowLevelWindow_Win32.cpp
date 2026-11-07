@@ -34,16 +34,16 @@ static void DestroyGraphicsWindowAndOpenGLContext() {
 }
 
 void* LowLevelWindow_Win32::GetProcAddress(std::string s) {
-  void* pRet = (void*)wglGetProcAddress(s.c_str());
-  if (pRet != nullptr) {
-    return pRet;
+  void* ret = (void*)wglGetProcAddress(s.c_str());
+  if (ret != nullptr) {
+    return ret;
   }
 
   if (g_HGL_Module != nullptr) {
-    pRet = (void*)::GetProcAddress(g_HGL_Module, s.c_str());
+    ret = (void*)::GetProcAddress(g_HGL_Module, s.c_str());
 
-    if (pRet != nullptr) {
-      return pRet;
+    if (ret != nullptr) {
+      return ret;
     }
   }
 
@@ -84,14 +84,14 @@ int ChooseWindowPixelFormat(
 
 void DumpPixelFormat(const PIXELFORMATDESCRIPTOR& pfd) {
   std::string str = ssprintf("Mode: ");
-  bool bInvalidFormat = false;
+  bool invalid_format = false;
 
   if (pfd.dwFlags & PFD_GENERIC_FORMAT) {
     if (pfd.dwFlags & PFD_GENERIC_ACCELERATED) {
       str += "MCD ";
     } else {
       str += "software ";
-      bInvalidFormat = true;
+      invalid_format = true;
     }
   } else {
     str += "ICD ";
@@ -99,19 +99,19 @@ void DumpPixelFormat(const PIXELFORMATDESCRIPTOR& pfd) {
 
   if (pfd.iPixelType != PFD_TYPE_RGBA) {
     str += "indexed ";
-    bInvalidFormat = true;
+    invalid_format = true;
   }
   if (!(pfd.dwFlags & PFD_SUPPORT_OPENGL)) {
     str += "!OPENGL ";
-    bInvalidFormat = true;
+    invalid_format = true;
   }
   if (!(pfd.dwFlags & PFD_DRAW_TO_WINDOW)) {
     str += "!window ";
-    bInvalidFormat = true;
+    invalid_format = true;
   }
   if (!(pfd.dwFlags & PFD_DOUBLEBUFFER)) {
     str += "!dbuff ";
-    bInvalidFormat = true;
+    invalid_format = true;
   }
 
   str += ssprintf(
@@ -130,7 +130,7 @@ void DumpPixelFormat(const PIXELFORMATDESCRIPTOR& pfd) {
     str += ssprintf("%i accum ", pfd.cAccumBits);
   }
 
-  if (bInvalidFormat) {
+  if (invalid_format) {
     LOG->Warn("Invalid format: %s", str.c_str());
   } else {
     LOG->Info("%s", str.c_str());
@@ -142,27 +142,27 @@ void DumpPixelFormat(const PIXELFORMATDESCRIPTOR& pfd) {
  * error, LowLevelWindow_Win32::~LowLevelWindow_Win32 will call
  * GraphicsWindow::Shutdown(). */
 std::string LowLevelWindow_Win32::TryVideoMode(
-    const VideoModeParams& p, bool& bNewDeviceOut) {
+    const VideoModeParams& p, bool& new_device_out) {
   // LOG->Warn( "LowLevelWindow_Win32::TryVideoMode" );
 
   ASSERT_M(p.bpp_ == 16 || p.bpp_ == 32, ssprintf("%i", p.bpp_));
 
-  bNewDeviceOut = false;
+  new_device_out = false;
 
   /* We're only allowed to change the pixel format of a window exactly once. */
-  bool bCanSetPixelFormat = true;
+  bool can_set_pixel_format = true;
 
   /* Do we have an old window? */
   if (GraphicsWindow::GetHwnd() == nullptr) {
     /* No.  Always create and show the window before changing the video mode.
      * Otherwise, some other window may have focus, and changing the video mode
      * will cause that window to be resized. */
-    bNewDeviceOut = true;
+    new_device_out = true;
     GraphicsWindow::CreateGraphicsWindow(p);
   } else {
     /* We already have a window.  Assume that its pixel format has already
      * been set. */
-    bCanSetPixelFormat = false;
+    can_set_pixel_format = false;
   }
 
   ASSERT(GraphicsWindow::GetHwnd() != nullptr);
@@ -170,37 +170,37 @@ std::string LowLevelWindow_Win32::TryVideoMode(
   /* Set the display mode: switch to a fullscreen mode or revert to windowed
    * mode. */
   LOG->Trace("SetScreenMode ...");
-  std::string sErr = GraphicsWindow::SetScreenMode(p);
-  if (!sErr.empty()) {
-    return sErr;
+  std::string err = GraphicsWindow::SetScreenMode(p);
+  if (!err.empty()) {
+    return err;
   }
 
   PIXELFORMATDESCRIPTOR pixfmt;
-  int iPixelFormat = ChooseWindowPixelFormat(p, &pixfmt);
-  if (iPixelFormat == 0) {
+  int pixel_format = ChooseWindowPixelFormat(p, &pixfmt);
+  if (pixel_format == 0) {
     /* Destroy the window. */
     DestroyGraphicsWindowAndOpenGLContext();
     return "Pixel format not found";
   }
 
-  bool bNeedToSetPixelFormat = false;
+  bool need_to_set_pixel_format = false;
   {
     /* We'll need to recreate it if the pixel format is going to change.  We
      * aren't allowed to change the pixel format twice. */
-    PIXELFORMATDESCRIPTOR DestPixelFormat;
-    ZERO(DestPixelFormat);
+    PIXELFORMATDESCRIPTOR dest_pixel_format;
+    ZERO(dest_pixel_format);
     DescribePixelFormat(
-        GraphicsWindow::GetHDC(), iPixelFormat, sizeof(PIXELFORMATDESCRIPTOR),
-        &DestPixelFormat);
+        GraphicsWindow::GetHDC(), pixel_format, sizeof(PIXELFORMATDESCRIPTOR),
+        &dest_pixel_format);
     if (memcmp(
-            &DestPixelFormat, &g_CurrentPixelFormat,
+            &dest_pixel_format, &g_CurrentPixelFormat,
             sizeof(PIXELFORMATDESCRIPTOR))) {
       LOG->Trace("Reset: pixel format changing");
-      bNeedToSetPixelFormat = true;
+      need_to_set_pixel_format = true;
     }
   }
 
-  if (bNeedToSetPixelFormat && !bCanSetPixelFormat) {
+  if (need_to_set_pixel_format && !can_set_pixel_format) {
     /*
      * The screen mode has changed, so we need to set the pixel format.  If
      * we're not allowed to do so, destroy the window and make a new one.
@@ -218,25 +218,25 @@ std::string LowLevelWindow_Win32::TryVideoMode(
       g_HGLRC = nullptr;
     }
 
-    bNewDeviceOut = true;
+    new_device_out = true;
   }
 
   /* If we deleted the OpenGL context above, also recreate the window.
    * Otherwise, just reconfigure it. */
-  GraphicsWindow::CreateGraphicsWindow(p, bNewDeviceOut);
+  GraphicsWindow::CreateGraphicsWindow(p, new_device_out);
 
-  if (bNeedToSetPixelFormat) {
+  if (need_to_set_pixel_format) {
     /* Set the pixel format. */
-    if (!SetPixelFormat(GraphicsWindow::GetHDC(), iPixelFormat, &pixfmt)) {
-      DWORD err = GetLastError();
+    if (!SetPixelFormat(GraphicsWindow::GetHDC(), pixel_format, &pixfmt)) {
+      DWORD last_error = GetLastError();
       /* Destroy the window. */
       DestroyGraphicsWindowAndOpenGLContext();
 
-      return werr_ssprintf(err, "Pixel format failed");
+      return werr_ssprintf(last_error, "Pixel format failed");
     }
 
     DescribePixelFormat(
-        GraphicsWindow::GetHDC(), iPixelFormat, sizeof(g_CurrentPixelFormat),
+        GraphicsWindow::GetHDC(), pixel_format, sizeof(g_CurrentPixelFormat),
         &g_CurrentPixelFormat);
 
     DumpPixelFormat(g_CurrentPixelFormat);
@@ -247,15 +247,15 @@ std::string LowLevelWindow_Win32::TryVideoMode(
 
     g_HGLRC = wglCreateContext(GraphicsWindow::GetHDC());
     if (g_HGLRC == nullptr) {
-      DWORD err = GetLastError();
+      DWORD last_error = GetLastError();
       DestroyGraphicsWindowAndOpenGLContext();
-      return hr_ssprintf(err, "wglCreateContext");
+      return hr_ssprintf(last_error, "wglCreateContext");
     }
 
     if (!wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC)) {
-      DWORD err = GetLastError();
+      DWORD last_error = GetLastError();
       DestroyGraphicsWindowAndOpenGLContext();
-      return hr_ssprintf(err, "wglCreateContext");
+      return hr_ssprintf(last_error, "wglCreateContext");
     }
   }
   return std::string();  // we set the video mode successfully
@@ -263,16 +263,16 @@ std::string LowLevelWindow_Win32::TryVideoMode(
 
 static LocalizedString OPENGL_NOT_AVAILABLE(
     "LowLevelWindow_Win32", "OpenGL hardware acceleration is not available.");
-bool LowLevelWindow_Win32::IsSoftwareRenderer(std::string& sError) {
-  std::string sVendor = (const char*)glGetString(GL_VENDOR);
-  std::string sRenderer = (const char*)glGetString(GL_RENDERER);
+bool LowLevelWindow_Win32::IsSoftwareRenderer(std::string& error) {
+  std::string vendor = (const char*)glGetString(GL_VENDOR);
+  std::string renderer = (const char*)glGetString(GL_RENDERER);
 
   LOG->Trace(
-      "LowLevelWindow_Win32::IsSoftwareRenderer '%s', '%s'", sVendor.c_str(),
-      sRenderer.c_str());
+      "LowLevelWindow_Win32::IsSoftwareRenderer '%s', '%s'", vendor.c_str(),
+      renderer.c_str());
 
-  if (sVendor == "Microsoft Corporation" && sRenderer == "GDI Generic") {
-    sError = OPENGL_NOT_AVAILABLE;
+  if (vendor == "Microsoft Corporation" && renderer == "GDI Generic") {
+    error = OPENGL_NOT_AVAILABLE;
     return true;
   }
 
@@ -295,12 +295,12 @@ const ActualVideoModeParams LowLevelWindow_Win32::GetActualVideoModeParams()
 
 class RenderTarget_Win32 : public RenderTarget {
  public:
-  RenderTarget_Win32(LowLevelWindow_Win32* pWind);
+  RenderTarget_Win32(LowLevelWindow_Win32* wind);
   virtual ~RenderTarget_Win32();
 
   void Create(
-      const RenderTargetParam& param, int& iTextureWidthOut,
-      int& iTextureHeightOut);
+      const RenderTargetParam& param, int& texture_width_out,
+      int& texture_height_out);
   uintptr_t GetTexture() const { return static_cast<uintptr_t>(tex_handle_); }
   void StartRenderingTo();
   void FinishRenderingTo();
@@ -316,8 +316,8 @@ class RenderTarget_Win32 : public RenderTarget {
   HGLRC old_render_context_;
 };
 
-RenderTarget_Win32::RenderTarget_Win32(LowLevelWindow_Win32* pWind) {
-  wind_ = pWind;
+RenderTarget_Win32::RenderTarget_Win32(LowLevelWindow_Win32* wind) {
+  wind_ = wind;
   tex_handle_ = 0;
   old_device_context_ = nullptr;
   old_render_context_ = nullptr;
@@ -329,8 +329,8 @@ RenderTarget_Win32::~RenderTarget_Win32() {
 }
 
 void RenderTarget_Win32::Create(
-    const RenderTargetParam& param, int& iTextureWidthOut,
-    int& iTextureHeightOut) {
+    const RenderTargetParam& param, int& texture_width_out,
+    int& texture_height_out) {
   param_ = param;
   width_ = param.width_;
   height_ = param.height_;
@@ -341,10 +341,10 @@ void RenderTarget_Win32::Create(
   ASSERT(tex_handle_ > 0);
   glBindTexture(GL_TEXTURE_2D, tex_handle_);
 
-  int iTextureWidth = power_of_two(param.width_);
-  int iTextureHeight = power_of_two(param.height_);
-  iTextureWidthOut = iTextureWidth;
-  iTextureHeightOut = iTextureHeight;
+  int texture_width = power_of_two(param.width_);
+  int texture_height = power_of_two(param.height_);
+  texture_width_out = texture_width;
+  texture_height_out = texture_height;
 
   GLenum internalformat;
   GLenum type = param.with_alpha_ ? GL_RGBA : GL_RGB;
@@ -355,7 +355,7 @@ void RenderTarget_Win32::Create(
   }
 
   glTexImage2D(
-      GL_TEXTURE_2D, 0, internalformat, iTextureWidth, iTextureHeight, 0, type,
+      GL_TEXTURE_2D, 0, internalformat, texture_width, texture_height, 0, type,
       GL_UNSIGNED_BYTE, nullptr);
 
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

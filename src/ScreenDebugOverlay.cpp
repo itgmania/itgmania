@@ -115,13 +115,13 @@ class IDebugLine {
   virtual std::string GetPageName() const { return "Main"; }
   virtual bool ForceOffAfterUse() const { return false; }
   virtual bool IsEnabled() = 0;
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     std::string s1 = GetDisplayTitle();
     std::string s2 = GetDisplayValue();
     if (!s2.empty()) {
       s1 += " - ";
     }
-    sMessageOut = s1 + s2;
+    message_out = s1 + s2;
   };
 
   DeviceInput button_;
@@ -175,9 +175,9 @@ struct MapDebugToDI {
 static MapDebugToDI g_Mappings;
 
 static LocalizedString IN_GAMEPLAY("ScreenDebugOverlay", "%s in gameplay");
-static std::string GetDebugButtonName(const IDebugLine* pLine) {
-  std::string s = INPUTMAN->GetDeviceSpecificInputString(pLine->button_);
-  IDebugLine::Type type = pLine->GetType();
+static std::string GetDebugButtonName(const IDebugLine* line) {
+  std::string s = INPUTMAN->GetDeviceSpecificInputString(line->button_);
+  IDebugLine::Type type = line->GetType();
   switch (type) {
     case IDebugLine::all_screens:
       return s;
@@ -259,24 +259,24 @@ void ScreenDebugOverlay::Init() {
     g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
   }
 
-  std::map<std::string, int> iNextDebugButton;
-  int iNextGameplayButton = 0;
+  std::map<std::string, int> next_debug_button;
+  int next_gameplay_button = 0;
   for (IDebugLine* p : *g_pvpSubscribers) {
-    std::string sPageName = p->GetPageName();
+    std::string page_name = p->GetPageName();
 
     DeviceInput di;
     switch (p->GetType()) {
       case IDebugLine::all_screens:
-        di = g_Mappings.debug_button_[iNextDebugButton[sPageName]++];
+        di = g_Mappings.debug_button_[next_debug_button[page_name]++];
         break;
       case IDebugLine::gameplay_only:
-        di = g_Mappings.gameplay_button_[iNextGameplayButton++];
+        di = g_Mappings.gameplay_button_[next_gameplay_button++];
         break;
     }
     p->button_ = di;
 
-    if (find(pages_.begin(), pages_.end(), sPageName) == pages_.end()) {
-      pages_.push_back(sPageName);
+    if (find(pages_.begin(), pages_.end(), page_name) == pages_.end()) {
+      pages_.push_back(page_name);
     }
   }
 
@@ -298,21 +298,21 @@ void ScreenDebugOverlay::Init() {
   auto start = pages_.begin();
   for (std::vector<std::string>::const_iterator s = pages_.begin();
        s != pages_.end(); ++s) {
-    int iPage = s - start;
+    int page = s - start;
 
     DeviceInput di;
-    bool b = GetKeyFromMap(g_Mappings.page_button_, iPage, di);
+    bool b = GetKeyFromMap(g_Mappings.page_button_, page, di);
     ASSERT(b);
 
-    std::string sButton = INPUTMAN->GetDeviceSpecificInputString(di);
+    std::string button = INPUTMAN->GetDeviceSpecificInputString(di);
 
     BitmapText* p = new BitmapText;
     p->SetName("PageText");
     p->LoadFromFont(THEME->GetPathF("ScreenDebugOverlay", "page"));
     LOAD_ALL_COMMANDS_AND_ON_COMMAND(p);
     // todo: Y value is still hardcoded. -aj
-    p->SetXY(PAGE_START_X + iPage * PAGE_SPACING_X, SCREEN_TOP + 20);
-    p->SetText(*s + " (" + sButton + ")");
+    p->SetXY(PAGE_START_X + page * PAGE_SPACING_X, SCREEN_TOP + 20);
+    p->SetText(*s + " (" + button + ")");
     text_pages_.push_back(p);
     this->AddChild(p);
   }
@@ -343,35 +343,36 @@ void ScreenDebugOverlay::Init() {
   this->SetVisible(false);
 }
 
-void ScreenDebugOverlay::Update(float fDeltaTime) {
+void ScreenDebugOverlay::Update(float delta_time) {
   if (!g_bEnableDebugMenu) {
     return;
   }
 
   {
-    float fRate = 1;
+    float rate = 1;
     if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_fast_)) {
       if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
-        fRate = 0;  // both; stop time
+        rate = 0;  // both; stop time
       } else {
-        fRate *= 4;
+        rate *= 4;
       }
     } else if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
-      fRate /= 4;
+      rate /= 4;
     }
 
     if (g_bIsHalt) {
-      fRate = 0;
+      rate = 0;
     } else if (g_bIsSlow) {
-      fRate /= 4;
+      rate /= 4;
     }
 
-    GameLoop::SetUpdateRate(fRate);
+    GameLoop::SetUpdateRate(rate);
   }
 
-  bool bCenteringNeedsUpdate = g_fImageScaleCurrent != g_fImageScaleDestination;
-  fapproach(g_fImageScaleCurrent, g_fImageScaleDestination, fDeltaTime);
-  if (bCenteringNeedsUpdate) {
+  bool centering_needs_update =
+      g_fImageScaleCurrent != g_fImageScaleDestination;
+  fapproach(g_fImageScaleCurrent, g_fImageScaleDestination, delta_time);
+  if (centering_needs_update) {
     DISPLAY->ChangeCentering(
         PREFSMAN->center_image_translate_x_,
         PREFSMAN->center_image_translate_y_,
@@ -381,7 +382,7 @@ void ScreenDebugOverlay::Update(float fDeltaTime) {
             (int)(g_fImageScaleCurrent * SCREEN_HEIGHT));
   }
 
-  Screen::Update(fDeltaTime);
+  Screen::Update(delta_time);
 
   this->SetVisible(g_bIsDisplayed && !forced_hidden_);
   if (!g_bIsDisplayed) {
@@ -395,52 +396,52 @@ void ScreenDebugOverlay::UpdateText() {
   auto start = pages_.begin();
   for (std::vector<std::string>::const_iterator s = pages_.begin();
        s != pages_.end(); ++s) {
-    int iPage = s - start;
-    text_pages_[iPage]->PlayCommand(
-        (iPage == current_page_) ? "GainFocus" : "LoseFocus");
+    int page = s - start;
+    text_pages_[page]->PlayCommand(
+        (page == current_page_) ? "GainFocus" : "LoseFocus");
   }
 
   // todo: allow changing of various spacing/location things -aj
-  int iOffset = 0;
-  auto subStart = g_pvpSubscribers->begin();
-  for (std::vector<IDebugLine*>::const_iterator p = subStart;
+  int offset = 0;
+  auto sub_start = g_pvpSubscribers->begin();
+  for (std::vector<IDebugLine*>::const_iterator p = sub_start;
        p != g_pvpSubscribers->end(); ++p) {
-    std::string sPageName = (*p)->GetPageName();
+    std::string page_name = (*p)->GetPageName();
 
-    int i = p - subStart;
+    int i = p - sub_start;
 
-    float fY = LINE_START_Y + iOffset * LINE_SPACING;
+    float y = LINE_START_Y + offset * LINE_SPACING;
 
     BitmapText& txt1 = *text_button_[i];
     BitmapText& txt2 = *text_function_[i];
-    if (sPageName != GetCurrentPageName()) {
+    if (page_name != GetCurrentPageName()) {
       txt1.SetVisible(false);
       txt2.SetVisible(false);
       continue;
     }
     txt1.SetVisible(true);
     txt2.SetVisible(true);
-    ++iOffset;
+    ++offset;
 
     txt1.SetX(LINE_BUTTON_X);
-    txt1.SetY(fY);
+    txt1.SetY(y);
 
     txt2.SetX(LINE_FUNCTION_X);
-    txt2.SetY(fY);
+    txt2.SetY(y);
 
     std::string s1 = (*p)->GetDisplayTitle();
     std::string s2 = (*p)->GetDisplayValue();
 
-    bool bOn = (*p)->IsEnabled();
+    bool on = (*p)->IsEnabled();
 
-    txt1.SetDiffuse(bOn ? LINE_ON_COLOR : LINE_OFF_COLOR);
-    txt2.SetDiffuse(bOn ? LINE_ON_COLOR : LINE_OFF_COLOR);
+    txt1.SetDiffuse(on ? LINE_ON_COLOR : LINE_OFF_COLOR);
+    txt2.SetDiffuse(on ? LINE_ON_COLOR : LINE_OFF_COLOR);
 
-    std::string sButton = GetDebugButtonName(*p);
-    if (!sButton.empty()) {
-      sButton += ": ";
+    std::string button = GetDebugButtonName(*p);
+    if (!button.empty()) {
+      button += ": ";
     }
-    txt1.SetText(sButton);
+    txt1.SetText(button);
     if (!s2.empty()) {
       s1 += " - ";
     }
@@ -474,21 +475,21 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
 
   if (input.device_i_ == g_Mappings.hold_for_debug1_ ||
       input.device_i_ == g_Mappings.hold_for_debug2_) {
-    bool bHoldingNeither =
+    bool holding_neither =
         (!g_Mappings.hold_for_debug1_.IsValid() ||
          !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
         (!g_Mappings.hold_for_debug2_.IsValid() ||
          !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
-    bool bHoldingBoth =
+    bool holding_both =
         (!g_Mappings.hold_for_debug1_.IsValid() ||
          INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
         (!g_Mappings.hold_for_debug2_.IsValid() ||
          INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
-    if (bHoldingNeither) {
+    if (holding_neither) {
       forced_hidden_ = false;
     }
 
-    if (bHoldingBoth) {
+    if (holding_both) {
       g_bIsDisplayed = true;
     } else {
       g_bIsDisplayed = false;
@@ -501,13 +502,13 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
                                 : MUTE_ACTIONS_OFF.GetValue());
   }
 
-  int iPage = 0;
+  int page = 0;
   if (g_bIsDisplayed &&
-      GetValueFromMap(g_Mappings.page_button_, input.device_i_, iPage)) {
+      GetValueFromMap(g_Mappings.page_button_, input.device_i_, page)) {
     if (input.type_ != IET_FIRST_PRESS) {
       return true;  // eat the input but do nothing
     }
-    current_page_ = iPage;
+    current_page_ = page;
     rage_clamp(current_page_, 0, (int)pages_.size() - 1);
     return true;
   }
@@ -515,7 +516,7 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
   auto start = g_pvpSubscribers->begin();
   for (std::vector<IDebugLine*>::const_iterator p = start;
        p != g_pvpSubscribers->end(); ++p) {
-    std::string sPageName = (*p)->GetPageName();
+    std::string page_name = (*p)->GetPageName();
 
     int i = p - start;
 
@@ -527,7 +528,7 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
         if (!g_bIsDisplayed) {
           continue;
         }
-        if (sPageName != GetCurrentPageName()) {
+        if (page_name != GetCurrentPageName()) {
           continue;
         }
         break;
@@ -546,10 +547,10 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
       }
 
       // do the action
-      std::string sMessage;
-      (*p)->DoAndLog(sMessage);
-      if (!sMessage.empty()) {
-        LOG->Trace("DEBUG: %s", sMessage.c_str());
+      std::string message;
+      (*p)->DoAndLog(message);
+      if (!message.empty()) {
+        LOG->Trace("DEBUG: %s", message.c_str());
       }
       if ((*p)->ForceOffAfterUse()) {
         forced_hidden_ = true;
@@ -575,23 +576,23 @@ static void SetSpeed() {
   // PauseMusic( g_bIsHalt );
 }
 
-void ChangeVolume(float fDelta) {
-  Preference<float>* pRet =
+void ChangeVolume(float delta) {
+  Preference<float>* ret =
       Preference<float>::GetPreferenceByName("SoundVolume");
-  float fVol = pRet->Get();
-  fVol += fDelta;
-  rage_clamp(fVol, 0.0f, 1.0f);
-  pRet->Set(fVol);
+  float vol = ret->Get();
+  vol += delta;
+  rage_clamp(vol, 0.0f, 1.0f);
+  ret->Set(vol);
   SOUNDMAN->SetMixVolume();
 }
 
-void ChangeVisualDelay(float fDelta) {
-  Preference<float>* pRet =
+void ChangeVisualDelay(float delta) {
+  Preference<float>* ret =
       Preference<float>::GetPreferenceByName("VisualDelaySeconds");
-  float fSecs = pRet->Get();
-  fSecs += fDelta;
-  rage_clamp(fSecs, -1.0f, 1.0f);
-  pRet->Set(fSecs);
+  float secs = ret->Get();
+  secs += delta;
+  rage_clamp(secs, -1.0f, 1.0f);
+  ret->Set(secs);
 }
 
 // DebugLines
@@ -668,15 +669,15 @@ class DebugLineAutoplay : public IDebugLine {
   virtual bool IsEnabled() {
     return GamePreferences::m_AutoPlay.Get() != PC_HUMAN;
   }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
     PlayerController pc =
         GAMESTATE->player_state_[GAMESTATE->GetMasterPlayerNumber()]
             ->player_controller_;
-    bool bHoldingShift =
+    bool holding_shift =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
-    if (bHoldingShift) {
+    if (holding_shift) {
       pc = (pc == PC_CPU) ? PC_HUMAN : PC_CPU;
     } else {
       pc = (pc == PC_AUTOPLAY) ? PC_HUMAN : PC_AUTOPLAY;
@@ -685,7 +686,7 @@ class DebugLineAutoplay : public IDebugLine {
     FOREACH_HumanPlayer(p) GAMESTATE->player_state_[p]->player_controller_ =
         GamePreferences::m_AutoPlay;
 
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -706,17 +707,17 @@ class DebugLineAssist : public IDebugLine {
     return GAMESTATE->song_options_.GetSong().assist_clap_ ||
            GAMESTATE->song_options_.GetSong().assist_metronome_;
   }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
-    bool bHoldingShift =
+    bool holding_shift =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT));
     bool b;
-    if (bHoldingShift) {
+    if (holding_shift) {
       b = !GAMESTATE->song_options_.GetSong().assist_metronome_;
     } else {
       b = !GAMESTATE->song_options_.GetSong().assist_clap_;
     }
-    if (bHoldingShift) {
+    if (holding_shift) {
       SO_GROUP_ASSIGN(
           GAMESTATE->song_options_, ModsLevel_Preferred, assist_metronome_, b);
     } else {
@@ -724,7 +725,7 @@ class DebugLineAssist : public IDebugLine {
           GAMESTATE->song_options_, ModsLevel_Preferred, assist_clap_, b);
     }
 
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -754,10 +755,10 @@ class DebugLineAutosync : public IDebugLine {
     return GAMESTATE->song_options_.GetSong().autosync_type_ !=
            AutosyncType_Off;
   }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     int as = GAMESTATE->song_options_.GetSong().autosync_type_ + 1;
-    bool bAllowSongAutosync = !GAMESTATE->IsCourseMode();
-    if (!bAllowSongAutosync &&
+    bool allow_song_autosync = !GAMESTATE->IsCourseMode();
+    if (!allow_song_autosync &&
         (as == AutosyncType_Song || as == AutosyncType_Tempo)) {
       as = AutosyncType_Machine;
     }
@@ -766,7 +767,7 @@ class DebugLineAutosync : public IDebugLine {
         GAMESTATE->song_options_, ModsLevel_Song, autosync_type_,
         AutosyncType(as));
     MESSAGEMAN->Broadcast(Message_AutosyncChanged);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -776,7 +777,7 @@ class DebugLineCoinMode : public IDebugLine {
     return CoinModeToString(GAMESTATE->GetCoinMode());
   }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     if (GAMESTATE->GetCoinMode() == CoinMode_Home) {
       GamePreferences::m_CoinMode.Set(CoinMode_Free);
     } else if (
@@ -787,65 +788,65 @@ class DebugLineCoinMode : public IDebugLine {
       GamePreferences::m_CoinMode.Set(CoinMode_Home);
     }
     SCREENMAN->RefreshCreditsMessages();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineSlow : public IDebugLine {
   virtual std::string GetDisplayTitle() { return SLOW.GetValue(); }
   virtual bool IsEnabled() { return g_bIsSlow; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     g_bIsSlow = !g_bIsSlow;
     SetSpeed();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineHalt : public IDebugLine {
   virtual std::string GetDisplayTitle() { return HALT.GetValue(); }
   virtual bool IsEnabled() { return g_bIsHalt; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     g_bIsHalt = !g_bIsHalt;
     g_HaltTimer.Touch();
     SetSpeed();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineLightsDebug : public IDebugLine {
   virtual std::string GetDisplayTitle() { return LIGHTS_DEBUG.GetValue(); }
   virtual bool IsEnabled() { return PREFSMAN->debug_lights_.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->debug_lights_.Set(!PREFSMAN->debug_lights_);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineStats : public IDebugLine {
   virtual std::string GetDisplayTitle() { return RENDERING_STATS.GetValue(); }
   virtual bool IsEnabled() { return PREFSMAN->show_stats_.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->show_stats_.Set(!PREFSMAN->show_stats_);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineVsync : public IDebugLine {
   virtual std::string GetDisplayTitle() { return VSYNC.GetValue(); }
   virtual bool IsEnabled() { return PREFSMAN->vsync_.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->vsync_.Set(!PREFSMAN->vsync_);
     StepMania::ApplyGraphicOptions();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
 class DebugLineAllowMultitexture : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MULTITEXTURE.GetValue(); }
   virtual bool IsEnabled() { return PREFSMAN->allow_multitexture_.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->allow_multitexture_.Set(!PREFSMAN->allow_multitexture_);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -853,9 +854,9 @@ class DebugLineShowMasks : public IDebugLine {
   virtual std::string GetDisplayTitle() { return SCREEN_SHOW_MASKS.GetValue(); }
   virtual bool IsEnabled() { return GetPref()->Get(); }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     GetPref()->Set(!GetPref()->Get());
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 
   Preference<bool>* GetPref() {
@@ -887,13 +888,13 @@ class DebugLineProfileSlot : public IDebugLine {
   }
   virtual bool IsEnabled() { return IsSelectProfilePersistent(); }
   virtual std::string GetPageName() const { return "Profiles"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     enum_add(g_ProfileSlot, +1);
     if (g_ProfileSlot == NUM_ProfileSlot) {
       g_ProfileSlot = ProfileSlot_Player1;
     }
 
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -901,9 +902,9 @@ class DebugLineSendNotesEnded : public IDebugLine {
   virtual std::string GetDisplayTitle() { return SEND_NOTES_ENDED.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     SCREENMAN->PostMessageToTopScreen(SM_NotesEnded, 0);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -911,10 +912,10 @@ class DebugLineResetKeyMapping : public IDebugLine {
   virtual std::string GetDisplayTitle() { return RESET_KEY_MAP.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     INPUTMAPPER->ResetMappingsToDefault();
     INPUTMAPPER->SaveMappingsToDisk();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -922,12 +923,12 @@ class DebugLineMuteActions : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MUTE_ACTIONS.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return PREFSMAN->mute_actions_; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->mute_actions_.Set(!PREFSMAN->mute_actions_);
     SCREENMAN->SystemMessage(
         PREFSMAN->mute_actions_ ? MUTE_ACTIONS_ON.GetValue()
                                 : MUTE_ACTIONS_OFF.GetValue());
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -940,16 +941,16 @@ class DebugLineReloadCurrentScreen : public IDebugLine {
   }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
-    std::string sScreenName = SCREENMAN->GetScreen(0)->GetName();
+  virtual void DoAndLog(std::string& message_out) {
+    std::string screen_name = SCREENMAN->GetScreen(0)->GetName();
     SCREENMAN->PopAllScreens();
 
     SOUND->StopMusic();
     // StepMania::ResetGame();
 
-    SCREENMAN->SetNewScreen(sScreenName);
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut = "";
+    SCREENMAN->SetNewScreen(screen_name);
+    IDebugLine::DoAndLog(message_out);
+    message_out = "";
   }
 };
 
@@ -963,10 +964,10 @@ class DebugLineRestartCurrentScreen : public IDebugLine {
   virtual bool IsEnabled() { return true; }
   virtual bool ForceOffAfterUse() const { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     SCREENMAN->GetTopScreen()->BeginScreen();
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut = "";
+    IDebugLine::DoAndLog(message_out);
+    message_out = "";
   }
 };
 
@@ -980,10 +981,10 @@ class DebugLineCurrentScreenOn : public IDebugLine {
   virtual bool IsEnabled() { return true; }
   virtual bool ForceOffAfterUse() const { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     SCREENMAN->GetTopScreen()->PlayCommand("On");
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut = "";
+    IDebugLine::DoAndLog(message_out);
+    message_out = "";
   }
 };
 
@@ -997,10 +998,10 @@ class DebugLineCurrentScreenOff : public IDebugLine {
   virtual bool IsEnabled() { return true; }
   virtual bool ForceOffAfterUse() const { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     SCREENMAN->GetTopScreen()->PlayCommand("Off");
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut = "";
+    IDebugLine::DoAndLog(message_out);
+    message_out = "";
   }
 };
 
@@ -1011,14 +1012,14 @@ class DebugLineReloadTheme : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     THEME->ReloadMetrics();
     TEXTUREMAN->ReloadAll();
     NOTESKIN->RefreshNoteSkinData(GAMESTATE->cur_game_);
     CodeDetector::RefreshCacheItems();
     // HACK: Don't update text below. Return immediately because this screen
     // was just destroyed as part of the theme reload.
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1029,9 +1030,9 @@ class DebugLineReloadOverlayScreens : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     SCREENMAN->ReloadOverlayScreensAfterInputFinishes();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1040,9 +1041,9 @@ class DebugLineToggleErrors : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return PREFSMAN->show_theme_errors_; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->show_theme_errors_.Set(!PREFSMAN->show_theme_errors_);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1053,10 +1054,10 @@ class DebugLineShowRecentErrors : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     Message msg("ToggleScriptError");
     MESSAGEMAN->Broadcast(msg);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1065,10 +1066,10 @@ class DebugLineClearErrors : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     Message msg("ClearScriptError");
     MESSAGEMAN->Broadcast(msg);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1077,11 +1078,11 @@ class DebugLineConvertXML : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Theme"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     Song* cur_song = GAMESTATE->cur_song_;
     if (cur_song) {
       convert_xmls_in_dir(cur_song->GetSongDir() + "/");
-      IDebugLine::DoAndLog(sMessageOut);
+      IDebugLine::DoAndLog(message_out);
     }
   }
 };
@@ -1091,7 +1092,7 @@ class DebugLineWriteProfiles : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return IsSelectProfilePersistent(); }
   virtual std::string GetPageName() const { return "Profiles"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     // Also save bookkeeping and profile info for debugging
     // so we don't have to play through a whole song to get new output.
     if (g_ProfileSlot == ProfileSlot_Machine) {
@@ -1101,7 +1102,7 @@ class DebugLineWriteProfiles : public IDebugLine {
       GAMESTATE->SaveCurrentSettingsToProfile(pn);
       GAMESTATE->SavePlayerProfile(pn);
     }
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1109,9 +1110,9 @@ class DebugLineWritePreferences : public IDebugLine {
   virtual std::string GetDisplayTitle() { return WRITE_PREFERENCES.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->SavePrefsToDisk();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1120,9 +1121,9 @@ class DebugLineReloadPreferences : public IDebugLine {
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
   virtual std::string GetPageName() const { return "Profiles"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->ReadPrefsFromDisk();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1130,9 +1131,9 @@ class DebugLineMenuTimer : public IDebugLine {
   virtual std::string GetDisplayTitle() { return MENU_TIMER.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return PREFSMAN->menu_timer_.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     PREFSMAN->menu_timer_.Set(!PREFSMAN->menu_timer_);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1140,9 +1141,9 @@ class DebugLineFlushLog : public IDebugLine {
   virtual std::string GetDisplayTitle() { return FLUSH_LOG.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     LOG->Flush();
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1150,13 +1151,13 @@ class DebugLinePullBackCamera : public IDebugLine {
   virtual std::string GetDisplayTitle() { return PULL_BACK_CAMERA.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return g_fImageScaleDestination != 1; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     if (g_fImageScaleDestination == 1) {
       g_fImageScaleDestination = 0.5f;
     } else {
       g_fImageScaleDestination = 1;
     }
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
 };
 
@@ -1166,9 +1167,9 @@ class DebugLineVolumeUp : public IDebugLine {
     return ssprintf("%.0f%%", GetPref()->Get() * 100);
   }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ChangeVolume(+0.1f);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
   Preference<float>* GetPref() {
     return Preference<float>::GetPreferenceByName("SoundVolume");
@@ -1179,10 +1180,10 @@ class DebugLineVolumeDown : public IDebugLine {
   virtual std::string GetDisplayTitle() { return VOLUME_DOWN.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ChangeVolume(-0.1f);
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut += " - " + ssprintf("%.0f%%", GetPref()->Get() * 100);
+    IDebugLine::DoAndLog(message_out);
+    message_out += " - " + ssprintf("%.0f%%", GetPref()->Get() * 100);
   }
   Preference<float>* GetPref() {
     return Preference<float>::GetPreferenceByName("SoundVolume");
@@ -1195,9 +1196,9 @@ class DebugLineVisualDelayUp : public IDebugLine {
     return ssprintf("%.03f", GetPref()->Get());
   }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ChangeVisualDelay(+0.001f);
-    IDebugLine::DoAndLog(sMessageOut);
+    IDebugLine::DoAndLog(message_out);
   }
   Preference<float>* GetPref() {
     return Preference<float>::GetPreferenceByName("VisualDelaySeconds");
@@ -1208,10 +1209,10 @@ class DebugLineVisualDelayDown : public IDebugLine {
   virtual std::string GetDisplayTitle() { return VISUAL_DELAY_DOWN.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
   virtual bool IsEnabled() { return true; }
-  virtual void DoAndLog(std::string& sMessageOut) {
+  virtual void DoAndLog(std::string& message_out) {
     ChangeVisualDelay(-0.001f);
-    IDebugLine::DoAndLog(sMessageOut);
-    sMessageOut += " - " + ssprintf("%.03f", GetPref()->Get());
+    IDebugLine::DoAndLog(message_out);
+    message_out += " - " + ssprintf("%.03f", GetPref()->Get());
   }
   Preference<float>* GetPref() {
     return Preference<float>::GetPreferenceByName("VisualDelaySeconds");
@@ -1224,7 +1225,7 @@ class DebugLineUptime : public IDebugLine {
     return MicrosecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStartMicroseconds());
   }
   virtual bool IsEnabled() { return false; }
-  virtual void DoAndLog(std::string& sMessageOut) {}
+  virtual void DoAndLog(std::string& message_out) {}
 };
 
 /* If you comment out a DECLARE_ONE at the end of the file, it will remove that

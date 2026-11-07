@@ -129,19 +129,19 @@ class Course {
   Trail* GetTrail(StepsType st, CourseDifficulty cd = Difficulty_Medium) const;
   Trail* GetTrailForceRegenCache(
       StepsType st, CourseDifficulty cd = Difficulty_Medium) const;
-  void GetTrails(std::vector<Trail*>& AddTo, StepsType st) const;
-  void GetAllTrails(std::vector<Trail*>& AddTo) const;
+  void GetTrails(std::vector<Trail*>& add_to, StepsType st) const;
+  void GetAllTrails(std::vector<Trail*>& add_to) const;
   int GetMeter(StepsType st, CourseDifficulty cd = Difficulty_Medium) const;
   bool HasMods() const;
   bool HasTimedMods() const;
   bool AllSongsAreFixed() const;
-  const Style* GetCourseStyle(const Game* pGame, int iNumPlayers) const;
+  const Style* GetCourseStyle(const Game* game, int num_players) const;
 
   int GetEstimatedNumStages() const { return entries_.size(); }
   bool IsPlayableIn(StepsType st) const;
   bool CourseHasBestOrWorst() const;
   RageColor GetColor() const;
-  bool GetTotalSeconds(StepsType st, float& fSecondsOut) const;
+  bool GetTotalSeconds(StepsType st, float& seconds_out) const;
 
   bool IsNonstop() const { return GetPlayMode() == PLAY_MODE_NONSTOP; }
   bool IsOni() const { return GetPlayMode() == PLAY_MODE_ONI; }
@@ -164,15 +164,15 @@ class Course {
   void InvalidateTrailCache();
 
   // Call when a Song or its Steps are deleted/changed.
-  void Invalidate(const Song* pStaleSong);
+  void Invalidate(const Song* stale_song);
 
   std::string GetCacheFilePath() const;
 
-  const CourseEntry* FindFixedSong(const Song* pSong) const;
+  const CourseEntry* FindFixedSong(const Song* song) const;
 
   ProfileSlot GetLoadedFromProfileSlot() const { return loaded_from_profile_; }
 
-  bool Matches(std::string sGroup, std::string sCourse) const;
+  bool Matches(std::string group, std::string course) const;
 
   // Lua
   void PushSelf(lua_State* L);
@@ -183,7 +183,7 @@ class Course {
   void GetTrailUnsortedEndless(
       const std::vector<CourseEntry>& entries, Trail& trail, StepsType& st,
       CourseDifficulty& cd, RandomGen& rnd,
-      bool& bCourseDifficultyIsSignificant) const;
+      bool& course_difficulty_is_significant) const;
   bool GetTrailSorted(StepsType st, CourseDifficulty cd, Trail& trail) const;
 
   bool IsAnEdit() const { return loaded_from_profile_ != ProfileSlot_Invalid; }

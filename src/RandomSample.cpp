@@ -14,11 +14,11 @@ RandomSample::RandomSample() { index_last_played_ = -1; }
 
 RandomSample::~RandomSample() { UnloadAll(); }
 
-bool RandomSample::Load(std::string sFilePath, int iMaxToLoad) {
-  if (GetExtension(sFilePath) == "") {
-    return LoadSoundDir(sFilePath, iMaxToLoad);
+bool RandomSample::Load(std::string file_path, int max_to_load) {
+  if (GetExtension(file_path) == "") {
+    return LoadSoundDir(file_path, max_to_load);
   } else {
-    return LoadSound(sFilePath);
+    return LoadSound(file_path);
   }
 }
 
@@ -29,8 +29,8 @@ void RandomSample::UnloadAll() {
   samples_.clear();
 }
 
-bool RandomSample::LoadSoundDir(std::string sDir, int iMaxToLoad) {
-  if (sDir == "") {
+bool RandomSample::LoadSoundDir(std::string dir, int max_to_load) {
+  if (dir == "") {
     return true;
   }
 
@@ -44,43 +44,44 @@ bool RandomSample::LoadSoundDir(std::string sDir, int iMaxToLoad) {
 		sDir += "/";
 #else
   // make sure there's a slash at the end of this path
-  if (Right(sDir, 1) != "/") {
-    sDir += "/";
+  if (Right(dir, 1) != "/") {
+    dir += "/";
   }
 #endif
 
-  std::vector<std::string> arraySoundFiles;
-  GetDirListing(sDir + "*.mp3", arraySoundFiles);
-  GetDirListing(sDir + "*.oga", arraySoundFiles);
-  GetDirListing(sDir + "*.ogg", arraySoundFiles);
-  GetDirListing(sDir + "*.wav", arraySoundFiles);
+  std::vector<std::string> array_sound_files;
+  GetDirListing(dir + "*.mp3", array_sound_files);
+  GetDirListing(dir + "*.oga", array_sound_files);
+  GetDirListing(dir + "*.ogg", array_sound_files);
+  GetDirListing(dir + "*.wav", array_sound_files);
 
   std::shuffle(
-      arraySoundFiles.begin(), arraySoundFiles.end(), g_RandomNumberGenerator);
-  const unsigned int newSize = std::min<unsigned int>(
-      arraySoundFiles.size(), static_cast<unsigned int>(iMaxToLoad));
-  arraySoundFiles.resize(newSize);
+      array_sound_files.begin(), array_sound_files.end(),
+      g_RandomNumberGenerator);
+  const unsigned int new_size = std::min<unsigned int>(
+      array_sound_files.size(), static_cast<unsigned int>(max_to_load));
+  array_sound_files.resize(new_size);
 
-  for (unsigned i = 0; i < arraySoundFiles.size(); i++) {
-    LoadSound(sDir + arraySoundFiles[i]);
+  for (unsigned i = 0; i < array_sound_files.size(); i++) {
+    LoadSound(dir + array_sound_files[i]);
   }
 
   return true;
 }
 
-bool RandomSample::LoadSound(std::string sSoundFilePath) {
-  LOG->Trace("RandomSample::LoadSound( %s )", sSoundFilePath.c_str());
+bool RandomSample::LoadSound(std::string sound_file_path) {
+  LOG->Trace("RandomSample::LoadSound( %s )", sound_file_path.c_str());
 
-  RageSound* pSS = new RageSound;
-  if (!pSS->Load(sSoundFilePath)) {
+  RageSound* ss = new RageSound;
+  if (!ss->Load(sound_file_path)) {
     LOG->Trace(
-        "Error loading \"%s\": %s", sSoundFilePath.c_str(),
-        pSS->GetError().c_str());
-    delete pSS;
+        "Error loading \"%s\": %s", sound_file_path.c_str(),
+        ss->GetError().c_str());
+    delete ss;
     return false;
   }
 
-  samples_.push_back(pSS);
+  samples_.push_back(ss);
 
   return true;
 }
@@ -91,24 +92,24 @@ int RandomSample::GetNextToPlay() {
     return -1;
   }
 
-  int iIndexToPlay = 0;
+  int index_to_play = 0;
   for (int i = 0; i < 5; i++) {
-    iIndexToPlay = RandomInt(samples_.size());
-    if (iIndexToPlay != index_last_played_) {
+    index_to_play = RandomInt(samples_.size());
+    if (index_to_play != index_last_played_) {
       break;
     }
   }
 
-  index_last_played_ = iIndexToPlay;
-  return iIndexToPlay;
+  index_last_played_ = index_to_play;
+  return index_to_play;
 }
 
 void RandomSample::PlayRandom() {
-  int iIndexToPlay = GetNextToPlay();
-  if (iIndexToPlay == -1) {
+  int index_to_play = GetNextToPlay();
+  if (index_to_play == -1) {
     return;
   }
-  samples_[iIndexToPlay]->Play(true);
+  samples_[index_to_play]->Play(true);
 }
 
 void RandomSample::Stop() {

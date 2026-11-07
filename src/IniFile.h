@@ -23,33 +23,33 @@ class IniFile : public XNode {
    * @return the latest error. */
   const std::string& GetError() const { return error_; }
 
-  bool ReadFile(const std::string& sPath);
-  bool ReadFile(RageFileBasic& sFile);
-  bool WriteFile(const std::string& sPath) const;
-  bool WriteFile(RageFileBasic& sFile) const;
+  bool ReadFile(const std::string& path);
+  bool ReadFile(RageFileBasic& file);
+  bool WriteFile(const std::string& path) const;
+  bool WriteFile(RageFileBasic& file) const;
 
   template <typename T>
   bool GetValue(
-      const std::string& sKey, const std::string& sValueName, T& value) const {
-    const XNode* pNode = GetChild(sKey);
-    if (pNode == nullptr) {
+      const std::string& key, const std::string& value_name, T& value) const {
+    const XNode* node = GetChild(key);
+    if (node == nullptr) {
       return false;
     }
-    return pNode->GetAttrValue<T>(sValueName, value);
+    return node->GetAttrValue<T>(value_name, value);
   }
   template <typename T>
   void SetValue(
-      const std::string& sKey, const std::string& sValueName, const T& value) {
-    XNode* pNode = GetChild(sKey);
-    if (pNode == nullptr) {
-      pNode = AppendChild(sKey);
+      const std::string& key, const std::string& value_name, const T& value) {
+    XNode* node = GetChild(key);
+    if (node == nullptr) {
+      node = AppendChild(key);
     }
-    pNode->AppendAttr<T>(sValueName, value);
+    node->AppendAttr<T>(value_name, value);
   }
   template <typename T>
   void SetKeyValue(
-      XNode* keynode, const std::string& sValueName, const T& value) {
-    keynode->AppendAttr<T>(sValueName, value);
+      XNode* keynode, const std::string& value_name, const T& value) {
+    keynode->AppendAttr<T>(value_name, value);
   }
 
   bool DeleteKey(const std::string& keyname);

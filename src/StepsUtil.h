@@ -67,7 +67,7 @@ class StepsCriteria {
    * for.
    * @return true if it matches, false otherwise.
    */
-  bool Matches(const Song* pSong, const Steps* pSteps) const;
+  bool Matches(const Song* song, const Steps* steps) const;
   /**
    * @brief Compare two StepsCriteria to see if they are equal.
    * @param other the StepsCriteria we are checking against.
@@ -102,7 +102,7 @@ class SongAndSteps {
    * <a class="el" href="class_steps.html">Step</a>.
    * @param pSong_ the new Song.
    * @param pSteps_ the new <a class="el" href="class_steps.html">Step</a>. */
-  SongAndSteps(Song* pSong_, Steps* pSteps_) : song_(pSong_), steps_(pSteps_) {}
+  SongAndSteps(Song* song, Steps* steps) : song_(song), steps_(steps) {}
   /**
    * @brief Compare two sets of Songs and Steps to see if they are equal.
    * @param other the other set of SongAndSteps.
@@ -142,7 +142,7 @@ void GetAllMatching(
  * @param out the SongsAndSteps that match.
  */
 void GetAllMatching(
-    Song* pSong, const StepsCriteria& stc, std::vector<SongAndSteps>& out);
+    Song* song, const StepsCriteria& stc, std::vector<SongAndSteps>& out);
 /**
  * @brief Retrieve all of the Steps that match the criteria, for Endless mode
  * only.
@@ -151,21 +151,19 @@ void GetAllMatching(
  * @param out the SongsAndSteps that match.
  */
 void GetAllMatchingEndless(
-    Song* pSong, const StepsCriteria& stc, std::vector<SongAndSteps>& out);
+    Song* song, const StepsCriteria& stc, std::vector<SongAndSteps>& out);
 
 bool CompareNotesPointersByRadarValues(
-    const Steps* pSteps1, const Steps* pSteps2);
-bool CompareNotesPointersByMeter(const Steps* pSteps1, const Steps* pSteps2);
-bool CompareNotesPointersByDifficulty(
-    const Steps* pSteps1, const Steps* pSteps2);
-void SortNotesArrayByDifficulty(std::vector<Steps*>& vpStepsInOut);
+    const Steps* steps1, const Steps* steps2);
+bool CompareNotesPointersByMeter(const Steps* steps1, const Steps* steps2);
+bool CompareNotesPointersByDifficulty(const Steps* steps1, const Steps* steps2);
+void SortNotesArrayByDifficulty(std::vector<Steps*>& steps_in_out);
 bool CompareStepsPointersByTypeAndDifficulty(
-    const Steps* pStep1, const Steps* pStep2);
-void SortStepsByTypeAndDifficulty(std::vector<Steps*>& vpStepsInOut);
-bool CompareStepsPointersByDescription(
-    const Steps* pStep1, const Steps* pStep2);
-void SortStepsByDescription(std::vector<Steps*>& vpStepsInOut);
-void RemoveLockedSteps(const Song* pSong, std::vector<Steps*>& vpStepsInOut);
+    const Steps* step1, const Steps* step2);
+void SortStepsByTypeAndDifficulty(std::vector<Steps*>& steps_in_out);
+bool CompareStepsPointersByDescription(const Steps* step1, const Steps* step2);
+void SortStepsByDescription(std::vector<Steps*>& steps_in_out);
+void RemoveLockedSteps(const Song* song, std::vector<Steps*>& steps_in_out);
 }  // namespace StepsUtil
 
 class StepsID {
@@ -187,7 +185,7 @@ class StepsID {
         hash_(0) {}
   void Unset() { FromSteps(nullptr); }
   void FromSteps(const Steps* p);
-  Steps* ToSteps(const Song* p, bool bAllowNull) const;
+  Steps* ToSteps(const Song* p, bool allow_null) const;
   // FIXME: (interferes with unlimited charts per song)
   // When performing comparisons, the hash value 0 is considered equal to
   // all other values.  This is because the hash value for a Steps is
@@ -210,7 +208,7 @@ class StepsID {
   bool MatchesStepsType(StepsType s) const { return st_ == s; }
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   std::string ToString() const;
   bool IsValid() const;
 

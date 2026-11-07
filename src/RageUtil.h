@@ -143,41 +143,41 @@ inline void RemoveIf(Container& c, Predicate p) {
  * know that the register value is invalid.)
  */
 template <typename T>
-static inline void enum_add(T& val, int iAmt) {
-  val = static_cast<T>(val + iAmt);
+static inline void enum_add(T& val, int amt) {
+  val = static_cast<T>(val + amt);
 }
 
 template <typename T>
-static inline T enum_add2(T val, int iAmt) {
-  return static_cast<T>(val + iAmt);
+static inline T enum_add2(T val, int amt) {
+  return static_cast<T>(val + amt);
 }
 
 /* return f rounded to the nearest multiple of fRoundInterval */
-inline float Quantize(const float f, const float fRoundInterval) {
-  return int((f + fRoundInterval / 2) / fRoundInterval) * fRoundInterval;
+inline float Quantize(const float f, const float round_interval) {
+  return int((f + round_interval / 2) / round_interval) * round_interval;
 }
 
-inline int Quantize(const int i, const int iRoundInterval) {
-  return int((i + iRoundInterval / 2) / iRoundInterval) * iRoundInterval;
+inline int Quantize(const int i, const int round_interval) {
+  return int((i + round_interval / 2) / round_interval) * round_interval;
 }
 
 /* return f truncated to the nearest multiple of fTruncInterval */
-inline float ftruncf(const float f, const float fTruncInterval) {
-  return int((f) / fTruncInterval) * fTruncInterval;
+inline float ftruncf(const float f, const float trunc_interval) {
+  return int((f) / trunc_interval) * trunc_interval;
 }
 
 /* Return i rounded up to the nearest multiple of iInterval. */
-inline int QuantizeUp(int i, int iInterval) {
-  return int((i + iInterval - 1) / iInterval) * iInterval;
+inline int QuantizeUp(int i, int interval) {
+  return int((i + interval - 1) / interval) * interval;
 }
 
-inline float QuantizeUp(float i, float iInterval) {
-  return std::ceil(i / iInterval) * iInterval;
+inline float QuantizeUp(float i, float interval) {
+  return std::ceil(i / interval) * interval;
 }
 
 /* Return i rounded down to the nearest multiple of iInterval. */
-inline float QuantizeDown(float i, float iInterval) {
-  return std::floor(i / iInterval) * iInterval;
+inline float QuantizeDown(float i, float interval) {
+  return std::floor(i / interval) * interval;
 }
 
 // Move val toward other_val by to_move.
@@ -189,19 +189,19 @@ float fmodfp(float x, float y);
 int power_of_two(int v);
 bool IsAnInt(const std::string& s);
 bool IsHexVal(const std::string& s);
-std::string BinaryToHex(const void* pData_, size_t iNumBytes);
-std::string BinaryToHex(const std::string& sString);
-float HHMMSSToSeconds(const std::string& sHMS);
-std::string SecondsToHHMMSS(float fSecs);
-std::string SecondsToMSSMsMs(float fSecs);
-std::string SecondsToMMSSMsMs(float fSecs);
-std::string SecondsToMMSSMsMsMs(float fSecs);
+std::string BinaryToHex(const void* data, size_t num_bytes);
+std::string BinaryToHex(const std::string& string);
+float HHMMSSToSeconds(const std::string& hms);
+std::string SecondsToHHMMSS(float secs);
+std::string SecondsToMSSMsMs(float secs);
+std::string SecondsToMMSSMsMs(float secs);
+std::string SecondsToMMSSMsMsMs(float secs);
 std::string MicrosecondsToMMSSMsMs(uint64_t usecs);
 std::string MicrosecondsToMMSSMsMsMs(uint64_t usecs);
-std::string SecondsToMSS(float fSecs);
-std::string SecondsToMMSS(float fSecs);
-std::string PrettyPercent(float fNumerator, float fDenominator);
-std::string Commify(int iNum);
+std::string SecondsToMSS(float secs);
+std::string SecondsToMMSS(float secs);
+std::string PrettyPercent(float numerator, float denominator);
+std::string Commify(int num);
 std::string Commify(
     const std::string& num, const std::string& sep = ",",
     const std::string& dot = ".");
@@ -212,7 +212,7 @@ std::string NormalizeDecimal(float num);
 struct tm GetLocalTime();
 
 std::string ssprintf(const char* fmt, ...) PRINTF(1, 2);
-std::string vssprintf(const char* fmt, va_list argList);
+std::string vssprintf(const char* fmt, va_list arg_list);
 
 /*
  * Splits a Path into 4 parts (Directory, Drive, Filename, Extention).  Supports
@@ -221,14 +221,14 @@ std::string vssprintf(const char* fmt, va_list argList);
  * "c:\games\stepmania\".
  * */
 void splitpath(
-    const std::string& Path, std::string& Dir, std::string& Filename,
-    std::string& Ext);
+    const std::string& path, std::string& dir, std::string& filename,
+    std::string& ext);
 std::string custom_songify_path(const std::string& path);
 
 std::string SetExtension(const std::string& path, const std::string& ext);
-std::string GetExtension(const std::string& sPath);
-std::string GetFileNameWithoutExtension(const std::string& sPath);
-void MakeValidFilename(std::string& sName);
+std::string GetExtension(const std::string& path);
+std::string GetFileNameWithoutExtension(const std::string& path);
+void MakeValidFilename(std::string& name);
 
 bool FindFirstFilenameContaining(
     const std::vector<std::string>& filenames, std::string& out,
@@ -239,18 +239,18 @@ bool FindFirstFilenameContaining(
 extern const wchar_t INVALID_CHAR;
 
 int utf8_get_char_len(char p);
-bool utf8_to_wchar(const char* s, size_t iLength, unsigned& start, wchar_t& ch);
+bool utf8_to_wchar(const char* s, size_t length, unsigned& start, wchar_t& ch);
 bool utf8_to_wchar_ec(const std::string& s, unsigned& start, wchar_t& ch);
 void wchar_to_utf8(wchar_t ch, std::string& out);
 wchar_t utf8_get_char(const std::string& s);
 bool utf8_is_valid(const std::string& s);
 void utf8_remove_bom(std::string& s);
-void MakeUpper(char* p, size_t iLen);
-void MakeUpper(wchar_t* p, size_t iLen);
+void MakeUpper(char* p, size_t len);
+void MakeUpper(wchar_t* p, size_t len);
 
 // TODO: Have the three functions below be moved to better locations.
-float StringToFloat(const std::string& sString);
-bool StringToFloat(const std::string& sString, float& fOut);
+float StringToFloat(const std::string& string);
+bool StringToFloat(const std::string& string, float& out);
 // Better than IntToString because you can check for success.
 template <class T>
 inline bool operator>>(const std::string& lhs, T& rhs) {
@@ -261,87 +261,87 @@ inline bool operator>>(const std::string& lhs, T& rhs) {
 // Additional argument exceptVal will be returned if the conversion couldn't be
 // performed
 int StringToInt(
-    const std::string& str, size_t* pos = 0, int base = 10, int exceptVal = 0);
+    const std::string& str, size_t* pos = 0, int base = 10, int except_val = 0);
 
-std::string WStringToRString(const std::wstring& sString);
+std::string WStringToRString(const std::wstring& string);
 std::string WcharToUTF8(wchar_t c);
-std::wstring RStringToWstring(const std::string& sString);
+std::wstring RStringToWstring(const std::string& string);
 
 // Splits a std::string into an std::vector<std::string> according the
 // Delimitor.
 void split(
-    const std::string& sSource, const std::string& sDelimitor,
-    std::vector<std::string>& asAddIt, const bool bIgnoreEmpty = true);
+    const std::string& source, const std::string& delimitor,
+    std::vector<std::string>& add_it, const bool ignore_empty = true);
 void split(
-    const std::wstring& sSource, const std::wstring& sDelimitor,
-    std::vector<std::wstring>& asAddIt, const bool bIgnoreEmpty = true);
+    const std::wstring& source, const std::wstring& delimitor,
+    std::vector<std::wstring>& add_it, const bool ignore_empty = true);
 std::vector<std::string> split(
-    const std::string& sSource, const char delimiter,
-    const bool bIgnoreEmpty = true);
+    const std::string& source, const char delimiter,
+    const bool ignore_empty = true);
 
 /* In-place split. */
 void split(
-    const std::string& sSource, const std::string& sDelimitor, int& iBegin,
-    int& iSize, const bool bIgnoreEmpty = true);
+    const std::string& source, const std::string& delimitor, int& begin,
+    int& size, const bool ignore_empty = true);
 
 /* In-place split of partial string. */
 void split(
-    const std::string& sSource, const std::string& sDelimitor, int& iBegin,
-    int& iSize, int iLen,
-    const bool bIgnoreEmpty); /* no default to avoid ambiguity */
+    const std::string& source, const std::string& delimitor, int& begin,
+    int& size, int len,
+    const bool ignore_empty); /* no default to avoid ambiguity */
 
 // Joins a std::vector<std::string> to create a std::string according the
 // Deliminator.
 std::string join(
-    const std::string& sDelimitor, const std::vector<std::string>& sSource);
+    const std::string& delimitor, const std::vector<std::string>& source);
 std::string join(
-    const std::string& sDelimitor,
+    const std::string& delimitor,
     std::vector<std::string>::const_iterator begin,
     std::vector<std::string>::const_iterator end);
 
 // These methods escapes a string for saving in a .sm or .crs file
 std::string SmEscape(
-    const std::string& sUnescaped,
-    const std::vector<char> charsToEscape = {'\\', ':', ';'});
+    const std::string& unescaped,
+    const std::vector<char> chars_to_escape = {'\\', ':', ';'});
 std::string SmEscape(
-    const char* cUnescaped, int len,
-    const std::vector<char> charsToEscape = {'\\', ':', ';'});
+    const char* unescaped, int len,
+    const std::vector<char> chars_to_escape = {'\\', ':', ';'});
 // Escapes each element in a std::vector<std::string>, returns a new vector
 std::vector<std::string> SmEscape(
-    const std::vector<std::string>& vUnescaped,
-    const std::vector<char> charsToEscape = {'\\', ':', ';'});
+    const std::vector<std::string>& unescaped,
+    const std::vector<char> chars_to_escape = {'\\', ':', ';'});
 
-std::string SmUnescape(const std::string& sEscaped);
+std::string SmUnescape(const std::string& escaped);
 
 std::string GetCwd();
 
 void SetCommandlineArguments(int argc, char** argv);
 bool GetCommandlineArgument(
-    const std::string& option, std::string* argument = nullptr, int iIndex = 0);
+    const std::string& option, std::string* argument = nullptr, int index = 0);
 extern int g_argc;
 extern char** g_argv;
 
-void CRC32(unsigned int& iCRC, const void* pBuffer, size_t iSize);
+void CRC32(unsigned int& crc, const void* buffer, size_t size);
 unsigned int GetHashForString(const std::string& s);
-unsigned int GetHashForFile(const std::string& sPath);
+unsigned int GetHashForFile(const std::string& path);
 unsigned int GetHashForDirectory(
-    const std::string& sDir);  // a hash value that remains the same as long as
-                               // nothing in the directory has changed
-bool DirectoryIsEmpty(const std::string& sPath);
+    const std::string& dir);  // a hash value that remains the same as long as
+                              // nothing in the directory has changed
+bool DirectoryIsEmpty(const std::string& path);
 
-bool CompareRStringsAsc(const std::string& sStr1, const std::string& sStr2);
-bool CompareRStringsDesc(const std::string& sStr1, const std::string& sStr2);
+bool CompareRStringsAsc(const std::string& str1, const std::string& str2);
+bool CompareRStringsDesc(const std::string& str1, const std::string& str2);
 void SortRStringArray(
-    std::vector<std::string>& asAddTo, const bool bSortAscending = true);
+    std::vector<std::string>& add_to, const bool sort_ascending = true);
 
 /* Find the mean and standard deviation of all numbers in [start,end). */
-float calc_mean(const float* pStart, const float* pEnd);
+float calc_mean(const float* start, const float* end);
 /* When bSample is true, it calculates the square root of an unbiased estimator
  * for the population variance. Note that this is not an unbiased estimator for
  * the population standard deviation but it is close and an unbiased estimator
  * is complicated (apparently). When the entire population is known, bSample
  * should be false to calculate the exact standard deviation. */
-float calc_stddev(const float* pStart, const float* pEnd, bool bSample = false);
+float calc_stddev(const float* start, const float* end, bool sample = false);
 
 /*
  * Find the slope, intercept, and error of a linear least squares regression
@@ -350,16 +350,16 @@ float calc_stddev(const float* pStart, const float* pEnd, bool bSample = false);
  * Returns true on success, false on failure.
  */
 bool CalcLeastSquares(
-    const std::vector<std::pair<float, float> >& vCoordinates, float& fSlope,
-    float& fIntercept, float& fError);
+    const std::vector<std::pair<float, float> >& coordinates, float& slope,
+    float& intercept, float& error);
 
 /*
  * This method throws away any points that are more than fCutoff away from
  * the line defined by fSlope and fIntercept.
  */
 void FilterHighErrorPoints(
-    std::vector<std::pair<float, float> >& vCoordinates, float fSlope,
-    float fIntercept, float fCutoff);
+    std::vector<std::pair<float, float> >& coordinates, float slope,
+    float intercept, float cutoff);
 
 template <class T1, class T2>
 int FindIndex(T1 begin, T1 end, const T2* p) {
@@ -383,13 +383,13 @@ inline T Decrement(T a) {
   return a;
 }
 
-void TrimLeft(std::string& sStr, const char* szTrim = "\r\n\t ");
-void TrimRight(std::string& sStr, const char* szTrim = "\r\n\t ");
-void Trim(std::string& sStr, const char* szTrim = "\r\n\t ");
-void StripCrnl(std::string& sStr);
-bool BeginsWith(const std::string& sTestThis, const std::string& sBeginning);
-bool EndsWith(const std::string& sTestThis, const std::string& sEnding);
-std::string URLEncode(const std::string& sStr);
+void TrimLeft(std::string& str, const char* trim = "\r\n\t ");
+void TrimRight(std::string& str, const char* trim = "\r\n\t ");
+void Trim(std::string& str, const char* trim = "\r\n\t ");
+void StripCrnl(std::string& str);
+bool BeginsWith(const std::string& test_this, const std::string& beginning);
+bool EndsWith(const std::string& test_this, const std::string& ending);
+std::string URLEncode(const std::string& str);
 
 void StripCvsAndSvn(
     std::vector<std::string>&
@@ -397,16 +397,15 @@ void StripCvsAndSvn(
 void StripMacResourceForks(
     std::vector<std::string>& vs);  // Removes files starting with "._"
 
-std::string DerefRedir(const std::string& sPath);
+std::string DerefRedir(const std::string& path);
 bool GetFileContents(
-    const std::string& sPath, std::string& sOut, bool bOneLine = false);
-bool GetFileContents(const std::string& sFile, std::vector<std::string>& asOut);
+    const std::string& path, std::string& out, bool one_line = false);
+bool GetFileContents(const std::string& file, std::vector<std::string>& out);
 
 void ReplaceEntityText(
-    std::string& sText, const std::map<std::string, std::string>& m);
-void ReplaceEntityText(
-    std::string& sText, const std::map<char, std::string>& m);
-void Replace_Unicode_Markers(std::string& Text);
+    std::string& text, const std::map<std::string, std::string>& m);
+void ReplaceEntityText(std::string& text, const std::map<char, std::string>& m);
+void Replace_Unicode_Markers(std::string& text);
 std::string WcharDisplayText(wchar_t c);
 
 std::string Basename(const std::string& dir);
@@ -461,33 +460,33 @@ typedef std::basic_string<char, char_traits_char_nocase> istring;
 /* Compatibility/convenience shortcuts. These are actually defined in
  * RageFileManager.h, but declared here since they're used in many places. */
 void GetDirListing(
-    const std::string& sPath, std::vector<std::string>& AddTo,
-    bool bOnlyDirs = false, bool bReturnPathToo = false);
+    const std::string& path, std::vector<std::string>& add_to,
+    bool only_dirs = false, bool return_path_too = false);
 void GetDirListingRecursive(
-    const std::string& sDir, const std::string& sMatch,
-    std::vector<std::string>& AddTo);          /* returns path too */
-bool DeleteRecursive(const std::string& sDir); /* delete the dir and all
+    const std::string& dir, const std::string& match,
+    std::vector<std::string>& add_to);        /* returns path too */
+bool DeleteRecursive(const std::string& dir); /* delete the dir and all
                                                   files/subdirs inside it */
-bool DoesFileExist(const std::string& sPath);
-bool IsAFile(const std::string& sPath);
-bool IsADirectory(const std::string& sPath);
+bool DoesFileExist(const std::string& path);
+bool IsAFile(const std::string& path);
+bool IsADirectory(const std::string& path);
 
 // call FixSlashesInPlace on any path that came from the user
-void FixSlashesInPlace(std::string& sPath);
-void CollapsePath(std::string& sPath, bool bRemoveLeadingDot = false);
+void FixSlashesInPlace(std::string& path);
+void CollapsePath(std::string& path, bool remove_leading_dot = false);
 
 /** @brief Utilities for converting the RStrings. */
 namespace StringConversion {
 template <typename T>
-bool FromString(const std::string& sValue, T& out);
+bool FromString(const std::string& value, T& out);
 
 template <typename T>
 std::string ToString(const T& value);
 
 template <>
 inline bool FromString<std::string>(
-    const std::string& sValue, std::string& out) {
-  out = sValue;
+    const std::string& value, std::string& out) {
+  out = value;
   return true;
 }
 template <>
@@ -497,24 +496,24 @@ inline std::string ToString<std::string>(const std::string& value) {
 }  // namespace StringConversion
 
 class RageFileBasic;
-bool FileCopy(const std::string& sSrcFile, const std::string& sDstFile);
+bool FileCopy(const std::string& src_file, const std::string& dst_file);
 bool FileCopy(
-    RageFileBasic& in, RageFileBasic& out, std::string& sError,
-    bool* bReadError = nullptr);
+    RageFileBasic& in, RageFileBasic& out, std::string& error,
+    bool* read_error = nullptr);
 
 template <class T>
 void GetAsNotInBs(
     const std::vector<T>& as, const std::vector<T>& bs,
     std::vector<T>& difference) {
-  std::vector<T> bsUnmatched = bs;
+  std::vector<T> unmatched = bs;
   // Cannot use FOREACH_CONST here because std::vector<T>::const_iterator is an
   // implicit type.
   for (typename std::vector<T>::const_iterator a = as.begin(); a != as.end();
        ++a) {
     typename std::vector<T>::iterator iter =
-        find(bsUnmatched.begin(), bsUnmatched.end(), *a);
-    if (iter != bsUnmatched.end()) {
-      bsUnmatched.erase(iter);
+        find(unmatched.begin(), unmatched.end(), *a);
+    if (iter != unmatched.end()) {
+      unmatched.erase(iter);
     } else {
       difference.push_back(*a);
     }

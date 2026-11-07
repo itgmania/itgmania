@@ -11,17 +11,17 @@ DualScrollBar::DualScrollBar() {
   bar_time_ = 1;
 }
 
-void DualScrollBar::Load(const std::string& sType) {
+void DualScrollBar::Load(const std::string& type) {
   FOREACH_PlayerNumber(pn) {
     spr_scroll_thumb_under_half_[pn].Load(
-        THEME->GetPathG(sType, ssprintf("thumb p%i", pn + 1)));
+        THEME->GetPathG(type, ssprintf("thumb p%i", pn + 1)));
     spr_scroll_thumb_under_half_[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
     this->AddChild(spr_scroll_thumb_under_half_[pn]);
   }
 
   FOREACH_PlayerNumber(pn) {
     spr_scroll_thumb_over_half_[pn].Load(
-        THEME->GetPathG(sType, ssprintf("thumb p%i", pn + 1)));
+        THEME->GetPathG(type, ssprintf("thumb p%i", pn + 1)));
     spr_scroll_thumb_over_half_[pn]->SetName(ssprintf("ThumbP%i", pn + 1));
     this->AddChild(spr_scroll_thumb_over_half_[pn]);
   }
@@ -42,7 +42,7 @@ void DualScrollBar::EnablePlayer(PlayerNumber pn, bool on) {
   spr_scroll_thumb_over_half_[pn]->SetVisible(on);
 }
 
-void DualScrollBar::SetPercentage(PlayerNumber pn, float fPercent) {
+void DualScrollBar::SetPercentage(PlayerNumber pn, float percent) {
   const float bottom =
       bar_height_ / 2 - spr_scroll_thumb_under_half_[pn]->GetZoomedHeight() / 2;
   const float top = -bottom;
@@ -50,11 +50,11 @@ void DualScrollBar::SetPercentage(PlayerNumber pn, float fPercent) {
   /* Position both thumbs. */
   spr_scroll_thumb_under_half_[pn]->StopTweening();
   spr_scroll_thumb_under_half_[pn]->BeginTweening(bar_time_);
-  spr_scroll_thumb_under_half_[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
+  spr_scroll_thumb_under_half_[pn]->SetY(SCALE(percent, 0, 1, top, bottom));
 
   spr_scroll_thumb_over_half_[pn]->StopTweening();
   spr_scroll_thumb_over_half_[pn]->BeginTweening(bar_time_);
-  spr_scroll_thumb_over_half_[pn]->SetY(SCALE(fPercent, 0, 1, top, bottom));
+  spr_scroll_thumb_over_half_[pn]->SetY(SCALE(percent, 0, 1, top, bottom));
 }
 
 /*

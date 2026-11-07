@@ -364,11 +364,11 @@ RankingCategory StringToRankingCategory(const std::string& rc);
 LuaDeclareType(RankingCategory);
 
 extern const std::vector<std::string> RANKING_TO_FILL_IN_MARKER;
-inline bool IsRankingToFillIn(const std::string& sName) {
-  return !sName.empty() && sName[0] == '#';
+inline bool IsRankingToFillIn(const std::string& name) {
+  return !name.empty() && name[0] == '#';
 }
 
-RankingCategory AverageMeterToRankingCategory(int iAverageMeter);
+RankingCategory AverageMeterToRankingCategory(int average_meter);
 
 // Group stuff
 extern const std::string GROUP_ALL;

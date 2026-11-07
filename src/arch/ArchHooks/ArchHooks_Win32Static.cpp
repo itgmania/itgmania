@@ -55,21 +55,21 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   return (ticks / freq) * 1000000LL + (ticks % freq) * 1000000LL / freq;
 }
 
-static std::string GetMountDir(const std::string& sDirOfExecutable) {
+static std::string GetMountDir(const std::string& dir_of_executable) {
   /* All Windows data goes in the directory one level above the executable. */
-  CHECKPOINT_M(ssprintf("DOE \"%s\"", sDirOfExecutable.c_str()));
-  std::vector<std::string> asParts;
-  split(sDirOfExecutable, "/", asParts);
-  CHECKPOINT_M(ssprintf("... %i asParts", asParts.size()));
+  CHECKPOINT_M(ssprintf("DOE \"%s\"", dir_of_executable.c_str()));
+  std::vector<std::string> parts;
+  split(dir_of_executable, "/", parts);
+  CHECKPOINT_M(ssprintf("... %i asParts", parts.size()));
   ASSERT_M(
-      asParts.size() > 1,
-      ssprintf("Strange sDirOfExecutable: %s", sDirOfExecutable.c_str()));
-  std::string sDir = join("/", asParts.begin(), asParts.end() - 1);
-  return sDir;
+      parts.size() > 1,
+      ssprintf("Strange sDirOfExecutable: %s", dir_of_executable.c_str()));
+  std::string dir = join("/", parts.begin(), parts.end() - 1);
+  return dir;
 }
 
-void MountDirectories(const std::string& baseDir) {
-  const std::vector<std::string> winDirectoryStructureITGm = {
+void MountDirectories(const std::string& base_dir) {
+  const std::vector<std::string> kWinDirectoryStructureItgm = {
       "/Announcers",
       "/BGAnimations",
       "/BackgroundEffects",
@@ -88,23 +88,23 @@ void MountDirectories(const std::string& baseDir) {
       "/RandomMovies",
       "/Themes"};
 
-  for (const std::string& dir : winDirectoryStructureITGm) {
-    FILEMAN->Mount("dir", baseDir + dir, dir);
+  for (const std::string& dir : kWinDirectoryStructureItgm) {
+    FILEMAN->Mount("dir", base_dir + dir, dir);
   }
 }
 
-void ArchHooks::MountInitialFilesystems(const std::string& sDirOfExecutable) {
-  std::string sDir = GetMountDir(sDirOfExecutable);
-  FILEMAN->Mount("dirro", sDir, "/");
+void ArchHooks::MountInitialFilesystems(const std::string& dir_of_executable) {
+  std::string dir = GetMountDir(dir_of_executable);
+  FILEMAN->Mount("dirro", dir, "/");
 
   if (DoesFileExist("/Portable.ini")) {
-    MountDirectories(sDir);
+    MountDirectories(dir);
   }
 }
 
-void ArchHooks::MountUserFilesystems(const std::string& sDirOfExecutable) {
-  std::string sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
-  MountDirectories(sAppDataDir);
+void ArchHooks::MountUserFilesystems(const std::string& dir_of_executable) {
+  std::string app_data_dir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
+  MountDirectories(app_data_dir);
 }
 
 static std::string LangIdToString(LANGID l) {
@@ -241,19 +241,19 @@ static std::string LangIdToString(LANGID l) {
 }
 
 static LANGID GetLanguageID() {
-  HINSTANCE hDLL = LoadLibrary("kernel32.dll");
-  if (hDLL) {
+  HINSTANCE dll = LoadLibrary("kernel32.dll");
+  if (dll) {
     typedef LANGID(GET_USER_DEFAULT_UI_LANGUAGE)(void);
 
-    GET_USER_DEFAULT_UI_LANGUAGE* pGetUserDefaultUILanguage =
+    GET_USER_DEFAULT_UI_LANGUAGE* get_user_default_ui_language =
         (GET_USER_DEFAULT_UI_LANGUAGE*)GetProcAddress(
-            hDLL, "GetUserDefaultUILanguage");
-    if (pGetUserDefaultUILanguage) {
-      LANGID ret = pGetUserDefaultUILanguage();
-      FreeLibrary(hDLL);
+            dll, "GetUserDefaultUILanguage");
+    if (get_user_default_ui_language) {
+      LANGID ret = get_user_default_ui_language();
+      FreeLibrary(dll);
       return ret;
     }
-    FreeLibrary(hDLL);
+    FreeLibrary(dll);
   }
 
   return GetUserDefaultLangID();

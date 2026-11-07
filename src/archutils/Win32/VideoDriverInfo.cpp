@@ -14,45 +14,45 @@
 std::string GetPrimaryVideoName() {
   typedef BOOL(WINAPI * pfnEnumDisplayDevices)(
       PVOID, DWORD, PDISPLAY_DEVICE, DWORD);
-  pfnEnumDisplayDevices EnumDisplayDevices;
-  HINSTANCE hInstUser32;
+  pfnEnumDisplayDevices enum_display_devices;
+  HINSTANCE inst_user32;
 
-  hInstUser32 = LoadLibrary("User32.DLL");
-  if (!hInstUser32) {
+  inst_user32 = LoadLibrary("User32.DLL");
+  if (!inst_user32) {
     return std::string();
   }
 
   // VC6 don't have a stub to static link with, so link dynamically.
-  EnumDisplayDevices =
-      (pfnEnumDisplayDevices)GetProcAddress(hInstUser32, "EnumDisplayDevicesA");
-  if (EnumDisplayDevices == nullptr) {
-    FreeLibrary(hInstUser32);
+  enum_display_devices =
+      (pfnEnumDisplayDevices)GetProcAddress(inst_user32, "EnumDisplayDevicesA");
+  if (enum_display_devices == nullptr) {
+    FreeLibrary(inst_user32);
     return std::string();
   }
 
-  std::string sPrimaryDeviceName;
+  std::string primary_device_name;
   for (int i = 0; true; ++i) {
     DISPLAY_DEVICE dd;
     ZERO(dd);
     dd.cb = sizeof(dd);
-    if (!EnumDisplayDevices(nullptr, i, &dd, 0)) {
+    if (!enum_display_devices(nullptr, i, &dd, 0)) {
       break;
     }
     if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-      sPrimaryDeviceName = (char*)dd.DeviceString;
+      primary_device_name = (char*)dd.DeviceString;
       break;
     }
   }
 
-  FreeLibrary(hInstUser32);
-  TrimRight(sPrimaryDeviceName);
-  return sPrimaryDeviceName;
+  FreeLibrary(inst_user32);
+  TrimRight(primary_device_name);
+  return primary_device_name;
 }
 
 std::string GetPrimaryVideoDriverName() {
-  std::string sPrimaryDeviceName = GetPrimaryVideoName();
-  if (sPrimaryDeviceName != "") {
-    return sPrimaryDeviceName;
+  std::string primary_device_name = GetPrimaryVideoName();
+  if (primary_device_name != "") {
+    return primary_device_name;
   }
 
   LOG->Warn("GetPrimaryVideoName failed; renderer selection may be wrong");
@@ -67,17 +67,17 @@ std::string GetPrimaryVideoDriverName() {
 
 /* Get info for the given card number.  Return false if that card doesn't exist.
  */
-bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info) {
-  static bool bInitialized = false;
+bool GetVideoDriverInfo(int cardno, VideoDriverInfo& info) {
+  static bool initialized = false;
   static std::vector<std::string> lst;
-  if (!bInitialized) {
-    bInitialized = true;
+  if (!initialized) {
+    initialized = true;
 
-    const std::string sTopKey =
+    const std::string kTopKey =
         "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{"
         "4D36E968-E325-11CE-BFC1-08002BE10318}";
 
-    RegistryAccess::GetRegSubKeys(sTopKey, lst, ".*", false);
+    RegistryAccess::GetRegSubKeys(kTopKey, lst, ".*", false);
 
     for (int i = lst.size() - 1; i >= 0; --i) {
       /* Remove all keys that aren't four characters long ("Properties"). */
@@ -86,7 +86,7 @@ bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info) {
         continue;
       }
 
-      lst[i] = sTopKey + "\\" + lst[i];
+      lst[i] = kTopKey + "\\" + lst[i];
     }
 
     if (lst.size() == 0) {
@@ -95,20 +95,20 @@ bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info) {
     }
   }
 
-  while (iCardno < (int)lst.size()) {
-    const std::string sKey = lst[iCardno];
+  while (cardno < (int)lst.size()) {
+    const std::string key = lst[cardno];
 
-    if (!RegistryAccess::GetRegValue(sKey, "DriverDesc", info.description_)) {
+    if (!RegistryAccess::GetRegValue(key, "DriverDesc", info.description_)) {
       /* Remove this one from the list and ignore it, */
-      lst.erase(lst.begin() + iCardno);
+      lst.erase(lst.begin() + cardno);
       continue;
     }
     TrimRight(info.description_);
 
-    RegistryAccess::GetRegValue(sKey, "DriverDate", info.date_);
-    RegistryAccess::GetRegValue(sKey, "MatchingDeviceId", info.device_id_);
-    RegistryAccess::GetRegValue(sKey, "ProviderName", info.provider_);
-    RegistryAccess::GetRegValue(sKey, "DriverVersion", info.version_);
+    RegistryAccess::GetRegValue(key, "DriverDate", info.date_);
+    RegistryAccess::GetRegValue(key, "MatchingDeviceId", info.device_id_);
+    RegistryAccess::GetRegValue(key, "ProviderName", info.provider_);
+    RegistryAccess::GetRegValue(key, "DriverVersion", info.version_);
 
     return true;
   }

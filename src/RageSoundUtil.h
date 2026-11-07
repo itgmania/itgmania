@@ -5,14 +5,14 @@
 
 /** @brief Simple utilities that operate on sound buffers. */
 namespace RageSoundUtil {
-void Attenuate(float* pBuf, int iSamples, float fVolume);
-void Pan(float* pBuffer, int iFrames, float fPos);
+void Attenuate(float* buf, int samples, float volume);
+void Pan(float* buffer, int frames, float pos);
 void Fade(
-    float* pBuffer, int iFrames, int iChannels, float fStartVolume,
-    float fEndVolume);
-void ConvertMonoToStereoInPlace(float* pBuffer, int iFrames);
-void ConvertNativeInt16ToFloat(const int16_t* pFrom, float* pTo, int iSamples);
-void ConvertFloatToNativeInt16(const float* pFrom, int16_t* pTo, int iSamples);
+    float* buffer, int frames, int channels, float start_volume,
+    float end_volume);
+void ConvertMonoToStereoInPlace(float* buffer, int frames);
+void ConvertNativeInt16ToFloat(const int16_t* from, float* to, int samples);
+void ConvertFloatToNativeInt16(const float* from, int16_t* to, int samples);
 };  // namespace RageSoundUtil
 
 #endif

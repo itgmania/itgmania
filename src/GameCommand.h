@@ -71,7 +71,7 @@ class GameCommand {
   }
   void Init();
 
-  void Load(int iIndex, const Commands& cmds);
+  void Load(int index, const Commands& cmds);
   void LoadOne(const Command& cmd);
 
   void ApplyToAllPlayers() const;
@@ -89,7 +89,7 @@ class GameCommand {
 
   /* If true, Apply() will apply m_sScreen. If false, it won't, and you need
    * to do it yourself. */
-  void ApplyCommitsScreens(bool bOn) { apply_commits_screens_ = bOn; }
+  void ApplyCommitsScreens(bool on) { apply_commits_screens_ = on; }
 
   // Same as what was passed to Load. We need to keep the original commands
   // so that we know the order of commands when it comes time to Apply.

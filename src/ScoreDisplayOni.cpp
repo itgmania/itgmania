@@ -26,23 +26,23 @@ ScoreDisplayOni::ScoreDisplayOni() {
 }
 
 void ScoreDisplayOni::Init(
-    const PlayerState* pPlayerState,
-    const PlayerStageStats* pPlayerStageStats) {
-  ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
+    const PlayerState* player_state,
+    const PlayerStageStats* player_stage_stats) {
+  ScoreDisplay::Init(player_state, player_stage_stats);
 }
 
-void ScoreDisplayOni::Update(float fDelta) {
-  ScoreDisplay::Update(fDelta);
+void ScoreDisplayOni::Update(float delta) {
+  ScoreDisplay::Update(delta);
 
   // TODO: Remove use of PlayerNumber.
   PlayerNumber pn = player_state_->player_number_;
 
-  float fSecsIntoPlay = 0;
+  float secs_into_play = 0;
   if (GAMESTATE->IsPlayerEnabled(pn)) {
-    fSecsIntoPlay = STATSMAN->cur_stage_stats_.player_[pn].alive_seconds_;
+    secs_into_play = STATSMAN->cur_stage_stats_.player_[pn].alive_seconds_;
   }
 
-  text_.SetText(SecondsToMMSSMsMs(fSecsIntoPlay));
+  text_.SetText(SecondsToMMSSMsMs(secs_into_play));
 }
 
 /*

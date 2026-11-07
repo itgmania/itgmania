@@ -8,11 +8,11 @@
 class SampleHistory {
  public:
   SampleHistory();
-  void AddSample(float fSample, float fDeltaTime);
-  float GetSample(float fSecondsAgo) const;
+  void AddSample(float sample, float delta_time);
+  float GetSample(float seconds_ago) const;
 
  private:
-  float GetSampleNum(float fSamplesAgo) const;
+  float GetSampleNum(float samples_ago) const;
 
   std::vector<float> history_;
   int last_history_;

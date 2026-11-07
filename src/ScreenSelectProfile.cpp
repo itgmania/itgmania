@@ -126,9 +126,9 @@ bool ScreenSelectProfile::MenuDown(const InputEventPlus& input) {
   return true;
 }
 
-bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int iProfileIndex) {
+bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int profile_index) {
   if (!GAMESTATE->IsHumanPlayer(pn)) {
-    if (iProfileIndex == -1) {
+    if (profile_index == -1) {
       GAMESTATE->JoinPlayer(pn);
       SCREENMAN->PlayStartSound();
       return true;
@@ -136,17 +136,17 @@ bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int iProfileIndex) {
     return false;
   }
 
-  if (iProfileIndex > PROFILEMAN->GetNumLocalProfiles()) {
+  if (profile_index > PROFILEMAN->GetNumLocalProfiles()) {
     return false;
   }
 
   // wrong selection
-  if (iProfileIndex < -3) {
+  if (profile_index < -3) {
     return false;
   }
 
   // unload player
-  if (iProfileIndex == -2) {
+  if (profile_index == -2) {
     // GAMESTATE->UnjoinPlayer takes care of unloading the profile.
     GAMESTATE->UnjoinPlayer(pn);
     MEMCARDMAN->UnlockCard(pn);
@@ -155,7 +155,7 @@ bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int iProfileIndex) {
     return true;
   }
 
-  selected_profiles_[pn] = iProfileIndex;
+  selected_profiles_[pn] = profile_index;
 
   return true;
 }
@@ -172,13 +172,13 @@ bool ScreenSelectProfile::Finish() {
     return false;
   }
 
-  int iUsedLocalProfiles = 0;
-  int iUnselectedProfiles = 0;
+  int used_local_profiles = 0;
+  int unselected_profiles = 0;
 
   FOREACH_PlayerNumber(p) {
     // not all players have made their choices
     if (GAMESTATE->IsHumanPlayer(p) && (selected_profiles_[p] == -1)) {
-      iUnselectedProfiles++;
+      unselected_profiles++;
     }
 
     // card not ready
@@ -194,14 +194,14 @@ bool ScreenSelectProfile::Finish() {
 
     // inc used profile count
     if (selected_profiles_[p] > 0) {
-      iUsedLocalProfiles++;
+      used_local_profiles++;
     }
   }
 
   // this allows to continue if there is less local profiles than number of
   // human players
-  if (iUnselectedProfiles &&
-      iUsedLocalProfiles < PROFILEMAN->GetNumLocalProfiles()) {
+  if (unselected_profiles &&
+      used_local_profiles < PROFILEMAN->GetNumLocalProfiles()) {
     return false;
   }
 
@@ -224,15 +224,15 @@ bool ScreenSelectProfile::Finish() {
     if (selected_profiles_[p] == 0) {
       MEMCARDMAN->WaitForCheckingToComplete();
 
-      bool bSuccess = false;
+      bool success = false;
       if (MEMCARDMAN->MountCard(p)) {
-        bSuccess = PROFILEMAN->LoadProfileFromMemoryCard(
+        success = PROFILEMAN->LoadProfileFromMemoryCard(
             p, true);  // load full profile
         MEMCARDMAN->UnmountCard(p);
       }
 
       // Lock the card on successful load, so we won't allow it to be changed.
-      if (bSuccess) {
+      if (success) {
         GAMESTATE->LoadCurrentSettingsFromProfile(p);
         MEMCARDMAN->LockCard(p);
       }
@@ -251,15 +251,15 @@ bool ScreenSelectProfile::Finish() {
   return true;
 }
 
-void ScreenSelectProfile::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_MenuTimer) {
-    bool bFinished = Finish();
-    if (!bFinished) {
+void ScreenSelectProfile::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_MenuTimer) {
+    bool finished = Finish();
+    if (!finished) {
       // TODO: we need to decide how to handle unfinished business.
     }
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 // lua start
@@ -270,9 +270,9 @@ class LunaScreenSelectProfile : public Luna<ScreenSelectProfile> {
  public:
   static int SetProfileIndex(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    int iProfileIndex = IArg(2);
-    bool bRet = p->SetProfileIndex(pn, iProfileIndex);
-    LuaHelpers::Push(L, bRet);
+    int profile_index = IArg(2);
+    bool ret = p->SetProfileIndex(pn, profile_index);
+    LuaHelpers::Push(L, ret);
     return 1;
   }
 
@@ -283,8 +283,8 @@ class LunaScreenSelectProfile : public Luna<ScreenSelectProfile> {
   }
 
   static int Finish(T* p, lua_State* L) {
-    bool bRet = p->Finish();
-    LuaHelpers::Push(L, bRet);
+    bool ret = p->Finish();
+    LuaHelpers::Push(L, ret);
     return 1;
   }
 

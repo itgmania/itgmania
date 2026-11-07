@@ -18,21 +18,21 @@ AutoScreenMessage(SM_Failure);
 
 static std::map<std::string, ScreenMessage>* m_pScreenMessages;
 
-ScreenMessage ScreenMessageHelpers::ToScreenMessage(const std::string& sName) {
+ScreenMessage ScreenMessageHelpers::ToScreenMessage(const std::string& name) {
   if (m_pScreenMessages == nullptr) {
     m_pScreenMessages = new std::map<std::string, ScreenMessage>;
   }
 
-  if (m_pScreenMessages->find(sName) == m_pScreenMessages->end()) {
-    (*m_pScreenMessages)[sName] = (ScreenMessage)sName;
+  if (m_pScreenMessages->find(name) == m_pScreenMessages->end()) {
+    (*m_pScreenMessages)[name] = (ScreenMessage)name;
   }
 
-  return (*m_pScreenMessages)[sName];
+  return (*m_pScreenMessages)[name];
 }
 
-std::string ScreenMessageHelpers::ScreenMessageToString(ScreenMessage SM) {
+std::string ScreenMessageHelpers::ScreenMessageToString(ScreenMessage sm) {
   for (const auto& it : *m_pScreenMessages) {
-    if (SM == it.second) {
+    if (sm == it.second) {
       return it.first;
     }
   }

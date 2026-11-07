@@ -7,12 +7,12 @@
 #import <Foundation/Foundation.h>
 
 std::string SpecialDirs::GetDesktopDir() {
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSURL* url = [fileManager URLForDirectory:NSDesktopDirectory
-                                   inDomain:NSUserDomainMask
-                          appropriateForURL:nil
-                                     create:NO
-                                      error:nil];
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  NSURL* url = [file_manager URLForDirectory:NSDesktopDirectory
+                                    inDomain:NSUserDomainMask
+                           appropriateForURL:nil
+                                      create:NO
+                                       error:nil];
   if (url == nil) {
     return "/tmp";
   }

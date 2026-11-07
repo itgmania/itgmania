@@ -20,7 +20,7 @@ class LuaDebugManager {
   /** Starts the debug server.
    * @param address address to listen on
    * @param startPaused if true, pauses Lua at first line of code executed */
-  void Start(std::string address, bool startPaused = false);
+  void Start(std::string address, bool start_paused = false);
 
   /* Marks a Lua state as active for the debugger. The calling thread should
   be holding the global Lua mutex in LuaManager. */

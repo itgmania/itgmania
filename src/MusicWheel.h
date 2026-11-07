@@ -25,13 +25,13 @@ class MusicWheel : public WheelBase {
 
  public:
   virtual ~MusicWheel();
-  virtual void Load(std::string sType);
+  virtual void Load(std::string type);
   void BeginScreen();
 
   bool ChangeSort(
       SortOrder new_so,
-      bool allowSameSort = false);  // return true if change successful
-  bool NextSort();                  // return true if change successful
+      bool allow_same_sort = false);  // return true if change successful
+  bool NextSort();                    // return true if change successful
   void StartRoulette();
   void StartRandom();
   bool IsRouletting() const;
@@ -53,7 +53,7 @@ class MusicWheel : public WheelBase {
   bool SelectSong(const Song* p);
   bool SelectCourse(const Course* p);
   bool HasSongs();
-  bool SelectSection(const std::string& SectionName);
+  bool SelectSection(const std::string& section_name);
   bool CloseOpenSectionOneLevel();
   void SetOpenSection(std::string group);
   SortOrder GetSortOrder() const { return sort_order_; }
@@ -76,7 +76,7 @@ class MusicWheel : public WheelBase {
  protected:
   MusicWheelItem* MakeItem();
 
-  void GetSongList(std::vector<Song*>& arraySongs, SortOrder so);
+  void GetSongList(std::vector<Song*>& array_songs, SortOrder so);
   bool SelectSongOrCourse();
   bool SelectModeMenuItem();
 
@@ -128,12 +128,12 @@ class MusicWheel : public WheelBase {
   std::vector<MusicWheelItemData*> un_filtered_wheel_item_datas_[NUM_SortOrder];
 
   void BuildWheelItemDatas(
-      std::vector<MusicWheelItemData*>& arrayWheelItems, SortOrder so);
+      std::vector<MusicWheelItemData*>& array_wheel_items, SortOrder so);
   void FilterWheelItemDatas(
-      std::vector<MusicWheelItemData*>& aUnFilteredDatas,
-      std::vector<MusicWheelItemData*>& aFilteredData, SortOrder so);
+      std::vector<MusicWheelItemData*>& un_filtered_datas,
+      std::vector<MusicWheelItemData*>& filtered_data, SortOrder so);
   void SetOpenSections(
-      const std::string& parentSection, const std::string& section);
+      const std::string& parent_section, const std::string& section);
 };
 
 #endif

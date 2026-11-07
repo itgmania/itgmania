@@ -54,140 +54,140 @@ inline void SafeRelease(T*& p) {
   }
 }
 
-static BOOL IsXInputDevice(const GUID* pGuidProductFromDirectInput) {
-  IWbemLocator* pIWbemLocator = nullptr;
-  IEnumWbemClassObject* pEnumDevices = nullptr;
-  IWbemClassObject* pDevices[20] = {0};
-  IWbemServices* pIWbemServices = nullptr;
-  BSTR bstrNamespace = nullptr;
-  BSTR bstrDeviceID = nullptr;
-  BSTR bstrClassName = nullptr;
-  DWORD uReturned = 0;
-  bool bIsXinputDevice = false;
-  UINT iDevice = 0;
+static BOOL IsXInputDevice(const GUID* guid_product_from_direct_input) {
+  IWbemLocator* wbem_locator = nullptr;
+  IEnumWbemClassObject* enum_devices = nullptr;
+  IWbemClassObject* devices[20] = {0};
+  IWbemServices* wbem_services = nullptr;
+  BSTR bstr_namespace = nullptr;
+  BSTR bstr_device_id = nullptr;
+  BSTR bstr_class_name = nullptr;
+  DWORD returned = 0;
+  bool is_xinput_device = false;
+  UINT device = 0;
   VARIANT var;
   HRESULT hr;
 
   // CoInit if needed
   hr = CoInitialize(nullptr);
-  bool bCleanupCOM = SUCCEEDED(hr);
+  bool cleanup_com = SUCCEEDED(hr);
 
   // Create WMI
   hr = CoCreateInstance(
       __uuidof(WbemLocator), nullptr, CLSCTX_INPROC_SERVER,
-      __uuidof(IWbemLocator), (LPVOID*)&pIWbemLocator);
-  if (FAILED(hr) || pIWbemLocator == nullptr) {
+      __uuidof(IWbemLocator), (LPVOID*)&wbem_locator);
+  if (FAILED(hr) || wbem_locator == nullptr) {
     goto LCleanup;
   }
 
-  bstrNamespace = SysAllocString(L"\\\\.\\root\\cimv2");
-  if (bstrNamespace == nullptr) {
+  bstr_namespace = SysAllocString(L"\\\\.\\root\\cimv2");
+  if (bstr_namespace == nullptr) {
     goto LCleanup;
   }
-  bstrClassName = SysAllocString(L"Win32_PNPEntity");
-  if (bstrClassName == nullptr) {
+  bstr_class_name = SysAllocString(L"Win32_PNPEntity");
+  if (bstr_class_name == nullptr) {
     goto LCleanup;
   }
-  bstrDeviceID = SysAllocString(L"DeviceID");
-  if (bstrDeviceID == nullptr) {
+  bstr_device_id = SysAllocString(L"DeviceID");
+  if (bstr_device_id == nullptr) {
     goto LCleanup;
   }
 
   // Connect to WMI
-  hr = pIWbemLocator->ConnectServer(
-      bstrNamespace, nullptr, nullptr, 0L, 0L, nullptr, nullptr,
-      &pIWbemServices);
-  if (FAILED(hr) || pIWbemServices == nullptr) {
+  hr = wbem_locator->ConnectServer(
+      bstr_namespace, nullptr, nullptr, 0L, 0L, nullptr, nullptr,
+      &wbem_services);
+  if (FAILED(hr) || wbem_services == nullptr) {
     goto LCleanup;
   }
 
   // Switch security level to IMPERSONATE.
   CoSetProxyBlanket(
-      pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
+      wbem_services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
       RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
 
-  hr = pIWbemServices->CreateInstanceEnum(
-      bstrClassName, 0, nullptr, &pEnumDevices);
-  if (FAILED(hr) || pEnumDevices == nullptr) {
+  hr = wbem_services->CreateInstanceEnum(
+      bstr_class_name, 0, nullptr, &enum_devices);
+  if (FAILED(hr) || enum_devices == nullptr) {
     goto LCleanup;
   }
 
   // Loop over all devices
   for (;;) {
     // Get 20 at a time
-    hr = pEnumDevices->Next(10000, 20, pDevices, &uReturned);
+    hr = enum_devices->Next(10000, 20, devices, &returned);
     if (FAILED(hr)) {
       goto LCleanup;
     }
-    if (uReturned == 0) {
+    if (returned == 0) {
       break;
     }
 
-    for (iDevice = 0; iDevice < uReturned; iDevice++) {
+    for (device = 0; device < returned; device++) {
       // For each device, get its device ID
-      hr = pDevices[iDevice]->Get(bstrDeviceID, 0L, &var, nullptr, nullptr);
+      hr = devices[device]->Get(bstr_device_id, 0L, &var, nullptr, nullptr);
       if (SUCCEEDED(hr) && var.vt == VT_BSTR && var.bstrVal != nullptr) {
         // Check if the device ID contains "IG_".  If it does, then it's an
         // XInput device This information can not be found from DirectInput
         if (wcsstr(var.bstrVal, L"IG_")) {
           // If it does, then get the VID/PID from var.bstrVal
-          DWORD dwPid = 0, dwVid = 0;
-          WCHAR* strVid = wcsstr(var.bstrVal, L"VID_");
-          if (strVid && swscanf(strVid, L"VID_%4X", &dwVid) != 1) {
-            dwVid = 0;
+          DWORD pid = 0, vid = 0;
+          WCHAR* str_vid = wcsstr(var.bstrVal, L"VID_");
+          if (str_vid && swscanf(str_vid, L"VID_%4X", &vid) != 1) {
+            vid = 0;
           }
-          WCHAR* strPid = wcsstr(var.bstrVal, L"PID_");
-          if (strPid && swscanf(strPid, L"PID_%4X", &dwPid) != 1) {
-            dwPid = 0;
+          WCHAR* str_pid = wcsstr(var.bstrVal, L"PID_");
+          if (str_pid && swscanf(str_pid, L"PID_%4X", &pid) != 1) {
+            pid = 0;
           }
 
           // Compare the VID/PID to the DInput device
-          DWORD dwVidPid = MAKELONG(dwVid, dwPid);
-          if (dwVidPid == pGuidProductFromDirectInput->Data1) {
-            bIsXinputDevice = true;
+          DWORD vid_pid = MAKELONG(vid, pid);
+          if (vid_pid == guid_product_from_direct_input->Data1) {
+            is_xinput_device = true;
             goto LCleanup;
           }
         }
       }
-      SafeRelease(pDevices[iDevice]);
+      SafeRelease(devices[device]);
     }
   }
 
 LCleanup:
-  if (bstrNamespace) {
-    SysFreeString(bstrNamespace);
+  if (bstr_namespace) {
+    SysFreeString(bstr_namespace);
   }
-  if (bstrDeviceID) {
-    SysFreeString(bstrDeviceID);
+  if (bstr_device_id) {
+    SysFreeString(bstr_device_id);
   }
-  if (bstrClassName) {
-    SysFreeString(bstrClassName);
+  if (bstr_class_name) {
+    SysFreeString(bstr_class_name);
   }
-  for (iDevice = 0; iDevice < 20; iDevice++) {
-    SafeRelease(pDevices[iDevice]);
+  for (device = 0; device < 20; device++) {
+    SafeRelease(devices[device]);
   }
-  SafeRelease(pEnumDevices);
-  SafeRelease(pIWbemLocator);
-  SafeRelease(pIWbemServices);
+  SafeRelease(enum_devices);
+  SafeRelease(wbem_locator);
+  SafeRelease(wbem_services);
 
-  if (bCleanupCOM) {
+  if (cleanup_com) {
     CoUninitialize();
   }
 
-  return bIsXinputDevice;
+  return is_xinput_device;
 }
 
 static BOOL CALLBACK
-EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
+EnumDevicesCallback(const DIDEVICEINSTANCE* did_instance, void* context) {
   DIDevice device;
 
   LOG->Info(
       "DInput: Enumerating device - Type: 0x%08X Instance Name: \"%s\" Product "
       "Name: \"%s\"",
-      pdidInstance->dwDevType, pdidInstance->tszInstanceName,
-      pdidInstance->tszProductName);
+      did_instance->dwDevType, did_instance->tszInstanceName,
+      did_instance->tszProductName);
 
-  switch (GET_DIDEVICE_TYPE(pdidInstance->dwDevType)) {
+  switch (GET_DIDEVICE_TYPE(did_instance->dwDevType)) {
     case DI8DEVTYPE_JOYSTICK:
     case DI8DEVTYPE_GAMEPAD:
     case DI8DEVTYPE_DRIVING:
@@ -212,7 +212,7 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
       return DIENUM_CONTINUE;
   }
 
-  device.joystick_inst_ = *pdidInstance;
+  device.joystick_inst_ = *did_instance;
 
   switch (device.type_) {
     case DIDevice::JOYSTICK:
@@ -220,7 +220,7 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
         return DIENUM_CONTINUE;
       }
 
-      if (IsXInputDevice(&pdidInstance->guidProduct)) {
+      if (IsXInputDevice(&did_instance->guidProduct)) {
         return DIENUM_CONTINUE;
       }
 
@@ -243,11 +243,11 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
 }
 
 static void CheckForDirectInputDebugMode() {
-  int iVal;
+  int val;
   if (RegistryAccess::GetRegValue(
           "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\DirectInput", "emulation",
-          iVal)) {
-    if (iVal & 0x8) {
+          val)) {
+    if (val & 0x8) {
       LOG->Warn(
           "DirectInput keyboard debug mode appears to be enabled. This "
           "reduces\n"
@@ -258,8 +258,8 @@ static void CheckForDirectInputDebugMode() {
 }
 
 static BOOL CALLBACK
-CountDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
-  (*(int*)pContext)++;
+CountDevicesCallback(const DIDEVICEINSTANCE* did_instance, void* context) {
+  (*(int*)context)++;
   return DIENUM_CONTINUE;
 }
 
@@ -272,13 +272,13 @@ static int GetNumHidDevices() {
 }
 
 static int GetNumJoysticksSlow() {
-  int iCount = 0;
+  int count = 0;
   HRESULT hr = g_dinput->EnumDevices(
-      DI8DEVCLASS_GAMECTRL, CountDevicesCallback, &iCount, DIEDFL_ATTACHEDONLY);
+      DI8DEVCLASS_GAMECTRL, CountDevicesCallback, &count, DIEDFL_ATTACHEDONLY);
   if (hr != DI_OK) {
     LOG->Warn(hr_ssprintf(hr, "g_dinput->EnumDevices").c_str());
   }
-  return iCount;
+  return count;
 }
 
 InputHandler_DInput::InputHandler_DInput() {
@@ -431,7 +431,7 @@ void InputHandler_DInput::WindowReset() {
 #define HAT_RIGHT_MASK 8
 
 static int TranslatePOV(DWORD value) {
-  const int HAT_VALS[] = {HAT_UP_MASK,    HAT_UP_MASK | HAT_RIGHT_MASK,
+  const int kHatVals[] = {HAT_UP_MASK,    HAT_UP_MASK | HAT_RIGHT_MASK,
                           HAT_RIGHT_MASK, HAT_DOWN_MASK | HAT_RIGHT_MASK,
                           HAT_DOWN_MASK,  HAT_DOWN_MASK | HAT_LEFT_MASK,
                           HAT_LEFT_MASK,  HAT_UP_MASK | HAT_LEFT_MASK};
@@ -449,7 +449,7 @@ static int TranslatePOV(DWORD value) {
     return 0;  // shouldn't happen
   }
 
-  return HAT_VALS[value];
+  return kHatVals[value];
 }
 
 static HRESULT GetDeviceState(LPDIRECTINPUTDEVICE8 dev, int size, void* ptr) {
@@ -700,14 +700,14 @@ void InputHandler_DInput::UpdateBuffered(
 
         case input_t::BUTTON:
           if (dev == DEVICE_MOUSE) {
-            DeviceButton mouseInput = DeviceButton_Invalid;
+            DeviceButton mouse_input = DeviceButton_Invalid;
 
             if (in.ofs_ == DIMOFS_BUTTON0) {
-              mouseInput = MOUSE_LEFT;
+              mouse_input = MOUSE_LEFT;
             } else if (in.ofs_ == DIMOFS_BUTTON1) {
-              mouseInput = MOUSE_RIGHT;
+              mouse_input = MOUSE_RIGHT;
             } else if (in.ofs_ == DIMOFS_BUTTON2) {
-              mouseInput = MOUSE_MIDDLE;
+              mouse_input = MOUSE_MIDDLE;
             } else {
               LOG->MapLog(
                   "unknown input",
@@ -715,7 +715,8 @@ void InputHandler_DInput::UpdateBuffered(
                   "%i",
                   device.name_.c_str(), in.ofs_);
             }
-            ButtonPressed(DeviceInput(dev, mouseInput, !!evtbuf[i].dwData, tm));
+            ButtonPressed(
+                DeviceInput(dev, mouse_input, !!evtbuf[i].dwData, tm));
           } else {
             ButtonPressed(DeviceInput(
                 dev, enum_add2(JOY_BUTTON_1, in.num_), !!evtbuf[i].dwData, tm));
@@ -726,17 +727,17 @@ void InputHandler_DInput::UpdateBuffered(
           DeviceButton up = DeviceButton_Invalid, down = DeviceButton_Invalid;
           if (dev == DEVICE_MOUSE) {
             float l = int(evtbuf[i].dwData);
-            POINT cursorPos;
-            GetCursorPos(&cursorPos);
+            POINT cursor_pos;
+            GetCursorPos(&cursor_pos);
             // convert screen coordinates to client
-            ScreenToClient(GraphicsWindow::GetHwnd(), &cursorPos);
+            ScreenToClient(GraphicsWindow::GetHwnd(), &cursor_pos);
 
             if (in.ofs_ == DIMOFS_X) {
               INPUTFILTER->UpdateCursorLocation(
-                  (float)cursorPos.x, (float)cursorPos.y);
+                  (float)cursor_pos.x, (float)cursor_pos.y);
             } else if (in.ofs_ == DIMOFS_Y) {
               INPUTFILTER->UpdateCursorLocation(
-                  (float)cursorPos.x, (float)cursorPos.y);
+                  (float)cursor_pos.x, (float)cursor_pos.y);
             } else if (in.ofs_ == DIMOFS_Z) {
               // positive values: WheelUp
               // negative values: WheelDown
@@ -744,12 +745,12 @@ void InputHandler_DInput::UpdateBuffered(
               {
                 up = MOUSE_WHEELUP;
                 down = MOUSE_WHEELDOWN;
-                float fWheelDelta = l;
+                float wheel_delta = l;
                 // l = SCALE( int(evtbuf[i].dwData), -WHEEL_DELTA,
                 // WHEEL_DELTA, 1.0f, -1.0f );
                 if (l > 0) {
-                  DeviceInput diUp = DeviceInput(dev, up, 1.0f, tm);
-                  DeviceInput diDown = DeviceInput(dev, down, 0.0f, tm);
+                  DeviceInput di_up = DeviceInput(dev, up, 1.0f, tm);
+                  DeviceInput di_down = DeviceInput(dev, down, 0.0f, tm);
                   // This if statement used to be a while loop.  But Kevin
                   // reported that scrolling the mouse wheel locked up input.
                   // I assume that fWheelDelta was some absurdly large value,
@@ -757,27 +758,27 @@ void InputHandler_DInput::UpdateBuffered(
                   // if fixed the input lockup.  Anything that wants to
                   // imitate multiple presses when the wheel is scrolled will
                   // have to do it manually. -Kyz
-                  if (fWheelDelta >= WHEEL_DELTA) {
-                    ButtonPressed(diUp);
-                    ButtonPressed(diDown);
-                    INPUTFILTER->UpdateMouseWheel(fWheelDelta);
-                    fWheelDelta -= WHEEL_DELTA;
+                  if (wheel_delta >= WHEEL_DELTA) {
+                    ButtonPressed(di_up);
+                    ButtonPressed(di_down);
+                    INPUTFILTER->UpdateMouseWheel(wheel_delta);
+                    wheel_delta -= WHEEL_DELTA;
                   }
                 } else if (l < 0) {
-                  DeviceInput diDown = DeviceInput(dev, down, 1.0f, tm);
-                  DeviceInput diUp = DeviceInput(dev, up, 0.0f, tm);
+                  DeviceInput di_down = DeviceInput(dev, down, 1.0f, tm);
+                  DeviceInput di_up = DeviceInput(dev, up, 0.0f, tm);
                   // See comment for the l > 0 case. -Kyz
-                  if (fWheelDelta <= -WHEEL_DELTA) {
-                    ButtonPressed(diDown);
-                    ButtonPressed(diUp);
-                    INPUTFILTER->UpdateMouseWheel(fWheelDelta);
-                    fWheelDelta += WHEEL_DELTA;
+                  if (wheel_delta <= -WHEEL_DELTA) {
+                    ButtonPressed(di_down);
+                    ButtonPressed(di_up);
+                    INPUTFILTER->UpdateMouseWheel(wheel_delta);
+                    wheel_delta += WHEEL_DELTA;
                   }
                 } else {
-                  DeviceInput diUp = DeviceInput(dev, up, 0.0f, tm);
-                  ButtonPressed(diUp);
-                  DeviceInput diDown = DeviceInput(dev, down, 0.0f, tm);
-                  ButtonPressed(diDown);
+                  DeviceInput di_up = DeviceInput(dev, up, 0.0f, tm);
+                  ButtonPressed(di_up);
+                  DeviceInput di_down = DeviceInput(dev, down, 0.0f, tm);
+                  ButtonPressed(di_down);
                 }
               }
             } else {
@@ -955,9 +956,9 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
   }
 }
 
-void InputHandler_DInput::PollAndAcquireDevices(bool bBuffered) {
+void InputHandler_DInput::PollAndAcquireDevices(bool buffered) {
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].buffered_ != bBuffered) {
+    if (Devices[i].buffered_ != buffered) {
       continue;
     }
 
@@ -1019,9 +1020,9 @@ bool InputHandler_DInput::DevicesChanged() {
    * to use don't prompt for a driver though, and the wizard adds them pretty
    * quickly. */
 
-  int iOldNumHidDevices = last_seen_num_hid_devices_;
+  int old_num_hid_devices = last_seen_num_hid_devices_;
   last_seen_num_hid_devices_ = GetNumHidDevices();
-  if (iOldNumHidDevices != last_seen_num_hid_devices_) {
+  if (old_num_hid_devices != last_seen_num_hid_devices_) {
     LOG->Warn("HID devices changes");
     num_times_left_to_poll_for_joysticks_changed_ =
         (int)(POLL_FOR_JOYSTICK_CHANGES_LENGTH_SECONDS /
@@ -1029,15 +1030,15 @@ bool InputHandler_DInput::DevicesChanged() {
   }
 
   if (num_times_left_to_poll_for_joysticks_changed_ > 0) {
-    static RageTimer timerPollJoysticks;
-    if (timerPollJoysticks.Ago() >= POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS) {
+    static RageTimer timer_poll_joysticks;
+    if (timer_poll_joysticks.Ago() >= POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS) {
       num_times_left_to_poll_for_joysticks_changed_--;
-      timerPollJoysticks.Touch();
+      timer_poll_joysticks.Touch();
       LOG->Warn("polling for joystick changes");
 
-      int iOldNumJoysticks = last_seen_num_joysticks_;
+      int old_num_joysticks = last_seen_num_joysticks_;
       last_seen_num_joysticks_ = GetNumJoysticksSlow();
-      if (iOldNumJoysticks != last_seen_num_joysticks_) {
+      if (old_num_joysticks != last_seen_num_joysticks_) {
         LOG->Warn("joysticks changed");
         num_times_left_to_poll_for_joysticks_changed_ = 0;
         return true;
@@ -1058,17 +1059,17 @@ void InputHandler_DInput::InputThreadMain() {
   // Enable priority boosting.
   SetThreadPriorityBoost(GetCurrentThread(), FALSE);
 
-  std::vector<DIDevice*> BufferedDevices;
-  HANDLE Handle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+  std::vector<DIDevice*> buffered_devices;
+  HANDLE handle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   for (unsigned i = 0; i < Devices.size(); ++i) {
     if (!Devices[i].buffered_) {
       continue;
     }
 
-    BufferedDevices.push_back(&Devices[i]);
+    buffered_devices.push_back(&Devices[i]);
 
     Devices[i].device_->Unacquire();
-    HRESULT hr = Devices[i].device_->SetEventNotification(Handle);
+    HRESULT hr = Devices[i].device_->SetEventNotification(handle);
     if (FAILED(hr)) {
       LOG->Warn("IDirectInputDevice2_SetEventNotification failed on %i", i);
     }
@@ -1077,11 +1078,11 @@ void InputHandler_DInput::InputThreadMain() {
 
   while (!shutdown_) {
     CHECKPOINT;
-    if (BufferedDevices.size()) {
+    if (buffered_devices.size()) {
       // Update buffered devices.
       PollAndAcquireDevices(true);
 
-      int ret = WaitForSingleObjectEx(Handle, 50, true);
+      int ret = WaitForSingleObjectEx(handle, 50, true);
       if (ret == -1) {
         LOG->Trace(werr_ssprintf(GetLastError(), "WaitForSingleObjectEx failed")
                        .c_str());
@@ -1091,15 +1092,15 @@ void InputHandler_DInput::InputThreadMain() {
       /* Update devices even if no event was triggered, since this also
        * checks for focus loss. */
       RageTimer now;
-      for (unsigned i = 0; i < BufferedDevices.size(); ++i) {
-        UpdateBuffered(*BufferedDevices[i], now);
+      for (unsigned i = 0; i < buffered_devices.size(); ++i) {
+        UpdateBuffered(*buffered_devices[i], now);
       }
     }
     CHECKPOINT;
 
     // If we have no buffered devices, we didn't delay at
     // WaitForMultipleObjectsEx.
-    if (BufferedDevices.size() == 0) {
+    if (buffered_devices.size() == 0) {
       usleep(50000);
     }
     CHECKPOINT;
@@ -1115,17 +1116,17 @@ void InputHandler_DInput::InputThreadMain() {
     Devices[i].device_->SetEventNotification(nullptr);
   }
 
-  CloseHandle(Handle);
+  CloseHandle(handle);
 }
 
 void InputHandler_DInput::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   for (unsigned i = 0; i < XDevices.size(); ++i) {
-    vDevicesOut.push_back(InputDeviceInfo(XDevices[i].dev_, XDevices[i].name_));
+    devices_out.push_back(InputDeviceInfo(XDevices[i].dev_, XDevices[i].name_));
   }
 
   for (unsigned i = 0; i < Devices.size(); ++i) {
-    vDevicesOut.push_back(InputDeviceInfo(Devices[i].dev_, Devices[i].name_));
+    devices_out.push_back(InputDeviceInfo(Devices[i].dev_, Devices[i].name_));
   }
 }
 
@@ -1133,31 +1134,31 @@ static wchar_t ScancodeAndKeysToChar(DWORD scancode, unsigned char keys[256]) {
   static HKL layout = GetKeyboardLayout(0);  // 0 == current thread
   UINT vk = MapVirtualKeyEx(scancode, 1, layout);
 
-  static bool bInitialized = false;
+  static bool initialized = false;
 
   typedef int(WINAPI TOUNICODEEX)(
       IN UINT wVirtKey, IN UINT wScanCode, IN CONST BYTE * lpKeyState,
       OUT LPWSTR pwszBuff, IN int cchBuff, IN UINT wFlags, IN HKL dwhkl);
-  static TOUNICODEEX* pToUnicodeEx;
+  static TOUNICODEEX* to_unicode_ex;
 
-  if (!bInitialized) {
-    bInitialized = true;
-    HMODULE hModule = GetModuleHandle("user32.dll");
-    pToUnicodeEx = (TOUNICODEEX*)GetProcAddress(hModule, "ToUnicodeEx");
+  if (!initialized) {
+    initialized = true;
+    HMODULE module = GetModuleHandle("user32.dll");
+    to_unicode_ex = (TOUNICODEEX*)GetProcAddress(module, "ToUnicodeEx");
   }
 
   unsigned short result[2];  // ToAscii writes a max of 2 chars
   ZERO(result);
 
-  if (pToUnicodeEx != nullptr) {
-    int iNum = pToUnicodeEx(vk, scancode, keys, (LPWSTR)result, 2, 0, layout);
-    if (iNum == 1) {
+  if (to_unicode_ex != nullptr) {
+    int num = to_unicode_ex(vk, scancode, keys, (LPWSTR)result, 2, 0, layout);
+    if (num == 1) {
       return result[0];
     }
   } else {
-    int iNum = ToAsciiEx(vk, scancode, keys, result, 0, layout);
+    int num = ToAsciiEx(vk, scancode, keys, result, 0, layout);
     // iNum == 2 will happen only for dead keys. See MSDN for ToAsciiEx.
-    if (iNum == 1) {
+    if (num == 1) {
       std::string s = std::string() + (char)result[0];
       return ConvertCodepageToWString(s, CP_ACP)[0];
     }
@@ -1167,7 +1168,7 @@ static wchar_t ScancodeAndKeysToChar(DWORD scancode, unsigned char keys[256]) {
 }
 
 wchar_t InputHandler_DInput::DeviceButtonToChar(
-    DeviceButton button, bool bUseCurrentKeyModifiers) {
+    DeviceButton button, bool use_current_key_modifiers) {
   // ToAsciiEx maps these keys to a character. They shouldn't be mapped to any
   // character.
   switch (button) {
@@ -1190,7 +1191,7 @@ wchar_t InputHandler_DInput::DeviceButtonToChar(
 
       unsigned char keys[256];
       ZERO(keys);
-      if (bUseCurrentKeyModifiers) {
+      if (use_current_key_modifiers) {
         GetKeyboardState(keys);
       }
       // todo: handle Caps Lock -freem
@@ -1201,7 +1202,7 @@ wchar_t InputHandler_DInput::DeviceButtonToChar(
     }
   }
 
-  return InputHandler::DeviceButtonToChar(button, bUseCurrentKeyModifiers);
+  return InputHandler::DeviceButtonToChar(button, use_current_key_modifiers);
 }
 
 /*

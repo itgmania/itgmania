@@ -31,8 +31,8 @@ class ITween {
   virtual float Tween(float f) const = 0;
   virtual ITween* Copy() const = 0;
 
-  static ITween* CreateFromType(TweenType iType);
-  static ITween* CreateFromStack(Lua* L, int iStackPos);
+  static ITween* CreateFromType(TweenType type);
+  static ITween* CreateFromStack(Lua* L, int stack_pos);
 };
 
 #endif

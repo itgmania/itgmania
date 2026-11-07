@@ -10,13 +10,13 @@
 /** @brief A read-only file driver for ZIPs. */
 class RageFileDriverZip : public RageFileDriver {
  public:
-  RageFileDriverZip(const std::string& sPath);
-  bool Load(const std::string& sPath);
+  RageFileDriverZip(const std::string& path);
+  bool Load(const std::string& path);
 
   virtual ~RageFileDriverZip();
 
-  RageFileBasic* Open(const std::string& sPath, int iMode, int& iErr);
-  void FlushDirCache(const std::string& sPath);
+  RageFileBasic* Open(const std::string& path, int mode, int& err);
+  void FlushDirCache(const std::string& path);
 
   void DeleteFileWhenFinished() { file_owned_ = true; }
 

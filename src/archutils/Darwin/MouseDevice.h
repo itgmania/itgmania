@@ -24,9 +24,9 @@ class MouseDevice : public HIDDevice {
   Mouse mouse_;
 
  protected:
-  bool AddLogicalDevice(int usagePage, int usage);
+  bool AddLogicalDevice(int usage_page, int usage);
   void AddElement(
-      int usagePage, int usage, IOHIDElementCookie cookie,
+      int usage_page, int usage, IOHIDElementCookie cookie,
       const CFDictionaryRef properties);
   void Open();
 
@@ -35,9 +35,9 @@ class MouseDevice : public HIDDevice {
 
  public:
   void GetButtonPresses(
-      std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+      std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
       const RageTimer& now) const;
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices) const;
 };
 
 #endif

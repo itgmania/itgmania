@@ -8,16 +8,16 @@
 
 Transition::Transition() { state_ = waiting; }
 
-void Transition::Load(std::string sBGAniDir) {
+void Transition::Load(std::string bg_ani_dir) {
   this->RemoveAllChildren();
 
-  spr_transition_.Load(sBGAniDir);
+  spr_transition_.Load(bg_ani_dir);
   this->AddChild(spr_transition_);
 
   state_ = waiting;
 }
 
-void Transition::UpdateInternal(float fDeltaTime) {
+void Transition::UpdateInternal(float delta_time) {
   if (state_ != transitioning) {
     return;
   }
@@ -30,7 +30,7 @@ void Transition::UpdateInternal(float fDeltaTime) {
     SCREENMAN->SendMessageToTopScreen(message_to_send_when_done_);
   }
 
-  ActorFrame::UpdateInternal(fDeltaTime);
+  ActorFrame::UpdateInternal(delta_time);
 }
 
 void Transition::Reset() {

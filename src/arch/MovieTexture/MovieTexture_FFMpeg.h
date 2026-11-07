@@ -45,19 +45,19 @@ struct ConvertedFrame {
 
 class MovieTexture_FFMpeg : public MovieTexture_Generic {
  public:
-  MovieTexture_FFMpeg(RageTextureID ID);
+  MovieTexture_FFMpeg(RageTextureID id);
 
   static RageSurface* AVCodecCreateCompatibleSurface(
-      int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
-      int& iAVTexfmt, MovieDecoderPixelFormatYCbCr& fmtout);
+      int texture_width, int texture_height, bool prefer_high_color,
+      int& av_texfmt, MovieDecoderPixelFormatYCbCr& fmtout);
 };
 
 class RageMovieTextureDriver_FFMpeg : public RageMovieTextureDriver {
  public:
-  RageMovieTexture* Create(RageTextureID ID, std::string& sError) override;
+  RageMovieTexture* Create(RageTextureID id, std::string& error) override;
   static RageSurface* AVCodecCreateCompatibleSurface(
-      int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
-      int& iAVTexfmt, MovieDecoderPixelFormatYCbCr& fmtout);
+      int texture_width, int texture_height, bool prefer_high_color,
+      int& av_texfmt, MovieDecoderPixelFormatYCbCr& fmtout);
 };
 
 class MovieDecoder_FFMpeg : public MovieDecoder {
@@ -84,7 +84,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   }
 
   RageSurface* CreateCompatibleSurface(
-      int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
+      int texture_width, int texture_height, bool prefer_high_color,
       MovieDecoderPixelFormatYCbCr& fmtout) override;
 
   float GetTimestamp() const override;

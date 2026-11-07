@@ -10,28 +10,28 @@
 
 REGISTER_ACTOR_CLASS_WITH_NAME(ActorSound, Sound);
 
-void ActorSound::Load(const std::string& sPath) { sound_.Load(sPath, true); }
+void ActorSound::Load(const std::string& path) { sound_.Load(path, true); }
 
 void ActorSound::Play() { sound_.Play(is_action_); }
 
-void ActorSound::Pause(bool bPause) { sound_.Pause(bPause); }
+void ActorSound::Pause(bool pause) { sound_.Pause(pause); }
 
 void ActorSound::Stop() { sound_.Stop(); }
 
-void ActorSound::LoadFromNode(const XNode* pNode) {
+void ActorSound::LoadFromNode(const XNode* node) {
   RageSoundLoadParams params;
-  pNode->GetAttrValue("SupportPan", params.support_pan_);
-  pNode->GetAttrValue("SupportRateChanging", params.support_rate_changing_);
-  pNode->GetAttrValue("IsAction", is_action_);
+  node->GetAttrValue("SupportPan", params.support_pan_);
+  node->GetAttrValue("SupportRateChanging", params.support_rate_changing_);
+  node->GetAttrValue("IsAction", is_action_);
 
-  bool bPrecache = true;
-  pNode->GetAttrValue("Precache", bPrecache);
+  bool precache = true;
+  node->GetAttrValue("Precache", precache);
 
-  Actor::LoadFromNode(pNode);
+  Actor::LoadFromNode(node);
 
-  std::string sFile;
-  if (ActorUtil::GetAttrPath(pNode, "File", sFile)) {
-    sound_.Load(sFile, bPrecache, &params);
+  std::string file;
+  if (ActorUtil::GetAttrPath(node, "File", file)) {
+    sound_.Load(file, precache, &params);
   }
 }
 

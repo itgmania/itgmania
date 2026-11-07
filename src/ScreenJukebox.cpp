@@ -48,130 +48,132 @@ REGISTER_SCREEN_CLASS(ScreenJukebox);
 void ScreenJukebox::SetSong() {
   ThemeMetric<bool> ALLOW_ADVANCED_MODIFIERS(name_, "AllowAdvancedModifiers");
 
-  std::vector<Song*> vSongs;
+  std::vector<Song*> songs;
 
   /* Check to see if there is a theme course. If there is a course that has
    * the exact same name as the theme, then we pick a song from this course. */
-  Course* pCourse = SONGMAN->GetCourseFromName(THEME->GetCurThemeName());
-  if (pCourse != nullptr) {
-    for (unsigned i = 0; i < pCourse->entries_.size(); i++) {
-      if (pCourse->entries_[i].IsFixedSong()) {
-        vSongs.push_back(pCourse->entries_[i].song_id_.ToSong());
+  Course* p_course = SONGMAN->GetCourseFromName(THEME->GetCurThemeName());
+  if (p_course != nullptr) {
+    for (unsigned i = 0; i < p_course->entries_.size(); i++) {
+      if (p_course->entries_[i].IsFixedSong()) {
+        songs.push_back(p_course->entries_[i].song_id_.ToSong());
       }
     }
   }
 
-  if (vSongs.size() == 0) {
-    vSongs = SONGMAN->GetSongs(GAMESTATE->preferred_song_group_);
+  if (songs.size() == 0) {
+    songs = SONGMAN->GetSongs(GAMESTATE->preferred_song_group_);
   }
   // Still nothing?
-  if (vSongs.size() == 0) {
+  if (songs.size() == 0) {
     return;
   }
 
   // Calculate what difficulties to show
-  std::vector<Difficulty> vDifficultiesToShow;
+  std::vector<Difficulty> difficulties_to_show;
   if (demonstration_) {
     // HACK: This belongs in ScreenDemonstration.
     ThemeMetricDifficultiesToShow DIFFICULTIES_TO_SHOW_HERE(
         name_, "DifficultiesToShow");
-    vDifficultiesToShow = DIFFICULTIES_TO_SHOW_HERE.GetValue();
+    difficulties_to_show = DIFFICULTIES_TO_SHOW_HERE.GetValue();
   } else {
     if (GAMESTATE->preferred_difficulty_[PLAYER_1] != Difficulty_Invalid) {
-      vDifficultiesToShow.push_back(GAMESTATE->preferred_difficulty_[PLAYER_1]);
+      difficulties_to_show.push_back(
+          GAMESTATE->preferred_difficulty_[PLAYER_1]);
     } else {
       FOREACH_ENUM(Difficulty, dc)
-      vDifficultiesToShow.push_back(dc);
+      difficulties_to_show.push_back(dc);
     }
   }
 
-  ASSERT(!vDifficultiesToShow.empty());
+  ASSERT(!difficulties_to_show.empty());
 
   // Search for a Song and Steps to play during the demo.
   for (int i = 0; i < 1000; i++) {
-    Song* pSong = vSongs[RandomInt(vSongs.size())];
+    Song* song = songs[RandomInt(songs.size())];
 
-    ASSERT(pSong != nullptr);
-    if (!pSong->HasMusic()) {
+    ASSERT(song != nullptr);
+    if (!song->HasMusic()) {
       continue;  // skip
     }
-    if (!pSong->NormallyDisplayed()) {
+    if (!song->NormallyDisplayed()) {
       continue;
     }
-    if (!pSong->ShowInDemonstrationAndRanking()) {
+    if (!song->ShowInDemonstrationAndRanking()) {
       continue;  // skip
     }
 
-    Difficulty dc = vDifficultiesToShow[RandomInt(vDifficultiesToShow.size())];
-    Steps* pSteps = SongUtil::GetStepsByDifficulty(
-        pSong, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_, dc);
+    Difficulty dc =
+        difficulties_to_show[RandomInt(difficulties_to_show.size())];
+    Steps* steps = SongUtil::GetStepsByDifficulty(
+        song, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_, dc);
 
-    if (pSteps == nullptr) {
+    if (steps == nullptr) {
       continue;  // skip
     }
 
-    if (!PREFSMAN->autogen_steps_ && pSteps->IsAutogen()) {
+    if (!PREFSMAN->autogen_steps_ && steps->IsAutogen()) {
       continue;  // skip
     }
 
     // Found something we can use!
-    GAMESTATE->cur_song_.Set(pSong);
+    GAMESTATE->cur_song_.Set(song);
     // We just changed the song. Reset the original sync data.
     AdjustSync::ResetOriginalSyncData();
-    FOREACH_PlayerNumber(p) GAMESTATE->cur_steps_[p].Set(pSteps);
+    FOREACH_PlayerNumber(p) GAMESTATE->cur_steps_[p].Set(steps);
 
-    bool bShowModifiers = randomf(0, 1) <= SHOW_COURSE_MODIFIERS_PROBABILITY;
-    if (bShowModifiers) {
+    bool show_modifiers = randomf(0, 1) <= SHOW_COURSE_MODIFIERS_PROBABILITY;
+    if (show_modifiers) {
       /* If we have a modifier course containing this song, apply its
        * modifiers. Only check fixed course entries. */
-      std::vector<Course*> apCourses;
-      SONGMAN->GetAllCourses(apCourses, false);
-      std::vector<const CourseEntry*> apOptions;
-      std::vector<Course*> apPossibleCourses;
-      for (unsigned j = 0; j < apCourses.size(); ++j) {
-        Course* lCourse = apCourses[j];
-        const CourseEntry* pEntry = lCourse->FindFixedSong(pSong);
-        if (pEntry == nullptr || pEntry->attacks_.size() == 0) {
+      std::vector<Course*> courses;
+      SONGMAN->GetAllCourses(courses, false);
+      std::vector<const CourseEntry*> options;
+      std::vector<Course*> possible_courses;
+      for (unsigned j = 0; j < courses.size(); ++j) {
+        Course* l_course = courses[j];
+        const CourseEntry* entry = l_course->FindFixedSong(song);
+        if (entry == nullptr || entry->attacks_.size() == 0) {
           continue;
         }
 
         if (!ALLOW_ADVANCED_MODIFIERS) {
           // There are some confusing mods that we don't want to show in
           // demonstration.
-          bool bModsAreOkToShow = true;
-          AttackArray aAttacks = pEntry->attacks_;
-          if (!pEntry->modifiers_.empty()) {
-            aAttacks.push_back(
-                Attack::FromGlobalCourseModifier(pEntry->modifiers_));
+          bool mods_are_ok_to_show = true;
+          AttackArray attacks = entry->attacks_;
+          if (!entry->modifiers_.empty()) {
+            attacks.push_back(
+                Attack::FromGlobalCourseModifier(entry->modifiers_));
           }
-          for (const Attack& a : aAttacks) {
+          for (const Attack& a : attacks) {
             std::string s = a.modifiers_;
             MakeLower(s);
             // todo: allow themers to modify this list? -aj
             if (s.find("dark") != std::string::npos ||
                 s.find("stealth") != std::string::npos) {
-              bModsAreOkToShow = false;
+              mods_are_ok_to_show = false;
               break;
             }
           }
-          if (!bModsAreOkToShow) {
+          if (!mods_are_ok_to_show) {
             continue;  // skip
           }
         }
 
-        apOptions.push_back(pEntry);
-        apPossibleCourses.push_back(pCourse);
+        options.push_back(entry);
+        possible_courses.push_back(p_course);
       }
 
-      if (!apOptions.empty()) {
-        int iIndex = RandomInt(apOptions.size());
-        Course* lCourse = apPossibleCourses[iIndex];
+      if (!options.empty()) {
+        int index = RandomInt(options.size());
+        Course* l_course = possible_courses[index];
 
-        PlayMode pm = CourseTypeToPlayMode(lCourse->GetCourseType());
+        PlayMode pm = CourseTypeToPlayMode(l_course->GetCourseType());
         GAMESTATE->play_mode_.Set(pm);
-        GAMESTATE->cur_course_.Set(lCourse);
+        GAMESTATE->cur_course_.Set(l_course);
         FOREACH_PlayerNumber(p) {
-          GAMESTATE->cur_trail_[p].Set(lCourse->GetTrail(
+          GAMESTATE->cur_trail_[p].Set(l_course->GetTrail(
               GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_));
           ASSERT(GAMESTATE->cur_trail_[p] != nullptr);
         }
@@ -199,8 +201,8 @@ void ScreenJukebox::Init() {
   GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
 
   // choose some cool options
-  int Benchmark = 0;
-  if (Benchmark) {
+  int benchmark = 0;
+  if (benchmark) {
     /* Note that you also need to make sure you benchmark with the same notes.
      * I (who? -aj) use a copy of Maxx Unlimited with only heavy notes
      * included.*/
@@ -284,22 +286,22 @@ bool ScreenJukebox::Input(const InputEventPlus& input) {
   return ScreenAttract::AttractInput(input, this);
 }
 
-void ScreenJukebox::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_NotesEnded) {
+void ScreenJukebox::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_NotesEnded) {
     if (out_.IsTransitioning() || out_.IsFinished()) {
       return;  // ignore - we're already fading or faded
     }
     out_.StartTransitioning(SM_GoToNextScreen);
     return;
-  } else if (SM == SM_GoToNextScreen) {
+  } else if (sm == SM_GoToNextScreen) {
     if (sound_music_) {
       sound_music_->Stop();
     }
-  } else if (SM == SM_GoToStartScreen) {
+  } else if (sm == SM_GoToStartScreen) {
     ScreenAttract::GoToStartScreen(name_);
   }
 
-  ScreenGameplay::HandleScreenMessage(SM);
+  ScreenGameplay::HandleScreenMessage(sm);
 }
 
 void ScreenJukebox::InitSongQueues() {
@@ -307,18 +309,18 @@ void ScreenJukebox::InitSongQueues() {
 
   // Pare down to just the song in the course that we want.
 
-  int iIndexToKeep = -1;
+  int index_to_keep = -1;
   for (unsigned i = 0; i < songs_queue_.size(); i++) {
     if (songs_queue_[i] == GAMESTATE->cur_song_) {
-      iIndexToKeep = i;
+      index_to_keep = i;
       break;
     }
   }
 
-  ASSERT(iIndexToKeep != -1);
+  ASSERT(index_to_keep != -1);
 
   for (int i = (songs_queue_.size()) - 1; i >= 0; i--) {
-    if (i != iIndexToKeep) {
+    if (i != index_to_keep) {
       songs_queue_.erase(songs_queue_.begin() + i);
       FOREACH_EnabledPlayerInfo(player_info_, pi) {
         pi->steps_queue_.erase(pi->steps_queue_.begin() + i);

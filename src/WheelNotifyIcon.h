@@ -24,7 +24,7 @@ class WheelNotifyIcon : public Sprite {
 
   void SetFlags(Flags flags);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool EarlyAbortDraw() const;
 
  protected:

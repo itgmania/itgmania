@@ -44,16 +44,16 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   virtual void Init();
   virtual void BeginScreen();
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual bool Input(const InputEventPlus& input);
   virtual void HandleMessage(const Message& msg);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual bool AllowLateJoin() const { return true; }
 
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuBack(const InputEventPlus& input);
-  virtual void Cancel(ScreenMessage smSendWhenDone);
-  virtual void ConfirmedCancel(ScreenMessage smSendWhenDone);
+  virtual void Cancel(ScreenMessage send_when_done);
+  virtual void ConfirmedCancel(ScreenMessage send_when_done);
 
   // ScreenWithMenuElements override: never play music here; we do it ourself.
   virtual void StartPlayingMusic() {}
@@ -70,7 +70,7 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  void UpdateSelectButton(PlayerNumber pn, bool bBeingPressed);
+  void UpdateSelectButton(PlayerNumber pn, bool being_pressed);
 
   void ChangeSteps(PlayerNumber pn, int dir);
   void AfterStepsOrTrailChange(const std::vector<PlayerNumber>& vpns);
@@ -80,7 +80,7 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   void SwitchToPreferredDifficulty();
   void AfterMusicChange();
 
-  void CheckBackgroundRequests(bool bForce);
+  void CheckBackgroundRequests(bool force);
   bool DetectCodes(const InputEventPlus& input);
   bool LoadPlayerProfile(PlayerNumber pn);
   bool LoadReadyMemoryCards();

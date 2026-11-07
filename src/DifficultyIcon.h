@@ -20,15 +20,15 @@ class DifficultyIcon : public Sprite {
     return blank_ || Sprite::EarlyAbortDraw();
   }
 
-  bool Load(std::string sFilePath);
-  virtual void Load(RageTextureID ID) { Load(ID.filename_); }
-  virtual void LoadFromNode(const XNode* pNode);
+  bool Load(std::string file_path);
+  virtual void Load(RageTextureID id) { Load(id.filename_); }
+  virtual void LoadFromNode(const XNode* node);
   virtual DifficultyIcon* Copy() const;
 
   void SetPlayer(PlayerNumber pn);
   void Unset();
-  void SetFromSteps(PlayerNumber pn, const Steps* pSteps);
-  void SetFromTrail(PlayerNumber pn, const Trail* pTrail);
+  void SetFromSteps(PlayerNumber pn, const Steps* steps);
+  void SetFromTrail(PlayerNumber pn, const Trail* trail);
   void SetFromDifficulty(Difficulty dc);
 
   // Lua

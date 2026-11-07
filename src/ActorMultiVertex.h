@@ -41,7 +41,7 @@ class ActorMultiVertex : public Actor {
   ActorMultiVertex(const ActorMultiVertex& cpy);
   virtual ~ActorMultiVertex();
 
-  void LoadFromNode(const XNode* Node) override;
+  void LoadFromNode(const XNode* node) override;
   virtual ActorMultiVertex* Copy() const override;
 
   struct AMV_TweenState {
@@ -83,28 +83,28 @@ class ActorMultiVertex : public Actor {
     return const_cast<ActorMultiVertex*>(this)->AMV_DestTweenState();
   }
 
-  virtual void EnableAnimation(bool bEnable) override;
-  virtual void Update(float fDelta) override;
+  virtual void EnableAnimation(bool enable) override;
+  virtual void Update(float delta) override;
   virtual bool EarlyAbortDraw() const override;
   virtual void DrawPrimitives() override;
-  virtual void DrawInternal(const AMV_TweenState* TS);
+  virtual void DrawInternal(const AMV_TweenState* ts);
 
   void SetCurrentTweenStart() override;
   void EraseHeadTween() override;
-  void UpdatePercentThroughTween(float PercentThroughTween) override;
-  void BeginTweening(float time, ITween* pInterp) override;
+  void UpdatePercentThroughTween(float percent_through_tween) override;
+  void BeginTweening(float time, ITween* interp) override;
 
   void StopTweening() override;
   void FinishTweening() override;
 
-  void SetTexture(RageTexture* Texture);
+  void SetTexture(RageTexture* texture);
   RageTexture* GetTexture() { return texture_; };
-  void LoadFromTexture(RageTextureID ID);
+  void LoadFromTexture(RageTextureID id);
 
   void UnloadTexture();
   void SetNumVertices(size_t n);
 
-  void AddVertices(int Add);
+  void AddVertices(int add);
 
   void SetEffectMode(EffectMode em) { effect_mode_ = em; }
   void SetTextureMode(TextureMode tm) { texture_mode_ = tm; }
@@ -124,7 +124,7 @@ class ActorMultiVertex : public Actor {
 
   void SetVertexPos(int index, float x, float y, float z);
   void SetVertexColor(int index, RageColor c);
-  void SetVertexCoords(int index, float TexCoordX, float TexCoordY);
+  void SetVertexCoords(int index, float tex_coord_x, float tex_coord_y);
 
   inline void SetVertsFromSplinesInternal(
       size_t num_splines, size_t start_vert);

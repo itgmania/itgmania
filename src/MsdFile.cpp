@@ -28,13 +28,13 @@ void MsdFile::AddValue() /* (no extra charge) */
   values_.back().params_.reserve(32);
 }
 
-void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
+void MsdFile::ReadBuf(const char* buf, int len, bool unescape) {
   values_.reserve(64);
 
-  bool ReadingValue = false;
+  bool reading_value = false;
   int i = 0;
-  char* cProcessed = new char[len];
-  int iProcessedLen = -1;
+  char* processed = new char[len];
+  int processed_len = -1;
   while (i < len) {
     if (i + 1 < len && buf[i] == '/' && buf[i + 1] == '/') {
       /* Skip a comment entirely; don't copy the comment to the value/parameter
@@ -46,52 +46,52 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
       continue;
     }
 
-    if (ReadingValue && buf[i] == '#') {
+    if (reading_value && buf[i] == '#') {
       /* Unfortunately, many of these files are missing ;'s.
        * If we get a # when we thought we were inside a value, assume we
        * missed the ;.  Back up and end the value. */
       // Make sure this # is the first non-whitespace character on the line.
-      bool FirstChar = true;
-      int j = iProcessedLen;
-      while (j > 0 && cProcessed[j - 1] != '\r' && cProcessed[j - 1] != '\n') {
-        if (cProcessed[j - 1] == ' ' || cProcessed[j - 1] == '\t') {
+      bool first_char = true;
+      int j = processed_len;
+      while (j > 0 && processed[j - 1] != '\r' && processed[j - 1] != '\n') {
+        if (processed[j - 1] == ' ' || processed[j - 1] == '\t') {
           --j;
           continue;
         }
 
-        FirstChar = false;
+        first_char = false;
         break;
       }
 
-      if (!FirstChar) {
+      if (!first_char) {
         /* We're not the first char on a line.  Treat it as if it were a normal
          * character. */
-        cProcessed[iProcessedLen++] = buf[i++];
+        processed[processed_len++] = buf[i++];
         continue;
       }
 
       /* Skip newlines and whitespace before adding the value. */
-      iProcessedLen = j;
-      while (iProcessedLen > 0 && (cProcessed[iProcessedLen - 1] == '\r' ||
-                                   cProcessed[iProcessedLen - 1] == '\n' ||
-                                   cProcessed[iProcessedLen - 1] == ' ' ||
-                                   cProcessed[iProcessedLen - 1] == '\t')) {
-        --iProcessedLen;
+      processed_len = j;
+      while (processed_len > 0 && (processed[processed_len - 1] == '\r' ||
+                                   processed[processed_len - 1] == '\n' ||
+                                   processed[processed_len - 1] == ' ' ||
+                                   processed[processed_len - 1] == '\t')) {
+        --processed_len;
       }
 
-      AddParam(cProcessed, iProcessedLen);
-      iProcessedLen = 0;
-      ReadingValue = false;
+      AddParam(processed, processed_len);
+      processed_len = 0;
+      reading_value = false;
     }
 
     /* # starts a new value. */
-    if (!ReadingValue && buf[i] == '#') {
+    if (!reading_value && buf[i] == '#') {
       AddValue();
-      ReadingValue = true;
+      reading_value = true;
     }
 
-    if (!ReadingValue) {
-      if (bUnescape && buf[i] == '\\') {
+    if (!reading_value) {
+      if (unescape && buf[i] == '\\') {
         i += 2;
       } else {
         ++i;
@@ -100,20 +100,20 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
     }
 
     /* : and ; end the current param, if any. */
-    if (iProcessedLen != -1 && (buf[i] == ':' || buf[i] == ';')) {
-      AddParam(cProcessed, iProcessedLen);
+    if (processed_len != -1 && (buf[i] == ':' || buf[i] == ';')) {
+      AddParam(processed, processed_len);
     }
 
     /* # and : begin new params. */
     if (buf[i] == '#' || buf[i] == ':') {
       ++i;
-      iProcessedLen = 0;
+      processed_len = 0;
       continue;
     }
 
     /* ; ends the current value. */
     if (buf[i] == ';') {
-      ReadingValue = false;
+      reading_value = false;
       ++i;
       continue;
     }
@@ -123,7 +123,7 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
      */
     if (buf[i] == '\\' && i < len) {
       // If we're escaping the next character, skip the '\\'
-      if (bUnescape) {
+      if (unescape) {
         ++i;
       }
       // Otherwise, add the '\\' to cProcessed here, so that
@@ -132,51 +132,51 @@ void MsdFile::ReadBuf(const char* buf, int len, bool bUnescape) {
       // (and most importantly, it doesn't get parsed as a control character)
       // on the next iteration
       else {
-        cProcessed[iProcessedLen++] = buf[i++];
+        processed[processed_len++] = buf[i++];
       }
     }
 
     if (i < len) {
-      cProcessed[iProcessedLen++] = buf[i++];
+      processed[processed_len++] = buf[i++];
     }
   }
 
   /* Add any unterminated value at the very end. */
-  if (ReadingValue) {
-    AddParam(cProcessed, iProcessedLen);
+  if (reading_value) {
+    AddParam(processed, processed_len);
   }
 
-  delete[] cProcessed;
+  delete[] processed;
 }
 
 // returns true if successful, false otherwise
-bool MsdFile::ReadFile(std::string sNewPath, bool bUnescape) {
+bool MsdFile::ReadFile(std::string new_path, bool unescape) {
   error_ = "";
 
   RageFile f;
   /* Open a file. */
-  if (!f.Open(sNewPath)) {
+  if (!f.Open(new_path)) {
     error_ = f.GetError();
     return false;
   }
 
   // allocate a string to hold the file
-  std::string FileString;
-  FileString.reserve(f.GetFileSize());
+  std::string file_string;
+  file_string.reserve(f.GetFileSize());
 
-  int iBytesRead = f.Read(FileString);
-  if (iBytesRead == -1) {
+  int bytes_read = f.Read(file_string);
+  if (bytes_read == -1) {
     error_ = f.GetError();
     return false;
   }
 
-  ReadBuf(FileString.c_str(), iBytesRead, bUnescape);
+  ReadBuf(file_string.c_str(), bytes_read, unescape);
 
   return true;
 }
 
-void MsdFile::ReadFromString(const std::string& sString, bool bUnescape) {
-  ReadBuf(sString.c_str(), sString.size(), bUnescape);
+void MsdFile::ReadFromString(const std::string& string, bool unescape) {
+  ReadBuf(string.c_str(), string.size(), unescape);
 }
 
 std::string MsdFile::GetParam(unsigned val, unsigned par) const {

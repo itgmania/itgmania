@@ -16,9 +16,9 @@
 #include <IOKit/IOMessage.h>
 
 static double GetTimebaseFactor() {
-  mach_timebase_info_data_t timeBase;
-  mach_timebase_info(&timeBase);
-  return timeBase.numer / (1000.0 * timeBase.denom);
+  mach_timebase_info_data_t time_base;
+  mach_timebase_info(&time_base);
+  return time_base.numer / (1000.0 * time_base.denom);
 }
 static const double g_fTimebaseFactor = GetTimebaseFactor();
 
@@ -27,24 +27,24 @@ REGISTER_INPUT_HANDLER_CLASS2(HID, MacOSX_HID);
 void InputHandler_MacOSX_HID::QueueCallback(void* target, int result, void* refcon, void* sender) {
   // The result seems useless as you can't actually return anything...
 
-  InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)target;
+  InputHandler_MacOSX_HID* that = (InputHandler_MacOSX_HID*)target;
   IOHIDQueueInterface** queue = (IOHIDQueueInterface**)sender;
   IOHIDEventStruct event;
-  AbsoluteTime zeroTime = {0, 0};
+  AbsoluteTime zero_time = {0, 0};
   HIDDevice* dev = static_cast<HIDDevice*>(refcon);
-  std::vector<DeviceInput> vPresses;
+  std::vector<DeviceInput> presses;
 
-  while ((result = CALL(queue, getNextEvent, &event, zeroTime, 0)) == kIOReturnSuccess) {
+  while ((result = CALL(queue, getNextEvent, &event, zero_time, 0)) == kIOReturnSuccess) {
     if (event.longValueSize != 0 && event.longValue != nullptr) {
       free(event.longValue);
       continue;
     }
-    uint64_t absoluteTimeVal = ((uint64_t)event.timestamp.hi << 32) | event.timestamp.lo;
-    uint64_t usecs = uint64_t(absoluteTimeVal * g_fTimebaseFactor);
-    RageTimer eventTime(usecs / 1000000ULL, usecs % 1000000ULL);
-    dev->GetButtonPresses(vPresses, event.elementCookie, event.value, eventTime);
+    uint64_t absolute_time_val = ((uint64_t)event.timestamp.hi << 32) | event.timestamp.lo;
+    uint64_t usecs = uint64_t(absolute_time_val * g_fTimebaseFactor);
+    RageTimer event_time(usecs / 1000000ULL, usecs % 1000000ULL);
+    dev->GetButtonPresses(presses, event.elementCookie, event.value, event_time);
   }
-  for (DeviceInput& i : vPresses) {
+  for (DeviceInput& i : presses) {
     INPUTFILTER->ButtonPressed(i);
   }
 }
@@ -56,26 +56,26 @@ static void RunLoopStarted(CFRunLoopObserverRef o, CFRunLoopActivity a, void* se
 }
 
 int InputHandler_MacOSX_HID::Run(void* data) {
-  InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)data;
+  InputHandler_MacOSX_HID* that = (InputHandler_MacOSX_HID*)data;
 
-  This->loop_ref_ = CFRunLoopGetCurrent();
-  CFRetain(This->loop_ref_);
+  that->loop_ref_ = CFRunLoopGetCurrent();
+  CFRetain(that->loop_ref_);
 
-  This->StartDevices();
+  that->StartDevices();
   {
-    const std::string sError = SetThreadPrecedence(1.0f);
-    if (!sError.empty()) {
-      LOG->Warn("Could not set precedence of the input thread: %s", sError.c_str());
+    const std::string error = SetThreadPrecedence(1.0f);
+    if (!error.empty()) {
+      LOG->Warn("Could not set precedence of the input thread: %s", error.c_str());
     }
   }
   // Add an observer for the start of the run loop
   {
     /* The function copies the information out of the structure, so the memory
      * pointed to by context does not need to persist beyond the function call. */
-    CFRunLoopObserverContext context = {0, &This->sem_, nullptr, nullptr, nullptr};
+    CFRunLoopObserverContext context = {0, &that->sem_, nullptr, nullptr, nullptr};
     CFRunLoopObserverRef o = CFRunLoopObserverCreate(
         kCFAllocatorDefault, kCFRunLoopEntry, false, 0, RunLoopStarted, &context);
-    CFRunLoopAddObserver(This->loop_ref_, o, kCFRunLoopDefaultMode);
+    CFRunLoopAddObserver(that->loop_ref_, o, kCFRunLoopDefaultMode);
   }
 
   /* Add a source for ending the run loop. This serves two purposes:
@@ -86,36 +86,36 @@ int InputHandler_MacOSX_HID::Run(void* data) {
     /* Being a little tricky here, the perform callback takes a void* and
      * returns nothing. CFRunLoopStop takes a CFRunLoopRef (a pointer) so
      * cast the function and pass the loop ref. */
-    void* info = This->loop_ref_;
+    void* info = that->loop_ref_;
     void (*perform)(void*) = (void (*)(void*))CFRunLoopStop;
     // { version, info, retain, release, copyDescription, equal, hash, schedule, cancel, perform }
     CFRunLoopSourceContext context = {0,       info,    nullptr, nullptr, nullptr,
                                       nullptr, nullptr, nullptr, nullptr, perform};
 
     // Pass 1 so that it is called after all inputs have been handled (they will have order = 0)
-    This->source_ref_ = CFRunLoopSourceCreate(kCFAllocatorDefault, 1, &context);
+    that->source_ref_ = CFRunLoopSourceCreate(kCFAllocatorDefault, 1, &context);
 
-    CFRunLoopAddSource(This->loop_ref_, This->source_ref_, kCFRunLoopDefaultMode);
+    CFRunLoopAddSource(that->loop_ref_, that->source_ref_, kCFRunLoopDefaultMode);
   }
   CFRunLoopRun();
   LOG->Trace("Shutting down input handler thread...");
   return 0;
 }
 
-void InputHandler_MacOSX_HID::DeviceAdded(void* refCon, io_iterator_t) {
-  InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)refCon;
+void InputHandler_MacOSX_HID::DeviceAdded(void* ref_con, io_iterator_t) {
+  InputHandler_MacOSX_HID* that = (InputHandler_MacOSX_HID*)ref_con;
 
-  LockMut(This->change_lock_);
-  This->changed_ = true;
+  LockMut(that->change_lock_);
+  that->changed_ = true;
 }
 
 void InputHandler_MacOSX_HID::DeviceChanged(
-    void* refCon, io_service_t service, natural_t messageType, void* arg) {
-  if (messageType == kIOMessageServiceIsTerminated) {
-    InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)refCon;
+    void* ref_con, io_service_t service, natural_t message_type, void* arg) {
+  if (message_type == kIOMessageServiceIsTerminated) {
+    InputHandler_MacOSX_HID* that = (InputHandler_MacOSX_HID*)ref_con;
 
-    LockMut(This->change_lock_);
-    This->changed_ = true;
+    LockMut(that->change_lock_);
+    that->changed_ = true;
   }
 }
 
@@ -126,9 +126,9 @@ void InputHandler_MacOSX_HID::StartDevices() {
     i->StartQueue(loop_ref_, InputHandler_MacOSX_HID::QueueCallback, this);
   }
 
-  CFRunLoopSourceRef runLoopSource = IONotificationPortGetRunLoopSource(notify_port_);
+  CFRunLoopSourceRef run_loop_source = IONotificationPortGetRunLoopSource(notify_port_);
 
-  CFRunLoopAddSource(loop_ref_, runLoopSource, kCFRunLoopDefaultMode);
+  CFRunLoopAddSource(loop_ref_, run_loop_source, kCFRunLoopDefaultMode);
 }
 
 InputHandler_MacOSX_HID::~InputHandler_MacOSX_HID() {
@@ -150,7 +150,7 @@ InputHandler_MacOSX_HID::~InputHandler_MacOSX_HID() {
   IONotificationPortDestroy(notify_port_);
 }
 
-static CFDictionaryRef GetMatchingDictionary(int usagePage, int usage) {
+static CFDictionaryRef GetMatchingDictionary(int usage_page, int usage) {
   // Build the matching dictionary.
   CFMutableDictionaryRef dict;
 
@@ -158,15 +158,15 @@ static CFDictionaryRef GetMatchingDictionary(int usagePage, int usage) {
     FAIL_M("Couldn't create a matching dictionary.");
   }
   // Refine the search by only looking for joysticks
-  CFNumberRef usagePageRef = CFInt(usagePage);
-  CFNumberRef usageRef = CFInt(usage);
+  CFNumberRef usage_page_ref = CFInt(usage_page);
+  CFNumberRef usage_ref = CFInt(usage);
 
-  CFDictionarySetValue(dict, CFSTR(kIOHIDPrimaryUsagePageKey), usagePageRef);
-  CFDictionarySetValue(dict, CFSTR(kIOHIDPrimaryUsageKey), usageRef);
+  CFDictionarySetValue(dict, CFSTR(kIOHIDPrimaryUsagePageKey), usage_page_ref);
+  CFDictionarySetValue(dict, CFSTR(kIOHIDPrimaryUsageKey), usage_ref);
 
   // Cleanup after ourselves
-  CFRelease(usagePageRef);
-  CFRelease(usageRef);
+  CFRelease(usage_page_ref);
+  CFRelease(usage_ref);
 
   return dict;
 }
@@ -189,9 +189,9 @@ static HIDDevice* MakeDevice(InputDevice id) {
   return nullptr;
 }
 
-void InputHandler_MacOSX_HID::AddDevices(int usagePage, int usage, InputDevice& id) {
+void InputHandler_MacOSX_HID::AddDevices(int usage_page, int usage, InputDevice& id) {
   io_iterator_t iter;
-  CFDictionaryRef dict = GetMatchingDictionary(usagePage, usage);
+  CFDictionaryRef dict = GetMatchingDictionary(usage_page, usage);
   kern_return_t ret = IOServiceAddMatchingNotification(
       notify_port_, kIOFirstMatchNotification, dict, InputHandler_MacOSX_HID::DeviceAdded, this,
       &iter);
@@ -277,9 +277,9 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID()
   }
 }
 
-void InputHandler_MacOSX_HID::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) {
+void InputHandler_MacOSX_HID::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices) {
   for (HIDDevice* i : devices_) {
-    i->GetDevicesAndDescriptions(vDevices);
+    i->GetDevicesAndDescriptions(devices);
   }
 }
 
@@ -446,43 +446,43 @@ std::string InputHandler_MacOSX_HID::GetDeviceSpecificInputString(const DeviceIn
 // used under MIT license from
 // http://macifom.googlecode.com/svn-history/r89/Macifom/trunk/NESControllerInterface.m Used under
 // MIT license from http://inquisitivecocoa.com/2009/04/05/key-code-translator/
-static wchar_t KeyCodeToChar(CGKeyCode keyCode, unsigned int modifierFlags) {
-  TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+static wchar_t KeyCodeToChar(CGKeyCode key_code, unsigned int modifier_flags) {
+  TISInputSourceRef current_keyboard = TISCopyCurrentKeyboardInputSource();
   CFDataRef uchr =
-      (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
-  const UCKeyboardLayout* keyboardLayout =
+      (CFDataRef)TISGetInputSourceProperty(current_keyboard, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout* keyboard_layout =
       uchr ? (const UCKeyboardLayout*)CFDataGetBytePtr(uchr) : nullptr;
 
-  if (keyboardLayout) {
-    UInt32 deadKeyState = 0;
-    constexpr UniCharCount maxStringLength = 255;
-    UniCharCount actualStringLength = 0;
-    UniChar unicodeString[maxStringLength];
+  if (keyboard_layout) {
+    UInt32 dead_key_state = 0;
+    constexpr UniCharCount kMaxStringLength = 255;
+    UniCharCount actual_string_length = 0;
+    UniChar unicode_string[kMaxStringLength];
 
     OSStatus status = UCKeyTranslate(
-        keyboardLayout, keyCode, kUCKeyActionDown, modifierFlags, LMGetKbdType(), 0, &deadKeyState,
-        maxStringLength, &actualStringLength, unicodeString);
+        keyboard_layout, key_code, kUCKeyActionDown, modifier_flags, LMGetKbdType(), 0,
+        &dead_key_state, kMaxStringLength, &actual_string_length, unicode_string);
 
     if (status != noErr) {
       NSError* error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
-      const char* errorDescription = [error.localizedDescription UTF8String];
+      const char* error_description = [error.localizedDescription UTF8String];
       fprintf(
           stderr,
           "There was an error translating from the '%d' key code to a human readable string: %s\n",
-          keyCode, errorDescription);
-    } else if (actualStringLength == 0) {
-      fprintf(stderr, "Couldn't find a translation for the '%d' key code\n", keyCode);
+          key_code, error_description);
+    } else if (actual_string_length == 0) {
+      fprintf(stderr, "Couldn't find a translation for the '%d' key code\n", key_code);
     } else {
-      return unicodeString[0];
+      return unicode_string[0];
     }
   } else {
-    fprintf(stderr, "Couldn't find a translation for the '%d' key code\n", keyCode);
+    fprintf(stderr, "Couldn't find a translation for the '%d' key code\n", key_code);
   }
   return 0;
 }
 
 wchar_t InputHandler_MacOSX_HID::DeviceButtonToChar(
-    DeviceButton button, bool bUseCurrentKeyModifiers) {
+    DeviceButton button, bool use_current_key_modifiers) {
   // KeyTranslate maps these keys to a character.  They shouldn't be mapped to any character.
   switch (button) {
     default:
@@ -511,19 +511,19 @@ wchar_t InputHandler_MacOSX_HID::DeviceButtonToChar(
   }
 
   // Use Text Input Source services to convert the key code to character code.
-  UInt8 iMacVirtualKey;
-  if (KeyboardDevice::DeviceButtonToMacVirtualKey(button, iMacVirtualKey)) {
+  UInt8 mac_virtual_key;
+  if (KeyboardDevice::DeviceButtonToMacVirtualKey(button, mac_virtual_key)) {
     CGEventRef event = CGEventCreate(nullptr);
     CGEventFlags mods = CGEventGetFlags(event);
     CFRelease(event);
-    UInt32 nModifiers = bUseCurrentKeyModifiers ? (UInt32)mods : 0;
-    wchar_t sCharCode = KeyCodeToChar(iMacVirtualKey, nModifiers);
-    if (sCharCode != 0) {
-      return sCharCode;
+    UInt32 modifiers = use_current_key_modifiers ? (UInt32)mods : 0;
+    wchar_t char_code = KeyCodeToChar(mac_virtual_key, modifiers);
+    if (char_code != 0) {
+      return char_code;
     }
   }
 
-  return InputHandler::DeviceButtonToChar(button, bUseCurrentKeyModifiers);
+  return InputHandler::DeviceButtonToChar(button, use_current_key_modifiers);
 }
 
 /*

@@ -13,14 +13,14 @@ class RageSoundReader_Resample_Good;
 
 class RageSoundReader_PitchChange : public RageSoundReader_Filter {
  public:
-  RageSoundReader_PitchChange(RageSoundReader* pSource);
+  RageSoundReader_PitchChange(RageSoundReader* source);
   RageSoundReader_PitchChange(const RageSoundReader_PitchChange& cpy);
 
-  virtual int Read(float* pBuf, int iFrames);
-  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual int Read(float* buf, int frames);
+  virtual bool SetProperty(const std::string& property, float value);
 
-  void SetSpeedRatio(float fRatio) { speed_ratio_ = fRatio; }
-  void SetPitchRatio(float fRatio) { pitch_ratio_ = fRatio; }
+  void SetSpeedRatio(float ratio) { speed_ratio_ = ratio; }
+  void SetPitchRatio(float ratio) { pitch_ratio_ = ratio; }
 
   virtual RageSoundReader_PitchChange* Copy() const {
     return new RageSoundReader_PitchChange(*this);

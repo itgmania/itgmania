@@ -14,9 +14,9 @@ class LifeMeter : public ActorFrame {
   virtual ~LifeMeter() {};
 
   virtual void Load(
-      const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats) {
-    player_state_ = pPlayerState;
-    player_stage_stats_ = pPlayerStageStats;
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats) {
+    player_state_ = player_state;
+    player_stage_stats_ = player_stage_stats;
   }
   virtual void OnLoadSong() {};
   virtual void OnSongEnded() {};

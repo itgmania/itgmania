@@ -107,29 +107,29 @@ std::string LuaValueToString(lua_State* L, int index, bool quote) {
   return value;
 }
 
-int LuaEvaluate(const std::string& expression, DebuggeeState& frameOrThread) {
-  ASSERT(frameOrThread);
+int LuaEvaluate(const std::string& expression, DebuggeeState& frame_or_thread) {
+  ASSERT(frame_or_thread);
 
-  DebuggeeState& frame = frameOrThread.GetStackFrame();
+  DebuggeeState& frame = frame_or_thread.GetStackFrame();
   std::vector<DebuggeeState*> scopes{&frame.GetUpvalues(), &frame.GetLocals()};
   lua_Debug debug = {};
-  lua_State* L = frameOrThread.GetLua();
+  lua_State* L = frame_or_thread.GetLua();
   ASSERT(L != nullptr);
   // Current Lua stack: [...]
 
   // Add a "return" in case the expression is not a full statement.
-  std::string returnExpression = "return " + expression;
-  int loadstringResult = luaL_loadstring(L, returnExpression.c_str());
+  std::string return_expression = "return " + expression;
+  int loadstring_result = luaL_loadstring(L, return_expression.c_str());
   // [..., error or expression]
-  if (loadstringResult == LUA_ERRSYNTAX) {
+  if (loadstring_result == LUA_ERRSYNTAX) {
     lua_pop(L, 1);
     // [...]
     // Try again without the return.
-    loadstringResult = luaL_loadstring(L, expression.c_str());
+    loadstring_result = luaL_loadstring(L, expression.c_str());
     // [..., error or expression]
   }
 
-  if (loadstringResult != 0) {
+  if (loadstring_result != 0) {
     return -1;
   }
 
@@ -186,11 +186,11 @@ int LuaEvaluate(const std::string& expression, DebuggeeState& frameOrThread) {
   // [..., expression, environment, environment]
   lua_insert(L, -3);
   // [..., environment, expression, environment]
-  int setfenvResult = lua_setfenv(L, -2);
-  ASSERT(setfenvResult == 1);
+  int setfenv_result = lua_setfenv(L, -2);
+  ASSERT(setfenv_result == 1);
   // [..., environment, expression]
 
-  int environmentIndex = lua_gettop(L) - 1;
+  int environment_index = lua_gettop(L) - 1;
   if (lua_pcall(L, 0, LUA_MULTRET, 0) != 0) {
     // [..., environment, error]
     lua_remove(L, -2);
@@ -198,22 +198,22 @@ int LuaEvaluate(const std::string& expression, DebuggeeState& frameOrThread) {
     return -1;
   }
   // [..., environment, return value 1, return value 2, etc]
-  int resultCount = lua_gettop(L) - environmentIndex;
-  ASSERT(resultCount >= 0);
+  int result_count = lua_gettop(L) - environment_index;
+  ASSERT(result_count >= 0);
 
   if (frame) {
     // Copy locals back to the function.
     lua_pushnil(L);
     // [..., environment, return values, nil]
-    while (lua_next(L, environmentIndex) != 0) {
+    while (lua_next(L, environment_index) != 0) {
       // [..., environment, return values, key, value]
-      std::string varName = LuaValueToString(L, -2, false);
+      std::string var_name = LuaValueToString(L, -2, false);
       bool found = false;
       for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope) {
         if (!*scope) {
           continue;
         }
-        DebuggeeState& var = (*scope)->GetVariable(varName);
+        DebuggeeState& var = (*scope)->GetVariable(var_name);
         if (var) {
           var.PopValue();
           found = true;
@@ -228,38 +228,38 @@ int LuaEvaluate(const std::string& expression, DebuggeeState& frameOrThread) {
     // [..., environment, return values]
   }
 
-  lua_remove(L, environmentIndex);
+  lua_remove(L, environment_index);
   // [..., return values]
 
-  return resultCount;
+  return result_count;
 }
 
-std::string ResolvePath(const std::string& luaPath) {
-  std::string_view pathView(luaPath);
+std::string ResolvePath(const std::string& lua_path) {
+  std::string_view path_view(lua_path);
   // Drop leading '@'
-  if (pathView.substr(0, 1) != "@") {
+  if (path_view.substr(0, 1) != "@") {
     return "";
   }
-  pathView = pathView.substr(1);
+  path_view = path_view.substr(1);
 
   int error = 0;
-  std::unique_ptr<RageFileBasic> sourceFile(
-      FILEMAN->Open(std::string(pathView), RageFile::READ, error));
-  if (sourceFile) {
-    return sourceFile->GetDisplayPath();
+  std::unique_ptr<RageFileBasic> source_file(
+      FILEMAN->Open(std::string(path_view), RageFile::READ, error));
+  if (source_file) {
+    return source_file->GetDisplayPath();
   }
 
   // Fall back to the Lua path without the leading '/'
-  if (pathView.substr(0, 1) == "/") {
-    pathView = pathView.substr(1);
+  if (path_view.substr(0, 1) == "/") {
+    path_view = path_view.substr(1);
   }
 
-  return std::string(pathView);
+  return std::string(path_view);
 }
 
-std::vector<std::string> UnresolvePath(const std::string& absolutePath) {
-  std::string absPath = absolutePath;
-  Replace(absPath, '\\', '/');
+std::vector<std::string> UnresolvePath(const std::string& absolute_path) {
+  std::string abs_path = absolute_path;
+  Replace(abs_path, '\\', '/');
 
   std::vector<RageFileManager::DriverLocation> mounts;
   FILEMAN->GetLoadedDrivers(mounts);
@@ -272,16 +272,16 @@ std::vector<std::string> UnresolvePath(const std::string& absolutePath) {
     if (root == "/") {
       continue;
     }
-    if (CompareNoCase(Left(absPath, root.size()), root)) {
+    if (CompareNoCase(Left(abs_path, root.size()), root)) {
       continue;
     }
 
-    std::string path = Right(absPath, absPath.size() - root.size());
-    std::string luaPath = mount.mount_point_ + path;
-    if (Left(luaPath, 1) == "/") {
-      luaPath = luaPath.substr(1);
+    std::string path = Right(abs_path, abs_path.size() - root.size());
+    std::string lua_path = mount.mount_point_ + path;
+    if (Left(lua_path, 1) == "/") {
+      lua_path = lua_path.substr(1);
     }
-    result.push_back(luaPath);
+    result.push_back(lua_path);
   }
 
   return result;

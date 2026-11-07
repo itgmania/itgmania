@@ -23,7 +23,7 @@ class ScreenSetTime : public ScreenWithMenuElements {
  public:
   virtual void Init();
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
   virtual bool Input(const InputEventPlus& input);
 
   virtual bool MenuUp(const InputEventPlus& input);
@@ -37,8 +37,8 @@ class ScreenSetTime : public ScreenWithMenuElements {
  private:
   SetTimeSelection selection_;
   time_t time_offset_;
-  void ChangeSelection(int iDirection);
-  void ChangeValue(int iDirection);
+  void ChangeSelection(int direction);
+  void ChangeValue(int direction);
 
   RageSound sound_change_value_;
   RageSound sound_change_selection_;

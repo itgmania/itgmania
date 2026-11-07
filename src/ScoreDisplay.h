@@ -10,8 +10,8 @@ class PlayerStageStats;
 class ScoreDisplay : public ActorFrame {
  public:
   virtual void Init(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
 
   virtual void SetScore(int) {}
   virtual void OnLoadSong() {};

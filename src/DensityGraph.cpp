@@ -43,8 +43,8 @@ DensityGraph::DensityGraph()
 
 DensityGraph::~DensityGraph() {}
 
-void DensityGraph::SetSteps(Steps* pSteps, PlayerNumber pn) {
-  steps_ = pSteps;
+void DensityGraph::SetSteps(Steps* steps, PlayerNumber pn) {
+  steps_ = steps;
   player_ = pn;
 }
 
@@ -90,14 +90,14 @@ void DensityGraph::BuildAllVertices() {
 
   const std::vector<float>& nps = steps_->GetNpsPerMeasure(player_);
   const float peak = steps_->GetPeakNps(player_);
-  Song* pSong = steps_->song_;
-  if (nps.empty() || peak <= 0.0f || pSong == nullptr) {
+  Song* song = steps_->song_;
+  if (nps.empty() || peak <= 0.0f || song == nullptr) {
     return;
   }
-  TimingData* pTiming = steps_->GetTimingData();
+  TimingData* timing = steps_->GetTimingData();
 
-  const float first = std::min(pTiming->GetElapsedTimeFromBeat(0.0f), 0.0f);
-  const float last = pSong->GetLastSecond();
+  const float first = std::min(timing->GetElapsedTimeFromBeat(0.0f), 0.0f);
+  const float last = song->GetLastSecond();
   if (last - first <= 0.0f) {
     return;
   }
@@ -117,7 +117,7 @@ void DensityGraph::BuildAllVertices() {
       continue;
     }
 
-    const float seconds = pTiming->GetElapsedTimeFromBeat(
+    const float seconds = timing->GetElapsedTimeFromBeat(
         static_cast<float>(i) * static_cast<float>(BEATS_PER_MEASURE));
     // Keep x non-decreasing so the visible-window search can assume order.
     const float x = std::max(SCALE(seconds, first, last, 0.0f, width), prev_x);
@@ -143,11 +143,11 @@ void DensityGraph::BuildAllVertices() {
   // Add a 0 NPS point at the end of the last measure so the final measure
   // slopes down like the others.
   if (nps.back() != 0.0f) {
-    const float endSeconds = pTiming->GetElapsedTimeFromBeat(
+    const float end_seconds = timing->GetElapsedTimeFromBeat(
         static_cast<float>(nps.size()) * static_cast<float>(BEATS_PER_MEASURE));
-    const float endX = std::max(
-        prev_x, std::min(width, SCALE(endSeconds, first, last, 0.0f, width)));
-    points_.push_back({endX, 0.0f, bottom});
+    const float end_x = std::max(
+        prev_x, std::min(width, SCALE(end_seconds, first, last, 0.0f, width)));
+    points_.push_back({end_x, 0.0f, bottom});
   }
 }
 
@@ -223,15 +223,15 @@ void DensityGraph::Emit(const std::vector<Point>& points) {
 class LunaDensityGraph : public Luna<DensityGraph> {
  public:
   static int SetSteps(T* p, lua_State* L) {
-    Steps* pSteps = nullptr;
+    Steps* steps = nullptr;
     if (!lua_isnoneornil(L, 1)) {
-      pSteps = Luna<Steps>::check(L, 1);
+      steps = Luna<Steps>::check(L, 1);
     }
     PlayerNumber pn = PLAYER_1;
     if (!lua_isnoneornil(L, 2)) {
       pn = Enum::Check<PlayerNumber>(L, 2);
     }
-    p->SetSteps(pSteps, pn);
+    p->SetSteps(steps, pn);
     COMMON_RETURN_SELF;
   }
 

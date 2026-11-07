@@ -40,8 +40,8 @@ void ScreenNameEntryTraditional::Init() {
         GAMESTATE->GetMasterPlayerNumber());
     for (int z = 0; z < 3; ++z) {
       StageStats ss;
-      const std::vector<Song*>& apSongs = SONGMAN->GetAllSongs();
-      ss.played_songs_.push_back(apSongs[rand() % apSongs.size()]);
+      const std::vector<Song*>& songs = SONGMAN->GetAllSongs();
+      ss.played_songs_.push_back(songs[rand() % songs.size()]);
       ss.possible_songs_ = ss.played_songs_;
       ss.play_mode_ = GAMESTATE->play_mode_;
       ASSERT(ss.played_songs_[0]->GetAllSteps().size());
@@ -49,15 +49,15 @@ void ScreenNameEntryTraditional::Init() {
       FOREACH_PlayerNumber(p) {
         ss.player_[p].style_ = GAMESTATE->GetCurrentStyle(p);
         StepsType st = GAMESTATE->GetCurrentStyle(p)->steps_type_;
-        Steps* pSteps = ss.played_songs_[0]->GetAllSteps()[0];
+        Steps* steps = ss.played_songs_[0]->GetAllSteps()[0];
         ss.player_[p].steps_played_ = 1;
-        GAMESTATE->cur_steps_[p].Set(pSteps);
+        GAMESTATE->cur_steps_[p].Set(steps);
         ss.player_[p].possible_dance_points_ = 100;
         ss.player_[p].actual_dance_points_ = 100;
         ss.player_[p].score_ = 100;
         ss.player_[p].possible_dance_points_ = 1000;
         ss.player_[p].actual_dance_points_ = 985;
-        ss.player_[p].possible_steps_.push_back(pSteps);
+        ss.player_[p].possible_steps_.push_back(steps);
 
         HighScore hs;
         hs.SetGrade(Grade_Tier03);
@@ -65,11 +65,11 @@ void ScreenNameEntryTraditional::Init() {
         hs.SetScore(ss.player_[p].score_);
         hs.SetDateTime(DateTime::GetNowDateTime());
         int a, b;
-        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
-        PROFILEMAN->AddStepsScore(ss.played_songs_[0], pSteps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], steps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], steps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], steps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], steps, p, hs, a, b);
+        PROFILEMAN->AddStepsScore(ss.played_songs_[0], steps, p, hs, a, b);
         PROFILEMAN->AddCategoryScore(st, RANKING_A, p, hs, a, b);
       }
 
@@ -85,13 +85,13 @@ void ScreenNameEntryTraditional::Init() {
 void ScreenNameEntryTraditional::BeginScreen() {
   /* Find out if players are entering their name. */
   FOREACH_PlayerNumber(pn) {
-    std::vector<GameState::RankingFeat> aFeats;
-    GAMESTATE->GetRankingFeats(pn, aFeats);
+    std::vector<GameState::RankingFeat> feats;
+    GAMESTATE->GetRankingFeats(pn, feats);
 
-    bool bNoStagesLeft = GAMESTATE->player_stage_tokens_[pn] <= 0;
+    bool no_stages_left = GAMESTATE->player_stage_tokens_[pn] <= 0;
     entering_name_[pn] =
-        (aFeats.size() > 0 || PROFILEMAN->ProfileFromMemoryCardIsNew(pn)) &&
-        bNoStagesLeft;
+        (feats.size() > 0 || PROFILEMAN->ProfileFromMemoryCardIsNew(pn)) &&
+        no_stages_left;
     finalized_[pn] = !entering_name_[pn];
   }
 
@@ -103,9 +103,9 @@ void ScreenNameEntryTraditional::BeginScreen() {
     selection_[pn] = L"";
 
     // load last used ranking name if any
-    const Profile* pProfile = PROFILEMAN->GetProfile(pn);
-    if (pProfile && !pProfile->last_used_high_score_name_.empty()) {
-      selection_[pn] = RStringToWstring(pProfile->last_used_high_score_name_);
+    const Profile* profile = PROFILEMAN->GetProfile(pn);
+    if (profile && !profile->last_used_high_score_name_.empty()) {
+      selection_[pn] = RStringToWstring(profile->last_used_high_score_name_);
       if ((int)selection_[pn].size() > MAX_RANKING_NAME_LENGTH) {
         selection_[pn].erase(MAX_RANKING_NAME_LENGTH);
       }
@@ -117,8 +117,8 @@ void ScreenNameEntryTraditional::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 }
 
-void ScreenNameEntryTraditional::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_MenuTimer) {
+void ScreenNameEntryTraditional::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_MenuTimer) {
     if (!out_.IsTransitioning()) {
       Message msg("MenuTimerExpired");
       this->HandleMessage(msg);
@@ -126,7 +126,7 @@ void ScreenNameEntryTraditional::HandleScreenMessage(const ScreenMessage SM) {
     return;
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 bool ScreenNameEntryTraditional::AnyStillEntering() const {
@@ -159,15 +159,15 @@ bool ScreenNameEntryTraditional::Finish(PlayerNumber pn) {
   finalized_[pn] = true;
 
   UpdateSelectionText(pn); /* hide NAME_ cursor */
-  std::string sSelection = WStringToRString(selection_[pn]);
+  std::string selection = WStringToRString(selection_[pn]);
 
   // save last used ranking name
-  Profile* pProfile = PROFILEMAN->GetProfile(pn);
-  pProfile->last_used_high_score_name_ = sSelection;
+  Profile* profile = PROFILEMAN->GetProfile(pn);
+  profile->last_used_high_score_name_ = selection;
 
-  Trim(sSelection, " ");
+  Trim(selection, " ");
 
-  GAMESTATE->StoreRankingName(pn, sSelection);
+  GAMESTATE->StoreRankingName(pn, selection);
 
   {
     Message msg("PlayerFinished");
@@ -183,18 +183,18 @@ bool ScreenNameEntryTraditional::Finish(PlayerNumber pn) {
 }
 
 void ScreenNameEntryTraditional::UpdateSelectionText(PlayerNumber pn) {
-  std::wstring sText = selection_[pn];
-  if (!finalized_[pn] && (int)sText.size() < MAX_RANKING_NAME_LENGTH) {
-    sText += L"_";
+  std::wstring text = selection_[pn];
+  if (!finalized_[pn] && (int)text.size() < MAX_RANKING_NAME_LENGTH) {
+    text += L"_";
   }
 
   Message msg("EntryChanged");
   msg.SetParam("PlayerNumber", pn);
-  msg.SetParam("Text", WStringToRString(sText));
+  msg.SetParam("Text", WStringToRString(text));
   this->HandleMessage(msg);
 }
 
-bool ScreenNameEntryTraditional::EnterKey(PlayerNumber pn, wchar_t sLetter) {
+bool ScreenNameEntryTraditional::EnterKey(PlayerNumber pn, wchar_t letter) {
   if (finalized_[pn]) {
     return false;  // ignore
   }
@@ -205,7 +205,7 @@ bool ScreenNameEntryTraditional::EnterKey(PlayerNumber pn, wchar_t sLetter) {
     return false;
   }
 
-  selection_[pn] += sLetter;
+  selection_[pn] += letter;
   UpdateSelectionText(pn);
 
   /* If that filled the string, set the cursor on OK. */
@@ -216,10 +216,10 @@ bool ScreenNameEntryTraditional::EnterKey(PlayerNumber pn, wchar_t sLetter) {
 }
 
 void ScreenNameEntryTraditional::SelectChar(
-    PlayerNumber pn, const std::string& sKey) {
+    PlayerNumber pn, const std::string& key) {
   Message msg("SelectKey");
   msg.SetParam("PlayerNumber", pn);
-  msg.SetParam("Key", sKey);
+  msg.SetParam("Key", key);
   this->HandleMessage(msg);
 }
 
@@ -245,23 +245,23 @@ class LunaScreenNameEntryTraditional : public Luna<ScreenNameEntryTraditional> {
  public:
   static int EnterKey(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    std::string sKey = SArg(2);
-    bool bRet = p->EnterKey(pn, utf8_get_char(sKey));
-    LuaHelpers::Push(L, bRet);
+    std::string key = SArg(2);
+    bool ret = p->EnterKey(pn, utf8_get_char(key));
+    LuaHelpers::Push(L, ret);
     return 1;
   }
 
   static int Finish(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    bool bRet = p->Finish(pn);
-    LuaHelpers::Push(L, bRet);
+    bool ret = p->Finish(pn);
+    LuaHelpers::Push(L, ret);
     return 1;
   }
 
   static int Backspace(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-    bool bRet = p->Backspace(pn);
-    LuaHelpers::Push(L, bRet);
+    bool ret = p->Backspace(pn);
+    LuaHelpers::Push(L, ret);
     return 1;
   }
 

@@ -11,7 +11,7 @@ class ScreenEditMenu : public ScreenWithMenuElements {
  public:
   virtual void Init();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
 
  private:
   bool MenuUp(const InputEventPlus& input);

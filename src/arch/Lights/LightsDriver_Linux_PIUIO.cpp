@@ -58,8 +58,8 @@ void LightsDriver_Linux_PIUIO::Set(const LightsState* ls) {
     buf[1] |= 0x04;
   }
 
-  std::string sInput = GAMESTATE->GetCurrentGame()->input_scheme_.name_;
-  if (EqualsNoCase(sInput, "dance")) {
+  std::string input = GAMESTATE->GetCurrentGame()->input_scheme_.name_;
+  if (EqualsNoCase(input, "dance")) {
     if (ls->game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
       buf[2] |= 0x04;
     }
@@ -85,7 +85,7 @@ void LightsDriver_Linux_PIUIO::Set(const LightsState* ls) {
     if (ls->game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
       buf[0] |= 0x20;
     }
-  } else if (EqualsNoCase(sInput, "pump")) {
+  } else if (EqualsNoCase(input, "pump")) {
     if (ls->game_button_lights_[GameController_1][PUMP_BUTTON_UPLEFT]) {
       buf[0] |= 0x04;
     }

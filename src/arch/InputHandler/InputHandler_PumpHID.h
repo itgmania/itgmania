@@ -232,7 +232,7 @@ class InputHandler_PumpHID : public InputHandler {
   ~InputHandler_PumpHID();
 
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
   bool IsConnected() { return dev_.IsConnected(); }
 
@@ -257,12 +257,12 @@ class InputHandler_PumpHID : public InputHandler {
 
   uint32_t PumpHIDToLocalState(pumphid_output_state_t from_dev);
 
-  void PushInputStateToEngine(std::uint32_t newInput);
+  void PushInputStateToEngine(std::uint32_t new_input);
 
   static int InputThread_Start(void* p);
   void InputThreadMain();
 
-  void CreateLightingMessage(LightsState newLS);
+  void CreateLightingMessage(LightsState new_ls);
 };
 
 #endif

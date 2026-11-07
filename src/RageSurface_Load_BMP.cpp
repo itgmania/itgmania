@@ -3,10 +3,10 @@
 #include "RageSurface_Load_STB.h"
 
 RageSurfaceUtils::OpenResult RageSurface_Load_BMP(
-    const std::string& sPath, RageSurface*& img, bool bHeaderOnly,
+    const std::string& path, RageSurface*& img, bool header_only,
     std::string& error) {
   return RageSurface_Load_STB(
-      sPath, img, bHeaderOnly, error, RageSurfaceSTBFormat::BMP);
+      path, img, header_only, error, RageSurfaceSTBFormat::BMP);
 }
 
 /*

@@ -22,10 +22,10 @@ class ScreenWithMenuElements : public Screen {
   virtual void BeginScreen();
   virtual ~ScreenWithMenuElements();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
-  void Update(float fDeltaTime);
-  void StartTransitioningScreen(ScreenMessage smSendWhenDone);
-  virtual void Cancel(ScreenMessage smSendWhenDone);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
+  void Update(float delta_time);
+  void StartTransitioningScreen(ScreenMessage send_when_done);
+  virtual void Cancel(ScreenMessage send_when_done);
   bool IsTransitioning();
   virtual bool AllowCallbackInput() { return !IsTransitioning(); }
 

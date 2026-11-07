@@ -12,7 +12,7 @@ class ScreenReloadSongs : public Screen {
   ~ScreenReloadSongs();
 
   virtual void Init();
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
  private:
   int updates_;

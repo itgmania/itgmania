@@ -14,7 +14,7 @@ class InputHandler_Linux_Joystick : public InputHandler {
   ~InputHandler_Linux_Joystick();
   bool TryDevice(std::string dev);
   bool DevicesChanged() { return devices_changed_; }
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
  private:
   void StartThread();

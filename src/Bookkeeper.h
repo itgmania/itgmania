@@ -25,7 +25,7 @@ class Bookkeeper {
   void WriteCoinsFile(int coins);
   void ReadCoinsFile(int& coins);
 
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   XNode* CreateNode() const;
 
   void ReadFromDisk();
@@ -53,7 +53,7 @@ class Bookkeeper {
      * @param time the time to turn into a Date. */
     Date(tm time) { Set(time); }
     void Set(time_t t);
-    void Set(tm pTime);
+    void Set(tm time);
     bool operator<(const Date& rhs) const;
   };
   int GetNumCoins(Date beginning, Date ending) const;

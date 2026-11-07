@@ -27,34 +27,34 @@
 static HBITMAP g_hBitmap = nullptr;
 
 /* Load a RageSurface into a GDI surface. */
-static HBITMAP LoadWin32Surface(const RageSurface* pSplash, HWND hWnd) {
+static HBITMAP LoadWin32Surface(const RageSurface* splash, HWND hwnd) {
   RageSurface* s = CreateSurface(
-      pSplash->w_, pSplash->h_, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0);
-  RageSurfaceUtils::Blit(pSplash, s, -1, -1);
+      splash->w_, splash->h_, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0);
+  RageSurfaceUtils::Blit(splash, s, -1, -1);
 
   /* Resize the splash image to fit the dialog.  Stretch to fit horizontally,
    * maintaining aspect ratio. */
   {
     RECT r;
-    GetClientRect(hWnd, &r);
+    GetClientRect(hwnd, &r);
 
-    int iWidth = r.right;
-    float fRatio = (float)iWidth / s->w_;
-    int iHeight = std::lrint(s->h_ * fRatio);
+    int width = r.right;
+    float ratio = (float)width / s->w_;
+    int height = std::lrint(s->h_ * ratio);
 
-    RageSurfaceUtils::Zoom(s, iWidth, iHeight);
+    RageSurfaceUtils::Zoom(s, width, height);
   }
 
-  HDC hScreen = GetDC(nullptr);
-  ASSERT_M(hScreen != nullptr, werr_ssprintf(GetLastError(), "hScreen"));
+  HDC screen = GetDC(nullptr);
+  ASSERT_M(screen != nullptr, werr_ssprintf(GetLastError(), "hScreen"));
 
-  HBITMAP bitmap = CreateCompatibleBitmap(hScreen, s->w_, s->h_);
+  HBITMAP bitmap = CreateCompatibleBitmap(screen, s->w_, s->h_);
   ASSERT_M(
       bitmap != nullptr,
       werr_ssprintf(GetLastError(), "CreateCompatibleBitmap"));
 
-  HDC BitmapDC = CreateCompatibleDC(hScreen);
-  SelectObject(BitmapDC, bitmap);
+  HDC bitmap_dc = CreateCompatibleDC(screen);
+  SelectObject(bitmap_dc, bitmap);
 
   /* This is silly, but simple.  We only do this once, on a small image. */
   for (int y = 0; y < s->h_; ++y) {
@@ -62,48 +62,48 @@ static HBITMAP LoadWin32Surface(const RageSurface* pSplash, HWND hWnd) {
     for (int x = 0; x < s->w_; ++x) {
       const unsigned char* data = line + (x * s->format_->bytes_per_pixel_);
 
-      SetPixelV(BitmapDC, x, y, RGB(data[3], data[2], data[1]));
+      SetPixelV(bitmap_dc, x, y, RGB(data[3], data[2], data[1]));
     }
   }
 
-  SelectObject(BitmapDC, nullptr);
-  DeleteObject(BitmapDC);
+  SelectObject(bitmap_dc, nullptr);
+  DeleteObject(bitmap_dc);
 
-  ReleaseDC(nullptr, hScreen);
+  ReleaseDC(nullptr, screen);
 
   delete s;
   return bitmap;
 }
 
-static HBITMAP LoadWin32Surface(std::string sFile, HWND hWnd) {
+static HBITMAP LoadWin32Surface(std::string file, HWND hwnd) {
   std::string error;
-  RageSurface* pSurface = RageSurfaceUtils::LoadFile(sFile, error);
-  if (pSurface == nullptr) {
+  RageSurface* surface = RageSurfaceUtils::LoadFile(file, error);
+  if (surface == nullptr) {
     return nullptr;
   }
 
-  HBITMAP ret = LoadWin32Surface(pSurface, hWnd);
-  delete pSurface;
+  HBITMAP ret = LoadWin32Surface(surface, hwnd);
+  delete surface;
   return ret;
 }
 
 INT_PTR CALLBACK LoadingWindow_Win32::WndProc(
-    HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
   switch (msg) {
     case WM_INITDIALOG: {
       std::vector<std::string> vs;
       GetDirListing("Data/splash*.png", vs, false, true);
       if (!vs.empty()) {
-        g_hBitmap = LoadWin32Surface(vs[0], hWnd);
+        g_hBitmap = LoadWin32Surface(vs[0], hwnd);
       }
     }
       if (g_hBitmap == nullptr) {
-        g_hBitmap = LoadWin32Surface("Data/splash.bmp", hWnd);
+        g_hBitmap = LoadWin32Surface("Data/splash.bmp", hwnd);
       }
       SendMessage(
-          GetDlgItem(hWnd, IDC_SPLASH), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP,
+          GetDlgItem(hwnd, IDC_SPLASH), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP,
           (LPARAM)(HANDLE)g_hBitmap);
-      SetWindowTextA(hWnd, PRODUCT_ID);
+      SetWindowTextA(hwnd, PRODUCT_ID);
       break;
 
     case WM_DESTROY:
@@ -115,24 +115,24 @@ INT_PTR CALLBACK LoadingWindow_Win32::WndProc(
   return FALSE;
 }
 
-void LoadingWindow_Win32::SetIcon(const RageSurface* pIcon) {
+void LoadingWindow_Win32::SetIcon(const RageSurface* icon) {
   if (icon_ != nullptr) {
     DestroyIcon(icon_);
   }
 
-  icon_ = IconFromSurface(pIcon);
+  icon_ = IconFromSurface(icon);
   if (icon_ != nullptr) {
     SetClassLongPtrA(hwnd_, GCLP_HICON, reinterpret_cast<LONG_PTR>(icon_));
   }
 }
 
-void LoadingWindow_Win32::SetSplash(const RageSurface* pSplash) {
+void LoadingWindow_Win32::SetSplash(const RageSurface* splash) {
   if (g_hBitmap != nullptr) {
     DeleteObject(g_hBitmap);
     g_hBitmap = nullptr;
   }
 
-  g_hBitmap = LoadWin32Surface(pSplash, hwnd_);
+  g_hBitmap = LoadWin32Surface(splash, hwnd_);
   if (g_hBitmap != nullptr) {
     SendDlgItemMessage(
         hwnd_, IDC_SPLASH, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP,
@@ -173,51 +173,52 @@ void LoadingWindow_Win32::Paint() {
   }
 }
 
-void LoadingWindow_Win32::SetText(std::string sText) {
-  std::vector<std::string> asMessageLines;
-  split(sText, "\n", asMessageLines, false);
-  while (asMessageLines.size() < 3) {
-    asMessageLines.push_back("");
+void LoadingWindow_Win32::SetText(std::string text) {
+  std::vector<std::string> message_lines;
+  split(text, "\n", message_lines, false);
+  while (message_lines.size() < 3) {
+    message_lines.push_back("");
   }
 
   const int msgid[] = {
       IDC_STATIC_MESSAGE1, IDC_STATIC_MESSAGE2, IDC_STATIC_MESSAGE3};
   for (unsigned i = 0; i < 3; ++i) {
-    if (text_[i] == asMessageLines[i]) {
+    if (text_[i] == message_lines[i]) {
       continue;
     }
-    text_[i] = asMessageLines[i];
+    text_[i] = message_lines[i];
 
-    HWND hwndItem = ::GetDlgItem(hwnd_, msgid[i]);
-    ::SetWindowText(hwndItem, ConvertUTF8ToACP(asMessageLines[i]).c_str());
+    HWND hwnd_item = ::GetDlgItem(hwnd_, msgid[i]);
+    ::SetWindowText(hwnd_item, ConvertUTF8ToACP(message_lines[i]).c_str());
   }
 }
 
 void LoadingWindow_Win32::SetProgress(const int progress) {
   progress_ = progress;
-  HWND hwndItem = ::GetDlgItem(hwnd_, IDC_PROGRESS);
-  ::SendMessage(hwndItem, PBM_SETPOS, progress, 0);
+  HWND hwnd_item = ::GetDlgItem(hwnd_, IDC_PROGRESS);
+  ::SendMessage(hwnd_item, PBM_SETPOS, progress, 0);
   Paint();
 }
 
-void LoadingWindow_Win32::SetTotalWork(const int totalWork) {
-  total_work_ = totalWork;
-  HWND hwndItem = ::GetDlgItem(hwnd_, IDC_PROGRESS);
-  SendMessage(hwndItem, PBM_SETRANGE32, 0, totalWork);
+void LoadingWindow_Win32::SetTotalWork(const int total_work) {
+  total_work_ = total_work;
+  HWND hwnd_item = ::GetDlgItem(hwnd_, IDC_PROGRESS);
+  SendMessage(hwnd_item, PBM_SETRANGE32, 0, total_work);
 }
 
 void LoadingWindow_Win32::SetIndeterminate(bool indeterminate) {
-  HWND hwndItem = ::GetDlgItem(hwnd_, IDC_PROGRESS);
+  HWND hwnd_item = ::GetDlgItem(hwnd_, IDC_PROGRESS);
 
   if (indeterminate) {
     SetWindowLong(
-        hwndItem, GWL_STYLE, PBS_MARQUEE | GetWindowLong(hwndItem, GWL_STYLE));
-    SendMessage(hwndItem, PBM_SETMARQUEE, 1, 0);
+        hwnd_item, GWL_STYLE,
+        PBS_MARQUEE | GetWindowLong(hwnd_item, GWL_STYLE));
+    SendMessage(hwnd_item, PBM_SETMARQUEE, 1, 0);
   } else {
-    SendMessage(hwndItem, PBM_SETMARQUEE, 0, 0);
+    SendMessage(hwnd_item, PBM_SETMARQUEE, 0, 0);
     SetWindowLong(
-        hwndItem, GWL_STYLE,
-        (~PBS_MARQUEE) & GetWindowLong(hwndItem, GWL_STYLE));
+        hwnd_item, GWL_STYLE,
+        (~PBS_MARQUEE) & GetWindowLong(hwnd_item, GWL_STYLE));
   }
 }
 

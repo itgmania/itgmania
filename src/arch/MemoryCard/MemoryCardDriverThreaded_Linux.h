@@ -8,13 +8,13 @@
 
 class MemoryCardDriverThreaded_Linux : public MemoryCardDriver {
  public:
-  virtual bool Mount(UsbStorageDevice* pDevice);
-  virtual void Unmount(UsbStorageDevice* pDevice);
+  virtual bool Mount(UsbStorageDevice* device);
+  virtual void Unmount(UsbStorageDevice* device);
 
  protected:
-  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& vDevicesOut);
+  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& devices_out);
   bool USBStorageDevicesChanged();
-  bool TestWrite(UsbStorageDevice* pDevice);
+  bool TestWrite(UsbStorageDevice* device);
 
   std::string last_devices_;
 };

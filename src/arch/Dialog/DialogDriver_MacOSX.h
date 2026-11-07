@@ -8,10 +8,10 @@
 
 class DialogDriver_MacOSX : public DialogDriver {
  public:
-  void Error(std::string sError, std::string sID);
-  void OK(std::string sMessage, std::string sID);
-  Dialog::Result AbortRetryIgnore(std::string sMessage, std::string sID);
-  Dialog::Result AbortRetry(std::string sMessage, std::string sID);
+  void Error(std::string error, std::string id);
+  void OK(std::string message, std::string id);
+  Dialog::Result AbortRetryIgnore(std::string message, std::string id);
+  Dialog::Result AbortRetry(std::string message, std::string id);
 };
 #define USE_DIALOG_DRIVER_COCOA
 

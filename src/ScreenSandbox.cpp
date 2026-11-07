@@ -16,15 +16,15 @@
 
 REGISTER_SCREEN_CLASS(ScreenSandbox);
 
-void ScreenSandbox::HandleScreenMessage(const ScreenMessage SM) {
-  Screen::HandleScreenMessage(SM);
+void ScreenSandbox::HandleScreenMessage(const ScreenMessage sm) {
+  Screen::HandleScreenMessage(sm);
 }
 
 bool ScreenSandbox::Input(const InputEventPlus& input) {
   return Screen::Input(input);
 }
 
-void ScreenSandbox::Update(float fDeltaTime) { Screen::Update(fDeltaTime); }
+void ScreenSandbox::Update(float delta_time) { Screen::Update(delta_time); }
 
 void ScreenSandbox::DrawPrimitives() { Screen::DrawPrimitives(); }
 

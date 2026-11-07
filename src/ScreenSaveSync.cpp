@@ -48,9 +48,9 @@ static std::string GetPromptText() {
   return s;
 }
 
-static void SaveSyncChanges(void* pThrowAway) { AdjustSync::SaveSyncChanges(); }
+static void SaveSyncChanges(void* throw_away) { AdjustSync::SaveSyncChanges(); }
 
-static void RevertSyncChanges(void* pThrowAway) {
+static void RevertSyncChanges(void* throw_away) {
   AdjustSync::RevertSyncChanges();
 }
 

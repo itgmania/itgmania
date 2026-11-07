@@ -28,29 +28,29 @@
 #include "Style.h"
 #include "global.h"
 
-static void GetStepsForSong(Song* pSong, std::vector<Steps*>& vpStepsOut) {
+static void GetStepsForSong(Song* song, std::vector<Steps*>& steps_out) {
   SongUtil::GetSteps(
-      pSong, vpStepsOut,
+      song, steps_out,
       GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
           ->steps_type_);
   // xxx: If the StepsType isn't valid for the current game, this will cause
   // a crash when changing songs. -aj
-  StepsUtil::RemoveLockedSteps(pSong, vpStepsOut);
-  StepsUtil::SortNotesArrayByDifficulty(vpStepsOut);
+  StepsUtil::RemoveLockedSteps(song, steps_out);
+  StepsUtil::SortNotesArrayByDifficulty(steps_out);
 }
 
 // XXX: very similar to OptionRowHandlerSteps
 class EditCourseOptionRowHandlerSteps : public OptionRowHandler {
  public:
-  void Load(int iEntryIndex) { entry_index_ = iEntryIndex; }
+  void Load(int entry_index) { entry_index_ = entry_index; }
   virtual ReloadChanged Reload() {
     def_.choices_.clear();
     steps_.clear();
 
-    Song* pSong = GAMESTATE->cur_song_;
-    if (pSong)  // playing a song
+    Song* song = GAMESTATE->cur_song_;
+    if (song)  // playing a song
     {
-      GetStepsForSong(pSong, steps_);
+      GetStepsForSong(song, steps_);
       for (const Steps* steps : steps_) {
         std::string s;
         if (steps->GetDifficulty() == Difficulty_Edit) {
@@ -72,31 +72,31 @@ class EditCourseOptionRowHandlerSteps : public OptionRowHandler {
     return RELOAD_CHANGED_ALL;
   }
   virtual void ImportOption(
-      OptionRow* pRow, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> vbSelectedOut[NUM_PLAYERS]) const {
-    Trail* pTrail = GAMESTATE->cur_trail_[PLAYER_1];
-    Steps* pSteps;
-    if (pTrail) {
-      if (entry_index_ < (int)pTrail->entries_.size()) {
-        pSteps = pTrail->entries_[entry_index_].steps_;
+      OptionRow* row, const std::vector<PlayerNumber>& vpns,
+      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+    Trail* trail = GAMESTATE->cur_trail_[PLAYER_1];
+    Steps* steps;
+    if (trail) {
+      if (entry_index_ < (int)trail->entries_.size()) {
+        steps = trail->entries_[entry_index_].steps_;
       }
     }
 
     std::vector<Steps*>::const_iterator iter =
-        find(steps_.begin(), steps_.end(), pSteps);
+        find(steps_.begin(), steps_.end(), steps);
     if (iter == steps_.end()) {
-      pRow->SetOneSharedSelection(0);
+      row->SetOneSharedSelection(0);
     } else {
       int index = iter - steps_.begin();
-      pRow->SetOneSharedSelection(index);
+      row->SetOneSharedSelection(index);
     }
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> vbSelected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[NUM_PLAYERS]) const {
     return 0;
   }
-  Steps* GetSteps(int iStepsIndex) const { return steps_[iStepsIndex]; }
+  Steps* GetSteps(int steps_index) const { return steps_[steps_index]; }
 
  protected:
   int entry_index_;
@@ -115,21 +115,21 @@ enum RowType {
   NUM_RowType,
   RowType_Invalid,
 };
-static int RowToEntryIndex(int iRow) {
-  if (iRow < NUM_EditCourseRow) {
+static int RowToEntryIndex(int row) {
+  if (row < NUM_EditCourseRow) {
     return -1;
   }
 
-  return (iRow - NUM_EditCourseRow) / NUM_RowType;
+  return (row - NUM_EditCourseRow) / NUM_RowType;
 }
-static RowType RowToRowType(int iRow) {
-  if (iRow < NUM_EditCourseRow) {
+static RowType RowToRowType(int row) {
+  if (row < NUM_EditCourseRow) {
     return RowType_Invalid;
   }
-  return (RowType)((iRow - NUM_EditCourseRow) % NUM_RowType);
+  return (RowType)((row - NUM_EditCourseRow) % NUM_RowType);
 }
-static int EntryIndexAndRowTypeToRow(int iEntryIndex, RowType rowType) {
-  return NUM_EditCourseRow + iEntryIndex * NUM_RowType + rowType;
+static int EntryIndexAndRowTypeToRow(int entry_index, RowType row_type) {
+  return NUM_EditCourseRow + entry_index * NUM_RowType + row_type;
 }
 
 void ScreenOptionsEditCourse::Init() {
@@ -163,30 +163,30 @@ static std::string MakeMinutesString(int mins) {
 }
 
 void ScreenOptionsEditCourse::BeginScreen() {
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
 
-  FOREACH_ENUM(EditCourseRow, rowIndex) {
-    const MenuRowDef& mr = g_MenuRows[rowIndex];
-    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeSimple(mr);
+  FOREACH_ENUM(EditCourseRow, row_index) {
+    const MenuRowDef& mr = g_MenuRows[row_index];
+    OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mr);
 
-    pHand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
-    pHand->def_.choices_.clear();
+    hand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
+    hand->def_.choices_.clear();
 
-    switch (rowIndex) {
-      DEFAULT_FAIL(rowIndex);
+    switch (row_index) {
+      DEFAULT_FAIL(row_index);
       case EditCourseRow_Minutes:
-        pHand->def_.choices_.push_back(MakeMinutesString(0));
+        hand->def_.choices_.push_back(MakeMinutesString(0));
         for (int i = EditCourseUtil::MIN_WORKOUT_MINUTES; i <= 20; i += 2) {
-          pHand->def_.choices_.push_back(MakeMinutesString(i));
+          hand->def_.choices_.push_back(MakeMinutesString(i));
         }
         for (int i = 20; i <= EditCourseUtil::MAX_WORKOUT_MINUTES; i += 5) {
-          pHand->def_.choices_.push_back(MakeMinutesString(i));
+          hand->def_.choices_.push_back(MakeMinutesString(i));
         }
         break;
     }
 
-    pHand->def_.export_on_change_ = true;
-    vHands.push_back(pHand);
+    hand->def_.export_on_change_ = true;
+    hands.push_back(hand);
   }
 
   for (int i = 0; i < NUM_SONG_ROWS; i++) {
@@ -198,39 +198,39 @@ void ScreenOptionsEditCourse::BeginScreen() {
         mrd.choices_.push_back(s->GetDisplayFullTitle());
       }
       mrd.name_ = ssprintf((SONG.GetValue() + " %d").c_str(), i + 1);
-      OptionRowHandler* pHand = OptionRowHandlerUtil::MakeSimple(mrd);
-      pHand->def_.allow_theme_title_ = false;  // already themed
-      pHand->def_.explanation_name_ = "Choose Song";
-      pHand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
-      pHand->def_.export_on_change_ = true;
-      vHands.push_back(pHand);
+      OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mrd);
+      hand->def_.allow_theme_title_ = false;  // already themed
+      hand->def_.explanation_name_ = "Choose Song";
+      hand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
+      hand->def_.export_on_change_ = true;
+      hands.push_back(hand);
     }
 
     {
-      EditCourseOptionRowHandlerSteps* pHand =
+      EditCourseOptionRowHandlerSteps* hand =
           new EditCourseOptionRowHandlerSteps;
-      pHand->Load(i);
-      pHand->def_.choices_.push_back("n/a");
-      pHand->def_.name_ = ssprintf((STEPS.GetValue() + " %d").c_str(), i + 1);
-      pHand->def_.allow_theme_title_ = false;  // already themed
-      pHand->def_.allow_theme_items_ = false;  // already themed
-      pHand->def_.explanation_name_ = "Choose Steps";
-      pHand->def_.one_choice_for_all_players_ = true;
-      pHand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
-      pHand->def_.export_on_change_ = true;
-      vHands.push_back(pHand);
+      hand->Load(i);
+      hand->def_.choices_.push_back("n/a");
+      hand->def_.name_ = ssprintf((STEPS.GetValue() + " %d").c_str(), i + 1);
+      hand->def_.allow_theme_title_ = false;  // already themed
+      hand->def_.allow_theme_items_ = false;  // already themed
+      hand->def_.explanation_name_ = "Choose Steps";
+      hand->def_.one_choice_for_all_players_ = true;
+      hand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
+      hand->def_.export_on_change_ = true;
+      hands.push_back(hand);
     }
   }
 
-  ScreenOptions::InitMenu(vHands);
+  ScreenOptions::InitMenu(hands);
 
   ScreenOptions::BeginScreen();
 
   for (int i = 0; i < (int)rows_.size(); i++) {
-    OptionRow* pRow = rows_[i];
+    OptionRow* row = rows_[i];
     current_row_[PLAYER_1] = i;
     this->SetCurrentSong();
-    pRow->Reload();
+    row->Reload();
   }
   current_row_[PLAYER_1] = 0;
 
@@ -242,33 +242,33 @@ void ScreenOptionsEditCourse::BeginScreen() {
 ScreenOptionsEditCourse::~ScreenOptionsEditCourse() {}
 
 void ScreenOptionsEditCourse::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  OptionRow& row = *rows_[iRow];
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  OptionRow& row = *rows_[i_row];
   if (row.GetRowType() == OptionRow::RowType_Exit) {
     return;
   }
 
-  switch (iRow) {
+  switch (i_row) {
     case EditCourseRow_Minutes:
       row.SetOneSharedSelection(0);
       row.SetOneSharedSelectionIfPresent(MakeMinutesString(
           static_cast<int>(GAMESTATE->cur_course_->goal_seconds_) / 60));
       break;
     default: {
-      int iEntryIndex = RowToEntryIndex(iRow);
-      RowType rowType = RowToRowType(iRow);
+      int entry_index = RowToEntryIndex(i_row);
+      RowType row_type = RowToRowType(i_row);
 
-      switch (rowType) {
-        DEFAULT_FAIL(rowType);
+      switch (row_type) {
+        DEFAULT_FAIL(row_type);
         case RowType_Song: {
-          Song* pSong = nullptr;
-          if (iEntryIndex < (int)GAMESTATE->cur_course_->entries_.size()) {
-            pSong =
-                GAMESTATE->cur_course_->entries_[iEntryIndex].song_id_.ToSong();
+          Song* song = nullptr;
+          if (entry_index < (int)GAMESTATE->cur_course_->entries_.size()) {
+            song =
+                GAMESTATE->cur_course_->entries_[entry_index].song_id_.ToSong();
           }
 
           std::vector<Song*>::iterator iter =
-              find(songs_.begin(), songs_.end(), pSong);
+              find(songs_.begin(), songs_.end(), song);
           if (iter == songs_.end()) {
             row.SetOneSharedSelection(0);
           } else {
@@ -284,13 +284,13 @@ void ScreenOptionsEditCourse::ImportOptions(
 }
 
 void ScreenOptionsEditCourse::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
+    int i_row, const std::vector<PlayerNumber>& vpns) {
   FOREACH_ENUM(EditCourseRow, i) {
     OptionRow& row = *rows_[i];
-    int iIndex = row.GetOneSharedSelection(true);
-    std::string sValue;
-    if (iIndex >= 0) {
-      sValue = row.GetRowDef().choices_[iIndex];
+    int index = row.GetOneSharedSelection(true);
+    std::string value;
+    if (index >= 0) {
+      value = row.GetRowDef().choices_[index];
     }
 
     switch (i) {
@@ -298,7 +298,7 @@ void ScreenOptionsEditCourse::ExportOptions(
       case EditCourseRow_Minutes:
         GAMESTATE->cur_course_->goal_seconds_ = 0;
         int mins;
-        if (sscanf(sValue.c_str(), "%d", &mins) == 1) {
+        if (sscanf(value.c_str(), "%d", &mins) == 1) {
           GAMESTATE->cur_course_->goal_seconds_ = float(mins * 60);
         }
         break;
@@ -313,18 +313,18 @@ void ScreenOptionsEditCourse::ExportOptions(
       continue;
     }
 
-    RowType rowType = RowToRowType(i);
-    int iEntryIndex = RowToEntryIndex(i);
+    RowType row_type = RowToRowType(i);
+    int entry_index = RowToEntryIndex(i);
 
-    switch (rowType) {
+    switch (row_type) {
       case RowType_Song: {
-        Song* pSong = this->GetSongForEntry(iEntryIndex);
-        if (pSong) {
-          Steps* pSteps = this->GetStepsForEntry(iEntryIndex);
-          ASSERT_M(pSteps != nullptr, "No Steps for this Song!");
+        Song* song = this->GetSongForEntry(entry_index);
+        if (song) {
+          Steps* steps = this->GetStepsForEntry(entry_index);
+          ASSERT_M(steps != nullptr, "No Steps for this Song!");
           CourseEntry ce;
-          ce.song_id_.FromSong(pSong);
-          ce.steps_criteria_.difficulty_ = pSteps->GetDifficulty();
+          ce.song_id_.FromSong(song);
+          ce.steps_criteria_.difficulty_ = steps->GetDifficulty();
           GAMESTATE->cur_course_->entries_.push_back(ce);
         }
       } break;
@@ -339,61 +339,61 @@ void ScreenOptionsEditCourse::ExportOptions(
   EditCourseUtil::UpdateAndSetTrail();
 }
 
-void ScreenOptionsEditCourse::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_ExportOptions) {
+void ScreenOptionsEditCourse::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_ExportOptions) {
     // g_Workout.m_vpSongs.clear();
   }
 
-  ScreenOptions::HandleScreenMessage(SM);
+  ScreenOptions::HandleScreenMessage(sm);
 }
 
 void ScreenOptionsEditCourse::SetCurrentSong() {
-  int iRow = current_row_[PLAYER_1];
-  OptionRow& row = *rows_[iRow];
+  int i_row = current_row_[PLAYER_1];
+  OptionRow& row = *rows_[i_row];
 
   if (row.GetRowType() == OptionRow::RowType_Exit) {
     GAMESTATE->cur_song_.Set(nullptr);
     GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
   } else {
-    iRow = current_row_[PLAYER_1];
-    int iEntryIndex = RowToEntryIndex(iRow);
-    Song* pSong = nullptr;
-    if (iEntryIndex != -1) {
-      int iCurrentSongRow =
-          EntryIndexAndRowTypeToRow(iEntryIndex, RowType_Song);
-      OptionRow& oRow = *rows_[iCurrentSongRow];
-      int index = oRow.GetOneSelection(PLAYER_1);
+    i_row = current_row_[PLAYER_1];
+    int entry_index = RowToEntryIndex(i_row);
+    Song* song = nullptr;
+    if (entry_index != -1) {
+      int current_song_row =
+          EntryIndexAndRowTypeToRow(entry_index, RowType_Song);
+      OptionRow& o_row = *rows_[current_song_row];
+      int index = o_row.GetOneSelection(PLAYER_1);
       if (index != 0) {
-        pSong = songs_[index - 1];
+        song = songs_[index - 1];
       }
     }
-    if (pSong != nullptr) {
-      GAMESTATE->cur_song_.Set(pSong);
+    if (song != nullptr) {
+      GAMESTATE->cur_song_.Set(song);
     }
   }
 }
 
 void ScreenOptionsEditCourse::SetCurrentSteps() {
-  Song* pSong = GAMESTATE->cur_song_;
-  if (pSong) {
-    int iRow = current_row_[PLAYER_1];
-    int iEntryIndex = RowToEntryIndex(iRow);
+  Song* song = GAMESTATE->cur_song_;
+  if (song) {
+    int i_row = current_row_[PLAYER_1];
+    int entry_index = RowToEntryIndex(i_row);
     OptionRow& row =
-        *rows_[EntryIndexAndRowTypeToRow(iEntryIndex, RowType_Steps)];
-    int iStepsIndex = row.GetOneSharedSelection();
-    const EditCourseOptionRowHandlerSteps* pHand =
+        *rows_[EntryIndexAndRowTypeToRow(entry_index, RowType_Steps)];
+    int steps_index = row.GetOneSharedSelection();
+    const EditCourseOptionRowHandlerSteps* hand =
         dynamic_cast<const EditCourseOptionRowHandlerSteps*>(row.GetHandler());
-    ASSERT(pHand != nullptr);
-    Steps* pSteps = pHand->GetSteps(iStepsIndex);
-    GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+    ASSERT(hand != nullptr);
+    Steps* steps = hand->GetSteps(steps_index);
+    GAMESTATE->cur_steps_[PLAYER_1].Set(steps);
   } else {
     GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
   }
 }
 
-Song* ScreenOptionsEditCourse::GetSongForEntry(int iEntryIndex) {
-  int iRow = EntryIndexAndRowTypeToRow(iEntryIndex, RowType_Song);
-  OptionRow& row = *rows_[iRow];
+Song* ScreenOptionsEditCourse::GetSongForEntry(int entry_index) {
+  int i_row = EntryIndexAndRowTypeToRow(entry_index, RowType_Song);
+  OptionRow& row = *rows_[i_row];
 
   int index = row.GetOneSharedSelection();
   if (index == 0) {
@@ -402,37 +402,38 @@ Song* ScreenOptionsEditCourse::GetSongForEntry(int iEntryIndex) {
   return songs_[index - 1];
 }
 
-Steps* ScreenOptionsEditCourse::GetStepsForEntry(int iEntryIndex) {
-  int iRow = EntryIndexAndRowTypeToRow(iEntryIndex, RowType_Steps);
-  OptionRow& row = *rows_[iRow];
+Steps* ScreenOptionsEditCourse::GetStepsForEntry(int entry_index) {
+  int i_row = EntryIndexAndRowTypeToRow(entry_index, RowType_Steps);
+  OptionRow& row = *rows_[i_row];
   int index = row.GetOneSharedSelection();
-  Song* pSong = GetSongForEntry(iEntryIndex);
-  std::vector<Steps*> vpSteps;
-  GetStepsForSong(pSong, vpSteps);
-  return vpSteps[index];
+  Song* song = GetSongForEntry(entry_index);
+  std::vector<Steps*> steps;
+  GetStepsForSong(song, steps);
+  return steps[index];
 }
 
 void ScreenOptionsEditCourse::AfterChangeRow(PlayerNumber pn) {
   ScreenOptions::AfterChangeRow(pn);
 
-  const int iCurRow = current_row_[pn];
+  const int cur_row = current_row_[pn];
   // only do this if it's not the first row. -aj
-  if (iCurRow > 0) {
+  if (cur_row > 0) {
     SetCurrentSong();
     SetCurrentSteps();
   }
 }
 
-void ScreenOptionsEditCourse::AfterChangeValueInRow(int iRow, PlayerNumber pn) {
-  ScreenOptions::AfterChangeValueInRow(iRow, pn);
+void ScreenOptionsEditCourse::AfterChangeValueInRow(
+    int i_row, PlayerNumber pn) {
+  ScreenOptions::AfterChangeValueInRow(i_row, pn);
 
-  int iEntryIndex = RowToEntryIndex(iRow);
-  RowType rowType = RowToRowType(iRow);
-  switch (rowType) {
+  int entry_index = RowToEntryIndex(i_row);
+  RowType row_type = RowToRowType(i_row);
+  switch (row_type) {
     case RowType_Song: {
       SetCurrentSong();
       OptionRow& row =
-          *rows_[EntryIndexAndRowTypeToRow(iEntryIndex, RowType_Steps)];
+          *rows_[EntryIndexAndRowTypeToRow(entry_index, RowType_Steps)];
       row.Reload();
     } break;
     case RowType_Steps:
@@ -452,12 +453,12 @@ void ScreenOptionsEditCourse::ProcessMenuStart(const InputEventPlus& input) {
     return;
   }
 
-  int iRow = current_row_[GAMESTATE->GetMasterPlayerNumber()];
+  int row = current_row_[GAMESTATE->GetMasterPlayerNumber()];
 
-  unsigned iSongCount = GAMESTATE->cur_course_->entries_.size();
+  unsigned song_count = GAMESTATE->cur_course_->entries_.size();
 
-  if (rows_[iRow]->GetRowType() == OptionRow::RowType_Exit &&
-      iSongCount < unsigned(MIN_ENABLED_SONGS)) {
+  if (rows_[row]->GetRowType() == OptionRow::RowType_Exit &&
+      song_count < unsigned(MIN_ENABLED_SONGS)) {
     ScreenPrompt::Prompt(
         SM_None,
         ssprintf(MUST_ENABLE_AT_LEAST.GetValue().c_str(), MIN_ENABLED_SONGS));

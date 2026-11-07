@@ -14,10 +14,10 @@ class ScreenNameEntryTraditional : public ScreenWithMenuElements {
   virtual void Init();
   virtual void BeginScreen();
 
-  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
   virtual bool Input(const InputEventPlus& input);
 
-  bool EnterKey(PlayerNumber pn, wchar_t sLetter);
+  bool EnterKey(PlayerNumber pn, wchar_t letter);
   bool Backspace(PlayerNumber pn);
 
   // Lua
@@ -27,7 +27,7 @@ class ScreenNameEntryTraditional : public ScreenWithMenuElements {
   bool AnyEntering() const;
   bool Finish(PlayerNumber pn);
   void UpdateSelectionText(PlayerNumber pn);
-  void SelectChar(PlayerNumber pn, const std::string& sKey);
+  void SelectChar(PlayerNumber pn, const std::string& key);
   /** @brief How long can the name be for ranking purposes? */
   ThemeMetric<int> MAX_RANKING_NAME_LENGTH;
 

@@ -121,8 +121,8 @@ void register_DisplaySpecs(lua_State* L) {
 REGISTER_WITH_LUA_FUNCTION(register_DisplaySpecs);
 
 DisplaySpecs* pushDisplaySpecs(lua_State* L, const DisplaySpecs& specs) {
-  void* vpSpecs = lua_newuserdata(L, sizeof(DisplaySpecs));
-  DisplaySpecs* pspecs = new (vpSpecs) DisplaySpecs(specs);
+  void* vp_specs = lua_newuserdata(L, sizeof(DisplaySpecs));
+  DisplaySpecs* pspecs = new (vp_specs) DisplaySpecs(specs);
   luaL_getmetatable(L, DISPLAYSPECS);
   lua_setmetatable(L, -2);
   return pspecs;

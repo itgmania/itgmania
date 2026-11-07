@@ -19,15 +19,15 @@ REGISTER_SCREEN_CLASS(ScreenOptionsToggleSongs);
 void ScreenOptionsToggleSongs::BeginScreen() {
   groups_.clear();
 
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
 
-  std::vector<std::string> asAllGroups;
-  SONGMAN->GetSongGroupNames(asAllGroups);
-  for (const std::string& sGroup : asAllGroups) {
-    vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->def_;
+  std::vector<std::string> all_groups;
+  SONGMAN->GetSongGroupNames(all_groups);
+  for (const std::string& group : all_groups) {
+    hands.push_back(OptionRowHandlerUtil::MakeNull());
+    OptionRowDefinition& def = hands.back()->def_;
 
-    def.name_ = sGroup;
+    def.name_ = group;
     def.explanation_name_ = "Select Group";
     def.allow_theme_title_ = false;  // not themable
     def.allow_theme_items_ = false;  // already themed
@@ -35,9 +35,9 @@ void ScreenOptionsToggleSongs::BeginScreen() {
     def.choices_.clear();
     def.choices_.push_back("");
 
-    groups_.push_back(sGroup);
+    groups_.push_back(group);
   }
-  ScreenOptions::InitMenu(vHands);
+  ScreenOptions::InitMenu(hands);
 
   ScreenOptions::BeginScreen();
 }
@@ -48,13 +48,13 @@ void ScreenOptionsToggleSongs::ProcessMenuStart(const InputEventPlus& input) {
   }
 
   // switch to the subpage with the specified group
-  int iRow = GetCurrentRow();
-  if (rows_[iRow]->GetRowType() == OptionRow::RowType_Exit) {
+  int row = GetCurrentRow();
+  if (rows_[row]->GetRowType() == OptionRow::RowType_Exit) {
     ScreenOptions::ProcessMenuStart(input);
     return;
   }
 
-  ToggleSongs::m_sGroup = groups_[iRow];
+  ToggleSongs::m_sGroup = groups_[row];
   SCREENMAN->SetNewScreen("ScreenOptionsToggleSongsSubPage");
 }
 
@@ -68,19 +68,19 @@ REGISTER_SCREEN_CLASS(ScreenOptionsToggleSongsSubPage);
 void ScreenOptionsToggleSongsSubPage::BeginScreen() {
   songs_.clear();
 
-  std::vector<OptionRowHandler*> vHands;
+  std::vector<OptionRowHandler*> hands;
 
-  const std::vector<Song*>& apAllSongs =
+  const std::vector<Song*>& all_songs =
       SONGMAN->GetSongs(ToggleSongs::m_sGroup);
-  for (Song* pSong : apAllSongs) {
-    if (UNLOCKMAN->SongIsLocked(pSong) & ~LOCKED_DISABLED) {
+  for (Song* song : all_songs) {
+    if (UNLOCKMAN->SongIsLocked(song) & ~LOCKED_DISABLED) {
       continue;
     }
 
-    vHands.push_back(OptionRowHandlerUtil::MakeNull());
-    OptionRowDefinition& def = vHands.back()->def_;
+    hands.push_back(OptionRowHandlerUtil::MakeNull());
+    OptionRowDefinition& def = hands.back()->def_;
 
-    def.name_ = pSong->GetTranslitFullTitle();
+    def.name_ = song->GetTranslitFullTitle();
     def.allow_theme_title_ = false;  // not themable
     def.explanation_name_ = "Toggle Song";
     def.one_choice_for_all_players_ = true;
@@ -89,36 +89,36 @@ void ScreenOptionsToggleSongsSubPage::BeginScreen() {
     def.choices_.push_back("Off");
     def.allow_theme_items_ = false;  // already themed
 
-    songs_.push_back(pSong);
+    songs_.push_back(song);
   }
 
-  InitMenu(vHands);
+  InitMenu(hands);
 
   ScreenOptions::BeginScreen();
 }
 
 void ScreenOptionsToggleSongsSubPage::ImportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  if (iRow >= (int)songs_.size()) {  // exit row
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  if (i_row >= (int)songs_.size()) {  // exit row
     return;
   }
 
-  OptionRow& row = *rows_[iRow];
-  bool bEnable = songs_[iRow]->GetEnabled();
-  int iSelection = bEnable ? 0 : 1;
-  row.SetOneSharedSelection(iSelection);
+  OptionRow& row = *rows_[i_row];
+  bool enable = songs_[i_row]->GetEnabled();
+  int selection = enable ? 0 : 1;
+  row.SetOneSharedSelection(selection);
 }
 
 void ScreenOptionsToggleSongsSubPage::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
-  if (iRow >= (int)songs_.size()) {  // exit row
+    int i_row, const std::vector<PlayerNumber>& vpns) {
+  if (i_row >= (int)songs_.size()) {  // exit row
     return;
   }
 
-  const OptionRow& row = *rows_[iRow];
-  int iSelection = row.GetOneSharedSelection();
-  bool bEnable = (iSelection == 0);
-  songs_[iRow]->SetEnabled(bEnable);
+  const OptionRow& row = *rows_[i_row];
+  int selection = row.GetOneSharedSelection();
+  bool enable = (selection == 0);
+  songs_[i_row]->SetEnabled(enable);
 
   SONGMAN->SaveEnabledSongsToPref();
   PREFSMAN->SavePrefsToDisk();

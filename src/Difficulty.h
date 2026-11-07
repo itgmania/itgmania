@@ -20,10 +20,10 @@ enum Difficulty {
   Difficulty_Invalid
 };
 const std::string& DifficultyToString(Difficulty dc);
-Difficulty StringToDifficulty(const std::string& sDC);
+Difficulty StringToDifficulty(const std::string& dc);
 LuaDeclareType(Difficulty);
 
-Difficulty OldStyleStringToDifficulty(const std::string& sDC);  // compatibility
+Difficulty OldStyleStringToDifficulty(const std::string& dc);  // compatibility
 
 typedef Difficulty CourseDifficulty;
 const int NUM_CourseDifficulty = NUM_Difficulty;
@@ -41,9 +41,9 @@ Difficulty GetNextShownCourseDifficulty(Difficulty pn);
 // strings and look up colors.
 std::string GetCustomDifficulty(StepsType st, Difficulty dc, CourseType ct);
 std::string CustomDifficultyToLocalizedString(
-    const std::string& sCustomDifficulty);
-std::string StepsToCustomDifficulty(const Steps* pSteps);
-std::string TrailToCustomDifficulty(const Trail* pTrail);
+    const std::string& custom_difficulty);
+std::string StepsToCustomDifficulty(const Steps* steps);
+std::string TrailToCustomDifficulty(const Trail* trail);
 
 #endif
 

@@ -6,8 +6,8 @@
 
 class MersenneTwister : public std::mt19937 {
  public:
-  MersenneTwister(int iSeed = 0)
-      : std::mt19937(iSeed == 0 ? time(nullptr) : iSeed) {}
+  MersenneTwister(int i_seed = 0)
+      : std::mt19937(i_seed == 0 ? time(nullptr) : i_seed) {}
 };
 
 typedef MersenneTwister RandomGen;
@@ -20,14 +20,14 @@ extern RandomGen g_RandomNumberGenerator;
  * @param fHigh the high value, inclusive.
  * @return the random float.
  */
-inline float RandomFloat(float fLow, float fHigh) {
-  std::uniform_real_distribution<> dist(fLow, fHigh);
+inline float RandomFloat(float low, float high) {
+  std::uniform_real_distribution<> dist(low, high);
   return dist(g_RandomNumberGenerator);
 }
 
 // Returns an integer between nLow and nHigh inclusive
-inline int RandomInt(int nLow, int nHigh) {
-  std::uniform_int_distribution<> dist(nLow, nHigh);
+inline int RandomInt(int low, int high) {
+  std::uniform_int_distribution<> dist(low, high);
   return dist(g_RandomNumberGenerator);
 }
 

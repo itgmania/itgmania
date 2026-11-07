@@ -35,12 +35,12 @@ void ScreenStatsOverlay::Init() {
     SKIP_SPACING_Y.Load(name_, "SkipSpacingY");
     SKIP_WIDTH.Load(name_, "SkipWidth");
 
-    RectF rectSkips = RectF(
+    RectF rect_skips = RectF(
         SKIP_X - SKIP_WIDTH / 2,
         SKIP_Y - (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 - 10,
         SKIP_X + SKIP_WIDTH / 2,
         SKIP_Y + (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 + 10);
-    quad_skip_background_.StretchTo(rectSkips);
+    quad_skip_background_.StretchTo(rect_skips);
     quad_skip_background_.SetDiffuse(RageColor(0, 0, 0, 0.4f));
     this->AddChild(&quad_skip_background_);
 
@@ -51,8 +51,8 @@ void ScreenStatsOverlay::Init() {
       text_skips_[i].LoadFromFont(THEME->GetPathF("Common", "normal"));
       text_skips_[i].SetX(SKIP_X);
       text_skips_[i].SetY(SCALE(
-          i, 0, NUM_SKIPS_TO_SHOW - 1, rectSkips.top_ + 10,
-          rectSkips.bottom_ - 10));
+          i, 0, NUM_SKIPS_TO_SHOW - 1, rect_skips.top_ + 10,
+          rect_skips.bottom_ - 10));
       text_skips_[i].SetDiffuse(RageColor(1, 1, 1, 0));
       text_skips_[i].SetShadowLength(0);
       this->AddChild(&text_skips_[i]);
@@ -62,17 +62,17 @@ void ScreenStatsOverlay::Init() {
   this->SubscribeToMessage("ShowStatsChanged");
 }
 
-void ScreenStatsOverlay::Update(float fDeltaTime) {
-  Screen::Update(fDeltaTime);
+void ScreenStatsOverlay::Update(float delta_time) {
+  Screen::Update(delta_time);
 
-  static bool bShowStatsWasOn = false;
+  static bool show_stats_was_on = false;
 
-  if (PREFSMAN->show_stats_ && !bShowStatsWasOn) {
+  if (PREFSMAN->show_stats_ && !show_stats_was_on) {
     // Reset skip timer when we toggle Stats on so we don't show a large skip
     // from the span when stats were turned off.
     timer_skip_.Touch();
   }
-  bShowStatsWasOn = PREFSMAN->show_stats_.Get();
+  show_stats_was_on = PREFSMAN->show_stats_.Get();
 
   this->SetVisible(PREFSMAN->show_stats_);
   if (PREFSMAN->show_stats_) {
@@ -100,7 +100,7 @@ void ScreenStatsOverlay::AddTimestampLine(
 
 void ScreenStatsOverlay::UpdateSkips() {
   /* Use our own timer, so we ignore `/tab. */
-  const float UpdateTime = timer_skip_.GetDeltaTime();
+  const float update_time = timer_skip_.GetDeltaTime();
 
   /* FPS is 0 for a little while after we load a screen; don't report
    * during this time. Do clear the timer, though, so we don't report
@@ -110,23 +110,23 @@ void ScreenStatsOverlay::UpdateSkips() {
   }
 
   /* We want to display skips.  We expect to get updates of about 1.0/FPS ms. */
-  const float ExpectedUpdate = 1.0f / DISPLAY->GetFPS();
+  const float expected_update = 1.0f / DISPLAY->GetFPS();
 
   /* These are thresholds for severity of skips.  The smallest
    * is slightly above expected, to tolerate normal jitter. */
-  const float Thresholds[] = {
-      ExpectedUpdate * 2.0f, ExpectedUpdate * 4.0f, 0.1f, -1};
+  const float thresholds[] = {
+      expected_update * 2.0f, expected_update * 4.0f, 0.1f, -1};
 
   int skip = 0;
-  while (Thresholds[skip] != -1 && UpdateTime > Thresholds[skip]) {
+  while (thresholds[skip] != -1 && update_time > thresholds[skip]) {
     skip++;
   }
 
   if (skip) {
-    std::string sTime(
+    std::string time(
         MicrosecondsToMMSSMsMs(RageTimer::GetTimeSinceStartMicroseconds()));
 
-    static const RageColor colors[] = {
+    static const RageColor kColors[] = {
         RageColor(0, 0, 0, 0),          /* unused */
         RageColor(1.0f, 1.0f, 1.0f, 1), /* white*/
         RageColor(1.0f, 1.0f, 0.0f, 1), /* yellow */
@@ -135,14 +135,14 @@ void ScreenStatsOverlay::UpdateSkips() {
 
     AddTimestampLine(
         ssprintf(
-            "%s: %.0fms (%.0f)", sTime.c_str(), 1000 * UpdateTime,
-            UpdateTime / ExpectedUpdate),
-        colors[skip]);
+            "%s: %.0fms (%.0f)", time.c_str(), 1000 * update_time,
+            update_time / expected_update),
+        kColors[skip]);
 
     if (PREFSMAN->log_skips_) {
       LOG->Trace(
-          "Frame skip: %.0fms (%.0f)", 1000 * UpdateTime,
-          UpdateTime / ExpectedUpdate);
+          "Frame skip: %.0fms (%.0f)", 1000 * update_time,
+          update_time / expected_update);
     }
   }
 }

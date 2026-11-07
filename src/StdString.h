@@ -10,8 +10,8 @@
 #include <utility>
 
 /* In RageUtil: */
-void MakeUpper(char* p, size_t iLen);
-void MakeUpper(wchar_t* p, size_t iLen);
+void MakeUpper(char* p, size_t len);
+void MakeUpper(wchar_t* p, size_t len);
 
 // FIXME: separate these into functions that either modify the argument, or
 // return a new string leaving the original unmodified.

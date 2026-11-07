@@ -9,18 +9,18 @@ class WindowsDialogBox {
  public:
   WindowsDialogBox();
   virtual ~WindowsDialogBox() {}
-  void Run(int iDialog);
+  void Run(int dialog);
 
   HWND GetHwnd() { return wnd_; }
 
  protected:
-  virtual INT_PTR HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+  virtual INT_PTR HandleMessage(UINT msg, WPARAM w_param, LPARAM l_param) {
     return false;
   }
 
  private:
   static INT_PTR APIENTRY
-  DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+  DlgProc(HWND dlg, UINT msg, WPARAM w_param, LPARAM l_param);
   HWND wnd_;
 };
 

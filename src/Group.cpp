@@ -39,25 +39,25 @@ static std::string GetInternalGroupName(
 }
 
 Group::Group(
-    const std::string& sDir, const std::string& sGroupDirName,
+    const std::string& dir, const std::string& group_dir_name,
     ProfileSlot prof_slot) {
   /* groupDirName empty for root songs on profile */
-  if (sDir.empty() ||
-      (sGroupDirName.empty() && prof_slot == ProfileSlot_Invalid)) {
+  if (dir.empty() ||
+      (group_dir_name.empty() && prof_slot == ProfileSlot_Invalid)) {
     LOG->Warn("Group::Group: Empty directory or group name provided.");
     return;
   }
 
-  std::string sPackIniPath;
+  std::string pack_ini_path;
   // songs from profile
   if (prof_slot != ProfileSlot_Invalid) {
-    sPackIniPath = sDir + "/" + INI_FILE;
-    path_ = sDir;
-    group_name_ = GetInternalGroupName(prof_slot, sGroupDirName);
+    pack_ini_path = dir + "/" + INI_FILE;
+    path_ = dir;
+    group_name_ = GetInternalGroupName(prof_slot, group_dir_name);
   } else {
-    sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
-    path_ = sDir + sGroupDirName;
-    group_name_ = Basename(sGroupDirName);
+    pack_ini_path = dir + group_dir_name + "/" + INI_FILE;
+    path_ = dir + group_dir_name;
+    group_name_ = Basename(group_dir_name);
   }
   display_title_ = group_name_;
   sort_title_ = group_name_;
@@ -78,26 +78,26 @@ Group::Group(
   banner_path_ = "";
   series_banner_path_ = "";
 
-  if (FILEMAN->DoesFileExist(sPackIniPath)) {
+  if (FILEMAN->DoesFileExist(pack_ini_path)) {
     IniFile ini;
-    if (!ini.ReadFile(sPackIniPath)) {
+    if (!ini.ReadFile(pack_ini_path)) {
       LOG->Warn(
           "Group::Group: Failed to read Pack.ini file at '%s': %s",
-          sPackIniPath.c_str(), ini.GetError().c_str());
+          pack_ini_path.c_str(), ini.GetError().c_str());
       return;
     }
 
-    std::string sVersion = "";
-    ini.GetValue("Group", "Version", sVersion);
-    Trim(sVersion);
+    std::string version = "";
+    ini.GetValue("Group", "Version", version);
+    Trim(version);
 
     // Only read the Pack.ini if the version is set
     // Otherwise log a warning and use default Pack.ini values
-    if (!sVersion.empty()) {
+    if (!version.empty()) {
       has_pack_ini_ = true;
 
       // Define a vector of key-value pairs to cleanly iterate
-      std::vector<std::pair<std::string, std::string&>> vPackfields = {
+      std::vector<std::pair<std::string, std::string&>> packfields = {
           {"DisplayTitle", display_title_},
           {"SortTitle", sort_title_},
           {"TranslitTitle", translit_title_},
@@ -105,7 +105,7 @@ Group::Group(
           {"Banner", banner_path_},
           {"SeriesBanner", series_banner_path_}};
 
-      for (auto& [key, value] : vPackfields) {
+      for (auto& [key, value] : packfields) {
         ini.GetValue("Group", key, value);
         Trim(value);
 
@@ -124,25 +124,25 @@ Group::Group(
         }
       }
 
-      std::string sValue = "";
-      ini.GetValue("Group", "SyncOffset", sValue);
-      Trim(sValue);
+      std::string s_value = "";
+      ini.GetValue("Group", "SyncOffset", s_value);
+      Trim(s_value);
       // If the Pack.ini is specified as SyncOffset=ITG (regardless of the
       // m_DefaultSyncOffset value, we need to always remove the 9ms ITG
       // bias.
       //
       // Otherwise, if SyncOffset=NULL, we don't need to do anything since
       // it's already NULL synced, which is what we shift everything to.
-      if (!sValue.empty()) {
-        if (sValue == "NULL") {
+      if (!s_value.empty()) {
+        if (s_value == "NULL") {
           sync_offset_ = 0.0f;
-        } else if (sValue == "ITG") {
+        } else if (s_value == "ITG") {
           sync_offset_ = -0.009f;
         } else {
           LOG->Warn(
               "Group::Group: Invalid SyncOffset value: %s in Pack.ini file "
               "\"%s\". Valid values are NULL and ITG. Using default value.",
-              sValue.c_str(), sPackIniPath.c_str());
+              s_value.c_str(), pack_ini_path.c_str());
         }
       }
 
@@ -151,7 +151,7 @@ Group::Group(
       LOG->Warn(
           "Group::Group: Pack.ini version not set in file \"%s\". Using "
           "default values.",
-          sPackIniPath.c_str());
+          pack_ini_path.c_str());
     }
   }
 }

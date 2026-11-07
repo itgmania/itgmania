@@ -7,7 +7,7 @@ struct RageSurface;
 class RageFile;
 /** @brief Utility functions for the RageSurfaces. */
 namespace RageSurfaceUtils {
-bool SaveJPEG(RageSurface* surface, RageFile& f, bool bHighQual = true);
+bool SaveJPEG(RageSurface* surface, RageFile& f, bool high_qual = true);
 };
 
 #endif

@@ -69,8 +69,8 @@ XToString(ModTimerType);
 XToLocalizedString(ModTimerType);
 LuaXType(ModTimerType);
 
-void NextFloat(float fValues[], int size);
-void NextBool(bool bValues[], int size);
+void NextFloat(float values[], int size);
+void NextBool(bool values[], int size);
 
 ThemeMetric<float> RANDOM_SPEED_CHANCE("PlayerOptions", "RandomSpeedChance");
 ThemeMetric<float> RANDOM_REVERSE_CHANCE(
@@ -278,36 +278,36 @@ void PlayerOptions::Approach(const PlayerOptions& other, float fDeltaSeconds) {
 }
 
 static void AddPart(
-    std::vector<std::string>& AddTo, float level, std::string name) {
+    std::vector<std::string>& add_to, float level, std::string name) {
   if (level == 0) {
     return;
   }
 
-  const std::string LevelStr =
+  const std::string level_str =
       (level == 1) ? std::string("")
                    : ssprintf("%ld%% ", std::lrint(level * 100));
 
-  AddTo.push_back(LevelStr + name);
+  add_to.push_back(level_str + name);
 }
 
-std::string PlayerOptions::GetString(bool bForceNoteSkin) const {
+std::string PlayerOptions::GetString(bool force_note_skin) const {
   std::vector<std::string> v;
-  GetMods(v, bForceNoteSkin);
+  GetMods(v, force_note_skin);
   return join(", ", v);
 }
 
 void PlayerOptions::GetMods(
-    std::vector<std::string>& AddTo, bool bForceNoteSkin) const {
+    std::vector<std::string>& add_to, bool force_note_skin) const {
   // std::string sReturn;
 
   switch (life_type_) {
     case LifeType_Bar:
       switch (drain_type_) {
         case DrainType_NoRecover:
-          AddTo.push_back("NoRecover");
+          add_to.push_back("NoRecover");
           break;
         case DrainType_SuddenDeath:
-          AddTo.push_back("SuddenDeath");
+          add_to.push_back("SuddenDeath");
           break;
         case DrainType_Normal:
         default:
@@ -315,10 +315,10 @@ void PlayerOptions::GetMods(
       }
       break;
     case LifeType_Battery:
-      AddTo.push_back(ssprintf("%dLives", battery_lives_));
+      add_to.push_back(ssprintf("%dLives", battery_lives_));
       break;
     case LifeType_Time:
-      AddTo.push_back("LifeTime");
+      add_to.push_back("LifeTime");
       break;
     default:
       FAIL_M(ssprintf("Invalid LifeType: %i", life_type_));
@@ -326,16 +326,16 @@ void PlayerOptions::GetMods(
 
   switch (hide_light_type_) {
     case HideLightType_NoHideLights:
-      AddTo.push_back("NoHideLights");
+      add_to.push_back("NoHideLights");
       break;
     case HideLightType_HideAllLights:
-      AddTo.push_back("HideAllLights");
+      add_to.push_back("HideAllLights");
       break;
     case HideLightType_HideMarqueeLights:
-      AddTo.push_back("HideMarqueeLights");
+      add_to.push_back("HideMarqueeLights");
       break;
     case HideLightType_HideBassLights:
-      AddTo.push_back("HideBassLights");
+      add_to.push_back("HideBassLights");
       break;
     default:
       FAIL_M(ssprintf("Invalid HideLightType: %i", hide_light_type_));
@@ -344,7 +344,7 @@ void PlayerOptions::GetMods(
   if (!time_spacing_) {
     if (max_scroll_bpm_) {
       std::string s = ssprintf("m%.0f", max_scroll_bpm_);
-      AddTo.push_back(s);
+      add_to.push_back(s);
     } else if (set_scroll_speed_ || scroll_speed_ != 1) {
       /* -> 1.00 */
       std::string s = ssprintf("%2.2f", scroll_speed_);
@@ -356,22 +356,22 @@ void PlayerOptions::GetMods(
           s.erase(s.size() - 2);  // delete last 2 chars
         }
       }
-      AddTo.push_back(s + "x");
+      add_to.push_back(s + "x");
     }
   } else {
     std::string s = ssprintf("C%.0f", scroll_bpm_);
-    AddTo.push_back(s);
+    add_to.push_back(s);
   }
 
   switch (mod_timer_type_) {
     case ModTimerType_Game:
-      AddTo.push_back("ModTimerGame");
+      add_to.push_back("ModTimerGame");
       break;
     case ModTimerType_Beat:
-      AddTo.push_back("ModTimerBeat");
+      add_to.push_back("ModTimerBeat");
       break;
     case ModTimerType_Song:
-      AddTo.push_back("ModTimerSong");
+      add_to.push_back("ModTimerSong");
       break;
     case ModTimerType_Default:
       break;
@@ -379,352 +379,352 @@ void PlayerOptions::GetMods(
       FAIL_M(ssprintf("Invalid ModTimerType: %i", mod_timer_type_));
   }
 
-  AddPart(AddTo, accels_[ACCEL_BOOST], "Boost");
-  AddPart(AddTo, accels_[ACCEL_BRAKE], "Brake");
-  AddPart(AddTo, accels_[ACCEL_WAVE], "Wave");
-  AddPart(AddTo, accels_[ACCEL_WAVE_PERIOD], "WavePeriod");
-  AddPart(AddTo, accels_[ACCEL_EXPAND], "Expand");
-  AddPart(AddTo, accels_[ACCEL_EXPAND_PERIOD], "ExpandPeriod");
-  AddPart(AddTo, accels_[ACCEL_TAN_EXPAND], "TanExpand");
-  AddPart(AddTo, accels_[ACCEL_TAN_EXPAND_PERIOD], "TanExpandPeriod");
-  AddPart(AddTo, accels_[ACCEL_BOOMERANG], "Boomerang");
+  AddPart(add_to, accels_[ACCEL_BOOST], "Boost");
+  AddPart(add_to, accels_[ACCEL_BRAKE], "Brake");
+  AddPart(add_to, accels_[ACCEL_WAVE], "Wave");
+  AddPart(add_to, accels_[ACCEL_WAVE_PERIOD], "WavePeriod");
+  AddPart(add_to, accels_[ACCEL_EXPAND], "Expand");
+  AddPart(add_to, accels_[ACCEL_EXPAND_PERIOD], "ExpandPeriod");
+  AddPart(add_to, accels_[ACCEL_TAN_EXPAND], "TanExpand");
+  AddPart(add_to, accels_[ACCEL_TAN_EXPAND_PERIOD], "TanExpandPeriod");
+  AddPart(add_to, accels_[ACCEL_BOOMERANG], "Boomerang");
 
-  AddPart(AddTo, effects_[EFFECT_DRUNK], "Drunk");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_SPEED], "DrunkSpeed");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_OFFSET], "DrunkOffset");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_PERIOD], "DrunkPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK], "TanDrunk");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_SPEED], "TanDrunkSpeed");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_OFFSET], "TanDrunkOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_PERIOD], "TanDrunkPeriod");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_Z], "DrunkZ");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_Z_SPEED], "DrunkZSpeed");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_Z_OFFSET], "DrunkZOffset");
-  AddPart(AddTo, effects_[EFFECT_DRUNK_Z_PERIOD], "DrunkZPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_Z], "TanDrunkZ");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_Z_SPEED], "TanDrunkZSpeed");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_Z_OFFSET], "TanDrunkZOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_DRUNK_Z_PERIOD], "TanDrunkZPeriod");
-  AddPart(AddTo, effects_[EFFECT_SHRINK_TO_LINEAR], "ShrinkLinear");
-  AddPart(AddTo, effects_[EFFECT_SHRINK_TO_MULT], "ShrinkMult");
-  AddPart(AddTo, effects_[EFFECT_PULSE_INNER], "PulseInner");
-  AddPart(AddTo, effects_[EFFECT_PULSE_OUTER], "PulseOuter");
-  AddPart(AddTo, effects_[EFFECT_PULSE_PERIOD], "PulsePeriod");
-  AddPart(AddTo, effects_[EFFECT_PULSE_OFFSET], "PulseOffset");
-  AddPart(AddTo, effects_[EFFECT_ATTENUATE_X], "AttenuateX");
-  AddPart(AddTo, effects_[EFFECT_ATTENUATE_Y], "AttenuateY");
-  AddPart(AddTo, effects_[EFFECT_ATTENUATE_Z], "AttenuateZ");
-  AddPart(AddTo, effects_[EFFECT_DIZZY], "Dizzy");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION], "Confusion");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION_OFFSET], "ConfusionOffset");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION_X], "ConfusionX");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION_X_OFFSET], "ConfusionXOffset");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION_Y], "ConfusionY");
-  AddPart(AddTo, effects_[EFFECT_CONFUSION_Y_OFFSET], "ConfusionYOffset");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE], "Bounce");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE_PERIOD], "BouncePeriod");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE_OFFSET], "BounceOffset");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE_Z], "BounceZ");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE_Z_PERIOD], "BounceZPeriod");
-  AddPart(AddTo, effects_[EFFECT_BOUNCE_Z_OFFSET], "BounceZOffset");
-  AddPart(AddTo, effects_[EFFECT_MINI], "Mini");
-  AddPart(AddTo, effects_[EFFECT_TINY], "Tiny");
-  AddPart(AddTo, effects_[EFFECT_FLIP], "Flip");
-  AddPart(AddTo, effects_[EFFECT_INVERT], "Invert");
-  AddPart(AddTo, effects_[EFFECT_TORNADO], "Tornado");
-  AddPart(AddTo, effects_[EFFECT_TORNADO_PERIOD], "TornadoPeriod");
-  AddPart(AddTo, effects_[EFFECT_TORNADO_OFFSET], "TornadoOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO], "TanTornado");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO_PERIOD], "TanTornadoPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO_OFFSET], "TanTornadoOffset");
-  AddPart(AddTo, effects_[EFFECT_TORNADO_Z], "TornadoZ");
-  AddPart(AddTo, effects_[EFFECT_TORNADO_Z_PERIOD], "TornadoZPeriod");
-  AddPart(AddTo, effects_[EFFECT_TORNADO_Z_OFFSET], "TornadoZOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO_Z], "TanTornadoZ");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO_Z_PERIOD], "TanTornadoZPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_TORNADO_Z_OFFSET], "TanTornadoZOffset");
-  AddPart(AddTo, effects_[EFFECT_TIPSY], "Tipsy");
-  AddPart(AddTo, effects_[EFFECT_TIPSY_SPEED], "TipsySpeed");
-  AddPart(AddTo, effects_[EFFECT_TIPSY_OFFSET], "TipsyOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_TIPSY], "TanTipsy");
-  AddPart(AddTo, effects_[EFFECT_TAN_TIPSY_SPEED], "TanTipsySpeed");
-  AddPart(AddTo, effects_[EFFECT_TAN_TIPSY_OFFSET], "TanTipsyOffset");
-  AddPart(AddTo, effects_[EFFECT_BUMPY], "Bumpy");
-  AddPart(AddTo, effects_[EFFECT_BUMPY_OFFSET], "BumpyOffset");
-  AddPart(AddTo, effects_[EFFECT_BUMPY_PERIOD], "BumpyPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY], "TanBumpy");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY_OFFSET], "TanBumpyOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY_PERIOD], "TanBumpyPeriod");
-  AddPart(AddTo, effects_[EFFECT_BUMPY_X], "BumpyX");
-  AddPart(AddTo, effects_[EFFECT_BUMPY_X_OFFSET], "BumpyXOffset");
-  AddPart(AddTo, effects_[EFFECT_BUMPY_X_PERIOD], "BumpyXPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY_X], "TanBumpyX");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY_X_OFFSET], "TanBumpyXOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_BUMPY_X_PERIOD], "TanBumpyXPeriod");
-  AddPart(AddTo, effects_[EFFECT_BEAT], "Beat");
-  AddPart(AddTo, effects_[EFFECT_BEAT_OFFSET], "BeatOffset");
-  AddPart(AddTo, effects_[EFFECT_BEAT_PERIOD], "BeatPeriod");
-  AddPart(AddTo, effects_[EFFECT_BEAT_MULT], "BeatMult");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Y], "BeatY");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Y_OFFSET], "BeatYOffset");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Y_PERIOD], "BeatYPeriod");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Y_MULT], "BeatYMult");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Z], "BeatZ");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Z_OFFSET], "BeatZOffset");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Z_PERIOD], "BeatZPeriod");
-  AddPart(AddTo, effects_[EFFECT_BEAT_Z_MULT], "BeatZMult");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG], "Zigzag");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG_PERIOD], "ZigzagPeriod");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG_OFFSET], "ZigzagOffset");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG_Z], "ZigzagZ");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG_Z_PERIOD], "ZigzagZPeriod");
-  AddPart(AddTo, effects_[EFFECT_ZIGZAG_Z_OFFSET], "ZigzagZOffset");
-  AddPart(AddTo, effects_[EFFECT_SAWTOOTH], "Sawtooth");
-  AddPart(AddTo, effects_[EFFECT_SAWTOOTH_PERIOD], "SawtoothPeriod");
-  AddPart(AddTo, effects_[EFFECT_SAWTOOTH_Z], "SawtoothZ");
-  AddPart(AddTo, effects_[EFFECT_SAWTOOTH_Z_PERIOD], "SawtoothZPeriod");
-  AddPart(AddTo, effects_[EFFECT_SQUARE], "Square");
-  AddPart(AddTo, effects_[EFFECT_SQUARE_OFFSET], "SquareOffset");
-  AddPart(AddTo, effects_[EFFECT_SQUARE_PERIOD], "SquarePeriod");
-  AddPart(AddTo, effects_[EFFECT_SQUARE_Z], "SquareZ");
-  AddPart(AddTo, effects_[EFFECT_SQUARE_Z_OFFSET], "SquareZOffset");
-  AddPart(AddTo, effects_[EFFECT_SQUARE_Z_PERIOD], "SquareZPeriod");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL], "Digital");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_STEPS], "DigitalSteps");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_PERIOD], "DigitalPeriod");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_OFFSET], "DigitalOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL], "TanDigital");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_STEPS], "TanDigitalSteps");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_PERIOD], "TanDigitalPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_OFFSET], "TanDigitalOffset");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_Z], "DigitalZ");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_Z_STEPS], "DigitalZSteps");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_Z_PERIOD], "DigitalZPeriod");
-  AddPart(AddTo, effects_[EFFECT_DIGITAL_Z_OFFSET], "DigitalZOffset");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_Z], "TanDigitalZ");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_Z_STEPS], "TanDigitalZSteps");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_Z_PERIOD], "TanDigitalZPeriod");
-  AddPart(AddTo, effects_[EFFECT_TAN_DIGITAL_Z_OFFSET], "TanDigitalZOffset");
-  AddPart(AddTo, effects_[EFFECT_PARABOLA_X], "ParabolaX");
-  AddPart(AddTo, effects_[EFFECT_PARABOLA_Y], "ParabolaY");
-  AddPart(AddTo, effects_[EFFECT_PARABOLA_Z], "ParabolaZ");
-  AddPart(AddTo, effects_[EFFECT_XMODE], "XMode");
-  AddPart(AddTo, effects_[EFFECT_TWIRL], "Twirl");
-  AddPart(AddTo, effects_[EFFECT_ROLL], "Roll");
-  AddPart(AddTo, stealth_type_, "StealthType");
-  AddPart(AddTo, stealth_past_receptors_, "StealthPastReceptors");
-  AddPart(AddTo, dizzy_holds_, "DizzyHolds");
-  AddPart(AddTo, z_buffer_, "ZBuffer");
-  AddPart(AddTo, cosecant_, "Cosecant");
+  AddPart(add_to, effects_[EFFECT_DRUNK], "Drunk");
+  AddPart(add_to, effects_[EFFECT_DRUNK_SPEED], "DrunkSpeed");
+  AddPart(add_to, effects_[EFFECT_DRUNK_OFFSET], "DrunkOffset");
+  AddPart(add_to, effects_[EFFECT_DRUNK_PERIOD], "DrunkPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK], "TanDrunk");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_SPEED], "TanDrunkSpeed");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_OFFSET], "TanDrunkOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_PERIOD], "TanDrunkPeriod");
+  AddPart(add_to, effects_[EFFECT_DRUNK_Z], "DrunkZ");
+  AddPart(add_to, effects_[EFFECT_DRUNK_Z_SPEED], "DrunkZSpeed");
+  AddPart(add_to, effects_[EFFECT_DRUNK_Z_OFFSET], "DrunkZOffset");
+  AddPart(add_to, effects_[EFFECT_DRUNK_Z_PERIOD], "DrunkZPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_Z], "TanDrunkZ");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_Z_SPEED], "TanDrunkZSpeed");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_Z_OFFSET], "TanDrunkZOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_DRUNK_Z_PERIOD], "TanDrunkZPeriod");
+  AddPart(add_to, effects_[EFFECT_SHRINK_TO_LINEAR], "ShrinkLinear");
+  AddPart(add_to, effects_[EFFECT_SHRINK_TO_MULT], "ShrinkMult");
+  AddPart(add_to, effects_[EFFECT_PULSE_INNER], "PulseInner");
+  AddPart(add_to, effects_[EFFECT_PULSE_OUTER], "PulseOuter");
+  AddPart(add_to, effects_[EFFECT_PULSE_PERIOD], "PulsePeriod");
+  AddPart(add_to, effects_[EFFECT_PULSE_OFFSET], "PulseOffset");
+  AddPart(add_to, effects_[EFFECT_ATTENUATE_X], "AttenuateX");
+  AddPart(add_to, effects_[EFFECT_ATTENUATE_Y], "AttenuateY");
+  AddPart(add_to, effects_[EFFECT_ATTENUATE_Z], "AttenuateZ");
+  AddPart(add_to, effects_[EFFECT_DIZZY], "Dizzy");
+  AddPart(add_to, effects_[EFFECT_CONFUSION], "Confusion");
+  AddPart(add_to, effects_[EFFECT_CONFUSION_OFFSET], "ConfusionOffset");
+  AddPart(add_to, effects_[EFFECT_CONFUSION_X], "ConfusionX");
+  AddPart(add_to, effects_[EFFECT_CONFUSION_X_OFFSET], "ConfusionXOffset");
+  AddPart(add_to, effects_[EFFECT_CONFUSION_Y], "ConfusionY");
+  AddPart(add_to, effects_[EFFECT_CONFUSION_Y_OFFSET], "ConfusionYOffset");
+  AddPart(add_to, effects_[EFFECT_BOUNCE], "Bounce");
+  AddPart(add_to, effects_[EFFECT_BOUNCE_PERIOD], "BouncePeriod");
+  AddPart(add_to, effects_[EFFECT_BOUNCE_OFFSET], "BounceOffset");
+  AddPart(add_to, effects_[EFFECT_BOUNCE_Z], "BounceZ");
+  AddPart(add_to, effects_[EFFECT_BOUNCE_Z_PERIOD], "BounceZPeriod");
+  AddPart(add_to, effects_[EFFECT_BOUNCE_Z_OFFSET], "BounceZOffset");
+  AddPart(add_to, effects_[EFFECT_MINI], "Mini");
+  AddPart(add_to, effects_[EFFECT_TINY], "Tiny");
+  AddPart(add_to, effects_[EFFECT_FLIP], "Flip");
+  AddPart(add_to, effects_[EFFECT_INVERT], "Invert");
+  AddPart(add_to, effects_[EFFECT_TORNADO], "Tornado");
+  AddPart(add_to, effects_[EFFECT_TORNADO_PERIOD], "TornadoPeriod");
+  AddPart(add_to, effects_[EFFECT_TORNADO_OFFSET], "TornadoOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO], "TanTornado");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO_PERIOD], "TanTornadoPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO_OFFSET], "TanTornadoOffset");
+  AddPart(add_to, effects_[EFFECT_TORNADO_Z], "TornadoZ");
+  AddPart(add_to, effects_[EFFECT_TORNADO_Z_PERIOD], "TornadoZPeriod");
+  AddPart(add_to, effects_[EFFECT_TORNADO_Z_OFFSET], "TornadoZOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO_Z], "TanTornadoZ");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO_Z_PERIOD], "TanTornadoZPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_TORNADO_Z_OFFSET], "TanTornadoZOffset");
+  AddPart(add_to, effects_[EFFECT_TIPSY], "Tipsy");
+  AddPart(add_to, effects_[EFFECT_TIPSY_SPEED], "TipsySpeed");
+  AddPart(add_to, effects_[EFFECT_TIPSY_OFFSET], "TipsyOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_TIPSY], "TanTipsy");
+  AddPart(add_to, effects_[EFFECT_TAN_TIPSY_SPEED], "TanTipsySpeed");
+  AddPart(add_to, effects_[EFFECT_TAN_TIPSY_OFFSET], "TanTipsyOffset");
+  AddPart(add_to, effects_[EFFECT_BUMPY], "Bumpy");
+  AddPart(add_to, effects_[EFFECT_BUMPY_OFFSET], "BumpyOffset");
+  AddPart(add_to, effects_[EFFECT_BUMPY_PERIOD], "BumpyPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY], "TanBumpy");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY_OFFSET], "TanBumpyOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY_PERIOD], "TanBumpyPeriod");
+  AddPart(add_to, effects_[EFFECT_BUMPY_X], "BumpyX");
+  AddPart(add_to, effects_[EFFECT_BUMPY_X_OFFSET], "BumpyXOffset");
+  AddPart(add_to, effects_[EFFECT_BUMPY_X_PERIOD], "BumpyXPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY_X], "TanBumpyX");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY_X_OFFSET], "TanBumpyXOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_BUMPY_X_PERIOD], "TanBumpyXPeriod");
+  AddPart(add_to, effects_[EFFECT_BEAT], "Beat");
+  AddPart(add_to, effects_[EFFECT_BEAT_OFFSET], "BeatOffset");
+  AddPart(add_to, effects_[EFFECT_BEAT_PERIOD], "BeatPeriod");
+  AddPart(add_to, effects_[EFFECT_BEAT_MULT], "BeatMult");
+  AddPart(add_to, effects_[EFFECT_BEAT_Y], "BeatY");
+  AddPart(add_to, effects_[EFFECT_BEAT_Y_OFFSET], "BeatYOffset");
+  AddPart(add_to, effects_[EFFECT_BEAT_Y_PERIOD], "BeatYPeriod");
+  AddPart(add_to, effects_[EFFECT_BEAT_Y_MULT], "BeatYMult");
+  AddPart(add_to, effects_[EFFECT_BEAT_Z], "BeatZ");
+  AddPart(add_to, effects_[EFFECT_BEAT_Z_OFFSET], "BeatZOffset");
+  AddPart(add_to, effects_[EFFECT_BEAT_Z_PERIOD], "BeatZPeriod");
+  AddPart(add_to, effects_[EFFECT_BEAT_Z_MULT], "BeatZMult");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG], "Zigzag");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG_PERIOD], "ZigzagPeriod");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG_OFFSET], "ZigzagOffset");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG_Z], "ZigzagZ");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG_Z_PERIOD], "ZigzagZPeriod");
+  AddPart(add_to, effects_[EFFECT_ZIGZAG_Z_OFFSET], "ZigzagZOffset");
+  AddPart(add_to, effects_[EFFECT_SAWTOOTH], "Sawtooth");
+  AddPart(add_to, effects_[EFFECT_SAWTOOTH_PERIOD], "SawtoothPeriod");
+  AddPart(add_to, effects_[EFFECT_SAWTOOTH_Z], "SawtoothZ");
+  AddPart(add_to, effects_[EFFECT_SAWTOOTH_Z_PERIOD], "SawtoothZPeriod");
+  AddPart(add_to, effects_[EFFECT_SQUARE], "Square");
+  AddPart(add_to, effects_[EFFECT_SQUARE_OFFSET], "SquareOffset");
+  AddPart(add_to, effects_[EFFECT_SQUARE_PERIOD], "SquarePeriod");
+  AddPart(add_to, effects_[EFFECT_SQUARE_Z], "SquareZ");
+  AddPart(add_to, effects_[EFFECT_SQUARE_Z_OFFSET], "SquareZOffset");
+  AddPart(add_to, effects_[EFFECT_SQUARE_Z_PERIOD], "SquareZPeriod");
+  AddPart(add_to, effects_[EFFECT_DIGITAL], "Digital");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_STEPS], "DigitalSteps");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_PERIOD], "DigitalPeriod");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_OFFSET], "DigitalOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL], "TanDigital");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_STEPS], "TanDigitalSteps");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_PERIOD], "TanDigitalPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_OFFSET], "TanDigitalOffset");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_Z], "DigitalZ");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_Z_STEPS], "DigitalZSteps");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_Z_PERIOD], "DigitalZPeriod");
+  AddPart(add_to, effects_[EFFECT_DIGITAL_Z_OFFSET], "DigitalZOffset");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_Z], "TanDigitalZ");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_Z_STEPS], "TanDigitalZSteps");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_Z_PERIOD], "TanDigitalZPeriod");
+  AddPart(add_to, effects_[EFFECT_TAN_DIGITAL_Z_OFFSET], "TanDigitalZOffset");
+  AddPart(add_to, effects_[EFFECT_PARABOLA_X], "ParabolaX");
+  AddPart(add_to, effects_[EFFECT_PARABOLA_Y], "ParabolaY");
+  AddPart(add_to, effects_[EFFECT_PARABOLA_Z], "ParabolaZ");
+  AddPart(add_to, effects_[EFFECT_XMODE], "XMode");
+  AddPart(add_to, effects_[EFFECT_TWIRL], "Twirl");
+  AddPart(add_to, effects_[EFFECT_ROLL], "Roll");
+  AddPart(add_to, stealth_type_, "StealthType");
+  AddPart(add_to, stealth_past_receptors_, "StealthPastReceptors");
+  AddPart(add_to, dizzy_holds_, "DizzyHolds");
+  AddPart(add_to, z_buffer_, "ZBuffer");
+  AddPart(add_to, cosecant_, "Cosecant");
 
   for (int i = 0; i < 16; i++) {
     std::string s = ssprintf("MoveX%d", i + 1);
 
-    AddPart(AddTo, moves_x_[i], s);
+    AddPart(add_to, moves_x_[i], s);
     s = ssprintf("MoveY%d", i + 1);
-    AddPart(AddTo, moves_y_[i], s);
+    AddPart(add_to, moves_y_[i], s);
     s = ssprintf("MoveZ%d", i + 1);
-    AddPart(AddTo, moves_z_[i], s);
+    AddPart(add_to, moves_z_[i], s);
     s = ssprintf("ConfusionOffset%d", i + 1);
-    AddPart(AddTo, confusion_x_[i], s);
+    AddPart(add_to, confusion_x_[i], s);
     s = ssprintf("ConfusionYOffset%d", i + 1);
-    AddPart(AddTo, confusion_y_[i], s);
+    AddPart(add_to, confusion_y_[i], s);
     s = ssprintf("ConfusionZOffset%d", i + 1);
-    AddPart(AddTo, confusion_z_[i], s);
+    AddPart(add_to, confusion_z_[i], s);
     s = ssprintf("Dark%d", i + 1);
-    AddPart(AddTo, darks_[i], s);
+    AddPart(add_to, darks_[i], s);
     s = ssprintf("Stealth%d", i + 1);
-    AddPart(AddTo, stealth_[i], s);
+    AddPart(add_to, stealth_[i], s);
     s = ssprintf("Tiny%d", i + 1);
-    AddPart(AddTo, tiny_[i], s);
+    AddPart(add_to, tiny_[i], s);
     s = ssprintf("Bumpy%d", i + 1);
-    AddPart(AddTo, bumpy_[i], s);
+    AddPart(add_to, bumpy_[i], s);
     s = ssprintf("Reverse%d", i + 1);
-    AddPart(AddTo, reverse_[i], s);
+    AddPart(add_to, reverse_[i], s);
   }
 
-  AddPart(AddTo, appearances_[APPEARANCE_HIDDEN], "Hidden");
-  AddPart(AddTo, appearances_[APPEARANCE_HIDDEN_OFFSET], "HiddenOffset");
-  AddPart(AddTo, appearances_[APPEARANCE_SUDDEN], "Sudden");
-  AddPart(AddTo, appearances_[APPEARANCE_SUDDEN_OFFSET], "SuddenOffset");
-  AddPart(AddTo, appearances_[APPEARANCE_STEALTH], "Stealth");
-  AddPart(AddTo, appearances_[APPEARANCE_BLINK], "Blink");
-  AddPart(AddTo, appearances_[APPEARANCE_RANDOMVANISH], "RandomVanish");
+  AddPart(add_to, appearances_[APPEARANCE_HIDDEN], "Hidden");
+  AddPart(add_to, appearances_[APPEARANCE_HIDDEN_OFFSET], "HiddenOffset");
+  AddPart(add_to, appearances_[APPEARANCE_SUDDEN], "Sudden");
+  AddPart(add_to, appearances_[APPEARANCE_SUDDEN_OFFSET], "SuddenOffset");
+  AddPart(add_to, appearances_[APPEARANCE_STEALTH], "Stealth");
+  AddPart(add_to, appearances_[APPEARANCE_BLINK], "Blink");
+  AddPart(add_to, appearances_[APPEARANCE_RANDOMVANISH], "RandomVanish");
 
-  AddPart(AddTo, scrolls_[SCROLL_REVERSE], "Reverse");
-  AddPart(AddTo, scrolls_[SCROLL_SPLIT], "Split");
-  AddPart(AddTo, scrolls_[SCROLL_ALTERNATE], "Alternate");
-  AddPart(AddTo, scrolls_[SCROLL_CROSS], "Cross");
-  AddPart(AddTo, scrolls_[SCROLL_CENTERED], "Centered");
+  AddPart(add_to, scrolls_[SCROLL_REVERSE], "Reverse");
+  AddPart(add_to, scrolls_[SCROLL_SPLIT], "Split");
+  AddPart(add_to, scrolls_[SCROLL_ALTERNATE], "Alternate");
+  AddPart(add_to, scrolls_[SCROLL_CROSS], "Cross");
+  AddPart(add_to, scrolls_[SCROLL_CENTERED], "Centered");
 
-  AddPart(AddTo, mod_timer_mult_, "ModTimerMult");
-  AddPart(AddTo, mod_timer_offset_, "ModTimerOffset");
-  AddPart(AddTo, draw_size_, "DrawSize");
-  AddPart(AddTo, draw_size_back_, "DrawSizeBack");
+  AddPart(add_to, mod_timer_mult_, "ModTimerMult");
+  AddPart(add_to, mod_timer_offset_, "ModTimerOffset");
+  AddPart(add_to, draw_size_, "DrawSize");
+  AddPart(add_to, draw_size_back_, "DrawSizeBack");
 
-  AddPart(AddTo, dark_, "Dark");
+  AddPart(add_to, dark_, "Dark");
 
-  AddPart(AddTo, blind_, "Blind");
-  AddPart(AddTo, cover_, "Cover");
+  AddPart(add_to, blind_, "Blind");
+  AddPart(add_to, cover_, "Cover");
 
-  AddPart(AddTo, rand_attack_, "RandomAttacks");
-  AddPart(AddTo, no_attack_, "NoAttacks");
-  AddPart(AddTo, player_auto_play_, "PlayerAutoPlay");
+  AddPart(add_to, rand_attack_, "RandomAttacks");
+  AddPart(add_to, no_attack_, "NoAttacks");
+  AddPart(add_to, player_auto_play_, "PlayerAutoPlay");
 
-  AddPart(AddTo, passmark_, "Passmark");
+  AddPart(add_to, passmark_, "Passmark");
 
-  AddPart(AddTo, random_speed_, "RandomSpeed");
+  AddPart(add_to, random_speed_, "RandomSpeed");
 
   if (turns_[TURN_MIRROR]) {
-    AddTo.push_back("Mirror");
+    add_to.push_back("Mirror");
   }
   if (turns_[TURN_LRMIRROR]) {
-    AddTo.push_back("LRMirror");
+    add_to.push_back("LRMirror");
   }
   if (turns_[TURN_UDMIRROR]) {
-    AddTo.push_back("UDMirror");
+    add_to.push_back("UDMirror");
   }
   if (turns_[TURN_BACKWARDS]) {
-    AddTo.push_back("Backwards");
+    add_to.push_back("Backwards");
   }
   if (turns_[TURN_LEFT]) {
-    AddTo.push_back("Left");
+    add_to.push_back("Left");
   }
   if (turns_[TURN_RIGHT]) {
-    AddTo.push_back("Right");
+    add_to.push_back("Right");
   }
   if (turns_[TURN_SHUFFLE]) {
-    AddTo.push_back("Shuffle");
+    add_to.push_back("Shuffle");
   }
   if (turns_[TURN_SOFT_SHUFFLE]) {
-    AddTo.push_back("SoftShuffle");
+    add_to.push_back("SoftShuffle");
   }
   if (turns_[TURN_SUPER_SHUFFLE]) {
-    AddTo.push_back("SuperShuffle");
+    add_to.push_back("SuperShuffle");
   }
   if (turns_[TURN_HYPER_SHUFFLE]) {
-    AddTo.push_back("HyperShuffle");
+    add_to.push_back("HyperShuffle");
   }
 
   if (transforms_[TRANSFORM_NOHOLDS]) {
-    AddTo.push_back("NoHolds");
+    add_to.push_back("NoHolds");
   }
   if (transforms_[TRANSFORM_NOROLLS]) {
-    AddTo.push_back("NoRolls");
+    add_to.push_back("NoRolls");
   }
   if (transforms_[TRANSFORM_NOMINES]) {
-    AddTo.push_back("NoMines");
+    add_to.push_back("NoMines");
   }
   if (transforms_[TRANSFORM_LITTLE]) {
-    AddTo.push_back("Little");
+    add_to.push_back("Little");
   }
   if (transforms_[TRANSFORM_WIDE]) {
-    AddTo.push_back("Wide");
+    add_to.push_back("Wide");
   }
   if (transforms_[TRANSFORM_BIG]) {
-    AddTo.push_back("Big");
+    add_to.push_back("Big");
   }
   if (transforms_[TRANSFORM_QUICK]) {
-    AddTo.push_back("Quick");
+    add_to.push_back("Quick");
   }
   if (transforms_[TRANSFORM_BMRIZE]) {
-    AddTo.push_back("BMRize");
+    add_to.push_back("BMRize");
   }
   if (transforms_[TRANSFORM_SKIPPY]) {
-    AddTo.push_back("Skippy");
+    add_to.push_back("Skippy");
   }
   if (transforms_[TRANSFORM_MINES]) {
-    AddTo.push_back("Mines");
+    add_to.push_back("Mines");
   }
   if (transforms_[TRANSFORM_ATTACKMINES]) {
-    AddTo.push_back("AttackMines");
+    add_to.push_back("AttackMines");
   }
   if (transforms_[TRANSFORM_ECHO]) {
-    AddTo.push_back("Echo");
+    add_to.push_back("Echo");
   }
   if (transforms_[TRANSFORM_STOMP]) {
-    AddTo.push_back("Stomp");
+    add_to.push_back("Stomp");
   }
   if (transforms_[TRANSFORM_PLANTED]) {
-    AddTo.push_back("Planted");
+    add_to.push_back("Planted");
   }
   if (transforms_[TRANSFORM_FLOORED]) {
-    AddTo.push_back("Floored");
+    add_to.push_back("Floored");
   }
   if (transforms_[TRANSFORM_TWISTER]) {
-    AddTo.push_back("Twister");
+    add_to.push_back("Twister");
   }
   if (transforms_[TRANSFORM_HOLDROLLS]) {
-    AddTo.push_back("HoldsToRolls");
+    add_to.push_back("HoldsToRolls");
   }
   if (transforms_[TRANSFORM_NOJUMPS]) {
-    AddTo.push_back("NoJumps");
+    add_to.push_back("NoJumps");
   }
   if (transforms_[TRANSFORM_NOHANDS]) {
-    AddTo.push_back("NoHands");
+    add_to.push_back("NoHands");
   }
   if (transforms_[TRANSFORM_NOLIFTS]) {
-    AddTo.push_back("NoLifts");
+    add_to.push_back("NoLifts");
   }
   if (transforms_[TRANSFORM_NOFAKES]) {
-    AddTo.push_back("NoFakes");
+    add_to.push_back("NoFakes");
   }
   if (transforms_[TRANSFORM_NOQUADS]) {
-    AddTo.push_back("NoQuads");
+    add_to.push_back("NoQuads");
   }
   if (transforms_[TRANSFORM_NOSTRETCH]) {
-    AddTo.push_back("NoStretch");
+    add_to.push_back("NoStretch");
   }
   if (mute_on_error_) {
-    AddTo.push_back("MuteOnError");
+    add_to.push_back("MuteOnError");
   }
 
   switch (fail_type_) {
     case FailType_Immediate:
       break;
     case FailType_ImmediateContinue:
-      AddTo.push_back("FailImmediateContinue");
+      add_to.push_back("FailImmediateContinue");
       break;
     case FailType_EndOfSong:
-      AddTo.push_back("FailAtEnd");
+      add_to.push_back("FailAtEnd");
       break;
     case FailType_Off:
-      AddTo.push_back("FailOff");
+      add_to.push_back("FailOff");
       break;
     default:
       FAIL_M(ssprintf("Invalid FailType: %i", fail_type_));
   }
 
   if (skew_ == 0 && perspective_tilt_ == 0) {
-    AddTo.push_back("Overhead");
+    add_to.push_back("Overhead");
   } else if (skew_ == 0) {
     if (perspective_tilt_ > 0) {
-      AddPart(AddTo, perspective_tilt_, "Distant");
+      AddPart(add_to, perspective_tilt_, "Distant");
     } else {
-      AddPart(AddTo, -perspective_tilt_, "Hallway");
+      AddPart(add_to, -perspective_tilt_, "Hallway");
     }
   } else if (std::abs(skew_ - perspective_tilt_) < 0.0001f) {
-    AddPart(AddTo, skew_, "Space");
+    AddPart(add_to, skew_, "Space");
   } else if (std::abs(skew_ + perspective_tilt_) < 0.0001f) {
-    AddPart(AddTo, skew_, "Incoming");
+    AddPart(add_to, skew_, "Incoming");
   } else {
-    AddPart(AddTo, skew_, "Skew");
-    AddPart(AddTo, perspective_tilt_, "Tilt");
+    AddPart(add_to, skew_, "Skew");
+    AddPart(add_to, perspective_tilt_, "Tilt");
   }
 
   // Don't display a string if using the default NoteSkin unless we force it.
-  if (bForceNoteSkin ||
+  if (force_note_skin ||
       (!note_skin_.empty() &&
        note_skin_ != CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue())) {
     std::string s = note_skin_;
     Capitalize(s);
-    AddTo.push_back(s);
+    add_to.push_back(s);
   }
 
   if (std::abs(visual_delay_) > 0.0001f) {
     // Format the string to be something like "10ms VisualDelay".
     // Note that we don't process sub-millisecond visual delay.
-    AddTo.push_back(ssprintf("%.0fms VisualDelay", visual_delay_ * 1000.0f));
+    add_to.push_back(ssprintf("%.0fms VisualDelay", visual_delay_ * 1000.0f));
   }
 
   if (disabled_windows_.count() != 0) {
@@ -743,19 +743,19 @@ void PlayerOptions::GetMods(
     }
 
     // Final string will be something like "No W4/W5"
-    AddTo.push_back(ss.str());
+    add_to.push_back(ss.str());
   }
 }
 
 /* Options are added to the current settings; call Init() beforehand if
  * you don't want this. */
-void PlayerOptions::FromString(const std::string& sMultipleMods) {
-  std::string sTemp = sMultipleMods;
+void PlayerOptions::FromString(const std::string& multiple_mods) {
+  std::string temp = multiple_mods;
   std::vector<std::string> vs;
-  split(sTemp, ",", vs, true);
-  std::string sThrowAway;
+  split(temp, ",", vs, true);
+  std::string throw_away;
   for (std::string& s : vs) {
-    if (!FromOneModString(s, sThrowAway)) {
+    if (!FromOneModString(s, throw_away)) {
       LOG->Trace(
           "Attempted to load a non-existing mod \'%s\' for the Player. "
           "Ignoring.",
@@ -765,15 +765,15 @@ void PlayerOptions::FromString(const std::string& sMultipleMods) {
 }
 
 bool PlayerOptions::FromOneModString(
-    const std::string& sOneMod, std::string& sErrorOut) {
+    const std::string& one_mod, std::string& error_out) {
   ASSERT_M(
       NOTESKIN != nullptr,
       "The Noteskin Manager must be loaded in order to process mods.");
 
-  std::string sBit = sOneMod;
-  std::string sMod = "";
-  MakeLower(sBit);
-  Trim(sBit);
+  std::string bit = one_mod;
+  std::string mod = "";
+  MakeLower(bit);
+  Trim(bit);
 
   /* "drunk"
    * "no drunk"
@@ -782,10 +782,10 @@ bool PlayerOptions::FromOneModString(
 
   float level = 1;
   float speed = 1;
-  std::vector<std::string> asParts;
-  split(sBit, " ", asParts, true);
+  std::vector<std::string> parts;
+  split(bit, " ", parts, true);
 
-  for (const std::string& s : asParts) {
+  for (const std::string& s : parts) {
     if (s == "no") {
       level = 0;
     } else if (isdigit(s[0]) || s[0] == '-') {
@@ -799,7 +799,7 @@ bool PlayerOptions::FromOneModString(
       else if (Right(s, 1) == "*") {
         // XXX: We know what they want, is there any reason not to handle it?
         // Yes. We should be strict in handling the format. -Chris
-        sErrorOut = ssprintf(
+        error_out = ssprintf(
             "Invalid player options \"%s\"; did you mean '*%d'?", s.c_str(),
             StringToInt(s));
         return false;
@@ -814,7 +814,7 @@ bool PlayerOptions::FromOneModString(
     }
   }
 
-  sBit = asParts.back();
+  bit = parts.back();
 
 #define SET_FLOAT(opt)   \
   {                      \
@@ -824,15 +824,15 @@ bool PlayerOptions::FromOneModString(
   const bool on = (level > 0.5f);
 
   static Regex mult("^([0-9]+(\\.[0-9]+)?)x$");
-  static Regex disabledWindows("(w[1-5])");
+  static Regex disabled_windows("(w[1-5])");
   std::vector<std::string> matches;
-  if (mult.Compare(sBit, matches)) {
+  if (mult.Compare(bit, matches)) {
     StringConversion::FromString(matches[0], level);
     SET_FLOAT(scroll_speed_)
     SET_FLOAT(time_spacing_)
     time_spacing_ = 0;
     max_scroll_bpm_ = 0;
-  } else if (sscanf(sBit.c_str(), "c%f", &level) == 1) {
+  } else if (sscanf(bit.c_str(), "c%f", &level) == 1) {
     if (!std::isfinite(level) || level <= 0.0f) {
       level = CMOD_DEFAULT;
     }
@@ -842,7 +842,7 @@ bool PlayerOptions::FromOneModString(
     max_scroll_bpm_ = 0;
   }
   // oITG's m-mods
-  else if (sscanf(sBit.c_str(), "m%f", &level) == 1) {
+  else if (sscanf(bit.c_str(), "m%f", &level) == 1) {
     // OpenITG doesn't have this block:
     /*
     if( !std::isfinite(level) || level <= 0.0f )
@@ -852,10 +852,10 @@ bool PlayerOptions::FromOneModString(
     time_spacing_ = 0;
   }
 
-  else if (sBit == "clearall") {
+  else if (bit == "clearall") {
     Init();
     note_skin_ = NOTESKIN->GetDefaultNoteSkinName();
-  } else if (sBit == "resetspeed") {
+  } else if (bit == "resetspeed") {
     /* level is set to the values from Init() because all speed related
        fields are being reset to initial values, and they each have different
        initial values.  -kyz */
@@ -866,630 +866,629 @@ bool PlayerOptions::FromOneModString(
     SET_FLOAT(scroll_speed_);
     level = CMOD_DEFAULT;
     SET_FLOAT(scroll_bpm_)
-  } else if (sBit == "life" || sBit == "lives") {
+  } else if (bit == "life" || bit == "lives") {
     // level is a percentage for every other option, so multiply by 100. -Kyz
     battery_lives_ = level * 100.0f;
-  } else if (sBit.find("modtimer") != sBit.npos) {
-    if (sBit == "modtimerdefault") {
+  } else if (bit.find("modtimer") != bit.npos) {
+    if (bit == "modtimerdefault") {
       mod_timer_type_ = ModTimerType_Default;
-    } else if (sBit == "modtimersong") {
+    } else if (bit == "modtimersong") {
       mod_timer_type_ = ModTimerType_Song;
-    } else if (sBit == "modtimerbeat") {
+    } else if (bit == "modtimerbeat") {
       mod_timer_type_ = ModTimerType_Beat;
-    } else if (sBit == "modtimergame") {
+    } else if (bit == "modtimergame") {
       mod_timer_type_ = ModTimerType_Game;
-    } else if (sBit == "modtimermult") {
+    } else if (bit == "modtimermult") {
       SET_FLOAT(mod_timer_mult_)
-    } else if (sBit == "modtimeroffset") {
+    } else if (bit == "modtimeroffset") {
       SET_FLOAT(mod_timer_offset_)
     }
-  } else if (sBit.find("drawsize") != sBit.npos) {
-    if (sBit == "drawsize") {
+  } else if (bit.find("drawsize") != bit.npos) {
+    if (bit == "drawsize") {
       SET_FLOAT(draw_size_)
-    } else if (sBit == "drawsizeback") {
+    } else if (bit == "drawsizeback") {
       SET_FLOAT(draw_size_back_)
     }
-  } else if (sBit == "bar") {
+  } else if (bit == "bar") {
     life_type_ = LifeType_Bar;
-  } else if (sBit == "battery") {
+  } else if (bit == "battery") {
     life_type_ = LifeType_Battery;
-  } else if (sBit == "lifetime") {
+  } else if (bit == "lifetime") {
     life_type_ = LifeType_Time;
-  } else if (sBit == "norecover" || sBit == "power-drop") {
+  } else if (bit == "norecover" || bit == "power-drop") {
     drain_type_ = DrainType_NoRecover;
-  } else if (sBit == "suddendeath" || sBit == "death") {
+  } else if (bit == "suddendeath" || bit == "death") {
     drain_type_ = DrainType_SuddenDeath;
-  } else if (sBit == "normal-drain") {
+  } else if (bit == "normal-drain") {
     drain_type_ = DrainType_Normal;
-  } else if (sBit.find("lights") != sBit.npos) {
-    if (sBit == "nohidelights") {
+  } else if (bit.find("lights") != bit.npos) {
+    if (bit == "nohidelights") {
       hide_light_type_ = HideLightType_NoHideLights;
-    } else if (sBit == "hidealllights") {
+    } else if (bit == "hidealllights") {
       hide_light_type_ = HideLightType_HideAllLights;
-    } else if (sBit == "hidemarqueelights") {
+    } else if (bit == "hidemarqueelights") {
       hide_light_type_ = HideLightType_HideMarqueeLights;
-    } else if (sBit == "hidebasslights") {
+    } else if (bit == "hidebasslights") {
       hide_light_type_ = HideLightType_HideBassLights;
     }
-  } else if (sBit == "boost") {
+  } else if (bit == "boost") {
     SET_FLOAT(accels_[ACCEL_BOOST])
-  } else if (sBit == "brake" || sBit == "land") {
+  } else if (bit == "brake" || bit == "land") {
     SET_FLOAT(accels_[ACCEL_BRAKE])
-  } else if (sBit.find("wave") != sBit.npos) {
-    if (sBit == "wave") {
+  } else if (bit.find("wave") != bit.npos) {
+    if (bit == "wave") {
       SET_FLOAT(accels_[ACCEL_WAVE])
-    } else if (sBit == "waveperiod") {
+    } else if (bit == "waveperiod") {
       SET_FLOAT(accels_[ACCEL_WAVE_PERIOD])
     }
   } else if (
-      (sBit.find("expand") != sBit.npos) ||
-      (sBit.find("dwiwave") != sBit.npos)) {
-    if (sBit == "expand" || sBit == "dwiwave") {
+      (bit.find("expand") != bit.npos) || (bit.find("dwiwave") != bit.npos)) {
+    if (bit == "expand" || bit == "dwiwave") {
       SET_FLOAT(accels_[ACCEL_EXPAND])
-    } else if (sBit == "expandperiod") {
+    } else if (bit == "expandperiod") {
       SET_FLOAT(accels_[ACCEL_EXPAND_PERIOD])
-    } else if (sBit == "tanexpand") {
+    } else if (bit == "tanexpand") {
       SET_FLOAT(accels_[ACCEL_TAN_EXPAND])
-    } else if (sBit == "tanexpandperiod") {
+    } else if (bit == "tanexpandperiod") {
       SET_FLOAT(accels_[ACCEL_TAN_EXPAND_PERIOD])
     }
-  } else if (sBit == "boomerang") {
+  } else if (bit == "boomerang") {
     SET_FLOAT(accels_[ACCEL_BOOMERANG])
-  } else if (sBit.find("drunk") != sBit.npos) {
-    if (sBit == "drunk") {
+  } else if (bit.find("drunk") != bit.npos) {
+    if (bit == "drunk") {
       SET_FLOAT(effects_[EFFECT_DRUNK])
-    } else if (sBit == "drunkspeed") {
+    } else if (bit == "drunkspeed") {
       SET_FLOAT(effects_[EFFECT_DRUNK_SPEED])
-    } else if (sBit == "drunkoffset") {
+    } else if (bit == "drunkoffset") {
       SET_FLOAT(effects_[EFFECT_DRUNK_OFFSET])
-    } else if (sBit == "drunkperiod") {
+    } else if (bit == "drunkperiod") {
       SET_FLOAT(effects_[EFFECT_DRUNK_PERIOD])
-    } else if (sBit == "tandrunk") {
+    } else if (bit == "tandrunk") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK])
-    } else if (sBit == "tandrunkspeed") {
+    } else if (bit == "tandrunkspeed") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_SPEED])
-    } else if (sBit == "tandrunkoffset") {
+    } else if (bit == "tandrunkoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_OFFSET])
-    } else if (sBit == "tandrunkperiod") {
+    } else if (bit == "tandrunkperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_PERIOD])
-    } else if (sBit == "drunkz") {
+    } else if (bit == "drunkz") {
       SET_FLOAT(effects_[EFFECT_DRUNK_Z])
-    } else if (sBit == "drunkzspeed") {
+    } else if (bit == "drunkzspeed") {
       SET_FLOAT(effects_[EFFECT_DRUNK_Z_SPEED])
-    } else if (sBit == "drunkzoffset") {
+    } else if (bit == "drunkzoffset") {
       SET_FLOAT(effects_[EFFECT_DRUNK_Z_OFFSET])
-    } else if (sBit == "drunkzperiod") {
+    } else if (bit == "drunkzperiod") {
       SET_FLOAT(effects_[EFFECT_DRUNK_Z_PERIOD])
-    } else if (sBit == "tandrunkz") {
+    } else if (bit == "tandrunkz") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_Z])
-    } else if (sBit == "tandrunkzspeed") {
+    } else if (bit == "tandrunkzspeed") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_Z_SPEED])
-    } else if (sBit == "tandrunkzoffset") {
+    } else if (bit == "tandrunkzoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_Z_OFFSET])
-    } else if (sBit == "tandrunkzperiod") {
+    } else if (bit == "tandrunkzperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_DRUNK_Z_PERIOD])
     }
-  } else if (sBit.find("shrink") != sBit.npos) {
-    if (sBit == "shrinklinear") {
+  } else if (bit.find("shrink") != bit.npos) {
+    if (bit == "shrinklinear") {
       SET_FLOAT(effects_[EFFECT_SHRINK_TO_LINEAR])
-    } else if (sBit == "shrinkmult") {
+    } else if (bit == "shrinkmult") {
       SET_FLOAT(effects_[EFFECT_SHRINK_TO_MULT])
     }
-  } else if (sBit.find("pulse") != sBit.npos) {
-    if (sBit == "pulseinner") {
+  } else if (bit.find("pulse") != bit.npos) {
+    if (bit == "pulseinner") {
       SET_FLOAT(effects_[EFFECT_PULSE_INNER])
-    } else if (sBit == "pulseouter") {
+    } else if (bit == "pulseouter") {
       SET_FLOAT(effects_[EFFECT_PULSE_OUTER])
-    } else if (sBit == "pulseoffset") {
+    } else if (bit == "pulseoffset") {
       SET_FLOAT(effects_[EFFECT_PULSE_OFFSET])
-    } else if (sBit == "pulseperiod") {
+    } else if (bit == "pulseperiod") {
       SET_FLOAT(effects_[EFFECT_PULSE_PERIOD])
     }
-  } else if (sBit.find("dizzy") != sBit.npos) {
-    if (sBit == "dizzy") {
+  } else if (bit.find("dizzy") != bit.npos) {
+    if (bit == "dizzy") {
       SET_FLOAT(effects_[EFFECT_DIZZY])
-    } else if (sBit == "dizzyholds") {
+    } else if (bit == "dizzyholds") {
       dizzy_holds_ = on;
     }
-  } else if (sBit.find("confusion") != sBit.npos) {
-    if (sBit.find("x") != sBit.npos) {
-      if (sBit == "confusionx") {
+  } else if (bit.find("confusion") != bit.npos) {
+    if (bit.find("x") != bit.npos) {
+      if (bit == "confusionx") {
         SET_FLOAT(effects_[EFFECT_CONFUSION_X])
-      } else if (sBit == "confusionxoffset") {
+      } else if (bit == "confusionxoffset") {
         SET_FLOAT(effects_[EFFECT_CONFUSION_X_OFFSET])
       } else {
         for (int i = 0; i < 16; i++) {
-          sMod = ssprintf("confusionxoffset%d", i + 1);
-          if (sBit == sMod) {
+          mod = ssprintf("confusionxoffset%d", i + 1);
+          if (bit == mod) {
             SET_FLOAT(confusion_x_[i])
             break;
           }
         }
       }
-    } else if (sBit.find("y") != sBit.npos) {
-      if (sBit == "confusiony") {
+    } else if (bit.find("y") != bit.npos) {
+      if (bit == "confusiony") {
         SET_FLOAT(effects_[EFFECT_CONFUSION_Y])
-      } else if (sBit == "confusionyoffset") {
+      } else if (bit == "confusionyoffset") {
         SET_FLOAT(effects_[EFFECT_CONFUSION_Y_OFFSET])
       } else {
         for (int i = 0; i < 16; i++) {
-          sMod = ssprintf("confusionyoffset%d", i + 1);
-          if (sBit == sMod) {
+          mod = ssprintf("confusionyoffset%d", i + 1);
+          if (bit == mod) {
             SET_FLOAT(confusion_y_[i])
             break;
           }
         }
       }
     }
-    if (sBit == "confusion") {
+    if (bit == "confusion") {
       SET_FLOAT(effects_[EFFECT_CONFUSION])
-    } else if (sBit == "confusionoffset") {
+    } else if (bit == "confusionoffset") {
       SET_FLOAT(effects_[EFFECT_CONFUSION_OFFSET])
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("confusionoffset%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("confusionoffset%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(confusion_z_[i])
           break;
         }
       }
     }
-  } else if (sBit.find("bounce") != sBit.npos) {
-    if (sBit == "bounce") {
+  } else if (bit.find("bounce") != bit.npos) {
+    if (bit == "bounce") {
       SET_FLOAT(effects_[EFFECT_BOUNCE])
-    } else if (sBit == "bounceperiod") {
+    } else if (bit == "bounceperiod") {
       SET_FLOAT(effects_[EFFECT_BOUNCE_PERIOD])
-    } else if (sBit == "bounceoffset") {
+    } else if (bit == "bounceoffset") {
       SET_FLOAT(effects_[EFFECT_BOUNCE_OFFSET])
-    } else if (sBit == "bouncez") {
+    } else if (bit == "bouncez") {
       SET_FLOAT(effects_[EFFECT_BOUNCE_Z])
-    } else if (sBit == "bouncezperiod") {
+    } else if (bit == "bouncezperiod") {
       SET_FLOAT(effects_[EFFECT_BOUNCE_Z_PERIOD])
-    } else if (sBit == "bouncezoffset") {
+    } else if (bit == "bouncezoffset") {
       SET_FLOAT(effects_[EFFECT_BOUNCE_Z_OFFSET])
     }
-  } else if (sBit == "mini") {
+  } else if (bit == "mini") {
     SET_FLOAT(effects_[EFFECT_MINI])
-  } else if (sBit.find("tiny") != sBit.npos) {
-    if (sBit == "tiny") {
+  } else if (bit.find("tiny") != bit.npos) {
+    if (bit == "tiny") {
       SET_FLOAT(effects_[EFFECT_TINY])
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("tiny%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("tiny%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(tiny_[i])
           break;
         }
       }
     }
-  } else if (sBit == "flip") {
+  } else if (bit == "flip") {
     SET_FLOAT(effects_[EFFECT_FLIP])
-  } else if (sBit == "invert") {
+  } else if (bit == "invert") {
     SET_FLOAT(effects_[EFFECT_INVERT])
-  } else if (sBit.find("tornado") != sBit.npos) {
-    if (sBit == "tornado") {
+  } else if (bit.find("tornado") != bit.npos) {
+    if (bit == "tornado") {
       SET_FLOAT(effects_[EFFECT_TORNADO])
-    } else if (sBit == "tornadoperiod") {
+    } else if (bit == "tornadoperiod") {
       SET_FLOAT(effects_[EFFECT_TORNADO_PERIOD])
-    } else if (sBit == "tornadooffset") {
+    } else if (bit == "tornadooffset") {
       SET_FLOAT(effects_[EFFECT_TORNADO_OFFSET])
-    } else if (sBit == "tantornado") {
+    } else if (bit == "tantornado") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO])
-    } else if (sBit == "tantornadoperiod") {
+    } else if (bit == "tantornadoperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO_PERIOD])
-    } else if (sBit == "tantornadooffset") {
+    } else if (bit == "tantornadooffset") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO_OFFSET])
-    } else if (sBit == "tornadoz") {
+    } else if (bit == "tornadoz") {
       SET_FLOAT(effects_[EFFECT_TORNADO_Z])
-    } else if (sBit == "tornadozperiod") {
+    } else if (bit == "tornadozperiod") {
       SET_FLOAT(effects_[EFFECT_TORNADO_Z_PERIOD])
-    } else if (sBit == "tornadozoffset") {
+    } else if (bit == "tornadozoffset") {
       SET_FLOAT(effects_[EFFECT_TORNADO_Z_OFFSET])
-    } else if (sBit == "tantornadoz") {
+    } else if (bit == "tantornadoz") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO_Z])
-    } else if (sBit == "tantornadozperiod") {
+    } else if (bit == "tantornadozperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO_Z_PERIOD])
-    } else if (sBit == "tantornadozoffset") {
+    } else if (bit == "tantornadozoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_TORNADO_Z_OFFSET])
     }
-  } else if (sBit.find("tipsy") != sBit.npos) {
-    if (sBit == "tipsy") {
+  } else if (bit.find("tipsy") != bit.npos) {
+    if (bit == "tipsy") {
       SET_FLOAT(effects_[EFFECT_TIPSY])
-    } else if (sBit == "tipsyspeed") {
+    } else if (bit == "tipsyspeed") {
       SET_FLOAT(effects_[EFFECT_TIPSY_SPEED])
-    } else if (sBit == "tipsyoffset") {
+    } else if (bit == "tipsyoffset") {
       SET_FLOAT(effects_[EFFECT_TIPSY_OFFSET])
-    } else if (sBit == "tantipsy") {
+    } else if (bit == "tantipsy") {
       SET_FLOAT(effects_[EFFECT_TAN_TIPSY])
-    } else if (sBit == "tantipsyspeed") {
+    } else if (bit == "tantipsyspeed") {
       SET_FLOAT(effects_[EFFECT_TAN_TIPSY_SPEED])
-    } else if (sBit == "tantipsyoffset") {
+    } else if (bit == "tantipsyoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_TIPSY_OFFSET])
     }
-  } else if (sBit.find("bumpy") != sBit.npos) {
-    if (sBit == "bumpy") {
+  } else if (bit.find("bumpy") != bit.npos) {
+    if (bit == "bumpy") {
       SET_FLOAT(effects_[EFFECT_BUMPY])
-    } else if (sBit == "bumpyoffset") {
+    } else if (bit == "bumpyoffset") {
       SET_FLOAT(effects_[EFFECT_BUMPY_OFFSET])
-    } else if (sBit == "bumpyperiod") {
+    } else if (bit == "bumpyperiod") {
       SET_FLOAT(effects_[EFFECT_BUMPY_PERIOD])
-    } else if (sBit == "tanbumpy") {
+    } else if (bit == "tanbumpy") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY])
-    } else if (sBit == "tanbumpyoffset") {
+    } else if (bit == "tanbumpyoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY_OFFSET])
-    } else if (sBit == "tanbumpyperiod") {
+    } else if (bit == "tanbumpyperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY_PERIOD])
-    } else if (sBit == "bumpyx") {
+    } else if (bit == "bumpyx") {
       SET_FLOAT(effects_[EFFECT_BUMPY_X])
-    } else if (sBit == "bumpyxoffset") {
+    } else if (bit == "bumpyxoffset") {
       SET_FLOAT(effects_[EFFECT_BUMPY_X_OFFSET])
-    } else if (sBit == "bumpyxperiod") {
+    } else if (bit == "bumpyxperiod") {
       SET_FLOAT(effects_[EFFECT_BUMPY_X_PERIOD])
-    } else if (sBit == "tanbumpyx") {
+    } else if (bit == "tanbumpyx") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY_X])
-    } else if (sBit == "tanbumpyxoffset") {
+    } else if (bit == "tanbumpyxoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY_X_OFFSET])
-    } else if (sBit == "tanbumpyxperiod") {
+    } else if (bit == "tanbumpyxperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_BUMPY_X_PERIOD])
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("bumpy%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("bumpy%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(bumpy_[i])
           break;
         }
       }
     }
-  } else if (sBit.find("beat") != sBit.npos) {
-    if (sBit == "beat") {
+  } else if (bit.find("beat") != bit.npos) {
+    if (bit == "beat") {
       SET_FLOAT(effects_[EFFECT_BEAT])
-    } else if (sBit == "beatoffset") {
+    } else if (bit == "beatoffset") {
       SET_FLOAT(effects_[EFFECT_BEAT_OFFSET])
-    } else if (sBit == "beatperiod") {
+    } else if (bit == "beatperiod") {
       SET_FLOAT(effects_[EFFECT_BEAT_PERIOD])
-    } else if (sBit == "beatmult") {
+    } else if (bit == "beatmult") {
       SET_FLOAT(effects_[EFFECT_BEAT_MULT])
-    } else if (sBit == "beaty") {
+    } else if (bit == "beaty") {
       SET_FLOAT(effects_[EFFECT_BEAT_Y])
-    } else if (sBit == "beatyoffset") {
+    } else if (bit == "beatyoffset") {
       SET_FLOAT(effects_[EFFECT_BEAT_Y_OFFSET])
-    } else if (sBit == "beatyperiod") {
+    } else if (bit == "beatyperiod") {
       SET_FLOAT(effects_[EFFECT_BEAT_Y_PERIOD])
-    } else if (sBit == "beatymult") {
+    } else if (bit == "beatymult") {
       SET_FLOAT(effects_[EFFECT_BEAT_Y_MULT])
-    } else if (sBit == "beatz") {
+    } else if (bit == "beatz") {
       SET_FLOAT(effects_[EFFECT_BEAT_Z])
-    } else if (sBit == "beatzoffset") {
+    } else if (bit == "beatzoffset") {
       SET_FLOAT(effects_[EFFECT_BEAT_Z_OFFSET])
-    } else if (sBit == "beatzperiod") {
+    } else if (bit == "beatzperiod") {
       SET_FLOAT(effects_[EFFECT_BEAT_Z_PERIOD])
-    } else if (sBit == "beatzmult") {
+    } else if (bit == "beatzmult") {
       SET_FLOAT(effects_[EFFECT_BEAT_Z_MULT])
     }
-  } else if (sBit.find("digital") != sBit.npos) {
-    if (sBit == "digital") {
+  } else if (bit.find("digital") != bit.npos) {
+    if (bit == "digital") {
       SET_FLOAT(effects_[EFFECT_DIGITAL])
-    } else if (sBit == "digitalsteps") {
+    } else if (bit == "digitalsteps") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_STEPS])
-    } else if (sBit == "digitalperiod") {
+    } else if (bit == "digitalperiod") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_PERIOD])
-    } else if (sBit == "digitaloffset") {
+    } else if (bit == "digitaloffset") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_OFFSET])
-    } else if (sBit == "tandigital") {
+    } else if (bit == "tandigital") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL])
-    } else if (sBit == "tandigitalsteps") {
+    } else if (bit == "tandigitalsteps") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_STEPS])
-    } else if (sBit == "tandigitalperiod") {
+    } else if (bit == "tandigitalperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_PERIOD])
-    } else if (sBit == "tandigitaloffset") {
+    } else if (bit == "tandigitaloffset") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_OFFSET])
-    } else if (sBit == "digitalz") {
+    } else if (bit == "digitalz") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_Z])
-    } else if (sBit == "digitalzsteps") {
+    } else if (bit == "digitalzsteps") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_Z_STEPS])
-    } else if (sBit == "digitalzperiod") {
+    } else if (bit == "digitalzperiod") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_Z_PERIOD])
-    } else if (sBit == "digitalzoffset") {
+    } else if (bit == "digitalzoffset") {
       SET_FLOAT(effects_[EFFECT_DIGITAL_Z_OFFSET])
-    } else if (sBit == "tandigitalz") {
+    } else if (bit == "tandigitalz") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_Z])
-    } else if (sBit == "tandigitalzsteps") {
+    } else if (bit == "tandigitalzsteps") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_Z_STEPS])
-    } else if (sBit == "tandigitalzperiod") {
+    } else if (bit == "tandigitalzperiod") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_Z_PERIOD])
-    } else if (sBit == "tandigitalzoffset") {
+    } else if (bit == "tandigitalzoffset") {
       SET_FLOAT(effects_[EFFECT_TAN_DIGITAL_Z_OFFSET])
     }
-  } else if (sBit.find("zigzag") != sBit.npos) {
-    if (sBit == "zigzag") {
+  } else if (bit.find("zigzag") != bit.npos) {
+    if (bit == "zigzag") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG])
-    } else if (sBit == "zigzagperiod") {
+    } else if (bit == "zigzagperiod") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG_PERIOD])
-    } else if (sBit == "zigzagoffset") {
+    } else if (bit == "zigzagoffset") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG_OFFSET])
-    } else if (sBit == "zigzagz") {
+    } else if (bit == "zigzagz") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG_Z])
-    } else if (sBit == "zigzagzperiod") {
+    } else if (bit == "zigzagzperiod") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG_Z_PERIOD])
-    } else if (sBit == "zigzagzoffset") {
+    } else if (bit == "zigzagzoffset") {
       SET_FLOAT(effects_[EFFECT_ZIGZAG_Z_OFFSET])
     }
-  } else if (sBit.find("sawtooth") != sBit.npos) {
-    if (sBit == "sawtooth") {
+  } else if (bit.find("sawtooth") != bit.npos) {
+    if (bit == "sawtooth") {
       SET_FLOAT(effects_[EFFECT_SAWTOOTH])
-    } else if (sBit == "sawtoothperiod") {
+    } else if (bit == "sawtoothperiod") {
       SET_FLOAT(effects_[EFFECT_SAWTOOTH_PERIOD])
-    } else if (sBit == "sawtoothz") {
+    } else if (bit == "sawtoothz") {
       SET_FLOAT(effects_[EFFECT_SAWTOOTH_Z])
-    } else if (sBit == "sawtoothzperiod") {
+    } else if (bit == "sawtoothzperiod") {
       SET_FLOAT(effects_[EFFECT_SAWTOOTH_Z_PERIOD])
     }
-  } else if (sBit.find("square") != sBit.npos) {
-    if (sBit == "square") {
+  } else if (bit.find("square") != bit.npos) {
+    if (bit == "square") {
       SET_FLOAT(effects_[EFFECT_SQUARE])
-    } else if (sBit == "squareoffset") {
+    } else if (bit == "squareoffset") {
       SET_FLOAT(effects_[EFFECT_SQUARE_OFFSET])
-    } else if (sBit == "squareperiod") {
+    } else if (bit == "squareperiod") {
       SET_FLOAT(effects_[EFFECT_SQUARE_PERIOD])
-    } else if (sBit == "squarez") {
+    } else if (bit == "squarez") {
       SET_FLOAT(effects_[EFFECT_SQUARE_Z])
-    } else if (sBit == "squarezoffset") {
+    } else if (bit == "squarezoffset") {
       SET_FLOAT(effects_[EFFECT_SQUARE_Z_OFFSET])
-    } else if (sBit == "squarezperiod") {
+    } else if (bit == "squarezperiod") {
       SET_FLOAT(effects_[EFFECT_SQUARE_Z_PERIOD])
     }
-  } else if (sBit.find("parabola") != sBit.npos) {
-    if (sBit == "parabolax") {
+  } else if (bit.find("parabola") != bit.npos) {
+    if (bit == "parabolax") {
       SET_FLOAT(effects_[EFFECT_PARABOLA_X])
-    } else if (sBit == "parabolay") {
+    } else if (bit == "parabolay") {
       SET_FLOAT(effects_[EFFECT_PARABOLA_Y])
-    } else if (sBit == "parabolaz") {
+    } else if (bit == "parabolaz") {
       SET_FLOAT(effects_[EFFECT_PARABOLA_Z])
     }
-  } else if (sBit.find("attenuate") != sBit.npos) {
-    if (sBit == "attenuatex") {
+  } else if (bit.find("attenuate") != bit.npos) {
+    if (bit == "attenuatex") {
       SET_FLOAT(effects_[EFFECT_ATTENUATE_X])
-    } else if (sBit == "attenuatey") {
+    } else if (bit == "attenuatey") {
       SET_FLOAT(effects_[EFFECT_ATTENUATE_Y])
-    } else if (sBit == "attenuatez") {
+    } else if (bit == "attenuatez") {
       SET_FLOAT(effects_[EFFECT_ATTENUATE_Z])
     }
-  } else if (sBit == "xmode") {
+  } else if (bit == "xmode") {
     SET_FLOAT(effects_[EFFECT_XMODE])
-  } else if (sBit == "twirl") {
+  } else if (bit == "twirl") {
     SET_FLOAT(effects_[EFFECT_TWIRL])
-  } else if (sBit == "roll") {
+  } else if (bit == "roll") {
     SET_FLOAT(effects_[EFFECT_ROLL])
-  } else if (sBit == "hidden") {
+  } else if (bit == "hidden") {
     SET_FLOAT(appearances_[APPEARANCE_HIDDEN])
-  } else if (sBit == "hiddenoffset") {
+  } else if (bit == "hiddenoffset") {
     SET_FLOAT(appearances_[APPEARANCE_HIDDEN_OFFSET])
-  } else if (sBit == "sudden") {
+  } else if (bit == "sudden") {
     SET_FLOAT(appearances_[APPEARANCE_SUDDEN])
-  } else if (sBit == "suddenoffset") {
+  } else if (bit == "suddenoffset") {
     SET_FLOAT(appearances_[APPEARANCE_SUDDEN_OFFSET])
-  } else if (sBit.find("stealth") != sBit.npos) {
-    if (sBit == "stealth") {
+  } else if (bit.find("stealth") != bit.npos) {
+    if (bit == "stealth") {
       SET_FLOAT(appearances_[APPEARANCE_STEALTH])
-    } else if (sBit == "stealthtype") {
+    } else if (bit == "stealthtype") {
       stealth_type_ = on;
-    } else if (sBit == "stealthpastreceptors") {
+    } else if (bit == "stealthpastreceptors") {
       stealth_past_receptors_ = on;
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("stealth%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("stealth%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(stealth_[i])
           break;
         }
       }
     }
-  } else if (sBit == "blink") {
+  } else if (bit == "blink") {
     SET_FLOAT(appearances_[APPEARANCE_BLINK])
-  } else if (sBit == "randomvanish") {
+  } else if (bit == "randomvanish") {
     SET_FLOAT(appearances_[APPEARANCE_RANDOMVANISH])
-  } else if (sBit == "turn" && !on) {
+  } else if (bit == "turn" && !on) {
     ZERO(turns_); /* "no turn" */
-  } else if (sBit == "mirror") {
+  } else if (bit == "mirror") {
     turns_[TURN_MIRROR] = on;
-  } else if (sBit == "lrmirror") {
+  } else if (bit == "lrmirror") {
     turns_[TURN_LRMIRROR] = on;
-  } else if (sBit == "udmirror") {
+  } else if (bit == "udmirror") {
     turns_[TURN_UDMIRROR] = on;
-  } else if (sBit == "backwards") {
+  } else if (bit == "backwards") {
     turns_[TURN_BACKWARDS] = on;
-  } else if (sBit == "left") {
+  } else if (bit == "left") {
     turns_[TURN_LEFT] = on;
-  } else if (sBit == "right") {
+  } else if (bit == "right") {
     turns_[TURN_RIGHT] = on;
-  } else if (sBit == "shuffle") {
+  } else if (bit == "shuffle") {
     turns_[TURN_SHUFFLE] = on;
-  } else if (sBit == "softshuffle") {
+  } else if (bit == "softshuffle") {
     turns_[TURN_SOFT_SHUFFLE] = on;
-  } else if (sBit == "supershuffle") {
+  } else if (bit == "supershuffle") {
     turns_[TURN_SUPER_SHUFFLE] = on;
-  } else if (sBit == "hypershuffle") {
+  } else if (bit == "hypershuffle") {
     turns_[TURN_HYPER_SHUFFLE] = on;
-  } else if (sBit == "little") {
+  } else if (bit == "little") {
     transforms_[TRANSFORM_LITTLE] = on;
-  } else if (sBit == "wide") {
+  } else if (bit == "wide") {
     transforms_[TRANSFORM_WIDE] = on;
-  } else if (sBit == "big") {
+  } else if (bit == "big") {
     transforms_[TRANSFORM_BIG] = on;
-  } else if (sBit == "quick") {
+  } else if (bit == "quick") {
     transforms_[TRANSFORM_QUICK] = on;
-  } else if (sBit == "bmrize") {
+  } else if (bit == "bmrize") {
     transforms_[TRANSFORM_BMRIZE] = on;
-  } else if (sBit == "skippy") {
+  } else if (bit == "skippy") {
     transforms_[TRANSFORM_SKIPPY] = on;
-  } else if (sBit == "mines") {
+  } else if (bit == "mines") {
     transforms_[TRANSFORM_MINES] = on;
-  } else if (sBit == "attackmines") {
+  } else if (bit == "attackmines") {
     transforms_[TRANSFORM_ATTACKMINES] = on;
-  } else if (sBit == "echo") {
+  } else if (bit == "echo") {
     transforms_[TRANSFORM_ECHO] = on;
-  } else if (sBit == "stomp") {
+  } else if (bit == "stomp") {
     transforms_[TRANSFORM_STOMP] = on;
-  } else if (sBit == "planted") {
+  } else if (bit == "planted") {
     transforms_[TRANSFORM_PLANTED] = on;
-  } else if (sBit == "floored") {
+  } else if (bit == "floored") {
     transforms_[TRANSFORM_FLOORED] = on;
-  } else if (sBit == "twister") {
+  } else if (bit == "twister") {
     transforms_[TRANSFORM_TWISTER] = on;
-  } else if (sBit == "holdrolls") {
+  } else if (bit == "holdrolls") {
     transforms_[TRANSFORM_HOLDROLLS] = on;
-  } else if (sBit == "nojumps") {
+  } else if (bit == "nojumps") {
     transforms_[TRANSFORM_NOJUMPS] = on;
-  } else if (sBit == "nohands") {
+  } else if (bit == "nohands") {
     transforms_[TRANSFORM_NOHANDS] = on;
-  } else if (sBit == "noquads") {
+  } else if (bit == "noquads") {
     transforms_[TRANSFORM_NOQUADS] = on;
-  } else if (sBit.find("reverse") != sBit.npos) {
-    if (sBit == "reverse") {
+  } else if (bit.find("reverse") != bit.npos) {
+    if (bit == "reverse") {
       SET_FLOAT(scrolls_[SCROLL_REVERSE])
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("reverse%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("reverse%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(reverse_[i])
           break;
         }
       }
     }
-  } else if (sBit == "split") {
+  } else if (bit == "split") {
     SET_FLOAT(scrolls_[SCROLL_SPLIT])
-  } else if (sBit == "alternate") {
+  } else if (bit == "alternate") {
     SET_FLOAT(scrolls_[SCROLL_ALTERNATE])
-  } else if (sBit == "cross") {
+  } else if (bit == "cross") {
     SET_FLOAT(scrolls_[SCROLL_CROSS])
-  } else if (sBit == "centered") {
+  } else if (bit == "centered") {
     SET_FLOAT(scrolls_[SCROLL_CENTERED])
-  } else if (sBit == "noholds") {
+  } else if (bit == "noholds") {
     transforms_[TRANSFORM_NOHOLDS] = on;
-  } else if (sBit == "norolls") {
+  } else if (bit == "norolls") {
     transforms_[TRANSFORM_NOROLLS] = on;
-  } else if (sBit == "nomines") {
+  } else if (bit == "nomines") {
     transforms_[TRANSFORM_NOMINES] = on;
-  } else if (sBit == "nostretch") {
+  } else if (bit == "nostretch") {
     transforms_[TRANSFORM_NOSTRETCH] = on;
-  } else if (sBit == "nolifts") {
+  } else if (bit == "nolifts") {
     transforms_[TRANSFORM_NOLIFTS] = on;
-  } else if (sBit == "nofakes") {
+  } else if (bit == "nofakes") {
     transforms_[TRANSFORM_NOFAKES] = on;
-  } else if (sBit.find("dark") != sBit.npos) {
-    if (sBit == "dark") {
+  } else if (bit.find("dark") != bit.npos) {
+    if (bit == "dark") {
       SET_FLOAT(dark_)
     } else {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("dark%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("dark%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(darks_[i])
           break;
         }
       }
     }
-  } else if (sBit == "blind") {
+  } else if (bit == "blind") {
     SET_FLOAT(blind_)
-  } else if (sBit == "cover") {
+  } else if (bit == "cover") {
     SET_FLOAT(cover_)
-  } else if (sBit == "randomattacks") {
+  } else if (bit == "randomattacks") {
     SET_FLOAT(rand_attack_)
-  } else if (sBit == "noattacks") {
+  } else if (bit == "noattacks") {
     SET_FLOAT(no_attack_)
-  } else if (sBit == "playerautoplay") {
+  } else if (bit == "playerautoplay") {
     SET_FLOAT(player_auto_play_)
-  } else if (sBit == "passmark") {
+  } else if (bit == "passmark") {
     SET_FLOAT(passmark_)
-  } else if (sBit == "overhead") {
+  } else if (bit == "overhead") {
     skew_ = 0;
     perspective_tilt_ = 0;
     speed_skew_ = speed_perspective_tilt_ = speed;
-  } else if (sBit == "incoming") {
+  } else if (bit == "incoming") {
     skew_ = level;
     perspective_tilt_ = -level;
     speed_skew_ = speed_perspective_tilt_ = speed;
-  } else if (sBit == "space") {
+  } else if (bit == "space") {
     skew_ = level;
     perspective_tilt_ = +level;
     speed_skew_ = speed_perspective_tilt_ = speed;
-  } else if (sBit == "hallway") {
+  } else if (bit == "hallway") {
     skew_ = 0;
     perspective_tilt_ = -level;
     speed_skew_ = speed_perspective_tilt_ = speed;
-  } else if (sBit == "distant") {
+  } else if (bit == "distant") {
     skew_ = 0;
     perspective_tilt_ = +level;
     speed_skew_ = speed_perspective_tilt_ = speed;
-  } else if (NOTESKIN && NOTESKIN->DoesNoteSkinExist(sBit)) {
-    note_skin_ = sBit;
-  } else if (sBit == "skew") {
+  } else if (NOTESKIN && NOTESKIN->DoesNoteSkinExist(bit)) {
+    note_skin_ = bit;
+  } else if (bit == "skew") {
     SET_FLOAT(skew_)
-  } else if (sBit == "tilt") {
+  } else if (bit == "tilt") {
     SET_FLOAT(perspective_tilt_)
-  } else if (sBit == "noteskin" && !on) /* "no noteskin" */
+  } else if (bit == "noteskin" && !on) /* "no noteskin" */
   {
     note_skin_ = CommonMetrics::DEFAULT_NOTESKIN_NAME;
-  } else if (sBit == "randomspeed") {
+  } else if (bit == "randomspeed") {
     SET_FLOAT(random_speed_)
-  } else if (sBit == "failarcade" || sBit == "failimmediate") {
+  } else if (bit == "failarcade" || bit == "failimmediate") {
     fail_type_ = FailType_Immediate;
-  } else if (sBit == "failendofsong" || sBit == "failimmediatecontinue") {
+  } else if (bit == "failendofsong" || bit == "failimmediatecontinue") {
     fail_type_ = FailType_ImmediateContinue;
-  } else if (sBit == "failatend") {
+  } else if (bit == "failatend") {
     fail_type_ = FailType_EndOfSong;
-  } else if (sBit == "failoff") {
+  } else if (bit == "failoff") {
     fail_type_ = FailType_Off;
-  } else if (sBit == "faildefault") {
+  } else if (bit == "faildefault") {
     PlayerOptions po;
     GAMESTATE->GetDefaultPlayerOptions(po);
     fail_type_ = po.fail_type_;
-  } else if (sBit == "muteonerror") {
+  } else if (bit == "muteonerror") {
     mute_on_error_ = on;
-  } else if (sBit == "random") {
+  } else if (bit == "random") {
     ChooseRandomModifiers();
   }
 
-  else if (sBit.find("move") != sBit.npos) {
-    if (sBit.find("x") != sBit.npos) {
+  else if (bit.find("move") != bit.npos) {
+    if (bit.find("x") != bit.npos) {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("movex%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("movex%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(moves_x_[i])
           break;
         }
       }
-    } else if (sBit.find("y") != sBit.npos) {
+    } else if (bit.find("y") != bit.npos) {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("movey%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("movey%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(moves_y_[i])
           break;
         }
       }
-    } else if (sBit.find("z") != sBit.npos) {
+    } else if (bit.find("z") != bit.npos) {
       for (int i = 0; i < 16; i++) {
-        sMod = ssprintf("movez%d", i + 1);
-        if (sBit == sMod) {
+        mod = ssprintf("movez%d", i + 1);
+        if (bit == mod) {
           SET_FLOAT(moves_z_[i])
           break;
         }
       }
     }
-  } else if (sBit == "zbuffer") {
+  } else if (bit == "zbuffer") {
     z_buffer_ = on;
-  } else if (sBit == "cosecant") {
+  } else if (bit == "cosecant") {
     cosecant_ = on;
-  } else if (sBit == "visualdelay") {
+  } else if (bit == "visualdelay") {
     visual_delay_ = level;
-  } else if (level == 0 && disabledWindows.Compare(sBit))  // "No w1" etc.
+  } else if (level == 0 && disabled_windows.Compare(bit))  // "No w1" etc.
   {
     // We come into this condition if there is at least a single window present
     // but there may be more. To get all of the windows, we go through in a loop
     // to extract all of them.
-    static Regex allDisabledWindows("(w[1-5])(.*)$");
-    std::string input = sBit;
+    static Regex all_disabled_windows("(w[1-5])(.*)$");
+    std::string input = bit;
     while (true) {
-      if (!allDisabledWindows.Compare(input, matches)) {
+      if (!all_disabled_windows.Compare(input, matches)) {
         break;
       }
 
@@ -1502,13 +1501,13 @@ bool PlayerOptions::FromOneModString(
     }
   }
   // deprecated mods/left in for compatibility
-  else if (sBit == "converge") {
+  else if (bit == "converge") {
     SET_FLOAT(scrolls_[SCROLL_CENTERED])
   }
   // end of the list
   else {
     // Maybe the original string is a noteskin name with a space. -Kyz
-    std::string name = sOneMod;
+    std::string name = one_mod;
     MakeLower(name);
     if (NOTESKIN && NOTESKIN->DoesNoteSkinExist(name)) {
       note_skin_ = name;
@@ -1519,45 +1518,45 @@ bool PlayerOptions::FromOneModString(
   return true;
 }
 
-void NextFloat(float fValues[], int size) {
+void NextFloat(float values[], int size) {
   int index = -1;
   for (int i = 0; i < size; i++) {
-    if (fValues[i] == 1) {
+    if (values[i] == 1) {
       index = i;
       break;
     }
   }
 
   for (int i = 0; i < size; i++) {
-    fValues[i] = 0;
+    values[i] = 0;
   }
 
   if (index ==
       size - 1)  // if true, then the last float in the list was selected
     ;            // leave all off
   else {
-    fValues[index + 1] = 1;
+    values[index + 1] = 1;
   }
 }
 
-void NextBool(bool bValues[], int size) {
+void NextBool(bool values[], int size) {
   int index = -1;
   for (int i = 0; i < size; i++) {
-    if (bValues[i]) {
+    if (values[i]) {
       index = i;
       break;
     }
   }
 
   for (int i = 0; i < size; i++) {
-    bValues[i] = false;
+    values[i] = false;
   }
 
   if (index ==
       size - 1)  // if true, then the last float in the list was selected
     ;            // leave all off
   else {
-    bValues[index + 1] = 1;
+    values[index + 1] = 1;
   }
 }
 
@@ -1601,31 +1600,31 @@ void PlayerOptions::ChooseRandomModifiers() {
 }
 
 void PlayerOptions::ToggleOneTurn(Turn t) {
-  bool bWasOn = turns_[t];
+  bool was_on = turns_[t];
   ZERO(turns_);
-  turns_[t] = !bWasOn;
+  turns_[t] = !was_on;
 }
 
-float PlayerOptions::GetReversePercentForColumn(int iCol) const {
+float PlayerOptions::GetReversePercentForColumn(int col) const {
   float f = 0;
   ASSERT(pn_ == PLAYER_1 || pn_ == PLAYER_2);
   ASSERT(GAMESTATE->GetCurrentStyle(pn_) != nullptr);
-  int iNumCols = GAMESTATE->GetCurrentStyle(pn_)->cols_per_player_;
+  int num_cols = GAMESTATE->GetCurrentStyle(pn_)->cols_per_player_;
 
   f += scrolls_[SCROLL_REVERSE];
-  f += reverse_[iCol];
+  f += reverse_[col];
 
-  if (iCol >= iNumCols / 2) {
+  if (col >= num_cols / 2) {
     f += scrolls_[SCROLL_SPLIT];
   }
 
-  if ((iCol % 2) == 1) {
+  if ((col % 2) == 1) {
     f += scrolls_[SCROLL_ALTERNATE];
   }
 
-  int iFirstCrossCol = iNumCols / 4;
-  int iLastCrossCol = iNumCols - 1 - iFirstCrossCol;
-  if (iCol >= iFirstCrossCol && iCol <= iLastCrossCol) {
+  int first_cross_col = num_cols / 4;
+  int last_cross_col = num_cols - 1 - first_cross_col;
+  if (col >= first_cross_col && col <= last_cross_col) {
     f += scrolls_[SCROLL_CROSS];
   }
 
@@ -1837,11 +1836,11 @@ PlayerOptions& PlayerOptions::operator=(const PlayerOptions& other) {
 }
 
 bool PlayerOptions::IsEasierForSongAndSteps(
-    Song* pSong, Steps* pSteps, PlayerNumber pn) const {
-  if (time_spacing_ && pSteps->HasSignificantTimingChanges()) {
+    Song* song, Steps* steps, PlayerNumber pn) const {
+  if (time_spacing_ && steps->HasSignificantTimingChanges()) {
     return true;
   }
-  const RadarValues& rv = pSteps->GetRadarValues(pn);
+  const RadarValues& rv = steps->GetRadarValues(pn);
   if (transforms_[TRANSFORM_NOHOLDS] && rv[RadarCategory_Holds] > 0) {
     return true;
   }
@@ -1891,12 +1890,12 @@ bool PlayerOptions::IsEasierForSongAndSteps(
   }
 
   // Removing attacks is easier in general.
-  if ((no_attack_ && pSteps->HasAttacks()) || rand_attack_) {
+  if ((no_attack_ && steps->HasAttacks()) || rand_attack_) {
     return true;
   }
 
-  if (cover_ && (!pSong->GetBackgroundChanges(BACKGROUND_LAYER_1).empty() ||
-                 !pSong->GetForegroundChanges().empty())) {
+  if (cover_ && (!song->GetBackgroundChanges(BACKGROUND_LAYER_1).empty() ||
+                 !song->GetForegroundChanges().empty())) {
     return true;
   }
 
@@ -1909,13 +1908,13 @@ bool PlayerOptions::IsEasierForSongAndSteps(
 
     DisplayBpms bpms;
     if (GAMESTATE->IsCourseMode()) {
-      Trail* pTrail = GAMESTATE->cur_course_->GetTrail(
+      Trail* trail = GAMESTATE->cur_course_->GetTrail(
           GAMESTATE->GetCurrentStyle(pn_)->steps_type_);
-      pTrail->GetDisplayBpms(bpms);
+      trail->GetDisplayBpms(bpms);
     } else {
       GAMESTATE->cur_song_->GetDisplayBpms(bpms);
     }
-    pSong->GetDisplayBpms(bpms);
+    song->GetDisplayBpms(bpms);
 
     // maximum BPM is obfuscated, so M-mods will set a playable speed.
     if (bpms.GetMax() <= 0) {
@@ -1929,44 +1928,43 @@ bool PlayerOptions::IsEasierForSongAndSteps(
 }
 
 bool PlayerOptions::IsEasierForCourseAndTrail(
-    Course* pCourse, Trail* pTrail) const {
-  ASSERT(pCourse != nullptr);
-  ASSERT(pTrail != nullptr);
+    Course* course, Trail* trail) const {
+  ASSERT(course != nullptr);
+  ASSERT(trail != nullptr);
 
   return std::any_of(
-      pTrail->entries_.begin(), pTrail->entries_.end(),
-      [&](const TrailEntry& e) {
+      trail->entries_.begin(), trail->entries_.end(), [&](const TrailEntry& e) {
         return e.song_ && IsEasierForSongAndSteps(e.song_, e.steps_, PLAYER_1);
       });
 }
 
-void PlayerOptions::GetLocalizedMods(std::vector<std::string>& AddTo) const {
-  std::vector<std::string> vMods;
-  GetMods(vMods);
-  for (const std::string& sOneMod : vMods) {
-    ASSERT(!sOneMod.empty());
+void PlayerOptions::GetLocalizedMods(std::vector<std::string>& add_to) const {
+  std::vector<std::string> mods;
+  GetMods(mods);
+  for (const std::string& one_mod : mods) {
+    ASSERT(!one_mod.empty());
 
-    std::vector<std::string> asTokens;
-    split(sOneMod, " ", asTokens);
+    std::vector<std::string> tokens;
+    split(one_mod, " ", tokens);
 
-    if (asTokens.empty()) {
+    if (tokens.empty()) {
       continue;
     }
 
     // Strip the approach speed token, if any
-    if (asTokens[0][0] == '*') {
-      asTokens.erase(asTokens.begin());
+    if (tokens[0][0] == '*') {
+      tokens.erase(tokens.begin());
     }
 
     // capitalize NoteSkin names
-    asTokens.back() = Capitalize(asTokens.back());
+    tokens.back() = Capitalize(tokens.back());
 
     /* Theme the mod name (the last string).  Allow this to not exist, since
      * characters might use modifiers that don't exist in the theme. */
-    asTokens.back() = CommonMetrics::LocalizeOptionItem(asTokens.back(), true);
+    tokens.back() = CommonMetrics::LocalizeOptionItem(tokens.back(), true);
 
-    std::string sLocalizedMod = join(" ", asTokens);
-    AddTo.push_back(sLocalizedMod);
+    std::string localized_mod = join(" ", tokens);
+    add_to.push_back(localized_mod);
   }
 }
 
@@ -2065,17 +2063,17 @@ void PlayerOptions::ResetPrefs(ResetPrefsType type) {
 class LunaPlayerOptions : public Luna<PlayerOptions> {
  public:
   static int IsEasierForSongAndSteps(T* p, lua_State* L) {
-    Song* pSong = Luna<Song>::check(L, 1);
-    Steps* pSteps = Luna<Steps>::check(L, 2);
+    Song* song = Luna<Song>::check(L, 1);
+    Steps* steps = Luna<Steps>::check(L, 2);
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 3);
-    lua_pushboolean(L, p->IsEasierForSongAndSteps(pSong, pSteps, pn));
+    lua_pushboolean(L, p->IsEasierForSongAndSteps(song, steps, pn));
     return 1;
   }
   static int IsEasierForCourseAndTrail(T* p, lua_State* L) {
     // course, trail
-    Course* pCourse = Luna<Course>::check(L, 1);
-    Trail* pTrail = Luna<Trail>::check(L, 2);
-    lua_pushboolean(L, p->IsEasierForCourseAndTrail(pCourse, pTrail));
+    Course* course = Luna<Course>::check(L, 1);
+    Trail* trail = Luna<Trail>::check(L, 2);
+    lua_pushboolean(L, p->IsEasierForCourseAndTrail(course, trail));
     return 1;
   }
 
@@ -2661,14 +2659,15 @@ class LunaPlayerOptions : public Luna<PlayerOptions> {
   DEFINE_METHOD(UsingReverse, scrolls_[PlayerOptions::SCROLL_REVERSE] == 1.0f);
 
   static int GetReversePercentForColumn(T* p, lua_State* L) {
-    const int colNum = IArg(1);
-    const int numColumns = GAMESTATE->GetCurrentStyle(p->pn_)->cols_per_player_;
+    const int col_num = IArg(1);
+    const int num_columns =
+        GAMESTATE->GetCurrentStyle(p->pn_)->cols_per_player_;
 
     // We don't want to go outside the bounds.
-    if (colNum < 0 || colNum > numColumns) {
+    if (col_num < 0 || col_num > num_columns) {
       lua_pushnil(L);
     } else {
-      lua_pushnumber(L, p->GetReversePercentForColumn(colNum));
+      lua_pushnumber(L, p->GetReversePercentForColumn(col_num));
     }
 
     return 1;

@@ -8,10 +8,10 @@ REGISTER_ACTOR_CLASS(Quad);
 
 Quad::Quad() { Load(TEXTUREMAN->GetDefaultTextureID()); }
 
-void Quad::LoadFromNode(const XNode* pNode) {
+void Quad::LoadFromNode(const XNode* node) {
   // HACK: Bypass Sprite's texture loading.  Sprite should really derive from
   // Quad.
-  Actor::LoadFromNode(pNode);
+  Actor::LoadFromNode(node);
 }
 
 /*

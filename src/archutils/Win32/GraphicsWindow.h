@@ -14,7 +14,7 @@ namespace GraphicsWindow {
 /** @brief Set up, and create a hidden window.
  *
  * This only needs to be called once. */
-void Initialize(bool bD3D);
+void Initialize(bool d3d);
 
 /** @brief Shut down completely. */
 void Shutdown();
@@ -29,7 +29,7 @@ std::string SetScreenMode(const VideoModeParams& p);
  *
  * This also updates VideoModeParams (returned by GetParams). */
 void CreateGraphicsWindow(
-    const VideoModeParams& p, bool bForceRecreateWindow = false);
+    const VideoModeParams& p, bool force_recreate_window = false);
 void DestroyGraphicsWindow();
 
 void GetDisplaySpecs(DisplaySpecs& out);

@@ -69,11 +69,11 @@ class StepParityGenerator {
   /// @param columns The foot placement for the resulting state
   /// @return The resulting state
   State* initResultState(
-      State* initialState, Row& row, const FootPlacement& columns);
+      State* initial_state, Row& row, const FootPlacement& columns);
 
   void mergeInitialAndResultPosition(
-      State* initialState, State* resultState, const FootPlacement& columns,
-      int columnCount);
+      State* initial_state, State* result_state, const FootPlacement& columns,
+      int column_count);
 
   /// @brief Returns a pointer to a vector of foot possible foot placements for
   /// the given row. Utilizes the permuteCache to re-use vectors. The returned
@@ -99,7 +99,7 @@ class StepParityGenerator {
   void AddRow(RowCounter& counter);
   Row CreateRow(RowCounter& counter);
   std::uint64_t getStateCacheKey(State* state);
-  StepParityNode* addNode(State* state, float second, int rowIndex);
+  StepParityNode* addNode(State* state, float second, int row_index);
 };
 };  // namespace StepParity
 

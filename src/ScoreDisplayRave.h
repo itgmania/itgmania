@@ -12,10 +12,10 @@ class ScoreDisplayRave : public ScoreDisplay {
  public:
   ScoreDisplayRave();
   virtual void Init(
-      const PlayerState* pPlayerState,
-      const PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state,
+      const PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDelta);
+  virtual void Update(float delta);
 
  protected:
   AutoActor spr_frame_base_;

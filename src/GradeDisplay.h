@@ -12,7 +12,7 @@ struct lua_State;
 /** @brief Grade shown on ScreenEvaluation. */
 class GradeDisplay : public ActorFrame {
  public:
-  virtual void Load(std::string sMetricsGroup);
+  virtual void Load(std::string metrics_group);
   void SetGrade(Grade g);
 
   virtual GradeDisplay* Copy() const;

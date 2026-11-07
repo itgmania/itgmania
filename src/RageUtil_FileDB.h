@@ -84,16 +84,16 @@ struct FileSet {
   FileSet() { filled_ = true; }
 
   void GetFilesMatching(
-      const std::string& sBeginning, const std::string& sContaining,
-      const std::string& sEnding, std::vector<std::string>& asOut,
-      bool bOnlyDirs) const;
+      const std::string& beginning, const std::string& containing,
+      const std::string& ending, std::vector<std::string>& out,
+      bool only_dirs) const;
   void GetFilesEqualTo(
       const std::string& pat, std::vector<std::string>& out,
-      bool bOnlyDirs) const;
+      bool only_dirs) const;
 
-  RageFileManager::FileType GetFileType(const std::string& sPath) const;
-  int GetFileSize(const std::string& sPath) const;
-  int GetFileHash(const std::string& sPath) const;
+  RageFileManager::FileType GetFileType(const std::string& path) const;
+  int GetFileSize(const std::string& path) const;
+  int GetFileHash(const std::string& path) const;
 };
 /** @brief A container for a file listing. */
 class FilenameDB {
@@ -102,39 +102,39 @@ class FilenameDB {
   virtual ~FilenameDB() { FlushDirCache(); }
 
   void AddFile(
-      const std::string& sPath, int iSize, int iHash, void* pPriv = nullptr);
-  void DelFile(const std::string& sPath);
-  void* GetFilePriv(const std::string& sPath);
+      const std::string& path, int size, int hash, void* priv = nullptr);
+  void DelFile(const std::string& path);
+  void* GetFilePriv(const std::string& path);
 
   /* This handles at most two * wildcards.  If we need anything more
    * complicated, we'll need to use fnmatch or regex. */
   void GetFilesSimpleMatch(
-      const std::string& sDir, const std::string& sFile,
-      std::vector<std::string>& asOut, bool bOnlyDirs);
+      const std::string& dir, const std::string& file,
+      std::vector<std::string>& out, bool only_dirs);
 
   /* Search for "path" case-insensitively and replace it with the correct
    * case.  If only a portion of the path exists, resolve as much as possible.
    * Return true if the entire path was matched. */
-  bool ResolvePath(std::string& sPath);
+  bool ResolvePath(std::string& path);
 
-  RageFileManager::FileType GetFileType(const std::string& sPath);
-  int GetFileSize(const std::string& sPath);
-  int GetFileHash(const std::string& sFilePath);
+  RageFileManager::FileType GetFileType(const std::string& path);
+  int GetFileSize(const std::string& path);
+  int GetFileHash(const std::string& file_path);
   void GetDirListing(
-      const std::string& sPath, std::vector<std::string>& asAddTo,
-      bool bOnlyDirs, bool bReturnPathToo);
+      const std::string& path, std::vector<std::string>& add_to, bool only_dirs,
+      bool return_path_too);
 
-  void FlushDirCache(const std::string& sDir = std::string());
+  void FlushDirCache(const std::string& dir = std::string());
 
   void GetFileSetCopy(const std::string& dir, FileSet& out);
   /* Probably slow, so override it. */
-  virtual void CacheFile(const std::string& sPath);
+  virtual void CacheFile(const std::string& path);
 
  protected:
   RageEvent mutex_;
 
-  const File* GetFile(const std::string& sPath);
-  FileSet* GetFileSet(const std::string& sDir, bool create = true);
+  const File* GetFile(const std::string& path);
+  FileSet* GetFileSet(const std::string& dir, bool create = true);
 
   /* Directories we have cached: */
   std::map<std::string, FileSet*> dirs_;
@@ -142,12 +142,12 @@ class FilenameDB {
   int expire_seconds_;
 
   void GetFilesEqualTo(
-      const std::string& sDir, const std::string& sName,
-      std::vector<std::string>& asOut, bool bOnlyDirs);
+      const std::string& dir, const std::string& name,
+      std::vector<std::string>& out, bool only_dirs);
   void GetFilesMatching(
-      const std::string& sDir, const std::string& sBeginning,
-      const std::string& sContaining, const std::string& sEnding,
-      std::vector<std::string>& asOut, bool bOnlyDirs);
+      const std::string& dir, const std::string& beginning,
+      const std::string& containing, const std::string& ending,
+      std::vector<std::string>& out, bool only_dirs);
   void DelFileSet(std::map<std::string, FileSet*>::iterator dir);
 
   /* The given path wasn't cached.  Cache it. */

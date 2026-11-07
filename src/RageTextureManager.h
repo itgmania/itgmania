@@ -23,14 +23,14 @@ struct RageTextureManagerPrefs {
         high_resolution_textures_(true),
         mip_maps_(false) {}
   RageTextureManagerPrefs(
-      int iTextureColorDepth, int iMovieColorDepth, bool bDelayedDelete,
-      int iMaxTextureResolution, bool bHighResolutionTextures, bool bMipMaps)
-      : texture_color_depth_(iTextureColorDepth),
-        movie_color_depth_(iMovieColorDepth),
-        delayed_delete_(bDelayedDelete),
-        max_texture_resolution_(iMaxTextureResolution),
-        high_resolution_textures_(bHighResolutionTextures),
-        mip_maps_(bMipMaps) {}
+      int texture_color_depth, int movie_color_depth, bool delayed_delete,
+      int max_texture_resolution, bool high_resolution_textures, bool mip_maps)
+      : texture_color_depth_(texture_color_depth),
+        movie_color_depth_(movie_color_depth),
+        delayed_delete_(delayed_delete),
+        max_texture_resolution_(max_texture_resolution),
+        high_resolution_textures_(high_resolution_textures),
+        mip_maps_(mip_maps) {}
 
   bool operator!=(const RageTextureManagerPrefs& rhs) const {
     return texture_color_depth_ != rhs.texture_color_depth_ ||
@@ -46,13 +46,13 @@ class RageTextureManager {
  public:
   RageTextureManager();
   ~RageTextureManager();
-  void Update(float fDeltaTime);
+  void Update(float delta_time);
 
-  RageTexture* LoadTexture(RageTextureID ID);
-  RageTexture* CopyTexture(RageTexture* pCopy);  // returns a ref to the same
-                                                 // texture, not a deep copy
-  bool IsTextureRegistered(RageTextureID ID) const;
-  void RegisterTexture(RageTextureID ID, RageTexture* p);
+  RageTexture* LoadTexture(RageTextureID id);
+  RageTexture* CopyTexture(RageTexture* copy);  // returns a ref to the same
+                                                // texture, not a deep copy
+  bool IsTextureRegistered(RageTextureID id) const;
+  void RegisterTexture(RageTextureID id, RageTexture* p);
   void UnloadTexture(RageTexture* t);
   void ReloadAll();
 
@@ -74,7 +74,7 @@ class RageTextureManager {
 
   void InvalidateTextures();
 
-  void AdjustTextureID(RageTextureID& ID) const;
+  void AdjustTextureID(RageTextureID& id) const;
 
   void DisableOddDimensionWarning() {}
   void EnableOddDimensionWarning() {}
@@ -87,7 +87,7 @@ class RageTextureManager {
   void DeleteTexture(RageTexture* t);
   enum GCType { screen_changed, delayed_delete };
   void GarbageCollect(GCType type);
-  RageTexture* LoadTextureInternal(RageTextureID ID);
+  RageTexture* LoadTextureInternal(RageTextureID id);
 
   RageTextureManagerPrefs prefs_;
   RageTextureID::TexPolicy texture_policy_;

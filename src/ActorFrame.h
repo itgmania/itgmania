@@ -18,18 +18,18 @@ class ActorFrame : public Actor {
 
   /** @brief Set up the initial state. */
   virtual void InitState();
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   virtual ActorFrame* Copy() const;
 
   /**
    * @brief Add a new child to the ActorFrame.
    * @param pActor the new Actor to add. */
-  virtual void AddChild(Actor* pActor);
+  virtual void AddChild(Actor* actor);
   /**
    * @brief Remove the specified child from the ActorFrame.
    * @param pActor the Actor to remove. */
-  virtual void RemoveChild(Actor* pActor);
-  Actor* GetChild(const std::string& sName);
+  virtual void RemoveChild(Actor* actor);
+  Actor* GetChild(const std::string& name);
   std::vector<Actor*> GetChildren() { return sub_actors_; }
   int GetNumChildren() const { return sub_actors_.size(); }
 
@@ -39,51 +39,51 @@ class ActorFrame : public Actor {
    * @brief Move a particular actor to the tail.
    * @param pActor the actor to go to the tail.
    */
-  void MoveToTail(Actor* pActor);
+  void MoveToTail(Actor* actor);
   void SortByDrawOrder();
   void SetDrawByZPosition(bool b);
 
-  void SetDrawFunction(const LuaReference& DrawFunction) {
-    draw_function_ = DrawFunction;
+  void SetDrawFunction(const LuaReference& draw_function) {
+    draw_function_ = draw_function;
   }
-  void SetUpdateFunction(const LuaReference& UpdateFunction) {
-    update_function_ = UpdateFunction;
+  void SetUpdateFunction(const LuaReference& update_function) {
+    update_function_ = update_function;
   }
 
   LuaReference GetDrawFunction() const { return draw_function_; }
   virtual bool AutoLoadChildren() const {
     return false;
   }  // derived classes override to automatically LoadChildrenFromNode
-  void DeleteChildrenWhenDone(bool bDelete = true) {
-    delete_children_ = bDelete;
+  void DeleteChildrenWhenDone(bool b_delete = true) {
+    delete_children_ = b_delete;
   }
   void DeleteAllChildren();
 
   // Commands
   virtual void PushSelf(lua_State* L);
   void PushChildrenTable(lua_State* L);
-  void PushChildTable(lua_State* L, const std::string& sName);
+  void PushChildTable(lua_State* L, const std::string& name);
   void PlayCommandOnChildren(
-      const std::string& sCommandName,
-      const LuaReference* pParamTable = nullptr);
+      const std::string& command_name,
+      const LuaReference* param_table = nullptr);
   void PlayCommandOnLeaves(
-      const std::string& sCommandName,
-      const LuaReference* pParamTable = nullptr);
+      const std::string& command_name,
+      const LuaReference* param_table = nullptr);
 
   virtual void RunCommandsRecursively(
-      const LuaReference& cmds, const LuaReference* pParamTable = nullptr);
+      const LuaReference& cmds, const LuaReference* param_table = nullptr);
   virtual void RunCommandsOnChildren(
       const LuaReference& cmds,
-      const LuaReference* pParamTable = nullptr); /* but not on self */
+      const LuaReference* param_table = nullptr); /* but not on self */
   void RunCommandsOnChildren(
-      const apActorCommands& cmds, const LuaReference* pParamTable = nullptr) {
-    this->RunCommandsOnChildren(*cmds, pParamTable);
+      const apActorCommands& cmds, const LuaReference* param_table = nullptr) {
+    this->RunCommandsOnChildren(*cmds, param_table);
   }  // convenience
   virtual void RunCommandsOnLeaves(
       const LuaReference& cmds,
-      const LuaReference* pParamTable = nullptr); /* but not on self */
+      const LuaReference* param_table = nullptr); /* but not on self */
 
-  virtual void UpdateInternal(float fDeltaTime);
+  virtual void UpdateInternal(float delta_time);
   virtual void BeginDraw();
   virtual void DrawPrimitives();
   virtual void EndDraw();
@@ -100,10 +100,10 @@ class ActorFrame : public Actor {
     }
   }
   float GetUpdateRate() { return update_rate_; }
-  void SetFOV(float fFOV) { fov_ = fFOV; }
-  void SetVanishPoint(float fX, float fY) {
-    vanish_x_ = fX;
-    vanish_y_ = fY;
+  void SetFOV(float fov) { fov_ = fov; }
+  void SetVanishPoint(float x, float y) {
+    vanish_x_ = x;
+    vanish_y_ = y;
   }
 
   void SetAmbientLightColor(RageColor c) { ambient_color_ = c; }
@@ -119,14 +119,14 @@ class ActorFrame : public Actor {
 
   virtual void HandleMessage(const Message& msg);
   virtual void RunCommands(
-      const LuaReference& cmds, const LuaReference* pParamTable = nullptr);
+      const LuaReference& cmds, const LuaReference* param_table = nullptr);
   void RunCommands(
-      const apActorCommands& cmds, const LuaReference* pParamTable = nullptr) {
-    this->RunCommands(*cmds, pParamTable);
+      const apActorCommands& cmds, const LuaReference* param_table = nullptr) {
+    this->RunCommands(*cmds, param_table);
   }  // convenience
 
  protected:
-  void LoadChildrenFromNode(const XNode* pNode);
+  void LoadChildrenFromNode(const XNode* node);
 
   /** @brief The children Actors used by the ActorFrame. */
   std::vector<Actor*> sub_actors_;

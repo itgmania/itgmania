@@ -25,14 +25,14 @@ void ScreenSongOptions::Init() {
 }
 
 void ScreenSongOptions::ExportOptions(
-    int iRow, const std::vector<PlayerNumber>& vpns) {
+    int row, const std::vector<PlayerNumber>& vpns) {
   PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
-  PlayerState* pPS = GAMESTATE->player_state_[pn];
-  const FailType ft = pPS->player_options_.GetPreferred().fail_type_;
+  PlayerState* ps = GAMESTATE->player_state_[pn];
+  const FailType ft = ps->player_options_.GetPreferred().fail_type_;
 
-  ScreenOptionsMaster::ExportOptions(iRow, vpns);
+  ScreenOptionsMaster::ExportOptions(row, vpns);
 
-  if (ft != pPS->player_options_.GetPreferred().fail_type_) {
+  if (ft != ps->player_options_.GetPreferred().fail_type_) {
     GAMESTATE->fail_type_was_explicitly_set_ = true;
   }
 }

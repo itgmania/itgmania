@@ -29,19 +29,19 @@ class JoystickDevice : public HIDDevice {
   std::vector<Joystick> sticks_;
 
  protected:
-  bool AddLogicalDevice(int usagePage, int usage);
+  bool AddLogicalDevice(int usage_page, int usage);
   void AddElement(
-      int usagePage, int usage, IOHIDElementCookie cookie,
+      int usage_page, int usage, IOHIDElementCookie cookie,
       const CFDictionaryRef properties);
   void Open();
   bool InitDevice(int vid, int pid);
 
  public:
   void GetButtonPresses(
-      std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+      std::vector<DeviceInput>& presses, IOHIDElementCookie cookie, int value,
       const RageTimer& now) const;
-  int AssignIDs(InputDevice startID);
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
+  int AssignIDs(InputDevice start_id);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices) const;
 };
 
 #endif

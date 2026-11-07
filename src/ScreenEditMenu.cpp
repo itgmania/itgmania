@@ -87,41 +87,41 @@ void ScreenEditMenu::Init() {
   }
 }
 
-void ScreenEditMenu::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_RefreshSelector) {
+void ScreenEditMenu::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_RefreshSelector) {
     selector_.RefreshAll();
     RefreshNumStepsLoadedFromProfile();
   } else if (
-      SM == SM_Success &&
+      sm == SM_Success &&
       selector_.GetSelectedAction() == EditMenuAction_Delete) {
     LOG->Trace("Delete successful; deleting steps from memory");
 
-    Song* pSong = GAMESTATE->cur_song_;
-    Steps* pStepsToDelete = GAMESTATE->cur_steps_[PLAYER_1];
+    Song* song = GAMESTATE->cur_song_;
+    Steps* steps_to_delete = GAMESTATE->cur_steps_[PLAYER_1];
     FOREACH_PlayerNumber(pn) { GAMESTATE->cur_steps_[pn].Set(nullptr); }
-    bool bSaveSong = !pStepsToDelete->WasLoadedFromProfile();
-    pSong->DeleteSteps(pStepsToDelete);
-    SONGMAN->Invalidate(pSong);
+    bool save_song = !steps_to_delete->WasLoadedFromProfile();
+    song->DeleteSteps(steps_to_delete);
+    SONGMAN->Invalidate(song);
 
     /* Only save to the main .SM file if the steps we're deleting
      * were loaded from it. */
-    if (bSaveSong) {
-      pSong->Save();
+    if (save_song) {
+      song->Save();
       SCREENMAN->ZeroNextUpdate();
     }
     SCREENMAN->SendMessageToTopScreen(SM_RefreshSelector);
   } else if (
-      SM == SM_Failure &&
+      sm == SM_Failure &&
       selector_.GetSelectedAction() == EditMenuAction_Delete) {
     LOG->Trace("Delete failed; not deleting steps");
-  } else if (SM == SM_BackFromEditDescription) {
+  } else if (sm == SM_BackFromEditDescription) {
     if (!ScreenTextEntry::cancelled_last_) {
       SOUND->StopMusic();
       StartTransitioningScreen(SM_GoToNextScreen);
     }
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 bool ScreenEditMenu::MenuUp(const InputEventPlus&) {
@@ -154,8 +154,8 @@ bool ScreenEditMenu::MenuRight(const InputEventPlus&) {
   return true;
 }
 
-static std::string GetCopyDescription(const Steps* pSourceSteps) {
-  std::string s = pSourceSteps->GetDescription();
+static std::string GetCopyDescription(const Steps* source_steps) {
+  std::string s = source_steps->GetDescription();
   return s;
 }
 
@@ -200,43 +200,43 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
     return true;
   }
 
-  Song* pSong = selector_.GetSelectedSong();
+  Song* song = selector_.GetSelectedSong();
   StepsType st = selector_.GetSelectedStepsType();
   Difficulty dc = selector_.GetSelectedDifficulty();
-  Steps* pSteps = selector_.GetSelectedSteps();
+  Steps* steps = selector_.GetSelectedSteps();
   //	StepsType soureNT	= m_Selector.GetSelectedSourceStepsType();
   //	Difficulty sourceDiff	= m_Selector.GetSelectedSourceDifficulty();
-  Steps* pSourceSteps = selector_.GetSelectedSourceSteps();
+  Steps* source_steps = selector_.GetSelectedSourceSteps();
   EditMenuAction action = selector_.GetSelectedAction();
   if (st == StepsType_Invalid) {
     ScreenPrompt::Prompt(SM_None, INVALID_SELECTION);
     return true;
   }
 
-  GAMESTATE->cur_song_.Set(pSong);
+  GAMESTATE->cur_song_.Set(song);
   GAMESTATE->cur_course_.Set(nullptr);
   GAMESTATE->SetCurrentStyle(
       GAMEMAN->GetEditorStyleForStepsType(st), PLAYER_INVALID);
-  GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+  GAMESTATE->cur_steps_[PLAYER_1].Set(steps);
 
   // handle error cases
-  if (!pSong->HasMusic()) {
+  if (!song->HasMusic()) {
     ScreenPrompt::Prompt(SM_None, MISSING_MUSIC_FILE);
     return true;
   }
 
   switch (selector_.EDIT_MODE) {
     case EditMode_Full: {
-      std::string sDir = pSong->GetSongDir();
-      std::string sTempFile = sDir + TEMP_FILE_NAME;
+      std::string dir = song->GetSongDir();
+      std::string temp_file = dir + TEMP_FILE_NAME;
       RageFile file;
-      if (!file.Open(sTempFile, RageFile::WRITE)) {
+      if (!file.Open(temp_file, RageFile::WRITE)) {
         ScreenPrompt::Prompt(SM_None, SONG_DIR_READ_ONLY);
         return true;
       }
 
       file.Close();
-      FILEMAN->Remove(sTempFile);
+      FILEMAN->Remove(temp_file);
       break;
     }
     default:
@@ -245,8 +245,8 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
 
   switch (action) {
     case EditMenuAction_Delete: {
-      ASSERT(pSteps != nullptr);
-      if (pSteps->IsAutogen()) {
+      ASSERT(steps != nullptr);
+      if (steps->IsAutogen()) {
         SCREENMAN->PlayInvalidSound();
         SCREENMAN->SystemMessage(DELETED_AUTOGEN_STEPS.GetValue());
         return true;
@@ -262,7 +262,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
     case EditMenuAction_Practice:
       break;
     case EditMenuAction_Delete:
-      ASSERT(pSteps != nullptr);
+      ASSERT(steps != nullptr);
       ScreenPrompt::Prompt(
           SM_None,
           STEPS_WILL_BE_LOST.GetValue() + "\n\n" +
@@ -270,17 +270,17 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
           PROMPT_YES_NO, ANSWER_NO);
       break;
     case EditMenuAction_LoadAutosave:
-      if (pSong) {
+      if (song) {
         FOREACH_PlayerNumber(pn) { GAMESTATE->cur_steps_[pn].Set(nullptr); }
-        pSong->LoadAutosaveFile();
-        SONGMAN->Invalidate(pSong);
+        song->LoadAutosaveFile();
+        SONGMAN->Invalidate(song);
         SCREENMAN->SendMessageToTopScreen(SM_RefreshSelector);
       }
       break;
     case EditMenuAction_Create:
-      ASSERT(!pSteps);
+      ASSERT(!steps);
       {
-        pSteps = pSong->CreateSteps();
+        steps = song->CreateSteps();
 
         EditMode mode = selector_.EDIT_MODE;
         switch (mode) {
@@ -289,32 +289,31 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
           case EditMode_Full:
             break;
           case EditMode_Home:
-            pSteps->SetLoadedFromProfile(ProfileSlot_Machine);
+            steps->SetLoadedFromProfile(ProfileSlot_Machine);
             break;
           case EditMode_Practice:
             FAIL_M("Cannot create steps in EditMode_Practice");
         }
 
-        std::string sEditName;
-        if (pSourceSteps) {
-          pSteps->CopyFrom(pSourceSteps, st, pSong->music_length_seconds_);
-          sEditName = GetCopyDescription(pSourceSteps);
+        std::string edit_name;
+        if (source_steps) {
+          steps->CopyFrom(source_steps, st, song->music_length_seconds_);
+          edit_name = GetCopyDescription(source_steps);
         } else {
-          pSteps->CreateBlank(st);
-          pSteps->SetMeter(1);
-          sEditName = "";
+          steps->CreateBlank(st);
+          steps->SetMeter(1);
+          edit_name = "";
         }
 
-        pSteps->SetDifficulty(
-            dc);  // override difficulty with the user's choice
-        SongUtil::MakeUniqueEditDescription(pSong, st, sEditName);
-        pSteps->SetDescription(sEditName);
-        pSong->AddSteps(pSteps);
+        steps->SetDifficulty(dc);  // override difficulty with the user's choice
+        SongUtil::MakeUniqueEditDescription(song, st, edit_name);
+        steps->SetDescription(edit_name);
+        song->AddSteps(steps);
 
         SCREENMAN->PlayStartSound();
 
-        GAMESTATE->cur_song_.Set(pSong);
-        GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+        GAMESTATE->cur_song_.Set(song);
+        GAMESTATE->cur_steps_[PLAYER_1].Set(steps);
         GAMESTATE->cur_course_.Set(nullptr);
       }
       break;
@@ -328,10 +327,10 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
     case EditMenuAction_Create:
     case EditMenuAction_Practice: {
       // Prepare for ScreenEdit
-      ASSERT(pSteps != nullptr);
-      bool bPromptToNameSteps =
+      ASSERT(steps != nullptr);
+      bool prompt_to_name_steps =
           (action == EditMenuAction_Create && dc == Difficulty_Edit);
-      if (bPromptToNameSteps) {
+      if (prompt_to_name_steps) {
         ScreenTextEntry::TextEntry(
             SM_BackFromEditDescription, ENTER_EDIT_DESCRIPTION,
             GAMESTATE->cur_steps_[0]->GetDescription(),

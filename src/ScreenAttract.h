@@ -20,13 +20,13 @@ class ScreenAttract : public ScreenWithMenuElements {
   virtual void BeginScreen();
 
   static bool AttractInput(
-      const InputEventPlus& input, ScreenWithMenuElements* pScreen);
-  static void GoToStartScreen(std::string sScreenName);
-  static void SetAttractVolume(bool bInAttract);
+      const InputEventPlus& input, ScreenWithMenuElements* screen);
+  static void GoToStartScreen(std::string screen_name);
+  static void SetAttractVolume(bool in_attract);
 
   virtual bool Input(const InputEventPlus& input);
-  virtual void HandleScreenMessage(const ScreenMessage SM);
-  virtual void Cancel(ScreenMessage smSendWhenDone);
+  virtual void HandleScreenMessage(const ScreenMessage sm);
+  virtual void Cancel(ScreenMessage send_when_done);
 
   virtual ScreenType GetScreenType() const { return attract; }
 

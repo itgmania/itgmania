@@ -126,7 +126,7 @@ class PrefsManager {
 
   void Init();
 
-  void SetCurrentGame(const std::string& sGame);
+  void SetCurrentGame(const std::string& game);
   std::string GetCurrentGame() { return current_game_; }
 
  protected:
@@ -370,9 +370,9 @@ class PrefsManager {
   Preference<bool> show_theme_errors_;
 
   void ReadPrefsFromIni(
-      const IniFile& ini, const std::string& sSection, bool bIsStatic);
-  void ReadGamePrefsFromIni(const std::string& sIni);
-  void ReadDefaultsFromIni(const IniFile& ini, const std::string& sSection);
+      const IniFile& ini, const std::string& section, bool is_static);
+  void ReadGamePrefsFromIni(const std::string& ini);
+  void ReadDefaultsFromIni(const IniFile& ini, const std::string& section);
   void SavePrefsToIni(IniFile& ini);
 
   void ReadPrefsFromDisk();
@@ -387,9 +387,8 @@ class PrefsManager {
 
  protected:
   void ReadPrefsFromFile(
-      const std::string& sIni, const std::string& sSection, bool bIsStatic);
-  void ReadDefaultsFromFile(
-      const std::string& sIni, const std::string& sSection);
+      const std::string& ini, const std::string& section, bool is_static);
+  void ReadDefaultsFromFile(const std::string& ini, const std::string& section);
   void TranslateDeprecatedFlags();
 
   Preference<std::string> additional_song_folders_;    // deprecated

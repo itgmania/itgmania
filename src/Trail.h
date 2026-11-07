@@ -88,9 +88,9 @@ class Trail {
   int GetMeter() const;
   int GetTotalMeter() const;
   float GetLengthSeconds() const;
-  void GetDisplayBpms(DisplayBpms& AddTo) const;
+  void GetDisplayBpms(DisplayBpms& add_to) const;
   bool IsSecret() const;
-  bool ContainsSong(const Song* pSong) const;
+  bool ContainsSong(const Song* song) const;
 
   // Lua
   void PushSelf(lua_State* L);

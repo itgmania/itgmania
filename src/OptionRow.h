@@ -27,7 +27,7 @@ std::string MOD_ICON_X_NAME(size_t p);
 
 class OptionRowType {
  public:
-  void Load(const std::string& sMetricsGroup, Actor* pParent);
+  void Load(const std::string& metrics_group, Actor* parent);
 
  private:
   std::string metrics_group_;
@@ -59,18 +59,18 @@ class OptionRowType {
 
 class OptionRow : public ActorFrame {
  public:
-  OptionRow(const OptionRowType* pType);
+  OptionRow(const OptionRowType* type);
   ~OptionRow();
 
   void Clear();
-  void LoadNormal(OptionRowHandler* pHand, bool bFirstItemGoesDown);
+  void LoadNormal(OptionRowHandler* hand, bool first_item_goes_down);
   void LoadExit();
 
-  void SetModIcon(PlayerNumber pn, const std::string& sText, GameCommand& gc);
+  void SetModIcon(PlayerNumber pn, const std::string& text, GameCommand& gc);
 
   void ImportOptions(const std::vector<PlayerNumber>& vpns);
   int ExportOptions(
-      const std::vector<PlayerNumber>& vpns, bool bRowHasFocus[NUM_PLAYERS]);
+      const std::vector<PlayerNumber>& vpns, bool row_has_focus[NUM_PLAYERS]);
 
   enum RowType { RowType_Normal, RowType_Exit };
 
@@ -84,22 +84,22 @@ class OptionRow : public ActorFrame {
   void PositionIcons(PlayerNumber pn);
   void UpdateText(PlayerNumber pn);
   bool GetRowHasFocus(PlayerNumber pn) const { return row_has_focus_[pn]; }
-  void SetRowHasFocus(PlayerNumber pn, bool bRowHasFocus);
+  void SetRowHasFocus(PlayerNumber pn, bool row_has_focus);
   void UpdateEnabledDisabled();
 
-  int GetOneSelection(PlayerNumber pn, bool bAllowFail = false) const;
-  int GetOneSharedSelection(bool bAllowFail = false) const;
-  void SetOneSelection(PlayerNumber pn, int iChoice);
-  void SetOneSharedSelection(int iChoice);
-  void SetOneSharedSelectionIfPresent(const std::string& sChoice);
+  int GetOneSelection(PlayerNumber pn, bool allow_fail = false) const;
+  int GetOneSharedSelection(bool allow_fail = false) const;
+  void SetOneSelection(PlayerNumber pn, int choice);
+  void SetOneSharedSelection(int choice);
+  void SetOneSharedSelectionIfPresent(const std::string& choice);
 
   int GetChoiceInRowWithFocus(PlayerNumber pn) const;
-  void SetChoiceInRowWithFocus(PlayerNumber pn, int iChoice);
+  void SetChoiceInRowWithFocus(PlayerNumber pn, int choice);
   void ResetFocusFromSelection(PlayerNumber pn);
 
-  bool GetSelected(PlayerNumber pn, int iChoice) const;
+  bool GetSelected(PlayerNumber pn, int choice) const;
   // SetSelected returns true if the choices changed because of setting.
-  bool SetSelected(PlayerNumber pn, int iChoice, bool b);
+  bool SetSelected(PlayerNumber pn, int choice, bool b);
 
   bool NotifyHandlerOfSelection(PlayerNumber pn, int choice);
 
@@ -108,10 +108,10 @@ class OptionRow : public ActorFrame {
   RowType GetRowType() const { return row_type_; }
   const OptionRowHandler* GetHandler() const { return hand_; }
 
-  const BitmapText& GetTextItemForRow(PlayerNumber pn, int iChoiceOnRow) const;
+  const BitmapText& GetTextItemForRow(PlayerNumber pn, int choice_on_row) const;
   void GetWidthXY(
-      PlayerNumber pn, int iChoiceOnRow, int& iWidthOut, int& iXOut,
-      int& iYOut) const;
+      PlayerNumber pn, int choice_on_row, int& width_out, int& x_out,
+      int& y_out) const;
 
   // ScreenOptions calls positions m_FrameDestination, then m_Frame tween to
   // that same TweenState.
@@ -120,7 +120,7 @@ class OptionRow : public ActorFrame {
   bool IsShowOneValueWithGoDown() const;
   bool GoToFirstOnStart();
 
-  std::string GetThemedItemText(int iChoice) const;
+  std::string GetThemedItemText(int choice) const;
 
   void Reload();
 
@@ -156,7 +156,7 @@ class OptionRow : public ActorFrame {
       selected_[NUM_PLAYERS];  // size = m_pHand->m_Def.choices.size()
 
  public:
-  void SetDestination(Actor::TweenState& ts, bool bTween);
+  void SetDestination(Actor::TweenState& ts, bool tween);
 };
 
 #endif

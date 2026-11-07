@@ -26,10 +26,10 @@ class BackgroundLoader {
   /* Return true if the requested CacheFile request has finished.  If true is
    * returned, the cached file can be read using the path returned in
    * sActualPath. */
-  bool IsCacheFileFinished(const std::string& sFile, std::string& sActualPath);
+  bool IsCacheFileFinished(const std::string& file, std::string& actual_path);
 
   /* Call this when finished with a cached file, to release any resources. */
-  void FinishedWithCachedFile(std::string sFile);
+  void FinishedWithCachedFile(std::string file);
 
   /* Abort all loads. */
   void Abort();
@@ -45,7 +45,7 @@ class BackgroundLoader {
 
   std::string GetRequest();
 
-  std::string GetCachePath(std::string sPath) const;
+  std::string GetCachePath(std::string path) const;
   std::string cache_path_prefix_;
 
   RageSemaphore start_sem_;

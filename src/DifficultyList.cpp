@@ -46,8 +46,8 @@ StepsDisplayList::StepsDisplayList() {
 
 StepsDisplayList::~StepsDisplayList() {}
 
-void StepsDisplayList::LoadFromNode(const XNode* pNode) {
-  ActorFrame::LoadFromNode(pNode);
+void StepsDisplayList::LoadFromNode(const XNode* node) {
+  ActorFrame::LoadFromNode(node);
 
   if (name_.empty()) {
     LuaHelpers::ReportScriptError("StepsDisplayList must have a Name");
@@ -61,13 +61,13 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
   lines_.resize(MAX_METERS);
 
   FOREACH_ENUM(PlayerNumber, pn) {
-    const XNode* pChild = pNode->GetChild(ssprintf("CursorP%i", pn + 1));
-    if (pChild == nullptr) {
+    const XNode* child = node->GetChild(ssprintf("CursorP%i", pn + 1));
+    if (child == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
           "%s: StepsDisplayList: missing the node \"CursorP%d\"",
-          ActorUtil::GetWhere(pNode).c_str(), pn + 1);
+          ActorUtil::GetWhere(node).c_str(), pn + 1);
     } else {
-      cursors_[pn].LoadActorFromNode(pChild, this);
+      cursors_[pn].LoadActorFromNode(child, this);
     }
 
     /* Hack: we need to tween cursors both up to down (cursor motion) and
@@ -77,13 +77,13 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
      * invisible or partially invisible.  So, do them in separate tweening
      * stacks.  This means the Cursor command can't change diffuse colors; I
      * think we do need a diffuse color stack ... */
-    pChild = pNode->GetChild(ssprintf("CursorP%iFrame", pn + 1));
-    if (pChild == nullptr) {
+    child = node->GetChild(ssprintf("CursorP%iFrame", pn + 1));
+    if (child == nullptr) {
       LuaHelpers::ReportScriptErrorFmt(
           "%s: StepsDisplayList: missing the node \"CursorP%dFrame\"",
-          ActorUtil::GetWhere(pNode).c_str(), pn + 1);
+          ActorUtil::GetWhere(node).c_str(), pn + 1);
     } else {
-      cursor_frames_[pn].LoadFromNode(pChild);
+      cursor_frames_[pn].LoadFromNode(child);
       cursor_frames_[pn].AddChild(cursors_[pn]);
       this->AddChild(&cursor_frames_[pn]);
     }
@@ -101,13 +101,13 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
 }
 
 int StepsDisplayList::GetCurrentRowIndex(PlayerNumber pn) const {
-  Difficulty ClosestDifficulty = GAMESTATE->GetClosestShownDifficulty(pn);
+  Difficulty closest_difficulty = GAMESTATE->GetClosestShownDifficulty(pn);
 
   for (unsigned i = 0; i < rows_.size(); i++) {
     const Row& row = rows_[i];
 
     if (GAMESTATE->cur_steps_[pn] == nullptr) {
-      if (row.dc_ == ClosestDifficulty) {
+      if (row.dc_ == closest_difficulty) {
         return i;
       }
     } else {
@@ -122,8 +122,8 @@ int StepsDisplayList::GetCurrentRowIndex(PlayerNumber pn) const {
 
 // Update m_fY and m_bHidden[].
 void StepsDisplayList::UpdatePositions() {
-  int iCurrentRow[NUM_PLAYERS];
-  FOREACH_HumanPlayer(p) iCurrentRow[p] = GetCurrentRowIndex(p);
+  int current_row[NUM_PLAYERS];
+  FOREACH_HumanPlayer(p) current_row[p] = GetCurrentRowIndex(p);
 
   const int total = NUM_SHOWN_ITEMS;
   const int halfsize = total / 2;
@@ -132,30 +132,30 @@ void StepsDisplayList::UpdatePositions() {
 
   // Choices for each player. If only one player is active, it's the same for
   // both.
-  int P1Choice = GAMESTATE->IsHumanPlayer(PLAYER_1)   ? iCurrentRow[PLAYER_1]
-                 : GAMESTATE->IsHumanPlayer(PLAYER_2) ? iCurrentRow[PLAYER_2]
-                                                      : 0;
-  int P2Choice = GAMESTATE->IsHumanPlayer(PLAYER_2)   ? iCurrentRow[PLAYER_2]
-                 : GAMESTATE->IsHumanPlayer(PLAYER_1) ? iCurrentRow[PLAYER_1]
-                                                      : 0;
+  int p1_choice = GAMESTATE->IsHumanPlayer(PLAYER_1)   ? current_row[PLAYER_1]
+                  : GAMESTATE->IsHumanPlayer(PLAYER_2) ? current_row[PLAYER_2]
+                                                       : 0;
+  int p2_choice = GAMESTATE->IsHumanPlayer(PLAYER_2)   ? current_row[PLAYER_2]
+                  : GAMESTATE->IsHumanPlayer(PLAYER_1) ? current_row[PLAYER_1]
+                                                       : 0;
 
-  std::vector<Row>& Rows = rows_;
+  std::vector<Row>& rows = rows_;
 
-  const bool BothPlayersActivated =
+  const bool both_players_activated =
       GAMESTATE->IsHumanPlayer(PLAYER_1) && GAMESTATE->IsHumanPlayer(PLAYER_2);
-  if (!BothPlayersActivated) {
+  if (!both_players_activated) {
     // Simply center the cursor.
-    first_start = std::max(P1Choice - halfsize, 0);
+    first_start = std::max(p1_choice - halfsize, 0);
     first_end = first_start + total;
     second_start = second_end = first_end;
   } else {
     // First half:
-    const int earliest = std::min(P1Choice, P2Choice);
+    const int earliest = std::min(p1_choice, p2_choice);
     first_start = std::max(earliest - halfsize / 2, 0);
     first_end = first_start + halfsize;
 
     // Second half:
-    const int latest = std::max(P1Choice, P2Choice);
+    const int latest = std::max(p1_choice, p2_choice);
 
     second_start = std::max(latest - halfsize / 2, 0);
 
@@ -165,14 +165,14 @@ void StepsDisplayList::UpdatePositions() {
     second_end = second_start + halfsize;
   }
 
-  first_end = std::min(first_end, (int)Rows.size());
-  second_end = std::min(second_end, (int)Rows.size());
+  first_end = std::min(first_end, (int)rows.size());
+  second_end = std::min(second_end, (int)rows.size());
 
   /* If less than total (and Rows.size()) are displayed, fill in the empty
    * space intelligently. */
   for (;;) {
     const int sum = (first_end - first_start) + (second_end - second_start);
-    if (sum >= (int)Rows.size() || sum >= total) {
+    if (sum >= (int)rows.size() || sum >= total) {
       break;  // nothing more to display, or no room
     }
 
@@ -184,7 +184,7 @@ void StepsDisplayList::UpdatePositions() {
     // Otherwise, expand either end.
     else if (first_start > 0) {
       first_start--;
-    } else if (second_end < (int)Rows.size()) {
+    } else if (second_end < (int)rows.size()) {
       second_end++;
     } else {
       FAIL_M("Do we have room to grow, or don't we?");
@@ -192,25 +192,25 @@ void StepsDisplayList::UpdatePositions() {
   }
 
   int pos = 0;
-  for (int i = 0; i < (int)Rows.size(); i++)  // foreach row
+  for (int i = 0; i < (int)rows.size(); i++)  // foreach row
   {
-    float ItemPosition;
+    float item_position;
     if (i < first_start) {
-      ItemPosition = -0.5f;
+      item_position = -0.5f;
     } else if (i < first_end) {
-      ItemPosition = (float)pos++;
+      item_position = (float)pos++;
     } else if (i < second_start) {
-      ItemPosition = halfsize - 0.5f;
+      item_position = halfsize - 0.5f;
     } else if (i < second_end) {
-      ItemPosition = (float)pos++;
+      item_position = (float)pos++;
     } else {
-      ItemPosition = (float)total - 0.5f;
+      item_position = (float)total - 0.5f;
     }
 
-    Row& row = Rows[i];
+    Row& row = rows[i];
 
-    float fY = ITEMS_SPACING_Y * ItemPosition;
-    row.y_ = fY;
+    float y = ITEMS_SPACING_Y * item_position;
+    row.y_ = y;
     row.hidden_ = i < first_start || (i >= first_end && i < second_start) ||
                   i >= second_end;
   }
@@ -218,20 +218,20 @@ void StepsDisplayList::UpdatePositions() {
 
 void StepsDisplayList::PositionItems() {
   for (size_t i = 0; i < MAX_METERS; ++i) {
-    bool bUnused = (i >= rows_.size());
-    lines_[i].meter_.SetVisible(!bUnused);
+    bool unused = (i >= rows_.size());
+    lines_[i].meter_.SetVisible(!unused);
   }
 
   for (size_t m = 0; m < rows_.size(); ++m) {
     Row& row = rows_[m];
-    bool bHidden = row.hidden_;
+    bool hidden = row.hidden_;
     if (!shown_) {
-      bHidden = true;
+      hidden = true;
     }
 
-    const float fDiffuseAlpha = bHidden ? 0.0f : 1.0f;
+    const float diffuse_alpha = hidden ? 0.0f : 1.0f;
     if (lines_[m].meter_.GetDestY() != row.y_ ||
-        lines_[m].meter_.DestTweenState().diffuse_[0][3] != fDiffuseAlpha) {
+        lines_[m].meter_.DestTweenState().diffuse_[0][3] != diffuse_alpha) {
       lines_[m].meter_.RunCommands(MOVE_COMMAND.GetValue());
       lines_[m].meter_.RunCommandsOnChildren(MOVE_COMMAND.GetValue());
     }
@@ -240,34 +240,34 @@ void StepsDisplayList::PositionItems() {
   }
 
   for (size_t m = 0; m < MAX_METERS; ++m) {
-    bool bHidden = true;
+    bool hidden = true;
     if (shown_ && m < rows_.size()) {
-      bHidden = rows_[m].hidden_;
+      hidden = rows_[m].hidden_;
     }
 
-    float fDiffuseAlpha = bHidden ? 0.0f : 1.0f;
+    float diffuse_alpha = hidden ? 0.0f : 1.0f;
 
-    lines_[m].meter_.SetDiffuseAlpha(fDiffuseAlpha);
+    lines_[m].meter_.SetDiffuseAlpha(diffuse_alpha);
   }
 
   FOREACH_HumanPlayer(pn) {
-    int iCurrentRow = GetCurrentRowIndex(pn);
+    int current_row = GetCurrentRowIndex(pn);
 
-    float fY = 0;
-    if (iCurrentRow < (int)rows_.size()) {
-      fY = rows_[iCurrentRow].y_;
+    float y = 0;
+    if (current_row < (int)rows_.size()) {
+      y = rows_[current_row].y_;
     }
 
     cursor_frames_[pn].PlayCommand("Change");
-    cursor_frames_[pn].SetY(fY);
+    cursor_frames_[pn].SetY(y);
   }
 }
 
 void StepsDisplayList::SetFromGameState() {
-  const Song* pSong = GAMESTATE->cur_song_;
+  const Song* song = GAMESTATE->cur_song_;
   unsigned i = 0;
 
-  if (pSong == nullptr) {
+  if (song == nullptr) {
     // FIXME: This clamps to between the min and the max difficulty, but
     // it really should round to the nearest difficulty that's in
     // DIFFICULTIES_TO_SHOW.
@@ -282,12 +282,12 @@ void StepsDisplayList::SetFromGameState() {
       ++i;
     }
   } else {
-    std::vector<Steps*> vpSteps;
-    SongUtil::GetPlayableSteps(pSong, vpSteps);
+    std::vector<Steps*> steps;
+    SongUtil::GetPlayableSteps(song, steps);
     // Should match the sort in ScreenSelectMusic::AfterMusicChange.
 
-    rows_.resize(vpSteps.size());
-    for (const Steps* s : vpSteps) {
+    rows_.resize(steps.size());
+    for (const Steps* s : steps) {
       // LOG->Trace(ssprintf("setting steps for row %i",i));
       rows_[i].steps_ = s;
       lines_[i].meter_.SetFromSteps(s);

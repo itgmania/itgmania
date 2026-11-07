@@ -27,28 +27,28 @@ class BPMDisplay : public BitmapText {
    * @brief Update the display as required.
    * @param fDeltaTime the changed time.
    */
-  virtual void Update(float fDeltaTime);
-  void LoadFromNode(const XNode* pNode);
+  virtual void Update(float delta_time);
+  void LoadFromNode(const XNode* node);
   /**
    * @brief Use the BPM[s] from a song.
    * @param pSong the song in question.
    */
-  void SetBpmFromSong(const Song* pSong);
+  void SetBpmFromSong(const Song* song);
   /**
    * @brief Use the BPM[s] from a steps.
    * @param pSteps the steps in question.
    */
-  void SetBpmFromSteps(const Steps* pSteps);
+  void SetBpmFromSteps(const Steps* steps);
   /**
    * @brief Use the BPM[s] from a course.
    * @param pCourse the course in question.
    */
-  void SetBpmFromCourse(const Course* pCourse);
+  void SetBpmFromCourse(const Course* course);
   /**
    * @brief Use a specified, constant BPM.
    * @param fBPM the constant BPM.
    */
-  void SetConstantBpm(float fBPM);
+  void SetConstantBpm(float bpm);
   /**
    * @brief Have the BPMDisplay cycle between various BPMs.
    */

@@ -87,9 +87,9 @@ REGISTER_SCREEN_CLASS(ScreenSelectCharacter);
 void ScreenSelectCharacter::Init() {
   ScreenWithMenuElements::Init();
 
-  std::vector<Character*> apCharacters;
-  CHARMAN->GetCharacters(apCharacters);
-  if (apCharacters.empty()) {
+  std::vector<Character*> characters;
+  CHARMAN->GetCharacters(characters);
+  if (characters.empty()) {
     this->PostScreenMessage(SM_GoToNextScreen, 0);
     return;
   }
@@ -148,9 +148,9 @@ void ScreenSelectCharacter::Init() {
 
       for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
         for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
-          float fX = ATTACK_ICONS_START_X(p) + ATTACK_ICONS_SPACING_X * j;
-          float fY = ATTACK_ICONS_START_Y(p) + ATTACK_ICONS_SPACING_Y * i;
-          attack_icons_[p][i][j].SetXY(fX, fY);
+          float x = ATTACK_ICONS_START_X(p) + ATTACK_ICONS_SPACING_X * j;
+          float y = ATTACK_ICONS_START_Y(p) + ATTACK_ICONS_SPACING_Y * i;
+          attack_icons_[p][i][j].SetXY(x, y);
           attack_icons_[p][i][j].RunCommands(ATTACK_ICONS_ON_COMMAND(p));
           this->AddChild(&attack_icons_[p][i][j]);
         }
@@ -193,16 +193,16 @@ bool ScreenSelectCharacter::Input(const InputEventPlus& input) {
   return ScreenWithMenuElements::Input(input);  // default input handler
 }
 
-void ScreenSelectCharacter::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_BeginFadingOut) {
+void ScreenSelectCharacter::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_BeginFadingOut) {
     StartTransitioningScreen(SM_GoToNextScreen);
-  } else if (SM == SM_MenuTimer) {
+  } else if (sm == SM_MenuTimer) {
     MakeSelection(PLAYER_1);
     if (!AllAreFinishedChoosing()) {
       ResetTimer();
     }
   } else {
-    ScreenWithMenuElements::HandleScreenMessage(SM);
+    ScreenWithMenuElements::HandleScreenMessage(sm);
   }
 }
 
@@ -221,11 +221,11 @@ PlayerNumber ScreenSelectCharacter::GetAffectedPlayerNumber(PlayerNumber pn) {
 }
 
 void ScreenSelectCharacter::BeforeRowChange(PlayerNumber pn) {
-  PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
+  PlayerNumber affected = GetAffectedPlayerNumber(pn);
   switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER:
-      spr_card_arrows_[pnAffected].StopEffect();
+      spr_card_arrows_[affected].StopEffect();
       break;
     default:
       break;
@@ -233,11 +233,11 @@ void ScreenSelectCharacter::BeforeRowChange(PlayerNumber pn) {
 }
 
 void ScreenSelectCharacter::AfterRowChange(PlayerNumber pn) {
-  PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
+  PlayerNumber affected = GetAffectedPlayerNumber(pn);
   switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER:
-      spr_card_arrows_[pnAffected].SetEffectGlowShift(
+      spr_card_arrows_[affected].SetEffectGlowShift(
           1.0f, RageColor(1, 1, 1, 0.2f), RageColor(1, 1, 1, 0.8f));
       break;
     default:
@@ -246,42 +246,41 @@ void ScreenSelectCharacter::AfterRowChange(PlayerNumber pn) {
 }
 
 void ScreenSelectCharacter::AfterValueChange(PlayerNumber pn) {
-  PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
+  PlayerNumber affected = GetAffectedPlayerNumber(pn);
   switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER: {
-      std::vector<Character*> apCharacters;
-      CHARMAN->GetCharacters(apCharacters);
-      Character* pChar = apCharacters[selected_character_[pnAffected]];
-      spr_card_[pnAffected].UnloadTexture();
-      spr_card_[pnAffected].Load(pChar->GetCardPath());
+      std::vector<Character*> characters;
+      CHARMAN->GetCharacters(characters);
+      Character* p_char = characters[selected_character_[affected]];
+      spr_card_[affected].UnloadTexture();
+      spr_card_[affected].Load(p_char->GetCardPath());
 
       if (GAMESTATE->play_mode_ == PLAY_MODE_BATTLE ||
           GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
         for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
           for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
-            attack_icons_[pnAffected][i][j].Load("ScreenSelectCharacter");
-            attack_icons_[pnAffected][i][j].Set(pChar->attacks_[i][j]);
+            attack_icons_[affected][i][j].Load("ScreenSelectCharacter");
+            attack_icons_[affected][i][j].Set(p_char->attacks_[i][j]);
           }
         }
       }
 
-      int c = selected_character_[pnAffected] - MAX_CHAR_ICONS_TO_SHOW / 2;
-      wrap(c, apCharacters.size());
+      int c = selected_character_[affected] - MAX_CHAR_ICONS_TO_SHOW / 2;
+      wrap(c, characters.size());
 
       for (unsigned i = 0; i < MAX_CHAR_ICONS_TO_SHOW; i++) {
         c++;
-        wrap(c, apCharacters.size());
-        Character* pCharacter = apCharacters[c];
-        Banner& banner = spr_icons_[pnAffected][i];
-        banner.LoadIconFromCharacter(pCharacter);
-        float fX =
-            (pnAffected == PLAYER_1) ? 320 - ICON_WIDTH : 320 + ICON_WIDTH;
-        float fY = SCALE(
+        wrap(c, characters.size());
+        Character* character = characters[c];
+        Banner& banner = spr_icons_[affected][i];
+        banner.LoadIconFromCharacter(character);
+        float x = (affected == PLAYER_1) ? 320 - ICON_WIDTH : 320 + ICON_WIDTH;
+        float y = SCALE(
             i, 0.f, MAX_CHAR_ICONS_TO_SHOW - 1.f,
             240 - (MAX_CHAR_ICONS_TO_SHOW / 2 * ICON_HEIGHT),
             240 + (MAX_CHAR_ICONS_TO_SHOW / 2 * ICON_HEIGHT));
-        banner.SetXY(fX, fY);
+        banner.SetXY(x, y);
       }
     } break;
     case FINISHED_CHOOSING:;  // do nothing
@@ -310,15 +309,15 @@ bool ScreenSelectCharacter::MenuDown(const InputEventPlus& input) {
   return true;
 }
 
-void ScreenSelectCharacter::Move(PlayerNumber pn, int deltaValue) {
-  PlayerNumber pnAffected = GetAffectedPlayerNumber(pn);
+void ScreenSelectCharacter::Move(PlayerNumber pn, int delta_value) {
+  PlayerNumber affected = GetAffectedPlayerNumber(pn);
   switch (selection_row_[pn]) {
     case CHOOSING_CPU_CHARACTER:
     case CHOOSING_HUMAN_CHARACTER: {
-      std::vector<Character*> apCharacters;
-      CHARMAN->GetCharacters(apCharacters);
-      selected_character_[pnAffected] += deltaValue;
-      wrap(selected_character_[pnAffected], apCharacters.size());
+      std::vector<Character*> characters;
+      CHARMAN->GetCharacters(characters);
+      selected_character_[affected] += delta_value;
+      wrap(selected_character_[affected], characters.size());
       AfterValueChange(pn);
       sound_change_.Play(true);
       break;
@@ -364,10 +363,10 @@ void ScreenSelectCharacter::MakeSelection(PlayerNumber pn) {
 
   if (AllAreFinishedChoosing()) {
     FOREACH_PlayerNumber(p) {
-      std::vector<Character*> apCharacters;
-      CHARMAN->GetCharacters(apCharacters);
-      Character* pChar = apCharacters[selected_character_[p]];
-      GAMESTATE->cur_characters_[p] = pChar;
+      std::vector<Character*> characters;
+      CHARMAN->GetCharacters(characters);
+      Character* p_char = characters[selected_character_[p]];
+      GAMESTATE->cur_characters_[p] = p_char;
     }
 
     StopTimer();

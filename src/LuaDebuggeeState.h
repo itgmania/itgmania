@@ -52,7 +52,7 @@ class DebuggeeState {
   DebuggeeState& GetStackFrame();
 
   DebuggeeState& GetObject(ObjectRef id);
-  DebuggeeState& GetThread(ThreadId threadId);
+  DebuggeeState& GetThread(ThreadId thread_id);
   DebuggeeState& GetThread(lua_State* L);
   DebuggeeState& GetStackFrame(int level);
   DebuggeeState& GetGlobals();
@@ -83,9 +83,9 @@ class DebuggeeState {
   void Invalidate();
 
   /** Called when a new Lua thread is created. */
-  void AddThread(ThreadId threadId, lua_State* lua);
+  void AddThread(ThreadId thread_id, lua_State* lua);
   /** Called when a Lua thread terminates. */
-  void RemoveThread(ThreadId threadId);
+  void RemoveThread(ThreadId thread_id);
 
  private:
   class Impl;

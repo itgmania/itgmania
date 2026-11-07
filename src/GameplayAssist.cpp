@@ -20,9 +20,9 @@ void GameplayAssist::Init() {
 }
 
 void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
-  bool bClap = GAMESTATE->song_options_.GetCurrent().assist_clap_;
-  bool bMetronome = GAMESTATE->song_options_.GetCurrent().assist_metronome_;
-  if (!bClap && !bMetronome) {
+  bool clap = GAMESTATE->song_options_.GetCurrent().assist_clap_;
+  bool metronome = GAMESTATE->song_options_.GetCurrent().assist_metronome_;
+  if (!clap && !metronome) {
     return;
   }
 
@@ -33,90 +33,90 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
    * handled by SetStartTime. */
   SongPosition& position =
       GAMESTATE->player_state_[ps->player_number_]->position_;
-  float fPositionSeconds = position.music_seconds_;
+  float position_seconds = position.music_seconds_;
 
   // float fPositionSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
-  fPositionSeconds += SOUNDMAN->GetPlayLatency() +
+  position_seconds += SOUNDMAN->GetPlayLatency() +
                       (float)CommonMetrics::TICK_EARLY_SECONDS + 0.250f;
   const TimingData& timing =
       *GAMESTATE->cur_steps_[ps->player_number_]->GetTimingData();
-  const float fSongBeat =
-      timing.GetBeatFromElapsedTimeNoOffset(fPositionSeconds);
+  const float song_beat =
+      timing.GetBeatFromElapsedTimeNoOffset(position_seconds);
 
-  const int iSongRow = std::max(0, BeatToNoteRowNotRounded(fSongBeat));
-  static int iRowLastCrossed = -1;
-  if (iSongRow < iRowLastCrossed) {
-    iRowLastCrossed = iSongRow;
+  const int song_row = std::max(0, BeatToNoteRowNotRounded(song_beat));
+  static int row_last_crossed = -1;
+  if (song_row < row_last_crossed) {
+    row_last_crossed = song_row;
   }
 
-  if (bClap) {
-    int iClapRow = -1;
+  if (clap) {
+    int clap_row = -1;
     // for each index we crossed since the last update:
     FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE(
-        nd, r, iRowLastCrossed + 1, iSongRow + 1) {
+        nd, r, row_last_crossed + 1, song_row + 1) {
       if (nd.IsThereATapOrHoldHeadAtRow(r)) {
-        iClapRow = r;
+        clap_row = r;
         break;
       }
     }
 
-    if (iClapRow != -1 && timing.IsJudgableAtRow(iClapRow)) {
-      const float fTickBeat = NoteRowToBeat(iClapRow);
-      const float fTickSecond =
-          timing.GetElapsedTimeFromBeatNoOffset(fTickBeat);
-      float fSecondsUntil = fTickSecond - position.music_seconds_;
-      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent()
+    if (clap_row != -1 && timing.IsJudgableAtRow(clap_row)) {
+      const float tick_beat = NoteRowToBeat(clap_row);
+      const float tick_second =
+          timing.GetElapsedTimeFromBeatNoOffset(tick_beat);
+      float seconds_until = tick_second - position.music_seconds_;
+      seconds_until /= GAMESTATE->song_options_.GetCurrent()
                            .music_rate_; /* 2x music rate means the time until
                                              the tick is halved */
 
       RageSoundParams p;
       p.start_time_ =
           position.last_beat_update_ +
-          (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
+          (seconds_until - (float)CommonMetrics::TICK_EARLY_SECONDS);
       sound_assist_clap_.Play(false, &p);
     }
   }
 
-  if (bMetronome && iRowLastCrossed != -1) {
+  if (metronome && row_last_crossed != -1) {
     // iRowLastCrossed+1, iSongRow+1
 
-    int iLastCrossedMeasureIndex;
-    int iLastCrossedBeatIndex;
-    int iLastCrossedRowsRemainder;
+    int last_crossed_measure_index;
+    int last_crossed_beat_index;
+    int last_crossed_rows_remainder;
     timing.NoteRowToMeasureAndBeat(
-        iRowLastCrossed, iLastCrossedMeasureIndex, iLastCrossedBeatIndex,
-        iLastCrossedRowsRemainder);
+        row_last_crossed, last_crossed_measure_index, last_crossed_beat_index,
+        last_crossed_rows_remainder);
 
-    int iCurrentMeasureIndex;
-    int iCurrentBeatIndex;
-    int iCurrentRowsRemainder;
+    int current_measure_index;
+    int current_beat_index;
+    int current_rows_remainder;
     timing.NoteRowToMeasureAndBeat(
-        iSongRow, iCurrentMeasureIndex, iCurrentBeatIndex,
-        iCurrentRowsRemainder);
+        song_row, current_measure_index, current_beat_index,
+        current_rows_remainder);
 
-    int iMetronomeRow = -1;
-    bool bIsMeasure = false;
+    int metronome_row = -1;
+    bool is_measure = false;
 
-    if (iLastCrossedMeasureIndex != iCurrentMeasureIndex ||
-        iLastCrossedBeatIndex != iCurrentBeatIndex) {
-      iMetronomeRow = iSongRow - iCurrentRowsRemainder;
-      bIsMeasure = iCurrentBeatIndex == 0 && iCurrentRowsRemainder == 0;
+    if (last_crossed_measure_index != current_measure_index ||
+        last_crossed_beat_index != current_beat_index) {
+      metronome_row = song_row - current_rows_remainder;
+      is_measure = current_beat_index == 0 && current_rows_remainder == 0;
     }
 
-    if (iMetronomeRow != -1) {
-      const float fTickBeat = NoteRowToBeat(iMetronomeRow);
-      const float fTickSecond =
-          timing.GetElapsedTimeFromBeatNoOffset(fTickBeat);
-      float fSecondsUntil = fTickSecond - position.music_seconds_;
-      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent()
+    if (metronome_row != -1) {
+      const float tick_beat = NoteRowToBeat(metronome_row);
+      const float tick_second =
+          timing.GetElapsedTimeFromBeatNoOffset(tick_beat);
+      float seconds_until = tick_second - position.music_seconds_;
+      seconds_until /= GAMESTATE->song_options_.GetCurrent()
                            .music_rate_; /* 2x music rate means the time until
                                              the tick is halved */
 
       RageSoundParams p;
       p.start_time_ =
           position.last_beat_update_ +
-          (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
-      if (bIsMeasure) {
+          (seconds_until - (float)CommonMetrics::TICK_EARLY_SECONDS);
+      if (is_measure) {
         sound_assist_metronome_measure_.Play(false, &p);
       } else {
         sound_assist_metronome_beat_.Play(false, &p);
@@ -124,7 +124,7 @@ void GameplayAssist::PlayTicks(const NoteData& nd, const PlayerState* ps) {
     }
   }
 
-  iRowLastCrossed = iSongRow;
+  row_last_crossed = song_row;
 }
 
 void GameplayAssist::StopPlaying() {

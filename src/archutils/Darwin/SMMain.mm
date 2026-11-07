@@ -81,7 +81,7 @@
 
 /* From here:
  * http://www.cocoadev.com/index.pl?HowToRegisterURLHandler */
-- (void)getUrl:(NSAppleEventDescriptor*)event withReplyEvent:(NSAppleEventDescriptor*)replyEvent {
+- (void)getUrl:(NSAppleEventDescriptor*)event withReplyEvent:(NSAppleEventDescriptor*)reply_event {
   const char* url = [[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String];
 
   LOG->Info("Parsing URL: %s", url);
@@ -155,52 +155,52 @@ static NSMenuItem* MenuItem(NSString* title, SEL action, NSString* code) {
 
 static void SetupMenus(void) {
   // Get the localized strings from the file.
-  NSString* sWindow = NSLocalizedString(@"Window", @"Menu title");
-  NSString* sHideOthers = NSLocalizedString(@"Hide Others", @"Menu item");
-  NSString* sAbout = NSLocalizedString(@"About " PRODUCT_FAMILY, @"Menu item");
-  NSString* sHide = NSLocalizedString(@"Hide " PRODUCT_FAMILY, @"Menu item");
-  NSString* sShowAll = NSLocalizedString(@"Show All", @"Menu item");
-  NSString* sQuit = NSLocalizedString(@"Quit " PRODUCT_FAMILY, @"Menu item");
-  NSString* sMinimize = NSLocalizedString(@"Minimize", @"Menu item");
-  NSString* sEnterFullScreen = NSLocalizedString(@"Enter Full Screen", @"Menu item");
+  NSString* window = NSLocalizedString(@"Window", @"Menu title");
+  NSString* hide_others_str = NSLocalizedString(@"Hide Others", @"Menu item");
+  NSString* about = NSLocalizedString(@"About " PRODUCT_FAMILY, @"Menu item");
+  NSString* hide = NSLocalizedString(@"Hide " PRODUCT_FAMILY, @"Menu item");
+  NSString* show_all = NSLocalizedString(@"Show All", @"Menu item");
+  NSString* quit = NSLocalizedString(@"Quit " PRODUCT_FAMILY, @"Menu item");
+  NSString* minimize = NSLocalizedString(@"Minimize", @"Menu item");
+  NSString* enter_full_screen = NSLocalizedString(@"Enter Full Screen", @"Menu item");
 
-  NSMenu* mainMenu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
-  NSMenu* appMenu = [[[NSMenu alloc] initWithTitle:@PRODUCT_FAMILY] autorelease];
-  NSMenu* windowMenu = [[[NSMenu alloc] initWithTitle:sWindow] autorelease];
-  NSMenuItem* hideOthers = MenuItem(sHideOthers, @selector(hideOtherApplications:), @"h");
+  NSMenu* main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+  NSMenu* app_menu = [[[NSMenu alloc] initWithTitle:@PRODUCT_FAMILY] autorelease];
+  NSMenu* window_menu = [[[NSMenu alloc] initWithTitle:window] autorelease];
+  NSMenuItem* hide_others = MenuItem(hide_others_str, @selector(hideOtherApplications:), @"h");
 
-  [hideOthers setKeyEquivalentModifierMask:NSEventModifierFlagOption | NSEventModifierFlagCommand];
+  [hide_others setKeyEquivalentModifierMask:NSEventModifierFlagOption | NSEventModifierFlagCommand];
 
-  [appMenu addItem:MenuItem(sAbout, @selector(orderFrontStandardAboutPanel:), @"")];
-  [appMenu addItem:[NSMenuItem separatorItem]];
-  [appMenu addItem:MenuItem(sHide, @selector(hide:), @"h")];
-  [appMenu addItem:hideOthers];
-  [appMenu addItem:MenuItem(sShowAll, @selector(unhideAllApplications:), @"")];
-  [appMenu addItem:[NSMenuItem separatorItem]];
-  [appMenu addItem:MenuItem(sQuit, @selector(terminate:), @"q")];
+  [app_menu addItem:MenuItem(about, @selector(orderFrontStandardAboutPanel:), @"")];
+  [app_menu addItem:[NSMenuItem separatorItem]];
+  [app_menu addItem:MenuItem(hide, @selector(hide:), @"h")];
+  [app_menu addItem:hide_others];
+  [app_menu addItem:MenuItem(show_all, @selector(unhideAllApplications:), @"")];
+  [app_menu addItem:[NSMenuItem separatorItem]];
+  [app_menu addItem:MenuItem(quit, @selector(terminate:), @"q")];
 
-  [windowMenu addItem:MenuItem(sMinimize, @selector(performMiniaturize:), @"m")];
-  [windowMenu addItem:[NSMenuItem separatorItem]];
+  [window_menu addItem:MenuItem(minimize, @selector(performMiniaturize:), @"m")];
+  [window_menu addItem:[NSMenuItem separatorItem]];
 
   // Add a Full Screen item.
-  NSMenuItem* item = MenuItem(sEnterFullScreen, @selector(fullscreen:), @"\n");
+  NSMenuItem* item = MenuItem(enter_full_screen, @selector(fullscreen:), @"\n");
 
   [item setKeyEquivalentModifierMask:NSEventModifierFlagOption];  // opt-enter
-  [windowMenu addItem:item];
+  [window_menu addItem:item];
 
-  [[mainMenu addItemWithTitle:[appMenu title] action:nil keyEquivalent:@""] setSubmenu:appMenu];
-  [[mainMenu addItemWithTitle:[windowMenu title] action:nil
-                keyEquivalent:@""] setSubmenu:windowMenu];
+  [[main_menu addItemWithTitle:[app_menu title] action:nil keyEquivalent:@""] setSubmenu:app_menu];
+  [[main_menu addItemWithTitle:[window_menu title] action:nil
+                 keyEquivalent:@""] setSubmenu:window_menu];
 
-  [NSApp setMainMenu:mainMenu];
-  [NSApp setAppleMenu:appMenu];  // This isn't the apple menu, but it doesn't work without this.
-  [NSApp setWindowsMenu:windowMenu];
+  [NSApp setMainMenu:main_menu];
+  [NSApp setAppleMenu:app_menu];  // This isn't the apple menu, but it doesn't work without this.
+  [NSApp setWindowsMenu:window_menu];
 }
 
 #undef main
 
 int main(int argc, char** argv) {
-  RageThreadRegister guiThread("GUI thread");
+  RageThreadRegister gui_thread("GUI thread");
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
   SMMain* sm;
 

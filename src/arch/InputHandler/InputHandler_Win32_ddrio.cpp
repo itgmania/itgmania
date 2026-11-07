@@ -156,24 +156,24 @@ InputHandler_Win32_ddrio::InputHandler_Win32_ddrio() {
     _ddriodll_loaded = MapFunctions();
   }
 
-  bool ddrInit = false;
+  bool ddr_init = false;
 
   thread_create_t thread_impl_create = crt_thread_create;
   thread_join_t thread_impl_join = crt_thread_join;
   thread_destroy_t thread_impl_destroy = crt_thread_destroy;
 
   if (ddrio_io_init != nullptr) {
-    ddrInit = ddrio_io_init(
+    ddr_init = ddrio_io_init(
         thread_impl_create, thread_impl_join, thread_impl_destroy);
   }
 
-  if (!ddrInit) {
+  if (!ddr_init) {
     LOG->Warn("Could not init ddrio.dll");
   }
 
   shutdown_ = false;
 
-  if (_ddriodll_loaded && ddrInit && PREFSMAN->threaded_input_) {
+  if (_ddriodll_loaded && ddr_init && PREFSMAN->threaded_input_) {
     input_thread_.SetName("ddrio thread");
     input_thread_.Create(InputThread_Start, this);
   }
@@ -267,9 +267,9 @@ std::string InputHandler_Win32_ddrio::GetDeviceSpecificInputString(
 }
 
 void InputHandler_Win32_ddrio::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   // We use a joystick device so we can get automatic input mapping
-  vDevicesOut.push_back(InputDeviceInfo(InputDevice(DDRIO_DEVICEID), "ddrio"));
+  devices_out.push_back(InputDeviceInfo(InputDevice(DDRIO_DEVICEID), "ddrio"));
 }
 
 int InputHandler_Win32_ddrio::InputThread_Start(void* p) {
@@ -278,35 +278,35 @@ int InputHandler_Win32_ddrio::InputThread_Start(void* p) {
 }
 
 void InputHandler_Win32_ddrio::InputThreadMain() {
-  uint32_t prevInput = 0, newInput = 0;
-  LightsState prevLS = {0};
-  LightsState newLS = {0};
+  uint32_t prev_input = 0, new_input = 0;
+  LightsState prev_ls = {0};
+  LightsState new_ls = {0};
 
   while (!shutdown_) {
     InputHandler::UpdateTimer();
 
     // Btools API states that this method will sleep/halt
     // so we can safely loop around it in a thread.
-    newInput = ddrio_io_read_pad();
+    new_input = ddrio_io_read_pad();
 
-    if (prevInput != newInput) {
-      PushInputState(newInput);
+    if (prev_input != new_input) {
+      PushInputState(new_input);
     }
 
-    newLS = LightsDriver_Export::GetState();
+    new_ls = LightsDriver_Export::GetState();
 
-    if (prevLS != newLS) {
-      PushLightState(newLS);
+    if (prev_ls != new_ls) {
+      PushLightState(new_ls);
     }
 
-    prevLS = newLS;
-    prevInput = newInput;
+    prev_ls = new_ls;
+    prev_input = new_input;
   }
 }
 
-void InputHandler_Win32_ddrio::PushInputState(uint32_t newInput) {
+void InputHandler_Win32_ddrio::PushInputState(uint32_t new_input) {
   for (int i = 0; i < 32; i++) {
-    bool pressed = (newInput & (1 << i));
+    bool pressed = (new_input & (1 << i));
 
     // return from ddrio is active high.
     DeviceInput di(DDRIO_DEVICEID, enum_add2(JOY_BUTTON_1, i), pressed);
@@ -320,7 +320,7 @@ void InputHandler_Win32_ddrio::PushInputState(uint32_t newInput) {
   }
 }
 
-void InputHandler_Win32_ddrio::PushLightState(LightsState newLS) {
+void InputHandler_Win32_ddrio::PushLightState(LightsState new_ls) {
   uint32_t p3io = 0;
   uint32_t hdxs = 0;
   uint32_t extio = 0;
@@ -328,78 +328,78 @@ void InputHandler_Win32_ddrio::PushLightState(LightsState newLS) {
   // lighting state has already been verified to have changed in this method, so
   // create the new one from scratch.
 
-  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
+  if (new_ls.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
     p3io |= (1 << LIGHT_P1_MENU);
   }
-  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
+  if (new_ls.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
     p3io |= (1 << LIGHT_P2_MENU);
   }
-  if (newLS.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
+  if (new_ls.cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT]) {
     p3io |= (1 << LIGHT_P2_LOWER_LAMP);
   }
-  if (newLS.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
+  if (new_ls.cabinet_lights_[LIGHT_MARQUEE_UP_RIGHT]) {
     p3io |= (1 << LIGHT_P2_UPPER_LAMP);
   }
-  if (newLS.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
+  if (new_ls.cabinet_lights_[LIGHT_MARQUEE_LR_LEFT]) {
     p3io |= (1 << LIGHT_P1_LOWER_LAMP);
   }
-  if (newLS.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
+  if (new_ls.cabinet_lights_[LIGHT_MARQUEE_UP_LEFT]) {
     p3io |= (1 << LIGHT_P1_UPPER_LAMP);
   }
 
   // hdxs device has one light for both MenuLeft and MenuRight as well as MenuUp
   // and MenuDown.
-  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
+  if (new_ls.game_button_lights_[GameController_1][GAME_BUTTON_START]) {
     hdxs |= (1 << LIGHT_HD_P1_START);
   }
-  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENUUP] ||
-      newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENUDOWN]) {
+  if (new_ls.game_button_lights_[GameController_1][GAME_BUTTON_MENUUP] ||
+      new_ls.game_button_lights_[GameController_1][GAME_BUTTON_MENUDOWN]) {
     hdxs |= (1 << LIGHT_HD_P1_UP_DOWN);
   }
-  if (newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENULEFT] ||
-      newLS.game_button_lights_[GameController_1][GAME_BUTTON_MENURIGHT]) {
+  if (new_ls.game_button_lights_[GameController_1][GAME_BUTTON_MENULEFT] ||
+      new_ls.game_button_lights_[GameController_1][GAME_BUTTON_MENURIGHT]) {
     hdxs |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
   }
-  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
+  if (new_ls.game_button_lights_[GameController_2][GAME_BUTTON_START]) {
     hdxs |= (1 << LIGHT_HD_P2_START);
   }
-  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENUUP] ||
-      newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENUDOWN]) {
+  if (new_ls.game_button_lights_[GameController_2][GAME_BUTTON_MENUUP] ||
+      new_ls.game_button_lights_[GameController_2][GAME_BUTTON_MENUDOWN]) {
     hdxs |= (1 << LIGHT_HD_P2_UP_DOWN);
   }
-  if (newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENULEFT] ||
-      newLS.game_button_lights_[GameController_2][GAME_BUTTON_MENURIGHT]) {
+  if (new_ls.game_button_lights_[GameController_2][GAME_BUTTON_MENULEFT] ||
+      new_ls.game_button_lights_[GameController_2][GAME_BUTTON_MENURIGHT]) {
     hdxs |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
   }
 
-  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
+  if (new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_RIGHT]) {
     extio |= (1 << LIGHT_P2_RIGHT);
   }
-  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
+  if (new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_LEFT]) {
     extio |= (1 << LIGHT_P2_LEFT);
   }
-  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
+  if (new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_DOWN]) {
     extio |= (1 << LIGHT_P2_DOWN);
   }
-  if (newLS.game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
+  if (new_ls.game_button_lights_[GameController_2][DANCE_BUTTON_UP]) {
     extio |= (1 << LIGHT_P2_UP);
   }
 
-  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
+  if (new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_RIGHT]) {
     extio |= (1 << LIGHT_P1_RIGHT);
   }
-  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
+  if (new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_LEFT]) {
     extio |= (1 << LIGHT_P1_LEFT);
   }
-  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
+  if (new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_DOWN]) {
     extio |= (1 << LIGHT_P1_DOWN);
   }
-  if (newLS.game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
+  if (new_ls.game_button_lights_[GameController_1][DANCE_BUTTON_UP]) {
     extio |= (1 << LIGHT_P1_UP);
   }
 
-  if (newLS.cabinet_lights_[LIGHT_BASS_LEFT] ||
-      newLS.cabinet_lights_[LIGHT_BASS_RIGHT]) {
+  if (new_ls.cabinet_lights_[LIGHT_BASS_LEFT] ||
+      new_ls.cabinet_lights_[LIGHT_BASS_RIGHT]) {
     extio |= (1 << LIGHT_NEONS);
   }
 

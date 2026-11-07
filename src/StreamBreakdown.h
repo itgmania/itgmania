@@ -29,8 +29,8 @@ struct StreamBreakdown {
    * If notesPerMeasure is empty or contains no measures meeting the stream
    * threshold, all of the texts will be empty. */
   static StreamBreakdown Calculate(
-      const std::vector<int>& notesPerMeasure,
-      int notesThreshold = kNotesThreshold);
+      const std::vector<int>& notes_per_measure,
+      int notes_threshold = kNotesThreshold);
 };
 
 #endif

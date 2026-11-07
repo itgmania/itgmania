@@ -15,29 +15,29 @@ REGISTER_INPUT_HANDLER_CLASS2(Pump, Win32_Pump);
 
 InputHandler_Win32_Pump::InputHandler_Win32_Pump() {
   shutdown_ = false;
-  const int pump_usb_vid = 0x0d2f;
-  const int pump_usb_pids[2] = {
+  const int kPumpUsbVid = 0x0d2f;
+  const int kPumpUsbPids[2] = {
       0x0001 /* older model */, 0x0003 /* shipped with Exceed */
   };
 
   device_ = new USBDevice[NUM_PUMPS];
 
-  int iNumFound = 0;
+  int num_found = 0;
   // TODO: Use C++1x semantics to loop through the pids.
   // Hardcoding for now to keep this moving.
   for (int p = 0; p < 2; ++p) {
-    const int pump_usb_pid = pump_usb_pids[p];
+    const int pump_usb_pid = kPumpUsbPids[p];
     for (int i = 0; i < NUM_PUMPS; ++i) {
       if (device_[i].Open(
-              pump_usb_vid, pump_usb_pid, sizeof(long), i, nullptr)) {
-        iNumFound++;
-        LOG->Info("Found Pump pad %i", iNumFound);
+              kPumpUsbVid, pump_usb_pid, sizeof(long), i, nullptr)) {
+        num_found++;
+        LOG->Info("Found Pump pad %i", num_found);
       }
     }
   }
 
   /* Don't start a thread if we have no pads. */
-  if (iNumFound > 0 && PREFSMAN->threaded_input_) {
+  if (num_found > 0 && PREFSMAN->threaded_input_) {
     input_thread_.SetName("Pump thread");
     input_thread_.Create(InputThread_Start, this);
   }
@@ -54,18 +54,18 @@ InputHandler_Win32_Pump::~InputHandler_Win32_Pump() {
   delete[] device_;
 }
 
-void InputHandler_Win32_Pump::HandleInput(int iDevice, int iEvent) {
-  static const int bits[] = {
+void InputHandler_Win32_Pump::HandleInput(int device, int event) {
+  static const int kBits[] = {
       /* P1 */ (1 << 9),   (1 << 12), (1 << 13), (1 << 11), (1 << 10),
       /* ESC */ (1 << 16),
       /* P1 */ (1 << 17),  (1 << 20), (1 << 21), (1 << 19), (1 << 18),
   };
 
-  InputDevice id = InputDevice(DEVICE_PUMP1 + iDevice);
+  InputDevice id = InputDevice(DEVICE_PUMP1 + device);
 
-  for (int iButton = 0; iButton < ARRAYLEN(bits); ++iButton) {
+  for (int button = 0; button < ARRAYLEN(kBits); ++button) {
     DeviceInput di(
-        id, enum_add2(JOY_BUTTON_1, iButton), !(iEvent & bits[iButton]));
+        id, enum_add2(JOY_BUTTON_1, button), !(event & kBits[button]));
 
     /* If we're in a thread, our timestamp is accurate. */
     if (input_thread_.IsCreated()) {
@@ -107,10 +107,10 @@ std::string InputHandler_Win32_Pump::GetDeviceSpecificInputString(
 }
 
 void InputHandler_Win32_Pump::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   for (int i = 0; i < NUM_PUMPS; ++i) {
     if (device_[i].IsOpen()) {
-      vDevicesOut.push_back(
+      devices_out.push_back(
           InputDeviceInfo(InputDevice(DEVICE_PUMP1 + i), "Pump USB"));
     }
   }
@@ -131,24 +131,24 @@ void InputHandler_Win32_Pump::InputThreadMain() {
   /* Enable priority boosting. */
   SetThreadPriorityBoost(GetCurrentThread(), FALSE);
 
-  std::vector<WindowsFileIO*> apSources;
+  std::vector<WindowsFileIO*> sources;
   for (int i = 0; i < NUM_PUMPS; ++i) {
     if (device_[i].io_.IsOpen()) {
-      apSources.push_back(&device_[i].io_);
+      sources.push_back(&device_[i].io_);
     }
   }
 
   while (!shutdown_) {
     CHECKPOINT;
-    int iActual = 0, iVal = 0;
-    int iRet = WindowsFileIO::read_several(apSources, &iVal, iActual, 0.100f);
+    int actual = 0, val = 0;
+    int ret = WindowsFileIO::read_several(sources, &val, actual, 0.100f);
 
     CHECKPOINT;
-    if (iRet <= 0) {
+    if (ret <= 0) {
       continue; /* no event */
     }
 
-    HandleInput(iActual, iVal);
+    HandleInput(actual, val);
     InputHandler::UpdateTimer();
   }
   CHECKPOINT;
@@ -157,13 +157,13 @@ void InputHandler_Win32_Pump::InputThreadMain() {
 void InputHandler_Win32_Pump::Update() {
   if (!input_thread_.IsCreated()) {
     for (int i = 0; i < NUM_PUMPS; ++i) {
-      int iRet = device_[i].GetPadEvent();
+      int ret = device_[i].GetPadEvent();
 
-      if (iRet == -1) {
+      if (ret == -1) {
         continue; /* no event */
       }
 
-      HandleInput(i, iRet);
+      HandleInput(i, ret);
     }
     InputHandler::UpdateTimer();
   }

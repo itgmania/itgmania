@@ -19,30 +19,30 @@ std::vector<int> make_pids(int base_pid, int size) {
 }
 
 HidDevice::HidDevice(
-    int vid, const std::vector<int> pids, int interfaceNum,
-    bool autoReconnection, bool nonBlockingRead)
+    int vid, const std::vector<int> pids, int interface_num,
+    bool auto_reconnection, bool non_blocking_read)
     : vid_{vid},
       pids_{pids},
-      interface_num_{interfaceNum},
-      auto_reconnection_{autoReconnection},
-      non_blocking_read_{nonBlockingRead} {
+      interface_num_{interface_num},
+      auto_reconnection_{auto_reconnection},
+      non_blocking_read_{non_blocking_read} {
   bool result = TryConnect();
 
   if (!result) {
     LOG->Warn(
         "HidDevice with vendor_id 0x%04x and pids 0x%s %d could not connect.",
-        vid, GetPidsString(pids).c_str(), interfaceNum);
+        vid, GetPidsString(pids).c_str(), interface_num);
   } else {
     found_once_ = true;
   }
 }
 
 HidDevice::HidDevice(
-    int vid, int pid, int interfaceNum, bool autoReconnection,
-    bool nonBlockingRead)
+    int vid, int pid, int interface_num, bool auto_reconnection,
+    bool non_blocking_read)
     : HidDevice(
-          vid, make_pids(pid, 1), interfaceNum, autoReconnection,
-          nonBlockingRead) {}
+          vid, make_pids(pid, 1), interface_num, auto_reconnection,
+          non_blocking_read) {}
 
 HidDevice::~HidDevice() {
   Close();
@@ -111,24 +111,24 @@ bool HidDevice::IsConnected() { return handle_ != nullptr; }
 bool HidDevice::FoundOnce() { return found_once_; }
 
 const std::string HidDevice::GetPidsString(const std::vector<int> pids) {
-  std::string pidsString;
+  std::string pids_string;
   char pid[5] = {0};
   size_t size = pids.size();
 
   for (size_t i = 0; i < size; ++i) {
     sprintf(pid, "%04X", pids[i]);
-    pidsString += pid;
+    pids_string += pid;
 
     if (i != size - 1) {
-      pidsString += ",";
+      pids_string += ",";
     }
   }
 
-  return pidsString;
+  return pids_string;
 }
 
 void HidDevice::GetDeviceInfo(
-    int vid, const std::vector<int> pids, int interfaceNumber,
+    int vid, const std::vector<int> pids, int interface_number,
     HidDeviceInfo* device_info) {
   bool found{false};
   struct hid_device_info *devs, *cur_dev;
@@ -142,11 +142,11 @@ void HidDevice::GetDeviceInfo(
     while (cur_dev) {
       for (size_t i = 0; i < size; i++) {
         if (cur_dev->vendor_id == vid && cur_dev->product_id == pids[i]) {
-          if (interfaceNumber == -1) {
+          if (interface_number == -1) {
             found = true;
             break;
           } else {
-            if (cur_dev->interface_number == interfaceNumber) {
+            if (cur_dev->interface_number == interface_number) {
               found = true;
               break;
             }

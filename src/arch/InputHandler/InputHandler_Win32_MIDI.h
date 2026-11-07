@@ -11,7 +11,7 @@ class InputHandler_Win32_MIDI : public InputHandler {
   InputHandler_Win32_MIDI();
   ~InputHandler_Win32_MIDI();
 
-  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
   void SetDev(DeviceInput key) { ButtonPressed(key); }
 

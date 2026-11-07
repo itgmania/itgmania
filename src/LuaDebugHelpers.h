@@ -24,13 +24,13 @@ std::string LuaValueToString(lua_State* L, int index, bool quote = true);
  * @param expression expression to evaluate
  * @param frameOrThread stack frame or thread used to evaluate the expression
  * @return number of return values on success, or -1 on error */
-int LuaEvaluate(const std::string& expression, DebuggeeState& frameOrThread);
+int LuaEvaluate(const std::string& expression, DebuggeeState& frame_or_thread);
 
 /** Returns the absolute path to a Lua source file. */
-std::string ResolvePath(const std::string& luaPath);
+std::string ResolvePath(const std::string& lua_path);
 
 /** Returns a list of Lua source files that map to the absolute path. */
-std::vector<std::string> UnresolvePath(const std::string& absolutePath);
+std::vector<std::string> UnresolvePath(const std::string& absolute_path);
 }  // namespace LuaDebug
 
 #endif

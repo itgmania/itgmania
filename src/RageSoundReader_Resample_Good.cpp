@@ -34,29 +34,29 @@ float sincf(float f) {
 
 /* Modified Bessel function I0.  From Abramowitz and Stegun "Handbook of
  * Mathematical Functions", "Modified Bessel Functions I and K". */
-float BesselI0(float fX) {
-  constexpr float COEFFS1[] = {3.5156229f, 3.0899424f, 1.2067492f,
-                               0.2659732f, 0.0360768f, 0.0045813f};
-  constexpr float COEFFS2[] = {0.39894228f,  0.01328592f,  0.00225319f,
-                               -0.00157565f, 0.00916281f,  -0.02057706f,
-                               0.02635537f,  -0.01647633f, 0.00392377f};
-  float fAbsX = std::abs(fX);
-  if (fAbsX < 3.75f) {
-    float y = (fX / 3.75f) * (fX / 3.75f);
-    float fRet = 1.0f;
-    for (float coeff : COEFFS1) {
-      fRet += coeff * y;
+float BesselI0(float x) {
+  constexpr float kCoeffs1[] = {3.5156229f, 3.0899424f, 1.2067492f,
+                                0.2659732f, 0.0360768f, 0.0045813f};
+  constexpr float kCoeffs2[] = {0.39894228f,  0.01328592f,  0.00225319f,
+                                -0.00157565f, 0.00916281f,  -0.02057706f,
+                                0.02635537f,  -0.01647633f, 0.00392377f};
+  float abs_x = std::abs(x);
+  if (abs_x < 3.75f) {
+    float y = (x / 3.75f) * (x / 3.75f);
+    float ret = 1.0f;
+    for (float coeff : kCoeffs1) {
+      ret += coeff * y;
       y *= y;
     }
-    return fRet;
+    return ret;
   } else {
-    float y = 3.75f / fAbsX;
-    float fRet = std::exp(fAbsX) / std::sqrt(fAbsX);
-    for (float coeff : COEFFS2) {
-      fRet += coeff * y;
+    float y = 3.75f / abs_x;
+    float ret = std::exp(abs_x) / std::sqrt(abs_x);
+    for (float coeff : kCoeffs2) {
+      ret += coeff * y;
       y *= y;
     }
-    return fRet;
+    return ret;
   }
 }
 
@@ -69,40 +69,40 @@ float BesselI0(float fX) {
  *
  * where B is the beta parameter, p is len/2, and n is in [-len/2,+len/2].
  */
-void ApplyKaiserWindow(float* pBuf, int iLen, float fBeta) {
-  constexpr float VERY_TINY_NUMBER =
+void ApplyKaiserWindow(float* buf, int len, float beta) {
+  constexpr float kVeryTinyNumber =
       0.0000001f;  // a little safer than comparing against zero
-  const float fDenom = BesselI0(fBeta);
-  const float p = (iLen - 1) / 2.0f;
-  for (int n = 0; n < iLen; ++n) {
-    const float fN1 = std::abs((n - p) * (1.0f / p));
-    const float fN1Squared = fN1 * fN1;
-    const float fNum = BesselI0(
-        fBeta * std::sqrt(std::max(1.0f - fN1Squared, VERY_TINY_NUMBER)));
-    pBuf[n] *= fNum / fDenom;
+  const float denom = BesselI0(beta);
+  const float p = (len - 1) / 2.0f;
+  for (int n = 0; n < len; ++n) {
+    const float n1 = std::abs((n - p) * (1.0f / p));
+    const float n1_squared = n1 * n1;
+    const float num = BesselI0(
+        beta * std::sqrt(std::max(1.0f - n1_squared, kVeryTinyNumber)));
+    buf[n] *= num / denom;
   }
 }
 
-void MultiplyVector(float* pStart, float* pEnd, float f) {
-  for (; pStart != pEnd; ++pStart) {
-    *pStart *= f;
+void MultiplyVector(float* start, float* end, float f) {
+  for (; start != end; ++start) {
+    *start *= f;
   }
 }
 
-void GenerateSincLowPassFilter(float* pFIR, int iWinSize, float fCutoff) {
-  constexpr double TWOPI = 2 * 3.141592653589793;
-  const float p = (iWinSize - 1) / 2.0;
+void GenerateSincLowPassFilter(float* fir, int win_size, float cutoff) {
+  constexpr double kTwopi = 2 * 3.141592653589793;
+  const float p = (win_size - 1) / 2.0;
 
-  for (int n = 0; n < iWinSize; ++n) {
-    const float fN1 = (n - p);
-    const float fVal = sincf((TWOPI * fCutoff * fN1)) * (2.0f * fCutoff);
-    pFIR[n] = fVal;
+  for (int n = 0; n < win_size; ++n) {
+    const float n1 = (n - p);
+    const float val = sincf((kTwopi * cutoff * n1)) * (2.0f * cutoff);
+    fir[n] = val;
   }
 }
 
-void NormalizeVector(float* pBuf, int iSize) {
-  float fTotal = std::accumulate(&pBuf[0], &pBuf[iSize], 0.0f);
-  MultiplyVector(&pBuf[0], &pBuf[iSize], 1 / fTotal);
+void NormalizeVector(float* buf, int size) {
+  float total = std::accumulate(&buf[0], &buf[size], 0.0f);
+  MultiplyVector(&buf[0], &buf[size], 1 / total);
 }
 
 int GCD(int i1, int i2) { return std::gcd(i1, i2); }
@@ -111,8 +111,8 @@ int GCD(int i1, int i2) { return std::gcd(i1, i2); }
 template <typename T>
 class AlignedBuffer {
  public:
-  AlignedBuffer(int iSize) {
-    size_ = iSize;
+  AlignedBuffer(int size) {
+    size_ = size;
     buf_ = new T[size_];
   }
 
@@ -133,8 +133,8 @@ class AlignedBuffer {
 
 struct PolyphaseFilter {
   struct State {
-    State(int iUpFactor) : buf_(FILTER_LENGTH * 2) {
-      poly_index_ = iUpFactor - 1;
+    State(int up_factor) : buf_(FILTER_LENGTH * 2) {
+      poly_index_ = up_factor - 1;
       filled_ = 0;
       buf_next_ = 0;
     }
@@ -150,18 +150,18 @@ struct PolyphaseFilter {
   };
   friend struct State;
 
-  PolyphaseFilter(int iUpFactor) : polyphase_(FILTER_LENGTH * iUpFactor) {
-    up_factor_ = iUpFactor;
+  PolyphaseFilter(int up_factor) : polyphase_(FILTER_LENGTH * up_factor) {
+    up_factor_ = up_factor;
   }
 
-  void Generate(const float* pFIR);
+  void Generate(const float* fir);
   int RunPolyphaseFilter(
-      State& State, const float* pIn, int iSamplesIn, int iDownFactor,
-      float* pOut, int iSamplesOut, int iSampleStride) const;
+      State& state, const float* in, int samples_in, int down_factor,
+      float* out, int samples_out, int sample_stride) const;
   int GetLatency() const { return FILTER_LENGTH / 2; }
 
   int NumInputsForOutputSamples(
-      const State& State, int iOut, int iDownFactor) const;
+      const State& state, int out, int down_factor) const;
 
  private:
   AlignedBuffer<float> polyphase_;
@@ -204,17 +204,17 @@ struct PolyphaseFilter {
  * third: 0, 3, 6, 9
  * Read a new sample after passing the last line.
  */
-void PolyphaseFilter::Generate(const float* pFIR) {
-  float* pOutput = polyphase_;
-  const int iInputSize = FILTER_LENGTH * up_factor_;
+void PolyphaseFilter::Generate(const float* fir) {
+  float* output = polyphase_;
+  const int input_size = FILTER_LENGTH * up_factor_;
 
-  for (int iRow = 0; iRow < up_factor_; ++iRow) {
-    int iInputOffset = (up_factor_ - iRow - 1) % up_factor_;
-    for (int iCol = 0; iCol < FILTER_LENGTH; ++iCol) {
-      *pOutput = pFIR[iInputOffset];
-      ++pOutput;
-      iInputOffset += up_factor_;
-      iInputOffset %= iInputSize;
+  for (int row = 0; row < up_factor_; ++row) {
+    int input_offset = (up_factor_ - row - 1) % up_factor_;
+    for (int col = 0; col < FILTER_LENGTH; ++col) {
+      *output = fir[input_offset];
+      ++output;
+      input_offset += up_factor_;
+      input_offset %= input_size;
     }
   }
 }
@@ -245,58 +245,58 @@ void PolyphaseFilter::Generate(const float* pFIR) {
  * without consuming an input.
  */
 int PolyphaseFilter::RunPolyphaseFilter(
-    State& State, const float* pIn, int iSamplesIn, int iDownFactor,
-    float* pOut, int iSamplesOut, int iSampleStride) const {
-  ASSERT(iSamplesIn >= 0);
+    State& state, const float* in, int samples_in, int down_factor, float* out,
+    int samples_out, int sample_stride) const {
+  ASSERT(samples_in >= 0);
 
-  float* pOutOrig = pOut;
-  const float* pInEnd = pIn + iSamplesIn * iSampleStride;
-  const float* pOutEnd = pOut + iSamplesOut * iSampleStride;
+  float* out_orig = out;
+  const float* in_end = in + samples_in * sample_stride;
+  const float* out_end = out + samples_out * sample_stride;
 
-  int iFilled = State.filled_;
-  int iPolyIndex = State.poly_index_;
-  while (pOut != pOutEnd) {
-    if (iFilled < FILTER_LENGTH) {
-      if (pIn == pInEnd) {
+  int filled = state.filled_;
+  int poly_index = state.poly_index_;
+  while (out != out_end) {
+    if (filled < FILTER_LENGTH) {
+      if (in == in_end) {
         break;
       }
 
-      State.buf_[State.buf_next_] = *pIn;
-      State.buf_[State.buf_next_ + FILTER_LENGTH] = *pIn;
-      ++State.buf_next_;
-      State.buf_next_ &= FILTER_LENGTH - 1;
+      state.buf_[state.buf_next_] = *in;
+      state.buf_[state.buf_next_ + FILTER_LENGTH] = *in;
+      ++state.buf_next_;
+      state.buf_next_ &= FILTER_LENGTH - 1;
 
-      pIn += iSampleStride;
-      ++iFilled;
+      in += sample_stride;
+      ++filled;
       continue;
     }
 
-    while (pOut != pOutEnd) {
-      const float* pCurPoly = &polyphase_[iPolyIndex * FILTER_LENGTH];
-      const float* pInData = &State.buf_[State.buf_next_];
+    while (out != out_end) {
+      const float* cur_poly = &polyphase_[poly_index * FILTER_LENGTH];
+      const float* in_data = &state.buf_[state.buf_next_];
 
-      float fTot = 0;
+      float tot = 0;
       for (int j = 0; j < FILTER_LENGTH; ++j) {
-        fTot += pInData[j] * pCurPoly[j];
+        tot += in_data[j] * cur_poly[j];
       }
-      *pOut = fTot;
-      pOut += iSampleStride;
+      *out = tot;
+      out += sample_stride;
 
-      iPolyIndex += iDownFactor;
-      if (iPolyIndex >= up_factor_) {
+      poly_index += down_factor;
+      if (poly_index >= up_factor_) {
         break;
       }
     }
-    iFilled -= iPolyIndex / up_factor_;
-    iPolyIndex %= up_factor_;
+    filled -= poly_index / up_factor_;
+    poly_index %= up_factor_;
   }
 
-  State.filled_ = iFilled;
-  State.poly_index_ = iPolyIndex;
+  state.filled_ = filled;
+  state.poly_index_ = poly_index;
 
-  int iRetSamples = pOut - pOutOrig;
-  int iRetFrames = iRetSamples / iSampleStride;
-  return iRetFrames;
+  int ret_samples = out - out_orig;
+  int ret_frames = ret_samples / sample_stride;
+  return ret_frames;
 }
 
 /*
@@ -305,10 +305,10 @@ int PolyphaseFilter::RunPolyphaseFilter(
  * the current position of the stream.
  */
 int PolyphaseFilter::NumInputsForOutputSamples(
-    const State& State, int iOut, int iDownFactor) const {
-  int iIn = 0;
-  int iFilled = State.filled_;
-  int iPolyIndex = State.poly_index_;
+    const State& state, int out, int down_factor) const {
+  int in = 0;
+  int filled = state.filled_;
+  int poly_index = state.poly_index_;
 
 #if 0
 	while( iOut > 0 )
@@ -333,19 +333,19 @@ int PolyphaseFilter::NumInputsForOutputSamples(
 	}
 #endif
 
-  if (iOut > 0) {
-    if (iFilled < FILTER_LENGTH) {
-      int iToFill = FILTER_LENGTH - iFilled;
-      iIn += iToFill;
+  if (out > 0) {
+    if (filled < FILTER_LENGTH) {
+      int to_fill = FILTER_LENGTH - filled;
+      in += to_fill;
     }
 
     // The -1 here is because we don't refill m_fBuf after writing the last
     // output.
-    iPolyIndex += iDownFactor * (iOut - 1);
-    iIn += iPolyIndex / up_factor_;
+    poly_index += down_factor * (out - 1);
+    in += poly_index / up_factor_;
   }
 
-  return iIn;
+  return in;
 }
 /** @brief Utilities for working with the PolyphaseFilter cache. */
 namespace PolyphaseFilterCache {
@@ -356,49 +356,49 @@ static RageMutex PolyphaseFiltersLock("PolyphaseFiltersLock");
 static FilterMap g_mapPolyphaseFilters;
 
 const PolyphaseFilter* MakePolyphaseFilter(
-    int iUpFactor, float fCutoffFrequency) {
+    int up_factor, float cutoff_frequency) {
   PolyphaseFiltersLock.Lock();
-  std::pair<int, float> params(std::make_pair(iUpFactor, fCutoffFrequency));
+  std::pair<int, float> params(std::make_pair(up_factor, cutoff_frequency));
   FilterMap::const_iterator it = g_mapPolyphaseFilters.find(params);
   if (it != g_mapPolyphaseFilters.end()) {
     /* We already have a filter for this upsampling factor and cutoff; use it.
      */
-    PolyphaseFilter* pPolyphase = it->second;
+    PolyphaseFilter* polyphase = it->second;
     PolyphaseFiltersLock.Unlock();
-    return pPolyphase;
+    return polyphase;
   }
-  int iWinSize = FILTER_LENGTH * iUpFactor;
-  float* pFIR = new float[iWinSize];
-  GenerateSincLowPassFilter(pFIR, iWinSize, fCutoffFrequency);
-  ApplyKaiserWindow(pFIR, iWinSize, 8);
-  NormalizeVector(pFIR, iWinSize);
-  MultiplyVector(&pFIR[0], &pFIR[iWinSize], (float)iUpFactor);
+  int win_size = FILTER_LENGTH * up_factor;
+  float* fir = new float[win_size];
+  GenerateSincLowPassFilter(fir, win_size, cutoff_frequency);
+  ApplyKaiserWindow(fir, win_size, 8);
+  NormalizeVector(fir, win_size);
+  MultiplyVector(&fir[0], &fir[win_size], (float)up_factor);
 
-  PolyphaseFilter* pPolyphase = new PolyphaseFilter(iUpFactor);
-  pPolyphase->Generate(pFIR);
-  delete[] pFIR;
+  PolyphaseFilter* polyphase = new PolyphaseFilter(up_factor);
+  polyphase->Generate(fir);
+  delete[] fir;
 
-  g_mapPolyphaseFilters[params] = pPolyphase;
+  g_mapPolyphaseFilters[params] = polyphase;
   PolyphaseFiltersLock.Unlock();
-  return pPolyphase;
+  return polyphase;
 }
 
 const PolyphaseFilter* FindNearestPolyphaseFilter(
-    int iUpFactor, float fCutoffFrequency) {
+    int up_factor, float cutoff_frequency) {
   /* Find a cached filter with the same iUpFactor and a nearby cutoff frequency.
    * Round the cutoff down, if possible; it's better to filter out too much than
    * too little. */
   PolyphaseFiltersLock.Lock();
   std::pair<int, float> params(
-      std::make_pair(iUpFactor, fCutoffFrequency + 0.0001f));
+      std::make_pair(up_factor, cutoff_frequency + 0.0001f));
   FilterMap::const_iterator it = g_mapPolyphaseFilters.upper_bound(params);
   if (it != g_mapPolyphaseFilters.begin()) {
     --it;
   }
-  ASSERT(it->first.first == iUpFactor);
-  PolyphaseFilter* pPolyphase = it->second;
+  ASSERT(it->first.first == up_factor);
+  PolyphaseFilter* polyphase = it->second;
   PolyphaseFiltersLock.Unlock();
-  return pPolyphase;
+  return polyphase;
 }
 }  // namespace PolyphaseFilterCache
 
@@ -414,39 +414,39 @@ class RageSoundResampler_Polyphase {
    * enough, or cause too much filtering, by not having a LPF that's high
    * enough. */
   RageSoundResampler_Polyphase(
-      int iUpFactor, int iMinDownFactor, int iMaxDownFactor) {
+      int up_factor, int min_down_factor, int max_down_factor) {
     /* Cache filters between iMinDownFactor and iMaxDownFactor.  Do them in
      * iFilterIncrement increments; we'll round down to the closest match
      * when filtering.  This will only cause the low-pass filter to be rounded;
      * the conversion ratio will always be exact. */
-    up_factor_ = iUpFactor;
+    up_factor_ = up_factor;
     polyphase_ = nullptr;
 
-    int iFilterIncrement = std::max((iMaxDownFactor - iMinDownFactor) / 10, 1);
-    for (int iDownFactor = iMinDownFactor; iDownFactor <= iMaxDownFactor;
-         iDownFactor += iFilterIncrement) {
-      float fCutoffFrequency = GetCutoffFrequency(iDownFactor);
-      PolyphaseFilterCache::MakePolyphaseFilter(up_factor_, fCutoffFrequency);
+    int filter_increment =
+        std::max((max_down_factor - min_down_factor) / 10, 1);
+    for (int down_factor = min_down_factor; down_factor <= max_down_factor;
+         down_factor += filter_increment) {
+      float cutoff_frequency = GetCutoffFrequency(down_factor);
+      PolyphaseFilterCache::MakePolyphaseFilter(up_factor_, cutoff_frequency);
     }
 
-    SetDownFactor(iUpFactor);
+    SetDownFactor(up_factor);
 
-    state_ = new PolyphaseFilter::State(iUpFactor);
+    state_ = new PolyphaseFilter::State(up_factor);
   }
 
   ~RageSoundResampler_Polyphase() { delete state_; }
 
-  void SetDownFactor(int iDownFactor) {
-    down_factor_ = iDownFactor;
+  void SetDownFactor(int down_factor) {
+    down_factor_ = down_factor;
     polyphase_ = GetFilter(down_factor_);
   }
 
   int Run(
-      const float* pIn, int iSamplesIn, float* pOut, int iSamplesOut,
-      int iSampleStride) const {
+      const float* in, int samples_in, float* out, int samples_out,
+      int sample_stride) const {
     return polyphase_->RunPolyphaseFilter(
-        *state_, pIn, iSamplesIn, down_factor_, pOut, iSamplesOut,
-        iSampleStride);
+        *state_, in, samples_in, down_factor_, out, samples_out, sample_stride);
   }
 
   void Reset() {
@@ -454,8 +454,8 @@ class RageSoundResampler_Polyphase {
     state_ = new PolyphaseFilter::State(up_factor_);
   }
 
-  int NumInputsForOutputSamples(int iOut) const {
-    return polyphase_->NumInputsForOutputSamples(*state_, iOut, down_factor_);
+  int NumInputsForOutputSamples(int out) const {
+    return polyphase_->NumInputsForOutputSamples(*state_, out, down_factor_);
   }
   int GetLatency() const { return polyphase_->GetLatency(); }
   int GetFilled() const { return state_->filled_; }
@@ -468,7 +468,7 @@ class RageSoundResampler_Polyphase {
   }
 
  private:
-  float GetCutoffFrequency(int iDownFactor) const {
+  float GetCutoffFrequency(int down_factor) const {
     /*
      * If we're upsampling, we want the low-pass filter to cut off at the
      * nyquist frequency of the original sample.
@@ -477,16 +477,16 @@ class RageSoundResampler_Polyphase {
      * nyquist frequency of the new sample.
      */
 
-    float fCutoffFrequency;
-    fCutoffFrequency = 1.0f / (2 * up_factor_);
-    fCutoffFrequency = std::min(fCutoffFrequency, 1.0f / (2 * iDownFactor));
-    return fCutoffFrequency;
+    float cutoff_frequency;
+    cutoff_frequency = 1.0f / (2 * up_factor_);
+    cutoff_frequency = std::min(cutoff_frequency, 1.0f / (2 * down_factor));
+    return cutoff_frequency;
   }
 
-  const PolyphaseFilter* GetFilter(int iDownFactor) const {
-    float fCutoffFrequency = GetCutoffFrequency(iDownFactor);
+  const PolyphaseFilter* GetFilter(int down_factor) const {
+    float cutoff_frequency = GetCutoffFrequency(down_factor);
     return PolyphaseFilterCache::FindNearestPolyphaseFilter(
-        up_factor_, fCutoffFrequency);
+        up_factor_, cutoff_frequency);
   }
 
   const PolyphaseFilter* polyphase_;
@@ -496,146 +496,146 @@ class RageSoundResampler_Polyphase {
 };
 
 int RageSoundReader_Resample_Good::GetNextSourceFrame() const {
-  int64_t iPosition = source_->GetNextSourceFrame();
-  iPosition -= resamplers_[0]->GetFilled();
+  int64_t position = source_->GetNextSourceFrame();
+  position -= resamplers_[0]->GetFilled();
 
-  iPosition *= sample_rate_;
-  iPosition /= source_->GetSampleRate();
-  return (int)iPosition;
+  position *= sample_rate_;
+  position /= source_->GetSampleRate();
+  return (int)position;
 }
 
 bool RageSoundReader_Resample_Good::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "Rate") {
-    SetRate(fValue);
+    const std::string& property, float value) {
+  if (property == "Rate") {
+    SetRate(value);
     return true;
   }
 
-  return source_->SetProperty(sProperty, fValue);
+  return source_->SetProperty(property, value);
 }
 
 float RageSoundReader_Resample_Good::GetStreamToSourceRatio() const {
-  float fRatio = source_->GetStreamToSourceRatio();
+  float ratio = source_->GetStreamToSourceRatio();
   if (rate_ != -1) {
-    fRatio *= rate_;
+    ratio *= rate_;
   }
-  return fRatio;
+  return ratio;
 }
 
 RageSoundReader_Resample_Good::RageSoundReader_Resample_Good(
-    RageSoundReader* pSource, int iSampleRate)
-    : RageSoundReader_Filter(pSource) {
-  sample_rate_ = iSampleRate;
+    RageSoundReader* source, int sample_rate)
+    : RageSoundReader_Filter(source) {
+  sample_rate_ = sample_rate;
   rate_ = -1;
   ReopenResampler();
 }
 
 /* Call this if the input position is changed or reset. */
 void RageSoundReader_Resample_Good::Reset() {
-  for (size_t iChannel = 0; iChannel < source_->GetNumChannels(); ++iChannel) {
-    resamplers_[iChannel]->Reset();
+  for (size_t channel = 0; channel < source_->GetNumChannels(); ++channel) {
+    resamplers_[channel]->Reset();
   }
 }
 
 void RageSoundReader_Resample_Good::GetFactors(
-    int& iDownFactor, int& iUpFactor) const {
-  iDownFactor = source_->GetSampleRate();
-  iUpFactor = sample_rate_;
+    int& down_factor, int& up_factor) const {
+  down_factor = source_->GetSampleRate();
+  up_factor = sample_rate_;
 
   {
-    int iGCD = GCD(iUpFactor, iDownFactor);
-    iUpFactor /= iGCD;
-    iDownFactor /= iGCD;
+    int gcd = GCD(up_factor, down_factor);
+    up_factor /= gcd;
+    down_factor /= gcd;
   }
 
-  bool bRateChangingEnabled = rate_ != -1;
-  if (bRateChangingEnabled) {
-    iUpFactor *= 100;
-    iDownFactor *= 100;
+  bool rate_changing_enabled = rate_ != -1;
+  if (rate_changing_enabled) {
+    up_factor *= 100;
+    down_factor *= 100;
   }
 }
 
 /* Call this if the sample factor changes. */
 void RageSoundReader_Resample_Good::ReopenResampler() {
-  for (size_t iChannel = 0; iChannel < resamplers_.size(); ++iChannel) {
-    delete resamplers_[iChannel];
+  for (size_t channel = 0; channel < resamplers_.size(); ++channel) {
+    delete resamplers_[channel];
   }
   resamplers_.clear();
 
-  int iDownFactor, iUpFactor;
-  GetFactors(iDownFactor, iUpFactor);
+  int down_factor, up_factor;
+  GetFactors(down_factor, up_factor);
 
-  for (size_t iChannel = 0; iChannel < source_->GetNumChannels(); ++iChannel) {
-    int iMinDownFactor = iDownFactor;
-    int iMaxDownFactor = iDownFactor;
+  for (size_t channel = 0; channel < source_->GetNumChannels(); ++channel) {
+    int min_down_factor = down_factor;
+    int max_down_factor = down_factor;
     if (rate_ != -1) {
-      iMaxDownFactor *= 5;
+      max_down_factor *= 5;
     }
 
     RageSoundResampler_Polyphase* p = new RageSoundResampler_Polyphase(
-        iUpFactor, iMinDownFactor, iMaxDownFactor);
+        up_factor, min_down_factor, max_down_factor);
     resamplers_.push_back(p);
   }
 
   if (rate_ != -1) {
-    iDownFactor = static_cast<int>((rate_ * iDownFactor) + 0.5);
+    down_factor = static_cast<int>((rate_ * down_factor) + 0.5);
   }
 
-  for (size_t iChannel = 0; iChannel < resamplers_.size(); ++iChannel) {
-    resamplers_[iChannel]->SetDownFactor(iDownFactor);
+  for (size_t channel = 0; channel < resamplers_.size(); ++channel) {
+    resamplers_[channel]->SetDownFactor(down_factor);
   }
 }
 
 RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good() {
-  for (size_t iChannel = 0; iChannel < resamplers_.size(); ++iChannel) {
-    delete resamplers_[iChannel];
+  for (size_t channel = 0; channel < resamplers_.size(); ++channel) {
+    delete resamplers_[channel];
   }
 }
 
 /* iFrame is in the destination rate.  Seek the source in its own sample rate.
  */
-int RageSoundReader_Resample_Good::SetPosition(int iFrame) {
+int RageSoundReader_Resample_Good::SetPosition(int frame) {
   Reset();
-  iFrame = (int)SCALE(
-      iFrame, 0, (int64_t)sample_rate_, 0, (int64_t)source_->GetSampleRate());
-  return source_->SetPosition(iFrame);
+  frame = (int)SCALE(
+      frame, 0, (int64_t)sample_rate_, 0, (int64_t)source_->GetSampleRate());
+  return source_->SetPosition(frame);
 }
 
-int RageSoundReader_Resample_Good::Read(float* pBuf, int iFrames) {
-  int iChannels = resamplers_.size();
+int RageSoundReader_Resample_Good::Read(float* buf, int frames) {
+  int channels = resamplers_.size();
 
-  int iFramesRead = 0;
+  int frames_read = 0;
 
   /* If the ratio is 1:1, then we're effectively disabled, and we can read
    * directly into the buffer. */
-  int iDownFactor, iUpFactor;
-  GetFactors(iDownFactor, iUpFactor);
+  int down_factor, up_factor;
+  GetFactors(down_factor, up_factor);
 
-  if (resamplers_[0]->GetFilled() == 0 && iDownFactor == iUpFactor &&
+  if (resamplers_[0]->GetFilled() == 0 && down_factor == up_factor &&
       GetRate() == 1.0f) {
-    return source_->Read(pBuf, iFrames);
+    return source_->Read(buf, frames);
   }
 
   {
-    int iFramesNeeded = resamplers_[0]->NumInputsForOutputSamples(iFrames);
-    float* pTmpBuf = (float*)alloca(iFramesNeeded * sizeof(float) * iChannels);
-    int iFramesIn = source_->Read(pTmpBuf, iFramesNeeded);
-    if (iFramesIn < 0) {
-      return iFramesIn;
+    int frames_needed = resamplers_[0]->NumInputsForOutputSamples(frames);
+    float* tmp_buf = (float*)alloca(frames_needed * sizeof(float) * channels);
+    int frames_in = source_->Read(tmp_buf, frames_needed);
+    if (frames_in < 0) {
+      return frames_in;
     }
 
-    for (int iChannel = 0; iChannel < iChannels; ++iChannel) {
-      int iGotFrames = resamplers_[iChannel]->Run(
-          pTmpBuf + iChannel, iFramesIn, pBuf + iChannel, iFrames, iChannels);
-      ASSERT(iGotFrames <= iFrames);
+    for (int channel = 0; channel < channels; ++channel) {
+      int got_frames = resamplers_[channel]->Run(
+          tmp_buf + channel, frames_in, buf + channel, frames, channels);
+      ASSERT(got_frames <= frames);
 
-      if (iChannel == 0) {
-        iFramesRead += iGotFrames;
+      if (channel == 0) {
+        frames_read += got_frames;
       }
     }
   }
 
-  return iFramesRead;
+  return frames_read;
 }
 
 /*
@@ -649,26 +649,26 @@ int RageSoundReader_Resample_Good::Read(float* pBuf, int iFrames) {
  * Changing these values will take effect immediately, with a buffering latency
  * of L/4 frames.
  */
-void RageSoundReader_Resample_Good::SetRate(float fRatio) {
-  ASSERT(fRatio > 0);
-  bool bRateChangingWasEnabled = rate_ != -1;
-  rate_ = fRatio;
+void RageSoundReader_Resample_Good::SetRate(float ratio) {
+  ASSERT(ratio > 0);
+  bool rate_changing_was_enabled = rate_ != -1;
+  rate_ = ratio;
 
-  if (!bRateChangingWasEnabled) {
+  if (!rate_changing_was_enabled) {
     ReopenResampler();
   }
 
-  int iDownFactor, iUpFactor;
-  GetFactors(iDownFactor, iUpFactor);
+  int down_factor, up_factor;
+  GetFactors(down_factor, up_factor);
   if (rate_ != -1) {
-    iDownFactor = static_cast<int>((rate_ * iDownFactor) + 0.5);
+    down_factor = static_cast<int>((rate_ * down_factor) + 0.5);
   }
 
   /* Set m_fRate to the actual rate, after quantization by iUpFactor. */
-  rate_ = float(iDownFactor) / iUpFactor;
+  rate_ = float(down_factor) / up_factor;
 
-  for (size_t iChannel = 0; iChannel < resamplers_.size(); ++iChannel) {
-    resamplers_[iChannel]->SetDownFactor(iDownFactor);
+  for (size_t channel = 0; channel < resamplers_.size(); ++channel) {
+    resamplers_[channel]->SetDownFactor(down_factor);
   }
 }
 

@@ -10,19 +10,19 @@
 class RageFileDriverSlice : public RageFileObj {
  public:
   /* pFile will be freed if DeleteFileWhenFinished is called. */
-  RageFileDriverSlice(RageFileBasic* pFile, int iOffset, int iFileSize);
+  RageFileDriverSlice(RageFileBasic* file, int offset, int file_size);
   RageFileDriverSlice(const RageFileDriverSlice& cpy);
   ~RageFileDriverSlice();
   RageFileDriverSlice* Copy() const;
 
   void DeleteFileWhenFinished() { file_owned_ = true; }
 
-  int ReadInternal(void* pBuffer, size_t iBytes);
+  int ReadInternal(void* buffer, size_t bytes);
   int WriteInternal(const void* /* pBuffer */, size_t /* iBytes */) {
     SetError("Not implemented");
     return -1;
   }
-  int SeekInternal(int iOffset);
+  int SeekInternal(int offset);
   int GetFileSize() const { return file_size_; }
   int GetFD() { return file_->GetFD(); }
 

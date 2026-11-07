@@ -93,59 +93,59 @@ struct StageLayout {
     return (p1.y_ - p2.y_) * (p1.y_ - p2.y_) +
            (p1.x_ - p2.x_) * (p1.x_ - p2.x_);
   }
-  float getDistance(int leftIndex, int rightIndex) const {
-    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+  float getDistance(int left_index, int right_index) const {
+    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
       return 0;
     }
-    return distances_[leftIndex * column_count_ + rightIndex];
+    return distances_[left_index * column_count_ + right_index];
   }
-  float getXFacingPenalty(int leftIndex, int rightIndex) const {
-    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+  float getXFacingPenalty(int left_index, int right_index) const {
+    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
       return 0;
     }
-    return facing_x_penalties_[leftIndex * column_count_ + rightIndex];
+    return facing_x_penalties_[left_index * column_count_ + right_index];
   }
-  float getYFacingPenalty(int leftIndex, int rightIndex) const {
-    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+  float getYFacingPenalty(int left_index, int right_index) const {
+    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
       return 0;
     }
-    return facing_y_penalties_[leftIndex * column_count_ + rightIndex];
+    return facing_y_penalties_[left_index * column_count_ + right_index];
   }
-  float getXDifference(int leftIndex, int rightIndex) const {
-    if (leftIndex == rightIndex) {
+  float getXDifference(int left_index, int right_index) const {
+    if (left_index == right_index) {
       return 0;
     }
-    float dx = columns_[rightIndex].x_ - columns_[leftIndex].x_;
-    float dy = columns_[rightIndex].y_ - columns_[leftIndex].y_;
+    float dx = columns_[right_index].x_ - columns_[left_index].x_;
+    float dy = columns_[right_index].y_ - columns_[left_index].y_;
     float distance = std::sqrt(dx * dx + dy * dy);
     dx /= distance;
     bool negative = dx <= 0;
     dx = std::pow(dx, 4);
     return negative ? -dx : dx;
   }
-  float getYDifference(int leftIndex, int rightIndex) const {
-    if (leftIndex == rightIndex) {
+  float getYDifference(int left_index, int right_index) const {
+    if (left_index == right_index) {
       return 0;
     }
-    float dx = columns_[rightIndex].x_ - columns_[leftIndex].x_;
-    float dy = columns_[rightIndex].y_ - columns_[leftIndex].y_;
+    float dx = columns_[right_index].x_ - columns_[left_index].x_;
+    float dy = columns_[right_index].y_ - columns_[left_index].y_;
     float distance = std::sqrt(dx * dx + dy * dy);
     dy /= distance;
     bool negative = dy <= 0;
     dy = std::pow(dy, 4);
     return negative ? -dy : dy;
   }
-  StagePoint averagePoint(int leftIndex, int rightIndex) const {
-    if (leftIndex == INVALID_COLUMN && rightIndex == INVALID_COLUMN) {
+  StagePoint averagePoint(int left_index, int right_index) const {
+    if (left_index == INVALID_COLUMN && right_index == INVALID_COLUMN) {
       return {0, 0};
     }
-    if (leftIndex == INVALID_COLUMN) {
-      return columns_[rightIndex];
+    if (left_index == INVALID_COLUMN) {
+      return columns_[right_index];
     }
-    if (rightIndex == INVALID_COLUMN) {
-      return columns_[leftIndex];
+    if (right_index == INVALID_COLUMN) {
+      return columns_[left_index];
     }
-    return avg_points_[leftIndex * column_count_ + rightIndex];
+    return avg_points_[left_index * column_count_ + right_index];
   }
 
   void preCalculateStuff();
@@ -217,8 +217,8 @@ struct Row {
   int column_count_ = 0;
   int note_count_ = 0;
 
-  Row(int _columnCount) {
-    column_count_ = _columnCount;
+  Row(int column_count) {
+    column_count_ = column_count;
     where_the_feet_are_.fill(INVALID_COLUMN);
   }
 
@@ -249,13 +249,13 @@ struct RowCounter {
   std::vector<float> next_fake_mines_;
   // number of "notes" added to the counter for the current row.
   int note_count_ = 0;
-  RowCounter(int columnCount) {
-    notes_ = std::vector<IntermediateNoteData>(columnCount);
-    active_holds_ = std::vector<IntermediateNoteData>(columnCount);
-    mines_ = std::vector<float>(columnCount, 0);
-    fake_mines_ = std::vector<float>(columnCount, 0);
-    next_mines_ = std::vector<float>(columnCount, 0);
-    next_fake_mines_ = std::vector<float>(columnCount, 0);
+  RowCounter(int column_count) {
+    notes_ = std::vector<IntermediateNoteData>(column_count);
+    active_holds_ = std::vector<IntermediateNoteData>(column_count);
+    mines_ = std::vector<float>(column_count, 0);
+    fake_mines_ = std::vector<float>(column_count, 0);
+    next_mines_ = std::vector<float>(column_count, 0);
+    next_fake_mines_ = std::vector<float>(column_count, 0);
 
     last_column_second_ = CLM_SECOND_INVALID;
     last_column_beat_ = CLM_SECOND_INVALID;
@@ -275,10 +275,10 @@ struct StepParityNode {
   float total_cost_ = 0;
   StepParityNode* previous_node_ = 0;
 
-  StepParityNode(State* _state, float _second, int _rowIndex) {
-    state_ = _state;
-    row_index_ = _rowIndex;
-    second_ = _second;
+  StepParityNode(State* state, float second, int row_index) {
+    state_ = state;
+    row_index_ = row_index;
+    second_ = second;
   }
 };
 };  // namespace StepParity

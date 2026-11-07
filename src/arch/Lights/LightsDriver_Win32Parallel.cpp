@@ -8,7 +8,7 @@ REGISTER_LIGHTS_DRIVER_CLASS(Win32Parallel);
 
 HINSTANCE hDLL = nullptr;
 
-typedef void(WINAPI PORTOUT)(short int Port, char Data);
+typedef void(WINAPI PORTOUT)(short int port, char data);
 PORTOUT* PortOut = nullptr;
 
 const int LIGHTS_PER_PARALLEL_PORT = 8;
@@ -54,13 +54,13 @@ void LightsDriver_Win32Parallel::Set(const LightsState* ls) {
 
   {
     FOREACH_CabinetLight(cl) {
-      bool bOn = ls->cabinet_lights_[cl];
+      bool on = ls->cabinet_lights_[cl];
       int index = CabinetLightToIndex(cl);
       int lpt;
       int pin;
       IndexToLptAndPin(index, lpt, pin);
       BYTE mask = (BYTE)(0x01 << pin);
-      if (bOn) {
+      if (on) {
         data[lpt] |= mask;
       } else {
         data[lpt] &= ~mask;
@@ -70,13 +70,13 @@ void LightsDriver_Win32Parallel::Set(const LightsState* ls) {
 
   FOREACH_ENUM(GameController, gc) {
     FOREACH_ENUM(GameButton, gb) {
-      bool bOn = ls->game_button_lights_[gc][gb];
+      bool on = ls->game_button_lights_[gc][gb];
       int index = GameControllerAndGameButtonToIndex(gc, gb);
       int lpt;
       int pin;
       IndexToLptAndPin(index, lpt, pin);
       BYTE mask = (BYTE)(0x01 << pin);
-      if (bOn) {
+      if (on) {
         data[lpt] |= mask;
       } else {
         data[lpt] &= ~mask;

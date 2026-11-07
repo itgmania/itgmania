@@ -14,7 +14,7 @@ class RageDisplay_D3D : public RageDisplay {
   RageDisplay_D3D();
   virtual ~RageDisplay_D3D();
   virtual std::string Init(
-      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
+      const VideoModeParams& p, bool allow_unaccelerated_renderer);
 
   virtual std::string GetApiDescription() const { return "D3D"; }
   virtual void GetDisplaySpecs(DisplaySpecs& out) const;
@@ -28,14 +28,14 @@ class RageDisplay_D3D : public RageDisplay {
   bool SupportsTextureFormat(RagePixelFormat pixfmt, bool realtime = false);
   bool SupportsPerVertexMatrixScale() { return false; }
   uintptr_t CreateTexture(
-      RagePixelFormat pixfmt, RageSurface* img, bool bGenerateMipMaps);
+      RagePixelFormat pixfmt, RageSurface* img, bool generate_mip_maps);
   void UpdateTexture(
-      uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset,
+      uintptr_t tex_handle, RageSurface* img, int xoffset, int yoffset,
       int width, int height);
-  void DeleteTexture(uintptr_t iTexHandle);
+  void DeleteTexture(uintptr_t tex_handle);
   void ClearAllTextures();
   int GetNumTextureUnits();
-  void SetTexture(TextureUnit tu, uintptr_t iTexture);
+  void SetTexture(TextureUnit tu, uintptr_t texture);
   void SetTextureMode(TextureUnit tu, TextureMode tm);
   void SetTextureWrapping(TextureUnit tu, bool b);
   int GetMaxTextureSize() const;
@@ -63,17 +63,17 @@ class RageDisplay_D3D : public RageDisplay {
   void DeleteCompiledGeometry(RageCompiledGeometry* p);
 
  protected:
-  void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawQuadStripInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawFanInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawStripInternal(const RageSpriteVertex v[], int iNumVerts);
-  void DrawTrianglesInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawQuadsInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawQuadStripInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawFanInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawStripInternal(const RageSpriteVertex v[], int num_verts);
+  void DrawTrianglesInternal(const RageSpriteVertex v[], int num_verts);
   void DrawSymmetricQuadStripInternal(
-      const RageSpriteVertex v[], int iNumVerts);
+      const RageSpriteVertex v[], int num_verts);
   void DrawCompiledGeometryInternal(
-      const RageCompiledGeometry* p, int iMeshIndex);
+      const RageCompiledGeometry* p, int mesh_index);
 
-  std::string TryVideoMode(const VideoModeParams& p, bool& bNewDeviceOut);
+  std::string TryVideoMode(const VideoModeParams& p, bool& new_device_out);
   RageSurface* CreateScreenshot();
   RageMatrix GetOrthoMatrix(
       float l, float r, float b, float t, float zn, float zf);

@@ -87,12 +87,12 @@ bool InputHandler_Linux_Joystick::TryDevice(std::string dev) {
     FileDescriptor f;
     f.fd_ = open(dev.c_str(), O_RDONLY);
     if (f.fd_ != -1) {
-      char szName[1024];
-      ZERO(szName);
-      if (ioctl(f.fd_, JSIOCGNAME(sizeof(szName)), szName) < 0) {
+      char name[1024];
+      ZERO(name);
+      if (ioctl(f.fd_, JSIOCGNAME(sizeof(name)), name) < 0) {
         f.description_ = ssprintf("Unknown joystick at %s", dev.c_str());
       } else {
-        f.description_ = szName;
+        f.description_ = name;
       }
 
       LOG->Info("LinuxJoystick: Opened %s", dev.c_str());
@@ -180,14 +180,14 @@ void InputHandler_Linux_Joystick::InputThread() {
       event.type &= ~JS_EVENT_INIT;
       switch (event.type) {
         case JS_EVENT_BUTTON: {
-          int iNum = event.number;
+          int num = event.number;
           // In 2.6.11 using an EMS USB2, the event number for P1 Tri (the first
           // button) is being reported as 32 instead of 0.  Correct for this.
           wrap(
-              iNum,
+              num,
               32);  // max number of joystick buttons.  Make this a constant?
           ButtonPressed(
-              DeviceInput(id, enum_add2(JOY_BUTTON_1, iNum), event.value, now));
+              DeviceInput(id, enum_add2(JOY_BUTTON_1, num), event.value, now));
           break;
         }
 
@@ -215,7 +215,7 @@ void InputHandler_Linux_Joystick::InputThread() {
 }
 
 void InputHandler_Linux_Joystick::GetDevicesAndDescriptions(
-    std::vector<InputDeviceInfo>& vDevicesOut) {
+    std::vector<InputDeviceInfo>& devices_out) {
   // HACK: If IH_Linux_Joystick is constructed before IH_Linux_Event, our thread
   // won't be started as part of the constructor. This isn't called until all
   // InputHandlers have been constructed, and is (hopefully) in the same thread
@@ -229,7 +229,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions(
       continue;
     }
 
-    vDevicesOut.push_back(
+    devices_out.push_back(
         InputDeviceInfo(InputDevice(DEVICE_JOY1 + i), files_[i].description_));
   }
   devices_changed_ = false;

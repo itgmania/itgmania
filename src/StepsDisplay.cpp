@@ -48,8 +48,8 @@ StepsDisplay::StepsDisplay() {}
  */
 
 void StepsDisplay::Load(
-    const std::string& sMetricsGroup, const PlayerState* pPlayerState) {
-  metrics_group_ = sMetricsGroup;
+    const std::string& metrics_group, const PlayerState* p_player_state) {
+  metrics_group_ = metrics_group;
 
   /* We can't use global ThemeMetric<std::string>s, because we can have multiple
    * StepsDisplays on screen at once, with different names. */
@@ -70,10 +70,10 @@ void StepsDisplay::Load(
   this->AddChild(spr_frame_);
 
   if (show_ticks_) {
-    std::string sChars = "10";  // on, off (todo: make this metricable -aj)
+    std::string chars = "10";  // on, off (todo: make this metricable -aj)
     text_ticks_.SetName("Ticks");
     text_ticks_.LoadFromTextureAndChars(
-        THEME->GetPathF(metrics_group_, "ticks"), sChars);
+        THEME->GetPathF(metrics_group_, "ticks"), chars);
     ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(text_ticks_, metrics_group_);
     this->AddChild(&text_ticks_);
   }
@@ -121,7 +121,7 @@ void StepsDisplay::Load(
   }
 
   // Play Load Command
-  PlayerState* pPlayerState_ = const_cast<PlayerState*>(pPlayerState);
+  PlayerState* pPlayerState_ = const_cast<PlayerState*>(p_player_state);
   Message msg("Load");
   if (pPlayerState_) {
     msg.SetParam("PlayerState", LuaReference::CreateFromPush(*pPlayerState_));
@@ -134,18 +134,18 @@ void StepsDisplay::Load(
 void StepsDisplay::SetFromGameState(PlayerNumber pn) {
   if (GAMESTATE->IsCourseMode()) {
     // figure out what course type is selected somehow.
-    const Trail* pTrail = GAMESTATE->cur_trail_[pn];
-    if (pTrail) {
-      SetFromTrail(pTrail);
+    const Trail* trail = GAMESTATE->cur_trail_[pn];
+    if (trail) {
+      SetFromTrail(trail);
     } else {
       SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
           StepsType_Invalid, 0, GAMESTATE->preferred_course_difficulty_[pn],
           CourseType_Invalid);
     }
   } else {
-    const Steps* pSteps = GAMESTATE->cur_steps_[pn];
-    if (pSteps) {
-      SetFromSteps(pSteps);
+    const Steps* steps = GAMESTATE->cur_steps_[pn];
+    if (steps) {
+      SetFromSteps(steps);
     } else {
       SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
           StepsType_Invalid, 0, GAMESTATE->preferred_difficulty_[pn],
@@ -154,43 +154,43 @@ void StepsDisplay::SetFromGameState(PlayerNumber pn) {
   }
 }
 
-void StepsDisplay::SetFromSteps(const Steps* pSteps) {
-  if (pSteps == nullptr) {
+void StepsDisplay::SetFromSteps(const Steps* steps) {
+  if (steps == nullptr) {
     Unset();
     return;
   }
 
   SetParams params = {
-      pSteps,
+      steps,
       nullptr,
-      pSteps->GetMeter(),
-      pSteps->steps_type_,
-      pSteps->GetDifficulty(),
+      steps->GetMeter(),
+      steps->steps_type_,
+      steps->GetDifficulty(),
       CourseType_Invalid};
   SetInternal(params);
 }
 
-void StepsDisplay::SetFromTrail(const Trail* pTrail) {
-  if (pTrail == nullptr) {
+void StepsDisplay::SetFromTrail(const Trail* trail) {
+  if (trail == nullptr) {
     Unset();
     return;
   }
 
   SetParams params = {
       nullptr,
-      pTrail,
-      pTrail->GetMeter(),
-      pTrail->steps_type_,
-      pTrail->course_difficulty_,
-      pTrail->course_type_};
+      trail,
+      trail->GetMeter(),
+      trail->steps_type_,
+      trail->course_difficulty_,
+      trail->course_type_};
   SetInternal(params);
 }
 
 void StepsDisplay::Unset() { this->SetVisible(false); }
 
 void StepsDisplay::SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
-    StepsType st, int iMeter, Difficulty dc, CourseType ct) {
-  SetParams params = {nullptr, nullptr, iMeter, st, dc, ct};
+    StepsType st, int meter, Difficulty dc, CourseType ct) {
+  SetParams params = {nullptr, nullptr, meter, st, dc, ct};
   SetInternal(params);
 }
 
@@ -198,29 +198,29 @@ void StepsDisplay::SetInternal(const SetParams& params) {
   this->SetVisible(true);
   Message msg("Set");
 
-  std::string sCustomDifficulty;
+  std::string custom_difficulty;
   if (params.steps_) {
-    sCustomDifficulty = StepsToCustomDifficulty(params.steps_);
+    custom_difficulty = StepsToCustomDifficulty(params.steps_);
   } else if (params.trail_) {
-    sCustomDifficulty = TrailToCustomDifficulty(params.trail_);
+    custom_difficulty = TrailToCustomDifficulty(params.trail_);
   } else {
-    sCustomDifficulty = GetCustomDifficulty(params.st_, params.dc_, params.ct_);
+    custom_difficulty = GetCustomDifficulty(params.st_, params.dc_, params.ct_);
   }
-  msg.SetParam("CustomDifficulty", sCustomDifficulty);
+  msg.SetParam("CustomDifficulty", custom_difficulty);
 
-  std::string sDisplayDescription;
+  std::string display_description;
   if (params.steps_ && params.steps_->IsAnEdit()) {
-    sDisplayDescription = params.steps_->GetDescription();
-  } else if (sCustomDifficulty.empty()) {
-    sDisplayDescription = std::string();
+    display_description = params.steps_->GetDescription();
+  } else if (custom_difficulty.empty()) {
+    display_description = std::string();
   } else {
-    sDisplayDescription = CustomDifficultyToLocalizedString(sCustomDifficulty);
+    display_description = CustomDifficultyToLocalizedString(custom_difficulty);
   }
-  msg.SetParam("DisplayDescription", sDisplayDescription);
+  msg.SetParam("DisplayDescription", display_description);
 
-  std::string sDisplayCredit;
+  std::string display_credit;
   if (params.steps_) {
-    sDisplayCredit = params.steps_->GetCredit();
+    display_credit = params.steps_->GetCredit();
   }
 
   if (params.steps_) {
@@ -239,12 +239,12 @@ void StepsDisplay::SetInternal(const SetParams& params) {
     char on = char('1');
     char off = '0';
 
-    std::string sNewText;
-    int iNumOn = std::min((int)max_ticks_, params.meter_);
-    sNewText.insert(sNewText.end(), iNumOn, on);
-    int iNumOff = std::max(0, num_ticks_ - iNumOn);
-    sNewText.insert(sNewText.end(), iNumOff, off);
-    text_ticks_.SetText(sNewText);
+    std::string new_text;
+    int num_on = std::min((int)max_ticks_, params.meter_);
+    new_text.insert(new_text.end(), num_on, on);
+    int num_off = std::max(0, num_ticks_ - num_on);
+    new_text.insert(new_text.end(), num_off, off);
+    text_ticks_.SetText(new_text);
     text_ticks_.HandleMessage(msg);
   }
 
@@ -253,19 +253,19 @@ void StepsDisplay::SetInternal(const SetParams& params) {
     {
       text_meter_.SetText(zero_meter_string_);
     } else {
-      const std::string sMeter =
+      const std::string meter =
           ssprintf(meter_format_string_.GetValue().c_str(), params.meter_);
-      text_meter_.SetText(sMeter);
+      text_meter_.SetText(meter);
       text_meter_.HandleMessage(msg);
     }
   }
 
   if (show_description_) {
-    text_description_.SetText(sDisplayDescription);
+    text_description_.SetText(display_description);
     text_description_.HandleMessage(msg);
   }
   if (show_credit_) {
-    text_author_.SetText(sDisplayCredit);
+    text_author_.SetText(display_credit);
     text_author_.HandleMessage(msg);
   }
 
@@ -303,8 +303,8 @@ class LunaStepsDisplay : public Luna<StepsDisplay> {
     if (lua_isnil(L, 1)) {
       p->SetFromSteps(nullptr);
     } else {
-      Steps* pS = Luna<Steps>::check(L, 1);
-      p->SetFromSteps(pS);
+      Steps* s = Luna<Steps>::check(L, 1);
+      p->SetFromSteps(s);
     }
     COMMON_RETURN_SELF;
   }
@@ -312,8 +312,8 @@ class LunaStepsDisplay : public Luna<StepsDisplay> {
     if (lua_isnil(L, 1)) {
       p->SetFromTrail(nullptr);
     } else {
-      Trail* pT = Luna<Trail>::check(L, 1);
-      p->SetFromTrail(pT);
+      Trail* t = Luna<Trail>::check(L, 1);
+      p->SetFromTrail(t);
     }
     COMMON_RETURN_SELF;
   }

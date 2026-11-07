@@ -21,17 +21,17 @@
 static Preference<bool> g_bRateModPreservesPitch("RateModPreservesPitch", true);
 
 RageSoundReader_PitchChange::RageSoundReader_PitchChange(
-    RageSoundReader* pSource)
+    RageSoundReader* source)
     : RageSoundReader_Filter(nullptr) {
-  bool bPreservePitch = g_bRateModPreservesPitch.Get();
+  bool preserve_pitch = g_bRateModPreservesPitch.Get();
 
-  speed_change_ = new RageSoundReader_SpeedChange(pSource);
-  if (bPreservePitch) {
+  speed_change_ = new RageSoundReader_SpeedChange(source);
+  if (preserve_pitch) {
     resample_ = new RageSoundReader_Resample_Good(
         speed_change_, speed_change_->GetSampleRate());
   } else {
     resample_ =
-        new RageSoundReader_Resample_Good(pSource, pSource->GetSampleRate());
+        new RageSoundReader_Resample_Good(source, source->GetSampleRate());
   }
   source_ = resample_;
   speed_ratio_ = 1.0f;
@@ -55,16 +55,16 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange(
   last_set_pitch_ratio_ = cpy.last_set_pitch_ratio_;
 }
 
-int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
+int RageSoundReader_PitchChange::Read(float* buf, int frames) {
   /* m_pSpeedChange->NextReadWillStep is true if speed changes will be applied
    * immediately on the next Read().  When this is true, apply the ratio to the
    * resampler and the speed changer simultaneously, so they take effect as
    * closely together as possible. */
-  bool bPreservePitch = g_bRateModPreservesPitch.Get();
-  if ((!bPreservePitch) || ((last_set_speed_ratio_ != speed_ratio_ ||
+  bool preserve_pitch = g_bRateModPreservesPitch.Get();
+  if ((!preserve_pitch) || ((last_set_speed_ratio_ != speed_ratio_ ||
                              last_set_pitch_ratio_ != pitch_ratio_) &&
                             speed_change_->NextReadWillStep())) {
-    float fRate = GetStreamToSourceRatio();
+    float rate = GetStreamToSourceRatio();
 
     /* This is the simple way: */
     // m_pResample->SetRate( m_fPitchRatio );
@@ -74,11 +74,11 @@ int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
      * point math, and the actual ratio will be slightly different than what
      * we tell it to use.  The actual ratio used is fActualPitchRatio. */
 
-    if (bPreservePitch) {
+    if (preserve_pitch) {
       resample_->SetRate(pitch_ratio_);
-      float fActualPitchRatio = resample_->GetRate();
-      float fRequestedSpeedRatio = speed_ratio_ / fActualPitchRatio;
-      speed_change_->SetSpeedRatio(fRequestedSpeedRatio);
+      float actual_pitch_ratio = resample_->GetRate();
+      float requested_speed_ratio = speed_ratio_ / actual_pitch_ratio;
+      speed_change_->SetSpeedRatio(requested_speed_ratio);
       last_set_pitch_ratio_ = pitch_ratio_;
       last_set_speed_ratio_ = speed_ratio_;
     } else {
@@ -88,32 +88,32 @@ int RageSoundReader_PitchChange::Read(float* pBuf, int iFrames) {
 
     /* If we just applied a new speed and it caused the ratio to change, return
      * no data, so the caller can see the new ratio. */
-    if (fRate != GetStreamToSourceRatio()) {
+    if (rate != GetStreamToSourceRatio()) {
       return 0;
     }
   }
 
-  return RageSoundReader_Filter::Read(pBuf, iFrames);
+  return RageSoundReader_Filter::Read(buf, frames);
 }
 
 bool RageSoundReader_PitchChange::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "Rate") {
+    const std::string& property, float value) {
+  if (property == "Rate") {
     /* Don't propagate this.  m_pResample will take it, but it's under
      * our control. */
     return false;
   }
-  if (sProperty == "Speed") {
-    SetSpeedRatio(fValue);
+  if (property == "Speed") {
+    SetSpeedRatio(value);
     return true;
   }
 
-  if (sProperty == "Pitch") {
-    SetPitchRatio(fValue);
+  if (property == "Pitch") {
+    SetPitchRatio(value);
     return true;
   }
 
-  return RageSoundReader_Filter::SetProperty(sProperty, fValue);
+  return RageSoundReader_Filter::SetProperty(property, value);
 }
 
 /*

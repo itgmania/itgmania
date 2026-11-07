@@ -16,9 +16,9 @@ class LifeMeterTime : public LifeMeter {
   virtual ~LifeMeterTime();
 
   virtual void Load(
-      const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   virtual void OnLoadSong();
   virtual void ChangeLife(TapNoteScore score);
@@ -34,7 +34,7 @@ class LifeMeterTime : public LifeMeter {
  private:
   float GetLifeSeconds() const;
   void SendLifeChangedMessage(
-      float fOldLife, TapNoteScore tns, HoldNoteScore hns);
+      float old_life, TapNoteScore tns, HoldNoteScore hns);
 
   AutoActor spr_background_;
   Quad quad_danger_glow_;

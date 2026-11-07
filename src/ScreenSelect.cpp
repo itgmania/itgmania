@@ -85,16 +85,16 @@ void ScreenSelect::Init() {
     // Each element in the list is a choice name. This level of indirection
     // makes it easier to add or remove items without having to change a
     // bunch of indices.
-    std::vector<std::string> asChoiceNames;
-    split(CHOICE_NAMES, ",", asChoiceNames, true);
+    std::vector<std::string> as_choice_names;
+    split(CHOICE_NAMES, ",", as_choice_names, true);
 
-    for (unsigned c = 0; c < asChoiceNames.size(); c++) {
-      std::string sChoiceName = asChoiceNames[c];
+    for (unsigned c = 0; c < as_choice_names.size(); c++) {
+      std::string choice_name = as_choice_names[c];
 
       GameCommand mc;
       mc.ApplyCommitsScreens(false);
-      mc.name_ = sChoiceName;
-      Commands cmd = ParseCommands(CHOICE(sChoiceName));
+      mc.name_ = choice_name;
+      Commands cmd = ParseCommands(CHOICE(choice_name));
       mc.Load(c, cmd);
       game_commands_.push_back(mc);
     }
@@ -120,7 +120,7 @@ ScreenSelect::~ScreenSelect() {
   }
 }
 
-void ScreenSelect::Update(float fDelta) {
+void ScreenSelect::Update(float delta) {
   if (!IsTransitioning()) {
     if (IDLE_COMMENT_SECONDS > 0 &&
         timer_idle_comment_.Ago() >= IDLE_COMMENT_SECONDS) {
@@ -136,7 +136,7 @@ void ScreenSelect::Update(float fDelta) {
     }
   }
 
-  ScreenWithMenuElements::Update(fDelta);
+  ScreenWithMenuElements::Update(delta);
 }
 
 bool ScreenSelect::Input(const InputEventPlus& input) {
@@ -184,8 +184,8 @@ bool ScreenSelect::Input(const InputEventPlus& input) {
   return ScreenWithMenuElements::Input(input);  // default input handler
 }
 
-void ScreenSelect::HandleScreenMessage(const ScreenMessage SM) {
-  if (SM == SM_BeginFadingOut)  // Screen is starting to tween out.
+void ScreenSelect::HandleScreenMessage(const ScreenMessage sm) {
+  if (sm == SM_BeginFadingOut)  // Screen is starting to tween out.
   {
     /* Don't call GameCommand::Apply once per player on screens that
      * have a shared selection. This can cause change messages to be
@@ -194,27 +194,27 @@ void ScreenSelect::HandleScreenMessage(const ScreenMessage SM) {
      * TODO: Think of a better way to handle this.
      */
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid);
-    int iMastersIndex =
+    int masters_index =
         this->GetSelectionIndex(GAMESTATE->GetMasterPlayerNumber());
-    bool bAllPlayersChoseTheSame = true;
+    bool all_players_chose_the_same = true;
     FOREACH_HumanPlayer(p) {
-      if (this->GetSelectionIndex(p) != iMastersIndex) {
-        bAllPlayersChoseTheSame = false;
+      if (this->GetSelectionIndex(p) != masters_index) {
+        all_players_chose_the_same = false;
         break;
       }
     }
 
     if (!game_commands_.empty()) {
-      if (bAllPlayersChoseTheSame) {
-        const GameCommand& gc = game_commands_[iMastersIndex];
+      if (all_players_chose_the_same) {
+        const GameCommand& gc = game_commands_[masters_index];
         next_screen_ = gc.screen_;
         if (!gc.invalid_) {
           gc.ApplyToAllPlayers();
         }
       } else {
         FOREACH_HumanPlayer(p) {
-          int iIndex = this->GetSelectionIndex(p);
-          const GameCommand& gc = game_commands_[iIndex];
+          int index = this->GetSelectionIndex(p);
+          const GameCommand& gc = game_commands_[index];
           next_screen_ = gc.screen_;
           if (!gc.invalid_) {
             gc.Apply(p);
@@ -236,7 +236,7 @@ void ScreenSelect::HandleScreenMessage(const ScreenMessage SM) {
     }
   }
 
-  ScreenWithMenuElements::HandleScreenMessage(SM);
+  ScreenWithMenuElements::HandleScreenMessage(sm);
 }
 
 void ScreenSelect::HandleMessage(const Message& msg) {

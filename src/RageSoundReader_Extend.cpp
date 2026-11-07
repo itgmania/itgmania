@@ -18,13 +18,13 @@
  * changes to these properties are delayed.
  */
 
-RageSoundReader_Extend::RageSoundReader_Extend(RageSoundReader* pSource)
-    : RageSoundReader_Filter(pSource) {
+RageSoundReader_Extend::RageSoundReader_Extend(RageSoundReader* source)
+    : RageSoundReader_Filter(source) {
   ASSERT_M(
-      pSource != nullptr,
+      source != nullptr,
       "The music file was not found! Was it deleted or moved while the game "
       "was on?");
-  position_frames_ = pSource->GetNextSourceFrame();
+  position_frames_ = source->GetNextSourceFrame();
 
   stop_mode_ = M_STOP;
   start_frames_ = 0;
@@ -34,13 +34,13 @@ RageSoundReader_Extend::RageSoundReader_Extend(RageSoundReader* pSource)
   ignore_fade_in_frames_ = false;
 }
 
-int RageSoundReader_Extend::SetPosition(int iFrame) {
+int RageSoundReader_Extend::SetPosition(int frame) {
   ignore_fade_in_frames_ = false;
 
-  position_frames_ = iFrame;
-  int iRet = source_->SetPosition(std::max(iFrame, 0));
-  if (iRet < 0) {
-    return iRet;
+  position_frames_ = frame;
+  int ret = source_->SetPosition(std::max(frame, 0));
+  if (ret < 0) {
+    return ret;
   }
 
   if (length_frames_ != -1) {
@@ -53,7 +53,7 @@ int RageSoundReader_Extend::SetPosition(int iFrame) {
     return 1;
   }
 
-  return iRet;
+  return ret;
 }
 
 int RageSoundReader_Extend::GetEndFrame() const {
@@ -64,54 +64,54 @@ int RageSoundReader_Extend::GetEndFrame() const {
   return start_frames_ + length_frames_;
 }
 
-int RageSoundReader_Extend::GetData(float* pBuffer, int iFrames) {
-  int iFramesToRead = iFrames;
+int RageSoundReader_Extend::GetData(float* buffer, int frames) {
+  int frames_to_read = frames;
   if (length_frames_ != -1) {
-    int iFramesLeft = GetEndFrame() - position_frames_;
-    iFramesLeft = std::max(0, iFramesLeft);
-    iFramesToRead = std::min(iFramesToRead, iFramesLeft);
+    int frames_left = GetEndFrame() - position_frames_;
+    frames_left = std::max(0, frames_left);
+    frames_to_read = std::min(frames_to_read, frames_left);
   }
 
-  if (iFrames && !iFramesToRead) {
+  if (frames && !frames_to_read) {
     return RageSoundReader::END_OF_FILE;
   }
 
   if (position_frames_ < 0) {
-    iFramesToRead = std::min(iFramesToRead, -position_frames_);
-    memset(pBuffer, 0, iFramesToRead * sizeof(float) * this->GetNumChannels());
-    return iFramesToRead;
+    frames_to_read = std::min(frames_to_read, -position_frames_);
+    memset(buffer, 0, frames_to_read * sizeof(float) * this->GetNumChannels());
+    return frames_to_read;
   }
 
-  int iNewPositionFrames = source_->GetNextSourceFrame();
-  int iRet = RageSoundReader_Filter::Read(pBuffer, iFramesToRead);
+  int new_position_frames = source_->GetNextSourceFrame();
+  int ret = RageSoundReader_Filter::Read(buffer, frames_to_read);
 
   /* Update the position from the source.  If the source is at EOF, skip this,
    * so we'll extrapolate in M_CONTINUE. */
-  if (iRet != RageSoundReader::END_OF_FILE) {
-    position_frames_ = iNewPositionFrames;
+  if (ret != RageSoundReader::END_OF_FILE) {
+    position_frames_ = new_position_frames;
   }
-  return iRet;
+  return ret;
 }
 
-int RageSoundReader_Extend::Read(float* pBuffer, int iFrames) {
-  int iFramesRead = GetData(pBuffer, iFrames);
-  if (iFramesRead == RageSoundReader::END_OF_FILE) {
+int RageSoundReader_Extend::Read(float* buffer, int frames) {
+  int frames_read = GetData(buffer, frames);
+  if (frames_read == RageSoundReader::END_OF_FILE) {
     if ((length_frames_ != -1 && position_frames_ < GetEndFrame()) ||
         stop_mode_ == M_CONTINUE) {
-      iFramesRead = iFrames;
+      frames_read = frames;
       if (stop_mode_ != M_CONTINUE) {
-        iFramesRead = std::min(GetEndFrame() - position_frames_, iFramesRead);
+        frames_read = std::min(GetEndFrame() - position_frames_, frames_read);
       }
-      memset(pBuffer, 0, iFramesRead * sizeof(float) * this->GetNumChannels());
+      memset(buffer, 0, frames_read * sizeof(float) * this->GetNumChannels());
     }
   }
 
-  if (iFramesRead > 0) {
-    int iFullVolumePositionFrames = 0;
-    int iSilencePositionFrames = 0;
+  if (frames_read > 0) {
+    int full_volume_position_frames = 0;
+    int silence_position_frames = 0;
     if (fade_in_frames_ != 0 && !ignore_fade_in_frames_) {
-      iSilencePositionFrames = 0;
-      iFullVolumePositionFrames = fade_in_frames_;
+      silence_position_frames = 0;
+      full_volume_position_frames = fade_in_frames_;
     }
 
     /* We want to fade when there's m_iFadeFrames frames left, but if
@@ -119,28 +119,28 @@ int RageSoundReader_Extend::Read(float* pBuffer, int iFrames) {
      * (m_LengthFrames is the length to play, not the length of the
      * source.)  If we don't know the length, don't fade. */
     if (fade_out_frames_ != 0 && length_frames_ != -1) {
-      iSilencePositionFrames = GetEndFrame();
-      iFullVolumePositionFrames = iSilencePositionFrames - fade_out_frames_;
+      silence_position_frames = GetEndFrame();
+      full_volume_position_frames = silence_position_frames - fade_out_frames_;
     }
 
-    if (iSilencePositionFrames != iFullVolumePositionFrames) {
-      const int iStartSecond = position_frames_;
-      const int iEndSecond = position_frames_ + iFramesRead;
-      const float fStartVolume = SCALE(
-          iStartSecond, iFullVolumePositionFrames, iSilencePositionFrames, 1.0f,
-          0.0f);
-      const float fEndVolume = SCALE(
-          iEndSecond, iFullVolumePositionFrames, iSilencePositionFrames, 1.0f,
-          0.0f);
+    if (silence_position_frames != full_volume_position_frames) {
+      const int start_second = position_frames_;
+      const int end_second = position_frames_ + frames_read;
+      const float start_volume = SCALE(
+          start_second, full_volume_position_frames, silence_position_frames,
+          1.0f, 0.0f);
+      const float end_volume = SCALE(
+          end_second, full_volume_position_frames, silence_position_frames,
+          1.0f, 0.0f);
       RageSoundUtil::Fade(
-          pBuffer, iFramesRead, this->GetNumChannels(), fStartVolume,
-          fEndVolume);
+          buffer, frames_read, this->GetNumChannels(), start_volume,
+          end_volume);
     }
 
-    position_frames_ += iFramesRead;
+    position_frames_ += frames_read;
   }
 
-  if (iFramesRead == RageSoundReader::END_OF_FILE && stop_mode_ == M_LOOP) {
+  if (frames_read == RageSoundReader::END_OF_FILE && stop_mode_ == M_LOOP) {
     this->SetPosition(start_frames_);
 
     /* If we're not fading out at the end, then only fade in once.  Ignore
@@ -151,7 +151,7 @@ int RageSoundReader_Extend::Read(float* pBuffer, int iFrames) {
     return STREAM_LOOPED;
   }
 
-  return iFramesRead;
+  return frames_read;
 }
 
 int RageSoundReader_Extend::GetNextSourceFrame() const {
@@ -159,43 +159,43 @@ int RageSoundReader_Extend::GetNextSourceFrame() const {
 }
 
 bool RageSoundReader_Extend::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "StartSecond") {
-    start_frames_ = static_cast<int>((fValue * this->GetSampleRate()) + 0.5);
+    const std::string& property, float value) {
+  if (property == "StartSecond") {
+    start_frames_ = static_cast<int>((value * this->GetSampleRate()) + 0.5);
     return true;
   }
 
-  if (sProperty == "LengthSeconds") {
-    if (fValue == -1) {
+  if (property == "LengthSeconds") {
+    if (value == -1) {
       length_frames_ = -1;
     } else {
-      length_frames_ = static_cast<int>((fValue * this->GetSampleRate()) + 0.5);
+      length_frames_ = static_cast<int>((value * this->GetSampleRate()) + 0.5);
     }
     return true;
   }
 
-  if (sProperty == "Loop") {
+  if (property == "Loop") {
     stop_mode_ = M_LOOP;
     return true;
   }
 
-  if (sProperty == "Stop") {
+  if (property == "Stop") {
     stop_mode_ = M_STOP;
     return true;
   }
 
-  if (sProperty == "Continue") {
+  if (property == "Continue") {
     stop_mode_ = M_CONTINUE;
     return true;
   }
 
-  if (sProperty == "FadeInSeconds") {
-    fade_in_frames_ = static_cast<int>((fValue * this->GetSampleRate()) + 0.5);
+  if (property == "FadeInSeconds") {
+    fade_in_frames_ = static_cast<int>((value * this->GetSampleRate()) + 0.5);
     return true;
   }
 
-  if (sProperty == "FadeSeconds" || sProperty == "FadeOutSeconds") {
-    fade_out_frames_ = static_cast<int>((fValue * this->GetSampleRate()) + 0.5);
+  if (property == "FadeSeconds" || property == "FadeOutSeconds") {
+    fade_out_frames_ = static_cast<int>((value * this->GetSampleRate()) + 0.5);
     return true;
   }
 

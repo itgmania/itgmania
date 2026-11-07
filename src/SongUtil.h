@@ -114,56 +114,55 @@ class SongCriteria {
 /** @brief A set of song utilities to make working with songs easier. */
 namespace SongUtil {
 void GetSteps(
-    const Song* pSong, std::vector<Steps*>& arrayAddTo,
+    const Song* song, std::vector<Steps*>& array_add_to,
     StepsType st = StepsType_Invalid, Difficulty dc = Difficulty_Invalid,
-    int iMeterLow = -1, int iMeterHigh = -1,
-    const std::string& sDescription = "", const std::string& sCredit = "",
-    bool bIncludeAutoGen = true, unsigned uHash = 0, int iMaxToGet = -1);
+    int meter_low = -1, int meter_high = -1,
+    const std::string& description = "", const std::string& credit = "",
+    bool include_auto_gen = true, unsigned hash = 0, int max_to_get = -1);
 Steps* GetOneSteps(
-    const Song* pSong, StepsType st = StepsType_Invalid,
-    Difficulty dc = Difficulty_Invalid, int iMeterLow = -1, int iMeterHigh = -1,
-    const std::string& sDescription = "", const std::string& sCredit = "",
-    unsigned uHash = 0, bool bIncludeAutoGen = true);
+    const Song* song, StepsType st = StepsType_Invalid,
+    Difficulty dc = Difficulty_Invalid, int meter_low = -1, int meter_high = -1,
+    const std::string& description = "", const std::string& credit = "",
+    unsigned hash = 0, bool include_auto_gen = true);
 Steps* GetStepsByDifficulty(
-    const Song* pSong, StepsType st, Difficulty dc,
-    bool bIncludeAutoGen = true);
+    const Song* song, StepsType st, Difficulty dc,
+    bool include_auto_gen = true);
 Steps* GetStepsByDescription(
-    const Song* pSong, StepsType st, std::string sDescription);
+    const Song* song, StepsType st, std::string description);
 Steps* GetClosestNotes(
-    const Song* pSong, StepsType st, Difficulty dc, bool bIgnoreLocked = false);
+    const Song* song, StepsType st, Difficulty dc, bool ignore_locked = false);
 
-void AdjustDuplicateSteps(Song* pSong);  // part of TidyUpData
-void DeleteDuplicateSteps(Song* pSong, std::vector<Steps*>& vSteps);
+void AdjustDuplicateSteps(Song* song);  // part of TidyUpData
+void DeleteDuplicateSteps(Song* song, std::vector<Steps*>& steps);
 
 std::string MakeSortString(std::string s);
-void SortSongPointerArrayByTitle(std::vector<Song*>& vpSongsInOut);
-void SortSongPointerArrayByBPM(std::vector<Song*>& vpSongsInOut);
+void SortSongPointerArrayByTitle(std::vector<Song*>& songs_in_out);
+void SortSongPointerArrayByBPM(std::vector<Song*>& songs_in_out);
 void SortSongPointerArrayByGrades(
-    std::vector<Song*>& vpSongsInOut, bool bDescending);
+    std::vector<Song*>& songs_in_out, bool descending);
 void SortSongPointerArrayByProfileGrades(
-    std::vector<Song*>& vpSongsInOut, bool bDescending, PlayerNumber pn);
-void SortSongPointerArrayByArtist(std::vector<Song*>& vpSongsInOut);
-void SortSongPointerArrayByDisplayArtist(std::vector<Song*>& vpSongsInOut);
-void SortSongPointerArrayByGenre(std::vector<Song*>& vpSongsInOut);
-void SortSongPointerArrayByGroupAndTitle(std::vector<Song*>& vpSongsInOut);
+    std::vector<Song*>& songs_in_out, bool descending, PlayerNumber pn);
+void SortSongPointerArrayByArtist(std::vector<Song*>& songs_in_out);
+void SortSongPointerArrayByDisplayArtist(std::vector<Song*>& songs_in_out);
+void SortSongPointerArrayByGenre(std::vector<Song*>& songs_in_out);
+void SortSongPointerArrayByGroupAndTitle(std::vector<Song*>& songs_in_out);
 void SortSongPointerArrayByNumPlays(
-    std::vector<Song*>& vpSongsInOut, ProfileSlot slot, bool bDescending);
+    std::vector<Song*>& songs_in_out, ProfileSlot slot, bool descending);
 void SortSongPointerArrayByNumPlays(
-    std::vector<Song*>& vpSongsInOut, const Profile* pProfile,
-    bool bDescending);
+    std::vector<Song*>& songs_in_out, const Profile* profile, bool descending);
 void SortSongPointerArrayByStepsTypeAndMeter(
-    std::vector<Song*>& vpSongsInOut, StepsType st, Difficulty dc);
-std::string GetSectionNameFromSongAndSort(const Song* pSong, SortOrder so);
+    std::vector<Song*>& songs_in_out, StepsType st, Difficulty dc);
+std::string GetSectionNameFromSongAndSort(const Song* song, SortOrder so);
 void SortSongPointerArrayBySectionName(
-    std::vector<Song*>& vpSongsInOut, SortOrder so);
-void SortSongPointerArrayByParentSectionName(std::vector<Song*>& vpSongsInOut);
-void SortByMostRecentlyPlayedForMachine(std::vector<Song*>& vpSongsInOut);
+    std::vector<Song*>& songs_in_out, SortOrder so);
+void SortSongPointerArrayByParentSectionName(std::vector<Song*>& songs_in_out);
+void SortByMostRecentlyPlayedForMachine(std::vector<Song*>& songs_in_out);
 void SortByMostRecentlyPlayedForProfile(
-    std::vector<Song*>& vpSongsInOut, PlayerNumber pn);
-void SortSongPointerArrayByLength(std::vector<Song*>& vpSongsInOut);
-void SortSongPointerArrayByGroup(std::vector<Song*>& vpSongsInOut);
+    std::vector<Song*>& songs_in_out, PlayerNumber pn);
+void SortSongPointerArrayByLength(std::vector<Song*>& songs_in_out);
+void SortSongPointerArrayByGroup(std::vector<Song*>& songs_in_out);
 
-int CompareSongPointersByGroup(const Song* pSong1, const Song* pSong2);
+int CompareSongPointersByGroup(const Song* song1, const Song* song2);
 
 /**
  * @brief Determine if the requested description for an edit is unique.
@@ -174,19 +173,19 @@ int CompareSongPointersByGroup(const Song* pSong1, const Song* pSong2);
  * @return true if it is unique, false otherwise.
  */
 bool IsEditDescriptionUnique(
-    const Song* pSong, StepsType st, const std::string& sPreferredDescription,
-    const Steps* pExclude);
+    const Song* song, StepsType st, const std::string& preferred_description,
+    const Steps* exclude);
 bool IsChartNameUnique(
-    const Song* pSong, StepsType st, const std::string& name,
-    const Steps* pExclude);
+    const Song* song, StepsType st, const std::string& name,
+    const Steps* exclude);
 std::string MakeUniqueEditDescription(
-    const Song* pSong, StepsType st, const std::string& sPreferredDescription);
+    const Song* song, StepsType st, const std::string& preferred_description);
 bool ValidateCurrentEditStepsDescription(
-    const std::string& sAnswer, std::string& sErrorOut);
+    const std::string& answer, std::string& error_out);
 bool ValidateCurrentStepsDescription(
-    const std::string& sAnswer, std::string& sErrorOut);
+    const std::string& answer, std::string& error_out);
 bool ValidateCurrentStepsCredit(
-    const std::string& sAnswer, std::string& sErrorOut);
+    const std::string& answer, std::string& error_out);
 bool ValidateCurrentStepsChartName(
     const std::string& answer, std::string& error);
 bool ValidateCurrentSongPreview(const std::string& answer, std::string& error);
@@ -200,12 +199,12 @@ bool ValidateCurrentStepsMusic(const std::string& answer, std::string& error);
  * @param doCareAboutGame a flag to see if we should only get playable steps. */
 void FilterSongs(
     const SongCriteria& sc, const std::vector<Song*>& in,
-    std::vector<Song*>& out, bool doCareAboutGame = false);
+    std::vector<Song*>& out, bool do_care_about_game = false);
 
-void GetPlayableStepsTypes(const Song* pSong, std::set<StepsType>& vOut);
-void GetPlayableSteps(const Song* pSong, std::vector<Steps*>& vOut);
-bool IsStepsTypePlayable(Song* pSong, StepsType st);
-bool IsStepsPlayable(Song* pSong, Steps* pSteps);
+void GetPlayableStepsTypes(const Song* song, std::set<StepsType>& out);
+void GetPlayableSteps(const Song* song, std::vector<Steps*>& out);
+bool IsStepsTypePlayable(Song* song, StepsType st);
+bool IsStepsPlayable(Song* song, Steps* steps);
 
 /**
  * @brief Determine if the song has any playable steps in the present game.
@@ -233,8 +232,8 @@ class SongID {
   bool operator==(const SongID& other) const { return dir_ == other.dir_; }
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
-  void FromString(std::string _sDir) { dir_ = _sDir; }
+  void LoadFromNode(const XNode* node);
+  void FromString(std::string dir) { dir_ = dir; }
   std::string ToString() const;
   bool IsValid() const;
 };

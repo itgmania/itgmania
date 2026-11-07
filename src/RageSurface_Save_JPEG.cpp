@@ -7,8 +7,8 @@
 #include "RageSurface_Save_STB.h"
 
 bool RageSurfaceUtils::SaveJPEG(
-    RageSurface* surface, RageFile& f, bool bHighQual) {
-  const int quality = bHighQual ? 95 : 75;
+    RageSurface* surface, RageFile& f, bool high_qual) {
+  const int quality = high_qual ? 95 : 75;
   std::string error;
   return RageSurface_Save_STB(
       surface, f, error, RageSurfaceSTBWriteFormat::JPEG, quality);

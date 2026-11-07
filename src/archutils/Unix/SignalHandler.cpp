@@ -71,11 +71,11 @@ SaveSignals::~SaveSignals() {
 }
 
 static void SigHandler(int signal, siginfo_t* si, void* ucp) {
-  bool bMaskSignal = false;
+  bool mask_signal = false;
   for (unsigned i = 0; i < handlers.size(); ++i) {
-    bMaskSignal |= handlers[i](signal, si, (const ucontext_t*)ucp);
+    mask_signal |= handlers[i](signal, si, (const ucontext_t*)ucp);
   }
-  if (!bMaskSignal) {
+  if (!mask_signal) {
     struct sigaction sa;
     sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask);
@@ -103,11 +103,11 @@ int find_stack_direction() {
 /* Create a stack with a barrier page at the end to guard against stack
  * overflow. */
 static void* CreateStack(int size) {
-  const long PageSize = getpagesize();
+  const long page_size = getpagesize();
 
   /* Round size up to the nearest PageSize. */
-  size += PageSize - 1;
-  size -= (size % PageSize);
+  size += page_size - 1;
+  size -= (size % page_size);
 
   /* mmap always returns page-aligned data.
    *
@@ -116,7 +116,7 @@ static void* CreateStack(int size) {
    * sides to guarantee that. */
   char* p = nullptr;
   p = (char*)mmap(
-      nullptr, size + PageSize, PROT_READ | PROT_WRITE,
+      nullptr, size + page_size, PROT_READ | PROT_WRITE,
       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
   if (p == (void*)-1) {
@@ -127,11 +127,11 @@ static void* CreateStack(int size) {
 
   if (find_stack_direction() < 0) {
     /* The stack grows towards smaller addresses.  Protect the first page. */
-    mprotect(p, PageSize, PROT_NONE);
-    p += PageSize;
+    mprotect(p, page_size, PROT_NONE);
+    p += page_size;
   } else {
     /* The stack grows towards larger addresses.  Protect the last page. */
-    mprotect(p + size, PageSize, PROT_NONE);
+    mprotect(p + size, page_size, PROT_NONE);
   }
 
   return p;
@@ -142,26 +142,26 @@ void SignalHandler::OnClose(handler h) {
   // if the unique_ptr has not been set, then enter.
   if (!saved_sigs) {
     saved_sigs.reset(new SaveSignals());
-    bool bUseAltSigStack = true;
+    bool use_alt_sig_stack = true;
 
 #if defined(LINUX)
     /* Linuxthreads (pre-NPTL) sigaltstack is broken. */
     // TODO: check if this is still necessary
-    bUseAltSigStack = false;
+    use_alt_sig_stack = false;
 #endif
 
     /* Allocate a separate signal stack.  This makes the crash handler work
      * if we run out of stack space. */
-    const int AltStackSize = 1024 * 64;
+    const int alt_stack_size = 1024 * 64;
     void* p = nullptr;
-    if (bUseAltSigStack) {
-      p = CreateStack(AltStackSize);
+    if (use_alt_sig_stack) {
+      p = CreateStack(alt_stack_size);
     }
 
     if (p != nullptr) {
       stack_t ss;
       ss.ss_sp = (char*)p; /* cast for Darwin */
-      ss.ss_size = AltStackSize;
+      ss.ss_size = alt_stack_size;
       ss.ss_flags = 0;
       if (sigaltstack(&ss, nullptr) == -1) {
         LOG->Info("sigaltstack failed: %s", strerror(errno));

@@ -59,9 +59,9 @@ class ThemeMetric : public IThemeMetric {
    * call Load() to set them.  This is done to allow initializing cached metrics
    * in one place for classes that don't receive their m_sName in the
    * constructor (everything except screens). */
-  ThemeMetric(const std::string& sGroup = "", const std::string& sName = "")
-      : group_(sGroup),
-        name_(sName),
+  ThemeMetric(const std::string& group = "", const std::string& name = "")
+      : group_(group),
+        name_(name),
         value_(),
         current_value_(T()),
         call_each_time_(false) {
@@ -83,9 +83,9 @@ class ThemeMetric : public IThemeMetric {
    * @brief Load the chosen metric from the .ini file.
    * @param sGroup the group the metric is in.
    * @param sName the name of the metric. */
-  void Load(const std::string& sGroup, const std::string& sName) {
-    group_ = sGroup;
-    name_ = sName;
+  void Load(const std::string& group, const std::string& name) {
+    group_ = group;
+    name_ = name;
     Read();
   }
   /**
@@ -167,14 +167,14 @@ class ThemeMetric1D {
   std::vector<ThemeMetricT> metric_;
 
  public:
-  ThemeMetric1D(const std::string& sGroup, MetricName1D pfn, size_t N) {
-    Load(sGroup, pfn, N);
+  ThemeMetric1D(const std::string& group, MetricName1D pfn, size_t n) {
+    Load(group, pfn, n);
   }
   ThemeMetric1D() { Load(std::string(), nullptr, 0); }
-  void Load(const std::string& sGroup, MetricName1D pfn, size_t N) {
-    metric_.resize(N);
-    for (unsigned i = 0; i < N; i++) {
-      metric_[i].Load(sGroup, pfn(i));
+  void Load(const std::string& group, MetricName1D pfn, size_t n) {
+    metric_.resize(n);
+    for (unsigned i = 0; i < n; i++) {
+      metric_[i].Load(group, pfn(i));
     }
   }
   void Clear() {
@@ -195,16 +195,16 @@ class ThemeMetric2D {
 
  public:
   ThemeMetric2D(
-      const std::string& sGroup = "", MetricName2D pfn = nullptr, size_t N = 0,
-      size_t M = 0) {
-    Load(sGroup, pfn, N, M);
+      const std::string& group = "", MetricName2D pfn = nullptr, size_t n = 0,
+      size_t m = 0) {
+    Load(group, pfn, n, m);
   }
-  void Load(const std::string& sGroup, MetricName2D pfn, size_t N, size_t M) {
-    metric_.resize(N);
-    for (unsigned i = 0; i < N; i++) {
-      metric_[i].resize(M);
-      for (unsigned j = 0; j < M; j++) {
-        metric_[i][j].Load(sGroup, pfn(i, j));
+  void Load(const std::string& group, MetricName2D pfn, size_t n, size_t m) {
+    metric_.resize(n);
+    for (unsigned i = 0; i < n; i++) {
+      metric_[i].resize(m);
+      for (unsigned j = 0; j < m; j++) {
+        metric_[i][j].Load(group, pfn(i, j));
       }
     }
   }
@@ -222,17 +222,16 @@ class ThemeMetricMap {
 
  public:
   ThemeMetricMap(
-      const std::string& sGroup = "", MetricNameMap pfn = nullptr,
-      const std::vector<std::string> vsValueNames =
-          std::vector<std::string>()) {
-    Load(sGroup, pfn, vsValueNames);
+      const std::string& group = "", MetricNameMap pfn = nullptr,
+      const std::vector<std::string> value_names = std::vector<std::string>()) {
+    Load(group, pfn, value_names);
   }
   void Load(
-      const std::string& sGroup, MetricNameMap pfn,
-      const std::vector<std::string> vsValueNames) {
+      const std::string& group, MetricNameMap pfn,
+      const std::vector<std::string> value_names) {
     metric_.clear();
-    for (const std::string& s : vsValueNames) {
-      metric_[s].Load(sGroup, pfn(s));
+    for (const std::string& s : value_names) {
+      metric_[s].Load(group, pfn(s));
     }
   }
   const T& GetValue(std::string s) const {

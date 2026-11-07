@@ -16,21 +16,21 @@
 #include "global.h"
 
 static RageSurface* TryOpenFile(
-    std::string sPath, bool bHeaderOnly, std::string& error, std::string format,
-    bool& bKeepTrying) {
+    std::string path, bool header_only, std::string& error, std::string format,
+    bool& keep_trying) {
   RageSurface* ret = nullptr;
   RageSurfaceUtils::OpenResult result;
   if (!CompareNoCase(format, "png")) {
-    result = RageSurface_Load_PNG(sPath, ret, bHeaderOnly, error);
+    result = RageSurface_Load_PNG(path, ret, header_only, error);
   } else if (!CompareNoCase(format, "gif")) {
-    result = RageSurface_Load_GIF(sPath, ret, bHeaderOnly, error);
+    result = RageSurface_Load_GIF(path, ret, header_only, error);
   } else if (!CompareNoCase(format, "jpg") || !CompareNoCase(format, "jpeg")) {
-    result = RageSurface_Load_JPEG(sPath, ret, bHeaderOnly, error);
+    result = RageSurface_Load_JPEG(path, ret, header_only, error);
   } else if (!CompareNoCase(format, "bmp")) {
-    result = RageSurface_Load_BMP(sPath, ret, bHeaderOnly, error);
+    result = RageSurface_Load_BMP(path, ret, header_only, error);
   } else {
     error = "Unsupported format";
-    bKeepTrying = true;
+    keep_trying = true;
     return nullptr;
   }
 
@@ -60,17 +60,17 @@ static RageSurface* TryOpenFile(
    * readers will probably fail, too.  The returned error is used, and no other
    * formats will be tried.
    */
-  bKeepTrying = (result != RageSurfaceUtils::OPEN_FATAL_ERROR);
+  keep_trying = (result != RageSurfaceUtils::OPEN_FATAL_ERROR);
   switch (result) {
     case RageSurfaceUtils::OPEN_UNKNOWN_FILE_FORMAT:
-      bKeepTrying = true;
+      keep_trying = true;
       error = "Unknown file format";
       break;
 
     case RageSurfaceUtils::OPEN_FATAL_ERROR:
       /* The file matched, but failed to load.  We know it's this type of data;
        * don't bother trying the other file types. */
-      bKeepTrying = false;
+      keep_trying = false;
       break;
     default:
       break;
@@ -80,43 +80,43 @@ static RageSurface* TryOpenFile(
 }
 
 RageSurface* RageSurfaceUtils::LoadFile(
-    const std::string& sPath, std::string& error, bool bHeaderOnly) {
+    const std::string& path, std::string& error, bool header_only) {
   {
-    RageFile TestOpen;
-    if (!TestOpen.Open(sPath)) {
-      error = TestOpen.GetError();
+    RageFile test_open;
+    if (!test_open.Open(path)) {
+      error = test_open.GetError();
       return nullptr;
     }
   }
 
-  std::set<std::string> FileTypes;
+  std::set<std::string> file_types;
   const std::vector<std::string>& exts =
       ActorUtil::GetTypeExtensionList(FT_Bitmap);
   for (std::vector<std::string>::const_iterator curr = exts.begin();
        curr != exts.end(); ++curr) {
-    FileTypes.insert(*curr);
+    file_types.insert(*curr);
   }
 
-  std::string format = GetExtension(sPath);
+  std::string format = GetExtension(path);
   MakeLower(format);
 
-  bool bKeepTrying = true;
+  bool keep_trying = true;
 
   /* If the extension matches a format, try that first. */
-  if (FileTypes.find(format) != FileTypes.end()) {
+  if (file_types.find(format) != file_types.end()) {
     RageSurface* ret =
-        TryOpenFile(sPath, bHeaderOnly, error, format, bKeepTrying);
+        TryOpenFile(path, header_only, error, format, keep_trying);
     if (ret) {
       return ret;
     }
-    FileTypes.erase(format);
+    file_types.erase(format);
   }
 
-  for (std::set<std::string>::iterator it = FileTypes.begin();
-       bKeepTrying && it != FileTypes.end(); ++it) {
-    RageSurface* ret = TryOpenFile(sPath, bHeaderOnly, error, *it, bKeepTrying);
+  for (std::set<std::string>::iterator it = file_types.begin();
+       keep_trying && it != file_types.end(); ++it) {
+    RageSurface* ret = TryOpenFile(path, header_only, error, *it, keep_trying);
     if (ret) {
-      LOG->UserLog("Graphic file", sPath, "is really %s", it->c_str());
+      LOG->UserLog("Graphic file", path, "is really %s", it->c_str());
       return ret;
     }
   }

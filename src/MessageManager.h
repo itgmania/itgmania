@@ -97,38 +97,38 @@ struct Message {
   Message(const std::string& s, const LuaReference& params);
   ~Message();
 
-  void SetName(const std::string& sName) { name_ = sName; }
+  void SetName(const std::string& name) { name_ = name; }
   std::string GetName() const { return name_; }
 
   bool IsBroadcast() const { return broadcast_; }
   void SetBroadcast(bool b) { broadcast_ = b; }
 
   const LuaReference& GetParamTable() const;
-  void GetParamFromStack(lua_State* L, const std::string& sName) const;
-  void SetParamFromStack(lua_State* L, const std::string& sName);
+  void GetParamFromStack(lua_State* L, const std::string& name) const;
+  void SetParamFromStack(lua_State* L, const std::string& name);
 
   template <typename T>
-  bool GetParam(const std::string& sName, T& val) const {
+  bool GetParam(const std::string& name, T& val) const {
     Lua* L = LUA->Get();
-    GetParamFromStack(L, sName);
-    bool bRet = LuaHelpers::Pop(L, val);
+    GetParamFromStack(L, name);
+    bool ret = LuaHelpers::Pop(L, val);
     LUA->Release(L);
-    return bRet;
+    return ret;
   }
 
   template <typename T>
-  void SetParam(const std::string& sName, const T& val) {
+  void SetParam(const std::string& name, const T& val) {
     Lua* L = LUA->Get();
     LuaHelpers::Push(L, val);
-    SetParamFromStack(L, sName);
+    SetParamFromStack(L, name);
     LUA->Release(L);
   }
 
   template <typename T>
-  void SetParam(const std::string& sName, const std::vector<T>& val) {
+  void SetParam(const std::string& name, const std::vector<T>& val) {
     Lua* L = LUA->Get();
     LuaHelpers::CreateTableFromArray(val, L);
-    SetParamFromStack(L, sName);
+    SetParamFromStack(L, name);
     LUA->Release(L);
   }
 
@@ -170,7 +170,7 @@ class MessageSubscriber : public IMessageSubscriber {
   //
   void SubscribeToMessage(MessageID message);  // will automatically unsubscribe
   void SubscribeToMessage(
-      const std::string& sMessageName);  // will automatically unsubscribe
+      const std::string& message_name);  // will automatically unsubscribe
 
   void UnsubscribeAll();
 
@@ -184,18 +184,17 @@ class MessageManager {
   MessageManager();
   ~MessageManager();
 
-  void Subscribe(IMessageSubscriber* pSubscriber, const std::string& sMessage);
-  void Subscribe(IMessageSubscriber* pSubscriber, MessageID m);
-  void Unsubscribe(
-      IMessageSubscriber* pSubscriber, const std::string& sMessage);
+  void Subscribe(IMessageSubscriber* subscriber, const std::string& message);
+  void Subscribe(IMessageSubscriber* subscriber, MessageID m);
+  void Unsubscribe(IMessageSubscriber* subscriber, const std::string& message);
   void Broadcast(Message& msg) const;
-  void Broadcast(const std::string& sMessage) const;
+  void Broadcast(const std::string& message) const;
   void Broadcast(MessageID m) const;
   bool IsSubscribedToMessage(
-      IMessageSubscriber* pSubscriber, const std::string& sMessage) const;
+      IMessageSubscriber* subscriber, const std::string& message) const;
   inline bool IsSubscribedToMessage(
-      IMessageSubscriber* pSubscriber, MessageID message) const {
-    return IsSubscribedToMessage(pSubscriber, MessageIDToString(message));
+      IMessageSubscriber* subscriber, MessageID message) const {
+    return IsSubscribedToMessage(subscriber, MessageIDToString(message));
   }
 
   void SetLogging(bool set) { logging_ = set; }
@@ -229,8 +228,8 @@ class BroadcastOnChange {
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <class T>
-void Push(lua_State* L, const BroadcastOnChange<T>& Object) {
-  LuaHelpers::Push<T>(L, Object.Get());
+void Push(lua_State* L, const BroadcastOnChange<T>& object) {
+  LuaHelpers::Push<T>(L, object.Get());
 }
 }  // namespace LuaHelpers
 

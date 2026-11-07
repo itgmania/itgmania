@@ -10,13 +10,13 @@
 
 class RageSoundReader_PostBuffering : public RageSoundReader_Filter {
  public:
-  RageSoundReader_PostBuffering(RageSoundReader* pSource);
+  RageSoundReader_PostBuffering(RageSoundReader* source);
   RageSoundReader_PostBuffering* Copy() const {
     return new RageSoundReader_PostBuffering(*this);
   }
-  static void SetMasterVolume(float fVolume);
-  virtual int Read(float* pBuf, int iFrames);
-  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  static void SetMasterVolume(float volume);
+  virtual int Read(float* buf, int frames);
+  virtual bool SetProperty(const std::string& property, float value);
 
  private:
   float volume_;

@@ -26,18 +26,18 @@ static int CompareLyricSegments(
   return seg1.start_time_ < seg2.start_time_;
 }
 
-bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
-  LOG->Trace("LyricsLoader::LoadFromLRCFile(%s)", sPath.c_str());
+bool LyricsLoader::LoadFromLRCFile(const std::string& path, Song& out) {
+  LOG->Trace("LyricsLoader::LoadFromLRCFile(%s)", path.c_str());
 
   RageFile input;
-  if (!input.Open(sPath)) {
+  if (!input.Open(path)) {
     LuaHelpers::ReportScriptErrorFmt(
-        "Error opening file '%s' for reading: %s", sPath.c_str(),
+        "Error opening file '%s' for reading: %s", path.c_str(),
         input.GetError().c_str());
     return false;
   }
 
-  RageColor CurrentColor = LYRICS_DEFAULT_COLOR;
+  RageColor current_color = LYRICS_DEFAULT_COLOR;
 
   out.lyric_segments_.clear();
 
@@ -69,26 +69,26 @@ bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
     }
     ASSERT(matches.size() == 2);
 
-    std::string& sValueName = matches[0];
-    std::string& sValueData = matches[1];
-    StripCrnl(sValueData);
+    std::string& value_name = matches[0];
+    std::string& value_data = matches[1];
+    StripCrnl(value_data);
 
     // handle the data
-    if (EqualsNoCase(sValueName, "COLOUR") ||
-        EqualsNoCase(sValueName, "COLOR")) {
+    if (EqualsNoCase(value_name, "COLOUR") ||
+        EqualsNoCase(value_name, "COLOR")) {
       // set color var here for this segment
       unsigned int r, g, b;
-      int result = sscanf(sValueData.c_str(), "0x%2x%2x%2x", &r, &g, &b);
+      int result = sscanf(value_data.c_str(), "0x%2x%2x%2x", &r, &g, &b);
       // According to the Dance With Intensity readme, one can set up to
       // ten colors in a line and access them via "{cX}", where X is 0-9.
       if (result != 3) {
         LOG->Trace(
-            "The color value '%s' in '%s' is invalid.", sValueData.c_str(),
-            sPath.c_str());
+            "The color value '%s' in '%s' is invalid.", value_data.c_str(),
+            path.c_str());
         continue;
       }
 
-      CurrentColor = RageColor(r / 256.0f, g / 256.0f, b / 256.0f, 1);
+      current_color = RageColor(r / 256.0f, g / 256.0f, b / 256.0f, 1);
       continue;
     }
 
@@ -99,11 +99,11 @@ bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
     // Enforce strict timestamp format to prevent crashing the program.
     std::vector<std::string> dummy;
     static Regex timestamp("^([0-9]+:){0,2}[0-9]+(.[0-9]*)?$");
-    if (timestamp.Compare(sValueName, dummy)) {
+    if (timestamp.Compare(value_name, dummy)) {
       LyricSegment seg;
-      seg.color_ = CurrentColor;
-      seg.start_time_ = HHMMSSToSeconds(sValueName);
-      seg.lyric_ = sValueData;
+      seg.color_ = current_color;
+      seg.start_time_ = HHMMSSToSeconds(value_name);
+      seg.lyric_ = value_data;
 
       Replace(
           seg.lyric_, "|",

@@ -123,12 +123,12 @@ Message::~Message() { delete params_; }
 
 const LuaReference& Message::GetParamTable() const { return *params_; }
 
-void Message::GetParamFromStack(lua_State* L, const std::string& sName) const {
-  params_->Get(L, sName);
+void Message::GetParamFromStack(lua_State* L, const std::string& name) const {
+  params_->Get(L, name);
 }
 
-void Message::SetParamFromStack(lua_State* L, const std::string& sName) {
-  params_->Set(L, sName);
+void Message::SetParamFromStack(lua_State* L, const std::string& name) {
+  params_->Set(L, name);
 }
 
 MessageManager::MessageManager() {
@@ -149,29 +149,29 @@ MessageManager::~MessageManager() {
 }
 
 void MessageManager::Subscribe(
-    IMessageSubscriber* pSubscriber, const std::string& sMessage) {
+    IMessageSubscriber* subscriber, const std::string& message) {
   LockMut(g_Mutex);
 
-  SubscribersSet& subs = g_MessageToSubscribers[sMessage];
+  SubscribersSet& subs = g_MessageToSubscribers[message];
 #ifdef DEBUG
-  SubscribersSet::iterator iter = subs.find(pSubscriber);
+  SubscribersSet::iterator iter = subs.find(subscriber);
   ASSERT_M(
       iter == subs.end(),
-      ssprintf("already subscribed to '%s'", sMessage.c_str()));
+      ssprintf("already subscribed to '%s'", message.c_str()));
 #endif
-  subs.insert(pSubscriber);
+  subs.insert(subscriber);
 }
 
-void MessageManager::Subscribe(IMessageSubscriber* pSubscriber, MessageID m) {
-  Subscribe(pSubscriber, MessageIDToString(m));
+void MessageManager::Subscribe(IMessageSubscriber* subscriber, MessageID m) {
+  Subscribe(subscriber, MessageIDToString(m));
 }
 
 void MessageManager::Unsubscribe(
-    IMessageSubscriber* pSubscriber, const std::string& sMessage) {
+    IMessageSubscriber* subscriber, const std::string& message) {
   LockMut(g_Mutex);
 
-  SubscribersSet& subs = g_MessageToSubscribers[sMessage];
-  SubscribersSet::iterator iter = subs.find(pSubscriber);
+  SubscribersSet& subs = g_MessageToSubscribers[message];
+  SubscribersSet::iterator iter = subs.find(subscriber);
   ASSERT(iter != subs.end());
   subs.erase(iter);
 }
@@ -195,9 +195,9 @@ void MessageManager::Broadcast(Message& msg) const {
   }
 }
 
-void MessageManager::Broadcast(const std::string& sMessage) const {
-  ASSERT(!sMessage.empty());
-  Message msg(sMessage);
+void MessageManager::Broadcast(const std::string& message) const {
+  ASSERT(!message.empty());
+  Message msg(message);
   Broadcast(msg);
 }
 
@@ -206,9 +206,9 @@ void MessageManager::Broadcast(MessageID m) const {
 }
 
 bool MessageManager::IsSubscribedToMessage(
-    IMessageSubscriber* pSubscriber, const std::string& sMessage) const {
-  SubscribersSet& subs = g_MessageToSubscribers[sMessage];
-  return subs.find(pSubscriber) != subs.end();
+    IMessageSubscriber* subscriber, const std::string& message) const {
+  SubscribersSet& subs = g_MessageToSubscribers[message];
+  return subs.find(subscriber) != subs.end();
 }
 
 MessageSubscriber::MessageSubscriber(const MessageSubscriber& cpy)
@@ -218,9 +218,9 @@ MessageSubscriber::MessageSubscriber(const MessageSubscriber& cpy)
   }
 }
 
-void MessageSubscriber::SubscribeToMessage(const std::string& sMessageName) {
-  MESSAGEMAN->Subscribe(this, sMessageName);
-  subscribed_to_.push_back(sMessageName);
+void MessageSubscriber::SubscribeToMessage(const std::string& message_name) {
+  MESSAGEMAN->Subscribe(this, message_name);
+  subscribed_to_.push_back(message_name);
 }
 
 void MessageSubscriber::SubscribeToMessage(MessageID message) {
@@ -246,11 +246,11 @@ class LunaMessageManager : public Luna<MessageManager> {
       luaL_typerror(L, 2, "table or nil");
     }
 
-    LuaReference ParamTable;
+    LuaReference param_table;
     lua_pushvalue(L, 2);
-    ParamTable.SetFromStack(L);
+    param_table.SetFromStack(L);
 
-    Message msg(SArg(1), ParamTable);
+    Message msg(SArg(1), param_table);
     p->Broadcast(msg);
     COMMON_RETURN_SELF;
   }

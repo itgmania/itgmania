@@ -153,8 +153,8 @@ DIJoystick_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
   HRESULT hr;
 
   input_t in;
-  const int SupportedMask = DIDFT_BUTTON | DIDFT_POV | DIDFT_AXIS;
-  if (!(dev->dwType & SupportedMask)) {
+  const int kSupportedMask = DIDFT_BUTTON | DIDFT_POV | DIDFT_AXIS;
+  if (!(dev->dwType & kSupportedMask)) {
     return DIENUM_CONTINUE;  // unsupported
   }
 
@@ -482,8 +482,8 @@ DIMouse_EnumDevObjectsProc(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID data) {
   // HRESULT hr;
 
   input_t in;
-  const int SupportedMask = DIDFT_BUTTON | DIDFT_AXIS | DIDFT_ANYINSTANCE;
-  if (!(dev->dwType & SupportedMask)) {
+  const int kSupportedMask = DIDFT_BUTTON | DIDFT_AXIS | DIDFT_ANYINSTANCE;
+  if (!(dev->dwType & kSupportedMask)) {
     return DIENUM_CONTINUE;  // unsupported
   }
 

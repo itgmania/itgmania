@@ -15,11 +15,11 @@ class RageFileDriverTimeout : public RageFileDriver {
   virtual ~RageFileDriverTimeout();
 
   RageFileBasic* Open(const std::string& path, int mode, int& err);
-  void FlushDirCache(const std::string& sPath);
-  bool Move(const std::string& sOldPath, const std::string& sNewPath);
-  bool Remove(const std::string& sPath);
+  void FlushDirCache(const std::string& path);
+  bool Move(const std::string& old_path, const std::string& new_path);
+  bool Remove(const std::string& path);
 
-  void SetDeadline(float fSeconds);
+  void SetDeadline(float seconds);
 
  private:
   ThreadedFileWorker* worker_;

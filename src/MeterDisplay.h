@@ -11,12 +11,12 @@
 class MeterDisplay : public ActorFrame {
  public:
   MeterDisplay();
-  void Load(std::string sStreamPath, float fStreamWidth, std::string sTipPath);
-  virtual void LoadFromNode(const XNode* pNode);
+  void Load(std::string stream_path, float stream_width, std::string tip_path);
+  virtual void LoadFromNode(const XNode* node);
   virtual MeterDisplay* Copy() const;
 
-  void SetPercent(float fPercent);
-  void SetStreamWidth(float fStreamWidth);
+  void SetPercent(float percent);
+  void SetStreamWidth(float stream_width);
 
   // Lua
   void PushSelf(lua_State* L);
@@ -30,7 +30,7 @@ class MeterDisplay : public ActorFrame {
 
 class SongMeterDisplay : public MeterDisplay {
  public:
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
   virtual SongMeterDisplay* Copy() const;
 };
 

@@ -237,16 +237,16 @@ std::string DeviceInput::ToString() const {
 }
 
 bool DeviceInput::FromString(const std::string& s) {
-  char szDevice[32] = "";
-  char szButton[32] = "";
+  char device[32] = "";
+  char button[32] = "";
 
-  if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", szDevice, szButton)) {
+  if (2 != sscanf(s.c_str(), "%31[^_]_%31[^_]", device, button)) {
     device_ = InputDevice_Invalid;
     return false;
   }
 
-  device_ = StringToInputDevice(szDevice);
-  button_ = StringToDeviceButton(szButton);
+  device_ = StringToInputDevice(device);
+  button_ = StringToDeviceButton(button);
   return true;
 }
 

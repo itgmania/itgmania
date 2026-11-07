@@ -75,14 +75,14 @@ void SerializeAnnotation(const NoteAnnotation& ann, std::vector<uint8_t>& out) {
   }
 
   // 2 bytes: tech bitmask
-  uint16_t techMask = 0;
+  uint16_t tech_mask = 0;
   for (TechCountsCategory cat : ann.tech_) {
     if (cat < NUM_TechCountsCategory) {
-      techMask |= (1u << cat);
+      tech_mask |= (1u << cat);
     }
   }
-  out[offset++] = techMask & 0xFF;
-  out[offset++] = (techMask >> 8) & 0xFF;
+  out[offset++] = tech_mask & 0xFF;
+  out[offset++] = (tech_mask >> 8) & 0xFF;
 }
 
 NoteAnnotation DeserializeAnnotation(const uint8_t* buf) {
@@ -100,10 +100,10 @@ NoteAnnotation DeserializeAnnotation(const uint8_t* buf) {
   }
 
   // 2 bytes: tech bitmask
-  uint16_t techMask = buf[offset] | (buf[offset + 1] << 8);
+  uint16_t tech_mask = buf[offset] | (buf[offset + 1] << 8);
   ann.tech_.clear();
   for (int i = 0; i < NUM_TechCountsCategory; i++) {
-    if (techMask & (1u << i)) {
+    if (tech_mask & (1u << i)) {
       ann.tech_.push_back(static_cast<TechCountsCategory>(i));
     }
   }
@@ -113,11 +113,11 @@ NoteAnnotation DeserializeAnnotation(const uint8_t* buf) {
 
 void NoteAnnotation::FromString(
     const std::string& input, std::vector<NoteAnnotation>& out) {
-  std::string inputCopy = input;
-  MakeStandardBase64(inputCopy);
+  std::string input_copy = input;
+  MakeStandardBase64(input_copy);
   std::vector<uint8_t> raw;
   out.clear();
-  int decode_result = base64_decode(inputCopy, raw);
+  int decode_result = base64_decode(input_copy, raw);
 
   if (decode_result != 0 || raw.size() % 11 != 0) {
     LOG->Warn(
@@ -127,10 +127,10 @@ void NoteAnnotation::FromString(
     return;
   }
 
-  size_t annotationCount = raw.size() / 11;
-  out.reserve(annotationCount);
+  size_t annotation_count = raw.size() / 11;
+  out.reserve(annotation_count);
 
-  for (size_t i = 0; i < annotationCount; i++) {
+  for (size_t i = 0; i < annotation_count; i++) {
     out.push_back(DeserializeAnnotation(&raw[i * 11]));
   }
 }

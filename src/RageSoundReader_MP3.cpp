@@ -319,7 +319,7 @@ int RageSoundReader_MP3::fill_buffer() {
     mad_->inbuf_filepos_ += mad_->stream_.next_frame - mad_->inbuf_;
   }
 
-  const bool bWasAtEOF = file_->AtEOF();
+  const bool was_at_eof = file_->AtEOF();
 
   int rc = file_->Read(
       mad_->inbuf_ + inbytes,
@@ -329,7 +329,7 @@ int RageSoundReader_MP3::fill_buffer() {
     return -1;
   }
 
-  if (file_->AtEOF() && !bWasAtEOF) {
+  if (file_->AtEOF() && !was_at_eof) {
     /* We just reached EOF.  Append MAD_BUFFER_GUARD bytes of NULs to the
      * buffer, to ensure that the last frame is flushed. */
     memset(mad_->inbuf_ + inbytes + rc, 0, MAD_BUFFER_GUARD);
@@ -362,8 +362,8 @@ void fill_frame_index_cache(madlib_t* mad) {
     madlib_t::tocmap_t::iterator it = mad->tocmap_.upper_bound(mad->timer_);
     if (it != mad->tocmap_.begin()) {
       --it;
-      int iDiffSeconds = mad->timer_.seconds - it->first.seconds;
-      if (iDiffSeconds < 5) {
+      int diff_seconds = mad->timer_.seconds - it->first.seconds;
+      if (diff_seconds < 5) {
         return;
       }
     }
@@ -490,8 +490,8 @@ void RageSoundReader_MP3::synth_output() {
   mad_synth_frame(&mad_->synth_, &mad_->frame_);
   for (int i = 0; i < mad_->synth_.pcm.length; i++) {
     for (int chan = 0; chan < this->channels_; ++chan) {
-      float Sample = scale(mad_->synth_.pcm.samples[chan][i]);
-      mad_->outbuf_[mad_->outleft_] = Sample;
+      float sample = scale(mad_->synth_.pcm.samples[chan][i]);
+      mad_->outbuf_[mad_->outleft_] = sample;
       ++mad_->outleft_;
     }
   }
@@ -552,8 +552,8 @@ RageSoundReader_MP3::~RageSoundReader_MP3() {
 }
 
 RageSoundReader_FileReader::OpenResult RageSoundReader_MP3::Open(
-    RageFileBasic* pFile) {
-  file_ = pFile;
+    RageFileBasic* file) {
+  file_ = file;
 
   mad_->filesize_ = file_->GetFileSize();
   ASSERT(mad_->filesize_ != -1);
@@ -615,23 +615,23 @@ RageSoundReader_MP3* RageSoundReader_MP3::Copy() const {
   return ret;
 }
 
-int RageSoundReader_MP3::Read(float* buf, int iFrames) {
-  int iFramesWritten = 0;
+int RageSoundReader_MP3::Read(float* buf, int frames) {
+  int frames_written = 0;
 
-  while (iFrames > 0) {
+  while (frames > 0) {
     if (mad_->outleft_ > 0) {
-      int iFramesToCopy =
-          std::min(iFrames, int(mad_->outleft_ / GetNumChannels()));
-      const int iSamplesToCopy = iFramesToCopy * GetNumChannels();
-      const int iBytesToCopy = iSamplesToCopy * sizeof(float);
+      int frames_to_copy =
+          std::min(frames, int(mad_->outleft_ / GetNumChannels()));
+      const int samples_to_copy = frames_to_copy * GetNumChannels();
+      const int bytes_to_copy = samples_to_copy * sizeof(float);
 
-      memcpy(buf, mad_->outbuf_ + mad_->outpos_, iBytesToCopy);
+      memcpy(buf, mad_->outbuf_ + mad_->outpos_, bytes_to_copy);
 
-      buf += iSamplesToCopy;
-      iFrames -= iFramesToCopy;
-      iFramesWritten += iFramesToCopy;
-      mad_->outpos_ += iSamplesToCopy;
-      mad_->outleft_ -= iSamplesToCopy;
+      buf += samples_to_copy;
+      frames -= frames_to_copy;
+      frames_written += frames_to_copy;
+      mad_->outpos_ += samples_to_copy;
+      mad_->outleft_ -= samples_to_copy;
       continue;
     }
 
@@ -647,7 +647,7 @@ int RageSoundReader_MP3::Read(float* buf, int iFrames) {
     synth_output();
   }
 
-  return iFramesWritten;
+  return frames_written;
 }
 
 bool RageSoundReader_MP3::MADLIB_rewind() {
@@ -690,9 +690,9 @@ bool RageSoundReader_MP3::MADLIB_rewind() {
  * position; combine them with MADLIB_rewind or SetPosition_hard to catch up.
  */
 
-int RageSoundReader_MP3::SetPosition_hard(int iFrame) {
+int RageSoundReader_MP3::SetPosition_hard(int frame) {
   mad_timer_t desired;
-  mad_timer_set(&desired, 0, iFrame, mad_->frame_.header.samplerate);
+  mad_timer_set(&desired, 0, frame, mad_->frame_.header.samplerate);
 
   /* This seek doesn't change the accuracy of our timer. */
 
@@ -766,12 +766,12 @@ int RageSoundReader_MP3::SetPosition_hard(int iFrame) {
 }
 
 /* Do a seek based on the bitrate. */
-int RageSoundReader_MP3::SetPosition_estimate(int iFrame) {
+int RageSoundReader_MP3::SetPosition_estimate(int frame) {
   /* This doesn't leave us accurate. */
   mad_->timer_accurate_ = 0;
 
   mad_timer_t seekamt;
-  mad_timer_set(&seekamt, 0, iFrame, mad_->frame_.header.samplerate);
+  mad_timer_set(&seekamt, 0, frame, mad_->frame_.header.samplerate);
   {
     /* We're going to skip ahead two samples below, so seek earlier than
      * we were asked to. */
@@ -809,10 +809,10 @@ int RageSoundReader_MP3::SetPosition_estimate(int iFrame) {
   return 1;
 }
 
-int RageSoundReader_MP3::SetPosition(int iFrame) {
+int RageSoundReader_MP3::SetPosition(int frame) {
   /* Rewinding is always fast and accurate, and SetPosition_estimate is bad at
    * 0. */
-  if (!iFrame) {
+  if (!frame) {
     MADLIB_rewind();
     return 1; /* ok */
   }
@@ -820,30 +820,30 @@ int RageSoundReader_MP3::SetPosition(int iFrame) {
   /* We can do a fast jump in VBR with Xing with more accuracy than without
    * Xing. */
   if (mad_->has_xing_) {
-    return SetPosition_hard(iFrame);
+    return SetPosition_hard(frame);
   }
 
   LOG->Trace("MP3 decoder had to revert to guessing the song position");
   /* Guess.  This is only remotely accurate when we're not VBR, but also
    * do it if we have no Xing tag. */
-  return SetPosition_estimate(iFrame);
+  return SetPosition_estimate(frame);
 }
 
 bool RageSoundReader_MP3::SetProperty(
-    const std::string& sProperty, float fValue) {
-  if (sProperty == "AccurateSync") {
-    accurate_sync_ = (fValue > 0.001f);
+    const std::string& property, float value) {
+  if (property == "AccurateSync") {
+    accurate_sync_ = (value > 0.001f);
     return true;
   }
 
-  return RageSoundReader_FileReader::SetProperty(sProperty, fValue);
+  return RageSoundReader_FileReader::SetProperty(property, value);
 }
 
 int RageSoundReader_MP3::GetNextSourceFrame() const {
-  int iFrame =
+  int frame =
       mad_timer_count(mad_->timer_, mad_units(mad_->frame_.header.samplerate));
-  iFrame += mad_->outpos_ / this->channels_;
-  return iFrame;
+  frame += mad_->outpos_ / this->channels_;
+  return frame;
 }
 
 int RageSoundReader_MP3::GetLengthInternal(bool fast) {
@@ -894,12 +894,12 @@ int RageSoundReader_MP3::GetLengthInternal(bool fast) {
 }
 
 int RageSoundReader_MP3::GetLengthConst(bool fast) const {
-  RageSoundReader_MP3* pCopy = this->Copy();
+  RageSoundReader_MP3* copy = this->Copy();
 
-  int iLength = pCopy->GetLengthInternal(fast);
+  int length = copy->GetLengthInternal(fast);
 
-  delete pCopy;
-  return iLength;
+  delete copy;
+  return length;
 }
 
 /* begin XING code ripped out of madplay */
@@ -915,17 +915,17 @@ void xing_init(struct xing* xing) { xing->flags_ = 0; }
  * DESCRIPTION:	parse a Xing VBR header
  */
 int xing_parse(struct xing* xing, struct mad_bitptr ptr, unsigned int bitlen) {
-  const unsigned XING_MAGIC = (('X' << 24) | ('i' << 16) | ('n' << 8) | 'g');
-  const unsigned INFO_MAGIC = (('I' << 24) | ('n' << 16) | ('f' << 8) | 'o');
+  const unsigned kXingMagic = (('X' << 24) | ('i' << 16) | ('n' << 8) | 'g');
+  const unsigned kInfoMagic = (('I' << 24) | ('n' << 16) | ('f' << 8) | 'o');
   unsigned data;
   if (bitlen < 64) {
     goto fail;
   }
   data = mad_bit_read(&ptr, 32);
 
-  if (data == XING_MAGIC) {
+  if (data == kXingMagic) {
     xing->type_ = xing::XING;
-  } else if (data == INFO_MAGIC) {
+  } else if (data == kInfoMagic) {
     xing->type_ = xing::INFO;
   } else {
     goto fail;

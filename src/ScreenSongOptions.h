@@ -11,7 +11,7 @@ class ScreenSongOptions : public ScreenOptionsMaster {
   virtual void Init();
 
  private:
-  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 };
 
 #endif

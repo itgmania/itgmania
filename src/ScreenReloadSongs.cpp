@@ -61,8 +61,8 @@ void ScreenReloadSongs::Init() {
 
 ScreenReloadSongs::~ScreenReloadSongs() { delete loading_window_; }
 
-void ScreenReloadSongs::Update(float fDeltaTime) {
-  Screen::Update(fDeltaTime);
+void ScreenReloadSongs::Update(float delta_time) {
+  Screen::Update(delta_time);
 
   /* Start the reload on the second update. On the first (0), SCREENMAN->Draw
    * won't draw. */
@@ -73,8 +73,8 @@ void ScreenReloadSongs::Update(float fDeltaTime) {
 
   ASSERT(!IsFirstUpdate());
 
-  bool onlyLoadAdditions = THEME->GetMetricB(name_, "OnlyLoadAdditions");
-  if (onlyLoadAdditions) {
+  bool only_load_additions = THEME->GetMetricB(name_, "OnlyLoadAdditions");
+  if (only_load_additions) {
     SONGMAN->LoadAdditions(loading_window_);
   } else {
     SONGMAN->Reload(false, loading_window_);

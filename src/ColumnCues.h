@@ -42,7 +42,7 @@ struct ColumnCue {
    */
   static void CalculateColumnCues(
       const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
-      PlayerNumber pn, float minDuration, StepsType stepsType);
+      PlayerNumber pn, float min_duration, StepsType steps_type);
 };
 
 #endif

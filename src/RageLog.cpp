@@ -101,12 +101,12 @@ RageLog::RageLog()
 
 RageLog::~RageLog() {
   /* Add the mapped log data to info.txt. */
-  const std::string AdditionalLog = GetAdditionalLog();
-  std::vector<std::string> AdditionalLogLines;
-  split(AdditionalLog, "\n", AdditionalLogLines);
-  for (unsigned i = 0; i < AdditionalLogLines.size(); ++i) {
-    Trim(AdditionalLogLines[i]);
-    this->Info("%s", AdditionalLogLines[i].c_str());
+  const std::string additional_log = GetAdditionalLog();
+  std::vector<std::string> additional_log_lines;
+  split(additional_log, "\n", additional_log_lines);
+  for (unsigned i = 0; i < additional_log_lines.size(); ++i) {
+    Trim(additional_log_lines[i]);
+    this->Info("%s", additional_log_lines[i].c_str());
   }
 
   Flush();
@@ -206,10 +206,10 @@ void RageLog::SetShowLogOutput(bool show) {
 void RageLog::Trace(const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  std::string sBuff = vssprintf(fmt, va);
+  std::string buff = vssprintf(fmt, va);
   va_end(va);
 
-  Write(0, sBuff);
+  Write(0, buff);
 }
 
 /* Use this for more important information; it'll always be included
@@ -217,64 +217,62 @@ void RageLog::Trace(const char* fmt, ...) {
 void RageLog::Info(const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  std::string sBuff = vssprintf(fmt, va);
+  std::string buff = vssprintf(fmt, va);
   va_end(va);
 
-  Write(WRITE_TO_INFO, sBuff);
+  Write(WRITE_TO_INFO, buff);
 }
 
 void RageLog::Warn(const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  std::string sBuff = vssprintf(fmt, va);
+  std::string buff = vssprintf(fmt, va);
   va_end(va);
 
-  Write(WRITE_TO_INFO | WRITE_LOUD, sBuff);
+  Write(WRITE_TO_INFO | WRITE_LOUD, buff);
 }
 
 void RageLog::UserLog(
-    const std::string& sType, const std::string& sElement, const char* fmt,
-    ...) {
+    const std::string& type, const std::string& element, const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  std::string sBuf = vssprintf(fmt, va);
+  std::string buf = vssprintf(fmt, va);
   va_end(va);
 
-  if (!sType.empty()) {
-    sBuf =
-        ssprintf("%s \"%s\" %s", sType.c_str(), sElement.c_str(), sBuf.c_str());
+  if (!type.empty()) {
+    buf = ssprintf("%s \"%s\" %s", type.c_str(), element.c_str(), buf.c_str());
   }
 
-  Write(WRITE_TO_USER_LOG, sBuf);
+  Write(WRITE_TO_USER_LOG, buf);
 }
 
-void RageLog::Write(int where, const std::string& sLine) {
+void RageLog::Write(int where, const std::string& line) {
   LockMut(*g_Mutex);
 
-  const char* const sWarningSeparator =
+  const char* const warning_separator =
       "/////////////////////////////////////////";
-  std::vector<std::string> asLines;
-  split(sLine, "\n", asLines, false);
+  std::vector<std::string> lines;
+  split(line, "\n", lines, false);
   if (where & WRITE_LOUD) {
     if (log_to_disk_ && g_fileLog->IsOpen()) {
-      g_fileLog->PutLine(sWarningSeparator);
+      g_fileLog->PutLine(warning_separator);
     }
-    puts(sWarningSeparator);
+    puts(warning_separator);
   }
 
-  std::string sTimestamp =
+  std::string timestamp =
       MicrosecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStartMicroseconds()) +
       ": ";
-  std::string sWarning;
+  std::string warning;
   if (where & WRITE_LOUD) {
-    sWarning = "WARNING: ";
+    warning = "WARNING: ";
   }
 
-  for (unsigned i = 0; i < asLines.size(); ++i) {
-    std::string& sStr = asLines[i];
+  for (unsigned i = 0; i < lines.size(); ++i) {
+    std::string& str = lines[i];
 
-    if (sWarning.size()) {
-      sStr.insert(0, sWarning);
+    if (warning.size()) {
+      str.insert(0, warning);
     }
 
     // NOTE: On Windows, m_bShowLogOutput determines whether we
@@ -287,42 +285,42 @@ void RageLog::Write(int where, const std::string& sLine) {
     // the stdout output, they'll run the game from a terminal.
 #ifdef _WIN32
     if (show_log_output_ || (where & WRITE_TO_INFO)) {
-      puts(sStr.c_str());  // fputws( (const wchar_t *)sStr.c_str(), stdout );
+      puts(str.c_str());  // fputws( (const wchar_t *)str.c_str(), stdout );
     }
     if (where & WRITE_TO_INFO) {
-      AddToInfo(sStr);
+      AddToInfo(str);
     }
 #else
     if (where & WRITE_TO_INFO) {
-      puts(sStr.c_str());
-      AddToInfo(sStr);
+      puts(str.c_str());
+      AddToInfo(str);
     }
 #endif
 
     if (log_to_disk_ && (where & WRITE_TO_INFO) && g_fileInfo->IsOpen()) {
-      g_fileInfo->PutLine(sStr);
+      g_fileInfo->PutLine(str);
     }
     if (user_log_to_disk_ && (where & WRITE_TO_USER_LOG) &&
         g_fileUserLog->IsOpen()) {
-      g_fileUserLog->PutLine(sStr);
+      g_fileUserLog->PutLine(str);
     }
 
     /* Add a timestamp to log.txt and RecentLogs, but not the rest of info.txt
      * and stdout. */
-    sStr.insert(0, sTimestamp);
+    str.insert(0, timestamp);
 
-    AddToRecentLogs(sStr);
+    AddToRecentLogs(str);
 
     if (log_to_disk_ && g_fileLog->IsOpen()) {
-      g_fileLog->PutLine(sStr);
+      g_fileLog->PutLine(str);
     }
   }
 
   if (where & WRITE_LOUD) {
     if (log_to_disk_ && g_fileLog->IsOpen() && (where & WRITE_LOUD)) {
-      g_fileLog->PutLine(sWarningSeparator);
+      g_fileLog->PutLine(warning_separator);
     }
-    puts(sWarningSeparator);
+    puts(warning_separator);
   }
   if (flush_ || (where & WRITE_TO_INFO)) {
     Flush();
@@ -439,12 +437,12 @@ void RageLog::UnmapLog(const std::string& key) {
 }
 
 void ShowWarningOrTrace(
-    const char* file, int line, const std::string& message, bool bWarning) {
-  ShowWarningOrTrace(file, line, message.c_str(), bWarning);
+    const char* file, int line, const std::string& message, bool warning) {
+  ShowWarningOrTrace(file, line, message.c_str(), warning);
 }
 
 void ShowWarningOrTrace(
-    const char* file, int line, const char* message, bool bWarning) {
+    const char* file, int line, const char* message, bool warning) {
   /* Ignore everything up to and including the first "src/". */
   const char* temp = strstr(file, "src/");
   if (temp) {
@@ -452,7 +450,7 @@ void ShowWarningOrTrace(
   }
 
   void (RageLog::*method)(const char* fmt, ...) =
-      bWarning ? &RageLog::Warn : &RageLog::Trace;
+      warning ? &RageLog::Warn : &RageLog::Trace;
 
   if (LOG) {
     (LOG->*method)("%s:%i: %s", file, line, message);

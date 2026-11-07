@@ -29,8 +29,8 @@ class PlayerStageStats {
   void AddStats(const PlayerStageStats& other);  // accumulate
 
   Grade GetGrade() const;
-  static float MakePercentScore(int iActual, int iPossible);
-  static std::string FormatPercentScore(float fPercentScore);
+  static float MakePercentScore(int actual, int possible);
+  static std::string FormatPercentScore(float percent_score);
   float GetPercentDancePoints() const;
 
   int GetLessonScoreActual() const;
@@ -102,10 +102,10 @@ class PlayerStageStats {
   float calories_burned_;
 
   std::map<float, float> life_record_;
-  void SetLifeRecordAt(float fLife, float fStepsSecond);
+  void SetLifeRecordAt(float life, float steps_second);
   void GetLifeRecord(
-      float* fLifeOut, int iNumSamples, float fStepsEndSecond) const;
-  float GetLifeRecordLerpAt(float fStepsSecond) const;
+      float* life_out, int num_samples, float steps_end_second) const;
+  float GetLifeRecordLerpAt(float steps_second) const;
   float GetCurrentLife() const;
 
   struct Combo_t {
@@ -145,13 +145,13 @@ class PlayerStageStats {
   float last_second_;
 
   int GetComboAtStartOfStage() const;
-  bool FullComboOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
+  bool FullComboOfScore(TapNoteScore all_greater_or_equal) const;
   bool FullCombo() const { return FullComboOfScore(TNS_W3); }
   TapNoteScore GetBestFullComboTapNoteScore() const;
-  bool SingleDigitsOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
-  bool OneOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
+  bool SingleDigitsOfScore(TapNoteScore all_greater_or_equal) const;
+  bool OneOfScore(TapNoteScore all_greater_or_equal) const;
   float GetPercentageOfTaps(TapNoteScore tns) const;
-  void UpdateComboList(float fSecond, bool rollover);
+  void UpdateComboList(float second, bool rollover);
   Combo_t GetMaxCombo() const;
 
   float GetSurvivalSeconds() const {
@@ -159,7 +159,7 @@ class PlayerStageStats {
   }
 
   // Final results:
-  void CalcAwards(PlayerNumber p, bool bGaveUp, bool bUsedAutoplay);
+  void CalcAwards(PlayerNumber p, bool gave_up, bool used_autoplay);
   StageAward stage_award_;
   PeakComboAward peak_combo_award_;
 

@@ -6,22 +6,21 @@
 class ILocalizedStringImpl {
  public:
   virtual ~ILocalizedStringImpl() {}
-  virtual void Load(const std::string& sGroup, const std::string& sName) = 0;
+  virtual void Load(const std::string& group, const std::string& name) = 0;
   virtual const std::string& GetLocalized() const = 0;
 };
 /** @brief Get a String based on the user's natural language. */
 class LocalizedString {
  public:
-  LocalizedString(
-      const std::string& sGroup = "", const std::string& sName = "");
+  LocalizedString(const std::string& group = "", const std::string& name = "");
   LocalizedString(const LocalizedString& other);
   ~LocalizedString();
-  void Load(const std::string& sGroup, const std::string& sName);
+  void Load(const std::string& group, const std::string& name);
   operator const std::string&() const { return GetValue(); }
   const std::string& GetValue() const;
 
   typedef ILocalizedStringImpl* (*MakeLocalizer)();
-  static void RegisterLocalizer(MakeLocalizer pFunc);
+  static void RegisterLocalizer(MakeLocalizer func);
 
  private:
   void CreateImpl();

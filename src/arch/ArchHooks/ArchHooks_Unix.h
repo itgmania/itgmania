@@ -16,7 +16,7 @@ class ArchHooks_Unix : public ArchHooks {
   void SetTime(tm newtime);
   int64_t GetSystemTimeInMicroseconds();
 
-  void MountInitialFilesystems(const std::string& sDirOfExecutable);
+  void MountInitialFilesystems(const std::string& dir_of_executable);
 
   static clockid_t GetClock();
 

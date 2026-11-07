@@ -21,7 +21,7 @@ class StepsDisplayList : public ActorFrame {
   StepsDisplayList();
   virtual ~StepsDisplayList();
   virtual StepsDisplayList* Copy() const;
-  virtual void LoadFromNode(const XNode* pNode);
+  virtual void LoadFromNode(const XNode* node);
 
   void HandleMessage(const Message& msg);
 

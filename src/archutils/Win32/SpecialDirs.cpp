@@ -7,14 +7,14 @@
 #include "global.h"
 
 static std::string GetSpecialFolderPath(int csidl) {
-  std::string sDir;
-  TCHAR szDir[MAX_PATH] = "";
-  HRESULT hResult =
-      SHGetFolderPath(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, szDir);
-  ASSERT(hResult == S_OK);
-  sDir = szDir;
-  sDir += "/";
-  return sDir;
+  std::string dir;
+  TCHAR sz_dir[MAX_PATH] = "";
+  HRESULT result =
+      SHGetFolderPath(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, sz_dir);
+  ASSERT(result == S_OK);
+  dir = sz_dir;
+  dir += "/";
+  return dir;
 }
 
 std::string SpecialDirs::GetAppDataDir() {

@@ -18,14 +18,14 @@ class LifeMeterBattery : public LifeMeter {
   LifeMeterBattery();
 
   virtual void Load(
-      const PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
-  virtual void Update(float fDeltaTime);
+  virtual void Update(float delta_time);
 
   virtual void OnSongEnded();
   virtual void ChangeLife(TapNoteScore score);
   virtual void ChangeLife(HoldNoteScore score, TapNoteScore tscore);
-  virtual void ChangeLife(float fDeltaLifePercent);
+  virtual void ChangeLife(float delta_life_percent);
   virtual void SetLife(float value);
   virtual void HandleTapScoreNone();
   virtual bool IsInDanger() const;
@@ -38,14 +38,14 @@ class LifeMeterBattery : public LifeMeter {
   void Refresh();
   int GetLivesLeft() { return lives_left_; }
   int GetTotalLives();
-  void ChangeLives(int iLifeDiff);
+  void ChangeLives(int life_diff);
 
   // Lua
   virtual void PushSelf(lua_State* L);
 
  private:
-  void SubtractLives(int iLives);
-  void AddLives(int iLives);
+  void SubtractLives(int lives);
+  void AddLives(int lives);
 
   int lives_left_;           // dead when 0
   int trailing_lives_left_;  // lags m_iLivesLeft

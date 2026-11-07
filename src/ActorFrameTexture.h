@@ -20,7 +20,7 @@ class ActorFrameTexture : public ActorFrame {
    * to load the texture.  If no name is supplied, a unique one will
    * be generated.
    * @param sName the new name. */
-  void SetTextureName(const std::string& sName) { texture_name_ = sName; }
+  void SetTextureName(const std::string& name) { texture_name_ = name; }
   RageTextureRenderTarget* GetTexture() { return render_target_; }
 
   void EnableDepthBuffer(bool b) { depth_buffer_ = b; }
