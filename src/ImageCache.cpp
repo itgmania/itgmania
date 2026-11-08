@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ActorUtil.h"
 #include "CommonMetrics.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -49,6 +50,10 @@ static int nearest_power_of_two(int v) {
   const int down = up / 2;
   const int nearest = (std::abs(v - up) > std::abs(v - down)) ? down : up;
   return std::max(1, nearest);
+}
+
+static bool IsMovie(const std::string& path) {
+  return ActorUtil::GetFileType(path) == FT_Movie;
 }
 
 /* Bump this to invalidate the on-disk image cache. */
@@ -138,6 +143,9 @@ void ImageCache::Undemand(std::string image_dir) {
 void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
   if (image_path == "") {
     return;  // nothing to do
+  }
+  if (IsMovie(image_path)) {
+    return;
   }
   if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_PRELOAD &&
       PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
@@ -328,6 +336,10 @@ RageTextureID ImageCache::LoadCachedImage(
     return id;
   }
 
+  if (IsMovie(image_path)) {
+    return id;
+  }
+
   // LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", sImagePath.c_str(),
   // ID.filename.c_str() );
 
@@ -385,6 +397,10 @@ RageTextureID ImageCache::LoadCachedImage(
 void ImageCache::CacheImage(std::string image_dir, std::string image_path) {
   if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_PRELOAD &&
       PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    return;
+  }
+
+  if (IsMovie(image_path)) {
     return;
   }
 
