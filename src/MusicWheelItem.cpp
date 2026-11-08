@@ -427,11 +427,7 @@ void MusicWheelItem::HandleMessage(const Message& msg) {
   if (!IsLoaded()) {
     return;
   }
-  if (msg == Message_CurrentStepsP1Changed ||
-      msg == Message_CurrentStepsP2Changed ||
-      msg == Message_CurrentTrailP1Changed ||
-      msg == Message_CurrentTrailP2Changed ||
-      msg == Message_PreferredDifficultyP1Changed ||
+  if (msg == Message_PreferredDifficultyP1Changed ||
       msg == Message_PreferredDifficultyP2Changed ||
       msg == Message_PlayerProfileSet) {
     const MusicWheelItemData* wid =
@@ -492,7 +488,15 @@ void MusicWheelItem::HandleMessage(const Message& msg) {
     set_msg.SetParam(
         "IsParentSection", wid->type_ == WheelItemDataType_ParentSection);
     this->HandleMessage(set_msg);
+  }
 
+  if (msg == Message_CurrentStepsP1Changed ||
+      msg == Message_CurrentStepsP2Changed ||
+      msg == Message_CurrentTrailP1Changed ||
+      msg == Message_CurrentTrailP2Changed ||
+      msg == Message_PreferredDifficultyP1Changed ||
+      msg == Message_PreferredDifficultyP2Changed ||
+      msg == Message_PlayerProfileSet) {
     RefreshGrades();
   }
 
