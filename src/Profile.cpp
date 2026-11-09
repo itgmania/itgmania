@@ -71,7 +71,6 @@ const std::string EDIT_STEPS_SUBDIR = "Edits/";
 const std::string EDIT_COURSES_SUBDIR = "EditCourses/";
 // const std::string UPLOAD_SUBDIR         = "Upload/";
 const std::string RIVAL_SUBDIR = "Rivals/";
-const std::string SONGS_SUBDIR = "Songs/";
 const std::string PACKS_SUBDIR = "Packs/";
 
 ThemeMetric<bool> SHOW_COIN_DATA("Profile", "ShowCoinData");
@@ -1446,7 +1445,6 @@ bool Profile::SaveAllToDir(std::string dir, bool sign_data) const {
     FILEMAN->CreateDir(dir + EDIT_COURSES_SUBDIR);
   }
   if (PREFSMAN->custom_songs_enable_) {
-    FILEMAN->CreateDir(dir + SONGS_SUBDIR);
     FILEMAN->CreateDir(dir + PACKS_SUBDIR + "My Pack/");
   }
   FILEMAN->CreateDir(dir + SCREENSHOTS_SUBDIR);
