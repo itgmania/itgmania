@@ -10,7 +10,7 @@
 #if defined(_MSC_VER)
 #pragma comment(lib, "dinput8.lib")
 #endif
-LPDIRECTINPUT8 g_dinput = nullptr;
+LPDIRECTINPUT8 dinput = nullptr;
 
 static int ConvertScancodeToKey(int scancode);
 static BOOL CALLBACK
@@ -36,7 +36,7 @@ bool DIDevice::Open() {
 
   // load joystick
   HRESULT hr =
-      g_dinput->CreateDevice(joystick_inst_.guidInstance, &tmpdevice, nullptr);
+      dinput->CreateDevice(joystick_inst_.guidInstance, &tmpdevice, nullptr);
   if (hr != DI_OK) {
     LOG->Info(hr_ssprintf(hr, "OpenDevice: IDirectInput_CreateDevice").c_str());
     return false;

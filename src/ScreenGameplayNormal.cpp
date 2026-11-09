@@ -11,7 +11,7 @@ REGISTER_SCREEN_CLASS(ScreenGameplayNormal);
 
 void ScreenGameplayNormal::FillPlayerInfo(
     std::vector<PlayerInfo>& player_info_out) {
-  player_info_out.resize(NUM_PLAYERS);
+  player_info_out.resize(kNumPlayers);
   FOREACH_PlayerNumber(p) player_info_out[p].Load(p, true);
 };
 

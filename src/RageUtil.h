@@ -41,7 +41,7 @@ class RageUtil {
 /** @brief Get the length of the array. */
 #define ARRAYLEN(a) (sizeof(a) / sizeof((a)[0]))
 
-extern const std::string CUSTOM_SONG_PATH;
+extern const std::string kCustomSongPath;
 
 /**
  * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
@@ -236,7 +236,7 @@ bool FindFirstFilenameContaining(
     const std::vector<std::string>& contains,
     const std::vector<std::string>& ends_with);
 
-extern const wchar_t INVALID_CHAR;
+extern const wchar_t kInvalidChar;
 
 int utf8_get_char_len(char p);
 bool utf8_to_wchar(const char* s, size_t length, unsigned& start, wchar_t& ch);
@@ -412,20 +412,20 @@ std::string Basename(const std::string& dir);
 std::string Dirname(const std::string& dir);
 std::string Capitalize(const std::string& s);
 
-extern unsigned char g_UpperCase[256];
+extern unsigned char upper_case[256];
 
 /* ASCII-only case insensitivity. */
 struct char_traits_char_nocase : public std::char_traits<char> {
   static inline bool eq(char c1, char c2) {
-    return g_UpperCase[(unsigned char)c1] == g_UpperCase[(unsigned char)c2];
+    return upper_case[(unsigned char)c1] == upper_case[(unsigned char)c2];
   }
 
   static inline bool ne(char c1, char c2) {
-    return g_UpperCase[(unsigned char)c1] != g_UpperCase[(unsigned char)c2];
+    return upper_case[(unsigned char)c1] != upper_case[(unsigned char)c2];
   }
 
   static inline bool lt(char c1, char c2) {
-    return g_UpperCase[(unsigned char)c1] < g_UpperCase[(unsigned char)c2];
+    return upper_case[(unsigned char)c1] < upper_case[(unsigned char)c2];
   }
 
   static int compare(const char* s1, const char* s2, size_t n) {
@@ -440,7 +440,7 @@ struct char_traits_char_nocase : public std::char_traits<char> {
   }
 
   static inline char fasttoupper(char a) {
-    return g_UpperCase[(unsigned char)a];
+    return upper_case[(unsigned char)a];
   }
 
   static const char* find(const char* s, int n, char a) {

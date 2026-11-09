@@ -48,7 +48,7 @@ class ScreenWithMenuElements : public Screen {
   virtual void StartPlayingMusic();
 
   AutoActor spr_underlay_;
-  MemoryCardDisplay* memory_card_display_[NUM_PLAYERS];
+  MemoryCardDisplay* memory_card_display_[kNumPlayers];
   MenuTimer* menu_timer_;
   AutoActor spr_overlay_;
   std::vector<Actor*> decorations_;

@@ -20,7 +20,7 @@ class DancingCharacters : public ActorFrame {
   bool draw_danger_light_;
 
  protected:
-  std::array<Model*, NUM_PLAYERS> character_;
+  std::array<Model*, kNumPlayers> character_;
 
   /** @brief How far away is the camera from the dancer? */
   float camera_distance_;

@@ -6,9 +6,9 @@
 
 /** @brief Quick access to other variables. */
 namespace GamePreferences {
-extern Preference<CoinMode> m_CoinMode;
-extern Preference<PlayerController> m_AutoPlay;
-extern Preference<bool> m_AxisFix;
+extern Preference<CoinMode> coin_mode;
+extern Preference<PlayerController> auto_play;
+extern Preference<bool> axis_fix;
 };  // namespace GamePreferences
 
 #endif

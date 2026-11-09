@@ -80,7 +80,7 @@
   THEME->GetMetricA(         \
       "ScreenSelectCharacter", ssprintf("IconsP%dOffCommand", p + 1))
 
-const PlayerNumber CPU_PLAYER[NUM_PLAYERS] = {PLAYER_2, PLAYER_1};
+const PlayerNumber kCpuPlayer[kNumPlayers] = {PLAYER_2, PLAYER_1};
 
 REGISTER_SCREEN_CLASS(ScreenSelectCharacter);
 
@@ -147,7 +147,7 @@ void ScreenSelectCharacter::Init() {
       this->AddChild(&spr_attack_frame_[p]);
 
       for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-        for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
+        for (int j = 0; j < kNumAttacksPerLevel; j++) {
           float x = ATTACK_ICONS_START_X(p) + ATTACK_ICONS_SPACING_X * j;
           float y = ATTACK_ICONS_START_Y(p) + ATTACK_ICONS_SPACING_Y * i;
           attack_icons_[p][i][j].SetXY(x, y);
@@ -211,7 +211,7 @@ PlayerNumber ScreenSelectCharacter::GetAffectedPlayerNumber(PlayerNumber pn) {
     case CHOOSING_HUMAN_CHARACTER:
       return pn;
     case CHOOSING_CPU_CHARACTER:
-      return CPU_PLAYER[pn];
+      return kCpuPlayer[pn];
     case FINISHED_CHOOSING:
       return pn;
     default:
@@ -259,7 +259,7 @@ void ScreenSelectCharacter::AfterValueChange(PlayerNumber pn) {
       if (GAMESTATE->play_mode_ == PLAY_MODE_BATTLE ||
           GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
         for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-          for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
+          for (int j = 0; j < kNumAttacksPerLevel; j++) {
             attack_icons_[affected][i][j].Load("ScreenSelectCharacter");
             attack_icons_[affected][i][j].Set(p_char->attacks_[i][j]);
           }
@@ -390,7 +390,7 @@ void ScreenSelectCharacter::TweenOffScreen() {
         GAMESTATE->play_mode_ == PLAY_MODE_RAVE) {
       spr_attack_frame_[p].RunCommands(ATTACK_FRAME_OFF_COMMAND(p));
       for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-        for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
+        for (int j = 0; j < kNumAttacksPerLevel; j++) {
           attack_icons_[p][i][j].RunCommands(ATTACK_ICONS_OFF_COMMAND(p));
         }
       }

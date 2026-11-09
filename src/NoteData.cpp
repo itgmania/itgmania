@@ -36,7 +36,7 @@ void NoteData::SetNumTracks(int new_num_tracks) {
 bool NoteData::IsComposite() const {
   for (int track = 0; track < GetNumTracks(); ++track) {
     for (const RowTapNote& tn : tap_notes_[track]) {
-      if (tn.second.pn_ != PLAYER_INVALID) {
+      if (tn.second.pn_ != kPlayerInvalid) {
         return true;
       }
     }
@@ -47,7 +47,7 @@ bool NoteData::IsComposite() const {
 // Clear (rowBegin,rowEnd).
 void NoteData::ClearRangeForTrack(int row_begin, int row_end, int track) {
   // Optimization: if the range encloses everything, just clear the whole maps.
-  if (row_begin == 0 && row_end == MAX_NOTE_ROW) {
+  if (row_begin == 0 && row_end == kMaxNoteRow) {
     tap_notes_[track].clear();
     return;
   }
@@ -95,7 +95,7 @@ void NoteData::ClearRangeForTrack(int row_begin, int row_end, int track) {
     int row = prev->first;
     if (tn.type_ == TapNoteType_HoldHead && row + tn.duration_ > row_end) {
       // A hold note overlaps the end of the range.  Separate it.
-      SetTapNote(track, row, TAP_EMPTY);
+      SetTapNote(track, row, tap_empty);
 
       int add = row_end - row;
       tn.duration_ -= add;
@@ -290,7 +290,7 @@ void NoteData::AddHoldNote(int track, int start_row, int end_row, TapNote tn) {
 
   /* Additionally, if there's a tap note lying at the end of our range,
    * remove it too. */
-  SetTapNote(track, end_row, TAP_EMPTY);
+  SetTapNote(track, end_row, tap_empty);
 
   // add a tap note at the start of this hold
   SetTapNote(track, start_row, tn);
@@ -391,7 +391,7 @@ int NoteData::GetLastRow() const {
   int oldest_row_found_so_far = 0;
 
   for (int t = 0; t < GetNumTracks(); t++) {
-    int row = MAX_NOTE_ROW;
+    int row = kMaxNoteRow;
     if (!GetPrevTapNoteRowForTrack(t, row)) {
       continue;
     }
@@ -848,7 +848,7 @@ void NoteData::SetTapNote(int track, int row, const TapNote& t) {
   auto it = lower_bound(track, row);
   bool found = (it != track_map.end() && it->first == row);
 
-  if (t == TAP_EMPTY) {
+  if (t == tap_empty) {
     if (found) {
       track_map.erase(it);
     }
@@ -938,7 +938,7 @@ void NoteData::GetTapNoteRange(
 
   if (start_row <= 0) {
     l_begin = map_track.begin();  // optimization
-  } else if (start_row >= MAX_NOTE_ROW) {
+  } else if (start_row >= kMaxNoteRow) {
     l_begin = map_track.end();  // optimization
   } else {
     l_begin = lower_bound(track, start_row);
@@ -946,7 +946,7 @@ void NoteData::GetTapNoteRange(
 
   if (end_row <= 0) {
     l_end = map_track.begin();  // optimization
-  } else if (end_row >= MAX_NOTE_ROW) {
+  } else if (end_row >= kMaxNoteRow) {
     l_end = map_track.end();  // optimization
   } else {
     l_end = lower_bound(track, end_row);
@@ -1019,13 +1019,13 @@ void NoteData::GetTapNoteRangeExclusive(
 }
 
 bool NoteData::GetNextTapNoteRowForAllTracks(int& row_in_out) const {
-  int closest_next_row = MAX_NOTE_ROW;
+  int closest_next_row = kMaxNoteRow;
   bool any_have_next_note = false;
   for (int t = 0; t < GetNumTracks(); t++) {
     int new_row_this_track = row_in_out;
     if (GetNextTapNoteRowForTrack(t, new_row_this_track)) {
       any_have_next_note = true;
-      ASSERT(new_row_this_track < MAX_NOTE_ROW);
+      ASSERT(new_row_this_track < kMaxNoteRow);
       closest_next_row = std::min(closest_next_row, new_row_this_track);
     }
   }
@@ -1045,7 +1045,7 @@ bool NoteData::GetPrevTapNoteRowForAllTracks(int& row_in_out) const {
     int new_row_this_track = row_in_out;
     if (GetPrevTapNoteRowForTrack(t, new_row_this_track)) {
       any_have_prev_note = true;
-      ASSERT(new_row_this_track < MAX_NOTE_ROW);
+      ASSERT(new_row_this_track < kMaxNoteRow);
       closest_prev_row = std::max(closest_prev_row, new_row_this_track);
     }
   }

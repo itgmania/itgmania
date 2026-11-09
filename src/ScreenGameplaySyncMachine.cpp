@@ -34,7 +34,7 @@ REGISTER_SCREEN_CLASS(ScreenGameplaySyncMachine);
 void ScreenGameplaySyncMachine::Init() {
   GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
   GAMESTATE->SetCurrentStyle(
-      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID);
+      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), kPlayerInvalid);
   AdjustSync::ResetOriginalSyncData();
 
   std::string file = THEME->GetPathO("ScreenGameplaySyncMachine", "music");
@@ -59,7 +59,7 @@ void ScreenGameplaySyncMachine::Init() {
   Steps* p_steps = vp_steps[0];
   GAMESTATE->cur_steps_[GAMESTATE->GetFirstHumanPlayer()].Set(p_steps);
 
-  GamePreferences::m_AutoPlay.Set(PC_HUMAN);
+  GamePreferences::auto_play.Set(PC_HUMAN);
 
   ScreenGameplayNormal::Init();
 
@@ -96,7 +96,7 @@ bool ScreenGameplaySyncMachine::Input(const InputEventPlus& input) {
   if (_input.game_i_.controller_ != GameController_Invalid) {
     _input.game_i_.controller_ = GameController_1;
   }
-  if (_input.pn_ != PLAYER_INVALID) {
+  if (_input.pn_ != kPlayerInvalid) {
     _input.pn_ = PLAYER_1;
   }
 
@@ -114,7 +114,7 @@ void ScreenGameplaySyncMachine::HandleScreenMessage(const ScreenMessage sm) {
   if (sm == SM_GoToPrevScreen || sm == SM_GoToNextScreen) {
     FOREACH_PlayerNumber(pn) { GAMESTATE->cur_steps_[pn].Set(nullptr); }
     GAMESTATE->play_mode_.Set(PlayMode_Invalid);
-    GAMESTATE->SetCurrentStyle(nullptr, PLAYER_INVALID);
+    GAMESTATE->SetCurrentStyle(nullptr, kPlayerInvalid);
     GAMESTATE->cur_song_.Set(nullptr);
   }
 }

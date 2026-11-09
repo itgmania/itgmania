@@ -31,12 +31,12 @@ REGISTER_LIGHTS_DRIVER_ALIAS(LinuxPacDrive, GenericHID);
 #define HID_IFACE_OUT 512
 
 // PacDrives have PIDs 1500 - 1507, but we'll handle that later.
-const unsigned GENERICHID_TIMEOUT = 10000;
+const unsigned kGenerichidTimeout = 10000;
 
-static Preference<std::string> g_sGenericHIDLightsOrdering(
+static Preference<std::string> generic_hid_lights_ordering(
     "PacDriveLightOrdering", "openitg");
-static Preference<int> g_sGenericHIDLightsVID("GenericHIDLightsVID", 0xD209);
-static Preference<int> g_sGenericHIDLightsPID("GenericHIDLightsPID", 0x1500);
+static Preference<int> generic_hid_lights_vid("GenericHIDLightsVID", 0xD209);
+static Preference<int> generic_hid_lights_pid("GenericHIDLightsPID", 0x1500);
 
 LightsDriver_GenericHID::LightsDriver_GenericHID() {
   LOG->Warn(
@@ -52,7 +52,7 @@ LightsDriver_GenericHID::LightsDriver_GenericHID() {
   // clear all lights
   WriteDevice(0);
 
-  std::string light_order = g_sGenericHIDLightsOrdering.Get();
+  std::string light_order = generic_hid_lights_ordering.Get();
   if (CompareNoCase(light_order, "lumenar") == 0 ||
       CompareNoCase(light_order, "openitg") == 0) {
     lights_order_ = 1;
@@ -250,9 +250,9 @@ void LightsDriver_GenericHID::OpenDevice() {
     // function always succeeds:
     libusb_get_device_descriptor(dev, &desc);
 
-    if (g_sGenericHIDLightsVID.Get() == desc.idVendor &&
-        g_sGenericHIDLightsPID.Get() <= desc.idProduct &&
-        g_sGenericHIDLightsPID.Get() + 8 > desc.idProduct) {
+    if (generic_hid_lights_vid.Get() == desc.idVendor &&
+        generic_hid_lights_pid.Get() <= desc.idProduct &&
+        generic_hid_lights_pid.Get() + 8 > desc.idProduct) {
       LOG->Info(
           "GenericHID device was found vid: 0x%04x pid: 0x%04x", desc.idVendor,
           desc.idProduct);
@@ -326,7 +326,7 @@ void LightsDriver_GenericHID::WriteDevice(uint16_t out) {
       LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS |
           LIBUSB_RECIPIENT_INTERFACE,
       HID_SET_REPORT, HID_IFACE_OUT, 0, (unsigned char*)&data, expected,
-      GENERICHID_TIMEOUT);
+      kGenerichidTimeout);
 
   if (result != expected) {
     LOG->Warn(

@@ -9,7 +9,7 @@
 #define ALSA_PCM_NEW_SW_PARAMS_API
 #include <alsa/asoundlib.h>
 
-static void* Handle = nullptr;
+static void* handle = nullptr;
 
 #include "ALSA9Dynamic.h"
 #include "RageUtil.h"
@@ -19,7 +19,7 @@ static void* Handle = nullptr;
 #include "ALSA9Functions.h"
 #undef FUNC
 
-static const std::string lib = "libasound.so.2";
+static const std::string kLib = "libasound.so.2";
 std::string LoadALSA() {
   /* If /proc/asound/ doesn't exist, chances are we're on an OSS system.  We
    * shouldn't touch ALSA at all, since many OSS systems have old, broken
@@ -37,20 +37,20 @@ std::string LoadALSA() {
     return "/proc/asound/ does not exist";
   }
 
-  ASSERT(Handle == nullptr);
+  ASSERT(handle == nullptr);
 
-  Handle = dlopen(lib.c_str(), RTLD_NOW);
-  if (Handle == nullptr) {
-    return ssprintf("dlopen(%s): %s", lib.c_str(), dlerror());
+  handle = dlopen(kLib.c_str(), RTLD_NOW);
+  if (handle == nullptr) {
+    return ssprintf("dlopen(%s): %s", kLib.c_str(), dlerror());
   }
 
   std::string error;
   /* Eww.  The "new" HW and SW API functions are really prefixed by __,
    * eg. __snd_pcm_hw_params_set_rate_near. */
 #define FUNC(ret, name, proto)                   \
-  d##name = (name##_f)dlsym(Handle, "__" #name); \
+  d##name = (name##_f)dlsym(handle, "__" #name); \
   if (!d##name) {                                \
-    d##name = (name##_f)dlsym(Handle, #name);    \
+    d##name = (name##_f)dlsym(handle, #name);    \
     if (!d##name) {                              \
       error = "Couldn't load symbol " #name;     \
       goto error;                                \
@@ -66,10 +66,10 @@ error:
 }
 
 void UnloadALSA() {
-  if (Handle) {
-    dlclose(Handle);
+  if (handle) {
+    dlclose(handle);
   }
-  Handle = nullptr;
+  handle = nullptr;
 #define FUNC(ret, name, proto) d##name = nullptr;
 #include "ALSA9Functions.h"
 #undef FUNC

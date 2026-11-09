@@ -18,11 +18,11 @@
 InputQueue* INPUTQUEUE =
     nullptr;  // global and accessible from anywhere in our program
 
-const unsigned MAX_INPUT_QUEUE_LENGTH = 32;
+const unsigned kMaxInputQueueLength = 32;
 
 InputQueue::InputQueue() {
   FOREACH_ENUM(GameController, gc)
-  queue_[gc].resize(MAX_INPUT_QUEUE_LENGTH);
+  queue_[gc].resize(kMaxInputQueueLength);
 }
 
 void InputQueue::RememberInput(const InputEventPlus& iep) {
@@ -31,17 +31,17 @@ void InputQueue::RememberInput(const InputEventPlus& iep) {
   }
 
   int c = iep.game_i_.controller_;
-  if (queue_[c].size() >= MAX_INPUT_QUEUE_LENGTH) {  // full
+  if (queue_[c].size() >= kMaxInputQueueLength) {  // full
     queue_[c].erase(
         queue_[c].begin(),
-        queue_[c].begin() + (queue_[c].size() - MAX_INPUT_QUEUE_LENGTH + 1));
+        queue_[c].begin() + (queue_[c].size() - kMaxInputQueueLength + 1));
   }
   queue_[c].push_back(iep);
 }
 
 void InputQueue::ClearQueue(GameController c) { queue_[c].clear(); }
 
-static const float g_fSimultaneousThreshold = 0.05f;
+static const float kSimultaneousThreshold = 0.05f;
 
 bool InputQueueCode::CheckPattern(
     const std::vector<ButtonPress>& presses, GameController controller) const {
@@ -82,7 +82,7 @@ bool InputQueueCode::CheckPattern(
      * g_fTapThreshold seconds with m_aButtonsToHold pressed.  Start looking at
      * iQueueIndex. */
     RageTimer oldest_time_allowed_for_tap(queue[queue_index].device_i_.ts_);
-    oldest_time_allowed_for_tap += -g_fSimultaneousThreshold;
+    oldest_time_allowed_for_tap += -kSimultaneousThreshold;
 
     bool matched = false;
     int min_search_index_used = queue_index;

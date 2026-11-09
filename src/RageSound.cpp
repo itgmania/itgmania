@@ -53,7 +53,7 @@ RageSoundParams::RageSoundParams()
       attract_volume_(1.0f),
       pitch_(1.0f),
       speed_(1.0f),
-      start_time_(RageZeroTimer),
+      start_time_(kRageZeroTimer),
       stop_mode_(M_AUTO),
       is_critical_sound_(false) {}
 

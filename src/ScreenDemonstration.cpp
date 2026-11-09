@@ -57,7 +57,7 @@ void ScreenDemonstration::Init() {
 
     ASSERT(style_possible.size() > 0);
     const Style* style = style_possible[RandomInt(style_possible.size())];
-    GAMESTATE->SetCurrentStyle(style, PLAYER_INVALID);
+    GAMESTATE->SetCurrentStyle(style, kPlayerInvalid);
   }
 
   GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);

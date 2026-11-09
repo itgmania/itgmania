@@ -13,7 +13,7 @@
 #include "arch/LoadingWindow/LoadingWindow.h"
 #include "global.h"
 
-static const int DrawFrameRate = 20;
+static const int kDrawFrameRate = 20;
 class ScreenReloadSongsLoadingWindow : public LoadingWindow {
   RageTimer last_draw_;
   BitmapText& bitmap_text_;
@@ -29,7 +29,7 @@ class ScreenReloadSongsLoadingWindow : public LoadingWindow {
   void Paint() {
     /* We load songs much faster than we draw frames. Cap the draw rate,
      * so we don't slow down the reload. */
-    if (last_draw_.Ago() < 1.0f / DrawFrameRate) {
+    if (last_draw_.Ago() < 1.0f / kDrawFrameRate) {
       return;
     }
     last_draw_.GetDeltaTime();

@@ -61,7 +61,7 @@ void WorkoutGraph::SetInternal(int min_songs_played) {
   }
 
   int blocks_wide = meters.size();
-  int blocks_high = MAX_METER;
+  int blocks_high = kMaxMeter;
 
   const float max_width = 300;
   float total_width = SCALE(blocks_wide, 1.0f, 10.0f, 50.0f, max_width);
@@ -74,7 +74,7 @@ void WorkoutGraph::SetInternal(int min_songs_played) {
   float block_size =
       std::min(total_width / blocks_wide, total_height / blocks_high);
 
-  spr_empty_.SetVertAlign(align_bottom);
+  spr_empty_.SetVertAlign(kAlignBottom);
   spr_empty_.SetCustomImageRect(
       RectF(0, 0, (float)blocks_wide, (float)blocks_high));
   spr_empty_.ZoomToWidth(blocks_wide * block_size);
@@ -85,9 +85,9 @@ void WorkoutGraph::SetInternal(int min_songs_played) {
     float offset_from_center = (index++) - (blocks_wide - 1) / 2.0f;
     Sprite* p = new Sprite;
     p->Load(THEME->GetPathG("WorkoutGraph", "bar"));
-    p->SetVertAlign(align_bottom);
+    p->SetVertAlign(kAlignBottom);
     p->ZoomToWidth(block_size);
-    int meters_to_cover = (MAX_METER - meter);
+    int meters_to_cover = (kMaxMeter - meter);
     p->SetCustomImageRect(
         RectF(0, (float)meters_to_cover / (float)blocks_high, 1, 1));
     p->ZoomToHeight(meter * block_size);

@@ -42,12 +42,11 @@ std::string getDevice(std::string input_dir, std::string type) {
 }
 
 LinuxInputManager::LinuxInputManager() {
-  event_enabled_ =
-      g_sInputDrivers.Get().find("LinuxEvent") != std::string::npos;
+  event_enabled_ = input_drivers.Get().find("LinuxEvent") != std::string::npos;
   joystick_enabled_ =
-      g_sInputDrivers.Get().find("LinuxJoystick") != std::string::npos;
+      input_drivers.Get().find("LinuxJoystick") != std::string::npos;
   // HACK: If empty, assume both are enabled
-  if (g_sInputDrivers.Get() == "") {
+  if (input_drivers.Get() == "") {
     event_enabled_ = true;
     joystick_enabled_ = true;
   }
@@ -168,7 +167,7 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver) {
   joystick_driver_ = driver;
   // Discard all the joystick devices if they were assigned manually via
   // 	InputDeviceOrder
-  if (g_sInputDeviceOrder.Get() != "") {
+  if (input_device_order.Get() != "") {
     pending_joystick_devices_.clear();
   }
 
@@ -181,7 +180,7 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver) {
 
   // If any, add the manually specified devices via InputDeviceOrder
   std::vector<std::string> fixed_devices;
-  split(g_sInputDeviceOrder, ",", fixed_devices, true);
+  split(input_device_order, ",", fixed_devices, true);
 
   for (std::string dev : fixed_devices) {
     std::string dev_file = dev;

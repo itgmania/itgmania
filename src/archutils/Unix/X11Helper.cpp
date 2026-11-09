@@ -13,22 +13,22 @@
 #include "RageLog.h"
 #include "global.h"
 
-Display* X11Helper::Dpy = nullptr;
-Window X11Helper::Win = None;
-bool X11Helper::FatalError = false;
+Display* X11Helper::g_dpy = nullptr;
+Window X11Helper::g_win = None;
+bool X11Helper::fatal_error = false;
 
 static int ErrorCallback(Display*, XErrorEvent*);
 static int FatalCallback(Display*);
 
-static Preference<std::string> g_XWMName("XWMName", PRODUCT_ID);
+static Preference<std::string> xwm_name("XWMName", PRODUCT_ID);
 
 static bool display_supports_dpms_extension = false;
 static bool dpms_state_at_startup = false;
 
 bool X11Helper::OpenXConnection() {
-  DEBUG_ASSERT(Dpy == nullptr && Win == None);
-  Dpy = XOpenDisplay(0);
-  if (Dpy == nullptr) {
+  DEBUG_ASSERT(g_dpy == nullptr && g_win == None);
+  g_dpy = XOpenDisplay(0);
+  if (g_dpy == nullptr) {
     return false;
   }
 
@@ -36,16 +36,16 @@ bool X11Helper::OpenXConnection() {
   XSetErrorHandler(ErrorCallback);
   int event_base, error_base;
   display_supports_dpms_extension =
-      DPMSQueryExtension(Dpy, &event_base, &error_base);
+      DPMSQueryExtension(g_dpy, &event_base, &error_base);
   if (display_supports_dpms_extension) {
     LOG->Trace(
         "DPMSQueryExtension returned true.  Stepmania will disable power "
         "management, and restore the original state on exit.");
     CARD16 power_level;
     BOOL state;
-    if (DPMSInfo(Dpy, &power_level, &state)) {
+    if (DPMSInfo(g_dpy, &power_level, &state)) {
       dpms_state_at_startup = state;
-      DPMSDisable(Dpy);
+      DPMSDisable(g_dpy);
     } else {
       LOG->Trace(
           "DPMSInfo returned false.  Stepmania will not be able to disable "
@@ -63,22 +63,22 @@ bool X11Helper::OpenXConnection() {
 void X11Helper::CloseXConnection() {
   if (display_supports_dpms_extension) {
     if (dpms_state_at_startup) {
-      DPMSEnable(Dpy);
+      DPMSEnable(g_dpy);
     } else {
-      DPMSDisable(Dpy);
+      DPMSDisable(g_dpy);
     }
   }
   // The window should have been shut down
-  DEBUG_ASSERT(Dpy != nullptr);
-  DEBUG_ASSERT(Win == None);
-  XCloseDisplay(Dpy);
-  Dpy = nullptr;
+  DEBUG_ASSERT(g_dpy != nullptr);
+  DEBUG_ASSERT(g_win == None);
+  XCloseDisplay(g_dpy);
+  g_dpy = nullptr;
 }
 
 bool X11Helper::MakeWindow(
     Window& win, int screen_num, int depth, Visual* visual, int width,
     int height, bool override_redirect) {
-  if (!Dpy) {
+  if (!g_dpy) {
     return false;
   }
 
@@ -89,13 +89,13 @@ bool X11Helper::MakeWindow(
   if (win) {
     // Preserve the event mask.
     XWindowAttributes attribs;
-    XGetWindowAttributes(Dpy, win, &attribs);
+    XGetWindowAttributes(g_dpy, win, &attribs);
     win_attribs.event_mask = attribs.your_event_mask;
-    XDestroyWindow(Dpy, win);
+    XDestroyWindow(g_dpy, win);
   }
   // XXX: Error catching/handling?
   win_attribs.colormap =
-      XCreateColormap(Dpy, RootWindow(Dpy, screen_num), visual, AllocNone);
+      XCreateColormap(g_dpy, RootWindow(g_dpy, screen_num), visual, AllocNone);
   unsigned long mask = CWBorderPixel | CWColormap | CWEventMask;
 
   if (override_redirect) {
@@ -103,7 +103,7 @@ bool X11Helper::MakeWindow(
     mask |= CWOverrideRedirect;
   }
   win = XCreateWindow(
-      Dpy, RootWindow(Dpy, screen_num), 0, 0, width, height, 0, depth,
+      g_dpy, RootWindow(g_dpy, screen_num), 0, 0, width, height, 0, depth,
       InputOutput, visual, mask, &win_attribs);
   if (win == None) {
     return false;
@@ -113,24 +113,24 @@ bool X11Helper::MakeWindow(
   if (hint == nullptr) {
     LOG->Warn("Could not set class hint for X11 Window");
   } else {
-    hint->res_name = (char*)g_XWMName.Get().c_str();
+    hint->res_name = (char*)xwm_name.Get().c_str();
     hint->res_class = (char*)PRODUCT_FAMILY;
-    XSetClassHint(Dpy, win, hint);
+    XSetClassHint(g_dpy, win, hint);
     XFree(hint);
   }
 
   // Hide the mouse cursor in certain situations.
   if (!PREFSMAN->show_mouse_cursor_) {
     const char blank[] = {0, 0, 0, 0, 0, 0, 0, 0};
-    Pixmap blank_bitmap = XCreateBitmapFromData(Dpy, win, blank, 8, 8);
+    Pixmap blank_bitmap = XCreateBitmapFromData(g_dpy, win, blank, 8, 8);
 
     XColor black = {0, 0, 0, 0, 0, 0};
     Cursor blank_pointer = XCreatePixmapCursor(
-        Dpy, blank_bitmap, blank_bitmap, &black, &black, 0, 0);
-    XFreePixmap(Dpy, blank_bitmap);
+        g_dpy, blank_bitmap, blank_bitmap, &black, &black, 0, 0);
+    XFreePixmap(g_dpy, blank_bitmap);
 
-    XDefineCursor(Dpy, win, blank_pointer);
-    XFreeCursor(Dpy, blank_pointer);
+    XDefineCursor(g_dpy, win, blank_pointer);
+    XFreeCursor(g_dpy, blank_pointer);
   }
 
   return true;
@@ -138,21 +138,21 @@ bool X11Helper::MakeWindow(
 
 void X11Helper::SetWMState(
     const Window& root, const Window& win, const long action, const Atom atom) {
-  if (!Dpy) {
+  if (!g_dpy) {
     return;
   }
-  Atom wm_state = XInternAtom(Dpy, "_NET_WM_STATE", False);
+  Atom wm_state = XInternAtom(g_dpy, "_NET_WM_STATE", False);
   XEvent xev;
   memset(&xev, 0, sizeof(xev));
   xev.type = ClientMessage;
-  xev.xclient.window = Win;
+  xev.xclient.window = g_win;
   xev.xclient.message_type = wm_state;
   xev.xclient.format = 32;
   xev.xclient.data.l[0] = action;  // 0 = Remove, 1 = Add, 2 = Toggle
   xev.xclient.data.l[1] = atom;
   xev.xclient.data.l[2] = 0;  // end list of Atoms
   XSendEvent(
-      Dpy, root, False, SubstructureRedirectMask | SubstructureNotifyMask,
+      g_dpy, root, False, SubstructureRedirectMask | SubstructureNotifyMask,
       &xev);
 }
 
@@ -169,7 +169,7 @@ int ErrorCallback(Display* d, XErrorEvent* err) {
 }
 
 int FatalCallback(Display* d) {
-  X11Helper::FatalError = true;
+  X11Helper::fatal_error = true;
   RageException::Throw("Fatal I/O error communicating with X server.");
 }
 
@@ -178,7 +178,7 @@ int FatalCallback(Display* d) {
 
 bool X11Helper::SetWMFullscreenMonitors(const DisplaySpec& target) {
   int num_screens = 0;
-  XineramaScreenInfo* screens = XineramaQueryScreens(Dpy, &num_screens);
+  XineramaScreenInfo* screens = XineramaQueryScreens(g_dpy, &num_screens);
   if (screens == nullptr) {
     return false;
   }
@@ -231,17 +231,19 @@ bool X11Helper::SetWMFullscreenMonitors(const DisplaySpec& target) {
 
   XFree(screens);
   XWindowAttributes attr{};
-  if (!found_bounds || !XGetWindowAttributes(Dpy, Win, &attr)) {
+  if (!found_bounds || !XGetWindowAttributes(g_dpy, g_win, &attr)) {
     return false;
   }
 
   SetWMState(
-      attr.root, Win, 1, XInternAtom(Dpy, "_NET_WM_STATE_FULLSCREEN", False));
+      attr.root, g_win, 1,
+      XInternAtom(g_dpy, "_NET_WM_STATE_FULLSCREEN", False));
 
   XClientMessageEvent xclient{};
   xclient.type = ClientMessage;
-  xclient.window = Win;
-  xclient.message_type = XInternAtom(Dpy, "_NET_WM_FULLSCREEN_MONITORS", False);
+  xclient.window = g_win;
+  xclient.message_type =
+      XInternAtom(g_dpy, "_NET_WM_FULLSCREEN_MONITORS", False);
   xclient.format = 32;
   xclient.data.l[0] = monitors.top_;
   xclient.data.l[1] = monitors.bottom_;
@@ -249,9 +251,10 @@ bool X11Helper::SetWMFullscreenMonitors(const DisplaySpec& target) {
   xclient.data.l[3] = monitors.right_;
   xclient.data.l[4] = 1;
   XSendEvent(
-      Dpy, attr.root, False, SubstructureRedirectMask | SubstructureNotifyMask,
+      g_dpy, attr.root, False,
+      SubstructureRedirectMask | SubstructureNotifyMask,
       reinterpret_cast<XEvent*>(&xclient));
-  XFlush(Dpy);
+  XFlush(g_dpy);
 
   return true;
 }

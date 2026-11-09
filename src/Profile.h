@@ -28,7 +28,7 @@ struct lua_State;
 class Character;
 
 // Current file versions
-extern const std::string STATS_XML;
+extern const std::string kStatsXml;
 
 /**
  * @brief The filename where one can edit their personal profile data.
@@ -37,7 +37,7 @@ extern const std::string STATS_XML;
  * systems will open the ini file in an editor.  The default association for
  * XML will open in IE.  Users have a much better chance of discovering how to
  * edit this data if they don't have to fight against the file associations. */
-extern const std::string EDITABLE_INI;
+extern const std::string kEditableIni;
 
 /**
  * @brief The filename containing the signature for STATS_XML's signature.
@@ -49,16 +49,16 @@ extern const std::string EDITABLE_INI;
  * to their own profile for use in the game unless they also have the "don't
  * share" file.  DontShare contains a piece of information that we can
  * construct using STATS_XML but the user can't construct using STATS_XML. */
-extern const std::string DONT_SHARE_SIG;
+extern const std::string kDontShareSig;
 
-extern const std::string PUBLIC_KEY_FILE;
-extern const std::string SCREENSHOTS_SUBDIR;
-extern const std::string EDIT_STEPS_SUBDIR;
-extern const std::string EDIT_COURSES_SUBDIR;
+extern const std::string kPublicKeyFile;
+extern const std::string kScreenshotsSubdir;
+extern const std::string kEditStepsSubdir;
+extern const std::string kEditCoursesSubdir;
 // extern const std::string RIVAL_SUBDIR;
 
 /** @brief The max number of characters that can be used in a profile. */
-const unsigned int PROFILE_MAX_DISPLAY_NAME_LENGTH = 32;
+const unsigned int kProfileMaxDisplayNameLength = 32;
 
 class Style;
 
@@ -154,7 +154,7 @@ class Profile {
     num_songs_played_by_play_mode_[i] = 0;
     FOREACH_ENUM(Difficulty, i)
     num_songs_played_by_difficulty_[i] = 0;
-    for (int i = 0; i < MAX_METER + 1; i++) {
+    for (int i = 0; i < kMaxMeter + 1; i++) {
       num_songs_played_by_meter_[i] = 0;
     }
 
@@ -280,7 +280,7 @@ class Profile {
   int num_songs_played_by_play_mode_[NUM_PlayMode];
   std::map<StyleID, int> num_songs_played_by_style_;
   int num_songs_played_by_difficulty_[NUM_Difficulty];
-  int num_songs_played_by_meter_[MAX_METER + 1];
+  int num_songs_played_by_meter_[kMaxMeter + 1];
   /**
    * @brief Count the total number of songs played.
    *

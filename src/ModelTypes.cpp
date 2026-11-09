@@ -34,7 +34,7 @@ AnimatedTexture::AnimatedTexture() {
 AnimatedTexture::~AnimatedTexture() { Unload(); }
 
 RageVector3 RadianToDegree(RageVector3 radian) {
-  constexpr float kRadToDeg = 180.0f / PI;
+  constexpr float kRadToDeg = 180.0f / kPi;
   return radian * kRadToDeg;
 }
 

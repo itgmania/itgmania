@@ -49,7 +49,7 @@ class Character {
  public:
   apActorCommands init_;
 
-  std::string attacks_[NUM_ATTACK_LEVELS][NUM_ATTACKS_PER_LEVEL];
+  std::string attacks_[NUM_ATTACK_LEVELS][kNumAttacksPerLevel];
 };
 
 #endif

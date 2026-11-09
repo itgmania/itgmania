@@ -63,7 +63,7 @@ static void TugMeterPercentChangeInit(
   }
 }
 
-static Preference1D<float> g_fTugMeterPercentChange(
+static Preference1D<float> tug_meter_percent_change(
     TugMeterPercentChangeInit, NUM_ScoreEvent);
 
 CombinedLifeMeterTug::CombinedLifeMeterTug() {
@@ -107,31 +107,31 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, TapNoteScore score) {
   float percent_to_move = 0;
   switch (score) {
     case TNS_W1:
-      percent_to_move = g_fTugMeterPercentChange[SE_W1];
+      percent_to_move = tug_meter_percent_change[SE_W1];
       break;
     case TNS_W2:
-      percent_to_move = g_fTugMeterPercentChange[SE_W2];
+      percent_to_move = tug_meter_percent_change[SE_W2];
       break;
     case TNS_W3:
-      percent_to_move = g_fTugMeterPercentChange[SE_W3];
+      percent_to_move = tug_meter_percent_change[SE_W3];
       break;
     case TNS_W4:
-      percent_to_move = g_fTugMeterPercentChange[SE_W4];
+      percent_to_move = tug_meter_percent_change[SE_W4];
       break;
     case TNS_W5:
-      percent_to_move = g_fTugMeterPercentChange[SE_W5];
+      percent_to_move = tug_meter_percent_change[SE_W5];
       break;
     case TNS_Miss:
-      percent_to_move = g_fTugMeterPercentChange[SE_Miss];
+      percent_to_move = tug_meter_percent_change[SE_Miss];
       break;
     case TNS_HitMine:
-      percent_to_move = g_fTugMeterPercentChange[SE_HitMine];
+      percent_to_move = tug_meter_percent_change[SE_HitMine];
       break;
     case TNS_CheckpointHit:
-      percent_to_move = g_fTugMeterPercentChange[SE_CheckpointHit];
+      percent_to_move = tug_meter_percent_change[SE_CheckpointHit];
       break;
     case TNS_CheckpointMiss:
-      percent_to_move = g_fTugMeterPercentChange[SE_CheckpointMiss];
+      percent_to_move = tug_meter_percent_change[SE_CheckpointMiss];
       break;
     default:
       FAIL_M(ssprintf("Invalid TapNotScore: %i", score));
@@ -147,13 +147,13 @@ void CombinedLifeMeterTug::ChangeLife(
   float percent_to_move = 0;
   switch (score) {
     case HNS_Held:
-      percent_to_move = g_fTugMeterPercentChange[SE_Held];
+      percent_to_move = tug_meter_percent_change[SE_Held];
       break;
     case HNS_LetGo:
-      percent_to_move = g_fTugMeterPercentChange[SE_LetGo];
+      percent_to_move = tug_meter_percent_change[SE_LetGo];
       break;
     case HNS_Missed:
-      percent_to_move = g_fTugMeterPercentChange[SE_Missed];
+      percent_to_move = tug_meter_percent_change[SE_Missed];
       break;
     default:
       FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));

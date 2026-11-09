@@ -19,7 +19,7 @@ void InputHandler_MonkeyKeyboard::GetDevicesAndDescriptions(
   devices_out.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "MonkeyKeyboard"));
 }
 
-static const DeviceButton g_keys[] = {
+static const DeviceButton kKeys[] = {
     // Some of the default keys for the dance game type
     KEY_LEFT,         // DANCE_BUTTON_LEFT,
     KEY_RIGHT,        // DANCE_BUTTON_RIGHT,
@@ -50,8 +50,8 @@ static const DeviceButton g_keys[] = {
 };
 
 static DeviceButton GetRandomKeyboardKey() {
-  int index = RandomInt(ARRAYLEN(g_keys));
-  return g_keys[index];
+  int index = RandomInt(ARRAYLEN(kKeys));
+  return kKeys[index];
 }
 
 void InputHandler_MonkeyKeyboard::Update() {

@@ -103,31 +103,31 @@ std::string BackgroundChange::ToString() const {
   return ssprintf(
       "%.3f=%s=%.3f=%d=%d=%d=%s=%s=%s=%s=%s", this->start_beat_,
       SmEscape(this->def_.file1_).c_str(), this->rate_,
-      this->transition_ == SBT_CrossFade,       // backward compat
-      this->def_.effect_ == SBE_StretchRewind,  // backward compat
-      this->def_.effect_ != SBE_StretchNoLoop,  // backward compat
+      this->transition_ == kSbtCrossFade,       // backward compat
+      this->def_.effect_ == kSbeStretchRewind,  // backward compat
+      this->def_.effect_ != kSbeStretchNoLoop,  // backward compat
       this->def_.effect_.c_str(), this->def_.file2_.c_str(),
       this->transition_.c_str(),
       SmEscape(RageColor::NormalizeColorString(this->def_.color1_)).c_str(),
       SmEscape(RageColor::NormalizeColorString(this->def_.color2_)).c_str());
 }
 
-const std::string BACKGROUND_EFFECTS_DIR = "BackgroundEffects/";
-const std::string BACKGROUND_TRANSITIONS_DIR = "BackgroundTransitions/";
-const std::string BG_ANIMS_DIR = "BGAnimations/";
-const std::string RANDOMMOVIES_DIR = "RandomMovies/";
-const std::string SONG_MOVIES_DIR = "SongMovies/";
+const std::string kBackgroundEffectsDir = "BackgroundEffects/";
+const std::string kBackgroundTransitionsDir = "BackgroundTransitions/";
+const std::string kBgAnimsDir = "BGAnimations/";
+const std::string kRandommoviesDir = "RandomMovies/";
+const std::string kSongMoviesDir = "SongMovies/";
 
-const std::string RANDOM_BACKGROUND_FILE = "-random-";
-const std::string NO_SONG_BG_FILE = "-nosongbg-";
-const std::string SONG_BACKGROUND_FILE = "songbackground";
+const std::string kRandomBackgroundFile = "-random-";
+const std::string kNoSongBgFile = "-nosongbg-";
+const std::string kSongBackgroundFile = "songbackground";
 
-const std::string SBE_UpperLeft = "UpperLeft";
-const std::string SBE_Centered = "Centered";
-const std::string SBE_StretchNormal = "StretchNormal";
-const std::string SBE_StretchNoLoop = "StretchNoLoop";
-const std::string SBE_StretchRewind = "StretchRewind";
-const std::string SBT_CrossFade = "CrossFade";
+const std::string kSbeUpperLeft = "UpperLeft";
+const std::string kSbeCentered = "Centered";
+const std::string kSbeStretchNormal = "StretchNormal";
+const std::string kSbeStretchNoLoop = "StretchNoLoop";
+const std::string kSbeStretchRewind = "StretchRewind";
+const std::string kSbtCrossFade = "CrossFade";
 
 static void StripCvsAndSvn(
     std::vector<std::string>& paths_to_strip,
@@ -172,8 +172,7 @@ void BackgroundUtil::GetBackgroundEffects(
   }
 
   paths_out.clear();
-  GetDirListing(
-      BACKGROUND_EFFECTS_DIR + sName + ".lua", paths_out, false, true);
+  GetDirListing(kBackgroundEffectsDir + sName + ".lua", paths_out, false, true);
 
   names_out.clear();
   for (const std::string& s : paths_out) {
@@ -194,10 +193,10 @@ void BackgroundUtil::GetBackgroundTransitions(
   paths_out.clear();
   if (true) {
     GetDirListing(
-        BACKGROUND_TRANSITIONS_DIR + sName + ".xml", paths_out, false, true);
+        kBackgroundTransitionsDir + sName + ".xml", paths_out, false, true);
   }
   GetDirListing(
-      BACKGROUND_TRANSITIONS_DIR + sName + ".lua", paths_out, false, true);
+      kBackgroundTransitionsDir + sName + ".lua", paths_out, false, true);
 
   names_out.clear();
   for (const std::string& s : paths_out) {
@@ -303,9 +302,9 @@ void BackgroundUtil::GetGlobalBGAnimations(
     const Song* song, const std::string& match,
     std::vector<std::string>& paths_out, std::vector<std::string>& names_out) {
   paths_out.clear();
-  GetDirListing(BG_ANIMS_DIR + match + "*", paths_out, true, true);
+  GetDirListing(kBgAnimsDir + match + "*", paths_out, true, true);
   if (true) {
-    GetDirListing(BG_ANIMS_DIR + match + "*.xml", paths_out, false, true);
+    GetDirListing(kBgAnimsDir + match + "*.xml", paths_out, false, true);
   }
 
   names_out.clear();
@@ -328,11 +327,11 @@ void GetGlobalRandomMoviePaths(
   // Check for an exact match
   if (!match.empty()) {
     GetDirListing(
-        SONG_MOVIES_DIR + song->group_name_ + "/" + match, paths_out, false,
+        kSongMoviesDir + song->group_name_ + "/" + match, paths_out, false,
         true);  // search in SongMovies/SongGroupName/ first
-    GetDirListing(SONG_MOVIES_DIR + match, paths_out, false, true);
-    GetDirListing(RANDOMMOVIES_DIR + match, paths_out, false, true);
-    if (paths_out.empty() && match != NO_SONG_BG_FILE) {
+    GetDirListing(kSongMoviesDir + match, paths_out, false, true);
+    GetDirListing(kRandommoviesDir + match, paths_out, false, true);
+    if (paths_out.empty() && match != kNoSongBgFile) {
       LOG->Warn("Background missing: %s", match.c_str());
     }
     return;
@@ -342,15 +341,15 @@ void GetGlobalRandomMoviePaths(
   std::set<std::string> file_name_whitelist;
   if (try_inside_of_song_group_and_genre_first && song &&
       !song->genre_.empty()) {
-    GetFilterToFileNames(RANDOMMOVIES_DIR, song, file_name_whitelist);
+    GetFilterToFileNames(kRandommoviesDir, song, file_name_whitelist);
   }
 
   std::vector<std::string> dirs_to_try;
   if (try_inside_of_song_group_first && song) {
     ASSERT(!song->group_name_.empty());
-    dirs_to_try.push_back(RANDOMMOVIES_DIR + song->group_name_ + "/");
+    dirs_to_try.push_back(kRandommoviesDir + song->group_name_ + "/");
   }
-  dirs_to_try.push_back(RANDOMMOVIES_DIR);
+  dirs_to_try.push_back(kRandommoviesDir);
 
   for (const std::string& dir : dirs_to_try) {
     paths_out.clear();
@@ -406,7 +405,7 @@ void BackgroundUtil::GetGlobalRandomMovies(
       try_inside_of_song_group_first);
 
   for (const std::string& s : paths_out) {
-    std::string name = Right(s, s.size() - RANDOMMOVIES_DIR.size() - 1);
+    std::string name = Right(s, s.size() - kRandommoviesDir.size() - 1);
     names_out.push_back(name);
   }
   StripCvsAndSvn(paths_out, names_out);

@@ -50,7 +50,7 @@ XToString(StepsEditAction);
 /** @brief Loop through each StepsEditAction. */
 #define FOREACH_StepsEditAction(i) FOREACH_ENUM(StepsEditAction, i)
 
-static MenuDef g_TempMenu("ScreenMiniMenuContext");
+static MenuDef temp_menu("ScreenMiniMenuContext");
 
 REGISTER_SCREEN_CLASS(ScreenOptionsManageEditSteps);
 
@@ -146,7 +146,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage sm) {
       ASSERT(steps != nullptr);
       const Style* style =
           GAMEMAN->GetEditorStyleForStepsType(steps->steps_type_);
-      GAMESTATE->SetCurrentStyle(style, PLAYER_INVALID);
+      GAMESTATE->SetCurrentStyle(style, kPlayerInvalid);
       // do base behavior
     }
   } else if (sm == SM_BackFromRename) {
@@ -193,7 +193,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage sm) {
           ScreenTextEntry::TextEntry(
               SM_BackFromRename, ENTER_NAME_FOR_STEPS,
               GAMESTATE->cur_steps_[PLAYER_1]->GetDescription(),
-              MAX_STEPS_DESCRIPTION_LENGTH,
+              kMaxStepsDescriptionLength,
               SongUtil::ValidateCurrentEditStepsDescription);
         } break;
         case StepsEditAction_Delete: {
@@ -241,12 +241,12 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart(const InputEventPlus&) {
   {
     std::vector<Steps*> v;
     SONGMAN->GetStepsLoadedFromProfile(v, ProfileSlot_Machine);
-    if (v.size() >= size_t(MAX_EDIT_STEPS_PER_PROFILE)) {
+    if (v.size() >= size_t(kMaxEditStepsPerProfile)) {
       std::string s = ssprintf(
           (YOU_HAVE_MAX_STEP_EDITS.GetValue() + "\n\n" +
            YOU_MUST_DELETE.GetValue())
               .c_str(),
-          MAX_EDIT_STEPS_PER_PROFILE);
+          kMaxEditStepsPerProfile);
       ScreenPrompt::Prompt(SM_None, s);
       return;
     }
@@ -257,18 +257,18 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart(const InputEventPlus&) {
     this->BeginFadingOut();
   } else  // a Steps
   {
-    g_TempMenu.rows_.clear();
+    temp_menu.rows_.clear();
     FOREACH_StepsEditAction(i) {
       MenuRowDef mrd(
           i, StepsEditActionToString(i), true, EditMode_Home, true, true, 0,
           "");
-      g_TempMenu.rows_.push_back(mrd);
+      temp_menu.rows_.push_back(mrd);
     }
 
     int width, x, y;
     this->GetWidthXY(PLAYER_1, cur_row, 0, width, x, y);
     ScreenMiniMenu::MiniMenu(
-        &g_TempMenu, SM_BackFromContextMenu, SM_BackFromContextMenu, (float)x,
+        &temp_menu, SM_BackFromContextMenu, SM_BackFromContextMenu, (float)x,
         (float)y);
   }
 }

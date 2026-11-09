@@ -96,17 +96,17 @@ namespace {
  * we know about when most of them aren't in use. This set is protected
  * by queuemutex. */
 typedef std::map<DeviceButtonPair, ButtonState> ButtonStateMap;
-ButtonStateMap g_ButtonStates;
+ButtonStateMap g_button_states;
 ButtonState& GetButtonState(const DeviceInput& di) {
   DeviceButtonPair db(di.device_, di.button_);
-  ButtonState& bs = g_ButtonStates[db];
+  ButtonState& bs = g_button_states[db];
   bs.device_input_.button_ = di.button_;
   bs.device_input_.device_ = di.device_;
   return bs;
 }
 
-DeviceInputList g_CurrentState;
-std::set<DeviceInput> g_DisableRepeat;
+DeviceInputList current_state;
+std::set<DeviceInput> disable_repeat;
 }  // namespace
 
 /* Some input devices require debouncing. Do this on both press and release.
@@ -126,16 +126,16 @@ std::set<DeviceInput> g_DisableRepeat;
  * For pad play, a value of 20ms-50ms seems to result in a better experience.
  * For keyboard play, this is often set to 0.
  * */
-static Preference<float> g_fInputDebounceTime("InputDebounceTime", 0.02f);
+static Preference<float> input_debounce_time("InputDebounceTime", 0.02f);
 
 InputFilter* INPUTFILTER =
     nullptr;  // global and accessible from anywhere in our program
 
-static const float TIME_BEFORE_REPEATS = 0.375f;
+static const float kTimeBeforeRepeats = 0.375f;
 
-static const float REPEATS_PER_SEC = 8;
+static const float kRepeatsPerSec = 8;
 
-static float g_fTimeBeforeRepeats, g_fTimeBetweenRepeats;
+static float time_before_repeats, time_between_repeats;
 
 InputFilter::InputFilter() {
   queuemutex_ = new RageMutex("InputFilter");
@@ -159,7 +159,7 @@ InputFilter::InputFilter() {
 
 InputFilter::~InputFilter() {
   delete queuemutex_;
-  g_ButtonStates.clear();
+  g_button_states.clear();
   // Unregister with Lua.
   LUA->UnsetGlobal("INPUTFILTER");
 }
@@ -169,18 +169,18 @@ void InputFilter::Reset() {
 }
 
 void InputFilter::SetRepeatRate(float repeat_rate) {
-  g_fTimeBetweenRepeats = 1 / repeat_rate;
+  time_between_repeats = 1 / repeat_rate;
 }
 
-void InputFilter::SetRepeatDelay(float delay) { g_fTimeBeforeRepeats = delay; }
+void InputFilter::SetRepeatDelay(float delay) { time_before_repeats = delay; }
 
 void InputFilter::ResetRepeatRate() {
-  SetRepeatRate(REPEATS_PER_SEC);
-  SetRepeatDelay(TIME_BEFORE_REPEATS);
+  SetRepeatRate(kRepeatsPerSec);
+  SetRepeatDelay(kTimeBeforeRepeats);
 }
 
 ButtonState::ButtonState()
-    : being_held_time_(RageZeroTimer), last_report_time_(RageZeroTimer) {
+    : being_held_time_(kRageZeroTimer), last_report_time_(kRageZeroTimer) {
   being_held_ = false;
   last_reported_held_ = false;
   secs_held_ = 0;
@@ -219,7 +219,7 @@ void InputFilter::ButtonPressed(const DeviceInput& di) {
   }
 
   // Try to report presses immediately.
-  MakeButtonStateList(g_CurrentState);
+  MakeButtonStateList(current_state);
   CheckButtonChange(bs, di, now);
 }
 
@@ -228,7 +228,7 @@ void InputFilter::ResetDevice(InputDevice device) {
   LockMut(*queuemutex_);
   RageTimer now;
 
-  const ButtonStateMap button_states(g_ButtonStates);
+  const ButtonStateMap button_states(g_button_states);
   for (const std::pair<const DeviceButtonPair, ButtonState>& b :
        button_states) {
     const DeviceButtonPair& db = b.first;
@@ -253,7 +253,7 @@ void InputFilter::CheckButtonChange(
   if (!INPUTMAPPER->DeviceToGame(di, gi) || gi.button_ != GAME_BUTTON_COIN) {
     /* If the last IET_FIRST_PRESS or IET_RELEASE event was sent too recently,
      * wait a while before sending it. */
-    if (now - bs.last_report_time_ < g_fInputDebounceTime) {
+    if (now - bs.last_report_time_ < input_debounce_time) {
       return;
     }
   } else {
@@ -272,12 +272,12 @@ void InputFilter::CheckButtonChange(
     di.level_ = 0;
   }
 
-  MakeButtonStateList(g_CurrentState);
+  MakeButtonStateList(current_state);
   ReportButtonChange(
       di, bs.last_reported_held_ ? IET_FIRST_PRESS : IET_RELEASE);
 
   if (!bs.last_reported_held_) {
-    g_DisableRepeat.erase(di);
+    disable_repeat.erase(di);
   }
 }
 
@@ -292,15 +292,15 @@ void InputFilter::ReportButtonChange(const DeviceInput& di, InputEventType t) {
    * a map, for efficiency; most code will not use this information. Iterating
    * over g_ButtonStates will be in DeviceInput order, so users can binary
    * search this list (eg. std::lower_bound). */
-  ie.button_state_ = g_CurrentState;
+  ie.button_state_ = current_state;
 }
 
 void InputFilter::MakeButtonStateList(
     std::vector<DeviceInput>& input_out) const {
   input_out.clear();
-  input_out.reserve(g_ButtonStates.size());
-  for (ButtonStateMap::const_iterator it = g_ButtonStates.begin();
-       it != g_ButtonStates.end(); ++it) {
+  input_out.reserve(g_button_states.size());
+  for (ButtonStateMap::const_iterator it = g_button_states.begin();
+       it != g_button_states.end(); ++it) {
     const ButtonState& bs = it->second;
     input_out.push_back(bs.device_input_);
     input_out.back().ts_ = bs.last_input_time_;
@@ -319,13 +319,13 @@ void InputFilter::Update(float delta_time) {
 
   DeviceInput di(InputDevice_Invalid, DeviceButton_Invalid, 1.0f, now);
 
-  MakeButtonStateList(g_CurrentState);
+  MakeButtonStateList(current_state);
 
   std::vector<ButtonStateMap::iterator> buttons_to_erase;
 
   for (std::map<DeviceButtonPair, ButtonState>::iterator b =
-           g_ButtonStates.begin();
-       b != g_ButtonStates.end(); ++b) {
+           g_button_states.begin();
+       b != g_button_states.end(); ++b) {
     di.device_ = b->first.device_;
     di.button_ = b->first.button_;
     ButtonState& bs = b->second;
@@ -337,7 +337,7 @@ void InputFilter::Update(float delta_time) {
     if (!bs.last_reported_held_) {
       // If the key isn't pressed, and hasn't been pressed for a while
       // (so debouncing isn't interested in it), purge the entry.
-      if (now - bs.last_report_time_ > g_fInputDebounceTime &&
+      if (now - bs.last_report_time_ > input_debounce_time &&
           bs.device_input_.level_ == 0.0f) {
         buttons_to_erase.push_back(b);
       }
@@ -345,7 +345,7 @@ void InputFilter::Update(float delta_time) {
     }
 
     // If repeats are disabled for this button, skip.
-    if (g_DisableRepeat.find(di) != g_DisableRepeat.end()) {
+    if (disable_repeat.find(di) != disable_repeat.end()) {
       continue;
     }
 
@@ -353,21 +353,21 @@ void InputFilter::Update(float delta_time) {
     bs.secs_held_ += delta_time;
     const float new_hold_time = bs.secs_held_;
 
-    if (new_hold_time <= g_fTimeBeforeRepeats) {
+    if (new_hold_time <= time_before_repeats) {
       continue;
     }
 
     float repeat_time;
-    if (old_hold_time < g_fTimeBeforeRepeats) {
-      repeat_time = g_fTimeBeforeRepeats;
+    if (old_hold_time < time_before_repeats) {
+      repeat_time = time_before_repeats;
     } else {
-      float adjusted_old_hold_time = old_hold_time - g_fTimeBeforeRepeats;
-      float adjusted_new_hold_time = new_hold_time - g_fTimeBeforeRepeats;
-      if (int(adjusted_old_hold_time / g_fTimeBetweenRepeats) ==
-          int(adjusted_new_hold_time / g_fTimeBetweenRepeats)) {
+      float adjusted_old_hold_time = old_hold_time - time_before_repeats;
+      float adjusted_new_hold_time = new_hold_time - time_before_repeats;
+      if (int(adjusted_old_hold_time / time_between_repeats) ==
+          int(adjusted_new_hold_time / time_between_repeats)) {
         continue;
       }
-      repeat_time = ftruncf(new_hold_time, g_fTimeBetweenRepeats);
+      repeat_time = ftruncf(new_hold_time, time_between_repeats);
     }
 
     /* Set the timestamp to the exact time of the repeat. This way, as long
@@ -379,7 +379,7 @@ void InputFilter::Update(float delta_time) {
   }
 
   for (ButtonStateMap::iterator& it : buttons_to_erase) {
-    g_ButtonStates.erase(it);
+    g_button_states.erase(it);
   }
 }
 
@@ -397,7 +397,7 @@ bool InputFilter::IsBeingPressed(
     const DeviceInput& di, const DeviceInputList* button_state) const {
   LockMut(*queuemutex_);
   if (button_state == nullptr) {
-    button_state = &g_CurrentState;
+    button_state = &current_state;
   }
   const DeviceInput* p_di =
       FindItemBinarySearch(button_state->begin(), button_state->end(), di);
@@ -408,7 +408,7 @@ float InputFilter::GetSecsHeld(
     const DeviceInput& di, const DeviceInputList* button_state) const {
   LockMut(*queuemutex_);
   if (button_state == nullptr) {
-    button_state = &g_CurrentState;
+    button_state = &current_state;
   }
   const DeviceInput* p_di =
       FindItemBinarySearch(button_state->begin(), button_state->end(), di);
@@ -422,7 +422,7 @@ float InputFilter::GetLevel(
     const DeviceInput& di, const DeviceInputList* button_state) const {
   LockMut(*queuemutex_);
   if (button_state == nullptr) {
-    button_state = &g_CurrentState;
+    button_state = &current_state;
   }
   const DeviceInput* p_di =
       FindItemBinarySearch(button_state->begin(), button_state->end(), di);
@@ -452,7 +452,7 @@ void InputFilter::RepeatStopKey(const DeviceInput& di) {
     return;
   }
 
-  g_DisableRepeat.insert(di);
+  disable_repeat.insert(di);
 }
 
 void InputFilter::GetInputEvents(std::vector<InputEvent>& array) {
@@ -463,7 +463,7 @@ void InputFilter::GetInputEvents(std::vector<InputEvent>& array) {
 
 void InputFilter::GetPressedButtons(std::vector<DeviceInput>& array) const {
   LockMut(*queuemutex_);
-  array = g_CurrentState;
+  array = current_state;
 }
 
 void InputFilter::UpdateCursorLocation(float x, float y) {
@@ -513,9 +513,9 @@ class LunaInputFilter : public Luna<InputFilter> {
   }
 
   static int GetFullSensorState(T* p, lua_State* L) {
-    lua_createtable(L, NUM_PLAYERS, 0);
+    lua_createtable(L, kNumPlayers, 0);
 
-    for (size_t player = 0; player < NUM_PLAYERS; ++player) {
+    for (size_t player = 0; player < kNumPlayers; ++player) {
       lua_createtable(L, 0, NUM_PadPanel);
 
       for (size_t panel = 0; panel < NUM_PadPanel; ++panel) {

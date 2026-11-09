@@ -60,7 +60,7 @@ void ScreenGameplayLesson::Init() {
     LuaThreadVariable pages("NumPages", LuaReference::Create((int)vs.size()));
     aa.Load(s);
 
-    aa->SetDrawOrder(DRAW_ORDER_OVERLAY + 1);
+    aa->SetDrawOrder(kDrawOrderOverlay + 1);
     this->AddChild(aa);
   }
 
@@ -178,7 +178,7 @@ void ScreenGameplayLesson::ChangeLessonPage(int dir) {
               .player_auto_play_ != 0) {
         pi->GetPlayerState()->player_controller_ = PC_AUTOPLAY;
       } else {
-        pi->GetPlayerState()->player_controller_ = GamePreferences::m_AutoPlay;
+        pi->GetPlayerState()->player_controller_ = GamePreferences::auto_play;
       }
     }
   } else {

@@ -65,7 +65,7 @@ class GrooveRadar : public ActorFrame {
   };
 
   AutoActor spr_radar_base_;
-  GrooveRadarValueMap groove_radar_value_map_[NUM_PLAYERS];
+  GrooveRadarValueMap groove_radar_value_map_[kNumPlayers];
   // xxx: convert Sprite to AutoActor -aj
   Sprite spr_radar_labels_[NUM_RadarCategory];
   ActorFrame frame_;

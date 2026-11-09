@@ -29,7 +29,7 @@ class ScreenSelectProfile : public ScreenWithMenuElements {
   bool Finish();
 
  protected:
-  int selected_profiles_[NUM_PLAYERS];
+  int selected_profiles_[kNumPlayers];
 };
 
 #endif

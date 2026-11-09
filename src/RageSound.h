@@ -26,7 +26,7 @@ class RageSoundBase {
   virtual int GetDataToPlay(
       float* buffer, int size, RageSoundMixPosition* positions,
       int max_positions, int& position_count, int& got_frames) = 0;
-  virtual RageTimer GetStartTime() const { return RageZeroTimer; }
+  virtual RageTimer GetStartTime() const { return kRageZeroTimer; }
   virtual std::string GetLoadedFilePath() const = 0;
 };
 

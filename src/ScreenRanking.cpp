@@ -85,7 +85,7 @@ void ScreenRanking::Init() {
   POINTS_START_Y.Load(name_, "PointsStartY");
   TIME_START_X.Load(name_, "TimeStartX");
   TIME_START_Y.Load(name_, "TimeStartY");
-  STEPS_TYPE_COLOR.Load(name_, STEPS_TYPE_COLOR_NAME, NUM_RANKING_LINES);
+  STEPS_TYPE_COLOR.Load(name_, STEPS_TYPE_COLOR_NAME, kNumRankingLines);
 
   if (RANKING_TYPE == RankingType_Category) {
     text_category_.SetName("Category");
@@ -140,9 +140,9 @@ void ScreenRanking::Init() {
     }
   }
 
-  for (int l = 0; l < NUM_RANKING_LINES; l++) {
+  for (int l = 0; l < kNumRankingLines; l++) {
     spr_bullets_[l].Load(
-        THEME->GetPathG(name_, ssprintf("bullets 1x%d", NUM_RANKING_LINES)));
+        THEME->GetPathG(name_, ssprintf("bullets 1x%d", kNumRankingLines)));
     spr_bullets_[l]->SetName(ssprintf("Bullet%d", l + 1));
     spr_bullets_[l]->StopAnimating();
     spr_bullets_[l]->SetState(l);
@@ -231,7 +231,7 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
       break;
   }
 
-  for (int l = 0; l < NUM_RANKING_LINES; l++) {
+  for (int l = 0; l < kNumRankingLines; l++) {
     text_names_[l].SetDiffuseColor(STEPS_TYPE_COLOR.GetValue(pts.color_index_));
 
     text_scores_[l].SetVisible(show_scores);
@@ -251,7 +251,7 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
     case RankingType_Category: {
       text_category_.SetText(ssprintf("Type %c", 'A' + pts.category_));
 
-      for (int l = 0; l < NUM_RANKING_LINES; l++) {
+      for (int l = 0; l < kNumRankingLines; l++) {
         // No need to shadow at this point.
         st = pts.types_.front().second;
         HighScoreList& hsl =
@@ -298,7 +298,7 @@ float ScreenRanking::SetPage(const PageToShow& pts) {
       const HighScoreList& hsl =
           PROFILEMAN->GetMachineProfile()->GetCourseHighScoreList(
               pts.course_, pts.trail_);
-      for (int l = 0; l < NUM_RANKING_LINES; l++) {
+      for (int l = 0; l < kNumRankingLines; l++) {
         HighScore hs;
         bool recent_high_score = false;
         if (l < (int)hsl.high_scores_.size()) {

@@ -65,15 +65,15 @@
  * @brief The internal version of the cache for StepMania.
  *
  * Increment this value to invalidate the current cache. */
-const int FILE_CACHE_VERSION = 234;
+const int kFileCacheVersion = 234;
 
 /** @brief How long does a song sample last by default? */
-const float DEFAULT_MUSIC_SAMPLE_LENGTH = 12.f;
+const float kDefaultMusicSampleLength = 12.f;
 
-static Preference<float> g_fLongVerSongSeconds("LongVerSongSeconds", 60 * 2.5f);
-static Preference<float> g_fMarathonVerSongSeconds(
+static Preference<float> long_ver_song_seconds("LongVerSongSeconds", 60 * 2.5f);
+static Preference<float> marathon_ver_song_seconds(
     "MarathonVerSongSeconds", 60 * 5.f);
-static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
+static Preference<bool> back_up_all_song_saves("BackUpAllSongSaves", false);
 
 static std::vector<std::string> GetImageCacheDirs() {
   std::vector<std::string> image_dirs;
@@ -88,9 +88,9 @@ Song::Song() {
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
 
   loaded_from_profile_ = ProfileSlot_Invalid;
-  version_ = STEPFILE_VERSION_NUMBER;
+  version_ = kStepfileVersionNumber;
   music_sample_start_seconds_ = -1;
-  music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+  music_sample_length_seconds_ = kDefaultMusicSampleLength;
   music_length_seconds_ = 0;
   first_second_ = -1;
   last_second_ = -1;
@@ -838,14 +838,14 @@ void Song::TidyUpData(
 
         // Don't use this file.
         preview_file_ = "";
-        music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+        music_sample_length_seconds_ = kDefaultMusicSampleLength;
       } else if (sample != nullptr) {
         music_sample_length_seconds_ = sample->GetLength() / 1000.0f;
         delete sample;
 
         if (music_sample_length_seconds_ < 0) {
           // It failed; bad file or something. It's already logged a warning.
-          music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+          music_sample_length_seconds_ = kDefaultMusicSampleLength;
         } else if (music_sample_length_seconds_ == 0) {
           LOG->UserLog("Sound file", GetPreviewMusicPath(), "is empty.");
         }
@@ -876,7 +876,7 @@ void Song::TidyUpData(
       // The old logic meant that you couldn't have sample lengths that go
       // forever, e.g. those in Donkey Konga. I never liked that. -freem
       if (music_sample_length_seconds_ <= 0.00f) {
-        music_sample_length_seconds_ = DEFAULT_MUSIC_SAMPLE_LENGTH;
+        music_sample_length_seconds_ = kDefaultMusicSampleLength;
       }
     }
 
@@ -1095,7 +1095,7 @@ void Song::TidyUpData(
         if (movie_list.size() == 1) {
           this->AddBackgroundChange(
               BACKGROUND_LAYER_1,
-              BackgroundChange(0, movie_list[0], "", 1.f, SBE_StretchNoLoop));
+              BackgroundChange(0, movie_list[0], "", 1.f, kSbeStretchNoLoop));
         }
       }
       // Clear fields for files that turned out to not exist.
@@ -1152,7 +1152,7 @@ void Song::FixupBackgroundChanges() {
   bool has_no_song_bg_tag = false;
 
   for (unsigned i = 0; !has_no_song_bg_tag && i < bg.size(); ++i) {
-    if (!CompareNoCase(bg[i].def_.file1_, NO_SONG_BG_FILE)) {
+    if (!CompareNoCase(bg[i].def_.file1_, kNoSongBgFile)) {
       bg.erase(bg.begin() + i);
       has_no_song_bg_tag = true;
     }
@@ -1348,7 +1348,7 @@ bool Song::SaveToSSCFile(std::string s_path, bool autosave) {
 
   RemoveAutosave();
 
-  if (g_BackUpAllSongSaves.Get()) {
+  if (back_up_all_song_saves.Get()) {
     std::string ext = GetExtension(path);
     std::string backup_file = SetExtension(path, "");
 
@@ -1923,11 +1923,11 @@ float Song::GetStepsSeconds() const {
 }
 
 bool Song::IsLong() const {
-  return !IsMarathon() && music_length_seconds_ >= g_fLongVerSongSeconds;
+  return !IsMarathon() && music_length_seconds_ >= long_ver_song_seconds;
 }
 
 bool Song::IsMarathon() const {
-  return music_length_seconds_ >= g_fMarathonVerSongSeconds;
+  return music_length_seconds_ >= marathon_ver_song_seconds;
 }
 
 // lua start

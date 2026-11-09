@@ -7,16 +7,16 @@
 class Song;
 class XNode;
 
-extern const std::string RANDOM_BACKGROUND_FILE;
-extern const std::string NO_SONG_BG_FILE;
-extern const std::string SONG_BACKGROUND_FILE;
+extern const std::string kRandomBackgroundFile;
+extern const std::string kNoSongBgFile;
+extern const std::string kSongBackgroundFile;
 
-extern const std::string SBE_UpperLeft;
-extern const std::string SBE_Centered;
-extern const std::string SBE_StretchNormal;
-extern const std::string SBE_StretchNoLoop;
-extern const std::string SBE_StretchRewind;
-extern const std::string SBT_CrossFade;
+extern const std::string kSbeUpperLeft;
+extern const std::string kSbeCentered;
+extern const std::string kSbeStretchNormal;
+extern const std::string kSbeStretchNoLoop;
+extern const std::string kSbeStretchRewind;
+extern const std::string kSbtCrossFade;
 
 struct BackgroundDef {
   bool operator<(const BackgroundDef& other) const;
@@ -48,7 +48,7 @@ struct BackgroundChange {
 
   BackgroundChange(
       float s, std::string f1, std::string f2 = std::string(), float r = 1.f,
-      std::string e = SBE_Centered, std::string t = std::string())
+      std::string e = kSbeCentered, std::string t = std::string())
       : def_(e, f1, f2), start_beat_(s), rate_(r), transition_(t) {}
 
   BackgroundDef def_;

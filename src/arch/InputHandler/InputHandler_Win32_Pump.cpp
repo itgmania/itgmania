@@ -20,14 +20,14 @@ InputHandler_Win32_Pump::InputHandler_Win32_Pump() {
       0x0001 /* older model */, 0x0003 /* shipped with Exceed */
   };
 
-  device_ = new USBDevice[NUM_PUMPS];
+  device_ = new USBDevice[kNumPumps];
 
   int num_found = 0;
   // TODO: Use C++1x semantics to loop through the pids.
   // Hardcoding for now to keep this moving.
   for (int p = 0; p < 2; ++p) {
     const int pump_usb_pid = kPumpUsbPids[p];
-    for (int i = 0; i < NUM_PUMPS; ++i) {
+    for (int i = 0; i < kNumPumps; ++i) {
       if (device_[i].Open(
               kPumpUsbVid, pump_usb_pid, sizeof(long), i, nullptr)) {
         num_found++;
@@ -108,7 +108,7 @@ std::string InputHandler_Win32_Pump::GetDeviceSpecificInputString(
 
 void InputHandler_Win32_Pump::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& devices_out) {
-  for (int i = 0; i < NUM_PUMPS; ++i) {
+  for (int i = 0; i < kNumPumps; ++i) {
     if (device_[i].IsOpen()) {
       devices_out.push_back(
           InputDeviceInfo(InputDevice(DEVICE_PUMP1 + i), "Pump USB"));
@@ -132,7 +132,7 @@ void InputHandler_Win32_Pump::InputThreadMain() {
   SetThreadPriorityBoost(GetCurrentThread(), FALSE);
 
   std::vector<WindowsFileIO*> sources;
-  for (int i = 0; i < NUM_PUMPS; ++i) {
+  for (int i = 0; i < kNumPumps; ++i) {
     if (device_[i].io_.IsOpen()) {
       sources.push_back(&device_[i].io_);
     }
@@ -156,7 +156,7 @@ void InputHandler_Win32_Pump::InputThreadMain() {
 
 void InputHandler_Win32_Pump::Update() {
   if (!input_thread_.IsCreated()) {
-    for (int i = 0; i < NUM_PUMPS; ++i) {
+    for (int i = 0; i < kNumPumps; ++i) {
       int ret = device_[i].GetPadEvent();
 
       if (ret == -1) {

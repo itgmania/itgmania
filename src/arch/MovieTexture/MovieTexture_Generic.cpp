@@ -29,7 +29,7 @@
 #include "archutils/Win32/ErrorStrings.h"
 #endif
 
-static Preference<bool> g_bMovieTextureDirectUpdates(
+static Preference<bool> movie_texture_direct_updates(
     "MovieTextureDirectUpdates", true);
 
 MovieTexture_Generic::MovieTexture_Generic(
@@ -220,7 +220,7 @@ void MovieTexture_Generic::CreateTexture() {
   MovieDecoderPixelFormatYCbCr fmt = PixelFormatYCbCr_Invalid;
   if (surface_ == nullptr) {
     ASSERT(texture_lock_ == nullptr);
-    if (g_bMovieTextureDirectUpdates) {
+    if (movie_texture_direct_updates) {
       texture_lock_ = DISPLAY->CreateTextureLock();
     }
 
@@ -295,8 +295,8 @@ void MovieTexture_Generic::CreateTexture() {
 
     /* Configure the sprite.  This blits the intermediate onto the ifnal render
      * target. */
-    sprite_->SetHorizAlign(align_left);
-    sprite_->SetVertAlign(align_top);
+    sprite_->SetHorizAlign(kAlignLeft);
+    sprite_->SetVertAlign(kAlignTop);
 
     /* Hack: Sprite wants to take ownership of the texture, and will decrement
      * the refcount when it unloads the texture.  Normally we'd make a "copy",
@@ -447,15 +447,15 @@ void MovieTexture_Generic::UpdateFrame() {
   }
 }
 
-static EffectMode EffectModes[] = {
+static EffectMode effect_modes[] = {
     EffectMode_YUYV422,
 };
-static_assert(ARRAYLEN(EffectModes) == NUM_PixelFormatYCbCr);
+static_assert(ARRAYLEN(effect_modes) == NUM_PixelFormatYCbCr);
 
 EffectMode MovieTexture_Generic::GetEffectMode(
     MovieDecoderPixelFormatYCbCr fmt) {
   ASSERT(fmt != PixelFormatYCbCr_Invalid);
-  return EffectModes[fmt];
+  return effect_modes[fmt];
 }
 
 void MovieTexture_Generic::Reload() {}

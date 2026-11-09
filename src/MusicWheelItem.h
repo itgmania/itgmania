@@ -64,7 +64,7 @@ class MusicWheelItem : public WheelItemBase {
   BitmapText* text_section_count_;
 
   WheelNotifyIcon wheel_notify_icon_;
-  AutoActor grade_display_[NUM_PLAYERS];
+  AutoActor grade_display_[kNumPlayers];
 };
 
 struct MusicWheelItemData : public WheelItemBaseData {

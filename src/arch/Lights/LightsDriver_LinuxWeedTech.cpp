@@ -20,7 +20,7 @@ REGISTER_LIGHTS_DRIVER_CLASS(LinuxWeedTech);
 
 // Begin serial driver
 static int fd = -1;
-static LightsState CurLights;
+static LightsState cur_lights;
 
 static inline void SerialClose() {
   if (fd != 1) {
@@ -138,7 +138,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
       // system with delays. ((2ms between commands req.))
       FOREACH_CabinetLight(cl) {
         on |= ls->cabinet_lights_[cl];
-        CurLights.cabinet_lights_[cl] = ls->cabinet_lights_[cl];
+        cur_lights.cabinet_lights_[cl] = ls->cabinet_lights_[cl];
       }
 
       str[0] = 'A';
@@ -161,7 +161,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
     FOREACH_CabinetLight(cl) {
       // Only send the command if the light has changed states (on/off)
       on = ls->cabinet_lights_[cl];
-      if (on != CurLights.cabinet_lights_[cl]) {
+      if (on != cur_lights.cabinet_lights_[cl]) {
         if (cl == LIGHT_MARQUEE_UP_LEFT) {
           str[0] = 'A';
           str[2] = 'A';
@@ -192,7 +192,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
           SerialOut(str, 6);
           str[0] = 0x00;
         }
-        CurLights.cabinet_lights_[cl] = on;
+        cur_lights.cabinet_lights_[cl] = on;
       }
     }
   }
@@ -201,7 +201,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
     FOREACH_ENUM(GameButton, gb) {
       // Only send the command if the light has changed states (on/off)
       on = ls->game_button_lights_[gc][gb];
-      if (on != CurLights.game_button_lights_[gc][gb]) {
+      if (on != cur_lights.game_button_lights_[gc][gb]) {
         if (gc == GameController_1) {
           if (gb == DANCE_BUTTON_LEFT) {
             str[0] = 'A';
@@ -252,7 +252,7 @@ void LightsDriver_LinuxWeedTech::Set(const LightsState* ls) {
           // SerialOut(str, 6);
           str[0] = 0x00;
         }
-        CurLights.game_button_lights_[gc][gb] = on;
+        cur_lights.game_button_lights_[gc][gb] = on;
       }
     }
   }

@@ -21,7 +21,7 @@
 namespace {
 class SextetImpl {
  protected:
-  uint8_t last_output_[FULL_SEXTET_COUNT];
+  uint8_t last_output_[kFullSextetCount];
 
 #ifdef _WIN32
   HANDLE out_;
@@ -54,30 +54,30 @@ virtual ~SextetImpl() {
 }
 
 void Set(const LightsState* ls) {
-  uint8_t buffer[FULL_SEXTET_COUNT];
+  uint8_t buffer[kFullSextetCount];
 
   packLine(buffer, ls);
 
   // Only write if the message has changed since the last write.
-  if (memcmp(buffer, last_output_, FULL_SEXTET_COUNT) != 0) {
+  if (memcmp(buffer, last_output_, kFullSextetCount) != 0) {
     if (out_ != nullptr) {
 #ifdef _WIN32
       DWORD written;
       bool success = WriteFile(
-          out_,               // pipe handle
-          buffer,             // message
-          FULL_SEXTET_COUNT,  // message length
-          &written,           // bytes written
-          NULL);              // not overlapped
+          out_,              // pipe handle
+          buffer,            // message
+          kFullSextetCount,  // message length
+          &written,          // bytes written
+          NULL);             // not overlapped
 
 #else
-        out_->Write(buffer, FULL_SEXTET_COUNT);
+        out_->Write(buffer, kFullSextetCount);
         out_->Flush();
 #endif
     }
 
     // Remember last message
-    memcpy(last_output_, buffer, FULL_SEXTET_COUNT);
+    memcpy(last_output_, buffer, kFullSextetCount);
   }
 }
 };  // namespace
@@ -108,7 +108,7 @@ REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 #else
 #define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
 #endif
-static Preference<std::string> g_sSextetStreamOutputFilename(
+static Preference<std::string> sextet_stream_output_filename(
     "SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
 inline RageFile* openOutputStream(const std::string& filename) {
@@ -128,7 +128,7 @@ inline RageFile* openOutputStream(const std::string& filename) {
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile() {
 #ifdef WINDOWS
   impl_ = new SextetImpl(CreateFile(
-      g_sSextetStreamOutputFilename.Get().c_str(),  // pipe name
+      sextet_stream_output_filename.Get().c_str(),  // pipe name
       GENERIC_WRITE,
       0,              // no sharing
       NULL,           // default security attributes
@@ -136,7 +136,7 @@ LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile() {
       0,              // default attributes
       NULL));
 #else
-  impl_ = new SextetImpl(openOutputStream(g_sSextetStreamOutputFilename));
+  impl_ = new SextetImpl(openOutputStream(sextet_stream_output_filename));
 #endif
 }
 

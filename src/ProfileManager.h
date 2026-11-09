@@ -157,24 +157,24 @@ class ProfileManager {
 
   // Directory that contains the profile.  Either on local machine or
   // on a memory card.
-  std::string profile_dir_[NUM_PLAYERS];
+  std::string profile_dir_[kNumPlayers];
 
   std::string stats_prefix_;
 
-  bool was_loaded_from_memory_card_[NUM_PLAYERS];
+  bool was_loaded_from_memory_card_[kNumPlayers];
   bool last_load_was_tampered_or_corrupt_
-      [NUM_PLAYERS];  // true if Stats.xml was present, but failed to load
+      [kNumPlayers];  // true if Stats.xml was present, but failed to load
                       // (probably because of a signature failure)
   bool last_load_was_from_last_good_
-      [NUM_PLAYERS];  // true if the primary Stats file was corrupt or missing
+      [kNumPlayers];  // true if the primary Stats file was corrupt or missing
                       // and LastGood loaded successfully
-  mutable bool need_to_back_up_last_load_[NUM_PLAYERS];  // if true, back up
+  mutable bool need_to_back_up_last_load_[kNumPlayers];  // if true, back up
                                                          // profile on next save
-  bool new_profile_[NUM_PLAYERS];
+  bool new_profile_[kNumPlayers];
   // prevent a bad save from overwriting Stats.xml after a prefix reload failed
-  bool stats_prefix_change_failed_[NUM_PLAYERS];
+  bool stats_prefix_change_failed_[kNumPlayers];
 
-  Profile* memory_card_profile_[NUM_PLAYERS];  // holds Profile for the
+  Profile* memory_card_profile_[kNumPlayers];  // holds Profile for the
                                                // currently inserted card
   Profile* machine_profile_;
 };

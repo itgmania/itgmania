@@ -261,8 +261,8 @@ void StageStats::FinalizeScores(bool summary) {
   // If the stepstype is routine, fill high scores with each player
   if (style_type == StyleType_TwoPlayersSharedSides) {
     PlayerNumber p = GAMESTATE->GetMasterPlayerNumber();
-    std::vector<PlayerStageStats> ppss(NUM_PLAYERS);
-    std::vector<std::string> player_guids(NUM_PLAYERS);
+    std::vector<PlayerStageStats> ppss(kNumPlayers);
+    std::vector<std::string> player_guids(kNumPlayers);
     FOREACH_HumanPlayer(pn) {
       ppss[pn] = player_[pn];
       player_guids[pn] = PROFILEMAN->IsPersistentProfile(pn)
@@ -271,15 +271,15 @@ void StageStats::FinalizeScores(bool summary) {
     }
     player_[p].high_score_ = FillInRoutineHighScore(
         routine_player_, *GAMESTATE->player_state_[p],
-        RANKING_TO_FILL_IN_MARKER[p], ppss, player_guids);
+        kRankingToFillInMarker[p], ppss, player_guids);
   } else {
     FOREACH_HumanPlayer(p) {
       std::string player_guid = PROFILEMAN->IsPersistentProfile(p)
                                     ? PROFILEMAN->GetProfile(p)->guid_
                                     : std::string("");
       player_[p].high_score_ = FillInHighScore(
-          player_[p], *GAMESTATE->player_state_[p],
-          RANKING_TO_FILL_IN_MARKER[p], player_guid);
+          player_[p], *GAMESTATE->player_state_[p], kRankingToFillInMarker[p],
+          player_guid);
     }
   }
 
@@ -397,7 +397,7 @@ bool StageStats::PlayerHasHighScore(PlayerNumber pn) const {
                   h < PREFSMAN->max_high_scores_per_list_for_machine_;
        ++h) {
     const HighScore& hs = hsl.high_scores_[h];
-    if (hs.GetName() == RANKING_TO_FILL_IN_MARKER[pn] &&
+    if (hs.GetName() == kRankingToFillInMarker[pn] &&
         hs.GetPercentDP() == percent_dp && hs.GetScore() == score) {
       return true;
     }

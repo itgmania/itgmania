@@ -54,7 +54,7 @@ void ScreenOptionsToggleSongs::ProcessMenuStart(const InputEventPlus& input) {
     return;
   }
 
-  ToggleSongs::m_sGroup = groups_[row];
+  ToggleSongs::g_group = groups_[row];
   SCREENMAN->SetNewScreen("ScreenOptionsToggleSongsSubPage");
 }
 
@@ -70,8 +70,7 @@ void ScreenOptionsToggleSongsSubPage::BeginScreen() {
 
   std::vector<OptionRowHandler*> hands;
 
-  const std::vector<Song*>& all_songs =
-      SONGMAN->GetSongs(ToggleSongs::m_sGroup);
+  const std::vector<Song*>& all_songs = SONGMAN->GetSongs(ToggleSongs::g_group);
   for (Song* song : all_songs) {
     if (UNLOCKMAN->SongIsLocked(song) & ~LOCKED_DISABLED) {
       continue;

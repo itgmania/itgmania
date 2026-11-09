@@ -57,7 +57,7 @@ class SongPosition {
 
   void UpdateSongPosition(
       float position_seconds, const TimingData& timing,
-      const RageTimer& timestamp = RageZeroTimer,
+      const RageTimer& timestamp = kRageZeroTimer,
       float additional_visual_delay = 0.0f);
 
   // Lua

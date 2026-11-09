@@ -26,7 +26,7 @@
  * using the correct format specifier, please modify it
  * to use PRId64 for int64_t, or PRIu64 for uint64_t */
 
-static const int channels = 2;
+static const int kChannels = 2;
 
 static int frames_to_buffer;
 
@@ -56,7 +56,7 @@ void RageSoundDriver::Sound::Allocate(int frames) {
   /* Reserve enough blocks in the buffer to hold the buffer.  Add one, to
    * account for the fact that we may have a partial block due to a previous
    * Mix() call. */
-  const int frames_per_block = samples_per_block / channels;
+  const int frames_per_block = kSamplesPerBlock / kChannels;
   const int blocks_to_prebuffer = frames / frames_per_block;
   buffer_.reserve(blocks_to_prebuffer + 1);
   mixed_position_queue_.reserve(64);
@@ -161,8 +161,8 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
 
       const int frames_to_read = std::min(
           frames_left, std::min(p[0]->frames_in_buffer_, remaining_frames));
-      mix.SetWriteOffset(got_frames * channels);
-      mix.write(p[0]->buffer_next_, frames_to_read * channels);
+      mix.SetWriteOffset(got_frames * kChannels);
+      mix.write(p[0]->buffer_next_, frames_to_read * kChannels);
 
       {
         Sound::PlaybackPositionInfo pos;
@@ -177,7 +177,7 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
         s.mixed_position_queue_.write(&pos, 1);
       }
 
-      p[0]->buffer_next_ += frames_to_read * channels;
+      p[0]->buffer_next_ += frames_to_read * kChannels;
       p[0]->frames_in_buffer_ -= frames_to_read;
       span.frames_consumed_ += frames_to_read;
       if (span.frames_consumed_ == span.frames_) {
@@ -203,13 +203,13 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
 
 void RageSoundDriver::Mix(
     int16_t* buf, int frames, int64_t frame_number, int64_t current_frame) {
-  memset(buf, 0, frames * channels * sizeof(int16_t));
+  memset(buf, 0, frames * kChannels * sizeof(int16_t));
   MixIntoBuffer(frames, frame_number, current_frame).read(buf);
 }
 
 void RageSoundDriver::Mix(
     float* buf, int frames, int64_t frame_number, int64_t current_frame) {
-  memset(buf, 0, frames * channels * sizeof(float));
+  memset(buf, 0, frames * kChannels * sizeof(float));
   MixIntoBuffer(frames, frame_number, current_frame).read(buf);
 }
 
@@ -275,8 +275,8 @@ int RageSoundDriver::GetDataForSound(Sound& s) {
   ASSERT(psize[0] > 0);
 
   sound_block* block = p[0];
-  int size = ARRAYLEN(block->buffer_) / channels;
-  RageSoundMixPosition positions[samples_per_block];
+  int size = ARRAYLEN(block->buffer_) / kChannels;
+  RageSoundMixPosition positions[kSamplesPerBlock];
   int position_count = 0;
   int ret = s.sound_->GetDataToPlay(
       block->buffer_, size, positions, ARRAYLEN(positions), position_count,

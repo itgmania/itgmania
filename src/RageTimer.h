@@ -54,7 +54,7 @@ class RageTimer {
   static double Difference(const RageTimer& lhs, const RageTimer& rhs);
 };
 
-extern const RageTimer RageZeroTimer;
+extern const RageTimer kRageZeroTimer;
 
 #endif  // RAGE_TIMER_H
 

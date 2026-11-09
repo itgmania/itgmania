@@ -18,13 +18,13 @@ typedef double real;
 
 namespace {
 
-const real MinimumBPM = 89.0;
-const real MaximumBPM = 205.0;
-const int IntervalDelta = 10;
-const int IntervalDownsample = 3;
+const real kMinimumBpm = 89.0;
+const real kMaximumBpm = 205.0;
+const int kIntervalDelta = 10;
+const int kIntervalDownsample = 3;
 
 // ArrowVortex analyzes at most ten minutes when nothing is selected.
-const double MaxAnalysisSeconds = 600.0;
+const double kMaxAnalysisSeconds = 600.0;
 
 struct Onset {
   int pos_;
@@ -294,8 +294,8 @@ struct GapData {
 struct IntervalTester {
   IntervalTester(int samplerate, int num_onsets, const Onset* onsets)
       : samplerate_(samplerate), num_onsets_(num_onsets), onsets_(onsets) {
-    min_interval_ = static_cast<int>(samplerate * 60.0 / MaximumBPM + 0.5);
-    max_interval_ = static_cast<int>(samplerate * 60.0 / MinimumBPM + 0.5);
+    min_interval_ = static_cast<int>(samplerate * 60.0 / kMaximumBpm + 0.5);
+    max_interval_ = static_cast<int>(samplerate * 60.0 / kMinimumBpm + 0.5);
     num_intervals_ = max_interval_ - min_interval_;
     fitness_.assign(num_intervals_ > 0 ? num_intervals_ : 1, 0.0);
   }
@@ -428,9 +428,9 @@ real IntervalToBPM(const IntervalTester& test, int i) {
 
 void FillCoarseIntervals(IntervalTester& test, GapData& gapdata) {
   int num_coarse_intervals =
-      (test.num_intervals_ + IntervalDelta - 1) / IntervalDelta;
+      (test.num_intervals_ + kIntervalDelta - 1) / kIntervalDelta;
   for (int i = 0; i < num_coarse_intervals; ++i) {
-    int index = i * IntervalDelta;
+    int index = i * kIntervalDelta;
     int interval = test.min_interval_ + index;
     test.fitness_[index] =
         std::max(0.001, GetConfidenceForInterval(gapdata, interval));
@@ -515,13 +515,13 @@ void CalculateBPM(DetectorData* data, Onset* onsets, int num_onsets) {
 
   IntervalTester test(data->samplerate_, num_onsets, onsets);
   GapData* gapdata =
-      new GapData(test.max_interval_, IntervalDownsample, num_onsets, onsets);
+      new GapData(test.max_interval_, kIntervalDownsample, num_onsets, onsets);
 
   // Loop through every 10th possible BPM, later we will fill in those that
   // look interesting.
   FillCoarseIntervals(test, *gapdata);
   int num_coarse_intervals =
-      (test.num_intervals_ + IntervalDelta - 1) / IntervalDelta;
+      (test.num_intervals_ + kIntervalDelta - 1) / kIntervalDelta;
   if (data->terminate_->load()) {
     delete gapdata;
     return;
@@ -534,7 +534,7 @@ void CalculateBPM(DetectorData* data, Onset* onsets, int num_onsets) {
       3, test.coefs_, &test.fitness_[0], num_coarse_intervals,
       test.min_interval_);
   real max_fitness = 0.001;
-  for (int i = 0; i < test.num_intervals_; i += IntervalDelta) {
+  for (int i = 0; i < test.num_intervals_; i += kIntervalDelta) {
     NormalizeFitness(
         test.fitness_[i], test.coefs_,
         static_cast<real>(test.min_interval_ + i));
@@ -543,11 +543,11 @@ void CalculateBPM(DetectorData* data, Onset* onsets, int num_onsets) {
 
   // Refine the intervals around the best intervals.
   real fitness_threshold = max_fitness * 0.4;
-  for (int i = 0; i < test.num_intervals_; i += IntervalDelta) {
+  for (int i = 0; i < test.num_intervals_; i += kIntervalDelta) {
     if (test.fitness_[i] > fitness_threshold) {
       int begin = 0, end = 0;
       FillIntervalRange(
-          test, *gapdata, i - IntervalDelta, i + IntervalDelta, begin, end);
+          test, *gapdata, i - kIntervalDelta, i + kIntervalDelta, begin, end);
       int best = FindBestInterval(&test.fitness_[0], begin, end);
       TempoResult result = {
           IntervalToBPM(test, best), 0.0, test.fitness_[best]};
@@ -749,7 +749,7 @@ bool DecodeMono(
   sample_rate_out = sample_rate;
 
   const size_t max_frames =
-      static_cast<size_t>(MaxAnalysisSeconds * sample_rate);
+      static_cast<size_t>(kMaxAnalysisSeconds * sample_rate);
   const int buffer_frames = 4096;
   std::vector<float> buf(static_cast<size_t>(buffer_frames) * channels);
 
@@ -773,7 +773,7 @@ bool DecodeMono(
   return !samples_out.empty();
 }
 
-const char* sProgressText[] = {"Looking for onsets",  "Scanning intervals",
+const char* progress_text[] = {"Looking for onsets",  "Scanning intervals",
                                "Refining intervals",  "Selecting BPM values",
                                "Calculating offsets", "Done"};
 
@@ -791,10 +791,10 @@ TempoDetector::~TempoDetector() {
 
 std::string TempoDetector::GetProgress() const {
   const int num_texts =
-      static_cast<int>(sizeof(sProgressText) / sizeof(sProgressText[0]));
+      static_cast<int>(sizeof(progress_text) / sizeof(progress_text[0]));
   int i = progress_.load();
   i = std::min(std::max(i, 0), num_texts - 1);
-  return sProgressText[i];
+  return progress_text[i];
 }
 
 TempoDetector* TempoDetector::Create(

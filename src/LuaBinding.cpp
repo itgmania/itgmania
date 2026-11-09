@@ -9,17 +9,17 @@
 #include "RageUtil.h"
 #include "SubscriptionManager.h"
 #include "global.h"
-static SubscriptionManager<LuaBinding> m_Subscribers;
+static SubscriptionManager<LuaBinding> subscribers;
 
 namespace {
 void RegisterTypes(lua_State* L) {
-  if (m_Subscribers.subscribers_ == nullptr) {
+  if (subscribers.subscribers_ == nullptr) {
     return;
   }
 
   /* Register base classes first. */
   std::map<std::string, LuaBinding*> map_to_register;
-  for (LuaBinding* binding : *m_Subscribers.subscribers_) {
+  for (LuaBinding* binding : *subscribers.subscribers_) {
     map_to_register[binding->GetClassName()] = binding;
   }
 
@@ -60,9 +60,9 @@ void RegisterTypes(lua_State* L) {
 };  // namespace
 REGISTER_WITH_LUA_FUNCTION(RegisterTypes);
 
-LuaBinding::LuaBinding() { m_Subscribers.Subscribe(this); }
+LuaBinding::LuaBinding() { subscribers.Subscribe(this); }
 
-LuaBinding::~LuaBinding() { m_Subscribers.Unsubscribe(this); }
+LuaBinding::~LuaBinding() { subscribers.Unsubscribe(this); }
 
 void LuaBinding::Register(lua_State* L) {
   /* Create the methods table, if it doesn't already exist. */

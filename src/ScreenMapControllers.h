@@ -66,8 +66,7 @@ class ScreenMapControllers : public ScreenWithMenuElements {
     GameButton game_button_;
 
     // owned by m_Line
-    BitmapText* text_mapped_to_[NUM_GameController]
-                               [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
+    BitmapText* text_mapped_to_[NUM_GameController][kNumShownGameToDeviceSlots];
   };
   std::vector<KeyToMap> keys_to_map_;
 
@@ -76,7 +75,7 @@ class ScreenMapControllers : public ScreenWithMenuElements {
   BitmapText text_label_[NUM_GameController];
   BitmapText list_header_center_;
   BitmapText list_header_labels_[NUM_GameController]
-                                [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
+                                [kNumShownGameToDeviceSlots];
 
   float auto_dismiss_warning_secs_;
   AutoActor warning_;

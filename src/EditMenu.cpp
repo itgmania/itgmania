@@ -61,7 +61,7 @@ void EditMenu::GetSongsToShowForGroup(
     songs_out.clear();
     return;
   }
-  songs_out = SONGMAN->GetSongs(SHOW_GROUPS.GetValue() ? group : GROUP_ALL);
+  songs_out = SONGMAN->GetSongs(SHOW_GROUPS.GetValue() ? group : kGroupAll);
   EditMode mode = EDIT_MODE.GetValue();
   switch (mode) {
     case EditMode_Practice:
@@ -108,7 +108,7 @@ void EditMenu::Load(const std::string& type) {
   LOG->Trace("EditMenu::Load");
 
   SHOW_GROUPS.Load(type, "ShowGroups");
-  ARROWS_X.Load(type, ARROWS_X_NAME, NUM_ARROWS);
+  ARROWS_X.Load(type, ARROWS_X_NAME, kNumArrows);
   ARROWS_ENABLED_COMMAND.Load(type, "ArrowsEnabledCommand");
   ARROWS_DISABLED_COMMAND.Load(type, "ArrowsDisabledCommand");
   ROW_Y.Load(type, ROW_Y_NAME, NUM_EditMenuRow);

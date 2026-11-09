@@ -13,7 +13,7 @@
 #include "RageUtil.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 
-static int g_currentSerial = 0;
+static int current_serial = 0;
 
 MemoryCardDriverThreaded_Folder::MemoryCardDriverThreaded_Folder() {
   last_devices_ = 0;
@@ -81,7 +81,7 @@ void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices(
   FOREACH_PlayerNumber(p) {
     if ((last_devices_ & (1 << p)) > 0) {
       UsbStorageDevice usbd;
-      usbd.serial_ = StringConversion::ToString(g_currentSerial++);
+      usbd.serial_ = StringConversion::ToString(current_serial++);
       usbd.sys_path_ = MEMCARDMAN->memory_card_os_mount_point_[p];
       usbd.os_mount_dir_ = MEMCARDMAN->memory_card_os_mount_point_[p];
 

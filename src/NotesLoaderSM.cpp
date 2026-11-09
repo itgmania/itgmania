@@ -554,7 +554,7 @@ void SMLoader::ProcessBPMsAndStops(
   }
   // We always want to have an initial BPM.  If we start out warping, this
   // BPM will be added later.  If we start with a regular BPM, add it now.
-  if (bpm > 0 && bpm <= FAST_BPM_WARP) {
+  if (bpm > 0 && bpm <= kFastBpmWarp) {
     out.AddSegment(BPMSegment(BeatToNoteRow(0), bpm));
   }
 
@@ -569,7 +569,7 @@ void SMLoader::ProcessBPMsAndStops(
     // Calculate the effects of time at the current BPM.  "Infinite"
     // BPMs (SM4 warps) imply that zero time passes, so skip this
     // step in that case.
-    if (bpm <= FAST_BPM_WARP) {
+    if (bpm <= kFastBpmWarp) {
       timeofs += (change.first - prevbeat) * 60 / bpm;
 
       // If we were in a warp and it finished during this
@@ -597,7 +597,7 @@ void SMLoader::ProcessBPMsAndStops(
     if (change_is_bpm) {
       // Does this BPM change start a new warp?
       if (warpstart < 0 &&
-          (change.second < 0 || change.second > FAST_BPM_WARP)) {
+          (change.second < 0 || change.second > kFastBpmWarp)) {
         // Yes.
         warpstart = change.first;
         prewarpbpm = bpm;
@@ -636,7 +636,7 @@ void SMLoader::ProcessBPMsAndStops(
 
           // Now, are we still warping because of
           // the BPM value?
-          if (bpm < 0 || bpm > FAST_BPM_WARP) {
+          if (bpm < 0 || bpm > kFastBpmWarp) {
             // Yep.
             warpstart = change.first;
             // prewarpbpm remains the same
@@ -660,7 +660,7 @@ void SMLoader::ProcessBPMsAndStops(
   // after the last timing change.
   if (warpstart >= 0) {
     // Will this warp ever end?
-    if (bpm < 0 || bpm > FAST_BPM_WARP) {
+    if (bpm < 0 || bpm > kFastBpmWarp) {
       // No, so it ends the entire chart immediately.
       // XXX There must be a less hacky and more accurate way
       // to do this.
@@ -799,7 +799,7 @@ void SMLoader::ProcessTickcounts(
     const float tickcount_beat =
         RowToBeat(array_tickcount_values[0], rows_per_beat);
     int ticks =
-        std::clamp(atoi(array_tickcount_values[1].c_str()), 0, ROWS_PER_BEAT);
+        std::clamp(atoi(array_tickcount_values[1].c_str()), 0, kRowsPerBeat);
 
     out.AddSegment(TickcountSegment(BeatToNoteRow(tickcount_beat), ticks));
   }
@@ -933,7 +933,7 @@ bool SMLoader::LoadFromBGChangesVector(
       if (change.def_.effect_.empty()) {
         bool loop = StringToInt(bg_change_values[5]) != 0;
         if (!loop) {
-          change.def_.effect_ = SBE_StretchNoLoop;
+          change.def_.effect_ = kSbeStretchNoLoop;
         }
       }
       [[fallthrough]];
@@ -943,7 +943,7 @@ bool SMLoader::LoadFromBGChangesVector(
       if (change.def_.effect_.empty()) {
         bool rewind_movie = StringToInt(bg_change_values[4]) != 0;
         if (rewind_movie) {
-          change.def_.effect_ = SBE_StretchRewind;
+          change.def_.effect_ = kSbeStretchRewind;
         }
       }
       [[fallthrough]];
@@ -1116,7 +1116,7 @@ bool SMLoader::LoadEditFromFile(
   LOG->Trace("SMLoader::LoadEditFromFile(%s)", edit_file_path.c_str());
 
   int bytes = FILEMAN->GetFileSizeInBytes(edit_file_path);
-  if (bytes > MAX_EDIT_STEPS_SIZE_BYTES) {
+  if (bytes > kMaxEditStepsSizeBytes) {
     LOG->UserLog(
         "Edit file", edit_file_path,
         "is unreasonably large. It won't be loaded.");
@@ -1171,7 +1171,7 @@ bool SMLoader::LoadEditFromMsd(
       }
 
       if (song->GetNumStepsLoadedFromProfile(slot) >=
-          MAX_EDITS_PER_SONG_PER_PROFILE) {
+          kMaxEditsPerSongPerProfile) {
         LOG->UserLog(
             "Song file", song_full_title,
             "already has the maximum number of edits allowed for "

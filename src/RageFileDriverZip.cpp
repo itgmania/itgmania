@@ -22,7 +22,7 @@ static struct FileDriverEntry_ZIP : public FileDriverEntry {
   RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverZip(root);
   }
-} const g_RegisterDriver;
+} const kRegisterDriver;
 
 RageFileDriverZip::RageFileDriverZip(const std::string& path)
     : RageFileDriver(new NullFilenameDB), mutex_("RageFileDriverZip") {

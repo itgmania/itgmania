@@ -92,7 +92,7 @@ XToString(DetailLine);
 
 static ThemeMetric<TapNoteScore> g_MinScoreToMaintainCombo(
     "Gameplay", "MinScoreToMaintainCombo");
-static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
+static const int kNumShownRadarCategories = 5;
 
 AutoScreenMessage(SM_PlayCheer);
 
@@ -123,7 +123,7 @@ void ScreenEvaluation::Init() {
     GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
     GAMESTATE->SetCurrentStyle(
         GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(), "versus"),
-        PLAYER_INVALID);
+        kPlayerInvalid);
     ss.play_mode_ = GAMESTATE->play_mode_;
     ss.stage_ = Stage_1st;
     enum_add(ss.stage_, rand() % 3);
@@ -275,7 +275,7 @@ void ScreenEvaluation::Init() {
   ScreenWithMenuElements::Init();
 
   // Calculate grades
-  Grade grade[NUM_PLAYERS];
+  Grade grade[kNumPlayers];
 
   FOREACH_PlayerNumber(p) {
     if (GAMESTATE->IsPlayerEnabled(p)) {
@@ -292,8 +292,7 @@ void ScreenEvaluation::Init() {
   if (SHOW_BANNER_AREA) {
     if (SUMMARY) {
       for (size_t i = 0;
-           i < stage_stats_->played_songs_.size() && i < MAX_SONGS_TO_SHOW;
-           i++) {
+           i < stage_stats_->played_songs_.size() && i < kMaxSongsToShow; i++) {
         Song* song = stage_stats_->played_songs_[i];
 
         small_banner_[i].LoadFromSong(song);
@@ -431,7 +430,7 @@ void ScreenEvaluation::Init() {
       this->AddChild(spr_bonus_frame_[p]);
 
       // todo: convert this to use category names instead of numbers? -aj
-      for (int r = 0; r < NUM_SHOWN_RADAR_CATEGORIES; r++)  // foreach line
+      for (int r = 0; r < kNumShownRadarCategories; r++)  // foreach line
       {
         float possible = stage_stats_->player_[p].radar_possible_[r];
         float actual = stage_stats_->player_[p].radar_actual_[r];

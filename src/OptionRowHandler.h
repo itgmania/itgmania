@@ -212,11 +212,11 @@ class OptionRowHandler {
   virtual int GetDefaultOption() const { return -1; }
   virtual void ImportOption(
       OptionRow*, const std::vector<PlayerNumber>&,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {}
+      std::vector<bool> selected_out[kNumPlayers]) const {}
   // Returns an OPT mask.
   virtual int ExportOption(
       const std::vector<PlayerNumber>&,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     return 0;
   }
   virtual void GetIconTextAndGameCommand(

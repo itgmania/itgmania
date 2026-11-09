@@ -12,10 +12,10 @@
 #define DitherMatDim 4
 
 // Fractions, 0/16 to 15/16:
-static const int DitherMat[DitherMatDim][DitherMatDim] = {
+static const int kDitherMat[DitherMatDim][DitherMatDim] = {
     {0, 8, 2, 10}, {12, 4, 14, 6}, {3, 11, 1, 9}, {15, 7, 13, 5}};
 
-static int DitherMatCalc[DitherMatDim][DitherMatDim];
+static int dither_mat_calc[DitherMatDim][DitherMatDim];
 
 // conv is the ratio from the input to the output.
 static uint8_t DitherPixel(int x, int y, int intensity, int conv) {
@@ -37,7 +37,7 @@ static uint8_t DitherPixel(int x, int y, int intensity, int conv) {
   int out_intensity = intensity * conv;
 
   // Add bias.
-  out_intensity += DitherMatCalc[y][x];
+  out_intensity += dither_mat_calc[y][x];
 
   // Truncate, and add e to make sure a value of 14.999998 -> 15.
   return uint8_t((out_intensity + 1) >> 16);
@@ -51,7 +51,7 @@ void RageSurfaceUtils::OrderedDither(const RageSurface* src, RageSurface* dst) {
         /* Each value is 0..15.  They represent 0/16 through 15/16.
          * Set DitherMatCalc to that value * 65536, so we can do it
          * with integer calcs. */
-        DitherMatCalc[i][j] = DitherMat[i][j] * 65536 / 16;
+        dither_mat_calc[i][j] = kDitherMat[i][j] * 65536 / 16;
       }
     }
 

@@ -22,7 +22,7 @@
 #endif
 // clang-format on
 
-std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
+std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::to_process;
 
 static void LuaInformation() {
   XNode* node = LuaHelpers::GetLuaInformation();
@@ -30,7 +30,7 @@ static void LuaInformation() {
   node->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
   node->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
 
-  node->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
+  node->AppendChild("Version", std::string(PRODUCT_FAMILY) + kProductVersion);
   node->AppendChild("Date", DateTime::GetNowDate().GetString());
 
   XmlFileUtil::SaveToFile(node, "Lua.xml", "Lua.xsl");
@@ -47,10 +47,10 @@ static void LuaInformation() {
 static void Version() {
 #if defined(_WIN32)
   std::string product_id =
-      ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str());
+      ssprintf("%s", (std::string(PRODUCT_FAMILY) + kProductVersion).c_str());
   std::string version = ssprintf(
-      "build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date,
-      version_time);
+      "build %s\nCompile Date: %s @ %s", ::kSmVersionGitHash, kVersionDate,
+      kVersionTime);
 
   AllocConsole();
   freopen("CONOUT$", "wb", stdout);
@@ -69,7 +69,7 @@ void CommandLineActions::Handle(LoadingWindow* lw) {
   for (int i = 0; i < g_argc; ++i) {
     args.argv_.push_back(g_argv[i]);
   }
-  ToProcess.push_back(args);
+  to_process.push_back(args);
 
   bool exit_after = false;
   if (GetCommandlineArgument("ExportLuaInformation")) {

@@ -90,7 +90,7 @@
   CommandLineActions::CommandLineArgs args;
   args.argv_.push_back(url);
 
-  CommandLineActions::ToProcess.push_back(args);
+  CommandLineActions::to_process.push_back(args);
 }
 
 // Called when the internal event loop has just started running.

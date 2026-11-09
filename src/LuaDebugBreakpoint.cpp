@@ -9,7 +9,7 @@
 
 namespace LuaDebug {
 namespace {
-static const int ALL_EVENTS = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
+static const int kAllEvents = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
 
 int GetCallStackDepth(lua_State* L) {
   int depth;
@@ -22,7 +22,7 @@ int GetCallStackDepth(lua_State* L) {
 
 Breakpoint Breakpoint::Pause() {
   Breakpoint bp;
-  bp.event_mask_ = ALL_EVENTS;
+  bp.event_mask_ = kAllEvents;
   bp.reason_ = "pause";
   bp.temporary_ = true;
   return bp;
@@ -30,7 +30,7 @@ Breakpoint Breakpoint::Pause() {
 
 Breakpoint Breakpoint::Return(lua_State* L) {
   Breakpoint bp;
-  bp.event_mask_ = ALL_EVENTS;
+  bp.event_mask_ = kAllEvents;
   bp.max_stack_depth_ = GetCallStackDepth(L) - 1;
   bp.thread_ = L;
   bp.reason_ = "step";
@@ -40,7 +40,7 @@ Breakpoint Breakpoint::Return(lua_State* L) {
 
 Breakpoint Breakpoint::Step(lua_State* L) {
   Breakpoint bp;
-  bp.event_mask_ = ALL_EVENTS;
+  bp.event_mask_ = kAllEvents;
   bp.thread_ = L;
   bp.reason_ = "step";
   bp.temporary_ = true;

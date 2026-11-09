@@ -56,25 +56,25 @@
 #include "XmlFileUtil.h"
 #include "global.h"
 
-const std::string STATS_XML = "Stats.xml";
-const std::string STATS_XML_GZ = "Stats.xml.gz";
+const std::string kStatsXml = "Stats.xml";
+const std::string kStatsXmlGz = "Stats.xml.gz";
 /** @brief The filename for where one can edit their personal profile
  * information. */
-const std::string EDITABLE_INI = "Editable.ini";
+const std::string kEditableIni = "Editable.ini";
 /** @brief A tiny file containing the type and list priority. */
-const std::string TYPE_INI = "Type.ini";
+const std::string kTypeIni = "Type.ini";
 /** @brief The filename containing the signature for STATS_XML's signature. */
-const std::string DONT_SHARE_SIG = "DontShare.sig";
-const std::string PUBLIC_KEY_FILE = "public.key";
-const std::string SCREENSHOTS_SUBDIR = "Screenshots/";
-const std::string EDIT_STEPS_SUBDIR = "Edits/";
-const std::string EDIT_COURSES_SUBDIR = "EditCourses/";
+const std::string kDontShareSig = "DontShare.sig";
+const std::string kPublicKeyFile = "public.key";
+const std::string kScreenshotsSubdir = "Screenshots/";
+const std::string kEditStepsSubdir = "Edits/";
+const std::string kEditCoursesSubdir = "EditCourses/";
 // const std::string UPLOAD_SUBDIR         = "Upload/";
-const std::string RIVAL_SUBDIR = "Rivals/";
-const std::string SONGS_SUBDIR = "Songs/";
+const std::string kRivalSubdir = "Rivals/";
+const std::string kSongsSubdir = "Songs/";
 
 ThemeMetric<bool> SHOW_COIN_DATA("Profile", "ShowCoinData");
-static Preference<bool> g_bProfileDataCompress("ProfileDataCompress", false);
+static Preference<bool> profile_data_compress("ProfileDataCompress", false);
 static ThemeMetric<std::string> UNLOCK_AUTH_STRING(
     "Profile", "UnlockAuthString");
 #define GUID_SIZE_BYTES 8
@@ -82,8 +82,8 @@ static ThemeMetric<std::string> UNLOCK_AUTH_STRING(
 #define MAX_EDITABLE_INI_SIZE_BYTES 2 * 1024               // 2KB
 #define MAX_PLAYER_STATS_XML_SIZE_BYTES 100 * 1024 * 1024  // 100MB
 
-const int DEFAULT_WEIGHT_POUNDS = 120;
-const float DEFAULT_BIRTH_YEAR = 1995;
+const int kDefaultWeightPounds = 120;
+const float kDefaultBirthYear = 1995;
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4706)  // assignment within conditional expression
@@ -201,7 +201,7 @@ void Profile::InitGeneralData() {
   num_songs_played_by_style_.clear();
   FOREACH_ENUM(Difficulty, i)
   num_songs_played_by_difficulty_[i] = 0;
-  for (int i = 0; i < MAX_METER + 1; i++) {
+  for (int i = 0; i < kMaxMeter + 1; i++) {
     num_songs_played_by_meter_[i] = 0;
   }
   num_total_songs_played_ = 0;
@@ -258,7 +258,7 @@ static std::string FormatCalories(float cals) {
 
 int Profile::GetCalculatedWeightPounds() const {
   if (weight_pounds_ == 0) {  // weight not entered
-    return DEFAULT_WEIGHT_POUNDS;
+    return kDefaultWeightPounds;
   } else {
     return weight_pounds_;
   }
@@ -266,7 +266,7 @@ int Profile::GetCalculatedWeightPounds() const {
 
 int Profile::GetAge() const {
   if (birth_year_ == 0) {
-    return (GetLocalTime().tm_year + 1900) - DEFAULT_BIRTH_YEAR;
+    return (GetLocalTime().tm_year + 1900) - kDefaultBirthYear;
   }
   return (GetLocalTime().tm_year + 1900) - birth_year_;
 }
@@ -850,7 +850,7 @@ void Profile::MergeScoresFromOtherProfile(
     FOREACH_ENUM(Difficulty, i) {
       MERGE_FIELD(num_songs_played_by_difficulty_[i]);
     }
-    for (int i = 0; i < MAX_METER; ++i) {
+    for (int i = 0; i < kMaxMeter; ++i) {
       MERGE_FIELD(num_songs_played_by_meter_[i]);
     }
     MERGE_FIELD(num_total_songs_played_);
@@ -985,7 +985,7 @@ void Profile::swap(Profile& other) {
   SWAP_ARRAY(num_songs_played_by_play_mode_, NUM_PlayMode);
   SWAP_STR_MEMBER(num_songs_played_by_style_);
   SWAP_ARRAY(num_songs_played_by_difficulty_, NUM_Difficulty);
-  SWAP_ARRAY(num_songs_played_by_meter_, MAX_METER + 1);
+  SWAP_ARRAY(num_songs_played_by_meter_, kMaxMeter + 1);
   SWAP_GENERAL(num_total_songs_played_);
   SWAP_ARRAY(num_stages_passed_by_play_mode_, NUM_PlayMode);
   SWAP_ARRAY(num_stages_passed_by_grade_, NUM_Grade);
@@ -1120,7 +1120,7 @@ bool Profile::HandleStatsPrefixChange(std::string dir, bool require_signature) {
   float total_calories_burned = total_calories_burned_;
   LuaTable user_table = user_table_;
   bool need_to_create_file = false;
-  if (IsAFile(dir + PROFILEMAN->GetStatsPrefix() + STATS_XML)) {
+  if (IsAFile(dir + PROFILEMAN->GetStatsPrefix() + kStatsXml)) {
     LoadAllFromDir(dir, require_signature);
   } else {
     ClearStats();
@@ -1290,11 +1290,11 @@ ProfileLoadResult Profile::LoadStatsFromDir(
     std::string dir, bool require_signature) {
   dir = dir + PROFILEMAN->GetStatsPrefix();
   // Check for the existance of stats.xml
-  std::string fn = dir + STATS_XML;
+  std::string fn = dir + kStatsXml;
   bool compressed = false;
   if (!IsAFile(fn)) {
     // Check for the existance of stats.xml.gz
-    fn = dir + STATS_XML_GZ;
+    fn = dir + kStatsXmlGz;
     compressed = true;
     if (!IsAFile(fn)) {
       return ProfileLoadResult_FailedNoProfile;
@@ -1334,8 +1334,8 @@ ProfileLoadResult Profile::LoadStatsFromDir(
   }
 
   if (require_signature) {
-    std::string stats_xml_sig_file = fn + SIGNATURE_APPEND;
-    std::string dont_share_file = dir + DONT_SHARE_SIG;
+    std::string stats_xml_sig_file = fn + kSignatureAppend;
+    std::string dont_share_file = dir + kDontShareSig;
 
     LOG->Trace(
         "Verifying don't share signature \"%s\" against \"%s\"",
@@ -1376,7 +1376,7 @@ void Profile::LoadTypeFromDir(std::string dir) {
   list_priority_ = 0;
   creation_time_.Init();
   last_played_date_.Init();
-  std::string fn = dir + TYPE_INI;
+  std::string fn = dir + kTypeIni;
   if (FILEMAN->DoesFileExist(fn)) {
     IniFile ini;
     if (ini.ReadFile(fn)) {
@@ -1466,16 +1466,16 @@ bool Profile::SaveAllToDir(std::string dir, bool sign_data) const {
 
   // Empty directories if none exist.
   if (ProfileManager::profile_step_edits_) {
-    FILEMAN->CreateDir(dir + EDIT_STEPS_SUBDIR);
+    FILEMAN->CreateDir(dir + kEditStepsSubdir);
   }
   if (ProfileManager::profile_course_edits_) {
-    FILEMAN->CreateDir(dir + EDIT_COURSES_SUBDIR);
+    FILEMAN->CreateDir(dir + kEditCoursesSubdir);
   }
   if (PREFSMAN->custom_songs_enable_) {
-    FILEMAN->CreateDir(dir + SONGS_SUBDIR);
+    FILEMAN->CreateDir(dir + kSongsSubdir);
   }
-  FILEMAN->CreateDir(dir + SCREENSHOTS_SUBDIR);
-  FILEMAN->CreateDir(dir + RIVAL_SUBDIR);
+  FILEMAN->CreateDir(dir + kScreenshotsSubdir);
+  FILEMAN->CreateDir(dir + kRivalSubdir);
 
   /* Get the theme's custom save function:
    *   [Profile]
@@ -1522,7 +1522,7 @@ bool Profile::SaveStatsXmlToDir(std::string dir, bool sign_data) const {
 
   dir = dir + PROFILEMAN->GetStatsPrefix();
   // Save stats.xml
-  std::string fn = dir + (g_bProfileDataCompress ? STATS_XML_GZ : STATS_XML);
+  std::string fn = dir + (profile_data_compress ? kStatsXmlGz : kStatsXml);
 
   {
     std::string error;
@@ -1533,7 +1533,7 @@ bool Profile::SaveStatsXmlToDir(std::string dir, bool sign_data) const {
       return false;
     }
 
-    if (g_bProfileDataCompress) {
+    if (profile_data_compress) {
       RageFileObjGzip gzip(&f);
       gzip.Start();
       if (!XmlFileUtil::SaveToFile(xml.get(), gzip, "", false)) {
@@ -1545,8 +1545,8 @@ bool Profile::SaveStatsXmlToDir(std::string dir, bool sign_data) const {
       }
 
       /* After successfully saving STATS_XML_GZ, remove any stray STATS_XML. */
-      if (FILEMAN->IsAFile(dir + STATS_XML)) {
-        FILEMAN->Remove(dir + STATS_XML);
+      if (FILEMAN->IsAFile(dir + kStatsXml)) {
+        FILEMAN->Remove(dir + kStatsXml);
       }
     } else {
       if (!XmlFileUtil::SaveToFile(xml.get(), f, "", false)) {
@@ -1554,18 +1554,18 @@ bool Profile::SaveStatsXmlToDir(std::string dir, bool sign_data) const {
       }
 
       /* After successfully saving STATS_XML, remove any stray STATS_XML_GZ. */
-      if (FILEMAN->IsAFile(dir + STATS_XML_GZ)) {
-        FILEMAN->Remove(dir + STATS_XML_GZ);
+      if (FILEMAN->IsAFile(dir + kStatsXmlGz)) {
+        FILEMAN->Remove(dir + kStatsXmlGz);
       }
     }
   }
 
   if (sign_data) {
-    std::string stats_xml_sig_file = fn + SIGNATURE_APPEND;
+    std::string stats_xml_sig_file = fn + kSignatureAppend;
     CryptManager::SignFileToFile(fn, stats_xml_sig_file);
 
     // Save the "don't share" file
-    std::string dont_share_file = dir + DONT_SHARE_SIG;
+    std::string dont_share_file = dir + kDontShareSig;
     CryptManager::SignFileToFile(stats_xml_sig_file, dont_share_file);
   }
 
@@ -1582,7 +1582,7 @@ void Profile::SaveTypeToDir(std::string dir) const {
   ini.SetValue("ListPosition", "CreationTime", creation_time_.GetString());
   ini.SetValue(
       "ListPosition", "LastPlayedDate", DateTime::GetNowDateTime().GetString());
-  ini.WriteFile(dir + TYPE_INI);
+  ini.WriteFile(dir + kTypeIni);
 }
 
 void Profile::SaveEditableDataToDir(std::string dir) const {
@@ -1598,7 +1598,7 @@ void Profile::SaveEditableDataToDir(std::string dir) const {
       "Editable", "IgnoreStepCountCalories", ignore_step_count_calories_);
   ini.SetValue("Editable", "IsMale", is_male_);
 
-  ini.WriteFile(dir + EDITABLE_INI);
+  ini.WriteFile(dir + kEditableIni);
 }
 
 XNode* Profile::SaveGeneralDataCreateNode() const {
@@ -1728,7 +1728,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const {
   {
     XNode* num_songs_played_by_meter =
         general_data_node->AppendChild("NumSongsPlayedByMeter");
-    for (int i = 0; i < MAX_METER + 1; i++) {
+    for (int i = 0; i < kMaxMeter + 1; i++) {
       if (!num_songs_played_by_meter_[i]) {
         continue;
       }
@@ -1781,7 +1781,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const {
 }
 
 ProfileLoadResult Profile::LoadEditableDataFromDir(std::string dir) {
-  std::string fn = dir + EDITABLE_INI;
+  std::string fn = dir + kEditableIni;
 
   // Don't load unreasonably large editable.xml files.
   int bytes = FILEMAN->GetFileSizeInBytes(fn);
@@ -1810,8 +1810,8 @@ ProfileLoadResult Profile::LoadEditableDataFromDir(std::string dir) {
 
   // This is data that the user can change, so we have to validate it.
   std::wstring wstr = RStringToWstring(display_name_);
-  if (wstr.size() > PROFILE_MAX_DISPLAY_NAME_LENGTH) {
-    wstr = wstr.substr(0, PROFILE_MAX_DISPLAY_NAME_LENGTH);
+  if (wstr.size() > kProfileMaxDisplayNameLength) {
+    wstr = wstr.substr(0, kProfileMaxDisplayNameLength);
   }
   display_name_ = WStringToRString(wstr);
   // TODO: strip invalid chars?
@@ -1958,7 +1958,7 @@ void Profile::LoadGeneralDataFromNode(const XNode* node) {
     const XNode* num_songs_played_by_meter =
         node->GetChild("NumSongsPlayedByMeter");
     if (num_songs_played_by_meter) {
-      for (int i = 0; i < MAX_METER + 1; i++) {
+      for (int i = 0; i < kMaxMeter + 1; i++) {
         num_songs_played_by_meter->GetChildValue(
             ssprintf("Meter%d", i), num_songs_played_by_meter_[i]);
       }
@@ -2576,34 +2576,34 @@ XNode* Profile::SaveCoinDataCreateNode() const {
   XNode* node = new XNode("CoinData");
 
   {
-    int coins[NUM_LAST_DAYS];
+    int coins[kNumLastDays];
     BOOKKEEPER->GetCoinsLastDays(coins);
     XNode* p = node->AppendChild("LastDays");
-    for (int i = 0; i < NUM_LAST_DAYS; i++) {
+    for (int i = 0; i < kNumLastDays; i++) {
       p->AppendChild(LastDayToString(i), coins[i]);
     }
   }
   {
-    int coins[NUM_LAST_WEEKS];
+    int coins[kNumLastWeeks];
     BOOKKEEPER->GetCoinsLastWeeks(coins);
     XNode* p = node->AppendChild("LastWeeks");
-    for (int i = 0; i < NUM_LAST_WEEKS; i++) {
+    for (int i = 0; i < kNumLastWeeks; i++) {
       p->AppendChild(LastWeekToString(i), coins[i]);
     }
   }
   {
-    int coins[DAYS_IN_WEEK];
+    int coins[kDaysInWeek];
     BOOKKEEPER->GetCoinsByDayOfWeek(coins);
     XNode* p = node->AppendChild("DayOfWeek");
-    for (int i = 0; i < DAYS_IN_WEEK; i++) {
+    for (int i = 0; i < kDaysInWeek; i++) {
       p->AppendChild(DayOfWeekToString(i), coins[i]);
     }
   }
   {
-    int coins[HOURS_IN_DAY];
+    int coins[kHoursInDay];
     BOOKKEEPER->GetCoinsByHour(coins);
     XNode* p = node->AppendChild("Hour");
-    for (int i = 0; i < HOURS_IN_DAY; i++) {
+    for (int i = 0; i < kHoursInDay; i++) {
       p->AppendChild(HourInDayToString(i), coins[i]);
     }
   }
@@ -2614,18 +2614,18 @@ XNode* Profile::SaveCoinDataCreateNode() const {
 void Profile::MoveBackupToDir(std::string from_dir, std::string to_dir) {
   std::string stats_file;
   std::string old_stats_file;
-  if (FILEMAN->IsAFile(from_dir + STATS_XML)) {
-    stats_file = STATS_XML;
-    old_stats_file = STATS_XML_GZ;
-  } else if (FILEMAN->IsAFile(from_dir + STATS_XML_GZ)) {
-    stats_file = STATS_XML_GZ;
-    old_stats_file = STATS_XML;
+  if (FILEMAN->IsAFile(from_dir + kStatsXml)) {
+    stats_file = kStatsXml;
+    old_stats_file = kStatsXmlGz;
+  } else if (FILEMAN->IsAFile(from_dir + kStatsXmlGz)) {
+    stats_file = kStatsXmlGz;
+    old_stats_file = kStatsXml;
   }
 
   if (!stats_file.empty()) {
     bool backup_complete =
         FILEMAN->Move(from_dir + stats_file, to_dir + stats_file);
-    const std::string signature_file = stats_file + SIGNATURE_APPEND;
+    const std::string signature_file = stats_file + kSignatureAppend;
     if (FILEMAN->IsAFile(from_dir + signature_file)) {
       const bool signature_moved =
           FILEMAN->Move(from_dir + signature_file, to_dir + signature_file);
@@ -2637,15 +2637,15 @@ void Profile::MoveBackupToDir(std::string from_dir, std::string to_dir) {
     // Otherwise the wrong backup file might be loaded if LastGood gets used.
     if (backup_complete) {
       FILEMAN->Remove(to_dir + old_stats_file);
-      FILEMAN->Remove(to_dir + old_stats_file + SIGNATURE_APPEND);
+      FILEMAN->Remove(to_dir + old_stats_file + kSignatureAppend);
     }
   }
 
-  if (FILEMAN->IsAFile(from_dir + EDITABLE_INI)) {
-    FILEMAN->Move(from_dir + EDITABLE_INI, to_dir + EDITABLE_INI);
+  if (FILEMAN->IsAFile(from_dir + kEditableIni)) {
+    FILEMAN->Move(from_dir + kEditableIni, to_dir + kEditableIni);
   }
-  if (FILEMAN->IsAFile(from_dir + DONT_SHARE_SIG)) {
-    FILEMAN->Move(from_dir + DONT_SHARE_SIG, to_dir + DONT_SHARE_SIG);
+  if (FILEMAN->IsAFile(from_dir + kDontShareSig)) {
+    FILEMAN->Move(from_dir + kDontShareSig, to_dir + kDontShareSig);
   }
 }
 

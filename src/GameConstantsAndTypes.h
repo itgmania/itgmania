@@ -12,14 +12,14 @@
 
 // Note definitions
 /** @brief Define the mininum difficulty value allowed. */
-const int MIN_METER = 1;
+const int kMinMeter = 1;
 /**
  * @brief Define the maximum difficulty value allowed.
  *
  * 35 is used rather than 13 due to a variety of Profile data.
  * For more examples, see Profile::InitGeneralData(). -aj
  */
-const int MAX_METER = 35;
+const int kMaxMeter = 35;
 
 /**
  * @brief The various radar categories available.
@@ -363,7 +363,7 @@ const std::string& RankingCategoryToString(RankingCategory rc);
 RankingCategory StringToRankingCategory(const std::string& rc);
 LuaDeclareType(RankingCategory);
 
-extern const std::vector<std::string> RANKING_TO_FILL_IN_MARKER;
+extern const std::vector<std::string> kRankingToFillInMarker;
 inline bool IsRankingToFillIn(const std::string& name) {
   return !name.empty() && name[0] == '#';
 }
@@ -371,7 +371,7 @@ inline bool IsRankingToFillIn(const std::string& name) {
 RankingCategory AverageMeterToRankingCategory(int average_meter);
 
 // Group stuff
-extern const std::string GROUP_ALL;
+extern const std::string kGroupAll;
 
 /** @brief The different types of players in the game. */
 enum PlayerController {
@@ -413,7 +413,7 @@ enum AttackLevel {
   ATTACK_LEVEL_3,
   NUM_ATTACK_LEVELS
 };
-const int NUM_ATTACKS_PER_LEVEL = 3;
+const int kNumAttacksPerLevel = 3;
 
 // Coin stuff
 /** @brief The different coin modes to determine how one can play. */

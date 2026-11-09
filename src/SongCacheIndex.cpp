@@ -33,7 +33,7 @@
  * only their path; we don't have to actually look in the directory (to find out
  * the directory hash) in order to find the cache file.
  */
-#define CACHE_INDEX SpecialFiles::CACHE_DIR + "index.cache"
+#define CACHE_INDEX SpecialFiles::kCacheDir + "index.cache"
 
 SongCacheIndex*
     SONGINDEX;  // global and accessible from anywhere in our program
@@ -63,7 +63,7 @@ std::string SongCacheIndex::GetCacheFilePath(
   }
   // CACHE_DIR ends with a /.
   return ssprintf(
-      "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), group.c_str(), s.c_str());
+      "%s%s/%s", SpecialFiles::kCacheDir.c_str(), group.c_str(), s.c_str());
 }
 
 SongCacheIndex::SongCacheIndex() : mutex_("SongCacheIndex") {
@@ -91,19 +91,19 @@ void SongCacheIndex::ReadCacheIndex() {
 
   int cache_version = -1;
   cache_index_.GetValue("Cache", "CacheVersion", cache_version);
-  if (cache_version == FILE_CACHE_VERSION) {
+  if (cache_version == kFileCacheVersion) {
     return;  // OK
   }
 
   LOG->Trace("Cache format is out of date.  Deleting all cache files.");
-  EmptyDir(SpecialFiles::CACHE_DIR);
-  EmptyDir(SpecialFiles::CACHE_DIR + "Songs/");
-  EmptyDir(SpecialFiles::CACHE_DIR + "Courses/");
+  EmptyDir(SpecialFiles::kCacheDir);
+  EmptyDir(SpecialFiles::kCacheDir + "Songs/");
+  EmptyDir(SpecialFiles::kCacheDir + "Courses/");
 
   std::vector<std::string> image_dir;
   split(CommonMetrics::IMAGES_TO_CACHE, ",", image_dir);
   for (unsigned c = 0; c < image_dir.size(); c++) {
-    EmptyDir(SpecialFiles::CACHE_DIR + image_dir[c] + "/");
+    EmptyDir(SpecialFiles::kCacheDir + image_dir[c] + "/");
   }
 
   cache_index_.Clear();
@@ -126,7 +126,7 @@ void SongCacheIndex::AddCacheIndex(const std::string& path, unsigned hash) {
   if (hash == 0) {
     ++hash; /* no 0 hash values */
   }
-  cache_index_.SetValue("Cache", "CacheVersion", FILE_CACHE_VERSION);
+  cache_index_.SetValue("Cache", "CacheVersion", kFileCacheVersion);
   cache_index_.SetValue("Cache", MangleName(path), hash);
   if (!delay_save_cache_) {
     cache_index_.WriteFile(CACHE_INDEX);

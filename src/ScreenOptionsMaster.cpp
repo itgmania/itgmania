@@ -93,7 +93,7 @@ void ScreenOptionsMaster::ExportOptions(
   CHECKPOINT_M(ssprintf("%i/%i", r, int(rows_.size())));
 
   OptionRow& row = *rows_[r];
-  bool row_has_focus[NUM_PLAYERS];
+  bool row_has_focus[kNumPlayers];
   ZERO(row_has_focus);
   for (const PlayerNumber& p : vpns) {
     int cur_row = current_row_[p];

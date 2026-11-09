@@ -45,8 +45,8 @@
 #include "WheelItemBase.h"
 #include "global.h"
 
-static Preference<bool> g_bMoveRandomToEnd("MoveRandomToEnd", false);
-static Preference<bool> g_bPrecacheAllSorts("PreCacheAllWheelSorts", false);
+static Preference<bool> move_random_to_end("MoveRandomToEnd", false);
+static Preference<bool> precache_all_sorts("PreCacheAllWheelSorts", false);
 
 #define NUM_WHEEL_ITEMS ((int)std::ceil(NUM_WHEEL_ITEMS_TO_DRAW + 2))
 #define WHEEL_TEXT(s) \
@@ -166,12 +166,12 @@ void MusicWheel::BeginScreen() {
       wheel_item_datas_status_[so] = NEEDREFILTER;
     }
 
-    if (g_bPrecacheAllSorts) {
+    if (precache_all_sorts) {
       readyWheelItemsData(so);
       times += ssprintf("%i:%.3f ", so, timer.GetDeltaTime());
     }
   }
-  if (g_bPrecacheAllSorts) {
+  if (precache_all_sorts) {
     LOG->Trace("MusicWheel sorting took: %s", times.c_str());
   }
 
@@ -213,7 +213,7 @@ void MusicWheel::BeginScreen() {
     GAMESTATE->preferred_sort_order_ = GAMESTATE->sort_order_;
   }
 
-  if (GAMESTATE->preferred_song_group_ != GROUP_ALL) {
+  if (GAMESTATE->preferred_song_group_ != kGroupAll) {
     // If a preferred song group is set, open the group and select the
     // first song in the group. -aj
     if (!GAMESTATE->IsCourseMode()) {
@@ -478,7 +478,7 @@ void MusicWheel::GetSongList(std::vector<Song*>& array_songs, SortOrder so) {
     case SORT_GROUP:
       // if we're not using sections with a preferred song group, and there
       // is a group to load, only load those songs. -aj
-      if (GAMESTATE->preferred_song_group_ != GROUP_ALL &&
+      if (GAMESTATE->preferred_song_group_ != kGroupAll &&
           !USE_SECTIONS_WITH_PREFERRED_GROUP) {
         all_songs = SONGMAN->GetSongs(GAMESTATE->preferred_song_group_);
         break;
@@ -539,14 +539,14 @@ void MusicWheel::GetSongList(std::vector<Song*>& array_songs, SortOrder so) {
       // if the song has steps that fit the preferred difficulty of the default
       // player
       if (song->HasStepsTypeAndDifficulty(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_,
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_,
               GAMESTATE
                   ->preferred_difficulty_[GAMESTATE->GetFirstHumanPlayer()])) {
         array_songs.push_back(song);
       }
     } else if (
         CommonMetrics::AUTO_SET_STYLE ||
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID) == nullptr) {
+        GAMESTATE->GetCurrentStyle(kPlayerInvalid) == nullptr) {
       if (SongUtil::IsSongPlayable(song)) {
         array_songs.push_back(song);
       }
@@ -554,7 +554,7 @@ void MusicWheel::GetSongList(std::vector<Song*>& array_songs, SortOrder so) {
     } else {
       // If the song has at least one steps, add it.
       if (song->HasStepsType(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_)) {
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_)) {
         array_songs.push_back(song);
       }
     }
@@ -566,7 +566,7 @@ void MusicWheel::GetSongList(std::vector<Song*>& array_songs, SortOrder so) {
     Song* song;
     Steps* steps;
     SONGMAN->GetExtraStageInfo(
-        GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(PLAYER_INVALID),
+        GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(kPlayerInvalid),
         song, steps);
 
     if (find(array_songs.begin(), array_songs.end(), song) ==
@@ -663,7 +663,7 @@ void MusicWheel::BuildWheelItemDatas(
           if (USE_SECTIONS_WITH_PREFERRED_GROUP) {
             use_sections = true;
           } else {
-            use_sections = GAMESTATE->preferred_song_group_ == GROUP_ALL;
+            use_sections = GAMESTATE->preferred_song_group_ == kGroupAll;
           }
           break;
         case SORT_TITLE:
@@ -1096,7 +1096,7 @@ void MusicWheel::BuildWheelItemDatas(
         Steps* steps;
         SONGMAN->GetExtraStageInfo(
             GAMESTATE->IsExtraStage2(),
-            GAMESTATE->GetCurrentStyle(PLAYER_INVALID), p_song, steps);
+            GAMESTATE->GetCurrentStyle(kPlayerInvalid), p_song, steps);
 
         for (unsigned i = 0; i < array_wheel_item_datas.size(); i++) {
           if (array_wheel_item_datas[i]->song_ == p_song) {
@@ -1166,7 +1166,7 @@ void MusicWheel::BuildWheelItemDatas(
 
       // since we can't agree, make it an option
       if (PREFSMAN->course_sort_order_ != COURSE_SORT_SONGS &&
-          g_bMoveRandomToEnd) {
+          move_random_to_end) {
         CourseUtil::MoveRandomToEnd(courses);
       }
 
@@ -1207,7 +1207,7 @@ void MusicWheel::BuildWheelItemDatas(
         // check that this course has at least one song playable in the current
         // style
         if (!course->IsPlayableIn(
-                GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_)) {
+                GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_)) {
           continue;
         }
 
@@ -1239,7 +1239,7 @@ void MusicWheel::BuildWheelItemDatas(
     if (WID->song_ != nullptr) {
       WID->flags_.has_beginner_or1_meter_ =
           WID->song_->IsEasy(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_) &&
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_) &&
           SHOW_EASY_FLAG;
       WID->flags_.edits_ = false;
       std::set<StepsType> steps_type;
@@ -1311,7 +1311,7 @@ void MusicWheel::FilterWheelItemDatas(
   if (GAMESTATE->IsAnExtraStage()) {
     Steps* steps;
     SONGMAN->GetExtraStageInfo(
-        GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(PLAYER_INVALID),
+        GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(kPlayerInvalid),
         extra_stage_song, steps);
   }
 
@@ -1385,7 +1385,7 @@ void MusicWheel::FilterWheelItemDatas(
       /* If the song has no steps for the current style, remove it. */
       if (!CommonMetrics::AUTO_SET_STYLE &&
           !song->HasStepsType(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_)) {
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_)) {
         remove[i] = true;
         continue;
       }
@@ -1404,7 +1404,7 @@ void MusicWheel::FilterWheelItemDatas(
 
     if (wid.type_ == WheelItemDataType_Course) {
       if (!wid.course_->IsPlayableIn(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_)) {
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_)) {
         remove[i] = true;
       }
     }
@@ -1781,7 +1781,7 @@ void MusicWheel::StartRandom() {
     // Shuffle and use the roulette wheel.
     auto& roulette_items = getWheelItemsData(SORT_ROULETTE);
     std::shuffle(
-        roulette_items.begin(), roulette_items.end(), g_RandomNumberGenerator);
+        roulette_items.begin(), roulette_items.end(), random_number_generator);
     GAMESTATE->sort_order_.Set(SORT_ROULETTE);
   } else {
     GAMESTATE->sort_order_.Set(GAMESTATE->preferred_sort_order_);
@@ -2186,7 +2186,7 @@ Song* MusicWheel::GetPreferredSelectionForRandomOrPortal() {
     random_songs = wid;
   }
   std::shuffle(
-      random_songs.begin(), random_songs.end(), g_RandomNumberGenerator);
+      random_songs.begin(), random_songs.end(), random_number_generator);
 
 #define NUM_PROBES 1000
   for (int i = 0; i < NUM_PROBES; i++) {

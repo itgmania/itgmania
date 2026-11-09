@@ -27,27 +27,27 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
-static RageTimer g_GameplayTimer;
-static RageTimer g_LastInputTimer;
+static RageTimer gameplay_timer;
+static RageTimer last_input_timer;
 
-static Preference<bool> g_bNeverBoostAppPriority(
+static Preference<bool> never_boost_app_priority(
     "NeverBoostAppPriority", false);
 
-static Preference<int> g_iQuitAfterIdleSeconds("QuitAfterIdleSeconds", 0);
+static Preference<int> quit_after_idle_seconds("QuitAfterIdleSeconds", 0);
 
 /* experimental: force a specific update rate. This prevents big  animation
  * jumps on frame skips. 0 to disable. */
-static Preference<float> g_fConstantUpdateDeltaSeconds(
+static Preference<float> constant_update_delta_seconds(
     "ConstantUpdateDeltaSeconds", 0);
 
 void HandleInputEvents(float delta_time);
 
-static float g_fUpdateRate = 1;
-void GameLoop::SetUpdateRate(float update_rate) { g_fUpdateRate = update_rate; }
+static float g_update_rate = 1;
+void GameLoop::SetUpdateRate(float update_rate) { g_update_rate = update_rate; }
 
-float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
+float GameLoop::GetUpdateRate() { return g_update_rate; }
 
-void GameLoop::ResetInputIdleTimer() { g_LastInputTimer.Touch(); }
+void GameLoop::ResetInputIdleTimer() { last_input_timer.Touch(); }
 
 static void CheckGameLoopTimerSkips(float delta_time) {
   static int last_fps = 0;
@@ -73,7 +73,7 @@ static void CheckGameLoopTimerSkips(float delta_time) {
 }
 
 static bool ChangeAppPri() {
-  if (g_bNeverBoostAppPriority.Get()) {
+  if (never_boost_app_priority.Get()) {
     return false;
   }
 
@@ -106,16 +106,16 @@ static void CheckInputDevices() {
 }
 
 // On the next update, change themes, and load sNewScreen.
-static std::string g_NewTheme;
-static std::string g_NewGame;
+static std::string g_new_theme;
+static std::string g_new_game;
 void GameLoop::ChangeTheme(const std::string& new_theme) {
-  g_NewTheme = new_theme;
+  g_new_theme = new_theme;
 }
 
 void GameLoop::ChangeGame(
     const std::string& new_game, const std::string& new_theme) {
-  g_NewGame = new_game;
-  g_NewTheme = new_theme;
+  g_new_game = new_game;
+  g_new_theme = new_theme;
 }
 
 #include "Game.h"
@@ -148,8 +148,8 @@ void DoChangeTheme() {
   // We always need to force the theme to reload because we cleared the lua
   // state by calling RegisterTypes so the scripts in Scripts/ need to run.
   THEME->SwitchThemeAndLanguage(
-      g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_, true);
-  PREFSMAN->theme_.Set(g_NewTheme);
+      g_new_theme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_, true);
+  PREFSMAN->theme_.Set(g_new_theme);
 
   // Apply the new window title, icon and aspect ratio.
   StepMania::ApplyGraphicOptions();
@@ -170,22 +170,22 @@ void DoChangeTheme() {
   SCREENMAN->SetNewScreen(new_screen_name);
 
   // Indicate no further theme change is needed
-  g_NewTheme = std::string();
+  g_new_theme = std::string();
 }
 
 void DoChangeGame() {
-  const Game* g = GAMEMAN->StringToGame(g_NewGame);
+  const Game* g = GAMEMAN->StringToGame(g_new_game);
   ASSERT(g != nullptr);
   GAMESTATE->SetCurGame(g);
 
   bool theme_changing = false;
   // The prefs allow specifying a different default theme to use for each
   // game type.  So if a theme name isn't passed in, fetch from the prefs.
-  if (g_NewTheme.empty()) {
-    g_NewTheme = PREFSMAN->theme_;
+  if (g_new_theme.empty()) {
+    g_new_theme = PREFSMAN->theme_;
   }
-  if (g_NewTheme != THEME->GetCurThemeName() &&
-      THEME->IsThemeSelectable(g_NewTheme)) {
+  if (g_new_theme != THEME->GetCurThemeName() &&
+      THEME->IsThemeSelectable(g_new_theme)) {
     theme_changing = true;
   }
 
@@ -194,8 +194,8 @@ void DoChangeGame() {
     TEXTUREMAN->DoDelayedDelete();
     LUA->RegisterTypes();
     THEME->SwitchThemeAndLanguage(
-        g_NewTheme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
-    PREFSMAN->theme_.Set(g_NewTheme);
+        g_new_theme, THEME->GetCurLanguage(), PREFSMAN->pseudo_localize_);
+    PREFSMAN->theme_.Set(g_new_theme);
     StepMania::ApplyGraphicOptions();
     SCREENMAN = new ScreenManager();
   }
@@ -231,17 +231,17 @@ void DoChangeGame() {
    * what it'd be. -aj */
   THEME->UpdateLuaGlobals();
   THEME->ReloadMetrics();
-  g_NewGame = std::string();
-  g_NewTheme = std::string();
+  g_new_game = std::string();
+  g_new_theme = std::string();
 }
 }  // namespace
 
 void GameLoop::UpdateAllButDraw() {
   // If the constant update delta is set, use that value. Otherwise, use the
   // delta time from the gameplay timer.
-  float delta_time = (g_fConstantUpdateDeltaSeconds > 0)
-                         ? g_fConstantUpdateDeltaSeconds
-                         : g_GameplayTimer.GetDeltaTime();
+  float delta_time = (constant_update_delta_seconds > 0)
+                         ? constant_update_delta_seconds
+                         : gameplay_timer.GetDeltaTime();
 
   // Use a static boolean to check the preference once per game launch.
   // This is a rarely used debug feature, so we try to skip it if possible.
@@ -250,7 +250,7 @@ void GameLoop::UpdateAllButDraw() {
     CheckGameLoopTimerSkips(delta_time);
   }
 
-  delta_time *= g_fUpdateRate;
+  delta_time *= g_update_rate;
 
   // Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush
   // position data.
@@ -283,17 +283,17 @@ void GameLoop::RunGameLoop() {
   }
 
   while (!ArchHooks::UserQuit()) {
-    if (!g_NewGame.empty()) {
+    if (!g_new_game.empty()) {
       DoChangeGame();
     }
-    if (!g_NewTheme.empty()) {
+    if (!g_new_theme.empty()) {
       DoChangeTheme();
     }
 
     CheckFocus();
 
-    float quit_idle_seconds = g_iQuitAfterIdleSeconds.Get();
-    if (quit_idle_seconds > 0 && g_LastInputTimer.Ago() > quit_idle_seconds) {
+    float quit_idle_seconds = quit_after_idle_seconds.Get();
+    if (quit_idle_seconds > 0 && last_input_timer.Ago() > quit_idle_seconds) {
       ArchHooks::SetUserQuit();
     }
 

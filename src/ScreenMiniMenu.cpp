@@ -19,17 +19,17 @@ std::vector<int> ScreenMiniMenu::last_answers_;
 
 // Settings:
 namespace {
-const MenuDef* g_pMenuDef = nullptr;
-ScreenMessage g_SendOnOK;
-ScreenMessage g_SendOnCancel;
+const MenuDef* menu_def = nullptr;
+ScreenMessage g_send_on_ok;
+ScreenMessage g_send_on_cancel;
 };  // namespace
 
 void ScreenMiniMenu::MiniMenu(
     const MenuDef* def, ScreenMessage sm_send_on_ok,
     ScreenMessage sm_send_on_cancel, float x, float y) {
-  g_pMenuDef = def;
-  g_SendOnOK = sm_send_on_ok;
-  g_SendOnCancel = sm_send_on_cancel;
+  menu_def = def;
+  g_send_on_ok = sm_send_on_ok;
+  g_send_on_cancel = sm_send_on_cancel;
 
   SCREENMAN->AddNewScreenToTop(def->class_name_);
   Screen* new_screen = SCREENMAN->GetTopScreen();
@@ -47,12 +47,12 @@ void ScreenMiniMenu::Init() {
 }
 
 void ScreenMiniMenu::BeginScreen() {
-  ASSERT(g_pMenuDef != nullptr);
+  ASSERT(menu_def != nullptr);
 
-  LoadMenu(g_pMenuDef);
-  send_on_ok_ = g_SendOnOK;
-  send_on_cancel_ = g_SendOnCancel;
-  g_pMenuDef = nullptr;
+  LoadMenu(menu_def);
+  send_on_ok_ = g_send_on_ok;
+  send_on_cancel_ = g_send_on_cancel;
+  menu_def = nullptr;
 
   ScreenOptions::BeginScreen();
 

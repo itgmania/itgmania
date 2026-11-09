@@ -9,7 +9,7 @@
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
 
-const int NUM_BOOKKEEPING_COLS = 4;
+const int kNumBookkeepingCols = 4;
 
 enum BookkeepingView {
   BookkeepingView_SongPlays,
@@ -42,7 +42,7 @@ class ScreenBookkeeping : public ScreenWithMenuElements {
 
   BitmapText text_all_time_;
   BitmapText text_title_;
-  BitmapText text_data_[NUM_BOOKKEEPING_COLS];
+  BitmapText text_data_[kNumBookkeepingCols];
 };
 
 #endif

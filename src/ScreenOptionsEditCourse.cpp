@@ -73,7 +73,7 @@ class EditCourseOptionRowHandlerSteps : public OptionRowHandler {
   }
   virtual void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     Trail* trail = GAMESTATE->cur_trail_[PLAYER_1];
     Steps* steps;
     if (trail) {
@@ -93,7 +93,7 @@ class EditCourseOptionRowHandlerSteps : public OptionRowHandler {
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     return 0;
   }
   Steps* GetSteps(int steps_index) const { return steps_[steps_index]; }
@@ -103,7 +103,7 @@ class EditCourseOptionRowHandlerSteps : public OptionRowHandler {
   std::vector<Steps*> steps_;
 };
 
-const int NUM_SONG_ROWS = 20;
+const int kNumSongRows = 20;
 
 REGISTER_SCREEN_CLASS(ScreenOptionsEditCourse);
 
@@ -145,7 +145,7 @@ void ScreenOptionsEditCourse::Init() {
   SongUtil::SortSongPointerArrayByTitle(songs_);
 }
 
-const MenuRowDef g_MenuRows[] = {
+const MenuRowDef kMenuRows[] = {
     MenuRowDef(
         -1, "Max Minutes", true, EditMode_Practice, true, false, 0, nullptr),
 };
@@ -166,7 +166,7 @@ void ScreenOptionsEditCourse::BeginScreen() {
   std::vector<OptionRowHandler*> hands;
 
   FOREACH_ENUM(EditCourseRow, row_index) {
-    const MenuRowDef& mr = g_MenuRows[row_index];
+    const MenuRowDef& mr = kMenuRows[row_index];
     OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mr);
 
     hand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
@@ -176,10 +176,10 @@ void ScreenOptionsEditCourse::BeginScreen() {
       DEFAULT_FAIL(row_index);
       case EditCourseRow_Minutes:
         hand->def_.choices_.push_back(MakeMinutesString(0));
-        for (int i = EditCourseUtil::MIN_WORKOUT_MINUTES; i <= 20; i += 2) {
+        for (int i = EditCourseUtil::min_workout_minutes; i <= 20; i += 2) {
           hand->def_.choices_.push_back(MakeMinutesString(i));
         }
-        for (int i = 20; i <= EditCourseUtil::MAX_WORKOUT_MINUTES; i += 5) {
+        for (int i = 20; i <= EditCourseUtil::max_workout_minutes; i += 5) {
           hand->def_.choices_.push_back(MakeMinutesString(i));
         }
         break;
@@ -189,7 +189,7 @@ void ScreenOptionsEditCourse::BeginScreen() {
     hands.push_back(hand);
   }
 
-  for (int i = 0; i < NUM_SONG_ROWS; i++) {
+  for (int i = 0; i < kNumSongRows; i++) {
     {
       MenuRowDef mrd = MenuRowDef(
           -1, "---", true, EditMode_Practice, true, false, 0,
@@ -444,7 +444,7 @@ void ScreenOptionsEditCourse::AfterChangeValueInRow(
   }
 }
 
-const int MIN_ENABLED_SONGS = 2;
+const int kMinEnabledSongs = 2;
 
 static LocalizedString MUST_ENABLE_AT_LEAST(
     "ScreenOptionsEditCourse", "You must enable at least %d songs.");
@@ -458,10 +458,10 @@ void ScreenOptionsEditCourse::ProcessMenuStart(const InputEventPlus& input) {
   unsigned song_count = GAMESTATE->cur_course_->entries_.size();
 
   if (rows_[row]->GetRowType() == OptionRow::RowType_Exit &&
-      song_count < unsigned(MIN_ENABLED_SONGS)) {
+      song_count < unsigned(kMinEnabledSongs)) {
     ScreenPrompt::Prompt(
         SM_None,
-        ssprintf(MUST_ENABLE_AT_LEAST.GetValue().c_str(), MIN_ENABLED_SONGS));
+        ssprintf(MUST_ENABLE_AT_LEAST.GetValue().c_str(), kMinEnabledSongs));
     return;
   }
 

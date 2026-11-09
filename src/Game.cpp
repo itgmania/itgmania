@@ -22,7 +22,7 @@ TapNoteScore Game::MapTapNoteScore(TapNoteScore tns) const {
   }
 }
 
-static const Game::PerButtonInfo g_CommonButtonInfo[] = {
+static const Game::PerButtonInfo kCommonButtonInfo[] = {
     {GameButtonType_Menu},  // GAME_BUTTON_MENULEFT
     {GameButtonType_Menu},  // GAME_BUTTON_MENURIGHT
     {GameButtonType_Menu},  // GAME_BUTTON_MENUUP
@@ -38,9 +38,9 @@ static const Game::PerButtonInfo g_CommonButtonInfo[] = {
 };
 
 const Game::PerButtonInfo* Game::GetPerButtonInfo(GameButton gb) const {
-  static_assert(GAME_BUTTON_NEXT == ARRAYLEN(g_CommonButtonInfo));
+  static_assert(GAME_BUTTON_NEXT == ARRAYLEN(kCommonButtonInfo));
   if (gb < GAME_BUTTON_NEXT) {
-    return &g_CommonButtonInfo[gb];
+    return &kCommonButtonInfo[gb];
   } else {
     return &per_button_info_[gb - GAME_BUTTON_NEXT];
   }

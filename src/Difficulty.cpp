@@ -75,13 +75,13 @@ struct OldStyleStringToDifficultyMapHolder {
     conversion_map_["edit"] = Difficulty_Edit;
   }
 };
-OldStyleStringToDifficultyMapHolder OldStyleStringToDifficulty_converter;
+OldStyleStringToDifficultyMapHolder old_style_string_to_difficulty_converter;
 Difficulty OldStyleStringToDifficulty(const std::string& dc) {
   std::string s2 = dc;
   MakeLower(s2);
   std::map<std::string, Difficulty>::iterator diff =
-      OldStyleStringToDifficulty_converter.conversion_map_.find(s2);
-  if (diff != OldStyleStringToDifficulty_converter.conversion_map_.end()) {
+      old_style_string_to_difficulty_converter.conversion_map_.find(s2);
+  if (diff != old_style_string_to_difficulty_converter.conversion_map_.end()) {
     return diff->second;
   }
   return Difficulty_Invalid;

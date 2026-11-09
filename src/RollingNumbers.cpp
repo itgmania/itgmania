@@ -33,7 +33,7 @@ void RollingNumbers::Load(const std::string& metrics_group) {
 void RollingNumbers::DrawPart(
     const RageColor* diffuse, const RageColor& stroke, float crop_left,
     float crop_right) {
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
+  for (int i = 0; i < kNumDiffuseColors; ++i) {
     temp_state_->diffuse_[i] = diffuse[i];
   }
   SetCurrStrokeColor(stroke);
@@ -46,11 +46,11 @@ void RollingNumbers::DrawPrimitives() noexcept {
   if (!metrics_loaded_) {
     return;
   }
-  RageColor diffuse_orig[NUM_DIFFUSE_COLORS];
-  RageColor diffuse_temp[NUM_DIFFUSE_COLORS];
+  RageColor diffuse_orig[kNumDiffuseColors];
+  RageColor diffuse_temp[kNumDiffuseColors];
   RageColor stroke_orig = GetCurrStrokeColor();
   RageColor stroke_temp = stroke_orig * LEADING_ZERO_MULTIPLY_COLOR;
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
+  for (int i = 0; i < kNumDiffuseColors; ++i) {
     diffuse_orig[i] = temp_state_->diffuse_[i];
     diffuse_temp[i] = temp_state_->diffuse_[i] * LEADING_ZERO_MULTIPLY_COLOR;
   }

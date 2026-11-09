@@ -550,7 +550,7 @@ bool GameCommand::IsPlayable(std::string* why) const {
     if (GAMESTATE->GetCoinMode() == CoinMode_Pay) {
       credits = GAMESTATE->coins_ / PREFSMAN->coins_per_credit_;
     } else {
-      credits = NUM_PLAYERS;
+      credits = kNumPlayers;
     }
 
     const int num_credits_paid = GetNumCreditsPaid();

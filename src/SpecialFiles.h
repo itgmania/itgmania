@@ -5,34 +5,34 @@
 
 /** @brief The listing of the special files and directories in use. */
 namespace SpecialFiles {
-extern const std::string PACKAGES_DIR;
-extern const std::string KEYMAPS_PATH;
+extern const std::string kPackagesDir;
+extern const std::string kKeymapsPath;
 /** @brief Edit Mode keymaps are separate from standard keymaps because
  * it should not change with the gametype, and to avoid possible
  * interference with the normal keymaps system. -Kyz */
-extern const std::string EDIT_MODE_KEYMAPS_PATH;
-extern const std::string PREFERENCES_INI_PATH;
+extern const std::string kEditModeKeymapsPath;
+extern const std::string kPreferencesIniPath;
 /** @brief The directory that contains the themes. */
-extern const std::string THEMES_DIR;
+extern const std::string kThemesDir;
 /** @brief The directory that contains the different languages. */
-extern const std::string LANGUAGES_SUBDIR;
+extern const std::string kLanguagesSubdir;
 /** @brief The base language for most users of this program. */
-extern const std::string BASE_LANGUAGE;
-extern const std::string METRICS_FILE;
-extern const std::string CACHE_DIR;
-extern const std::string BASE_THEME_NAME;
-extern const std::string DEFAULTS_INI_PATH;
-extern const std::string STATIC_INI_PATH;
-extern const std::string TYPE_TXT_FILE;
-extern const std::string CA_BUNDLE_PATH;
+extern const std::string kBaseLanguage;
+extern const std::string kMetricsFile;
+extern const std::string kCacheDir;
+extern const std::string kBaseThemeName;
+extern const std::string kDefaultsIniPath;
+extern const std::string kStaticIniPath;
+extern const std::string kTypeTxtFile;
+extern const std::string kCaBundlePath;
 /** @brief The default Songs directory. */
-extern const std::string SONGS_DIR;
+extern const std::string kSongsDir;
 /** @brief The default courses directory. */
-extern const std::string COURSES_DIR;
+extern const std::string kCoursesDir;
 /** @brief The default noteskins directory. */
-extern const std::string NOTESKINS_DIR;
+extern const std::string kNoteskinsDir;
 
-extern const std::string COINS_INI;
+extern const std::string kCoinsIni;
 
 }  // namespace SpecialFiles
 

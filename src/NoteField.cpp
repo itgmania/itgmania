@@ -426,7 +426,7 @@ void NoteField::InitColumnRenderers() {
     FOREACH_EnabledPlayer(pn) {
       column_renderers_[ncr].displays_[pn] = &(displays_[pn]->display_[ncr]);
     }
-    column_renderers_[ncr].displays_[PLAYER_INVALID] =
+    column_renderers_[ncr].displays_[kPlayerInvalid] =
         &(cur_display_->display_[ncr]);
     column_renderers_[ncr].column_ = ncr;
     column_renderers_[ncr].column_render_args_.column_ = ncr;
@@ -508,7 +508,7 @@ float NoteField::GetWidth() const {
   style->GetMinAndMaxColX(player_state_->player_number_, min_x, max_x);
 
   const float y_zoom = ArrowEffects::GetZoom(player_state_, 0, 0);
-  return (max_x - min_x + ARROW_SIZE) * y_zoom;
+  return (max_x - min_x + kArrowSize) * y_zoom;
 }
 
 void NoteField::DrawBeatBar(
@@ -570,7 +570,7 @@ void NoteField::DrawBeatBar(
 
     text_measure_number_.SetDiffuse(RageColor(1, 1, 1, 1));
     text_measure_number_.SetGlow(RageColor(1, 1, 1, 0));
-    text_measure_number_.SetHorizAlign(align_right);
+    text_measure_number_.SetHorizAlign(kAlignRight);
     text_measure_number_.SetText(ssprintf("%d", measure_no_display));
     text_measure_number_.SetXY(-width / 2, y_pos);
     text_measure_number_.Draw();
@@ -626,8 +626,8 @@ void NoteField::DrawMarkerBar(int i_beat) {
       player_state_, 0, y_offset, y_reverse_offset_pixels_);
 
   rect_marker_bar_.StretchTo(RectF(
-      -GetWidth() / 2, y_pos - ARROW_SIZE / 2, GetWidth() / 2,
-      y_pos + ARROW_SIZE / 2));
+      -GetWidth() / 2, y_pos - kArrowSize / 2, GetWidth() / 2,
+      y_pos + kArrowSize / 2));
   rect_marker_bar_.Draw();
 }
 
@@ -853,7 +853,7 @@ void NoteField::draw_timing_segment_text(
 void NoteField::DrawAttackText(
     const float beat, const Attack& attack, const RageColor& glow) {
   set_text_measure_number_for_draw(
-      beat, 1, 10, align_left, RageColor(0, 0.8f, 0.8f, 1), glow);
+      beat, 1, 10, kAlignLeft, RageColor(0, 0.8f, 0.8f, 1), glow);
   text_measure_number_.SetText(attack.GetTextDescription());
   text_measure_number_.Draw();
 }
@@ -861,7 +861,7 @@ void NoteField::DrawAttackText(
 void NoteField::DrawBGChangeText(
     const float beat, const std::string new_bg_name, const RageColor& glow) {
   set_text_measure_number_for_draw(
-      beat, 1, 0, align_left, RageColor(0, 1, 0, 1), glow);
+      beat, 1, 0, kAlignLeft, RageColor(0, 1, 0, 1), glow);
   text_measure_number_.SetText(new_bg_name);
   text_measure_number_.Draw();
 }
@@ -1158,10 +1158,10 @@ void NoteField::DrawPrimitives() {
     float glow = std::cos(phase) * 0.5f + 0.5f;
     const RageColor text_glow = RageColor(1.0f, 1.0f, 1.0f, glow);
 
-    float horiz_align = align_right;
+    float horiz_align = kAlignRight;
     float side_sign = 1;
 #define draw_all_segments(str_exp, name, caps_name)                       \
-  horiz_align = caps_name##_IS_LEFT_SIDE ? align_right : align_left;      \
+  horiz_align = caps_name##_IS_LEFT_SIDE ? kAlignRight : kAlignLeft;      \
   side_sign = caps_name##_IS_LEFT_SIDE ? -1 : 1;                          \
   for (size_t i = 0; i < segs[SEGMENT_##caps_name]->size(); ++i) {        \
     const name##Segment* seg = To##name((*segs[SEGMENT_##caps_name])[i]); \

@@ -9,12 +9,12 @@
 
 REGISTER_SOUND_DRIVER_CLASS(Null);
 
-const int channels = 2;
+const int kChannels = 2;
 
 void RageSoundDriver_Null::Update() {
   /* "Play" frames. */
   while (last_cursor_pos_ < GetPosition() + 1024 * 4) {
-    int16_t buf[256 * channels];
+    int16_t buf[256 * kChannels];
     this->Mix(buf, 256, last_cursor_pos_, GetPosition());
     last_cursor_pos_ += 256;
   }

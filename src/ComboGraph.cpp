@@ -13,7 +13,7 @@
 #include "StageStats.h"
 #include "ThemeManager.h"
 
-const int MinComboSizeToShow = 5;
+const int kMinComboSizeToShow = 5;
 
 REGISTER_ACTOR_CLASS(ComboGraph);
 
@@ -82,7 +82,7 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
 
   for (unsigned i = 0; i < pss.combo_list_.size(); ++i) {
     const PlayerStageStats::Combo_t& combo = pss.combo_list_[i];
-    if (combo.GetStageCnt() < MinComboSizeToShow) {
+    if (combo.GetStageCnt() < kMinComboSizeToShow) {
       continue;  // too small
     }
 
@@ -108,7 +108,7 @@ void ComboGraph::Set(const StageStats& s, const PlayerStageStats& pss) {
 
   for (unsigned i = 0; i < pss.combo_list_.size(); ++i) {
     const PlayerStageStats::Combo_t& combo = pss.combo_list_[i];
-    if (combo.GetStageCnt() < MinComboSizeToShow) {
+    if (combo.GetStageCnt() < kMinComboSizeToShow) {
       continue;  // too small
     }
 

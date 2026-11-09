@@ -26,10 +26,10 @@ static const ThemeMetric<float> RADAR_CENTER_ALPHA(
     "GrooveRadar", "CenterAlpha");
 
 static float RADAR_VALUE_ROTATION(int value_index) {
-  return PI / 2 + PI * 2 / 5.0f * value_index;
+  return kPi / 2 + kPi * 2 / 5.0f * value_index;
 }
 
-static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
+static const int kNumShownRadarCategories = 5;
 
 GrooveRadar::GrooveRadar() {
   spr_radar_base_.Load(THEME->GetPathG("GrooveRadar", "base"));
@@ -47,7 +47,7 @@ GrooveRadar::GrooveRadar() {
 
   this->AddChild(&frame_);
 
-  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
+  for (int c = 0; c < kNumShownRadarCategories; c++) {
     spr_radar_labels_[c].SetName(ssprintf("Label%i", c + 1));
     spr_radar_labels_[c].Load(THEME->GetPathG("GrooveRadar", "labels 1x5"));
     spr_radar_labels_[c].StopAnimating();
@@ -87,7 +87,7 @@ GrooveRadar::GrooveRadarValueMap::GrooveRadarValueMap() {
   values_visible_ = false;
   percent_toward_new_ = 0;
 
-  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
+  for (int c = 0; c < kNumShownRadarCategories; c++) {
     values_new_[c] = 0;
     values_old_[c] = 0;
   }
@@ -97,7 +97,7 @@ void GrooveRadar::GrooveRadarValueMap::SetEmpty() { values_visible_ = false; }
 
 void GrooveRadar::GrooveRadarValueMap::SetFromSteps(const RadarValues& rv) {
   values_visible_ = true;
-  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
+  for (int c = 0; c < kNumShownRadarCategories; c++) {
     const float value_current = values_old_[c] * (1 - percent_toward_new_) +
                                 values_new_[c] * percent_toward_new_;
     values_old_[c] = value_current;
@@ -113,7 +113,7 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps(const RadarValues& rv) {
 
 void GrooveRadar::GrooveRadarValueMap::SetFromValues(std::vector<float> vals) {
   values_visible_ = true;
-  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
+  for (int c = 0; c < kNumShownRadarCategories; c++) {
     const float value_current = values_old_[c] * (1 - percent_toward_new_) +
                                 values_new_[c] * percent_toward_new_;
     values_old_[c] = value_current;
@@ -159,10 +159,10 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
   v[0].c_ = midcolor;
   v[1].c_ = color;
 
-  for (int i = 0; i < NUM_SHOWN_RADAR_CATEGORIES + 1;
+  for (int i = 0; i < kNumShownRadarCategories + 1;
        i++)  // do one extra to close the fan
   {
-    const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
+    const int c = i % kNumShownRadarCategories;
     const float dist_from_center =
         (values_old_[c] * (1 - percent_toward_new_) +
          values_new_[c] * percent_toward_new_ + 0.07f) *
@@ -175,11 +175,11 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
     v[1 + i].c_ = v[1].c_;
   }
 
-  DISPLAY->DrawFan(v, NUM_SHOWN_RADAR_CATEGORIES + 2);
+  DISPLAY->DrawFan(v, kNumShownRadarCategories + 2);
 
   // use a line loop to draw the thick line
-  for (int i = 0; i <= NUM_SHOWN_RADAR_CATEGORIES; i++) {
-    const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
+  for (int i = 0; i <= kNumShownRadarCategories; i++) {
+    const int c = i % kNumShownRadarCategories;
     const float dist_from_center =
         (values_old_[c] * (1 - percent_toward_new_) +
          values_new_[c] * percent_toward_new_ + 0.07f) *
@@ -199,7 +199,7 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
   // NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH );	break; 	case 1:
   // DISPLAY->DrawLoop_Polys( v, NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH );
   // break; 	default: 	case -1:
-  DISPLAY->DrawLineStrip(v, NUM_SHOWN_RADAR_CATEGORIES + 1, RADAR_EDGE_WIDTH);
+  DISPLAY->DrawLineStrip(v, kNumShownRadarCategories + 1, RADAR_EDGE_WIDTH);
   //	break;
   //	}
 }

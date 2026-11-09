@@ -46,7 +46,7 @@ class GameState {
   TimingData* processed_timing_;
   /** @brief Whether the player has score data on their profile from playing
    * a song this game. */
-  bool player_has_committed_gameplay_[NUM_PLAYERS];
+  bool player_has_committed_gameplay_[kNumPlayers];
 
  public:
   /** @brief Set up the GameState with initial values. */
@@ -58,7 +58,7 @@ class GameState {
   void ResetPlayerOptions(PlayerNumber pn);
   void ApplyCmdline();  // called by Reset
   void ApplyGameCommand(
-      const std::string& command, PlayerNumber pn = PLAYER_INVALID);
+      const std::string& command, PlayerNumber pn = kPlayerInvalid);
   /** @brief Start the game when the first player joins in. */
   void BeginGame();
   void JoinPlayer(PlayerNumber pn);
@@ -111,7 +111,7 @@ class GameState {
   /** @brief Determine which side is joined.
    *
    * The left side is player 1, and the right side is player 2. */
-  bool side_is_joined_[NUM_PLAYERS];       // left side, right side
+  bool side_is_joined_[kNumPlayers];       // left side, right side
   BroadcastOnChange<PlayMode> play_mode_;  // many screens display different
                                            // info depending on this value
   /**
@@ -206,8 +206,8 @@ class GameState {
   bool fail_type_was_explicitly_set_;  // true if FailType was changed in the
                                        // song options screen
   BroadcastOnChange<StepsType> preferred_steps_type_;
-  BroadcastOnChange1D<Difficulty, NUM_PLAYERS> preferred_difficulty_;
-  BroadcastOnChange1D<CourseDifficulty, NUM_PLAYERS>
+  BroadcastOnChange1D<Difficulty, kNumPlayers> preferred_difficulty_;
+  BroadcastOnChange1D<CourseDifficulty, kNumPlayers>
       preferred_course_difficulty_;          // used in nonstop
   BroadcastOnChange<SortOrder> sort_order_;  // set by MusicWheel
   SortOrder preferred_sort_order_;           // used by MusicWheel
@@ -229,7 +229,7 @@ class GameState {
    * @brief The number of stages available for the players.
    *
    * This resets whenever a player joins or continues. */
-  int player_stage_tokens_[NUM_PLAYERS];
+  int player_stage_tokens_[kNumPlayers];
   // This is necessary so that IsFinalStageForEveryHumanPlayer knows to
   // adjust for the current song cost.
   bool adjust_tokens_by_song_cost_for_final_stage_check_;
@@ -276,14 +276,14 @@ class GameState {
   BroadcastOnChangePtr<Song> cur_song_;
   // The last Song that the user manually changed to.
   Song* preferred_song_;
-  BroadcastOnChangePtr1D<Steps, NUM_PLAYERS> cur_steps_;
+  BroadcastOnChangePtr1D<Steps, kNumPlayers> cur_steps_;
 
   // nullptr on ScreenSelectMusic if the currently selected wheel item isn't a
   // Course.
   BroadcastOnChangePtr<Course> cur_course_;
   // The last Course that the user manually changed to.
   Course* preferred_course_;
-  BroadcastOnChangePtr1D<Trail, NUM_PLAYERS> cur_trail_;
+  BroadcastOnChangePtr1D<Trail, kNumPlayers> cur_trail_;
 
   bool backed_out_of_final_stage_;
 
@@ -306,7 +306,7 @@ class GameState {
   void SetPaused(bool p) { paused_ = p; }
   void UpdateSongPosition(
       float position_seconds, const TimingData& timing,
-      const RageTimer& timestamp = RageZeroTimer);
+      const RageTimer& timestamp = kRageZeroTimer);
   float GetSongPercent(float beat) const;
 
   bool AllAreInDangerOrWorse() const;
@@ -331,7 +331,7 @@ class GameState {
   float tug_life_percent_p1_;
 
   // used in workout
-  bool goal_complete_[NUM_PLAYERS];
+  bool goal_complete_[kNumPlayers];
   bool workout_goal_complete_;
 
   /** @brief Primarily called at the end of a song to stop all attacks. */
@@ -367,7 +367,7 @@ class GameState {
   }
 
   // character stuff
-  Character* cur_characters_[NUM_PLAYERS];
+  Character* cur_characters_[kNumPlayers];
 
   bool HasEarnedExtraStage() const { return earned_extra_stage_; }
   EarnedExtraStage GetEarnedExtraStage() const {
@@ -400,8 +400,8 @@ class GameState {
 
   // Award stuff
   // lowest priority in front, highest priority at the back.
-  std::deque<StageAward> last_stage_awards_[NUM_PLAYERS];
-  std::deque<PeakComboAward> last_peak_combo_awards_[NUM_PLAYERS];
+  std::deque<StageAward> last_stage_awards_[kNumPlayers];
+  std::deque<PeakComboAward> last_peak_combo_awards_[kNumPlayers];
 
   // Attract stuff
   int num_times_through_attract_;  // negative means play regardless of
@@ -411,7 +411,7 @@ class GameState {
 
   // PlayerState
   /** @brief Allow access to each player's PlayerState. */
-  PlayerState* player_state_[NUM_PLAYERS];
+  PlayerState* player_state_[kNumPlayers];
 
   // Preferences
   static Preference<bool> auto_join_;
@@ -470,7 +470,7 @@ class GameState {
   float GetPremiumFreeSeconds() const;
   float GetPremiumFreeSongGraceSeconds() const;
   EarnedExtraStage CalculateEarnedExtraStage() const;
-  int awarded_extra_stages_[NUM_PLAYERS];
+  int awarded_extra_stages_[kNumPlayers];
   bool earned_extra_stage_;
 
   // Timing position corrections
@@ -490,19 +490,19 @@ PlayerNumber GetNextPotentialCpuPlayer(PlayerNumber pn);
 /** @brief A foreach loop to act on each human Player. */
 #define FOREACH_HumanPlayer(pn)                                  \
   for (PlayerNumber pn = GetNextHumanPlayer((PlayerNumber) - 1); \
-       pn != PLAYER_INVALID; pn = GetNextHumanPlayer(pn))
+       pn != kPlayerInvalid; pn = GetNextHumanPlayer(pn))
 /** @brief A foreach loop to act on each enabled Player. */
 #define FOREACH_EnabledPlayer(pn)                                  \
   for (PlayerNumber pn = GetNextEnabledPlayer((PlayerNumber) - 1); \
-       pn != PLAYER_INVALID; pn = GetNextEnabledPlayer(pn))
+       pn != kPlayerInvalid; pn = GetNextEnabledPlayer(pn))
 /** @brief A foreach loop to act on each CPU Player. */
 #define FOREACH_CpuPlayer(pn)                                  \
   for (PlayerNumber pn = GetNextCpuPlayer((PlayerNumber) - 1); \
-       pn != PLAYER_INVALID; pn = GetNextCpuPlayer(pn))
+       pn != kPlayerInvalid; pn = GetNextCpuPlayer(pn))
 /** @brief A foreach loop to act on each potential CPU Player. */
 #define FOREACH_PotentialCpuPlayer(pn)                                  \
   for (PlayerNumber pn = GetNextPotentialCpuPlayer((PlayerNumber) - 1); \
-       pn != PLAYER_INVALID; pn = GetNextPotentialCpuPlayer(pn))
+       pn != kPlayerInvalid; pn = GetNextPotentialCpuPlayer(pn))
 extern GameState*
     GAMESTATE;  // global and accessible from anywhere in our program
 

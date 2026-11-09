@@ -36,8 +36,8 @@ class RageInput {
   void PushSelf(lua_State* L);
 };
 
-extern Preference<std::string> g_sInputDrivers;
-extern Preference<std::string> g_sInputDeviceOrder;
+extern Preference<std::string> input_drivers;
+extern Preference<std::string> input_device_order;
 
 extern RageInput*
     INPUTMAN;  // global and accessible from anywhere in our program

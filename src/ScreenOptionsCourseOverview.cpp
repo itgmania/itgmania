@@ -48,7 +48,7 @@ static bool CurrentCourseIsSaved() {
   return !course->path_.empty();
 }
 
-static const MenuRowDef g_MenuRows[] = {
+static const MenuRowDef kMenuRows[] = {
     MenuRowDef(-1, "Play", true, EditMode_Practice, true, false, 0, nullptr),
     MenuRowDef(
         -1, "Edit Course", true, EditMode_Practice, true, false, 0, nullptr),
@@ -98,7 +98,7 @@ void ScreenOptionsCourseOverview::Init() {
 void ScreenOptionsCourseOverview::BeginScreen() {
   std::vector<OptionRowHandler*> hands;
   FOREACH_ENUM(CourseOverviewRow, row_index) {
-    const MenuRowDef& mr = g_MenuRows[row_index];
+    const MenuRowDef& mr = kMenuRows[row_index];
     OptionRowHandler* hand = OptionRowHandlerUtil::MakeSimple(mr);
     hands.push_back(hand);
   }
@@ -213,7 +213,7 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
       Course* course = GAMESTATE->cur_course_;
       std::shuffle(
           course->entries_.begin(), course->entries_.end(),
-          g_RandomNumberGenerator);
+          random_number_generator);
       Trail* trail = course->GetTrailForceRegenCache(
           GAMESTATE->GetCurrentStyle(input.pn_)->steps_type_);
       GAMESTATE->cur_trail_[PLAYER_1].Set(trail);
@@ -225,7 +225,7 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
       ScreenTextEntry::TextEntry(
           SM_BackFromRename, ENTER_COURSE_NAME,
           GAMESTATE->cur_course_->GetDisplayFullTitle(),
-          EditCourseUtil::MAX_NAME_LENGTH,
+          EditCourseUtil::max_name_length,
           EditCourseUtil::ValidateEditCourseName);
       break;
     case CourseOverviewRow_Delete:
@@ -236,12 +236,12 @@ void ScreenOptionsCourseOverview::ProcessMenuStart(
           PROMPT_YES_NO, ANSWER_NO);
       break;
     case CourseOverviewRow_Save: {
-      bool prompt_for_name = EditCourseUtil::s_bNewCourseNeedsName;
+      bool prompt_for_name = EditCourseUtil::new_course_needs_name;
       if (prompt_for_name) {
         ScreenTextEntry::TextEntry(
             SM_BackFromEnterName, ENTER_COURSE_NAME,
             GAMESTATE->cur_course_->GetDisplayFullTitle(),
-            EditCourseUtil::MAX_NAME_LENGTH,
+            EditCourseUtil::max_name_length,
             EditCourseUtil::ValidateEditCourseName);
       } else {
         if (EditCourseUtil::Save(GAMESTATE->cur_course_)) {

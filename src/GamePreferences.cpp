@@ -5,9 +5,9 @@
 
 // This options has weird interactions depending on m_bEventMode;
 // use GameState::GetCoinMode().
-Preference<CoinMode> GamePreferences::m_CoinMode("CoinMode", CoinMode_Home);
-Preference<PlayerController> GamePreferences::m_AutoPlay("AutoPlay", PC_HUMAN);
-Preference<bool> GamePreferences::m_AxisFix("AxisFix", false);
+Preference<CoinMode> GamePreferences::coin_mode("CoinMode", CoinMode_Home);
+Preference<PlayerController> GamePreferences::auto_play("AutoPlay", PC_HUMAN);
+Preference<bool> GamePreferences::axis_fix("AxisFix", false);
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez

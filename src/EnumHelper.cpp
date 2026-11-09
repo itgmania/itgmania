@@ -143,11 +143,11 @@ int Reverse(lua_State* L) {
 }
 }  // namespace
 
-static const luaL_Reg EnumLib[] = {
+static const luaL_Reg kEnumLib[] = {
     {"GetName", GetName}, {"Reverse", Reverse}, {nullptr, nullptr}};
 
 static void PushEnumMethodTable(lua_State* L) {
-  luaL_register(L, "Enum", EnumLib);
+  luaL_register(L, "Enum", kEnumLib);
 }
 
 /* Set up the enum table on the stack, and pop the table. */

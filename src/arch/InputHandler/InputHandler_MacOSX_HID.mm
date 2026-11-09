@@ -20,7 +20,7 @@ static double GetTimebaseFactor() {
   mach_timebase_info(&time_base);
   return time_base.numer / (1000.0 * time_base.denom);
 }
-static const double g_fTimebaseFactor = GetTimebaseFactor();
+static const double kTimebaseFactor = GetTimebaseFactor();
 
 REGISTER_INPUT_HANDLER_CLASS2(HID, MacOSX_HID);
 
@@ -40,7 +40,7 @@ void InputHandler_MacOSX_HID::QueueCallback(void* target, int result, void* refc
       continue;
     }
     uint64_t absolute_time_val = ((uint64_t)event.timestamp.hi << 32) | event.timestamp.lo;
-    uint64_t usecs = uint64_t(absolute_time_val * g_fTimebaseFactor);
+    uint64_t usecs = uint64_t(absolute_time_val * kTimebaseFactor);
     RageTimer event_time(usecs / 1000000ULL, usecs % 1000000ULL);
     dev->GetButtonPresses(presses, event.elementCookie, event.value, event_time);
   }

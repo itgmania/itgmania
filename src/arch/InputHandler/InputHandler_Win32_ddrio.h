@@ -10,7 +10,7 @@
 #include "RageInputDevice.h"
 #include "RageThreads.h"
 
-static bool _ddriodll_loaded = false;
+static bool ddriodll_loaded = false;
 
 // we want to use a
 #define DDRIO_DEVICEID DEVICE_JOY1

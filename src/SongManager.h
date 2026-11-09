@@ -33,9 +33,9 @@ std::string COURSE_GROUP_COLOR_NAME(size_t i);
 bool CompareNotesPointersForExtra(const Steps* n1, const Steps* n2);
 
 /** @brief The max number of edit steps a profile can have. */
-const int MAX_EDIT_STEPS_PER_PROFILE = 200;
+const int kMaxEditStepsPerProfile = 200;
 /** @brief The max number of edit courses a profile can have. */
-const int MAX_EDIT_COURSES_PER_PROFILE = 20;
+const int kMaxEditCoursesPerProfile = 20;
 
 /** @brief The holder for the Songs and its Steps. */
 class SongManager {
@@ -129,7 +129,7 @@ class SongManager {
   /**
    * @brief Retrieve all of the songs in the game.
    * @return all of the songs. */
-  const std::vector<Song*>& GetAllSongs() const { return GetSongs(GROUP_ALL); }
+  const std::vector<Song*>& GetAllSongs() const { return GetSongs(kGroupAll); }
   /**
    * @brief Retrieve all of the popular songs.
    *

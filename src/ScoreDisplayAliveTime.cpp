@@ -15,7 +15,7 @@
 REGISTER_ACTOR_CLASS(ScoreDisplayAliveTime);
 
 ScoreDisplayAliveTime::ScoreDisplayAliveTime() {
-  player_number_ = PLAYER_INVALID;
+  player_number_ = kPlayerInvalid;
 }
 
 ScoreDisplayAliveTime::~ScoreDisplayAliveTime() {}
@@ -44,8 +44,8 @@ void ScoreDisplayAliveTime::HandleMessage(const Message& msg) {
 
 void ScoreDisplayAliveTime::UpdateNumber() {
   float secs_into_play = 0;
-  ASSERT(player_number_ != PLAYER_INVALID);
-  if (player_number_ != PLAYER_INVALID &&
+  ASSERT(player_number_ != kPlayerInvalid);
+  if (player_number_ != kPlayerInvalid &&
       GAMESTATE->IsPlayerEnabled(player_number_)) {
     secs_into_play =
         STATSMAN->GetAccumPlayedStageStats()

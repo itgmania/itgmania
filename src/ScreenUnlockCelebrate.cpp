@@ -9,18 +9,18 @@
 
 REGISTER_SCREEN_CLASS(ScreenUnlockCelebrate);
 
-static int g_iUnlockEntryIndexToCelebrate = 0;
+static int unlock_entry_index_to_celebrate = 0;
 
-LuaFunction(GetUnlockEntryIndexToCelebrate, g_iUnlockEntryIndexToCelebrate);
+LuaFunction(GetUnlockEntryIndexToCelebrate, unlock_entry_index_to_celebrate);
 
 void ScreenUnlockCelebrate::Init() {
   // We shouldn't be called if there aren't any unlocks to celebrate
   ASSERT(UNLOCKMAN->AnyUnlocksToCelebrate());
 
-  g_iUnlockEntryIndexToCelebrate = UNLOCKMAN->GetUnlockEntryIndexToCelebrate();
-  UNLOCKMAN->UnlockEntryIndex(g_iUnlockEntryIndexToCelebrate);
-  Song* song =
-      UNLOCKMAN->unlock_entries_[g_iUnlockEntryIndexToCelebrate].song_.ToSong();
+  unlock_entry_index_to_celebrate = UNLOCKMAN->GetUnlockEntryIndexToCelebrate();
+  UNLOCKMAN->UnlockEntryIndex(unlock_entry_index_to_celebrate);
+  Song* song = UNLOCKMAN->unlock_entries_[unlock_entry_index_to_celebrate]
+                   .song_.ToSong();
   if (song) {
     GAMESTATE->cur_song_.Set(song);
   }

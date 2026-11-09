@@ -13,9 +13,9 @@ REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
 // It is currently unmapped.
 
 namespace {
-const int coin_counter_index = 28;
+const int kCoinCounterIndex = 28;
 
-const int cabinet_lights[] = {
+const int kCabinetLights[] = {
     23,  // LIGHT_MARQUEE_UP_LEFT
     26,  // LIGHT_MARQUEE_UP_RIGHT
     25,  // LIGHT_MARQUEE_LR_LEFT
@@ -24,7 +24,7 @@ const int cabinet_lights[] = {
     10,  // LIGHT_BASS_RIGHT
 };
 
-const int player1_dance_lights[] = {
+const int kPlayer1DanceLights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -58,7 +58,7 @@ const int player1_dance_lights[] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_dance_lights[] = {
+const int kPlayer2DanceLights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -92,7 +92,7 @@ const int player2_dance_lights[] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player1_pump_lights[] = {
+const int kPlayer1PumpLights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -126,7 +126,7 @@ const int player1_pump_lights[] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_pump_lights[] = {
+const int kPlayer2PumpLights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -161,44 +161,44 @@ const int player2_pump_lights[] = {
 };
 
 static_assert(
-    ARRAYLEN(cabinet_lights) == NUM_CabinetLight,
+    ARRAYLEN(kCabinetLights) == NUM_CabinetLight,
     "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(cabinet_lights) != "
     "NUM_CabinetLight");
 static_assert(
-    ARRAYLEN(player1_dance_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer1DanceLights) == NUM_GameButton,
     "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player1_dance_lights) != "
     "NUM_GameButton");
 static_assert(
-    ARRAYLEN(player2_dance_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer2DanceLights) == NUM_GameButton,
     "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player2_dance_lights) != "
     "NUM_GameButton");
 static_assert(
-    ARRAYLEN(player1_pump_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer1PumpLights) == NUM_GameButton,
     "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player1_pump_lights) != "
     "NUM_GameButton");
 static_assert(
-    ARRAYLEN(player2_pump_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer2PumpLights) == NUM_GameButton,
     "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player2_pump_lights) != "
     "NUM_GameButton");
 
 }  // namespace
 
 void LightsDriver_Linux_PIUIO_Leds::Set(const LightsState* ls) {
-  SetCabinetLights(cabinet_lights, ls);
+  SetCabinetLights(kCabinetLights, ls);
 
   // gamemode is checked here as gamemode can change during runtime
   //...although I'd be impressed if someone wanted to swap from pump to dance
   // on a cabinet without shutting down first...
   //...including swapping pads from your pump cabinet to your itg cabinet...
   if (IsDance()) {
-    SetGameControllerLights(GameController_1, player1_dance_lights, ls);
-    SetGameControllerLights(GameController_2, player2_dance_lights, ls);
+    SetGameControllerLights(GameController_1, kPlayer1DanceLights, ls);
+    SetGameControllerLights(GameController_2, kPlayer2DanceLights, ls);
   } else if (IsPump()) {
-    SetGameControllerLights(GameController_1, player1_pump_lights, ls);
-    SetGameControllerLights(GameController_2, player2_pump_lights, ls);
+    SetGameControllerLights(GameController_1, kPlayer1PumpLights, ls);
+    SetGameControllerLights(GameController_2, kPlayer2PumpLights, ls);
   }
 
-  SetCoinCounter(coin_counter_index, ls);
+  SetCoinCounter(kCoinCounterIndex, ls);
 
   previous_ls_ = *ls;
 }

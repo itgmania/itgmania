@@ -59,19 +59,19 @@ static void Parse(const std::string& dir, PlayAfterLaunchInfo& out) {
   }
 }
 
-static const std::string TEMP_ZIP_MOUNT_POINT = "/@temp-zip/";
-const std::string TEMP_OS_MOUNT_POINT = "/@temp-os/";
+static const std::string kTempZipMountPoint = "/@temp-zip/";
+const std::string kTempOsMountPoint = "/@temp-os/";
 
 static void InstallSmzip(
     const std::string& zip_file, PlayAfterLaunchInfo& out) {
-  if (!FILEMAN->Mount("zip", zip_file, TEMP_ZIP_MOUNT_POINT)) {
+  if (!FILEMAN->Mount("zip", zip_file, kTempZipMountPoint)) {
     FAIL_M("Failed to mount " + zip_file);
   }
 
   std::vector<std::string> files;
   {
     std::vector<std::string> raw_files;
-    GetDirListingRecursive(TEMP_ZIP_MOUNT_POINT, "*", raw_files);
+    GetDirListingRecursive(kTempZipMountPoint, "*", raw_files);
 
     std::vector<std::string> pretty_files;
     for (const std::string& s : raw_files) {
@@ -81,7 +81,7 @@ static void InstallSmzip(
 
       files.push_back(s);
 
-      std::string s2 = Right(s, s.length() - TEMP_ZIP_MOUNT_POINT.length());
+      std::string s2 = Right(s, s.length() - kTempZipMountPoint.length());
       pretty_files.push_back(s2);
     }
     sort(pretty_files.begin(), pretty_files.end());
@@ -91,7 +91,7 @@ static void InstallSmzip(
   for (std::string& tmp_file : files) {
     std::string dest_file = tmp_file;
     dest_file =
-        Right(dest_file, dest_file.length() - TEMP_ZIP_MOUNT_POINT.length());
+        Right(dest_file, dest_file.length() - kTempZipMountPoint.length());
 
     std::string dir, throw_away;
     splitpath(dest_file, dir, throw_away, throw_away);
@@ -106,7 +106,7 @@ static void InstallSmzip(
       break;
     }
   }
-  FILEMAN->Unmount("zip", zip_file, TEMP_ZIP_MOUNT_POINT);
+  FILEMAN->Unmount("zip", zip_file, kTempZipMountPoint);
 
   SCREENMAN->SystemMessage(result);
 }
@@ -118,12 +118,12 @@ void InstallSmzipOsArg(
   std::string os_dir, filename, ext;
   splitpath(os_zip_file, os_dir, filename, ext);
 
-  if (!FILEMAN->Mount("dir", os_dir, TEMP_OS_MOUNT_POINT)) {
+  if (!FILEMAN->Mount("dir", os_dir, kTempOsMountPoint)) {
     FAIL_M("Failed to mount " + os_dir);
   }
-  InstallSmzip(TEMP_OS_MOUNT_POINT + filename + ext, out);
+  InstallSmzip(kTempOsMountPoint + filename + ext, out);
 
-  FILEMAN->Unmount("dir", os_dir, TEMP_OS_MOUNT_POINT);
+  FILEMAN->Unmount("dir", os_dir, kTempOsMountPoint);
 }
 
 static bool IsPackageFile(const std::string& arg) {
@@ -161,10 +161,10 @@ bool ScreenInstallOverlay::Input(const InputEventPlus& input) {
 void ScreenInstallOverlay::Update(float delta_time) {
   Screen::Update(delta_time);
   PlayAfterLaunchInfo play_after_launch_info;
-  while (CommandLineActions::ToProcess.size() > 0) {
+  while (CommandLineActions::to_process.size() > 0) {
     CommandLineActions::CommandLineArgs args =
-        CommandLineActions::ToProcess.back();
-    CommandLineActions::ToProcess.pop_back();
+        CommandLineActions::to_process.back();
+    CommandLineActions::to_process.pop_back();
     PlayAfterLaunchInfo pali2 = DoInstalls(args);
     play_after_launch_info.OverlayWith(pali2);
   }

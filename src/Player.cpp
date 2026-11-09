@@ -127,7 +127,7 @@ std::string ATTACK_DISPLAY_X_NAME(size_t p, size_t both_sides) {
  *
  * TODO: This should be calculated based on the max size of the current judgment
  * windows. */
-static const float StepSearchDistance = 1.0f;
+static const float kStepSearchDistance = 1.0f;
 
 void TimingWindowSecondsInit(
     size_t /*TimingWindow*/ i, std::string& name_out,
@@ -185,17 +185,17 @@ void ValidateMinTNSToScoreNotes(TapNoteScore& tns) {
   }
 }
 
-static Preference<float> m_fTimingWindowScale("TimingWindowScale", 1.0f);
-static Preference<float> m_fTimingWindowAdd("TimingWindowAdd", 0);
-static Preference1D<float> m_fTimingWindowSeconds(
+static Preference<float> timing_window_scale("TimingWindowScale", 1.0f);
+static Preference<float> timing_window_add("TimingWindowAdd", 0);
+static Preference1D<float> timing_window_seconds(
     TimingWindowSecondsInit, NUM_TimingWindow);
-static Preference<float> m_fTimingWindowJump("TimingWindowJump", 0.25);
-static Preference<float> m_fMaxInputLatencySeconds(
+static Preference<float> timing_window_jump("TimingWindowJump", 0.25);
+static Preference<float> max_input_latency_seconds(
     "MaxInputLatencySeconds", 0.0);
-static Preference<bool> g_bEnableAttackSoundPlayback(
+static Preference<bool> enable_attack_sound_playback(
     "EnableAttackSounds", true);
-static Preference<bool> g_bEnableMineSoundPlayback("EnableMineHitSound", true);
-static Preference<TapNoteScore> g_MinTNSToScoreNotes(
+static Preference<bool> enable_mine_sound_playback("EnableMineHitSound", true);
+static Preference<TapNoteScore> min_tns_to_score_notes(
     "MinTNSToScoreNotes", TNS_None,
     ValidateMinTNSToScoreNotes);  // Default to great and above.
 
@@ -293,9 +293,9 @@ ThemeMetric<float> M_MOD_HIGH_CAP("Player", "MModHighCap");
 ThemeMetric<bool> BATTLE_RAVE_MIRROR("Player", "BattleRaveMirror");
 
 float Player::GetWindowSeconds(TimingWindow tw) {
-  float secs = m_fTimingWindowSeconds[tw];
-  secs *= m_fTimingWindowScale;
-  secs += m_fTimingWindowAdd;
+  float secs = timing_window_seconds[tw];
+  secs *= timing_window_scale;
+  secs += timing_window_add;
   return secs;
 }
 
@@ -366,7 +366,7 @@ void Player::Init(
     ScoreKeeper* secondary_score_keeper) {
   GRAY_ARROWS_Y_STANDARD.Load(type, "ReceptorArrowsYStandard");
   GRAY_ARROWS_Y_REVERSE.Load(type, "ReceptorArrowsYReverse");
-  ATTACK_DISPLAY_X.Load(type, ATTACK_DISPLAY_X_NAME, NUM_PLAYERS, 2);
+  ATTACK_DISPLAY_X.Load(type, ATTACK_DISPLAY_X_NAME, kNumPlayers, 2);
   HOLD_JUDGMENT_Y_STANDARD.Load(type, "HoldJudgmentYStandard");
   HOLD_JUDGMENT_Y_REVERSE.Load(type, "HoldJudgmentYReverse");
   BRIGHT_GHOST_COMBO_THRESHOLD.Load(type, "BrightGhostComboThreshold");
@@ -658,11 +658,11 @@ static void GenerateCacheDataStructure(
   player_state->cache_note_stat_.clear();
 
   NoteData::all_tracks_const_iterator it =
-      notes.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW, true);
+      notes.GetTapNoteRangeAllTracks(0, kMaxNoteRow, true);
   int count = 0, last_count = 0;
   for (; !it.IsAtEnd(); ++it) {
     for (int t = 0; t < notes.GetNumTracks(); t++) {
-      if (notes.GetTapNote(t, it.Row()) != TAP_EMPTY) {
+      if (notes.GetTapNote(t, it.Row()) != tap_empty) {
         count++;
       }
     }
@@ -827,23 +827,23 @@ void Player::Load() {
 
   RageUtil::SafeDelete(iter_needs_tap_judging_);
   iter_needs_tap_judging_ = new NoteData::all_tracks_iterator(
-      note_data_.GetTapNoteRangeAllTracks(note_row, MAX_NOTE_ROW));
+      note_data_.GetTapNoteRangeAllTracks(note_row, kMaxNoteRow));
 
   RageUtil::SafeDelete(iter_needs_hold_judging_);
   iter_needs_hold_judging_ = new NoteData::all_tracks_iterator(
-      note_data_.GetTapNoteRangeAllTracks(note_row, MAX_NOTE_ROW));
+      note_data_.GetTapNoteRangeAllTracks(note_row, kMaxNoteRow));
 
   RageUtil::SafeDelete(iter_uncrossed_rows_);
   iter_uncrossed_rows_ = new NoteData::all_tracks_iterator(
-      note_data_.GetTapNoteRangeAllTracks(note_row, MAX_NOTE_ROW));
+      note_data_.GetTapNoteRangeAllTracks(note_row, kMaxNoteRow));
 
   RageUtil::SafeDelete(iter_unjudged_rows_);
   iter_unjudged_rows_ = new NoteData::all_tracks_iterator(
-      note_data_.GetTapNoteRangeAllTracks(note_row, MAX_NOTE_ROW));
+      note_data_.GetTapNoteRangeAllTracks(note_row, kMaxNoteRow));
 
   RageUtil::SafeDelete(iter_unjudged_mine_rows_);
   iter_unjudged_mine_rows_ = new NoteData::all_tracks_iterator(
-      note_data_.GetTapNoteRangeAllTracks(note_row, MAX_NOTE_ROW));
+      note_data_.GetTapNoteRangeAllTracks(note_row, kMaxNoteRow));
 }
 
 void Player::SendComboMessages(
@@ -918,7 +918,7 @@ void Player::Update(float delta_time) {
       }
     }
 
-    if (g_bEnableAttackSoundPlayback) {
+    if (enable_attack_sound_playback) {
       if (player_state_->attack_began_this_update_) {
         sound_attack_launch_.Play(false);
       }
@@ -1015,8 +1015,8 @@ void Player::Update(float delta_time) {
       GAMESTATE->GetCurrentStyle(GetPlayerState()->player_number_)
           ->cols_per_player_;
   ASSERT_M(
-      num_cols <= MAX_COLS_PER_PLAYER,
-      ssprintf("%i > %i", num_cols, MAX_COLS_PER_PLAYER));
+      num_cols <= kMaxColsPerPlayer,
+      ssprintf("%i > %i", num_cols, kMaxColsPerPlayer));
   for (int col = 0; col < num_cols; ++col) {
     ASSERT(player_state_ != nullptr);
 
@@ -1266,7 +1266,7 @@ void Player::UpdateHoldNotes(
 
     // Routine charts assign each note to a specific player; skip notes
     // that don't belong to this Player
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
       continue;
     }
 
@@ -1287,7 +1287,7 @@ void Player::UpdateHoldNotes(
     TapNote& tn = *trtn.tn_;
     // Routine charts assign each note to a specific player; skip notes
     // that don't belong to this Player
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
       continue;
     }
     // set hold flags so NoteField can do intelligent drawing
@@ -1332,7 +1332,7 @@ void Player::UpdateHoldNotes(
     TapNoteScore tns = tn.result_.tns_;
     // Routine charts assign each note to a specific player; skip notes
     // that don't belong to this Player
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
       continue;
     }
     // LOG->Trace( ssprintf("[C++] tap note score:
@@ -1420,7 +1420,7 @@ void Player::UpdateHoldNotes(
       int end_row = start_row + tn.duration_;
       // Routine charts assign each note to a specific player; skip notes
       // that don't belong to this Player
-      if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+      if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
         continue;
       }
       // LOG->Trace(ssprintf("trying for min between iSongRow (%i) and iEndRow
@@ -1435,7 +1435,7 @@ void Player::UpdateHoldNotes(
       case TapNoteSubType_Hold:
         for (const TrackRowTapNote& trtn : v_tn) {
           TapNote& tn = *trtn.tn_;
-          if (tn.pn_ != PLAYER_INVALID &&
+          if (tn.pn_ != kPlayerInvalid &&
               tn.pn_ != player_state_->player_number_) {
             continue;
           }
@@ -1474,7 +1474,7 @@ void Player::UpdateHoldNotes(
       case TapNoteSubType_Roll:
         for (const TrackRowTapNote& trtn : v_tn) {
           TapNote& tn = *trtn.tn_;
-          if (tn.pn_ != PLAYER_INVALID &&
+          if (tn.pn_ != kPlayerInvalid &&
               tn.pn_ != player_state_->player_number_) {
             continue;
           }
@@ -1552,7 +1552,7 @@ void Player::UpdateHoldNotes(
       int checkpoints_hit = 0;
       int checkpoints_missed = 0;
       for (const TrackRowTapNote& v : v_tn) {
-        if (v.tn_->pn_ != PLAYER_INVALID &&
+        if (v.tn_->pn_ != kPlayerInvalid &&
             v.tn_->pn_ != player_state_->player_number_) {
           continue;
         }
@@ -1594,7 +1594,7 @@ void Player::UpdateHoldNotes(
                           (unsigned int)BRIGHT_GHOST_COMBO_THRESHOLD;
         if (note_field_) {
           for (const TrackRowTapNote& trtn : v_tn) {
-            if (trtn.tn_->pn_ != PLAYER_INVALID &&
+            if (trtn.tn_->pn_ != kPlayerInvalid &&
                 trtn.tn_->pn_ != player_state_->player_number_) {
               continue;
             }
@@ -1621,7 +1621,7 @@ void Player::UpdateHoldNotes(
     TapNote& tn = *trtn.tn_;
     // Routine charts assign each note to a specific player; skip notes
     // that don't belong to this Player
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
       continue;
     }
     tn.hold_result_.life_ = life;
@@ -1658,7 +1658,7 @@ void Player::UpdateHoldNotes(
     TapNote& tn = *v_tn[0].tn_;
     // Routine charts assign each note to a specific player; skip notes
     // that don't belong to this Player
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != player_state_->player_number_) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != player_state_->player_number_) {
       return;
     }
     SetHoldJudgment(tn, first_track_with_max_end_row);
@@ -2037,14 +2037,14 @@ void Player::DoTapScoreNone() {
     life_meter_->HandleTapScoreNone();
   }
   // TODO: Remove use of PlayerNumber
-  PlayerNumber pn = PLAYER_INVALID;
+  PlayerNumber pn = kPlayerInvalid;
   if (combined_life_meter_) {
     combined_life_meter_->HandleTapScoreNone(pn);
   }
 
   if (PENALIZE_TAP_SCORE_NONE) {
     SetJudgment(
-        BeatToNoteRow(player_state_->position_.song_beat_), -1, TAP_EMPTY,
+        BeatToNoteRow(player_state_->position_.song_beat_), -1, tap_empty,
         TNS_Miss, 0);
     // the ScoreKeeper will subtract points later.
   }
@@ -2109,12 +2109,13 @@ void Player::Step(
     const int step_search_rows =
         std::max(
             BeatToNoteRow(timing_->GetBeatFromElapsedTime(
-                player_state_->position_.music_seconds_ + StepSearchDistance)) -
+                player_state_->position_.music_seconds_ +
+                kStepSearchDistance)) -
                 song_row,
             song_row - BeatToNoteRow(timing_->GetBeatFromElapsedTime(
                            player_state_->position_.music_seconds_ -
-                           StepSearchDistance))) +
-        ROWS_PER_BEAT;
+                           kStepSearchDistance))) +
+        kRowsPerBeat;
     int row_of_overlapping_note_or_row = row;
     if (row == -1) {
       row_of_overlapping_note_or_row = GetClosestNote(
@@ -2125,7 +2126,7 @@ void Player::Step(
           note_data_.FindTapNote(col, row_of_overlapping_note_or_row);
       if (iter != note_data_.end(col)) {
         const TapNote& tn = iter->second;
-        if (tn.pn_ != PLAYER_INVALID &&
+        if (tn.pn_ != kPlayerInvalid &&
             tn.pn_ != player_state_->player_number_) {
           return;
         }
@@ -2223,7 +2224,7 @@ void Player::Step(
       for (size_t i = 0; i < game_i.size(); ++i) {
         secs_held = std::max(secs_held, INPUTMAPPER->GetSecsHeld(game_i[i]));
       }
-      if (secs_held > 0 && secs_held < m_fTimingWindowJump) {
+      if (secs_held > 0 && secs_held < timing_window_jump) {
         num_tracks_held++;
       }
     }
@@ -2263,12 +2264,12 @@ void Player::Step(
   const int step_search_rows =
       std::max(
           BeatToNoteRow(timing_->GetBeatFromElapsedTime(
-              player_state_->position_.music_seconds_ + StepSearchDistance)) -
+              player_state_->position_.music_seconds_ + kStepSearchDistance)) -
               song_row,
           song_row - BeatToNoteRow(timing_->GetBeatFromElapsedTime(
                          player_state_->position_.music_seconds_ -
-                         StepSearchDistance))) +
-      ROWS_PER_BEAT;
+                         kStepSearchDistance))) +
+      kRowsPerBeat;
   int row_of_overlapping_note_or_row = row;
   if (row == -1) {
     row_of_overlapping_note_or_row = GetClosestNote(
@@ -2528,7 +2529,7 @@ void Player::Step(
           p_tn->attack_duration_seconds_, p_tn->attack_modifiers_, true, false);
 
       // TODO: Remove use of PlayerNumber
-      PlayerNumber to_attack = OPPOSITE_PLAYER[player_state_->player_number_];
+      PlayerNumber to_attack = kOppositePlayer[player_state_->player_number_];
       PlayerState* player_state_to_attack = GAMESTATE->player_state_[to_attack];
       player_state_to_attack->LaunchAttack(attack);
 
@@ -2553,7 +2554,7 @@ void Player::Step(
     }
 
     if (score != TNS_None) {
-      TapNoteScore min_tns_to_score = g_MinTNSToScoreNotes;
+      TapNoteScore min_tns_to_score = min_tns_to_score_notes;
       bool bad_tns = false;
       if (min_tns_to_score != TNS_None) {
         switch (score) {
@@ -2669,7 +2670,7 @@ void Player::Step(
     } else {
       // or else find the closest note.
       row_of_overlapping_note_or_row =
-          GetClosestNote(col, song_row, MAX_NOTE_ROW, MAX_NOTE_ROW, true);
+          GetClosestNote(col, song_row, kMaxNoteRow, kMaxNoteRow, true);
     }
     if (row_of_overlapping_note_or_row != -1) {
       const TapNote& tn =
@@ -2856,7 +2857,7 @@ void Player::UpdateJudgedRows() {
       if (tn.keysound_index_ >= 0 &&
           tn.keysound_index_ < (int)keysounds_.size()) {
         set_sounds.insert(&keysounds_[tn.keysound_index_]);
-      } else if (g_bEnableMineSoundPlayback) {
+      } else if (enable_mine_sound_playback) {
         set_sounds.insert(&sound_mine_);
       }
 
@@ -3036,7 +3037,7 @@ void Player::CrossedRows(int last_row_crossed, const RageTimer& now) {
       int tick_current = timing_->GetTickcountAtRow(r);
 
       // There is a tick count at this row
-      if (tick_current > 0 && r % (ROWS_PER_BEAT / tick_current) == 0) {
+      if (tick_current > 0 && r % (kRowsPerBeat / tick_current) == 0) {
         std::vector<int> cols_with_hold;
         int num_holds_held_this_row = 0;
         int num_holds_missed_this_row = 0;
@@ -3260,7 +3261,7 @@ void Player::HandleHoldCheckpoint(
       num_holds_missed_this_row == 0 ? TNS_CheckpointHit : TNS_CheckpointMiss);
 
   SetJudgment(
-      row, cols_with_hold[0], TAP_EMPTY,
+      row, cols_with_hold[0], tap_empty,
       num_holds_missed_this_row == 0 ? TNS_CheckpointHit : TNS_CheckpointMiss,
       0);
 }
@@ -3317,7 +3318,7 @@ float Player::GetMaxStepDistanceSeconds() {
   max = std::max(max, GetWindowSeconds(TW_Attack));
   max = std::max(max, GetWindowSeconds(TW_Checkpoint));
   float f = GAMESTATE->song_options_.GetCurrent().music_rate_ * max;
-  return f + m_fMaxInputLatencySeconds;
+  return f + max_input_latency_seconds;
 }
 
 void Player::FadeToFail() {

@@ -103,28 +103,28 @@
 
 @end
 
-static LoadingWindowHelper* g_Helper = nil;
+static LoadingWindowHelper* helper = nil;
 
 LoadingWindow_MacOSX::LoadingWindow_MacOSX() {}
 
 LoadingWindow_MacOSX::~LoadingWindow_MacOSX() {
-  if (!g_Helper) {
+  if (!helper) {
     return;
   }
-  NSAutoreleasePool* pool = g_Helper->pool_;
-  [g_Helper->window_ performSelectorOnMainThread:@selector(close) withObject:nil waitUntilDone:YES];
-  [g_Helper release];
-  g_Helper = nil;
+  NSAutoreleasePool* pool = helper->pool_;
+  [helper->window_ performSelectorOnMainThread:@selector(close) withObject:nil waitUntilDone:YES];
+  [helper release];
+  helper = nil;
   [pool release];
 }
 
 void LoadingWindow_MacOSX::SetText(std::string str) {
-  if (!g_Helper) {
+  if (!helper) {
     return;
   }
   NSString* s = [[NSString alloc] initWithUTF8String:(str.c_str())];
-  [g_Helper->text_ performSelectorOnMainThread:@selector(setString:)
-                                    withObject:(s ? s : @"")waitUntilDone:NO];
+  [helper->text_ performSelectorOnMainThread:@selector(setString:)
+                                  withObject:(s ? s : @"")waitUntilDone:NO];
   [s release];
 }
 
@@ -160,29 +160,29 @@ void LoadingWindow_MacOSX::SetSplash(const RageSurface* splash) {
     return;
   }
 
-  g_Helper = [[LoadingWindowHelper alloc] init];
-  g_Helper->pool_ = pool;
-  [g_Helper performSelectorOnMainThread:@selector(setupWindow:) withObject:image waitUntilDone:NO];
+  helper = [[LoadingWindowHelper alloc] init];
+  helper->pool_ = pool;
+  [helper performSelectorOnMainThread:@selector(setupWindow:) withObject:image waitUntilDone:NO];
   [image release];
 }
 
 void LoadingWindow_MacOSX::SetProgress(const int progress) {
-  [g_Helper performSelectorOnMainThread:@selector(setProgress:)
-                             withObject:[NSNumber numberWithDouble:(double)progress]
-                          waitUntilDone:NO];
+  [helper performSelectorOnMainThread:@selector(setProgress:)
+                           withObject:[NSNumber numberWithDouble:(double)progress]
+                        waitUntilDone:NO];
 }
 
 void LoadingWindow_MacOSX::SetTotalWork(const int total_work) {
-  [g_Helper performSelectorOnMainThread:@selector(setTotalWork:)
-                             withObject:[NSNumber numberWithDouble:(double)total_work]
-                          waitUntilDone:NO];
+  [helper performSelectorOnMainThread:@selector(setTotalWork:)
+                           withObject:[NSNumber numberWithDouble:(double)total_work]
+                        waitUntilDone:NO];
 }
 
 void LoadingWindow_MacOSX::SetIndeterminate(bool indeterminate) {
   double tmp = indeterminate ? 1 : 0;
-  [g_Helper performSelectorOnMainThread:@selector(setIndeterminate:)
-                             withObject:[NSNumber numberWithDouble:tmp]
-                          waitUntilDone:NO];
+  [helper performSelectorOnMainThread:@selector(setIndeterminate:)
+                           withObject:[NSNumber numberWithDouble:tmp]
+                        waitUntilDone:NO];
 }
 
 /*

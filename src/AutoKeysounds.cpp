@@ -83,12 +83,12 @@ void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* chain) {
       }
       row = next_row;
 
-      TapNote tn[NUM_PLAYERS];
+      TapNote tn[kNumPlayers];
       FOREACH_EnabledPlayer(pn) tn[pn] =
           auto_keysounds_only_[pn].GetTapNote(t, row);
 
       FOREACH_EnabledPlayer(pn) {
-        if (tn[pn] == TAP_EMPTY) {
+        if (tn[pn] == tap_empty) {
           continue;
         }
 

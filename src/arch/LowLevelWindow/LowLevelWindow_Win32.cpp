@@ -17,18 +17,18 @@
 #include "archutils/Win32/GraphicsWindow.h"
 #include "global.h"
 
-static PIXELFORMATDESCRIPTOR g_CurrentPixelFormat;
-static HGLRC g_HGLRC = nullptr;
-static HMODULE g_HGL_Module = nullptr;
+static PIXELFORMATDESCRIPTOR current_pixel_format;
+static HGLRC hglrc = nullptr;
+static HMODULE hgl_module = nullptr;
 
 static void DestroyGraphicsWindowAndOpenGLContext() {
-  if (g_HGLRC != nullptr) {
+  if (hglrc != nullptr) {
     wglMakeCurrent(nullptr, nullptr);
-    wglDeleteContext(g_HGLRC);
-    g_HGLRC = nullptr;
+    wglDeleteContext(hglrc);
+    hglrc = nullptr;
   }
 
-  ZERO(g_CurrentPixelFormat);
+  ZERO(current_pixel_format);
 
   GraphicsWindow::DestroyGraphicsWindow();
 }
@@ -39,8 +39,8 @@ void* LowLevelWindow_Win32::GetProcAddress(std::string s) {
     return ret;
   }
 
-  if (g_HGL_Module != nullptr) {
-    ret = (void*)::GetProcAddress(g_HGL_Module, s.c_str());
+  if (hgl_module != nullptr) {
+    ret = (void*)::GetProcAddress(hgl_module, s.c_str());
 
     if (ret != nullptr) {
       return ret;
@@ -51,8 +51,8 @@ void* LowLevelWindow_Win32::GetProcAddress(std::string s) {
 }
 
 LowLevelWindow_Win32::LowLevelWindow_Win32() {
-  ASSERT(g_HGLRC == nullptr);
-  ASSERT(g_HGL_Module == nullptr);
+  ASSERT(hglrc == nullptr);
+  ASSERT(hgl_module == nullptr);
 
   GraphicsWindow::Initialize(false);
 }
@@ -193,7 +193,7 @@ std::string LowLevelWindow_Win32::TryVideoMode(
         GraphicsWindow::GetHDC(), pixel_format, sizeof(PIXELFORMATDESCRIPTOR),
         &dest_pixel_format);
     if (memcmp(
-            &dest_pixel_format, &g_CurrentPixelFormat,
+            &dest_pixel_format, &current_pixel_format,
             sizeof(PIXELFORMATDESCRIPTOR))) {
       LOG->Trace("Reset: pixel format changing");
       need_to_set_pixel_format = true;
@@ -212,10 +212,10 @@ std::string LowLevelWindow_Win32::TryVideoMode(
     LOG->Trace(
         "Mode requires new pixel format, and we've already set one; resetting "
         "OpenGL context");
-    if (g_HGLRC != nullptr) {
+    if (hglrc != nullptr) {
       wglMakeCurrent(nullptr, nullptr);
-      wglDeleteContext(g_HGLRC);
-      g_HGLRC = nullptr;
+      wglDeleteContext(hglrc);
+      hglrc = nullptr;
     }
 
     new_device_out = true;
@@ -236,23 +236,23 @@ std::string LowLevelWindow_Win32::TryVideoMode(
     }
 
     DescribePixelFormat(
-        GraphicsWindow::GetHDC(), pixel_format, sizeof(g_CurrentPixelFormat),
-        &g_CurrentPixelFormat);
+        GraphicsWindow::GetHDC(), pixel_format, sizeof(current_pixel_format),
+        &current_pixel_format);
 
-    DumpPixelFormat(g_CurrentPixelFormat);
+    DumpPixelFormat(current_pixel_format);
   }
 
-  if (g_HGLRC == nullptr) {
-    g_HGL_Module = LoadLibraryA("opengl32.dll");
+  if (hglrc == nullptr) {
+    hgl_module = LoadLibraryA("opengl32.dll");
 
-    g_HGLRC = wglCreateContext(GraphicsWindow::GetHDC());
-    if (g_HGLRC == nullptr) {
+    hglrc = wglCreateContext(GraphicsWindow::GetHDC());
+    if (hglrc == nullptr) {
       DWORD last_error = GetLastError();
       DestroyGraphicsWindowAndOpenGLContext();
       return hr_ssprintf(last_error, "wglCreateContext");
     }
 
-    if (!wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC)) {
+    if (!wglMakeCurrent(GraphicsWindow::GetHDC(), hglrc)) {
       DWORD last_error = GetLastError();
       DestroyGraphicsWindowAndOpenGLContext();
       return hr_ssprintf(last_error, "wglCreateContext");
@@ -371,7 +371,7 @@ void RenderTarget_Win32::StartRenderingTo() {
   old_device_context_ = wglGetCurrentDC();
   old_render_context_ = wglGetCurrentContext();
 
-  BOOL successful = wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC);
+  BOOL successful = wglMakeCurrent(GraphicsWindow::GetHDC(), hglrc);
   ASSERT_M(
       successful == TRUE,
       "wglMakeCurrent failed in RenderTarget_Win32::StartRenderingTo()");

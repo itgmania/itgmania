@@ -22,7 +22,7 @@
 #include "WheelItemBase.h"
 #include "global.h"
 
-const int MAX_WHEEL_SOUND_SPEED = 15;
+const int kMaxWheelSoundSpeed = 15;
 AutoScreenMessage(
     SM_SongChanged);  // TODO: Replace this with a Message and MESSAGEMAN
 
@@ -221,13 +221,13 @@ void WheelBase::Update(float delta_time) {
         (moving_ == 1 && position_offset_from_selection_ <= 0)) {
       ChangeMusic(moving_);
 
-      if (PREFSMAN->music_wheel_switch_speed_ < MAX_WHEEL_SOUND_SPEED) {
+      if (PREFSMAN->music_wheel_switch_speed_ < kMaxWheelSoundSpeed) {
         sound_change_music_.Play(true);
       }
     }
 
-    if (PREFSMAN->music_wheel_switch_speed_ >= MAX_WHEEL_SOUND_SPEED &&
-        moving_sound_timer_.Ago() >= 1.0f / MAX_WHEEL_SOUND_SPEED) {
+    if (PREFSMAN->music_wheel_switch_speed_ >= kMaxWheelSoundSpeed &&
+        moving_sound_timer_.Ago() >= 1.0f / kMaxWheelSoundSpeed) {
       moving_sound_timer_.GetDeltaTime();
       sound_change_music_.Play(true);
     }

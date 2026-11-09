@@ -6,7 +6,7 @@
 
 #include "EnumHelper.h"
 
-static const int MAX_OPTIONS = 16;
+static const int kMaxOptions = 16;
 enum OptEffect {
   OPT_SAVE_PREFERENCES = (1 << 0),
   OPT_APPLY_GRAPHICS = (1 << 1),
@@ -18,7 +18,7 @@ enum OptEffect {
   OPT_APPLY_PROFILES = (1 << 7),
   OPT_RELOAD_SONGS = (1 << 8),
   NUM_OptEffect = 9,
-  OptEffect_Invalid = MAX_OPTIONS + 1
+  OptEffect_Invalid = kMaxOptions + 1
 };
 const std::string& OptEffectToString(OptEffect e);
 LuaDeclareType(OptEffect);

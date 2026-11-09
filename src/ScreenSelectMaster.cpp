@@ -74,9 +74,9 @@ void ScreenSelectMaster::Init() {
   USE_ICON_METRICS.Load(name_, "UseIconMetrics");
   NUM_CHOICES_ON_PAGE_1.Load(name_, "NumChoicesOnPage1");
   CURSOR_OFFSET_X_FROM_ICON.Load(
-      name_, CURSOR_OFFSET_X_FROM_ICON_NAME, NUM_PLAYERS);
+      name_, CURSOR_OFFSET_X_FROM_ICON_NAME, kNumPlayers);
   CURSOR_OFFSET_Y_FROM_ICON.Load(
-      name_, CURSOR_OFFSET_Y_FROM_ICON_NAME, NUM_PLAYERS);
+      name_, CURSOR_OFFSET_Y_FROM_ICON_NAME, kNumPlayers);
   PER_CHOICE_ICON_ELEMENT.Load(name_, "PerChoiceIconElement");
   PRE_SWITCH_PAGE_SECONDS.Load(name_, "PreSwitchPageSeconds");
   POST_SWITCH_PAGE_SECONDS.Load(name_, "PostSwitchPageSeconds");
@@ -429,7 +429,7 @@ void ScreenSelectMaster::UpdateSelectableChoices() {
   std::vector<PlayerNumber> vpns;
   GetActiveElementPlayerNumbers(vpns);
   int first_playable = -1;
-  bool on_unplayable[NUM_PLAYERS];
+  bool on_unplayable[kNumPlayers];
   FOREACH_PlayerNumber(pn) { on_unplayable[pn] = false; }
 
   for (unsigned c = 0; c < game_commands_.size(); c++) {
@@ -826,7 +826,7 @@ bool ScreenSelectMaster::ChangeSelection(
 }
 
 PlayerNumber ScreenSelectMaster::GetSharedPlayer() {
-  if (GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID) {
+  if (GAMESTATE->GetMasterPlayerNumber() != kPlayerInvalid) {
     return GAMESTATE->GetMasterPlayerNumber();
   }
 

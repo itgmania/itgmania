@@ -69,10 +69,10 @@
 #include "RageUtil_FileDB.h"
 #include "global.h"
 
-constexpr std::chrono::seconds OPERATION_TIMEOUT(5);
+constexpr std::chrono::seconds kOperationTimeout(5);
 
 /* Directories with many files take longer to list. */
-constexpr std::chrono::seconds LIST_TIMEOUT(10);
+constexpr std::chrono::seconds kListTimeout(10);
 
 class ThreadedFileWorker {
  public:
@@ -85,7 +85,7 @@ class ThreadedFileWorker {
    * timeout.  fn may finish after a timeout, so it must capture by value. */
   bool Run(
       std::function<void()> fn,
-      std::chrono::seconds timeout = OPERATION_TIMEOUT);
+      std::chrono::seconds timeout = kOperationTimeout);
 
   /* Runs fn in the worker, not rejected or dropped on timeout. */
   void RunEventually(std::function<void()> fn);
@@ -251,7 +251,7 @@ void ThreadedFileWorker::RunEventually(std::function<void()> fn) {
   std::unique_lock<std::mutex> lock(mutex_);
   std::shared_ptr<Operation> op = Queue(std::move(fn), true);
   Wait(
-      lock, *op, OPERATION_TIMEOUT,
+      lock, *op, kOperationTimeout,
       std::chrono::steady_clock::time_point::max());
 }
 
@@ -405,7 +405,7 @@ class TimedFilenameDB : public FilenameDB {
             [child_driver, result, path] {
               child_driver->fdb_->GetFileSetCopy(path, *result);
             },
-            LIST_TIMEOUT)) {
+            kListTimeout)) {
       LOG->Trace("PopulateFileSet(%s) failed", path.c_str());
       return;
     }
@@ -528,7 +528,7 @@ static struct FileDriverEntry_Timeout : public FileDriverEntry {
   RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverTimeout(root);
   }
-} const g_RegisterDriver;
+} const kRegisterDriver;
 
 /*
  * Copyright (c) 2005 Glenn Maynard

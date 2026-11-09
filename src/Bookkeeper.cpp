@@ -20,7 +20,7 @@
 Bookkeeper* BOOKKEEPER =
     nullptr;  // global and accessible from anywhere in our program
 
-static const std::string COINS_DAT = "Save/Coins.xml";
+static const std::string kCoinsDat = "Save/Coins.xml";
 
 Bookkeeper::Bookkeeper() {
   // GameState resets the coin count, but once the Bookkeeper is initialized,
@@ -119,12 +119,12 @@ XNode* Bookkeeper::CreateNode() const {
 }
 
 void Bookkeeper::ReadFromDisk() {
-  if (!IsAFile(COINS_DAT)) {
+  if (!IsAFile(kCoinsDat)) {
     return;
   }
 
   XNode xml;
-  if (!XmlFileUtil::LoadFromFileShowErrors(xml, COINS_DAT)) {
+  if (!XmlFileUtil::LoadFromFileShowErrors(xml, kCoinsDat)) {
     return;
   }
 
@@ -147,9 +147,9 @@ void Bookkeeper::ReadFromDisk() {
 void Bookkeeper::WriteToDisk() {
   // Write data. Use SLOW_FLUSH, to help ensure that we don't lose coin data.
   RageFile f;
-  if (!f.Open(COINS_DAT, RageFile::WRITE | RageFile::SLOW_FLUSH)) {
+  if (!f.Open(kCoinsDat, RageFile::WRITE | RageFile::SLOW_FLUSH)) {
     LOG->Warn(
-        "Couldn't open file \"%s\" for writing: %s", COINS_DAT.c_str(),
+        "Couldn't open file \"%s\" for writing: %s", kCoinsDat.c_str(),
         f.GetError().c_str());
     return;
   }
@@ -168,12 +168,12 @@ void Bookkeeper::CoinInserted() {
 void Bookkeeper::WriteCoinsFile(int coins) {
   IniFile ini;
   ini.SetValue("Bookkeeping", "Coins", coins);
-  ini.WriteFile(SpecialFiles::COINS_INI);
+  ini.WriteFile(SpecialFiles::kCoinsIni);
 }
 
 void Bookkeeper::ReadCoinsFile(int& coins) {
   IniFile ini;
-  ini.ReadFile(SpecialFiles::COINS_INI);
+  ini.ReadFile(SpecialFiles::kCoinsIni);
   ini.GetValue("Bookkeeping", "Coins", coins);
 }
 
@@ -202,21 +202,21 @@ int Bookkeeper::GetCoinsTotal() const {
       map_coins_for_hour_.begin(), map_coins_for_hour_.end());
 }
 
-void Bookkeeper::GetCoinsLastDays(int coins[NUM_LAST_DAYS]) const {
+void Bookkeeper::GetCoinsLastDays(int coins[kNumLastDays]) const {
   time_t old_time = time(nullptr);
   tm time;
   localtime_r(&old_time, &time);
 
   time.tm_hour = 0;
 
-  for (int i = 0; i < NUM_LAST_DAYS; i++) {
+  for (int i = 0; i < kNumLastDays; i++) {
     tm end_time = AddDays(time, +1);
     coins[i] = GetNumCoins(time, end_time);
     time = GetYesterday(time);
   }
 }
 
-void Bookkeeper::GetCoinsLastWeeks(int coins[NUM_LAST_WEEKS]) const {
+void Bookkeeper::GetCoinsLastWeeks(int coins[kNumLastWeeks]) const {
   time_t old_time = time(nullptr);
   tm time;
   localtime_r(&old_time, &time);
@@ -224,8 +224,8 @@ void Bookkeeper::GetCoinsLastWeeks(int coins[NUM_LAST_WEEKS]) const {
   time = GetNextSunday(time);
   time = GetYesterday(time);
 
-  for (int w = 0; w < NUM_LAST_WEEKS; w++) {
-    tm start_time = AddDays(time, -DAYS_IN_WEEK);
+  for (int w = 0; w < kNumLastWeeks; w++) {
+    tm start_time = AddDays(time, -kDaysInWeek);
     coins[w] = GetNumCoins(start_time, time);
     time = start_time;
   }
@@ -233,8 +233,8 @@ void Bookkeeper::GetCoinsLastWeeks(int coins[NUM_LAST_WEEKS]) const {
 
 /* iDay is days since Jan 1. iYear is eg. 2005. Return the day of the week,
  * where 0 is Sunday. */
-void Bookkeeper::GetCoinsByDayOfWeek(int coins[DAYS_IN_WEEK]) const {
-  for (int i = 0; i < DAYS_IN_WEEK; i++) {
+void Bookkeeper::GetCoinsByDayOfWeek(int coins[kDaysInWeek]) const {
+  for (int i = 0; i < kDaysInWeek; i++) {
     coins[i] = 0;
   }
 
@@ -246,14 +246,14 @@ void Bookkeeper::GetCoinsByDayOfWeek(int coins[DAYS_IN_WEEK]) const {
   }
 }
 
-void Bookkeeper::GetCoinsByHour(int coins[HOURS_IN_DAY]) const {
-  memset(coins, 0, sizeof(int) * HOURS_IN_DAY);
+void Bookkeeper::GetCoinsByHour(int coins[kHoursInDay]) const {
+  memset(coins, 0, sizeof(int) * kHoursInDay);
   for (std::map<Date, int>::const_iterator it = map_coins_for_hour_.begin();
        it != map_coins_for_hour_.end(); ++it) {
     const Date& d = it->first;
 
-    if (d.hour_ >= HOURS_IN_DAY) {
-      LOG->Warn("Hour %i >= %i", d.hour_, HOURS_IN_DAY);
+    if (d.hour_ >= kHoursInDay) {
+      LOG->Warn("Hour %i >= %i", d.hour_, kHoursInDay);
       continue;
     }
 

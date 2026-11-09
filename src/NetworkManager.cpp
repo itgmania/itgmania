@@ -227,7 +227,7 @@ NetworkManager::NetworkManager() {
   }
 
   RageFile f;
-  if (f.Open(SpecialFiles::CA_BUNDLE_PATH)) {
+  if (f.Open(SpecialFiles::kCaBundlePath)) {
     std::string data;
     f.Read(data);
     f.Close();
@@ -235,7 +235,7 @@ NetworkManager::NetworkManager() {
     this->tls_options_.caFile = data;
   } else {
     LOG->Warn(
-        "Reading '%s' failed: %s", SpecialFiles::CA_BUNDLE_PATH.c_str(),
+        "Reading '%s' failed: %s", SpecialFiles::kCaBundlePath.c_str(),
         f.GetError().c_str());
   }
 
@@ -573,7 +573,7 @@ std::string NetworkManager::EncodeQueryParameters(
 
 std::string NetworkManager::GetUserAgent() {
   std::stringstream ss;
-  ss << PRODUCT_FAMILY << "/" << product_version;
+  ss << PRODUCT_FAMILY << "/" << kProductVersion;
   return ss.str();
 }
 

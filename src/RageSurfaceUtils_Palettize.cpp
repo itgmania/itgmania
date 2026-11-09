@@ -46,14 +46,14 @@ struct acolorhist_list_item {
   acolorhist_list next_;
 };
 
-static const unsigned int HASH_SIZE = 20023u;
+static const unsigned int kHashSize = 20023u;
 
 struct acolorhash_hash {
-  acolorhist_list hash_[HASH_SIZE];
+  acolorhist_list hash_[kHashSize];
   acolorhash_hash() { ZERO(hash_); }
 
   ~acolorhash_hash() {
-    for (unsigned i = 0; i < HASH_SIZE; ++i) {
+    for (unsigned i = 0; i < kHashSize; ++i) {
       acolorhist_list achl, achlnext;
       for (achl = hash_[i]; achl != nullptr; achl = achlnext) {
         achlnext = achl->next_;
@@ -480,7 +480,7 @@ static acolorhist_item* mediancut(
 #define pam_hashapixel(p)                                            \
   (((unsigned)PAM_GETR(p) * 33023 + (unsigned)PAM_GETG(p) * 30013 +  \
     (unsigned)PAM_GETB(p) * 27011 + (unsigned)PAM_GETA(p) * 24007) % \
-   (unsigned)HASH_SIZE)
+   (unsigned)kHashSize)
 
 static bool pam_computeacolorhash(
     const RageSurface* src, int maxacolors, int* acolors_p,
@@ -529,7 +529,7 @@ static acolorhist_item* pam_acolorhashtoacolorhist(
 
   // Loop through the hash table.
   int j = 0;
-  for (unsigned i = 0; i < HASH_SIZE; ++i) {
+  for (unsigned i = 0; i < kHashSize; ++i) {
     for (acolorhist_list achl = acht.hash_[i]; achl != nullptr;
          achl = achl->next_) {
       // Add the new entry.

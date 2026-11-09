@@ -8,7 +8,7 @@
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php
  * We don't use 3-letter codes, so we don't bother supporting them. */
-static const LanguageInfo g_langs[] = {
+static const LanguageInfo kLangs[] = {
     {"aa", "Afar"},
     {"ab", "Abkhazian"},
     {"af", "Afrikaans"},
@@ -152,9 +152,9 @@ static const LanguageInfo g_langs[] = {
 };
 
 const LanguageInfo* GetLanguageInfo(const std::string& iso_code) {
-  for (unsigned i = 0; i < ARRAYLEN(g_langs); ++i) {
-    if (EqualsNoCase(iso_code, g_langs[i].iso_code_)) {
-      return &g_langs[i];
+  for (unsigned i = 0; i < ARRAYLEN(kLangs); ++i) {
+    if (EqualsNoCase(iso_code, kLangs[i].iso_code_)) {
+      return &kLangs[i];
     }
   }
 

@@ -15,19 +15,19 @@
 // an older increment command. This delay is the minimum amount of time to wait
 // between receiving an ack for an increment command and sending a new
 // increment command.
-inline constexpr float COUNTER_MINIMUM_SEND_DELAY = 0.15f;
+inline constexpr float kCounterMinimumSendDelay = 0.15f;
 
 // The longest amount of time to wait for an ack to the increment command
 // before moving on with the coin counter increment sequence.
-inline constexpr float COUNTER_MAXIMUM_RECV_DELAY = 3.0f;
+inline constexpr float kCounterMaximumRecvDelay = 3.0f;
 
 // If RTIO does not initialize within this amount of time, exit the RTIO input
 // loop to free resources.
-inline constexpr float RTIO_INIT_TIME_MAX = 10.0f;
+inline constexpr float kRtioInitTimeMax = 10.0f;
 
 // If there are this many failures, something has most likely gone very wrong,
 // so just exit the RTIO input loop.
-inline constexpr int RTIO_MAX_READ_FAILURES = 50;
+inline constexpr int kRtioMaxReadFailures = 50;
 
 REGISTER_INPUT_HANDLER_CLASS2(Rtio, Win32_RTIO);
 
@@ -174,7 +174,7 @@ void InputHandler_Win32_RTIO::InputThread() {
       read_failures++;
       LOG->Warn(
           "RTIO: HandlerLoop: Failed to read (%d failures)", read_failures);
-      if (read_failures == RTIO_MAX_READ_FAILURES) {
+      if (read_failures == kRtioMaxReadFailures) {
         return;
       }
       continue;
@@ -182,7 +182,7 @@ void InputHandler_Win32_RTIO::InputThread() {
 
     RageTimer now;
 
-    if (!initialized_ && now - start_time > RTIO_INIT_TIME_MAX) {
+    if (!initialized_ && now - start_time > kRtioInitTimeMax) {
       LOG->Warn("RTIO: Device failed to initialize; exiting input loop");
       return;
     }
@@ -222,7 +222,7 @@ void InputHandler_Win32_RTIO::InputThread() {
     if (counter_cycles_pending_ > 0) {
       switch (counter_state_) {
         case COUNTER_STATE_SEND_1:
-          if (last_counter_recv_.Ago() > COUNTER_MINIMUM_SEND_DELAY) {
+          if (last_counter_recv_.Ago() > kCounterMinimumSendDelay) {
             if (!rtio_.WriteMsg("H10")) {
               LOG->Warn("RTIO: Could not send coin counter increment (1/2)");
             }
@@ -231,7 +231,7 @@ void InputHandler_Win32_RTIO::InputThread() {
           }
           break;
         case COUNTER_STATE_SEND_2:
-          if (last_counter_recv_.Ago() > COUNTER_MINIMUM_SEND_DELAY) {
+          if (last_counter_recv_.Ago() > kCounterMinimumSendDelay) {
             if (!rtio_.WriteMsg("H00")) {
               LOG->Warn("RTIO: Could not send coin counter increment (2/2)");
             }
@@ -241,7 +241,7 @@ void InputHandler_Win32_RTIO::InputThread() {
           break;
       }
 
-      if (last_counter_send_.Ago() > COUNTER_MAXIMUM_RECV_DELAY) {
+      if (last_counter_send_.Ago() > kCounterMaximumRecvDelay) {
         switch (counter_state_) {
           case COUNTER_STATE_RECV_1:
             LOG->Warn(

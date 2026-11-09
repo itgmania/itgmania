@@ -55,7 +55,7 @@ enum Animation {
   NUM_ANIMATIONS
 };
 
-static const std::string anims[NUM_ANIMATIONS] = {
+static const std::string kAnims[NUM_ANIMATIONS] = {
     "DancePad.txt",
     "DancePads.txt",
     "BeginnerHelper_step-up.bones.txt",
@@ -65,7 +65,7 @@ static const std::string anims[NUM_ANIMATIONS] = {
     "BeginnerHelper_step-jumplr.bones.txt"};
 
 static std::string GetAnimPath(Animation a) {
-  return std::string("Characters/") + anims[a];
+  return std::string("Characters/") + kAnims[a];
 }
 
 static bool HaveAllCharAnimations() {
@@ -143,7 +143,7 @@ void ScreenHowToPlay::Init() {
   }
 
   GAMESTATE->SetCurrentStyle(
-      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID);
+      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), kPlayerInvalid);
 
   if (USE_PLAYER) {
     GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
@@ -167,7 +167,7 @@ void ScreenHowToPlay::Init() {
     }
     song_.AddAutoGenNotes();
 
-    const Style* style = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
+    const Style* style = GAMESTATE->GetCurrentStyle(kPlayerInvalid);
 
     Steps* steps = SongUtil::GetClosestNotes(
         &song_, style->steps_type_, Difficulty_Beginner);

@@ -5,7 +5,7 @@
 
 #include "StdString.h"
 
-const wchar_t FontCharmaps::M_SKIP = 0xFEFF;
+const wchar_t FontCharmaps::kMSkip = 0xFEFF;
 
 static std::map<std::string, const wchar_t*> charmaps;
 
@@ -29,11 +29,11 @@ PQRSTUVWXYZ[\]^_
 `abcdefghijklmno
 pqrstuvwxyz{|}~
  */
-static const wchar_t map_ascii[] = {
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, 0x0020, 0x0021, 0x0022, 0x0023,
+static const wchar_t kMapAscii[] = {
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, 0x0020, 0x0021, 0x0022, 0x0023,
     0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002A, 0x002B, 0x002C,
     0x002D, 0x002E, 0x002F, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035,
     0x0036, 0x0037, 0x0038, 0x0039, 0x003A, 0x003B, 0x003C, 0x003D, 0x003E,
@@ -44,7 +44,7 @@ static const wchar_t map_ascii[] = {
     0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068, 0x0069, 0x006A, 0x006B,
     0x006C, 0x006D, 0x006E, 0x006F, 0x0070, 0x0071, 0x0072, 0x0073, 0x0074,
     0x0075, 0x0076, 0x0077, 0x0078, 0x0079, 0x007A, 0x007B, 0x007C, 0x007D,
-    0x007E, M_SKIP, 0};
+    0x007E, kMSkip, 0};
 
 /*
  * ISO-8859-1 (Latin1): West Europe, US, others:
@@ -60,11 +60,11 @@ static const wchar_t map_ascii[] = {
  *
  * Non-breaking space and soft hyphen are not used.
  */
-static const wchar_t map_iso_8859_1[] = {
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, 0x0020, 0x0021, 0x0022, 0x0023,
+static const wchar_t kMapIso88591[] = {
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, 0x0020, 0x0021, 0x0022, 0x0023,
     0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002a, 0x002b, 0x002c,
     0x002d, 0x002e, 0x002f, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035,
     0x0036, 0x0037, 0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e,
@@ -75,10 +75,10 @@ static const wchar_t map_iso_8859_1[] = {
     0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068, 0x0069, 0x006a, 0x006b,
     0x006c, 0x006d, 0x006e, 0x006f, 0x0070, 0x0071, 0x0072, 0x0073, 0x0074,
     0x0075, 0x0076, 0x0077, 0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d,
-    0x007e, 0x007f, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, 0x00a0, 0x00a1,
+    0x007e, 0x007f, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, 0x00a0, 0x00a1,
     0x00a2, 0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7, 0x00a8, 0x00a9, 0x00aa,
     0x00ab, 0x00ac, 0x00ad, 0x00ae, 0x00af, 0x00b0, 0x00b1, 0x00b2, 0x00b3,
     0x00b4, 0x00b5, 0x00b6, 0x00b7, 0x00b8, 0x00b9, 0x00ba, 0x00bb, 0x00bc,
@@ -105,11 +105,11 @@ static const wchar_t map_iso_8859_1[] = {
  *
  * Non-breaking space and soft hyphen are not used.
  */
-static const wchar_t map_cp1252[] = {
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, 0x0020, 0x0021, 0x0022, 0x0023,
+static const wchar_t kMapCp1252[] = {
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, 0x0020, 0x0021, 0x0022, 0x0023,
     0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002A, 0x002B, 0x002C,
     0x002D, 0x002E, 0x002F, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035,
     0x0036, 0x0037, 0x0038, 0x0039, 0x003A, 0x003B, 0x003C, 0x003D, 0x003E,
@@ -120,10 +120,10 @@ static const wchar_t map_cp1252[] = {
     0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068, 0x0069, 0x006A, 0x006B,
     0x006C, 0x006D, 0x006E, 0x006F, 0x0070, 0x0071, 0x0072, 0x0073, 0x0074,
     0x0075, 0x0076, 0x0077, 0x0078, 0x0079, 0x007A, 0x007B, 0x007C, 0x007D,
-    0x007E, M_SKIP, 0x20AC, M_SKIP, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020,
-    0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, M_SKIP, 0x017D, M_SKIP,
-    M_SKIP, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC,
-    0x2122, 0x0161, 0x203A, 0x0153, 0x017E, M_SKIP, 0x0178, 0x00A0, 0x00A1,
+    0x007E, kMSkip, 0x20AC, kMSkip, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020,
+    0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, kMSkip, 0x017D, kMSkip,
+    kMSkip, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC,
+    0x2122, 0x0161, 0x203A, 0x0153, 0x017E, kMSkip, 0x0178, 0x00A0, 0x00A1,
     0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7, 0x00A8, 0x00A9, 0x00AA,
     0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF, 0x00B0, 0x00B1, 0x00B2, 0x00B3,
     0x00B4, 0x00B5, 0x00B6, 0x00B7, 0x00B8, 0x00B9, 0x00BA, 0x00BB, 0x00BC,
@@ -149,11 +149,11 @@ static const wchar_t map_cp1252[] = {
 đńňóôőö÷řůúűüýţ˙
  */
 
-static const wchar_t map_iso_8859_2[] = {
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP,
-    M_SKIP, M_SKIP, M_SKIP, M_SKIP, M_SKIP, 0x00A0, 0x0104, 0x02D8, 0x0141,
+static const wchar_t kMapIso88592[] = {
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, kMSkip,
+    kMSkip, kMSkip, kMSkip, kMSkip, kMSkip, 0x00A0, 0x0104, 0x02D8, 0x0141,
     0x00A4, 0x013D, 0x015A, 0x00A7, 0x00A8, 0x0160, 0x015E, 0x0164, 0x0179,
     0x00AD, 0x017D, 0x017B, 0x00B0, 0x0105, 0x02DB, 0x0142, 0x00B4, 0x013E,
     0x015B, 0x02C7, 0x00B8, 0x0161, 0x015F, 0x0165, 0x017A, 0x02DD, 0x017E,
@@ -187,7 +187,7 @@ static const wchar_t map_iso_8859_2[] = {
 ヰヱヲンヴヵヶヷヸヹヺ・ーヽヾ　
 
  */
-static const wchar_t map_basic_japanese[] = {
+static const wchar_t kMapBasicJapanese[] = {
     0x3000, 0x3001, 0x3002, 0x3003, 0x3004, 0x3005, 0x3006, 0x3007, 0x3008,
     0x3009, 0x300a, 0x300b, 0x300c, 0x300d, 0x300e, 0x300f, 0x3010, 0x3011,
     0x3012, 0x3013, 0x3014, 0x3015, 0x3016, 0x3017, 0x3018, 0x3019, 0x301a,
@@ -219,7 +219,7 @@ static const wchar_t map_basic_japanese[] = {
     0x30fc, 0x30fd, 0x30fe, 0x30ff, 0};
 
 /* Korean Jamo */
-static const wchar_t map_korean_jamo[] = {
+static const wchar_t kMapKoreanJamo[] = {
     0x1100, 0x1110, 0x1120, 0x1130, 0x1140, 0x1150, 0x1160, 0x1170, 0x1180,
     0x1190, 0x11a0, 0x11b0, 0x11c0, 0x11d0, 0x11e0, 0x11f0, 0x1101, 0x1111,
     0x1121, 0x1131, 0x1141, 0x1151, 0x1161, 0x1171, 0x1181, 0x1191, 0x11a1,
@@ -251,7 +251,7 @@ static const wchar_t map_korean_jamo[] = {
     0x11cf, 0x11df, 0x11ef, 0x11ff, 0};
 
 /* 5x3 Numbers. "01234 56789 %. :x" */
-static const wchar_t map_numbers[] = {
+static const wchar_t kMapNumbers[] = {
     0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
     0x0038, 0x0039, 0x0025, 0x002E, 0x0020, 0x003A, 0x0078, 0};
 
@@ -260,13 +260,13 @@ static void Init() {
     return;
   }
 
-  charmaps["ascii"] = map_ascii;
-  charmaps["basic-japanese"] = map_basic_japanese;
-  charmaps["iso-8859-1"] = map_iso_8859_1;
-  charmaps["cp1252"] = map_cp1252;
-  charmaps["iso-8859-2"] = map_iso_8859_2;
-  charmaps["korean-jamo"] = map_korean_jamo;
-  charmaps["numbers"] = map_numbers;
+  charmaps["ascii"] = kMapAscii;
+  charmaps["basic-japanese"] = kMapBasicJapanese;
+  charmaps["iso-8859-1"] = kMapIso88591;
+  charmaps["cp1252"] = kMapCp1252;
+  charmaps["iso-8859-2"] = kMapIso88592;
+  charmaps["korean-jamo"] = kMapKoreanJamo;
+  charmaps["numbers"] = kMapNumbers;
 }
 
 const wchar_t* FontCharmaps::get_char_map(std::string name) {

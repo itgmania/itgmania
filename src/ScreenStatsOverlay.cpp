@@ -37,21 +37,21 @@ void ScreenStatsOverlay::Init() {
 
     RectF rect_skips = RectF(
         SKIP_X - SKIP_WIDTH / 2,
-        SKIP_Y - (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 - 10,
+        SKIP_Y - (SKIP_SPACING_Y * kNumSkipsToShow) / 2 - 10,
         SKIP_X + SKIP_WIDTH / 2,
-        SKIP_Y + (SKIP_SPACING_Y * NUM_SKIPS_TO_SHOW) / 2 + 10);
+        SKIP_Y + (SKIP_SPACING_Y * kNumSkipsToShow) / 2 + 10);
     quad_skip_background_.StretchTo(rect_skips);
     quad_skip_background_.SetDiffuse(RageColor(0, 0, 0, 0.4f));
     this->AddChild(&quad_skip_background_);
 
-    for (int i = 0; i < NUM_SKIPS_TO_SHOW; i++) {
+    for (int i = 0; i < kNumSkipsToShow; i++) {
       /* This is somewhat big.  Let's put it on the right side, where it'll
        * obscure the 2P side during gameplay; there's nowhere to put it that
        * doesn't obscure something, and it's just a diagnostic. */
       text_skips_[i].LoadFromFont(THEME->GetPathF("Common", "normal"));
       text_skips_[i].SetX(SKIP_X);
       text_skips_[i].SetY(SCALE(
-          i, 0, NUM_SKIPS_TO_SHOW - 1, rect_skips.top_ + 10,
+          i, 0, kNumSkipsToShow - 1, rect_skips.top_ + 10,
           rect_skips.bottom_ - 10));
       text_skips_[i].SetDiffuse(RageColor(1, 1, 1, 0));
       text_skips_[i].SetShadowLength(0);
@@ -95,7 +95,7 @@ void ScreenStatsOverlay::AddTimestampLine(
   text_skips_[last_skip_].SetDiffuse(RageColor(1, 1, 1, 0));
 
   last_skip_++;
-  last_skip_ %= NUM_SKIPS_TO_SHOW;
+  last_skip_ %= kNumSkipsToShow;
 }
 
 void ScreenStatsOverlay::UpdateSkips() {

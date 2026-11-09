@@ -23,17 +23,17 @@
 RageInput* INPUTMAN =
     nullptr;  // global and accessible from anywhere in our program
 
-Preference<std::string> g_sInputDrivers(
+Preference<std::string> input_drivers(
     "InputDrivers", "");  // "" == DEFAULT_INPUT_DRIVER_LIST
-Preference<std::string> g_sInputDeviceOrder(
+Preference<std::string> input_device_order(
     "InputDeviceOrder", "");  // "" == DEFAULT_LINUX_INPUT_DEVICE_ORDER_LIST
 
 namespace {
 struct LoadedInputHandler {
   InputHandler* device_;
 };
-std::vector<LoadedInputHandler> m_InputHandlers;
-std::map<InputDevice, InputHandler*> g_mapDeviceToHandler;
+std::vector<LoadedInputHandler> input_handlers;
+std::map<InputDevice, InputHandler*> map_device_to_handler;
 }  // namespace
 
 RageInput::RageInput() {
@@ -53,11 +53,11 @@ RageInput::RageInput() {
 
 RageInput::~RageInput() {
   // Delete optional devices.
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    delete m_InputHandlers[i].device_;
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    delete input_handlers[i].device_;
   }
-  m_InputHandlers.clear();
-  g_mapDeviceToHandler.clear();
+  input_handlers.clear();
+  map_device_to_handler.clear();
 
   // Unregister with Lua.
   LUA->UnsetGlobal("INPUTMAN");
@@ -66,11 +66,11 @@ RageInput::~RageInput() {
 static LocalizedString NO_INPUT_DEVICES_LOADED(
     "RageInput", "No input devices were loaded.");
 void RageInput::LoadDrivers() {
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    delete m_InputHandlers[i].device_;
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    delete input_handlers[i].device_;
   }
-  m_InputHandlers.clear();
-  g_mapDeviceToHandler.clear();
+  input_handlers.clear();
+  map_device_to_handler.clear();
 
 #if LINUX
   // Recreating this forces it to re-scan for devices.
@@ -83,7 +83,7 @@ void RageInput::LoadDrivers() {
   // Init optional devices.
   std::vector<InputHandler*> devices;
 
-  InputHandler::Create(g_sInputDrivers, devices);
+  InputHandler::Create(input_drivers, devices);
   for (unsigned i = 0; i < devices.size(); ++i) {
     AddHandler(devices[i]);
   }
@@ -96,15 +96,15 @@ void RageInput::LoadDrivers() {
 
 void RageInput::Update() {
   // Update optional devices.
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].device_->Update();
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    input_handlers[i].device_->Update();
   }
 }
 
 bool RageInput::DevicesChanged() {
   // Update optional devices.
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    if (m_InputHandlers[i].device_->DevicesChanged()) {
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    if (input_handlers[i].device_->DevicesChanged()) {
       return true;
     }
   }
@@ -113,14 +113,14 @@ bool RageInput::DevicesChanged() {
 
 void RageInput::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& devices_out) const {
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].device_->GetDevicesAndDescriptions(devices_out);
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    input_handlers[i].device_->GetDevicesAndDescriptions(devices_out);
   }
 }
 
 void RageInput::WindowReset() {
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].device_->WindowReset();
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    input_handlers[i].device_->WindowReset();
   }
 }
 
@@ -129,20 +129,20 @@ void RageInput::AddHandler(InputHandler* handler) {
 
   LoadedInputHandler hand;
   hand.device_ = handler;
-  m_InputHandlers.push_back(hand);
+  input_handlers.push_back(hand);
 
   std::vector<InputDeviceInfo> device_info;
   hand.device_->GetDevicesAndDescriptions(device_info);
   for (const InputDeviceInfo& idi : device_info) {
-    g_mapDeviceToHandler[idi.id_] = handler;
+    map_device_to_handler[idi.id_] = handler;
   }
 }
 
 /** @brief Return the first InputDriver for the requested InputDevice. */
 InputHandler* RageInput::GetHandlerForDevice(const InputDevice id) {
   std::map<InputDevice, InputHandler*>::iterator it =
-      g_mapDeviceToHandler.find(id);
-  if (it == g_mapDeviceToHandler.end()) {
+      map_device_to_handler.find(id);
+  if (it == map_device_to_handler.end()) {
     return nullptr;
   }
   return it->second;
@@ -194,13 +194,13 @@ std::string RageInput::GetDisplayDevicesString() const {
 }
 
 void RageInput::StartSensorTest() {
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].device_->StartSensorDebugging();
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    input_handlers[i].device_->StartSensorDebugging();
   }
 }
 void RageInput::StopSensorTest() {
-  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
-    m_InputHandlers[i].device_->StopSensorDebugging();
+  for (unsigned i = 0; i < input_handlers.size(); ++i) {
+    input_handlers[i].device_->StopSensorDebugging();
   }
 }
 

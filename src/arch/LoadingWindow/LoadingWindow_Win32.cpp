@@ -24,7 +24,7 @@
 #include "archutils/win32/WindowsResources.h"
 #include "global.h"
 
-static HBITMAP g_hBitmap = nullptr;
+static HBITMAP g_bitmap = nullptr;
 
 /* Load a RageSurface into a GDI surface. */
 static HBITMAP LoadWin32Surface(const RageSurface* splash, HWND hwnd) {
@@ -94,21 +94,21 @@ INT_PTR CALLBACK LoadingWindow_Win32::WndProc(
       std::vector<std::string> vs;
       GetDirListing("Data/splash*.png", vs, false, true);
       if (!vs.empty()) {
-        g_hBitmap = LoadWin32Surface(vs[0], hwnd);
+        g_bitmap = LoadWin32Surface(vs[0], hwnd);
       }
     }
-      if (g_hBitmap == nullptr) {
-        g_hBitmap = LoadWin32Surface("Data/splash.bmp", hwnd);
+      if (g_bitmap == nullptr) {
+        g_bitmap = LoadWin32Surface("Data/splash.bmp", hwnd);
       }
       SendMessage(
           GetDlgItem(hwnd, IDC_SPLASH), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP,
-          (LPARAM)(HANDLE)g_hBitmap);
+          (LPARAM)(HANDLE)g_bitmap);
       SetWindowTextA(hwnd, PRODUCT_ID);
       break;
 
     case WM_DESTROY:
-      DeleteObject(g_hBitmap);
-      g_hBitmap = nullptr;
+      DeleteObject(g_bitmap);
+      g_bitmap = nullptr;
       break;
   }
 
@@ -127,16 +127,16 @@ void LoadingWindow_Win32::SetIcon(const RageSurface* icon) {
 }
 
 void LoadingWindow_Win32::SetSplash(const RageSurface* splash) {
-  if (g_hBitmap != nullptr) {
-    DeleteObject(g_hBitmap);
-    g_hBitmap = nullptr;
+  if (g_bitmap != nullptr) {
+    DeleteObject(g_bitmap);
+    g_bitmap = nullptr;
   }
 
-  g_hBitmap = LoadWin32Surface(splash, hwnd_);
-  if (g_hBitmap != nullptr) {
+  g_bitmap = LoadWin32Surface(splash, hwnd_);
+  if (g_bitmap != nullptr) {
     SendDlgItemMessage(
         hwnd_, IDC_SPLASH, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP,
-        (LPARAM)(HANDLE)g_hBitmap);
+        (LPARAM)(HANDLE)g_bitmap);
   }
 }
 

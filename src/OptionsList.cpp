@@ -34,7 +34,7 @@
 #define DIRECT_LINES THEME->GetMetric(name_, "DirectLines")
 #define TOP_MENUS THEME->GetMetric(name_, "TopMenus")
 
-static const std::string RESET_ROW = "ResetOptions";
+static const std::string kResetRow = "ResetOptions";
 
 void OptionListRow::Load(OptionsList* options, const std::string& type) {
   options_ = options;
@@ -527,7 +527,7 @@ void OptionsList::TweenOnCurrentRow(bool forward) {
 }
 
 void OptionsList::ImportRow(std::string row) {
-  std::vector<bool> selections[NUM_PLAYERS];
+  std::vector<bool> selections[kNumPlayers];
   std::vector<PlayerNumber> vpns;
   vpns.push_back(pn_);
   OptionRowHandler* handler = rows_[row];
@@ -545,7 +545,7 @@ void OptionsList::ExportRow(std::string row) {
     return;
   }
 
-  std::vector<bool> selections[NUM_PLAYERS];
+  std::vector<bool> selections[kNumPlayers];
   selections[pn_] = selections_[row];
 
   std::vector<PlayerNumber> vpns;
@@ -674,7 +674,7 @@ bool OptionsList::Start() {
     std::string icon_text;
     GameCommand gc;
     handler->GetIconTextAndGameCommand(menu_stack_selection_, icon_text, gc);
-    if (gc.name_ == RESET_ROW) {
+    if (gc.name_ == kResetRow) {
       GAMESTATE->player_state_[pn_]->ResetToDefaultPlayerOptions(
           ModsLevel_Preferred);
       GAMESTATE->ResetToDefaultSongOptions(ModsLevel_Preferred);

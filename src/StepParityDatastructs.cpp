@@ -111,10 +111,10 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
   // If column >= columns.size(), we've reached the end of the row.
   // Perform some final validation before returning the contents of test_columns
   if (column >= test_columns.size()) {
-    int left_heel_index = StepParity::INVALID_COLUMN;
-    int left_toe_index = StepParity::INVALID_COLUMN;
-    int right_heel_index = StepParity::INVALID_COLUMN;
-    int right_toe_index = StepParity::INVALID_COLUMN;
+    int left_heel_index = StepParity::kInvalidColumn;
+    int left_toe_index = StepParity::kInvalidColumn;
+    int right_heel_index = StepParity::kInvalidColumn;
+    int right_toe_index = StepParity::kInvalidColumn;
 
     for (unsigned long i = 0; i < test_columns.size(); i++) {
       if (test_columns[i] == Foot_None) {
@@ -138,20 +138,20 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
     // - We don't want permutations where the toe is on an arrow, but not the
     // heel
     // - We don't want impossible brackets (eg you can't bracket up and down)
-    if ((left_heel_index == StepParity::INVALID_COLUMN &&
-         left_toe_index != StepParity::INVALID_COLUMN) ||
-        (right_heel_index == StepParity::INVALID_COLUMN &&
-         right_toe_index != StepParity::INVALID_COLUMN)) {
+    if ((left_heel_index == StepParity::kInvalidColumn &&
+         left_toe_index != StepParity::kInvalidColumn) ||
+        (right_heel_index == StepParity::kInvalidColumn &&
+         right_toe_index != StepParity::kInvalidColumn)) {
       return std::vector<FootPlacement>();
     }
-    if (left_heel_index != StepParity::INVALID_COLUMN &&
-        left_toe_index != StepParity::INVALID_COLUMN) {
+    if (left_heel_index != StepParity::kInvalidColumn &&
+        left_toe_index != StepParity::kInvalidColumn) {
       if (!bracketCheck(left_heel_index, left_toe_index)) {
         return std::vector<FootPlacement>();
       }
     }
-    if (right_heel_index != StepParity::INVALID_COLUMN &&
-        right_toe_index != StepParity::INVALID_COLUMN) {
+    if (right_heel_index != StepParity::kInvalidColumn &&
+        right_toe_index != StepParity::kInvalidColumn) {
       if (!bracketCheck(right_heel_index, right_toe_index)) {
         return std::vector<FootPlacement>();
       }
@@ -173,7 +173,7 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
   bool active = (mask & (0x1 << column)) != 0;
 
   if (active) {
-    for (StepParity::Foot foot : FEET) {
+    for (StepParity::Foot foot : kFeet) {
       if (std::find(test_columns.begin(), test_columns.end(), foot) !=
           test_columns.end()) {
         continue;

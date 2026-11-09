@@ -26,7 +26,7 @@
 
 bool child_read(int fd, void* p, int size);
 
-const char* g_pCrashHandlerArgv0 = nullptr;
+const char* crash_handler_argv0 = nullptr;
 
 static void output_stack_trace(FILE* out, const void** backtrace_pointers) {
   if (backtrace_pointers[0] == BACKTRACE_METHOD_NOT_AVAILABLE) {
@@ -45,7 +45,7 @@ static void output_stack_trace(FILE* out, const void** backtrace_pointers) {
     bn.Demangle();
 
     /* Don't show the main module name. */
-    if (bn.file_ == g_pCrashHandlerArgv0 && !bn.symbol_.empty()) {
+    if (bn.file_ == crash_handler_argv0 && !bn.symbol_.empty()) {
       bn.file_ = "";
     }
 
@@ -205,10 +205,10 @@ static void child_process() {
     exit(1);
   }
 
-  fprintf(crash_dump, "%s%s crash report", PRODUCT_FAMILY, product_version);
+  fprintf(crash_dump, "%s%s crash report", PRODUCT_FAMILY, kProductVersion);
   fprintf(
-      crash_dump, " (build %s, %s @ %s)", ::sm_version_git_hash, version_date,
-      version_time);
+      crash_dump, " (build %s, %s @ %s)", ::kSmVersionGitHash, kVersionDate,
+      kVersionTime);
   fprintf(crash_dump, "\n");
   fprintf(crash_dump, "--------------------------------------\n");
   fprintf(crash_dump, "\n");
@@ -300,7 +300,7 @@ static void child_process() {
 }
 
 void CrashHandler::CrashHandlerHandleArgs(int argc, char* argv[]) {
-  g_pCrashHandlerArgv0 = argv[0];
+  crash_handler_argv0 = argv[0];
   if (argc == 2 && !strcmp(argv[1], CHILD_MAGIC_PARAMETER)) {
     child_process();
     exit(0);

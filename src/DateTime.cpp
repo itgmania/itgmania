@@ -144,21 +144,21 @@ bool DateTime::FromString(const std::string date_time) {
   return true;
 }
 
-static const std::string LAST_DAYS_NAME[NUM_LAST_DAYS] = {
+static const std::string kLastDaysName[kNumLastDays] = {
     "Today", "Yesterday", "Day2Ago", "Day3Ago", "Day4Ago", "Day5Ago", "Day6Ago",
 };
 
 std::string LastDayToString(int last_day_index) {
-  return LAST_DAYS_NAME[last_day_index];
+  return kLastDaysName[last_day_index];
 }
 
-static const char* DAY_OF_WEEK_TO_NAME[DAYS_IN_WEEK] = {
+static const char* day_of_week_to_name[kDaysInWeek] = {
     "Sunday",   "Monday", "Tuesday",  "Wednesday",
     "Thursday", "Friday", "Saturday",
 };
 
 std::string DayOfWeekToString(int day_of_week_index) {
-  return DAY_OF_WEEK_TO_NAME[day_of_week_index];
+  return day_of_week_to_name[day_of_week_index];
 }
 
 std::string HourInDayToString(int hour_in_day_index) {
@@ -250,12 +250,12 @@ tm GetYesterday(tm start) { return AddDays(start, -1); }
 
 int GetDayOfWeek(tm time) {
   int day_of_week = time.tm_wday;
-  ASSERT(day_of_week < DAYS_IN_WEEK);
+  ASSERT(day_of_week < kDaysInWeek);
   return day_of_week;
 }
 
 tm GetNextSunday(tm start) {
-  return AddDays(start, DAYS_IN_WEEK - GetDayOfWeek(start));
+  return AddDays(start, kDaysInWeek - GetDayOfWeek(start));
 }
 
 tm GetDayInYearAndYear(int day_in_year_index, int year) {

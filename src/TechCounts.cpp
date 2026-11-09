@@ -13,13 +13,13 @@
 
 // 0.176 ~= 1/8th at 175bpm
 // Anything slower isn't counted as a jack
-constexpr float JACK_CUTOFF = 0.176f;
+constexpr float kJackCutoff = 0.176f;
 // 0.3 = 1/4th at 200bpm (or 3/16th at 150bpm)
 // Anything slower isn't counted as a footswitch
-constexpr float FOOTSWITCH_CUTOFF = 0.3f;
+constexpr float kFootswitchCutoff = 0.3f;
 // 0.235 ~= 1/8th at 128bpm
 // Anything slower isn't counted as a doublestep
-constexpr float DOUBLESTEP_CUTOFF = 0.235f;
+constexpr float kDoublestepCutoff = 0.235f;
 
 // TechCounts methods
 TechCounts::TechCounts() { MakeUnknown(); }
@@ -47,17 +47,17 @@ void TechCounts::CalculateTechCountsFromRows(
     // Check for brackets
     if (current_row.note_count_ >= 2) {
       if (current_row.where_the_feet_are_[StepParity::Foot_LeftHeel] !=
-              StepParity::INVALID_COLUMN &&
+              StepParity::kInvalidColumn &&
           current_row.where_the_feet_are_[StepParity::Foot_LeftToe] !=
-              StepParity::INVALID_COLUMN) {
+              StepParity::kInvalidColumn) {
         out[TechCountsCategory_Brackets] += 1;
         annotation.tech_.push_back(TechCountsCategory_Brackets);
       }
 
       if (current_row.where_the_feet_are_[StepParity::Foot_RightHeel] !=
-              StepParity::INVALID_COLUMN &&
+              StepParity::kInvalidColumn &&
           current_row.where_the_feet_are_[StepParity::Foot_RightToe] !=
-              StepParity::INVALID_COLUMN) {
+              StepParity::kInvalidColumn) {
         out[TechCountsCategory_Brackets] += 1;
         annotation.tech_.push_back(TechCountsCategory_Brackets);
       }
@@ -83,22 +83,22 @@ void TechCounts::CalculateTechCountsFromRows(
 
     // Check for jacks and doublesteps
     if (current_row.note_count_ == 1 && previous_row.note_count_ == 1) {
-      for (StepParity::Foot foot : StepParity::FEET) {
+      for (StepParity::Foot foot : StepParity::kFeet) {
         if (current_row.where_the_feet_are_[foot] ==
-                StepParity::INVALID_COLUMN ||
+                StepParity::kInvalidColumn ||
             previous_row.where_the_feet_are_[foot] ==
-                StepParity::INVALID_COLUMN) {
+                StepParity::kInvalidColumn) {
           continue;
         }
 
         if (previous_row.where_the_feet_are_[foot] ==
             current_row.where_the_feet_are_[foot]) {
-          if (elapsed_time < JACK_CUTOFF) {
+          if (elapsed_time < kJackCutoff) {
             out[TechCountsCategory_Jacks] += 1;
             annotation.tech_.push_back(TechCountsCategory_Jacks);
           }
         } else {
-          if (elapsed_time < DOUBLESTEP_CUTOFF) {
+          if (elapsed_time < kDoublestepCutoff) {
             out[TechCountsCategory_Doublesteps] += 1;
             annotation.tech_.push_back(TechCountsCategory_Doublesteps);
           }
@@ -161,9 +161,9 @@ void TechCounts::CalculateTechCountsFromRows(
     //     foot)
     //     - otherwise, then this was probably a half crossover (like UDL,
     //     starting on right foot)
-    if (right_heel != StepParity::INVALID_COLUMN &&
-        previous_left_heel != StepParity::INVALID_COLUMN &&
-        previous_right_heel == StepParity::INVALID_COLUMN) {
+    if (right_heel != StepParity::kInvalidColumn &&
+        previous_left_heel != StepParity::kInvalidColumn &&
+        previous_right_heel == StepParity::kInvalidColumn) {
       StepParity::StagePoint left_pos =
           layout->averagePoint(previous_left_heel, previous_left_toe);
       StepParity::StagePoint right_pos =
@@ -176,7 +176,7 @@ void TechCounts::CalculateTechCountsFromRows(
               previous_previous_row
                   .where_the_feet_are_[StepParity::Foot_RightHeel];
 
-          if (previous_previous_right_heel != StepParity::INVALID_COLUMN &&
+          if (previous_previous_right_heel != StepParity::kInvalidColumn &&
               previous_previous_right_heel != right_heel) {
             StepParity::StagePoint previous_previous_right_pos =
                 layout->columns_[previous_previous_right_heel];
@@ -200,9 +200,9 @@ void TechCounts::CalculateTechCountsFromRows(
     }
     // And check the same thing, starting with left foot
     else if (
-        left_heel != StepParity::INVALID_COLUMN &&
-        previous_right_heel != StepParity::INVALID_COLUMN &&
-        previous_left_heel == StepParity::INVALID_COLUMN) {
+        left_heel != StepParity::kInvalidColumn &&
+        previous_right_heel != StepParity::kInvalidColumn &&
+        previous_left_heel == StepParity::kInvalidColumn) {
       StepParity::StagePoint left_pos =
           layout->averagePoint(left_heel, left_toe);
       StepParity::StagePoint right_pos =
@@ -214,7 +214,7 @@ void TechCounts::CalculateTechCountsFromRows(
           int previous_previous_left_heel =
               previous_previous_row
                   .where_the_feet_are_[StepParity::Foot_LeftHeel];
-          if (previous_previous_left_heel != StepParity::INVALID_COLUMN &&
+          if (previous_previous_left_heel != StepParity::kInvalidColumn &&
               previous_previous_left_heel != left_heel) {
             StepParity::StagePoint previous_previous_left_pos =
                 layout->columns_[previous_previous_left_heel];
@@ -249,9 +249,9 @@ bool TechCounts::isFootswitch(
   }
 
   if (previous_row.columns_[c] != current_row.columns_[c] &&
-      StepParity::OTHER_PART_OF_FOOT[previous_row.columns_[c]] !=
+      StepParity::kOtherPartOfFoot[previous_row.columns_[c]] !=
           current_row.columns_[c] &&
-      elapsed_time < FOOTSWITCH_CUTOFF) {
+      elapsed_time < kFootswitchCutoff) {
     return true;
   }
   return false;

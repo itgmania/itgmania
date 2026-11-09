@@ -31,23 +31,23 @@ XToString(PromptAnswer);
 
 // Settings:
 namespace {
-std::string g_sText;
-PromptType g_PromptType;
-PromptAnswer g_defaultAnswer;
-void (*g_pOnYes)(void*);
-void (*g_pOnNo)(void*);
-void* g_pCallbackData;
+std::string g_text;
+PromptType prompt_type;
+PromptAnswer g_default_answer;
+void (*g_on_yes)(void*);
+void (*g_on_no)(void*);
+void* g_callback_data;
 };  // namespace
 
 void ScreenPrompt::SetPromptSettings(
     const std::string& text, PromptType type, PromptAnswer default_answer,
     void (*on_yes)(void*), void (*on_no)(void*), void* callback_data) {
-  g_sText = text;
-  g_PromptType = type;
-  g_defaultAnswer = default_answer;
-  g_pOnYes = on_yes;
-  g_pOnNo = on_no;
-  g_pCallbackData = callback_data;
+  g_text = text;
+  prompt_type = type;
+  g_default_answer = default_answer;
+  g_on_yes = on_yes;
+  g_on_no = on_no;
+  g_callback_data = callback_data;
 }
 
 void ScreenPrompt::Prompt(
@@ -91,24 +91,24 @@ void ScreenPrompt::Init() {
 void ScreenPrompt::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 
-  answer_ = g_defaultAnswer;
-  enum_clamp(answer_, PromptAnswer(0), PromptAnswer(g_PromptType));
+  answer_ = g_default_answer;
+  enum_clamp(answer_, PromptAnswer(0), PromptAnswer(prompt_type));
 
-  text_question_.SetText(g_sText);
+  text_question_.SetText(g_text);
   SET_XY(text_question_);
   text_question_.PlayCommand("On");
 
   spr_cursor_->PlayCommand("On");
 
-  for (int i = 0; i <= g_PromptType; i++) {
-    std::string elem = ssprintf("Answer%dOf%d", i + 1, g_PromptType + 1);
+  for (int i = 0; i <= prompt_type; i++) {
+    std::string elem = ssprintf("Answer%dOf%d", i + 1, prompt_type + 1);
     text_answer_[i].SetName(elem);
     LOAD_ALL_COMMANDS(text_answer_[i]);
     // Side note:  Because LOAD_ALL_COMMANDS occurs here, InitCommand will
     // not be run for the actors.  People can just use OnCommand instead.
     std::string answer = PromptAnswerToString((PromptAnswer)i);
     // FRAGILE
-    if (g_PromptType == PROMPT_OK) {
+    if (prompt_type == PROMPT_OK) {
       answer = "OK";
     }
 
@@ -117,7 +117,7 @@ void ScreenPrompt::BeginScreen() {
     SET_XY(text_answer_[i]);
   }
 
-  for (int i = g_PromptType + 1; i < NUM_PromptAnswer; i++) {
+  for (int i = prompt_type + 1; i < NUM_PromptAnswer; i++) {
     text_answer_[i].SetText("");
   }
 
@@ -148,7 +148,7 @@ bool ScreenPrompt::Input(const InputEventPlus& input) {
 }
 
 bool ScreenPrompt::CanGoRight() {
-  switch (g_PromptType) {
+  switch (prompt_type) {
     case PROMPT_OK:
       return false;
     case PROMPT_YES_NO:
@@ -156,7 +156,7 @@ bool ScreenPrompt::CanGoRight() {
     case PROMPT_YES_NO_CANCEL:
       return answer_ < ANSWER_CANCEL;
     default:
-      FAIL_M(ssprintf("Invalid PromptType: %i", g_PromptType));
+      FAIL_M(ssprintf("Invalid PromptType: %i", prompt_type));
   }
 }
 
@@ -200,7 +200,7 @@ bool ScreenPrompt::MenuBack(const InputEventPlus& input) {
     return false;
   }
 
-  switch (g_PromptType) {
+  switch (prompt_type) {
     case PROMPT_OK:
     case PROMPT_YES_NO:
       // don't allow cancel
@@ -233,13 +233,13 @@ void ScreenPrompt::End(bool cancelled) {
 
   switch (answer_) {
     case ANSWER_YES:
-      if (g_pOnYes) {
-        g_pOnYes(g_pCallbackData);
+      if (g_on_yes) {
+        g_on_yes(g_callback_data);
       }
       break;
     case ANSWER_NO:
-      if (g_pOnNo) {
-        g_pOnNo(g_pCallbackData);
+      if (g_on_no) {
+        g_on_no(g_callback_data);
       }
       break;
     default:
@@ -258,7 +258,7 @@ void ScreenPrompt::PositionCursor() {
 void ScreenPrompt::TweenOffScreen() {
   text_question_.PlayCommand("Off");
   spr_cursor_->PlayCommand("Off");
-  for (int i = 0; i <= g_PromptType; i++) {
+  for (int i = 0; i <= prompt_type; i++) {
     text_answer_[i].PlayCommand("Off");
   }
 

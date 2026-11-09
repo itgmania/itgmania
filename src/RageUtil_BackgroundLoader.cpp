@@ -17,13 +17,13 @@
  * cache.  This helps in Windows, where even reading directory entries off of a
  * CD--even if they've just been read--can cause long delays if the disk is in
  * use. */
-static const bool g_bWriteToCache = true;
+static const bool kWriteToCache = true;
 
-static const bool g_bEnableBackgroundLoading = false;
+static const bool kEnableBackgroundLoading = false;
 
 BackgroundLoader::BackgroundLoader()
     : start_sem_("BackgroundLoaderSem"), mutex_("BackgroundLoaderMutex") {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return;
   }
 
@@ -47,7 +47,7 @@ static void DeleteEmptyDirectories(std::string dir) {
 }
 
 BackgroundLoader::~BackgroundLoader() {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return;
   }
 
@@ -70,7 +70,7 @@ BackgroundLoader::~BackgroundLoader() {
 
 /* Pull a request out of m_CacheRequests. */
 std::string BackgroundLoader::GetRequest() {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return std::string();
   }
 
@@ -126,7 +126,7 @@ void BackgroundLoader::LoadThread() {
       /* If we're writing to a file cache ... */
       RageFile dst;
 
-      bool write_to_cache = g_bWriteToCache;
+      bool write_to_cache = kWriteToCache;
       if (write_to_cache) {
         write_to_cache = dst.Open(cache_path, RageFile::WRITE);
       }
@@ -165,7 +165,7 @@ void BackgroundLoader::LoadThread() {
 }
 
 void BackgroundLoader::CacheFile(const std::string& file) {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return;
   }
 
@@ -180,7 +180,7 @@ void BackgroundLoader::CacheFile(const std::string& file) {
 
 bool BackgroundLoader::IsCacheFileFinished(
     const std::string& file, std::string& actual_path) {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     actual_path = file;
     return true;
   }
@@ -199,7 +199,7 @@ bool BackgroundLoader::IsCacheFileFinished(
   }
 
   LOG->Trace("XXX: %s finished (%i)", file.c_str(), it->second);
-  if (g_bWriteToCache) {
+  if (kWriteToCache) {
     actual_path = GetCachePath(file);
   } else {
     actual_path = file;
@@ -209,7 +209,7 @@ bool BackgroundLoader::IsCacheFileFinished(
 }
 
 void BackgroundLoader::FinishedWithCachedFile(std::string file) {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return;
   }
 
@@ -230,7 +230,7 @@ void BackgroundLoader::FinishedWithCachedFile(std::string file) {
 }
 
 void BackgroundLoader::Abort() {
-  if (!g_bEnableBackgroundLoading) {
+  if (!kEnableBackgroundLoading) {
     return;
   }
 

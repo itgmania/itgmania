@@ -28,10 +28,10 @@
 #include "TitleSubstitution.h"
 
 /** @brief Edit courses can only be so big before they are rejected. */
-const int MAX_EDIT_COURSE_SIZE_BYTES = 32 * 1024;  // 32KB
+const int kMaxEditCourseSizeBytes = 32 * 1024;  // 32KB
 
 /** @brief The list of difficulty names for courses. */
-const char* g_CRSDifficultyNames[] = {
+const char* crs_difficulty_names[] = {
     "Beginner", "Easy", "Regular", "Difficult", "Challenge", "Edit",
 };
 
@@ -62,7 +62,7 @@ void split_minding_escaped_delims(
  */
 static CourseDifficulty CRSStringToDifficulty(const std::string& s) {
   FOREACH_ENUM(Difficulty, i)
-  if (!CompareNoCase(s, g_CRSDifficultyNames[i])) {
+  if (!CompareNoCase(s, crs_difficulty_names[i])) {
     return i;
   }
   return Difficulty_Invalid;
@@ -286,7 +286,7 @@ bool CourseLoaderCRS::LoadEditFromFile(
   LOG->Trace("CourseLoaderCRS::LoadEdit(%s)", edit_file_path.c_str());
 
   int bytes = FILEMAN->GetFileSizeInBytes(edit_file_path);
-  if (bytes > MAX_EDIT_COURSE_SIZE_BYTES) {
+  if (bytes > kMaxEditCourseSizeBytes) {
     LOG->UserLog(
         "Edit file", edit_file_path,
         "is unreasonably large. It won't be loaded.");

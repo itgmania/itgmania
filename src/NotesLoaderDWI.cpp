@@ -226,7 +226,7 @@ static bool Is192(const std::string& step_data, size_t pos) {
   return false;
 }
 /** @brief All DWI files use 4 beats per measure. */
-const int BEATS_PER_MEASURE = 4;
+const int kBeatsPerMeasure = 4;
 
 /* We prefer the normal names; recognize a number of others, too. (They'll get
  * normalized when written to SMs, etc.) */
@@ -352,23 +352,23 @@ static NoteData ParseNoteData(
     Replace(step_data, " ", "");
 
     double current_beat = 0;
-    double current_incrementer = 1.0 / 8 * BEATS_PER_MEASURE;
+    double current_incrementer = 1.0 / 8 * kBeatsPerMeasure;
 
     for (size_t i = 0; i < step_data.size();) {
       char c = step_data[i++];
       switch (c) {
           // begins a series
         case '(':
-          current_incrementer = 1.0 / 16 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 16 * kBeatsPerMeasure;
           break;
         case '[':
-          current_incrementer = 1.0 / 24 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 24 * kBeatsPerMeasure;
           break;
         case '{':
-          current_incrementer = 1.0 / 64 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 64 * kBeatsPerMeasure;
           break;
         case '`':
-          current_incrementer = 1.0 / 192 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 192 * kBeatsPerMeasure;
           break;
 
           // ends a series
@@ -377,7 +377,7 @@ static NoteData ParseNoteData(
         case '}':
         case '\'':
         case '>':
-          current_incrementer = 1.0 / 8 * BEATS_PER_MEASURE;
+          current_incrementer = 1.0 / 8 * kBeatsPerMeasure;
           break;
 
         default:  // this is a note character
@@ -392,7 +392,7 @@ static NoteData ParseNoteData(
           if (c == '<') {
             /* Arr.  Is this a jump or a 1/192 marker? */
             if (Is192(step_data, i)) {
-              current_incrementer = 1.0 / 192 * BEATS_PER_MEASURE;
+              current_incrementer = 1.0 / 192 * kBeatsPerMeasure;
               break;
             }
 
@@ -417,10 +417,10 @@ static NoteData ParseNoteData(
                 map_dance_note_to_note_data_column);
 
             if (col1 != -1) {
-              new_note_data.SetTapNote(col1, index, TAP_ORIGINAL_TAP);
+              new_note_data.SetTapNote(col1, index, tap_original_tap);
             }
             if (col2 != -1) {
-              new_note_data.SetTapNote(col2, index, TAP_ORIGINAL_TAP);
+              new_note_data.SetTapNote(col2, index, tap_original_tap);
             }
 
             if (i >= step_data.length()) {
@@ -438,10 +438,10 @@ static NoteData ParseNoteData(
                   map_dance_note_to_note_data_column);
 
               if (col1 != -1) {
-                new_note_data.SetTapNote(col1, index, TAP_ORIGINAL_HOLD_HEAD);
+                new_note_data.SetTapNote(col1, index, tap_original_hold_head);
               }
               if (col2 != -1) {
-                new_note_data.SetTapNote(col2, index, TAP_ORIGINAL_HOLD_HEAD);
+                new_note_data.SetTapNote(col2, index, tap_original_hold_head);
               }
             }
 
@@ -471,7 +471,7 @@ static NoteData ParseNoteData(
           continue;
         }
 
-        new_note_data.SetTapNote(t, tail_row, TAP_EMPTY);
+        new_note_data.SetTapNote(t, tail_row, tap_empty);
         tn.duration_ = tail_row - head_row;
         new_note_data.SetTapNote(t, head_row, tn);
         found = true;
@@ -484,7 +484,7 @@ static NoteData ParseNoteData(
             "failed to close a hold note in \"%s\" on track %i",
             DifficultyToString(out.GetDifficulty()).c_str(), t);
 
-        new_note_data.SetTapNote(t, head_row, TAP_EMPTY);
+        new_note_data.SetTapNote(t, head_row, tap_empty);
       }
     }
   }

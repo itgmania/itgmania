@@ -107,7 +107,7 @@ static const char* LookupException(DWORD code) {
   return nullptr;
 }
 
-static CrashInfo g_CrashInfo;
+static CrashInfo crash_info;
 static void GetReason(const EXCEPTION_RECORD* record, CrashInfo* crash) {
   // fill out bomb reason
   const char* reason = LookupException(record->ExceptionCode);
@@ -121,8 +121,8 @@ static void GetReason(const EXCEPTION_RECORD* record, CrashInfo* crash) {
   }
 }
 
-static HWND g_hForegroundWnd = nullptr;
-void CrashHandler::SetForegroundWindow(HWND wnd) { g_hForegroundWnd = wnd; }
+static HWND foreground_wnd = nullptr;
+void CrashHandler::SetForegroundWindow(HWND wnd) { foreground_wnd = wnd; }
 
 void WriteToChild(HANDLE pipe, const void* data, size_t size) {
   while (size) {
@@ -247,7 +247,7 @@ void RunChild() {
   }
 
   // 1. Write the CrashData.
-  WriteToChild(to_stdin, &g_CrashInfo, sizeof(g_CrashInfo));
+  WriteToChild(to_stdin, &crash_info, sizeof(crash_info));
 
   // 2. Write info.
   const TCHAR* p = RageLog::GetInfo();
@@ -363,29 +363,29 @@ static DWORD WINAPI MainExceptionHandler(LPVOID parameter) {
 
   RageThread::HaltAllThreads(false);
 
-  if (!g_CrashInfo.crash_reason_[0]) {
-    GetReason(exc->ExceptionRecord, &g_CrashInfo);
+  if (!crash_info.crash_reason_[0]) {
+    GetReason(exc->ExceptionRecord, &crash_info);
   }
   CrashHandler::do_backtrace(
-      (void**)g_CrashInfo.backtrace_pointers_, BACKTRACE_MAX_SIZE,
+      (void**)crash_info.backtrace_pointers_, BACKTRACE_MAX_SIZE,
       GetCurrentProcess(), GetCurrentThread(), exc->ContextRecord);
 
   RunChild();
 
   ++in_here;
 
-  if (g_bAutoRestart) {
+  if (auto_restart) {
     Win32RestartProgram();
   }
 
   /* Now things get more risky. If we're fullscreen, the window will obscure
    * the crash dialog. Try to hide the window. Things might blow up here; do
    * this after DoSave, so we always write a crash dump. */
-  if (GetWindowThreadProcessId(g_hForegroundWnd, nullptr) ==
+  if (GetWindowThreadProcessId(foreground_wnd, nullptr) ==
       GetCurrentThreadId()) {
     /* The thread that crashed was the thread that created the main window.
      * Hide the window. This will also restore the video mode, if necessary. */
-    ShowWindow(g_hForegroundWnd, SW_HIDE);
+    ShowWindow(foreground_wnd, SW_HIDE);
   } else {
     /* A different thread crashed. Simply kill all other windows. We can't
      * safely call ShowWindow; the main thread might be deadlocked. */
@@ -512,9 +512,9 @@ static void debug_crash() {
  */
 void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
   strncpy(
-      g_CrashInfo.crash_reason_, reason.c_str(),
-      sizeof(g_CrashInfo.crash_reason_));
-  g_CrashInfo.crash_reason_[sizeof(g_CrashInfo.crash_reason_) - 1] = 0;
+      crash_info.crash_reason_, reason.c_str(),
+      sizeof(crash_info.crash_reason_));
+  crash_info.crash_reason_[sizeof(crash_info.crash_reason_) - 1] = 0;
 
   /* Suspend the other thread we're going to backtrace. (We need to at least
    * suspend thread, for GetThreadContext to work.) */
@@ -537,22 +537,22 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
       CONTEXT context;
       context.ContextFlags = CONTEXT_FULL;
       if (!GetThreadContext(thread, &context)) {
-        size_t used = strlen(g_CrashInfo.crash_reason_);
+        size_t used = strlen(crash_info.crash_reason_);
         BufferedFormatString(
-            g_CrashInfo.crash_reason_ + used,
-            sizeof(g_CrashInfo.crash_reason_) - used,
+            crash_info.crash_reason_ + used,
+            sizeof(crash_info.crash_reason_) - used,
             "; GetThreadContext(%Ix) failed",
             reinterpret_cast<uintptr_t>(thread));
       } else {
         static const void* kBacktracePointers[BACKTRACE_MAX_SIZE];
         do_backtrace(
-            (void**)g_CrashInfo.alternate_thread_backtrace_[cnt],
+            (void**)crash_info.alternate_thread_backtrace_[cnt],
             BACKTRACE_MAX_SIZE, GetCurrentProcess(), thread, &context);
 
         const char* name = RageThread::GetThreadNameByID(id);
         strncpy(
-            g_CrashInfo.alternate_thread_name_[cnt], name ? name : "???",
-            sizeof(g_CrashInfo.alternate_thread_name_[cnt]) - 1);
+            crash_info.alternate_thread_name_[cnt], name ? name : "???",
+            sizeof(crash_info.alternate_thread_name_[cnt]) - 1);
 
         ++cnt;
       }
@@ -567,17 +567,17 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
     CONTEXT context;
     context.ContextFlags = CONTEXT_FULL;
     if (!GetThreadContext(thread, &context)) {
-      strcat(g_CrashInfo.crash_reason_, "(GetThreadContext failed)");
+      strcat(crash_info.crash_reason_, "(GetThreadContext failed)");
     } else {
       static const void* kBacktracePointers[BACKTRACE_MAX_SIZE];
       do_backtrace(
-          (void**)g_CrashInfo.alternate_thread_backtrace_[0],
-          BACKTRACE_MAX_SIZE, GetCurrentProcess(), thread, &context);
+          (void**)crash_info.alternate_thread_backtrace_[0], BACKTRACE_MAX_SIZE,
+          GetCurrentProcess(), thread, &context);
 
       const char* name = RageThread::GetThreadNameByID(id);
       strncpy(
-          g_CrashInfo.alternate_thread_name_[0], name ? name : "???",
-          sizeof(g_CrashInfo.alternate_thread_name_[0]) - 1);
+          crash_info.alternate_thread_name_[0], name ? name : "???",
+          sizeof(crash_info.alternate_thread_name_[0]) - 1);
     }
   }
 
@@ -585,8 +585,8 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t id) {
 }
 
 void CrashHandler::ForceCrash(const char* reason) {
-  strncpy(g_CrashInfo.crash_reason_, reason, sizeof(g_CrashInfo.crash_reason_));
-  g_CrashInfo.crash_reason_[sizeof(g_CrashInfo.crash_reason_) - 1] = 0;
+  strncpy(crash_info.crash_reason_, reason, sizeof(crash_info.crash_reason_));
+  crash_info.crash_reason_[sizeof(crash_info.crash_reason_) - 1] = 0;
 
   debug_crash();
 }

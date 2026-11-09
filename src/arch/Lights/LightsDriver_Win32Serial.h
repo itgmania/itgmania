@@ -15,7 +15,7 @@
 
 class LightsDriver_Win32Serial : public LightsDriver {
  protected:
-  uint8_t last_output_[FULL_SEXTET_COUNT];
+  uint8_t last_output_[kFullSextetCount];
 
  public:
   LightsDriver_Win32Serial();

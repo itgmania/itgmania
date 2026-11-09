@@ -60,7 +60,7 @@ void ScreenUnlockStatus::Init() {
   unsigned num_unlocks = UNLOCKMAN->unlock_entries_.size();
 
   points_until_next_unlock_.LoadFromFont(THEME->GetPathF("Common", "normal"));
-  points_until_next_unlock_.SetHorizAlign(align_left);
+  points_until_next_unlock_.SetHorizAlign(kAlignLeft);
 
   apActorCommands icon_command = ICON_COMMAND;
   for (unsigned i = 1; i <= num_unlocks; i++) {
@@ -120,7 +120,7 @@ void ScreenUnlockStatus::Init() {
       BitmapText* text = new BitmapText;
 
       text->LoadFromFont(THEME->GetPathF("ScreenUnlockStatus", "text"));
-      text->SetHorizAlign(align_left);
+      text->SetHorizAlign(kAlignLeft);
       text->SetZoom(scrolling_text_zoom);
 
       switch (entry.type_) {
@@ -283,7 +283,7 @@ void ScreenUnlockStatus::Init() {
       BitmapText* new_text = new BitmapText;
 
       new_text->LoadFromFont(THEME->GetPathF("ScreenUnlockStatus", "text"));
-      new_text->SetHorizAlign(align_left);
+      new_text->SetHorizAlign(kAlignLeft);
 
       std::string title = song->GetDisplayMainTitle();
       std::string subtitle = song->GetDisplaySubTitle();

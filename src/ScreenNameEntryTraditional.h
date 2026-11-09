@@ -31,9 +31,9 @@ class ScreenNameEntryTraditional : public ScreenWithMenuElements {
   /** @brief How long can the name be for ranking purposes? */
   ThemeMetric<int> MAX_RANKING_NAME_LENGTH;
 
-  std::wstring selection_[NUM_PLAYERS];
-  bool entering_name_[NUM_PLAYERS];
-  bool finalized_[NUM_PLAYERS];
+  std::wstring selection_[kNumPlayers];
+  bool entering_name_[kNumPlayers];
+  bool finalized_[kNumPlayers];
 };
 
 #endif

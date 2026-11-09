@@ -15,7 +15,7 @@ void ValidateSongsPerPlay(int& val);
 /** @brief How many songs can be played during a normal game max?
  *
  * This assumes no extra stages, no event mode, no course modes. */
-const int MAX_SONGS_PER_PLAY = 7;
+const int kMaxSongsPerPlay = 7;
 
 enum MusicWheelUsesSections {
   MusicWheelUsesSections_NEVER,
@@ -399,7 +399,7 @@ class PrefsManager {
 /* This is global, because it can be accessed by crash handlers and error
  * handlers that are run after PREFSMAN shuts down (and probably don't want to
  * deref that pointer anyway). */
-extern bool g_bAutoRestart;
+extern bool auto_restart;
 
 extern PrefsManager*
     PREFSMAN;  // global and accessible from anywhere in our program

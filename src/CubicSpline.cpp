@@ -46,7 +46,7 @@ struct SplineSolutionCache {
   std::list<Entry> looped_diagonals_;
 };
 
-const size_t solution_cache_limit = 16;
+const size_t kSolutionCacheLimit = 16;
 
 bool SplineSolutionCache::find_in_cache(
     std::list<Entry>& cache, std::vector<float>& outd,
@@ -71,7 +71,7 @@ bool SplineSolutionCache::find_in_cache(
 void SplineSolutionCache::add_to_cache(
     std::list<Entry>& cache, std::vector<float>& outd,
     std::vector<float>& outm) {
-  if (cache.size() >= solution_cache_limit) {
+  if (cache.size() >= kSolutionCacheLimit) {
     cache.pop_back();
   }
   cache.push_front(Entry());

@@ -17,9 +17,9 @@
 
 REGISTER_DIALOG_DRIVER_CLASS(Win32);
 
-static bool g_bHush;
-static std::string g_sMessage;
-static bool g_bAllowHush;
+static bool hush;
+static std::string g_message;
+static bool allow_hush;
 
 static INT_PTR CALLBACK
 OKWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -31,11 +31,11 @@ OKWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       DialogUtil::LocalizeDialogAndContents(hwnd);
 
       // Hide or display "Don't show this message."
-      g_bHush = false;
+      hush = false;
       HWND hush_button = GetDlgItem(hwnd, IDC_HUSH);
       int style = GetWindowLong(hush_button, GWL_STYLE);
 
-      if (g_bAllowHush) {
+      if (allow_hush) {
         style |= WS_VISIBLE;
       } else {
         style &= ~WS_VISIBLE;
@@ -43,7 +43,7 @@ OKWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       SetWindowLong(hush_button, GWL_STYLE, style);
 
       // Set static text.
-      std::string message = g_sMessage;
+      std::string message = g_message;
       Replace(message, "\n", "\r\n");
       SetWindowText(GetDlgItem(hwnd, IDC_MESSAGE), message.c_str());
 
@@ -60,7 +60,7 @@ OKWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_COMMAND:
       switch (LOWORD(wparam)) {
         case IDOK:
-          g_bHush = !!IsDlgButtonChecked(hwnd, IDC_HUSH);
+          hush = !!IsDlgButtonChecked(hwnd, IDC_HUSH);
           [[fallthrough]];
         case IDCANCEL:
           EndDialog(hwnd, 0);
@@ -77,16 +77,16 @@ static std::string GetWindowTitle() {
 }
 
 void DialogDriver_Win32::OK(std::string message, std::string id) {
-  g_bAllowHush = id != "";
-  g_sMessage = message;
+  allow_hush = id != "";
+  g_message = message;
   AppInstance handle;
   DialogBox(handle.Get(), MAKEINTRESOURCE(IDD_OK), ::GetHwnd(), OKWndProc);
-  if (g_bAllowHush && g_bHush) {
+  if (allow_hush && hush) {
     Dialog::IgnoreMessage(id);
   }
 }
 
-static std::string g_sErrorString;
+static std::string error_string;
 
 static INT_PTR CALLBACK
 ErrorWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -95,7 +95,7 @@ ErrorWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       DialogUtil::SetHeaderFont(hwnd, IDC_STATIC_HEADER_TEXT);
 
       // Set static text
-      std::string message = g_sErrorString;
+      std::string message = error_string;
       Replace(message, "\n", "\r\n");
       SetWindowText(GetDlgItem(hwnd, IDC_EDIT_ERROR), message.c_str());
     } break;
@@ -155,7 +155,7 @@ ErrorWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 void DialogDriver_Win32::Error(std::string error, std::string id) {
-  g_sErrorString = error;
+  error_string = error;
 
   // throw up a pretty error dialog
   AppInstance handle;

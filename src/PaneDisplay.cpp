@@ -49,7 +49,7 @@ struct Content_t {
   std::string font_type_;
 };
 
-static const Content_t g_Contents[NUM_PaneCategory] = {
+static const Content_t kContents[NUM_PaneCategory] = {
     {NEED_NOTES, "count"},                 // NumSteps
     {NEED_NOTES, "count"},                 // Jumps
     {NEED_NOTES, "count"},                 // Holds
@@ -77,7 +77,7 @@ void PaneDisplay::Load(const std::string& sMetricsGroup, PlayerNumber pn) {
   FOREACH_ENUM(PaneCategory, pc) {
     LuaThreadVariable var("PaneCategory", LuaReference::Create(pc));
 
-    std::string font_type = g_Contents[pc].font_type_;
+    std::string font_type = kContents[pc].font_type_;
 
     text_contents_[pc].LoadFromFont(THEME->GetPathF(sMetricsGroup, font_type));
     text_contents_[pc].SetName(PaneCategoryToString(pc) + "Text");
@@ -145,7 +145,7 @@ void PaneDisplay::GetPaneTextAndLevel(
   level_out = 0;
 
   if (GAMESTATE->IsCourseMode() && !trail) {
-    if ((g_Contents[c].req_ & NEED_PROFILE)) {
+    if ((kContents[c].req_ & NEED_PROFILE)) {
       text_out = NOT_AVAILABLE;
     }
 
@@ -165,7 +165,7 @@ void PaneDisplay::GetPaneTextAndLevel(
 
     return;
   } else if (!GAMESTATE->IsCourseMode() && !song) {
-    if ((g_Contents[c].req_ & NEED_PROFILE)) {
+    if ((kContents[c].req_ & NEED_PROFILE)) {
       text_out = NOT_AVAILABLE;
     }
 
@@ -186,10 +186,10 @@ void PaneDisplay::GetPaneTextAndLevel(
     return;
   }
 
-  if ((g_Contents[c].req_ & NEED_NOTES) && !steps && !trail) {
+  if ((kContents[c].req_ & NEED_NOTES) && !steps && !trail) {
     return;
   }
-  if ((g_Contents[c].req_ & NEED_PROFILE) && !profile) {
+  if ((kContents[c].req_ & NEED_PROFILE) && !profile) {
     text_out = NOT_AVAILABLE;
     return;
   }

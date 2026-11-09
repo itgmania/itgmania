@@ -114,20 +114,20 @@ class ScreenSelectMaster : public ScreenSelect {
   std::vector<AutoActor> spr_icon_;
 
   // preview is per-player, per-choice piece
-  std::vector<AutoActor> spr_scroll_[NUM_PLAYERS];
+  std::vector<AutoActor> spr_scroll_[kNumPlayers];
 
-  ActorScroller scroller_[NUM_PLAYERS];
+  ActorScroller scroller_[kNumPlayers];
 
   // cursor is the per-player, shared by all choices
-  AutoActor spr_cursor_[NUM_PLAYERS];
+  AutoActor spr_cursor_[kNumPlayers];
 
   RageSound sound_change_;
   RandomSample sound_difficult_;
   RageSound sound_start_;
 
-  int choice_[NUM_PLAYERS];
-  bool chosen_[NUM_PLAYERS];
-  bool double_choice_[NUM_PLAYERS];
+  int choice_[kNumPlayers];
+  bool chosen_[kNumPlayers];
+  bool double_choice_[kNumPlayers];
   bool double_choice_no_sound_;
 
   GameButton tracking_repeating_input_;

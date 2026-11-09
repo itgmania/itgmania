@@ -42,7 +42,7 @@
 ThemeManager* THEME =
     nullptr;  // global object accessible from anywhere in the program
 
-static const std::string THEME_INFO_INI = "ThemeInfo.ini";
+static const std::string kThemeInfoIni = "ThemeInfo.ini";
 
 static const char* ElementCategoryNames[] = {
     "BGAnimations", "Fonts", "Graphics", "Sounds", "Other"};
@@ -53,7 +53,7 @@ struct Theme {
   std::string theme_name_;
 };
 // When looking for a metric or an element, search these from head to tail.
-static std::deque<Theme> g_vThemes;
+static std::deque<Theme> g_themes;
 class LoadedThemeData {
  public:
   IniFile ini_metrics_;
@@ -63,11 +63,11 @@ class LoadedThemeData {
     ini_strings_.Clear();
   }
 };
-LoadedThemeData* g_pLoadedThemeData = nullptr;
+LoadedThemeData* loaded_theme_data = nullptr;
 
 // For self-registering metrics
 #include "SubscriptionManager.h"
-static SubscriptionManager<IThemeMetric> g_Subscribers;
+static SubscriptionManager<IThemeMetric> subscribers;
 
 class LocalizedStringImplThemeMetric : public ILocalizedStringImpl,
                                        public ThemeMetric<std::string> {
@@ -102,7 +102,7 @@ class LocalizedStringImplThemeMetric : public ILocalizedStringImpl,
 };
 
 void ThemeManager::Subscribe(IThemeMetric* p) {
-  g_Subscribers.Subscribe(p);
+  subscribers.Subscribe(p);
 
   // It's ThemeManager's responsibility to make sure all of its subscribers
   // are updated with current data.  If a metric is created after
@@ -113,16 +113,14 @@ void ThemeManager::Subscribe(IThemeMetric* p) {
   }
 }
 
-void ThemeManager::Unsubscribe(IThemeMetric* p) {
-  g_Subscribers.Unsubscribe(p);
-}
+void ThemeManager::Unsubscribe(IThemeMetric* p) { subscribers.Unsubscribe(p); }
 
 // We spend a lot of time doing redundant theme path lookups. Cache results.
 static std::map<std::string, ThemeManager::PathInfo>
-    g_ThemePathCache[NUM_ElementCategory];
+    theme_path_cache[NUM_ElementCategory];
 void ThemeManager::ClearThemePathCache() {
   for (int i = 0; i < NUM_ElementCategory; ++i) {
-    g_ThemePathCache[i].clear();
+    theme_path_cache[i].clear();
   }
 }
 
@@ -171,15 +169,15 @@ ThemeManager::ThemeManager() {
 }
 
 ThemeManager::~ThemeManager() {
-  g_vThemes.clear();
-  RageUtil::SafeDelete(g_pLoadedThemeData);
+  g_themes.clear();
+  RageUtil::SafeDelete(loaded_theme_data);
 
   // Unregister with Lua.
   LUA->UnsetGlobal("THEME");
 }
 
 void ThemeManager::GetThemeNames(std::vector<std::string>& add_to) {
-  GetDirListing(SpecialFiles::THEMES_DIR + "*", add_to, true);
+  GetDirListing(SpecialFiles::kThemesDir + "*", add_to, true);
   StripCvsAndSvn(add_to);
   StripMacResourceForks(add_to);
 }
@@ -221,7 +219,7 @@ bool ThemeManager::IsThemeNameValid(const std::string& name) {
 std::string ThemeManager::GetThemeDisplayName(const std::string& theme_name) {
   std::string dir = GetThemeDirFromName(theme_name);
   IniFile ini;
-  ini.ReadFile(dir + THEME_INFO_INI);
+  ini.ReadFile(dir + kThemeInfoIni);
 
   std::string s;
   if (ini.GetValue("ThemeInfo", "DisplayName", s)) {
@@ -234,7 +232,7 @@ std::string ThemeManager::GetThemeDisplayName(const std::string& theme_name) {
 std::string ThemeManager::GetThemeAuthor(const std::string& theme_name) {
   std::string dir = GetThemeDirFromName(theme_name);
   IniFile ini;
-  ini.ReadFile(dir + THEME_INFO_INI);
+  ini.ReadFile(dir + kThemeInfoIni);
 
   std::string s;
   if (ini.GetValue("ThemeInfo", "Author", s)) {
@@ -247,8 +245,8 @@ std::string ThemeManager::GetThemeAuthor(const std::string& theme_name) {
 void ThemeManager::GetLanguages(std::vector<std::string>& add_to) {
   add_to.clear();
 
-  for (unsigned i = 0; i < g_vThemes.size(); ++i) {
-    GetLanguagesForTheme(g_vThemes[i].theme_name_, add_to);
+  for (unsigned i = 0; i < g_themes.size(); ++i) {
+    GetLanguagesForTheme(g_themes[i].theme_name_, add_to);
   }
 
   // remove dupes
@@ -272,14 +270,14 @@ bool ThemeManager::DoesLanguageExist(const std::string& language) {
 
 void ThemeManager::LoadThemeMetrics(
     const std::string& raw_theme_name, const std::string& raw_language) {
-  if (g_pLoadedThemeData == nullptr) {
-    g_pLoadedThemeData = new LoadedThemeData;
+  if (loaded_theme_data == nullptr) {
+    loaded_theme_data = new LoadedThemeData;
   }
 
   // Don't delete and recreate LoadedThemeData.  There are references iniMetrics
   // and iniStrings on the stack, so Clear them instead.
-  g_pLoadedThemeData->ClearAll();
-  g_vThemes.clear();
+  loaded_theme_data->ClearAll();
+  g_themes.clear();
 
   std::string theme_name(raw_theme_name);
   std::string language(raw_language);
@@ -290,10 +288,10 @@ void ThemeManager::LoadThemeMetrics(
   bool loaded_base = false;
   for (;;) {
     ASSERT_M(
-        g_vThemes.size() < 20, "Circular theme fallback references detected.");
+        g_themes.size() < 20, "Circular theme fallback references detected.");
 
-    g_vThemes.push_back(Theme());
-    Theme& t = g_vThemes.back();
+    g_themes.push_back(Theme());
+    Theme& t = g_themes.back();
     t.theme_name_ = theme_name;
 
     IniFile ini_metrics;
@@ -309,12 +307,12 @@ void ThemeManager::LoadThemeMetrics(
       }
     }
     ini_strings.ReadFile(
-        GetLanguageIniPath(theme_name, SpecialFiles::BASE_LANGUAGE));
-    if (CompareNoCase(language, SpecialFiles::BASE_LANGUAGE)) {
+        GetLanguageIniPath(theme_name, SpecialFiles::kBaseLanguage));
+    if (CompareNoCase(language, SpecialFiles::kBaseLanguage)) {
       ini_strings.ReadFile(GetLanguageIniPath(theme_name, language));
     }
     bool is_base_theme =
-        !CompareNoCase(theme_name, SpecialFiles::BASE_THEME_NAME);
+        !CompareNoCase(theme_name, SpecialFiles::kBaseThemeName);
     ini_metrics.GetValue("Global", "IsBaseTheme", is_base_theme);
     if (is_base_theme) {
       loaded_base = true;
@@ -325,9 +323,9 @@ void ThemeManager::LoadThemeMetrics(
      * "FallbackTheme=". */
     std::string fallback;
     if (!ini_metrics.GetValue("Global", "FallbackTheme", fallback)) {
-      if (CompareNoCase(theme_name, SpecialFiles::BASE_THEME_NAME) &&
+      if (CompareNoCase(theme_name, SpecialFiles::kBaseThemeName) &&
           !loaded_base) {
-        fallback = SpecialFiles::BASE_THEME_NAME;
+        fallback = SpecialFiles::kBaseThemeName;
       }
     }
     /* We actually want to load themes bottom-to-top, loading fallback themes
@@ -335,8 +333,8 @@ void ThemeManager::LoadThemeMetrics(
      * need to load the derived theme first, to find out the name of the
      * fallback theme.  Avoid having to load IniFile twice, merging the fallback
      * theme into the derived theme that we've already loaded. */
-    XmlFileUtil::MergeIniUnder(&ini_metrics, &g_pLoadedThemeData->ini_metrics_);
-    XmlFileUtil::MergeIniUnder(&ini_strings, &g_pLoadedThemeData->ini_strings_);
+    XmlFileUtil::MergeIniUnder(&ini_metrics, &loaded_theme_data->ini_metrics_);
+    XmlFileUtil::MergeIniUnder(&ini_strings, &loaded_theme_data->ini_strings_);
 
     if (fallback.empty()) {
       break;
@@ -356,7 +354,7 @@ void ThemeManager::LoadThemeMetrics(
       RageException::Throw("Invalid argument \"--metric=%s\".", metric.c_str());
     }
 
-    g_pLoadedThemeData->ini_metrics_.SetValue(bits[0], bits[1], bits[2]);
+    loaded_theme_data->ini_metrics_.SetValue(bits[0], bits[1], bits[2]);
   }
 
   LOG->MapLog("theme", "Theme: %s", cur_theme_name_.c_str());
@@ -465,8 +463,8 @@ void ThemeManager::SwitchThemeAndLanguage(
 
 void ThemeManager::ReloadSubscribers() {
   // reload subscribers
-  if (g_Subscribers.subscribers_) {
-    for (IThemeMetric* metric : *g_Subscribers.subscribers_) {
+  if (subscribers.subscribers_) {
+    for (IThemeMetric* metric : *subscribers.subscribers_) {
       metric->Read();
     }
   }
@@ -479,7 +477,7 @@ void ThemeManager::RunLuaScripts(const std::string& mask, bool use_theme_dir) {
   /* TODO: verify whether this final check is necessary. */
   const std::string cur_theme_name = cur_theme_name_;
 
-  std::deque<Theme>::const_iterator iter = g_vThemes.end();
+  std::deque<Theme>::const_iterator iter = g_themes.end();
   do {
     --iter;
 
@@ -522,7 +520,7 @@ void ThemeManager::RunLuaScripts(const std::string& mask, bool use_theme_dir) {
       LOG->Trace("Loading \"%s\" ...", path.c_str());
       LuaHelpers::RunScriptFile(path);
     }
-  } while (iter != g_vThemes.begin());
+  } while (iter != g_themes.begin());
 
   /* TODO: verify whether this final check is necessary. */
   if (cur_theme_name != cur_theme_name_) {
@@ -542,7 +540,7 @@ void ThemeManager::UpdateLuaGlobals() {
 }
 
 std::string ThemeManager::GetThemeDirFromName(const std::string& theme_name) {
-  return SpecialFiles::THEMES_DIR + theme_name + "/";
+  return SpecialFiles::kThemesDir + theme_name + "/";
 }
 
 struct CompareLanguageTag {
@@ -582,7 +580,7 @@ void ThemeManager::FilterFileLanguages(std::vector<std::string>& paths) {
     // We didn't find any for the current language.  Try BASE_LANGUAGE.
     it = partition(
         paths.begin(), paths.end(),
-        CompareLanguageTag(SpecialFiles::BASE_LANGUAGE));
+        CompareLanguageTag(SpecialFiles::kBaseLanguage));
     dist = distance(paths.begin(), it);
   }
 
@@ -677,7 +675,7 @@ bool ThemeManager::GetPathInfoToRaw(
   FilterFileLanguages(element_paths);
 
   if (element_paths.size() > 1) {
-    g_ThemePathCache[category].clear();
+    theme_path_cache[category].clear();
 
     std::string message = ssprintf(
         "ThemeManager:  There is more than one theme element that matches "
@@ -755,7 +753,7 @@ bool ThemeManager::GetPathInfoToAndFallback(
 
   int n = 100;
   while (n--) {
-    for (const Theme& theme : g_vThemes) {
+    for (const Theme& theme : g_themes) {
       // search with requested name
       if (GetPathInfoToRaw(
               out, theme.theme_name_, category, metrics_group, element)) {
@@ -793,7 +791,7 @@ bool ThemeManager::GetPathInfo(
   std::string file_name =
       MetricsGroupAndElementToFileName(metrics_group, element);
 
-  std::map<std::string, PathInfo>& cache = g_ThemePathCache[category];
+  std::map<std::string, PathInfo>& cache = theme_path_cache[category];
   {
     std::map<std::string, PathInfo>::const_iterator i;
 
@@ -838,7 +836,7 @@ try_element_again:
       std::string element_name = category_str + '/' + file_name;
       std::string error = "could not be found in \"" +
                           GetThemeDirFromName(cur_theme_name_) + "\" or \"" +
-                          GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME) +
+                          GetThemeDirFromName(SpecialFiles::kBaseThemeName) +
                           "\".";
       LOG->UserLog("Theme element", element_name.c_str(), "%s", error.c_str());
       LOG->Warn("%s %s", element_name.c_str(), error.c_str());
@@ -849,7 +847,7 @@ try_element_again:
       if (file_name == "_missing") {
         RageException::Throw(
             "\"_missing\" isn't present in \"%s%s\".",
-            GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str(),
+            GetThemeDirFromName(SpecialFiles::kBaseThemeName).c_str(),
             category_str.c_str());
       }
 
@@ -861,12 +859,12 @@ try_element_again:
           "Theme element", category_str + '/' + file_name,
           "could not be found in \"%s\" or \"%s\".",
           GetThemeDirFromName(cur_theme_name_).c_str(),
-          GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str());
+          GetThemeDirFromName(SpecialFiles::kBaseThemeName).c_str());
       RageException::Throw(
           "Theme element \"%s/%s\" could not be found in \"%s\" or \"%s\".",
           category_str.c_str(), file_name.c_str(),
           GetThemeDirFromName(cur_theme_name_).c_str(),
-          GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str());
+          GetThemeDirFromName(SpecialFiles::kBaseThemeName).c_str());
       DEFAULT_FAIL(res);
   }
 }
@@ -887,7 +885,7 @@ std::string ThemeManager::GetPath(
 }
 
 std::string ThemeManager::GetMetricsIniPath(const std::string& theme_name) {
-  return GetThemeDirFromName(theme_name) + SpecialFiles::METRICS_FILE;
+  return GetThemeDirFromName(theme_name) + SpecialFiles::kMetricsFile;
 }
 
 bool ThemeManager::HasMetric(
@@ -897,7 +895,7 @@ bool ThemeManager::HasMetric(
     return false;
   }
   return GetMetricRawRecursive(
-      g_pLoadedThemeData->ini_metrics_, metrics_group, value_name, throw_away);
+      loaded_theme_data->ini_metrics_, metrics_group, value_name, throw_away);
 }
 
 bool ThemeManager::HasString(
@@ -907,7 +905,7 @@ bool ThemeManager::HasString(
     return false;
   }
   return GetMetricRawRecursive(
-      g_pLoadedThemeData->ini_strings_, metrics_group, value_name, throw_away);
+      loaded_theme_data->ini_strings_, metrics_group, value_name, throw_away);
 }
 
 // the strings that were here before were moved to StepMania.cpp;
@@ -927,12 +925,12 @@ void ThemeManager::ReloadMetrics() {
 
 std::string ThemeManager::GetMetricsGroupFallback(
     const std::string& metrics_group) {
-  ASSERT(g_pLoadedThemeData != nullptr);
+  ASSERT(loaded_theme_data != nullptr);
 
   // always look in iniMetrics for "Fallback"
   std::string fallback;
   if (!GetMetricRawRecursive(
-          g_pLoadedThemeData->ini_metrics_, metrics_group, "Fallback",
+          loaded_theme_data->ini_metrics_, metrics_group, "Fallback",
           fallback)) {
     return std::string();
   }
@@ -990,12 +988,12 @@ std::string ThemeManager::GetMetricRaw(
     }
     std::string cur_metric_path = GetMetricsIniPath(cur_theme_name_);
     std::string default_metric_path =
-        GetMetricsIniPath(SpecialFiles::BASE_THEME_NAME);
+        GetMetricsIniPath(SpecialFiles::kBaseThemeName);
 
     std::string type;
-    if (&ini == &g_pLoadedThemeData->ini_strings_) {
+    if (&ini == &loaded_theme_data->ini_strings_) {
       type = "String";
-    } else if (&ini == &g_pLoadedThemeData->ini_metrics_) {
+    } else if (&ini == &loaded_theme_data->ini_metrics_) {
       type = "Metric";
     } else {
       FAIL_M("");
@@ -1092,7 +1090,7 @@ void ThemeManager::PushMetric(
     return;
   }
   std::string value =
-      GetMetricRaw(g_pLoadedThemeData->ini_metrics_, metrics_group, value_name);
+      GetMetricRaw(loaded_theme_data->ini_metrics_, metrics_group, value_name);
 
   std::string name =
       ssprintf("%s::%s", metrics_group.c_str(), value_name.c_str());
@@ -1144,13 +1142,13 @@ std::string ThemeManager::GetNextSelectableTheme() {
 void ThemeManager::GetLanguagesForTheme(
     const std::string& theme_name, std::vector<std::string>& languages_out) {
   std::string language_dir =
-      GetThemeDirFromName(theme_name) + SpecialFiles::LANGUAGES_SUBDIR;
+      GetThemeDirFromName(theme_name) + SpecialFiles::kLanguagesSubdir;
   std::vector<std::string> as;
   GetDirListing(language_dir + "*.ini", as);
 
   for (const std::string& s : as) {
     // ignore metrics.ini
-    if (CompareNoCase(s, SpecialFiles::METRICS_FILE) == 0) {
+    if (CompareNoCase(s, SpecialFiles::kMetricsFile) == 0) {
       continue;
     }
 
@@ -1169,7 +1167,7 @@ void ThemeManager::GetLanguagesForTheme(
 
 std::string ThemeManager::GetLanguageIniPath(
     const std::string& theme_name, const std::string& language) {
-  return GetThemeDirFromName(theme_name) + SpecialFiles::LANGUAGES_SUBDIR +
+  return GetThemeDirFromName(theme_name) + SpecialFiles::kLanguagesSubdir +
          language + ".ini";
 }
 
@@ -1178,7 +1176,7 @@ void ThemeManager::GetOptionalLanguageIniPaths(
     const std::string& language) {
   // optional ini names look like: "en PackageName.ini"
   GetDirListing(
-      GetThemeDirFromName(theme_name) + SpecialFiles::LANGUAGES_SUBDIR +
+      GetThemeDirFromName(theme_name) + SpecialFiles::kLanguagesSubdir +
           language + " *.ini",
       paths_out, false, true);
 }
@@ -1224,9 +1222,9 @@ std::string ThemeManager::GetString(
   Replace(value_name, "\r\n", "\\n");
   Replace(value_name, "\n", "\\n");
 
-  ASSERT(g_pLoadedThemeData != nullptr);
+  ASSERT(loaded_theme_data != nullptr);
   std::string s =
-      GetMetricRaw(g_pLoadedThemeData->ini_strings_, metrics_group, value_name);
+      GetMetricRaw(loaded_theme_data->ini_strings_, metrics_group, value_name);
   FontCharAliases::ReplaceMarkers(s);
 
   // Don't EvalulateString.  Strings are raw and shouldn't allow Lua.
@@ -1266,7 +1264,7 @@ void ThemeManager::GetMetricsThatBeginWith(
     std::set<std::string>& value_names_out) {
   std::string metrics_group(raw_metrics_group);
   while (!metrics_group.empty()) {
-    const XNode* cur = g_pLoadedThemeData->ini_metrics_.GetChild(metrics_group);
+    const XNode* cur = loaded_theme_data->ini_metrics_.GetChild(metrics_group);
     if (cur != nullptr) {
       // Iterate over all metrics that match.
       for (XAttrs::const_iterator j = cur->attrs_.lower_bound(value_name);
@@ -1286,7 +1284,7 @@ void ThemeManager::GetMetricsThatBeginWith(
 }
 
 std::string ThemeManager::GetBlankGraphicPath() {
-  return SpecialFiles::THEMES_DIR + SpecialFiles::BASE_THEME_NAME + "/" +
+  return SpecialFiles::kThemesDir + SpecialFiles::kBaseThemeName + "/" +
          ElementCategoryToString(EC_GRAPHICS) + "/_blank.png";
 }
 
@@ -1405,12 +1403,12 @@ class LunaThemeManager : public Luna<ThemeManager> {
   }
 
   static int GetMetricNamesInGroup(T* p, lua_State* L) {
-    PushMetricNamesInGroup(g_pLoadedThemeData->ini_metrics_, L);
+    PushMetricNamesInGroup(loaded_theme_data->ini_metrics_, L);
     return 1;
   }
 
   static int GetStringNamesInGroup(T* p, lua_State* L) {
-    PushMetricNamesInGroup(g_pLoadedThemeData->ini_strings_, L);
+    PushMetricNamesInGroup(loaded_theme_data->ini_strings_, L);
     return 1;
   }
 
@@ -1424,10 +1422,10 @@ class LunaThemeManager : public Luna<ThemeManager> {
   }
 
   static int get_theme_fallback_list(T* p, lua_State* L) {
-    lua_createtable(L, g_vThemes.size(), 0);
+    lua_createtable(L, g_themes.size(), 0);
     int ret = lua_gettop(L);
-    for (size_t tid = 0; tid < g_vThemes.size(); ++tid) {
-      lua_pushstring(L, g_vThemes[tid].theme_name_.c_str());
+    for (size_t tid = 0; tid < g_themes.size(); ++tid) {
+      lua_pushstring(L, g_themes[tid].theme_name_.c_str());
       lua_rawseti(L, ret, tid + 1);
     }
     return 1;

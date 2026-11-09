@@ -11,7 +11,7 @@
 
 // Can this be done any better? -aj
 namespace ToggleSongs {
-std::string m_sGroup;
+std::string g_group;
 }
 
 class ScreenOptionsToggleSongs : public ScreenOptions {

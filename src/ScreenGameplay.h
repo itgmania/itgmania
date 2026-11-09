@@ -59,12 +59,12 @@ class PlayerInfo {
    * @return the player's state and stage stats index.
    */
   PlayerNumber GetPlayerStateAndStageStatsIndex() {
-    return pn_ == PLAYER_INVALID ? PLAYER_1 : pn_;
+    return pn_ == kPlayerInvalid ? PLAYER_1 : pn_;
   }
   PlayerState* GetPlayerState();
   PlayerStageStats* GetPlayerStageStats();
   PlayerNumber GetStepsAndTrailIndex() {
-    return pn_ == PLAYER_INVALID ? PLAYER_1 : pn_;
+    return pn_ == kPlayerInvalid ? PLAYER_1 : pn_;
   }
   /**
    * @brief Determine if the player information is enabled.

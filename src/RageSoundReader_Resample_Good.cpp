@@ -22,7 +22,7 @@
 #include "RageUtil.h"
 #include "global.h"
 
-constexpr int FILTER_LENGTH = 8;  // This must be a power of 2.
+constexpr int kFilterLength = 8;  // This must be a power of 2.
 
 namespace {
 float sincf(float f) {
@@ -133,7 +133,7 @@ class AlignedBuffer {
 
 struct PolyphaseFilter {
   struct State {
-    State(int up_factor) : buf_(FILTER_LENGTH * 2) {
+    State(int up_factor) : buf_(kFilterLength * 2) {
       poly_index_ = up_factor - 1;
       filled_ = 0;
       buf_next_ = 0;
@@ -150,7 +150,7 @@ struct PolyphaseFilter {
   };
   friend struct State;
 
-  PolyphaseFilter(int up_factor) : polyphase_(FILTER_LENGTH * up_factor) {
+  PolyphaseFilter(int up_factor) : polyphase_(kFilterLength * up_factor) {
     up_factor_ = up_factor;
   }
 
@@ -158,7 +158,7 @@ struct PolyphaseFilter {
   int RunPolyphaseFilter(
       State& state, const float* in, int samples_in, int down_factor,
       float* out, int samples_out, int sample_stride) const;
-  int GetLatency() const { return FILTER_LENGTH / 2; }
+  int GetLatency() const { return kFilterLength / 2; }
 
   int NumInputsForOutputSamples(
       const State& state, int out, int down_factor) const;
@@ -206,11 +206,11 @@ struct PolyphaseFilter {
  */
 void PolyphaseFilter::Generate(const float* fir) {
   float* output = polyphase_;
-  const int input_size = FILTER_LENGTH * up_factor_;
+  const int input_size = kFilterLength * up_factor_;
 
   for (int row = 0; row < up_factor_; ++row) {
     int input_offset = (up_factor_ - row - 1) % up_factor_;
-    for (int col = 0; col < FILTER_LENGTH; ++col) {
+    for (int col = 0; col < kFilterLength; ++col) {
       *output = fir[input_offset];
       ++output;
       input_offset += up_factor_;
@@ -256,15 +256,15 @@ int PolyphaseFilter::RunPolyphaseFilter(
   int filled = state.filled_;
   int poly_index = state.poly_index_;
   while (out != out_end) {
-    if (filled < FILTER_LENGTH) {
+    if (filled < kFilterLength) {
       if (in == in_end) {
         break;
       }
 
       state.buf_[state.buf_next_] = *in;
-      state.buf_[state.buf_next_ + FILTER_LENGTH] = *in;
+      state.buf_[state.buf_next_ + kFilterLength] = *in;
       ++state.buf_next_;
-      state.buf_next_ &= FILTER_LENGTH - 1;
+      state.buf_next_ &= kFilterLength - 1;
 
       in += sample_stride;
       ++filled;
@@ -272,11 +272,11 @@ int PolyphaseFilter::RunPolyphaseFilter(
     }
 
     while (out != out_end) {
-      const float* cur_poly = &polyphase_[poly_index * FILTER_LENGTH];
+      const float* cur_poly = &polyphase_[poly_index * kFilterLength];
       const float* in_data = &state.buf_[state.buf_next_];
 
       float tot = 0;
-      for (int j = 0; j < FILTER_LENGTH; ++j) {
+      for (int j = 0; j < kFilterLength; ++j) {
         tot += in_data[j] * cur_poly[j];
       }
       *out = tot;
@@ -334,8 +334,8 @@ int PolyphaseFilter::NumInputsForOutputSamples(
 #endif
 
   if (out > 0) {
-    if (filled < FILTER_LENGTH) {
-      int to_fill = FILTER_LENGTH - filled;
+    if (filled < kFilterLength) {
+      int to_fill = kFilterLength - filled;
       in += to_fill;
     }
 
@@ -352,22 +352,22 @@ namespace PolyphaseFilterCache {
 /* Cache filter data, and reuse it without copying.  All operations after
  * creation are const, so this doesn't cause thread-safety problems. */
 typedef std::map<std::pair<int, float>, PolyphaseFilter*> FilterMap;
-static RageMutex PolyphaseFiltersLock("PolyphaseFiltersLock");
-static FilterMap g_mapPolyphaseFilters;
+static RageMutex polyphase_filters_lock("PolyphaseFiltersLock");
+static FilterMap map_polyphase_filters;
 
 const PolyphaseFilter* MakePolyphaseFilter(
     int up_factor, float cutoff_frequency) {
-  PolyphaseFiltersLock.Lock();
+  polyphase_filters_lock.Lock();
   std::pair<int, float> params(std::make_pair(up_factor, cutoff_frequency));
-  FilterMap::const_iterator it = g_mapPolyphaseFilters.find(params);
-  if (it != g_mapPolyphaseFilters.end()) {
+  FilterMap::const_iterator it = map_polyphase_filters.find(params);
+  if (it != map_polyphase_filters.end()) {
     /* We already have a filter for this upsampling factor and cutoff; use it.
      */
     PolyphaseFilter* polyphase = it->second;
-    PolyphaseFiltersLock.Unlock();
+    polyphase_filters_lock.Unlock();
     return polyphase;
   }
-  int win_size = FILTER_LENGTH * up_factor;
+  int win_size = kFilterLength * up_factor;
   float* fir = new float[win_size];
   GenerateSincLowPassFilter(fir, win_size, cutoff_frequency);
   ApplyKaiserWindow(fir, win_size, 8);
@@ -378,8 +378,8 @@ const PolyphaseFilter* MakePolyphaseFilter(
   polyphase->Generate(fir);
   delete[] fir;
 
-  g_mapPolyphaseFilters[params] = polyphase;
-  PolyphaseFiltersLock.Unlock();
+  map_polyphase_filters[params] = polyphase;
+  polyphase_filters_lock.Unlock();
   return polyphase;
 }
 
@@ -388,16 +388,16 @@ const PolyphaseFilter* FindNearestPolyphaseFilter(
   /* Find a cached filter with the same iUpFactor and a nearby cutoff frequency.
    * Round the cutoff down, if possible; it's better to filter out too much than
    * too little. */
-  PolyphaseFiltersLock.Lock();
+  polyphase_filters_lock.Lock();
   std::pair<int, float> params(
       std::make_pair(up_factor, cutoff_frequency + 0.0001f));
-  FilterMap::const_iterator it = g_mapPolyphaseFilters.upper_bound(params);
-  if (it != g_mapPolyphaseFilters.begin()) {
+  FilterMap::const_iterator it = map_polyphase_filters.upper_bound(params);
+  if (it != map_polyphase_filters.begin()) {
     --it;
   }
   ASSERT(it->first.first == up_factor);
   PolyphaseFilter* polyphase = it->second;
-  PolyphaseFiltersLock.Unlock();
+  polyphase_filters_lock.Unlock();
   return polyphase;
 }
 }  // namespace PolyphaseFilterCache

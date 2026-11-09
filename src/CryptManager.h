@@ -6,7 +6,7 @@
 class RageFileBasic;
 struct lua_State;
 
-const std::string SIGNATURE_APPEND = ".sig";
+const std::string kSignatureAppend = ".sig";
 
 class CryptManager {
  public:

@@ -21,7 +21,7 @@ std::string WARNING_COMMAND_NAME(size_t i) {
   return ssprintf("Warning%dCommand", int(i));
 }
 
-static const float TIMER_PAUSE_SECONDS = 99.99f;
+static const float kTimerPauseSeconds = 99.99f;
 
 MenuTimer::MenuTimer() {
   stall_seconds_ = 0;
@@ -51,7 +51,7 @@ void MenuTimer::Load(std::string metrics_group) {
   expr_format_text_[1] =
       THEME->GetMetricR(metrics_group, "Text2FormatFunction");
 
-  SetSeconds(TIMER_PAUSE_SECONDS);
+  SetSeconds(kTimerPauseSeconds);
 
   sound_beep_.Load(THEME->GetPathS(metrics_group, "tick"));
 
@@ -145,7 +145,7 @@ void MenuTimer::Stop() {
 }
 
 void MenuTimer::Disable() {
-  SetSeconds(TIMER_PAUSE_SECONDS);
+  SetSeconds(kTimerPauseSeconds);
   Pause();
 }
 

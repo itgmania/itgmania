@@ -59,17 +59,17 @@ RageLog* LOG;  // global and accessible from anywhere in the program
  *
  * The identifier is never displayed, so we can use a simple local object to
  * map/unmap, using any mechanism to generate unique IDs. */
-static std::map<std::string, std::string> LogMaps;
+static std::map<std::string, std::string> log_maps;
 
 #define LOG_PATH "/Logs/log.txt"
 #define INFO_PATH "/Logs/info.txt"
 #define USER_PATH "/Logs/userlog.txt"
 
-static RageFile *g_fileLog, *g_fileInfo, *g_fileUserLog;
+static RageFile *file_log, *file_info, *file_user_log;
 
 /* Mutex writes to the files.  Writing to files is not thread-aware, and this is
  * the only place we write to the same file from multiple threads. */
-static RageMutex* g_Mutex;
+static RageMutex* mutex;
 
 /* staticlog gets info.txt
  * crashlog gets log.txt */
@@ -92,11 +92,11 @@ RageLog::RageLog()
       user_log_to_disk_(false),
       flush_(false),
       show_log_output_(false) {
-  g_fileLog = new RageFile;
-  g_fileInfo = new RageFile;
-  g_fileUserLog = new RageFile;
+  file_log = new RageFile;
+  file_info = new RageFile;
+  file_user_log = new RageFile;
 
-  g_Mutex = new RageMutex("Log");
+  mutex = new RageMutex("Log");
 }
 
 RageLog::~RageLog() {
@@ -111,14 +111,14 @@ RageLog::~RageLog() {
 
   Flush();
   SetShowLogOutput(false);
-  g_fileLog->Close();
-  g_fileInfo->Close();
-  g_fileUserLog->Close();
+  file_log->Close();
+  file_info->Close();
+  file_user_log->Close();
 
-  RageUtil::SafeDelete(g_Mutex);
-  RageUtil::SafeDelete(g_fileLog);
-  RageUtil::SafeDelete(g_fileInfo);
-  RageUtil::SafeDelete(g_fileUserLog);
+  RageUtil::SafeDelete(mutex);
+  RageUtil::SafeDelete(file_log);
+  RageUtil::SafeDelete(file_info);
+  RageUtil::SafeDelete(file_user_log);
 }
 
 void RageLog::SetLogToDisk(bool b) {
@@ -129,16 +129,16 @@ void RageLog::SetLogToDisk(bool b) {
   log_to_disk_ = b;
 
   if (!log_to_disk_) {
-    if (g_fileLog->IsOpen()) {
-      g_fileLog->Close();
+    if (file_log->IsOpen()) {
+      file_log->Close();
     }
     return;
   }
 
-  if (!g_fileLog->Open(LOG_PATH, RageFile::WRITE | RageFile::STREAMED)) {
+  if (!file_log->Open(LOG_PATH, RageFile::WRITE | RageFile::STREAMED)) {
     fprintf(
         stderr, "Couldn't open %s: %s\n", LOG_PATH,
-        g_fileLog->GetError().c_str());
+        file_log->GetError().c_str());
   }
 }
 
@@ -150,16 +150,16 @@ void RageLog::SetInfoToDisk(bool b) {
   info_to_disk_ = b;
 
   if (!info_to_disk_) {
-    if (g_fileInfo->IsOpen()) {
-      g_fileInfo->Close();
+    if (file_info->IsOpen()) {
+      file_info->Close();
     }
     return;
   }
 
-  if (!g_fileInfo->Open(INFO_PATH, RageFile::WRITE | RageFile::STREAMED)) {
+  if (!file_info->Open(INFO_PATH, RageFile::WRITE | RageFile::STREAMED)) {
     fprintf(
         stderr, "Couldn't open %s: %s\n", INFO_PATH,
-        g_fileInfo->GetError().c_str());
+        file_info->GetError().c_str());
   }
 }
 
@@ -171,15 +171,15 @@ void RageLog::SetUserLogToDisk(bool b) {
   user_log_to_disk_ = b;
 
   if (!user_log_to_disk_) {
-    if (g_fileUserLog->IsOpen()) {
-      g_fileUserLog->Close();
+    if (file_user_log->IsOpen()) {
+      file_user_log->Close();
     }
     return;
   }
-  if (!g_fileUserLog->Open(USER_PATH, RageFile::WRITE | RageFile::STREAMED)) {
+  if (!file_user_log->Open(USER_PATH, RageFile::WRITE | RageFile::STREAMED)) {
     fprintf(
         stderr, "Couldn't open %s: %s\n", USER_PATH,
-        g_fileUserLog->GetError().c_str());
+        file_user_log->GetError().c_str());
   }
 }
 
@@ -247,15 +247,15 @@ void RageLog::UserLog(
 }
 
 void RageLog::Write(int where, const std::string& line) {
-  LockMut(*g_Mutex);
+  LockMut(*mutex);
 
   const char* const warning_separator =
       "/////////////////////////////////////////";
   std::vector<std::string> lines;
   split(line, "\n", lines, false);
   if (where & WRITE_LOUD) {
-    if (log_to_disk_ && g_fileLog->IsOpen()) {
-      g_fileLog->PutLine(warning_separator);
+    if (log_to_disk_ && file_log->IsOpen()) {
+      file_log->PutLine(warning_separator);
     }
     puts(warning_separator);
   }
@@ -297,12 +297,12 @@ void RageLog::Write(int where, const std::string& line) {
     }
 #endif
 
-    if (log_to_disk_ && (where & WRITE_TO_INFO) && g_fileInfo->IsOpen()) {
-      g_fileInfo->PutLine(str);
+    if (log_to_disk_ && (where & WRITE_TO_INFO) && file_info->IsOpen()) {
+      file_info->PutLine(str);
     }
     if (user_log_to_disk_ && (where & WRITE_TO_USER_LOG) &&
-        g_fileUserLog->IsOpen()) {
-      g_fileUserLog->PutLine(str);
+        file_user_log->IsOpen()) {
+      file_user_log->PutLine(str);
     }
 
     /* Add a timestamp to log.txt and RecentLogs, but not the rest of info.txt
@@ -311,14 +311,14 @@ void RageLog::Write(int where, const std::string& line) {
 
     AddToRecentLogs(str);
 
-    if (log_to_disk_ && g_fileLog->IsOpen()) {
-      g_fileLog->PutLine(str);
+    if (log_to_disk_ && file_log->IsOpen()) {
+      file_log->PutLine(str);
     }
   }
 
   if (where & WRITE_LOUD) {
-    if (log_to_disk_ && g_fileLog->IsOpen() && (where & WRITE_LOUD)) {
-      g_fileLog->PutLine(warning_separator);
+    if (log_to_disk_ && file_log->IsOpen() && (where & WRITE_LOUD)) {
+      file_log->PutLine(warning_separator);
     }
     puts(warning_separator);
   }
@@ -328,9 +328,9 @@ void RageLog::Write(int where, const std::string& line) {
 }
 
 void RageLog::Flush() {
-  g_fileLog->Flush();
-  g_fileInfo->Flush();
-  g_fileUserLog->Flush();
+  file_log->Flush();
+  file_info->Flush();
+  file_user_log->Flush();
 }
 
 #define NEWLINE "\n"
@@ -365,8 +365,8 @@ const char* RageLog::GetInfo() {
   return staticlog;
 }
 
-static const int BACKLOG_LINES = 10;
-static char backlog[BACKLOG_LINES][1024];
+static const int kBacklogLines = 10;
+static char backlog[kBacklogLines][1024];
 static int backlog_start = 0, backlog_cnt = 0;
 void RageLog::AddToRecentLogs(const std::string& str) {
   unsigned len = str.size();
@@ -381,17 +381,17 @@ void RageLog::AddToRecentLogs(const std::string& str) {
   if (backlog_start > backlog_cnt) {
     backlog_cnt = backlog_start;
   }
-  backlog_start %= BACKLOG_LINES;
+  backlog_start %= kBacklogLines;
 }
 
 const char* RageLog::GetRecentLog(int n) {
-  if (n >= BACKLOG_LINES || n >= backlog_cnt) {
+  if (n >= kBacklogLines || n >= backlog_cnt) {
     return nullptr;
   }
 
-  if (backlog_cnt == BACKLOG_LINES) {
+  if (backlog_cnt == kBacklogLines) {
     n += backlog_start;
-    n %= BACKLOG_LINES;
+    n %= kBacklogLines;
   }
   /* Make sure it's terminated: */
   backlog[n][sizeof(backlog[n]) - 1] = 0;
@@ -399,24 +399,24 @@ const char* RageLog::GetRecentLog(int n) {
   return backlog[n];
 }
 
-static char g_AdditionalLogStr[10240] = "";
-static int g_AdditionalLogSize = 0;
+static char additional_log_str[10240] = "";
+static int additional_log_size = 0;
 
 void RageLog::UpdateMappedLog() {
   std::string str;
-  for (const auto& i : LogMaps) {
+  for (const auto& i : log_maps) {
     str += ssprintf("%s" NEWLINE, i.second.c_str());
   }
 
-  g_AdditionalLogSize = std::min(sizeof(g_AdditionalLogStr), str.size() + 1);
-  memcpy(g_AdditionalLogStr, str.c_str(), g_AdditionalLogSize);
-  g_AdditionalLogStr[sizeof(g_AdditionalLogStr) - 1] = 0;
+  additional_log_size = std::min(sizeof(additional_log_str), str.size() + 1);
+  memcpy(additional_log_str, str.c_str(), additional_log_size);
+  additional_log_str[sizeof(additional_log_str) - 1] = 0;
 }
 
 const char* RageLog::GetAdditionalLog() {
-  int size = std::min(g_AdditionalLogSize, (int)sizeof(g_AdditionalLogStr) - 1);
-  g_AdditionalLogStr[size] = 0;
-  return g_AdditionalLogStr;
+  int size = std::min(additional_log_size, (int)sizeof(additional_log_str) - 1);
+  additional_log_str[size] = 0;
+  return additional_log_str;
 }
 
 void RageLog::MapLog(const std::string& key, const char* fmt, ...) {
@@ -427,12 +427,12 @@ void RageLog::MapLog(const std::string& key, const char* fmt, ...) {
   s += vssprintf(fmt, va);
   va_end(va);
 
-  LogMaps[key] = s;
+  log_maps[key] = s;
   UpdateMappedLog();
 }
 
 void RageLog::UnmapLog(const std::string& key) {
-  LogMaps.erase(key);
+  log_maps.erase(key);
   UpdateMappedLog();
 }
 

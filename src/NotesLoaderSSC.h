@@ -22,9 +22,9 @@ enum SSCLoadingStates {
 };
 
 /** @brief The version that formally introduced Split Timing. */
-const float VERSION_SPLIT_TIMING = 0.7f;
+const float kVersionSplitTiming = 0.7f;
 /** @brief The version that introduced the Chart Name tag. */
-const float VERSION_CHART_NAME_TAG = 0.74f;
+const float kVersionChartNameTag = 0.74f;
 
 /**
  * @brief The SSCLoader handles all of the parsing needed for .ssc files.

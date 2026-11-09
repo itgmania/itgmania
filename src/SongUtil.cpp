@@ -401,16 +401,16 @@ static LocalizedString SORT_OTHER("Sort", "Other");
 
 /* Just calculating GetNumTimesPlayed within the sort is pretty slow, so let's
  * precompute it.  (This could be generalized with a template.) */
-static std::map<const Song*, std::string> g_mapSongSortVal;
+static std::map<const Song*, std::string> map_song_sort_val;
 
 static bool CompareSongPointersBySortValueAscending(
     const Song* song1, const Song* song2) {
-  return g_mapSongSortVal[song1] < g_mapSongSortVal[song2];
+  return map_song_sort_val[song1] < map_song_sort_val[song2];
 }
 
 static bool CompareSongPointersBySortValueDescending(
     const Song* song1, const Song* song2) {
-  return g_mapSongSortVal[song1] > g_mapSongSortVal[song2];
+  return map_song_sort_val[song1] > map_song_sort_val[song2];
 }
 
 std::string SongUtil::MakeSortString(std::string s) {
@@ -584,7 +584,7 @@ void SongUtil::SortSongPointerArrayByProfileGrades(
 
 void SongUtil::SortSongPointerArrayByArtist(std::vector<Song*>& songs_in_out) {
   for (unsigned i = 0; i < songs_in_out.size(); ++i) {
-    g_mapSongSortVal[songs_in_out[i]] =
+    map_song_sort_val[songs_in_out[i]] =
         MakeSortString(songs_in_out[i]->GetTranslitArtist());
   }
   stable_sort(
@@ -597,7 +597,7 @@ void SongUtil::SortSongPointerArrayByArtist(std::vector<Song*>& songs_in_out) {
 void SongUtil::SortSongPointerArrayByDisplayArtist(
     std::vector<Song*>& songs_in_out) {
   for (unsigned i = 0; i < songs_in_out.size(); ++i) {
-    g_mapSongSortVal[songs_in_out[i]] =
+    map_song_sort_val[songs_in_out[i]] =
         MakeSortString(songs_in_out[i]->GetDisplayArtist());
   }
   stable_sort(
@@ -709,14 +709,14 @@ void SongUtil::SortSongPointerArrayByNumPlays(
     std::vector<Song*>& songs_in_out, const Profile* profile, bool descending) {
   ASSERT(profile != nullptr);
   for (unsigned i = 0; i < songs_in_out.size(); ++i) {
-    g_mapSongSortVal[songs_in_out[i]] =
+    map_song_sort_val[songs_in_out[i]] =
         ssprintf("%9i", profile->GetSongNumTimesPlayed(songs_in_out[i]));
   }
   stable_sort(
       songs_in_out.begin(), songs_in_out.end(),
       descending ? CompareSongPointersBySortValueDescending
                  : CompareSongPointersBySortValueAscending);
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
 }
 
 std::string SongUtil::GetSectionNameFromSongAndSort(
@@ -894,13 +894,13 @@ void SongUtil::SortSongPointerArrayBySectionName(
       val = "1" + MakeSortString(val);
     }
 
-    g_mapSongSortVal[songs_in_out[i]] = val;
+    map_song_sort_val[songs_in_out[i]] = val;
   }
 
   stable_sort(
       songs_in_out.begin(), songs_in_out.end(),
       CompareSongPointersBySortValueAscending);
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
 }
 
 void SongUtil::SortSongPointerArrayByParentSectionName(
@@ -924,22 +924,22 @@ void SongUtil::SortSongPointerArrayByParentSectionName(
         val = "1" + MakeSortString(series_name) + '\x01' + group_key;
       }
     }
-    g_mapSongSortVal[songs_in_out[i]] = val;
+    map_song_sort_val[songs_in_out[i]] = val;
   }
 
   stable_sort(
       songs_in_out.begin(), songs_in_out.end(),
       CompareSongPointersBySortValueAscending);
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
 }
 
 void SongUtil::SortSongPointerArrayByStepsTypeAndMeter(
     std::vector<Song*>& songs_in_out, StepsType st, Difficulty dc) {
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
   for (unsigned i = 0; i < songs_in_out.size(); ++i) {
     // Ignore locked steps.
     const Steps* steps = GetClosestNotes(songs_in_out[i], st, dc, true);
-    std::string& s = g_mapSongSortVal[songs_in_out[i]];
+    std::string& s = map_song_sort_val[songs_in_out[i]];
     s = ssprintf("%03d", steps ? steps->GetMeter() : 0);
 
     /* pSteps may not be exactly the difficulty we want; for example, we
@@ -972,13 +972,13 @@ void SongUtil::SortByMostRecentlyPlayedForMachine(
     std::string val = num_times_played
                           ? profile->GetSongLastPlayedDateTime(s).GetString()
                           : std::string("0");
-    g_mapSongSortVal[s] = val;
+    map_song_sort_val[s] = val;
   }
 
   stable_sort(
       songs_in_out.begin(), songs_in_out.end(),
       CompareSongPointersBySortValueDescending);
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
 }
 
 void SongUtil::SortByMostRecentlyPlayedForProfile(
@@ -989,12 +989,12 @@ void SongUtil::SortByMostRecentlyPlayedForProfile(
     std::string val = num_times_played
                           ? profile->GetSongLastPlayedDateTime(s).GetString()
                           : std::string("0");
-    g_mapSongSortVal[s] = val;
+    map_song_sort_val[s] = val;
   }
   stable_sort(
       songs_in_out.begin(), songs_in_out.end(),
       CompareSongPointersBySortValueDescending);
-  g_mapSongSortVal.clear();
+  map_song_sort_val.clear();
 }
 
 bool SongUtil::IsEditDescriptionUnique(
@@ -1046,7 +1046,7 @@ std::string SongUtil::MakeUniqueEditDescription(
     // make name "My Edit" -> "My Edit2"
     std::string num = ssprintf("%d", i + 1);
     temp =
-        Left(preferred_description, MAX_STEPS_DESCRIPTION_LENGTH - num.size()) +
+        Left(preferred_description, kMaxStepsDescriptionLength - num.size()) +
         num;
 
     if (IsEditDescriptionUnique(song, st, temp, nullptr)) {
@@ -1247,12 +1247,12 @@ void SongUtil::GetPlayableStepsTypes(
   // If AutoSetStyle, or a Style hasn't been chosen, check StepsTypes for all
   // Styles.
   if (CommonMetrics::AUTO_SET_STYLE ||
-      GAMESTATE->GetCurrentStyle(PLAYER_INVALID) == nullptr) {
+      GAMESTATE->GetCurrentStyle(kPlayerInvalid) == nullptr) {
     GAMEMAN->GetCompatibleStyles(
         GAMESTATE->cur_game_, GAMESTATE->GetNumPlayersEnabled(),
         possible_styles);
   } else {
-    possible_styles.push_back(GAMESTATE->GetCurrentStyle(PLAYER_INVALID));
+    possible_styles.push_back(GAMESTATE->GetCurrentStyle(kPlayerInvalid));
   }
 
   std::set<StepsType> steps_types;

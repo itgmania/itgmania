@@ -30,12 +30,12 @@
 #include "arch/Lights/LightsDriver.h"
 #include "global.h"
 
-const std::string DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
-static Preference<std::string> g_sLightsDriver(
+const std::string kDefaultLightsDriver = "SystemMessage,Export";
+static Preference<std::string> lights_driver(
     "LightsDriver", "");  // "" == DEFAULT_LIGHTS_DRIVER
-Preference<float> g_fLightsFalloffSeconds("LightsFalloffSeconds", 0.1f);
-Preference<float> g_fLightsAheadSeconds("LightsAheadSeconds", 0.05f);
-static Preference<bool> g_bBlinkGameplayButtonLightsOnNote(
+Preference<float> lights_falloff_seconds("LightsFalloffSeconds", 0.1f);
+Preference<float> lights_ahead_seconds("LightsAheadSeconds", 0.05f);
+static Preference<bool> blink_gameplay_button_lights_on_note(
     "BlinkGameplayButtonLightsOnNote", false);
 
 static ThemeMetric<std::string> GAME_BUTTONS_TO_SHOW(
@@ -113,9 +113,9 @@ LightsManager::LightsManager() {
   coin_counter_timer_.SetZero();
 
   lights_mode_ = LIGHTSMODE_JOINING;
-  std::string driver = g_sLightsDriver.Get();
+  std::string driver = lights_driver.Get();
   if (driver.empty()) {
-    driver = DEFAULT_LIGHTS_DRIVER;
+    driver = kDefaultLightsDriver;
   }
   LightsDriver::Create(driver, drivers_);
 
@@ -174,9 +174,9 @@ int LightsManager::LightsManThreadMain() {
 }
 
 // XXX: Allow themer to change these. (rewritten; who wrote original? -aj)
-static const float g_fLightEffectRiseSeconds = 0.075f;
-static const float g_fLightEffectFalloffSeconds = 0.35f;
-static const float g_fCoinPulseTime = 0.100f;
+static const float kLightEffectRiseSeconds = 0.075f;
+static const float kLightEffectFalloffSeconds = 0.35f;
+static const float kCoinPulseTime = 0.100f;
 void LightsManager::Update(float delta_time) {
   // Update actor effect lights.
   FOREACH_CabinetLight(cl) {
@@ -187,12 +187,12 @@ void LightsManager::Update(float delta_time) {
       float seconds = std::min(duration, time);
       duration -= seconds;
       time -= seconds;
-      fapproach(actor_lights_[cl], 1, seconds / g_fLightEffectRiseSeconds);
+      fapproach(actor_lights_[cl], 1, seconds / kLightEffectRiseSeconds);
     }
 
     if (time > 0) {
       // The light is out of power.  Dim it.
-      fapproach(actor_lights_[cl], 0, time / g_fLightEffectFalloffSeconds);
+      fapproach(actor_lights_[cl], 0, time / kLightEffectFalloffSeconds);
     }
 
     Actor::SetBGMLight(cl, actor_lights_[cl]);
@@ -221,9 +221,9 @@ void LightsManager::Update(float delta_time) {
     lights_state_.coin_counter_ = false;
     if (!coin_counter_timer_.IsZero()) {
       float ago = coin_counter_timer_.Ago();
-      if (ago < g_fCoinPulseTime) {
+      if (ago < kCoinPulseTime) {
         lights_state_.coin_counter_ = true;
-      } else if (ago >= g_fCoinPulseTime * 2) {
+      } else if (ago >= kCoinPulseTime * 2) {
         coin_counter_timer_.SetZero();
       }
     } else if (queued_coin_counter_pulses_) {
@@ -445,7 +445,7 @@ void LightsManager::Update(float delta_time) {
                       (lights_mode_ == LIGHTSMODE_GAMEPLAY);
 
       // Blink on notes during gameplay.
-      if (gameplay && g_bBlinkGameplayButtonLightsOnNote) {
+      if (gameplay && blink_gameplay_button_lights_on_note) {
         FOREACH_ENUM(GameController, gc) {
           FOREACH_ENUM(GameButton, gb) {
             lights_state_.game_button_lights_[gc][gb] =
@@ -545,12 +545,12 @@ void LightsManager::Update(float delta_time) {
 }
 
 void LightsManager::BlinkCabinetLight(CabinetLight cl) {
-  secs_left_in_cabinet_light_blink_[cl] = g_fLightsFalloffSeconds;
+  secs_left_in_cabinet_light_blink_[cl] = lights_falloff_seconds;
 }
 
 void LightsManager::BlinkGameButton(GameInput gi) {
   secs_left_in_game_button_blink_[gi.controller_][gi.button_] =
-      g_fLightsFalloffSeconds;
+      lights_falloff_seconds;
 }
 
 void LightsManager::SetLightsMode(LightsMode lm) {

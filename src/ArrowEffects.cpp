@@ -27,7 +27,7 @@
 #include "ThemeMetric.h"
 #include "global.h"
 
-static const char dimension_names[4] = "XYZ";
+static const char kDimensionNames[4] = "XYZ";
 
 static ThemeMetric<float> ARROW_SPACING("ArrowEffects", "ArrowSpacing");
 static ThemeMetric<bool> QUANTIZE_ARROW_Y(
@@ -84,27 +84,27 @@ static ThemeMetric<float> TIPSY_OFFSET_ARROW_MAGNITUDE(
     "ArrowEffects", "TipsyOffsetArrowMagnitude");
 
 static std::string TPSTL_NAME(size_t i) {
-  return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]);
+  return ssprintf("Tornado%cPositionScaleToLow", kDimensionNames[i]);
 }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_LOW(
     "ArrowEffects", TPSTL_NAME, 3);
 static std::string TPSTH_NAME(size_t i) {
-  return ssprintf("Tornado%cPositionScaleToHigh", dimension_names[i]);
+  return ssprintf("Tornado%cPositionScaleToHigh", kDimensionNames[i]);
 }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_HIGH(
     "ArrowEffects", TPSTH_NAME, 3);
 static std::string TOF_NAME(size_t i) {
-  return ssprintf("Tornado%cOffsetFrequency", dimension_names[i]);
+  return ssprintf("Tornado%cOffsetFrequency", kDimensionNames[i]);
 }
 static ThemeMetric1D<float> TORNADO_OFFSET_FREQUENCY(
     "ArrowEffects", TOF_NAME, 3);
 static std::string TOSFL_NAME(size_t i) {
-  return ssprintf("Tornado%cOffsetScaleFromLow", dimension_names[i]);
+  return ssprintf("Tornado%cOffsetScaleFromLow", kDimensionNames[i]);
 }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_LOW(
     "ArrowEffects", TOSFL_NAME, 3);
 static std::string TOSFH_NAME(size_t i) {
-  return ssprintf("Tornado%cOffsetScaleFromHigh", dimension_names[i]);
+  return ssprintf("Tornado%cOffsetScaleFromHigh", kDimensionNames[i]);
 }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_HIGH(
     "ArrowEffects", TOSFH_NAME, 3);
@@ -176,13 +176,13 @@ float ArrowEffects::GetTime() {
 
 namespace {
 struct PerPlayerData {
-  float min_tornado_[3][MAX_COLS_PER_PLAYER];
-  float max_tornado_[3][MAX_COLS_PER_PLAYER];
-  float invert_distance_[MAX_COLS_PER_PLAYER];
-  float tipsy_result_[MAX_COLS_PER_PLAYER];
-  float tipsy_offset_result_[MAX_COLS_PER_PLAYER];
-  float tan_tipsy_result_[MAX_COLS_PER_PLAYER];
-  float tan_tipsy_offset_result_[MAX_COLS_PER_PLAYER];
+  float min_tornado_[3][kMaxColsPerPlayer];
+  float max_tornado_[3][kMaxColsPerPlayer];
+  float invert_distance_[kMaxColsPerPlayer];
+  float tipsy_result_[kMaxColsPerPlayer];
+  float tipsy_offset_result_[kMaxColsPerPlayer];
+  float tan_tipsy_result_[kMaxColsPerPlayer];
+  float tan_tipsy_offset_result_[kMaxColsPerPlayer];
   float beat_factor_[3];
   float expand_seconds_;
   float tan_expand_seconds_;
@@ -193,10 +193,10 @@ struct PerPlayerData {
   // to cause bugs. -Kyz
   const Style* prev_style_;
 };
-PerPlayerData g_EffectData[NUM_PLAYERS];
-const int dim_x = 0;
-const int dim_y = 1;
-const int dim_z = 2;
+PerPlayerData effect_data[kNumPlayers];
+const int kDimX = 0;
+const int kDimY = 1;
+const int kDimZ = 2;
 
 float tornado_position_scale_to_low[3];
 float tornado_position_scale_to_high[3];
@@ -252,8 +252,8 @@ static float CalculateBumpyAngle(float y_offset, float offset, float period) {
 }
 
 static float CalculateDigitalAngle(float y_offset, float offset, float period) {
-  return PI * (y_offset + (1.0f * offset)) /
-         (ARROW_SIZE + (period * ARROW_SIZE));
+  return kPi * (y_offset + (1.0f * offset)) /
+         (kArrowSize + (period * kArrowSize));
 }
 
 static void UpdateBeat(
@@ -302,11 +302,11 @@ static void UpdateTipsy(
   const float time = ArrowEffects::GetTime();
   const float time_times_timer =
       time * ((speed * TIPSY_TIMER_FREQUENCY) + TIPSY_TIMER_FREQUENCY);
-  const float arrow_times_mag = ARROW_SIZE * TIPSY_ARROW_MAGNITUDE;
+  const float arrow_times_mag = kArrowSize * TIPSY_ARROW_MAGNITUDE;
   const float time_times_offset_timer = time * TIPSY_OFFSET_TIMER_FREQUENCY;
   const float arrow_times_offset_mag =
-      ARROW_SIZE * TIPSY_OFFSET_ARROW_MAGNITUDE;
-  for (int col = 0; col < MAX_COLS_PER_PLAYER; ++col) {
+      kArrowSize * TIPSY_OFFSET_ARROW_MAGNITUDE;
+  for (int col = 0; col < kMaxColsPerPlayer; ++col) {
     if (is_tan) {
       tipsy_result[col] =
           SelectTanType(
@@ -336,7 +336,7 @@ static void UpdateTipsy(
 void ArrowEffects::Init(PlayerNumber pn) {
   const Style* style = GAMESTATE->GetCurrentStyle(pn);
   const Style::ColumnInfo* cols = style->column_info_[pn];
-  PerPlayerData& data = g_EffectData[pn];
+  PerPlayerData& data = effect_data[pn];
   // Init tornado limits.
   // This used to run every frame, but it doesn't actually depend on anything
   // that changes every frame.  In openitg, it runs for every note. -Kyz
@@ -405,7 +405,7 @@ void ArrowEffects::Update() {
     const float* accels =
         GAMESTATE->player_state_[pn]->player_options_.GetCurrent().accels_;
 
-    PerPlayerData& data = g_EffectData[pn];
+    PerPlayerData& data = effect_data[pn];
 
     if (style != data.prev_style_) {
       Init(pn);
@@ -416,15 +416,15 @@ void ArrowEffects::Update() {
       data.expand_seconds_ += static_cast<float>(time - last_time);
       data.expand_seconds_ = std::fmod(
           data.expand_seconds_,
-          (PI * 2) / (accels[PlayerOptions::ACCEL_EXPAND_PERIOD] + 1));
+          (kPi * 2) / (accels[PlayerOptions::ACCEL_EXPAND_PERIOD] + 1));
       data.tan_expand_seconds_ += static_cast<float>(time - last_time);
       data.tan_expand_seconds_ = std::fmod(
           data.tan_expand_seconds_,
-          (PI * 2) / (accels[PlayerOptions::ACCEL_TAN_EXPAND_PERIOD] + 1));
+          (kPi * 2) / (accels[PlayerOptions::ACCEL_TAN_EXPAND_PERIOD] + 1));
     }
 
     // Update Invert
-    for (int col_num = 0; col_num < MAX_COLS_PER_PLAYER; ++col_num) {
+    for (int col_num = 0; col_num < kMaxColsPerPlayer; ++col_num) {
       const int num_cols = style->cols_per_player_;
       const int num_sides =
           (style->style_type_ == StyleType_OnePlayerTwoSides ||
@@ -474,7 +474,7 @@ void ArrowEffects::Update() {
           effects[PlayerOptions::EFFECT_TIPSY_OFFSET],
           effects[PlayerOptions::EFFECT_TIPSY_SPEED], false);
     } else {
-      for (int col = 0; col < MAX_COLS_PER_PLAYER; ++col) {
+      for (int col = 0; col < kMaxColsPerPlayer; ++col) {
         data.tipsy_result_[col] = 0;
       }
     }
@@ -486,24 +486,24 @@ void ArrowEffects::Update() {
           effects[PlayerOptions::EFFECT_TAN_TIPSY_OFFSET],
           effects[PlayerOptions::EFFECT_TAN_TIPSY_SPEED], true);
     } else {
-      for (int col = 0; col < MAX_COLS_PER_PLAYER; ++col) {
+      for (int col = 0; col < kMaxColsPerPlayer; ++col) {
         data.tan_tipsy_result_[col] = 0;
       }
     }
 
     // Update Beat
     UpdateBeat(
-        dim_x, data, position, effects[PlayerOptions::EFFECT_BEAT_OFFSET],
+        kDimX, data, position, effects[PlayerOptions::EFFECT_BEAT_OFFSET],
         effects[PlayerOptions::EFFECT_BEAT_MULT]);
 
     // Update BeatY
     UpdateBeat(
-        dim_y, data, position, effects[PlayerOptions::EFFECT_BEAT_Y_OFFSET],
+        kDimY, data, position, effects[PlayerOptions::EFFECT_BEAT_Y_OFFSET],
         effects[PlayerOptions::EFFECT_BEAT_Y_MULT]);
 
     // Update BeatZ
     UpdateBeat(
-        dim_z, data, position, effects[PlayerOptions::EFFECT_BEAT_Z_OFFSET],
+        kDimZ, data, position, effects[PlayerOptions::EFFECT_BEAT_Z_OFFSET],
         effects[PlayerOptions::EFFECT_BEAT_Z_MULT]);
   }
   last_time = time;
@@ -598,7 +598,7 @@ float ArrowEffects::GetYOffset(
   const float* effects = curr_options->effects_;
 
   // TODO: Don't index by PlayerNumber.
-  PerPlayerData& data = g_EffectData[player_state->player_number_];
+  PerPlayerData& data = effect_data[player_state->player_number_];
 
   float y_adjust = 0;  // fill this in depending on PlayerOptions
 
@@ -635,7 +635,7 @@ float ArrowEffects::GetYOffset(
 
   if (effects[PlayerOptions::EFFECT_PARABOLA_Y] != 0) {
     y_adjust += effects[PlayerOptions::EFFECT_PARABOLA_Y] *
-                (y_offset / ARROW_SIZE) * (y_offset / ARROW_SIZE);
+                (y_offset / kArrowSize) * (y_offset / kArrowSize);
   }
 
   y_offset += y_adjust;
@@ -747,24 +747,24 @@ float ArrowEffects::GetYPos(
   // Doing the math with a precalculated result of 0 should be faster than
   // checking whether tipsy is on. -Kyz
   // TODO: Don't index by PlayerNumber.
-  PerPlayerData& data = g_EffectData[curr_options->pn_];
+  PerPlayerData& data = effect_data[curr_options->pn_];
   f += effects[PlayerOptions::EFFECT_TIPSY] * data.tipsy_result_[col];
   f += effects[PlayerOptions::EFFECT_TAN_TIPSY] * data.tan_tipsy_result_[col];
 
   if (effects[PlayerOptions::EFFECT_ATTENUATE_Y] != 0) {
     const float x_offset = cols[col].x_offset_;
-    f += effects[PlayerOptions::EFFECT_ATTENUATE_Y] * (y_offset / ARROW_SIZE) *
-         (y_offset / ARROW_SIZE) * (x_offset / ARROW_SIZE);
+    f += effects[PlayerOptions::EFFECT_ATTENUATE_Y] * (y_offset / kArrowSize) *
+         (y_offset / kArrowSize) * (x_offset / kArrowSize);
   }
 
   if (effects[PlayerOptions::EFFECT_BEAT_Y] != 0) {
     const float shift =
-        data.beat_factor_[dim_y] *
+        data.beat_factor_[kDimY] *
         std::sin(
             y_offset / ((effects[PlayerOptions::EFFECT_BEAT_Y_PERIOD] *
                          BEAT_Y_OFFSET_HEIGHT) +
                         BEAT_Y_OFFSET_HEIGHT) +
-            PI / BEAT_Y_PI_HEIGHT);
+            kPi / BEAT_Y_PI_HEIGHT);
     f += effects[PlayerOptions::EFFECT_BEAT_Y] * shift;
   }
 
@@ -783,13 +783,13 @@ float ArrowEffects::GetYOffsetFromYPos(
   // Doing the math with a precalculated result of 0 should be faster than
   // checking whether tipsy is on. -Kyz
   // TODO: Don't index by PlayerNumber.
-  PerPlayerData& data = g_EffectData[curr_options->pn_];
+  PerPlayerData& data = effect_data[curr_options->pn_];
   f += effects[PlayerOptions::EFFECT_TIPSY] * data.tipsy_offset_result_[col];
   f += effects[PlayerOptions::EFFECT_TAN_TIPSY] *
        data.tan_tipsy_offset_result_[col];
 
-  f += effects[PlayerOptions::EFFECT_PARABOLA_Y] * (y_pos / ARROW_SIZE) *
-       (y_pos / ARROW_SIZE);
+  f += effects[PlayerOptions::EFFECT_PARABOLA_Y] * (y_pos / kArrowSize) *
+       (y_pos / kArrowSize);
 
   float shift, scale;
   ArrowGetReverseShiftAndScale(col, y_reverse_offset_pixels, shift, scale);
@@ -812,11 +812,11 @@ float ArrowEffects::GetXPos(
   // TODO: Don't index by PlayerNumber.
   const Style::ColumnInfo* cols =
       style->column_info_[player_state->player_number_];
-  PerPlayerData& data = g_EffectData[player_state->player_number_];
+  PerPlayerData& data = effect_data[player_state->player_number_];
 
   if (effects[PlayerOptions::EFFECT_TORNADO] != 0) {
     pixel_offset_from_center += CalculateTornadoOffsetFromMagnitude(
-        dim_x, col_num, effects[PlayerOptions::EFFECT_TORNADO],
+        kDimX, col_num, effects[PlayerOptions::EFFECT_TORNADO],
         effects[PlayerOptions::EFFECT_TORNADO_OFFSET],
         effects[PlayerOptions::EFFECT_TORNADO_PERIOD], cols,
         player_state->notefield_zoom_, data, y_offset, false);
@@ -824,7 +824,7 @@ float ArrowEffects::GetXPos(
 
   if (effects[PlayerOptions::EFFECT_TAN_TORNADO] != 0) {
     pixel_offset_from_center += CalculateTornadoOffsetFromMagnitude(
-        dim_x, col_num, effects[PlayerOptions::EFFECT_TAN_TORNADO],
+        kDimX, col_num, effects[PlayerOptions::EFFECT_TAN_TORNADO],
         effects[PlayerOptions::EFFECT_TAN_TORNADO_OFFSET],
         effects[PlayerOptions::EFFECT_TAN_TORNADO_PERIOD], cols,
         player_state->notefield_zoom_, data, y_offset, true);
@@ -857,7 +857,7 @@ float ArrowEffects::GetXPos(
              DRUNK_COLUMN_FREQUENCY, y_offset,
              effects[PlayerOptions::EFFECT_DRUNK_PERIOD],
              DRUNK_OFFSET_FREQUENCY)) *
-         ARROW_SIZE * DRUNK_ARROW_MAGNITUDE);
+         kArrowSize * DRUNK_ARROW_MAGNITUDE);
   }
 
   if (effects[PlayerOptions::EFFECT_TAN_DRUNK] != 0) {
@@ -871,7 +871,7 @@ float ArrowEffects::GetXPos(
                  effects[PlayerOptions::EFFECT_TAN_DRUNK_PERIOD],
                  DRUNK_OFFSET_FREQUENCY),
              curr_options->cosecant_) *
-         ARROW_SIZE * DRUNK_ARROW_MAGNITUDE);
+         kArrowSize * DRUNK_ARROW_MAGNITUDE);
   }
 
   if (effects[PlayerOptions::EFFECT_FLIP] != 0) {
@@ -893,54 +893,54 @@ float ArrowEffects::GetXPos(
 
   if (effects[PlayerOptions::EFFECT_BEAT] != 0) {
     const float shift =
-        data.beat_factor_[dim_x] *
+        data.beat_factor_[kDimX] *
         std::sin(
             y_offset / ((effects[PlayerOptions::EFFECT_BEAT_PERIOD] *
                          BEAT_OFFSET_HEIGHT) +
                         BEAT_OFFSET_HEIGHT) +
-            PI / BEAT_PI_HEIGHT);
+            kPi / BEAT_PI_HEIGHT);
     pixel_offset_from_center += effects[PlayerOptions::EFFECT_BEAT] * shift;
   }
 
   if (effects[PlayerOptions::EFFECT_ZIGZAG] != 0) {
     float result = RageTriangle(
-        (PI * (1 / (effects[PlayerOptions::EFFECT_ZIGZAG_PERIOD] + 1)) *
+        (kPi * (1 / (effects[PlayerOptions::EFFECT_ZIGZAG_PERIOD] + 1)) *
          ((y_offset +
            (100.0f * (effects[PlayerOptions::EFFECT_ZIGZAG_OFFSET]))) /
-          ARROW_SIZE)));
+          kArrowSize)));
 
     pixel_offset_from_center +=
-        (effects[PlayerOptions::EFFECT_ZIGZAG] * ARROW_SIZE / 2) * result;
+        (effects[PlayerOptions::EFFECT_ZIGZAG] * kArrowSize / 2) * result;
   }
 
   if (effects[PlayerOptions::EFFECT_SAWTOOTH] != 0) {
     pixel_offset_from_center +=
-        (effects[PlayerOptions::EFFECT_SAWTOOTH] * ARROW_SIZE) *
+        (effects[PlayerOptions::EFFECT_SAWTOOTH] * kArrowSize) *
         ((0.5f / (effects[PlayerOptions::EFFECT_SAWTOOTH_PERIOD] + 1) *
           y_offset) /
-             ARROW_SIZE -
+             kArrowSize -
          std::floor(
              (0.5f / (effects[PlayerOptions::EFFECT_SAWTOOTH_PERIOD] + 1) *
               y_offset) /
-             ARROW_SIZE));
+             kArrowSize));
   }
 
   if (effects[PlayerOptions::EFFECT_PARABOLA_X] != 0) {
     pixel_offset_from_center += effects[PlayerOptions::EFFECT_PARABOLA_X] *
-                                (y_offset / ARROW_SIZE) *
-                                (y_offset / ARROW_SIZE);
+                                (y_offset / kArrowSize) *
+                                (y_offset / kArrowSize);
   }
 
   if (effects[PlayerOptions::EFFECT_ATTENUATE_X] != 0) {
     const float x_offset = cols[col_num].x_offset_;
     pixel_offset_from_center +=
-        effects[PlayerOptions::EFFECT_ATTENUATE_X] * (y_offset / ARROW_SIZE) *
-        (y_offset / ARROW_SIZE) * (x_offset / ARROW_SIZE);
+        effects[PlayerOptions::EFFECT_ATTENUATE_X] * (y_offset / kArrowSize) *
+        (y_offset / kArrowSize) * (x_offset / kArrowSize);
   }
 
   if (effects[PlayerOptions::EFFECT_DIGITAL] != 0) {
     pixel_offset_from_center +=
-        (effects[PlayerOptions::EFFECT_DIGITAL] * ARROW_SIZE * 0.5f) *
+        (effects[PlayerOptions::EFFECT_DIGITAL] * kArrowSize * 0.5f) *
         std::round(
             (effects[PlayerOptions::EFFECT_DIGITAL_STEPS] + 1) *
             std::sin(CalculateDigitalAngle(
@@ -951,7 +951,7 @@ float ArrowEffects::GetXPos(
 
   if (effects[PlayerOptions::EFFECT_TAN_DIGITAL] != 0) {
     pixel_offset_from_center +=
-        (effects[PlayerOptions::EFFECT_TAN_DIGITAL] * ARROW_SIZE * 0.5f) *
+        (effects[PlayerOptions::EFFECT_TAN_DIGITAL] * kArrowSize * 0.5f) *
         std::round(
             (effects[PlayerOptions::EFFECT_TAN_DIGITAL_STEPS] + 1) *
             SelectTanType(
@@ -964,13 +964,13 @@ float ArrowEffects::GetXPos(
 
   if (effects[PlayerOptions::EFFECT_SQUARE] != 0) {
     float result = RageSquare(
-        (PI *
+        (kPi *
          (y_offset + (1.0f * (effects[PlayerOptions::EFFECT_SQUARE_OFFSET]))) /
-         (ARROW_SIZE +
-          (effects[PlayerOptions::EFFECT_SQUARE_PERIOD] * ARROW_SIZE))));
+         (kArrowSize +
+          (effects[PlayerOptions::EFFECT_SQUARE_PERIOD] * kArrowSize))));
 
     pixel_offset_from_center +=
-        (effects[PlayerOptions::EFFECT_SQUARE] * ARROW_SIZE * 0.5f) * result;
+        (effects[PlayerOptions::EFFECT_SQUARE] * kArrowSize * 0.5f) * result;
   }
 
   if (effects[PlayerOptions::EFFECT_BOUNCE] != 0) {
@@ -981,7 +981,7 @@ float ArrowEffects::GetXPos(
              (60 + (effects[PlayerOptions::EFFECT_BOUNCE_PERIOD] * 60)))));
 
     pixel_offset_from_center +=
-        effects[PlayerOptions::EFFECT_BOUNCE] * ARROW_SIZE * 0.5f * bounce_amt;
+        effects[PlayerOptions::EFFECT_BOUNCE] * kArrowSize * 0.5f * bounce_amt;
   }
 
   if (effects[PlayerOptions::EFFECT_XMODE] != 0) {
@@ -1078,8 +1078,8 @@ float ArrowEffects::GetRotationZ(
     const float song_beat = player_state->position_.song_beat_visible_;
     float dizzy_rotation = note_beat - song_beat;
     dizzy_rotation *= effects[PlayerOptions::EFFECT_DIZZY];
-    dizzy_rotation = std::fmod(dizzy_rotation, 2 * PI);
-    dizzy_rotation *= 180 / PI;
+    dizzy_rotation = std::fmod(dizzy_rotation, 2 * kPi);
+    dizzy_rotation *= 180 / kPi;
     rotation += dizzy_rotation;
   }
   return rotation;
@@ -1091,18 +1091,18 @@ float ArrowEffects::ReceptorGetRotationZ(
   float rotation = 0;
 
   if (curr_options->confusion_z_[col] != 0) {
-    rotation += curr_options->confusion_z_[col] * 180.0f / PI;
+    rotation += curr_options->confusion_z_[col] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION_OFFSET] != 0) {
-    rotation += effects[PlayerOptions::EFFECT_CONFUSION_OFFSET] * 180.0f / PI;
+    rotation += effects[PlayerOptions::EFFECT_CONFUSION_OFFSET] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION] != 0) {
     float conf_rotation = player_state->position_.song_beat_visible_;
     conf_rotation *= effects[PlayerOptions::EFFECT_CONFUSION];
-    conf_rotation = std::fmod(conf_rotation, 2 * PI);
-    conf_rotation *= -180 / PI;
+    conf_rotation = std::fmod(conf_rotation, 2 * kPi);
+    conf_rotation *= -180 / kPi;
     rotation += conf_rotation;
   }
 
@@ -1115,18 +1115,19 @@ float ArrowEffects::ReceptorGetRotationX(
   float rotation = 0;
 
   if (curr_options->confusion_x_[col] != 0) {
-    rotation += curr_options->confusion_x_[col] * 180.0f / PI;
+    rotation += curr_options->confusion_x_[col] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION_X_OFFSET] != 0) {
-    rotation += effects[PlayerOptions::EFFECT_CONFUSION_X_OFFSET] * 180.0f / PI;
+    rotation +=
+        effects[PlayerOptions::EFFECT_CONFUSION_X_OFFSET] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION_X] != 0) {
     float conf_rotation = player_state->position_.song_beat_visible_;
     conf_rotation *= effects[PlayerOptions::EFFECT_CONFUSION_X];
-    conf_rotation = std::fmod(conf_rotation, 2 * PI);
-    conf_rotation *= -180 / PI;
+    conf_rotation = std::fmod(conf_rotation, 2 * kPi);
+    conf_rotation *= -180 / kPi;
     rotation += conf_rotation;
   }
 
@@ -1139,18 +1140,19 @@ float ArrowEffects::ReceptorGetRotationY(
   float rotation = 0;
 
   if (curr_options->confusion_y_[col] != 0) {
-    rotation += curr_options->confusion_y_[col] * 180.0f / PI;
+    rotation += curr_options->confusion_y_[col] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION_Y_OFFSET] != 0) {
-    rotation += effects[PlayerOptions::EFFECT_CONFUSION_Y_OFFSET] * 180.0f / PI;
+    rotation +=
+        effects[PlayerOptions::EFFECT_CONFUSION_Y_OFFSET] * 180.0f / kPi;
   }
 
   if (effects[PlayerOptions::EFFECT_CONFUSION_Y] != 0) {
     float conf_rotation = player_state->position_.song_beat_visible_;
     conf_rotation *= effects[PlayerOptions::EFFECT_CONFUSION_Y];
-    conf_rotation = std::fmod(conf_rotation, 2 * PI);
-    conf_rotation *= -180 / PI;
+    conf_rotation = std::fmod(conf_rotation, 2 * kPi);
+    conf_rotation *= -180 / kPi;
     rotation += conf_rotation;
   }
 
@@ -1161,7 +1163,7 @@ float ArrowEffects::GetMoveX(int col) {
   const float* moves = curr_options->moves_x_;
   float f = 0;
   if (moves[col] != 0) {
-    f += ARROW_SIZE * moves[col];
+    f += kArrowSize * moves[col];
   }
   return f;
 }
@@ -1170,7 +1172,7 @@ float ArrowEffects::GetMoveY(int col) {
   const float* moves = curr_options->moves_y_;
   float f = 0;
   if (moves[col] != 0) {
-    f += ARROW_SIZE * moves[col];
+    f += kArrowSize * moves[col];
   }
   return f;
 }
@@ -1179,7 +1181,7 @@ float ArrowEffects::GetMoveZ(int col) {
   const float* moves = curr_options->moves_z_;
   float f = 0;
   if (moves[col] != 0) {
-    f += ARROW_SIZE * moves[col];
+    f += kArrowSize * moves[col];
   }
   return f;
 }
@@ -1373,11 +1375,11 @@ float ArrowEffects::GetZPos(
   // TODO: Don't index by PlayerNumber.
   const Style::ColumnInfo* cols =
       style->column_info_[player_state->player_number_];
-  PerPlayerData& data = g_EffectData[player_state->player_number_];
+  PerPlayerData& data = effect_data[player_state->player_number_];
 
   if (effects[PlayerOptions::EFFECT_TORNADO_Z] != 0) {
     z_pos += CalculateTornadoOffsetFromMagnitude(
-        dim_z, col, effects[PlayerOptions::EFFECT_TORNADO_Z],
+        kDimZ, col, effects[PlayerOptions::EFFECT_TORNADO_Z],
         effects[PlayerOptions::EFFECT_TORNADO_Z_OFFSET],
         effects[PlayerOptions::EFFECT_TORNADO_Z_PERIOD], cols,
         player_state->notefield_zoom_, data, y_offset, false);
@@ -1385,7 +1387,7 @@ float ArrowEffects::GetZPos(
 
   if (effects[PlayerOptions::EFFECT_TAN_TORNADO_Z] != 0) {
     z_pos += CalculateTornadoOffsetFromMagnitude(
-        dim_z, col, effects[PlayerOptions::EFFECT_TAN_TORNADO_Z],
+        kDimZ, col, effects[PlayerOptions::EFFECT_TAN_TORNADO_Z],
         effects[PlayerOptions::EFFECT_TAN_TORNADO_Z_OFFSET],
         effects[PlayerOptions::EFFECT_TAN_TORNADO_Z_PERIOD], cols,
         player_state->notefield_zoom_, data, y_offset, true);
@@ -1416,37 +1418,37 @@ float ArrowEffects::GetZPos(
 
   if (effects[PlayerOptions::EFFECT_ZIGZAG_Z] != 0) {
     float result = RageTriangle(
-        (PI * (1 / (effects[PlayerOptions::EFFECT_ZIGZAG_Z_PERIOD] + 1)) *
+        (kPi * (1 / (effects[PlayerOptions::EFFECT_ZIGZAG_Z_PERIOD] + 1)) *
          ((y_offset +
            (100.0f * (effects[PlayerOptions::EFFECT_ZIGZAG_Z_OFFSET]))) /
-          ARROW_SIZE)));
+          kArrowSize)));
 
     z_pos +=
-        (effects[PlayerOptions::EFFECT_ZIGZAG_Z] * ARROW_SIZE / 2) * result;
+        (effects[PlayerOptions::EFFECT_ZIGZAG_Z] * kArrowSize / 2) * result;
   }
 
   if (effects[PlayerOptions::EFFECT_SAWTOOTH_Z] != 0) {
     z_pos +=
-        (effects[PlayerOptions::EFFECT_SAWTOOTH_Z] * ARROW_SIZE) *
+        (effects[PlayerOptions::EFFECT_SAWTOOTH_Z] * kArrowSize) *
         ((0.5f / (effects[PlayerOptions::EFFECT_SAWTOOTH_Z_PERIOD] + 1) *
           y_offset) /
-             ARROW_SIZE -
+             kArrowSize -
          std::floor(
              (0.5f / (effects[PlayerOptions::EFFECT_SAWTOOTH_Z_PERIOD] + 1) *
               y_offset) /
-             ARROW_SIZE));
+             kArrowSize));
   }
 
   if (effects[PlayerOptions::EFFECT_PARABOLA_Z] != 0) {
     z_pos += effects[PlayerOptions::EFFECT_PARABOLA_Z] *
-             (y_offset / ARROW_SIZE) * (y_offset / ARROW_SIZE);
+             (y_offset / kArrowSize) * (y_offset / kArrowSize);
   }
 
   if (effects[PlayerOptions::EFFECT_ATTENUATE_Z] != 0) {
     const float x_offset = cols[col].x_offset_;
     z_pos += effects[PlayerOptions::EFFECT_ATTENUATE_Z] *
-             (y_offset / ARROW_SIZE) * (y_offset / ARROW_SIZE) *
-             (x_offset / ARROW_SIZE);
+             (y_offset / kArrowSize) * (y_offset / kArrowSize) *
+             (x_offset / kArrowSize);
   }
 
   if (effects[PlayerOptions::EFFECT_DRUNK_Z] != 0) {
@@ -1457,7 +1459,7 @@ float ArrowEffects::GetZPos(
                   DRUNK_Z_COLUMN_FREQUENCY, y_offset,
                   effects[PlayerOptions::EFFECT_DRUNK_Z_PERIOD],
                   DRUNK_Z_OFFSET_FREQUENCY)) *
-              ARROW_SIZE * DRUNK_Z_ARROW_MAGNITUDE);
+              kArrowSize * DRUNK_Z_ARROW_MAGNITUDE);
   }
 
   if (effects[PlayerOptions::EFFECT_TAN_DRUNK_Z] != 0) {
@@ -1470,22 +1472,22 @@ float ArrowEffects::GetZPos(
                       effects[PlayerOptions::EFFECT_TAN_DRUNK_Z_PERIOD],
                       DRUNK_Z_OFFSET_FREQUENCY),
                   curr_options->cosecant_) *
-              ARROW_SIZE * DRUNK_Z_ARROW_MAGNITUDE);
+              kArrowSize * DRUNK_Z_ARROW_MAGNITUDE);
   }
 
   if (effects[PlayerOptions::EFFECT_BEAT_Z] != 0) {
     const float shift =
-        data.beat_factor_[dim_z] *
+        data.beat_factor_[kDimZ] *
         std::sin(
             y_offset / ((effects[PlayerOptions::EFFECT_BEAT_Z_PERIOD] *
                          BEAT_Z_OFFSET_HEIGHT) +
                         BEAT_Z_OFFSET_HEIGHT) +
-            PI / BEAT_Z_PI_HEIGHT);
+            kPi / BEAT_Z_PI_HEIGHT);
     z_pos += effects[PlayerOptions::EFFECT_BEAT_Z] * shift;
   }
 
   if (effects[PlayerOptions::EFFECT_DIGITAL_Z] != 0) {
-    z_pos += (effects[PlayerOptions::EFFECT_DIGITAL_Z] * ARROW_SIZE * 0.5f) *
+    z_pos += (effects[PlayerOptions::EFFECT_DIGITAL_Z] * kArrowSize * 0.5f) *
              std::round(
                  (effects[PlayerOptions::EFFECT_DIGITAL_Z_STEPS] + 1) *
                  std::sin(CalculateDigitalAngle(
@@ -1496,7 +1498,7 @@ float ArrowEffects::GetZPos(
 
   if (effects[PlayerOptions::EFFECT_TAN_DIGITAL_Z] != 0) {
     z_pos +=
-        (effects[PlayerOptions::EFFECT_TAN_DIGITAL_Z] * ARROW_SIZE * 0.5f) *
+        (effects[PlayerOptions::EFFECT_TAN_DIGITAL_Z] * kArrowSize * 0.5f) *
         std::round(
             (effects[PlayerOptions::EFFECT_TAN_DIGITAL_Z_STEPS] + 1) *
             SelectTanType(
@@ -1510,12 +1512,12 @@ float ArrowEffects::GetZPos(
 
   if (effects[PlayerOptions::EFFECT_SQUARE_Z] != 0) {
     float result = RageSquare((
-        PI *
+        kPi *
         (y_offset + (1.0f * (effects[PlayerOptions::EFFECT_SQUARE_Z_OFFSET]))) /
-        (ARROW_SIZE +
-         (effects[PlayerOptions::EFFECT_SQUARE_Z_PERIOD] * ARROW_SIZE))));
+        (kArrowSize +
+         (effects[PlayerOptions::EFFECT_SQUARE_Z_PERIOD] * kArrowSize))));
     z_pos +=
-        (effects[PlayerOptions::EFFECT_SQUARE_Z] * ARROW_SIZE * 0.5f) * result;
+        (effects[PlayerOptions::EFFECT_SQUARE_Z] * kArrowSize * 0.5f) * result;
   }
 
   if (effects[PlayerOptions::EFFECT_BOUNCE_Z] != 0) {
@@ -1525,7 +1527,7 @@ float ArrowEffects::GetZPos(
               (1.0f * (effects[PlayerOptions::EFFECT_BOUNCE_Z_OFFSET]))) /
              (60 + (effects[PlayerOptions::EFFECT_BOUNCE_Z_PERIOD] * 60)))));
 
-    z_pos += effects[PlayerOptions::EFFECT_BOUNCE_Z] * ARROW_SIZE * 0.5f *
+    z_pos += effects[PlayerOptions::EFFECT_BOUNCE_Z] * kArrowSize * 0.5f *
              bounce_amt;
   }
 
@@ -1593,9 +1595,9 @@ float ArrowEffects::GetZoomVariable(float y_offset, int col, float cur_zoom) {
         ((y_offset +
           (100.0f *
            (curr_options->effects_[PlayerOptions::EFFECT_PULSE_OFFSET]))) /
-         (0.4f * (ARROW_SIZE +
+         (0.4f * (kArrowSize +
                   (curr_options->effects_[PlayerOptions::EFFECT_PULSE_PERIOD] *
-                   ARROW_SIZE)))));
+                   kArrowSize)))));
 
     zoom *= (sine * (curr_options->effects_[PlayerOptions::EFFECT_PULSE_OUTER] *
                      0.5f)) +
@@ -1615,7 +1617,7 @@ float ArrowEffects::GetZoomVariable(float y_offset, int col, float cur_zoom) {
     zoom +=
         y_offset *
         (0.5f * curr_options->effects_[PlayerOptions::EFFECT_SHRINK_TO_LINEAR] /
-         ARROW_SIZE);
+         kArrowSize);
   }
   return zoom;
 }

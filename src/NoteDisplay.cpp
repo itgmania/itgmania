@@ -38,11 +38,11 @@
 #include "Tween.h"
 #include "global.h"
 
-static Preference<bool> g_bRenderEarlierNotesOnTop(
+static Preference<bool> render_earlier_notes_on_top(
     "RenderEarlierNotesOnTop", false);
 
-static const double PI_180 = PI / 180.0;
-static const double PI_180R = 180.0 / PI;
+static const double kPi180 = kPi / 180.0;
+static const double kPi180R = 180.0 / kPi;
 
 const std::string& NoteNotePartToString(NotePart i);
 /** @brief A foreach loop going through the different NoteParts. */
@@ -199,7 +199,7 @@ struct NoteResource {
 };
 
 static std::map<std::string, std::map<NoteSkinAndPath, NoteResource*>>
-    g_NoteResource;
+    note_resource;
 
 static NoteResource* MakeNoteResource(
     const std::string& button, const std::string& element, PlayerNumber pn,
@@ -213,8 +213,8 @@ static NoteResource* MakeNoteResource(
       NOTESKIN->GetCurrentNoteSkin(), element_and_type, pn, gc);
 
   std::map<NoteSkinAndPath, NoteResource*>::iterator it =
-      g_NoteResource[color].find(nsap);
-  if (it == g_NoteResource[color].end()) {
+      note_resource[color].find(nsap);
+  if (it == note_resource[color].end()) {
     NoteResource* res = new NoteResource(nsap);
 
     NOTESKIN->SetPlayerNumber(pn);
@@ -224,8 +224,8 @@ static NoteResource* MakeNoteResource(
         NOTESKIN->LoadActor(button, element, nullptr, sprite_only, color);
     ASSERT(res->actor_ != nullptr);
 
-    g_NoteResource[color][nsap] = res;
-    it = g_NoteResource[color].find(nsap);
+    note_resource[color][nsap] = res;
+    it = note_resource[color].find(nsap);
   }
 
   NoteResource* ret = it->second;
@@ -242,7 +242,7 @@ static void DeleteNoteResource(NoteResource* res) {
     return;
   }
 
-  for (auto& it : g_NoteResource) {
+  for (auto& it : note_resource) {
     it.second.erase(res->nsap_);
   }
   delete res;
@@ -404,9 +404,9 @@ void NoteColumnRenderArgs::SetPRZForActor(
   actor->SetX(sp_pos.x_ + ae_pos.x_);
   actor->SetY(sp_pos.y_ + ae_pos.y_);
   actor->SetZ(sp_pos.z_ + ae_pos.z_);
-  actor->SetRotationX(sp_rot.x_ * PI_180R + ae_rot.x_);
-  actor->SetRotationY(sp_rot.y_ * PI_180R + ae_rot.y_);
-  actor->SetRotationZ(sp_rot.z_ * PI_180R + ae_rot.z_);
+  actor->SetRotationX(sp_rot.x_ * kPi180R + ae_rot.x_);
+  actor->SetRotationY(sp_rot.y_ * kPi180R + ae_rot.y_);
+  actor->SetRotationZ(sp_rot.z_ * kPi180R + ae_rot.z_);
   actor->SetZoomX(sp_zoom.x_ + ae_zoom.x_);
   actor->SetZoomY(sp_zoom.y_ + ae_zoom.y_);
   actor->SetZoomZ(sp_zoom.z_ + ae_zoom.z_);
@@ -645,7 +645,7 @@ bool NoteDisplay::DrawTapsInRange(
     }
   };
 
-  if (g_bRenderEarlierNotesOnTop.Get()) {
+  if (render_earlier_notes_on_top.Get()) {
     // draw notes from closest to furthest
     std::for_each(tap_set.rbegin(), tap_set.rend(), loop_body);
   } else {
@@ -668,7 +668,7 @@ void NoteDisplay::Update(float delta_time) {
   /* This function is static: it's called once per game loop, not once per
    * NoteDisplay.  Update each cached item exactly once. */
   std::map<NoteSkinAndPath, NoteResource*>::iterator it;
-  for (auto& color_map : g_NoteResource) {
+  for (auto& color_map : note_resource) {
     for (it = color_map.second.begin(); it != color_map.second.end(); ++it) {
       NoteResource* res = it->second;
       res->actor_->Update(delta_time);
@@ -989,12 +989,12 @@ void NoteDisplay::DrawHoldPart(
         // XXX: Actor rotations use degrees, Math uses radians. Convert here.
         ae_rot.y_ = ArrowEffects::GetRotationY(
                         player_state_, y_offset, column_args.column_) *
-                    -PI_180;
+                    -kPi180;
         break;
       case NCSM_Offset:
         ae_rot.y_ = ArrowEffects::GetRotationY(
                         player_state_, y_offset, column_args.column_) *
-                    -PI_180;
+                    -kPi180;
         column_args.rot_handler_->EvalForBeat(
             column_args.song_beat_, cur_beat, sp_rot);
         break;
@@ -1674,9 +1674,9 @@ void NoteColumnRenderer::DrawPrimitives() {
   // The vector in the NUM_PlayerNumber slot should stay empty, not worth
   // optimizing it out. -Kyz
   std::vector<std::vector<NoteData::TrackMap::const_iterator>> holds(
-      PLAYER_INVALID + 1);
+      kPlayerInvalid + 1);
   std::vector<std::vector<NoteData::TrackMap::const_iterator>> taps(
-      PLAYER_INVALID + 1);
+      kPlayerInvalid + 1);
   NoteData::TrackMap::const_iterator begin, end;
   field_render_args_->note_data_->GetTapNoteRangeInclusive(
       column_, field_render_args_->first_row_,
@@ -1715,9 +1715,9 @@ void NoteColumnRenderer::DrawPrimitives() {
   FOREACH_PlayerNumber(pn) { DTS_INNER(pn, tap_set, draw_func, displays_[pn]); }
 
   DRAW_TAP_SET(holds, DrawHoldsInRange);
-  DTS_INNER(PLAYER_INVALID, holds, DrawHoldsInRange, displays_[PLAYER_INVALID]);
+  DTS_INNER(kPlayerInvalid, holds, DrawHoldsInRange, displays_[kPlayerInvalid]);
   DRAW_TAP_SET(taps, DrawTapsInRange);
-  DTS_INNER(PLAYER_INVALID, taps, DrawTapsInRange, displays_[PLAYER_INVALID]);
+  DTS_INNER(kPlayerInvalid, taps, DrawTapsInRange, displays_[kPlayerInvalid]);
 #undef DTS_INNER
 #undef DRAW_TAP_SET
   field_render_args_->receptor_row_->SetNoteUpcoming(column_, any_upcoming);
@@ -1757,9 +1757,9 @@ void NoteColumnRenderer::FinishTweening() {
 }
 
 NoteColumnRenderer::NCR_TweenState::NCR_TweenState() {
-  rot_handler_.spline_.set_spatial_extent(0, PI * 2.0f);
-  rot_handler_.spline_.set_spatial_extent(1, PI * 2.0f);
-  rot_handler_.spline_.set_spatial_extent(2, PI * 2.0f);
+  rot_handler_.spline_.set_spatial_extent(0, kPi * 2.0f);
+  rot_handler_.spline_.set_spatial_extent(1, kPi * 2.0f);
+  rot_handler_.spline_.set_spatial_extent(2, kPi * 2.0f);
 }
 
 void NoteColumnRenderer::NCR_TweenState::MakeWeightedAverage(

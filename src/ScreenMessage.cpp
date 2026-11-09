@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-const ScreenMessage SM_Invalid = "";
+const ScreenMessage kSmInvalid = "";
 AutoScreenMessage(SM_None);
 AutoScreenMessage(SM_MenuTimer);
 AutoScreenMessage(SM_DoneFadingIn);
@@ -16,22 +16,22 @@ AutoScreenMessage(SM_Pause);
 AutoScreenMessage(SM_Success);
 AutoScreenMessage(SM_Failure);
 
-static std::map<std::string, ScreenMessage>* m_pScreenMessages;
+static std::map<std::string, ScreenMessage>* screen_messages;
 
 ScreenMessage ScreenMessageHelpers::ToScreenMessage(const std::string& name) {
-  if (m_pScreenMessages == nullptr) {
-    m_pScreenMessages = new std::map<std::string, ScreenMessage>;
+  if (screen_messages == nullptr) {
+    screen_messages = new std::map<std::string, ScreenMessage>;
   }
 
-  if (m_pScreenMessages->find(name) == m_pScreenMessages->end()) {
-    (*m_pScreenMessages)[name] = (ScreenMessage)name;
+  if (screen_messages->find(name) == screen_messages->end()) {
+    (*screen_messages)[name] = (ScreenMessage)name;
   }
 
-  return (*m_pScreenMessages)[name];
+  return (*screen_messages)[name];
 }
 
 std::string ScreenMessageHelpers::ScreenMessageToString(ScreenMessage sm) {
-  for (const auto& it : *m_pScreenMessages) {
+  for (const auto& it : *screen_messages) {
     if (sm == it.second) {
       return it.first;
     }

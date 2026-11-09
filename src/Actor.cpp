@@ -31,8 +31,8 @@
 #include "XmlFile.h"
 #include "global.h"
 
-static Preference<bool> g_bShowMasks("ShowMasks", false);
-static const float default_effect_period = 1.0f;
+static Preference<bool> show_masks("ShowMasks", false);
+static const float kDefaultEffectPeriod = 1.0f;
 
 /**
  * @brief Set up a hidden Actor that won't be drawn.
@@ -56,7 +56,7 @@ std::vector<float> Actor::current_bgm_beat_player_no_offset_(
 
 Actor* Actor::Copy() const { return new Actor(*this); }
 
-static float g_fCabinetLights[NUM_CabinetLight];
+static float g_cabinet_lights[NUM_CabinetLight];
 
 static const char* HorizAlignNames[] = {"Left", "Center", "Right"};
 XToString(HorizAlign);
@@ -86,7 +86,7 @@ void Actor::SetPlayerBGMBeat(
 
 void Actor::SetBGMLight(int light_number, float cabinet_lights) {
   ASSERT(light_number < NUM_CabinetLight);
-  g_fCabinetLights[light_number] = cabinet_lights;
+  g_cabinet_lights[light_number] = cabinet_lights;
 }
 
 void Actor::InitState() {
@@ -108,7 +108,7 @@ void Actor::InitState() {
   effect_ = no_effect;
   secs_into_effect_ = 0;
   effect_delta_ = 0;
-  SetEffectPeriod(default_effect_period);
+  SetEffectPeriod(kDefaultEffectPeriod);
   effect_offset_ = 0;
   effect_clock_ = CLOCK_TIMER;
   effect_magnitude_ = RageVector3(0, 0, 10);
@@ -509,7 +509,7 @@ void Actor::PreDraw()  // calculate actor properties
 
     bool blink_on = percent_through_effect > 0.5f;
     float percent_between_colors =
-        std::sin((percent_through_effect + 0.25f) * 2 * PI) / 2 + 0.5f;
+        std::sin((percent_through_effect + 0.25f) * 2 * kPi) / 2 + 0.5f;
     ASSERT_M(
         percent_between_colors >= 0 && percent_between_colors <= 1,
         ssprintf(
@@ -524,7 +524,7 @@ void Actor::PreDraw()  // calculate actor properties
          * m_current_with_effects color? (That would have the same effect with
          * 1,1,1,1, and allow tweening the diffuse while blinking and shifting.)
          */
-        for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+        for (int i = 0; i < kNumDiffuseColors; i++) {
           current_with_effects_.diffuse_[i] =
               blink_on ? effect_color1_ : effect_color2_;
           current_with_effects_.diffuse_[i].a_ *=
@@ -533,7 +533,7 @@ void Actor::PreDraw()  // calculate actor properties
         }
         break;
       case diffuse_shift:
-        for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+        for (int i = 0; i < kNumDiffuseColors; i++) {
           current_with_effects_.diffuse_[i] =
               effect_color1_ * percent_between_colors +
               effect_color2_ * (1.0f - percent_between_colors);
@@ -543,7 +543,7 @@ void Actor::PreDraw()  // calculate actor properties
         }
         break;
       case diffuse_ramp:
-        for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+        for (int i = 0; i < kNumDiffuseColors; i++) {
           current_with_effects_.diffuse_[i] =
               effect_color1_ * percent_through_effect +
               effect_color2_ * (1.0f - percent_through_effect);
@@ -574,21 +574,21 @@ void Actor::PreDraw()  // calculate actor properties
         break;
       case rainbow:
         current_with_effects_.diffuse_[0] = RageColor(
-            std::cos(percent_between_colors * 2 * PI) * 0.5f + 0.5f,
-            std::cos(percent_between_colors * 2 * PI + PI * 2.0f / 3.0f) *
+            std::cos(percent_between_colors * 2 * kPi) * 0.5f + 0.5f,
+            std::cos(percent_between_colors * 2 * kPi + kPi * 2.0f / 3.0f) *
                     0.5f +
                 0.5f,
-            std::cos(percent_between_colors * 2 * PI + PI * 4.0f / 3.0f) *
+            std::cos(percent_between_colors * 2 * kPi + kPi * 4.0f / 3.0f) *
                     0.5f +
                 0.5f,
             original_alpha);
-        for (int i = 1; i < NUM_DIFFUSE_COLORS; i++) {
+        for (int i = 1; i < kNumDiffuseColors; i++) {
           current_with_effects_.diffuse_[i] = current_with_effects_.diffuse_[0];
         }
         break;
       case wag:
         current_with_effects_.rotation_ +=
-            effect_magnitude_ * std::sin(percent_through_effect * 2.0f * PI);
+            effect_magnitude_ * std::sin(percent_through_effect * 2.0f * kPi);
         break;
       case spin:
         // nothing needs to be here
@@ -602,17 +602,17 @@ void Actor::PreDraw()  // calculate actor properties
             effect_magnitude_.z_ * randomf(-1.0f, 1.0f) * GetZoom();
         break;
       case bounce: {
-        float percent_offset = std::sin(percent_through_effect * PI);
+        float percent_offset = std::sin(percent_through_effect * kPi);
         current_with_effects_.pos_ += effect_magnitude_ * percent_offset;
       } break;
       case bob: {
-        float percent_offset = std::sin(percent_through_effect * PI * 2);
+        float percent_offset = std::sin(percent_through_effect * kPi * 2);
         current_with_effects_.pos_ += effect_magnitude_ * percent_offset;
       } break;
       case pulse: {
         float min_zoom = effect_magnitude_[0];
         float max_zoom = effect_magnitude_[1];
-        float percent_offset = std::sin(percent_through_effect * PI);
+        float percent_offset = std::sin(percent_through_effect * kPi);
         float zoom = SCALE(percent_offset, 0.f, 1.f, min_zoom, max_zoom);
         current_with_effects_.scale_ *= zoom;
 
@@ -638,7 +638,7 @@ void Actor::PreDraw()  // calculate actor properties
       current_with_effects_ = current_;
     }
 
-    for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+    for (int i = 0; i < kNumDiffuseColors; i++) {
       current_with_effects_.diffuse_[i] *= internal_diffuse_;
     }
   }
@@ -739,7 +739,7 @@ void Actor::BeginDraw() {
 
 void Actor::SetGlobalRenderStates() {
   // set Actor-defined render states
-  if (!g_bShowMasks.Get() || blend_mode_ != BLEND_NO_EFFECT) {
+  if (!show_masks.Get() || blend_mode_ != BLEND_NO_EFFECT) {
     DISPLAY->SetBlendMode(blend_mode_);
   }
   DISPLAY->SetZWrite(z_write_);
@@ -924,7 +924,7 @@ void Actor::UpdateInternal(float delta_time) {
       if (effect_clock_ >= CLOCK_LIGHT_1 && effect_clock_ <= CLOCK_LIGHT_LAST) {
         int light_index = effect_clock_ - CLOCK_LIGHT_1;
         generic_global_timer_update(
-            g_fCabinetLights[light_index], effect_delta_, secs_into_effect_);
+            g_cabinet_lights[light_index], effect_delta_, secs_into_effect_);
       }
       break;
   }
@@ -1350,7 +1350,7 @@ float Actor::GetTweenTimeLeft() const {
  * However, we'd then have to give every TweenState a userdata in Lua while it's
  * being manipulated, which would add overhead ... */
 void Actor::SetGlobalDiffuseColor(RageColor c) {
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; i++)  // color, not alpha
+  for (int i = 0; i < kNumDiffuseColors; i++)  // color, not alpha
   {
     for (unsigned ts = 0; ts < tweens_.size(); ++ts) {
       tweens_[ts]->state_.diffuse_[i].r_ = c.r_;
@@ -1367,7 +1367,7 @@ void Actor::SetGlobalDiffuseColor(RageColor c) {
 }
 
 void Actor::SetDiffuseColor(RageColor c) {
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+  for (int i = 0; i < kNumDiffuseColors; i++) {
     DestTweenState().diffuse_[i].r_ = c.r_;
     DestTweenState().diffuse_[i].g_ = c.g_;
     DestTweenState().diffuse_[i].b_ = c.b_;
@@ -1383,7 +1383,7 @@ void Actor::TweenState::Init() {
   skew_y_ = 0;
   crop_ = RectF(0, 0, 0, 0);
   fade_ = RectF(0, 0, 0, 0);
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+  for (int i = 0; i < kNumDiffuseColors; i++) {
     diffuse_[i] = RageColor(1, 1, 1, 1);
   }
   glow_ = RageColor(1, 1, 1, 0);
@@ -1457,7 +1457,7 @@ void Actor::TweenState::MakeWeightedAverage(
   average_out.fade_.bottom_ =
       lerp(percent_between, ts1.fade_.bottom_, ts2.fade_.bottom_);
 
-  for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
+  for (int i = 0; i < kNumDiffuseColors; ++i) {
     average_out.diffuse_[i] =
         lerp(percent_between, ts1.diffuse_[i], ts2.diffuse_[i]);
   }

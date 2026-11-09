@@ -118,7 +118,7 @@ void DensityGraph::BuildAllVertices() {
     }
 
     const float seconds = timing->GetElapsedTimeFromBeat(
-        static_cast<float>(i) * static_cast<float>(BEATS_PER_MEASURE));
+        static_cast<float>(i) * static_cast<float>(kBeatsPerMeasure));
     // Keep x non-decreasing so the visible-window search can assume order.
     const float x = std::max(SCALE(seconds, first, last, 0.0f, width), prev_x);
     prev_x = x;
@@ -144,7 +144,7 @@ void DensityGraph::BuildAllVertices() {
   // slopes down like the others.
   if (nps.back() != 0.0f) {
     const float end_seconds = timing->GetElapsedTimeFromBeat(
-        static_cast<float>(nps.size()) * static_cast<float>(BEATS_PER_MEASURE));
+        static_cast<float>(nps.size()) * static_cast<float>(kBeatsPerMeasure));
     const float end_x = std::max(
         prev_x, std::min(width, SCALE(end_seconds, first, last, 0.0f, width)));
     points_.push_back({end_x, 0.0f, bottom});

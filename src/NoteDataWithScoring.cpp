@@ -39,7 +39,7 @@ int LastTapNoteScoreTrack(const NoteData& in, unsigned row, PlayerNumber pn) {
         tn.type_ == TapNoteType_Fake || tn.type_ == TapNoteType_AutoKeysound) {
       continue;
     }
-    if (tn.pn_ != PLAYER_INVALID && tn.pn_ != pn && pn != PLAYER_INVALID) {
+    if (tn.pn_ != kPlayerInvalid && tn.pn_ != pn && pn != kPlayerInvalid) {
       continue;
     }
 
@@ -82,7 +82,7 @@ const TapNote& NoteDataWithScoring::LastTapNoteWithResult(
   */
   int track = LastTapNoteScoreTrack(in, row, plnum);
   if (track == -1) {
-    return TAP_EMPTY;
+    return tap_empty;
   }
 
   // LOG->Trace( ssprintf("returning in.GetTapNote(iTrack=%i, iRow=%i)", iTrack,
@@ -253,7 +253,7 @@ void NoteDataWithScoring::GetActualRadarValues(
   garv_state state;
 
   NoteData::all_tracks_const_iterator curr_note =
-      in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+      in.GetTapNoteRangeAllTracks(0, kMaxNoteRow);
   TimingData* timing = GAMESTATE->GetProcessedTimingData();
   // first_hittable_row and last_hittable_row exist so that
   // GetActualVoltageRadarValue can be passed the correct song length.
@@ -282,8 +282,8 @@ void NoteDataWithScoring::GetActualRadarValues(
       state.last_time_on_row_ = -9999;
       state.worst_tns_on_row_ = TapNoteScore_Invalid;
     }
-    bool for_this_player = curr_note->pn_ == pn || pn == PLAYER_INVALID ||
-                           curr_note->pn_ == PLAYER_INVALID;
+    bool for_this_player = curr_note->pn_ == pn || pn == kPlayerInvalid ||
+                           curr_note->pn_ == kPlayerInvalid;
     if (state.judgable_ && for_this_player) {
       switch (curr_note->type_) {
         case TapNoteType_HoldTail:

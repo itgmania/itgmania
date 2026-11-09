@@ -45,17 +45,17 @@ class ScreenNameEntry : public ScreenWithMenuElements {
   enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
   bool AnyStillEntering() const;
 
-  ReceptorArrowRow receptor_arrow_row_[NUM_PLAYERS];
-  BitmapText text_selected_chars_[NUM_PLAYERS][ABS_MAX_RANKING_NAME_LENGTH];
-  BitmapText text_category_[NUM_PLAYERS];
+  ReceptorArrowRow receptor_arrow_row_[kNumPlayers];
+  BitmapText text_selected_chars_[kNumPlayers][ABS_MAX_RANKING_NAME_LENGTH];
+  BitmapText text_category_[kNumPlayers];
   RageSound sound_step_;
 
   float fake_beat_;
-  std::string selected_name_[NUM_PLAYERS];
-  bool still_entering_name_[NUM_PLAYERS];
+  std::string selected_name_[kNumPlayers];
+  bool still_entering_name_[kNumPlayers];
 
-  ScrollingText text_[NUM_PLAYERS];
-  std::vector<int> col_to_string_index_[NUM_PLAYERS];
+  ScrollingText text_[kNumPlayers];
+  std::vector<int> col_to_string_index_[kNumPlayers];
 };
 
 #endif

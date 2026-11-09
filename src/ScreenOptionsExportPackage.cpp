@@ -71,7 +71,7 @@ void ScreenOptionsExportPackage::ProcessMenuStart(const InputEventPlus& input) {
     return;
   }
 
-  ExportPackages::m_sPackageType = package_types_[row];
+  ExportPackages::g_package_type = package_types_[row];
 
   SCREENMAN->PlayStartSound();
   this->BeginFadingOut();
@@ -100,15 +100,15 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
   ScreenWithMenuElements::BeginScreen();
 
   // Check type and fill m_vsPossibleDirsToExport
-  const std::string* package_type = &ExportPackages::m_sPackageType;
+  const std::string* package_type = &ExportPackages::g_package_type;
   if (*package_type == "Themes") {
     // add themes
     GetDirListing(
-        SpecialFiles::THEMES_DIR + "*", possible_dirs_to_export_, true, true);
+        SpecialFiles::kThemesDir + "*", possible_dirs_to_export_, true, true);
   } else if (*package_type == "NoteSkins") {
     // add noteskins
     std::vector<std::string> vs;
-    GetDirListing(SpecialFiles::NOTESKINS_DIR + "*", vs, true, true);
+    GetDirListing(SpecialFiles::kNoteskinsDir + "*", vs, true, true);
     for (const std::string& s : vs) {
       GetDirListing(s + "*", possible_dirs_to_export_, true, true);
     }
@@ -116,7 +116,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
     // Add courses. Only support courses that are in a group folder.
     // Support for courses not in a group folder should be phased out.
     std::vector<std::string> vs;
-    GetDirListing(SpecialFiles::COURSES_DIR + "*", vs, true, true);
+    GetDirListing(SpecialFiles::kCoursesDir + "*", vs, true, true);
     StripCvsAndSvn(vs);
     StripMacResourceForks(vs);
     for (const std::string& s : vs) {
@@ -134,8 +134,8 @@ void ScreenOptionsExportPackageSubPage::BeginScreen() {
     // ExportPackages::m_sFolder
     std::vector<std::string> vs;
     GetDirListing(
-        SpecialFiles::SONGS_DIR + "/" + ExportPackages::m_sFolder + "/*", vs,
-        true, true);
+        SpecialFiles::kSongsDir + "/" + ExportPackages::folder + "/*", vs, true,
+        true);
     for (const std::string& s : vs) {
       possible_dirs_to_export_.push_back(s);
       GetDirListing(s + "/*", possible_dirs_to_export_, true, true);
@@ -202,12 +202,12 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart(
     return;
   }
 
-  if (ExportPackages::m_sPackageType == "Courses" ||
-      ExportPackages::m_sPackageType == "NoteSkins" ||
-      ExportPackages::m_sPackageType == "Songs") {
+  if (ExportPackages::g_package_type == "Courses" ||
+      ExportPackages::g_package_type == "NoteSkins" ||
+      ExportPackages::g_package_type == "Songs") {
     // find folder name
-    ExportPackages::m_sPackageType = "SubGroup";
-    ExportPackages::m_sFolder = possible_dirs_to_export_[cur_row];
+    ExportPackages::g_package_type = "SubGroup";
+    ExportPackages::folder = possible_dirs_to_export_[cur_row];
     SCREENMAN->SetNewScreen("ScreenOptionsExportPackageSubPage");
     return;
   }

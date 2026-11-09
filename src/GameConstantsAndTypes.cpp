@@ -21,10 +21,10 @@ static std::vector<std::string> GenerateRankingToFillInMarker() {
   rankings.push_back(ssprintf("#P%d#", pn + 1));
   return rankings;
 }
-extern const std::vector<std::string> RANKING_TO_FILL_IN_MARKER(
+extern const std::vector<std::string> kRankingToFillInMarker(
     GenerateRankingToFillInMarker());
 
-extern const std::string GROUP_ALL = "---Group All---";
+extern const std::string kGroupAll = "---Group All---";
 
 static const char* RadarCategoryNames[] = {
     "Stream", "Voltage", "Air",   "Freeze", "Chaos", "Notes", "TapsAndHolds",

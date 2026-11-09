@@ -19,7 +19,7 @@
 
 static void EraseSegment(
     std::vector<TimingSegment*>& segs, int index, TimingSegment* cur);
-static const int INVALID_INDEX = -1;
+static const int kInvalidIndex = -1;
 
 TimingSegment* GetSegmentAtRow(int note_row, TimingSegmentType tst);
 
@@ -129,7 +129,7 @@ void TimingData::ShiftRange(
       int last_row = std::max(end_row, end_row + shift_amount);
       int first_affected = GetSegmentIndexAtRow(seg_type, first_row);
       int last_affected = GetSegmentIndexAtRow(seg_type, last_row);
-      if (first_affected == INVALID_INDEX || last_affected == INVALID_INDEX) {
+      if (first_affected == kInvalidIndex || last_affected == kInvalidIndex) {
         continue;
       }
       // Prance through the affected area twice.  The first time, changing
@@ -190,7 +190,7 @@ void TimingData::ClearRange(
       std::vector<TimingSegment*>& segs = GetTimingSegments(seg_type);
       int first_affected = GetSegmentIndexAtRow(seg_type, start_row);
       int last_affected = GetSegmentIndexAtRow(seg_type, end_row);
-      if (first_affected == INVALID_INDEX) {
+      if (first_affected == kInvalidIndex) {
         continue;
       }
       for (int index = last_affected; index >= first_affected; --index) {
@@ -246,7 +246,7 @@ int TimingData::GetSegmentIndexAtRow(TimingSegmentType tst, int row) const {
   const std::vector<TimingSegment*>& segs = GetTimingSegments(tst);
 
   if (segs.empty()) {
-    return INVALID_INDEX;
+    return kInvalidIndex;
   }
 
   int min = 0, max = segs.size() - 1;
@@ -264,7 +264,7 @@ int TimingData::GetSegmentIndexAtRow(TimingSegmentType tst, int row) const {
   }
 
   // iRow is before the first segment of type tst
-  return INVALID_INDEX;
+  return kInvalidIndex;
 }
 
 struct ts_less {
@@ -327,7 +327,7 @@ bool TimingData::IsFakeAtRow(int note_row) const {
  * Note that types whose SegmentEffectAreas are "Indefinite" are nullptr here,
  * because they should never need to be used; we always have at least one such
  * segment in the TimingData, and if not, we'll crash anyway. -- vyhd */
-static const TimingSegment* DummySegments[NUM_TimingSegmentType] = {
+static const TimingSegment* dummy_segments[NUM_TimingSegmentType] = {
     nullptr,  // BPMSegment
     new StopSegment, new DelaySegment,
     nullptr,  // TimeSignatureSegment
@@ -344,7 +344,7 @@ const TimingSegment* TimingData::GetSegmentAtRow(
   const std::vector<TimingSegment*>& segments = GetTimingSegments(tst);
 
   if (segments.empty()) {
-    return DummySegments[tst];
+    return dummy_segments[tst];
   }
 
   int index = GetSegmentIndexAtRow(tst, note_row);
@@ -361,7 +361,7 @@ const TimingSegment* TimingData::GetSegmentAtRow(
       if (seg->GetRow() == note_row) {
         return seg;
       } else {
-        return DummySegments[tst];
+        return dummy_segments[tst];
       }
     }
   }
@@ -394,7 +394,7 @@ void TimingData::AddSegment(const TimingSegment* seg) {
   }
 
   int index = GetSegmentIndexAtRow(tst, seg->GetRow());
-  ASSERT(index != INVALID_INDEX);
+  ASSERT(index != kInvalidIndex);
   TimingSegment* cur = segs[index];
 
   bool is_notable = seg->IsNotable();
@@ -1029,8 +1029,8 @@ void TimingData::NoteRowToMeasureAndBeat(
       measure_index_out += num_measures_this_segment;
       int num_rows_this_measure =
           num_rows_this_segment % rows_per_measure_this_segment;
-      beat_index_out = num_rows_this_measure / ROWS_PER_BEAT;
-      rows_remainder = num_rows_this_measure % ROWS_PER_BEAT;
+      beat_index_out = num_rows_this_measure / kRowsPerBeat;
+      rows_remainder = num_rows_this_measure % kRowsPerBeat;
       return;
     } else {
       // iNoteRow lands after this segment

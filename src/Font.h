@@ -236,7 +236,7 @@ class Font {
  * @brief Last private-use Unicode character:
  *
  * This is in the header to reduce file dependencies. */
-const wchar_t FONT_DEFAULT_GLYPH = 0xF8FF;
+const wchar_t kFontDefaultGlyph = 0xF8FF;
 
 #endif
 

@@ -106,7 +106,7 @@ void ScreenJukebox::SetSong() {
     Difficulty dc =
         difficulties_to_show[RandomInt(difficulties_to_show.size())];
     Steps* steps = SongUtil::GetStepsByDifficulty(
-        song, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_, dc);
+        song, GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_, dc);
 
     if (steps == nullptr) {
       continue;  // skip
@@ -174,7 +174,7 @@ void ScreenJukebox::SetSong() {
         GAMESTATE->cur_course_.Set(l_course);
         FOREACH_PlayerNumber(p) {
           GAMESTATE->cur_trail_[p].Set(l_course->GetTrail(
-              GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_));
+              GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_));
           ASSERT(GAMESTATE->cur_trail_[p] != nullptr);
         }
       }
@@ -191,7 +191,7 @@ ScreenJukebox::ScreenJukebox() { demonstration_ = false; }
 static LocalizedString NO_MATCHING_STEPS("ScreenJukebox", "NoMatchingSteps");
 void ScreenJukebox::Init() {
   // ScreenJukeboxMenu must set this
-  ASSERT(GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr);
+  ASSERT(GAMESTATE->GetCurrentStyle(kPlayerInvalid) != nullptr);
   GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
 
   SetSong();

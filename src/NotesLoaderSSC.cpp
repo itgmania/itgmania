@@ -293,7 +293,7 @@ void SetChartStyle(StepsTagInfo& info) {
 void SetDescription(StepsTagInfo& info) {
   std::string name = (*info.params_)[1];
   Trim(name);
-  if (info.song_->version_ < VERSION_CHART_NAME_TAG && !info.for_load_edit_) {
+  if (info.song_->version_ < kVersionChartNameTag && !info.for_load_edit_) {
     info.steps_->SetChartName(name);
   } else {
     info.steps_->SetDescription(name);
@@ -316,7 +316,7 @@ void SetRadarValues(StepsTagInfo& info) {
     // categories to expect, look at the number of values and split them
     // evenly. -Kyz
     size_t cats_per_player = values.size() / NUM_PlayerNumber;
-    RadarValues v[NUM_PLAYERS];
+    RadarValues v[kNumPlayers];
     FOREACH_PlayerNumber(pn) {
       for (size_t i = 0; i < cats_per_player; ++i) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
@@ -334,7 +334,7 @@ void SetTechCounts(StepsTagInfo& info) {
     std::vector<std::string> values;
     split((*info.params_)[1], ",", values, true);
     std::size_t cats_per_player = values.size() / NUM_PlayerNumber;
-    TechCounts v[NUM_PLAYERS];
+    TechCounts v[kNumPlayers];
     FOREACH_PlayerNumber(pn) {
       for (std::size_t i = 0; i < cats_per_player; ++i) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
@@ -494,49 +494,49 @@ void SetStepsMusic(StepsTagInfo& info) {
   info.steps_->SetMusicFile((*info.params_)[1]);
 }
 void SetStepsBPMs(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessBPMs(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsStops(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessStops(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsDelays(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessDelays(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsTimeSignatures(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessTimeSignatures(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsTickCounts(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessTickcounts(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsCombos(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessCombos(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsWarps(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessWarps(
         *info.timing_, (*info.params_)[1], info.song_->version_);
     info.has_own_timing_ = true;
@@ -544,42 +544,42 @@ void SetStepsWarps(StepsTagInfo& info) {
   info.ssc_format_ = true;
 }
 void SetStepsSpeeds(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessSpeeds(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsScrolls(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessScrolls(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsFakes(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessFakes(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsLabels(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessLabels(*info.timing_, (*info.params_)[1]);
     info.has_own_timing_ = true;
   }
   info.ssc_format_ = true;
 }
 void SetStepsAttacks(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.loader_->ProcessAttackString(
         info.steps_->GetStepsAttackStrings(), *info.params_);
     info.loader_->ProcessAttacks(info.steps_->GetStepsAttacks(), *info.params_);
   }
 }
 void SetStepsOffset(StepsTagInfo& info) {
-  if (info.song_->version_ >= VERSION_SPLIT_TIMING || info.for_load_edit_) {
+  if (info.song_->version_ >= kVersionSplitTiming || info.for_load_edit_) {
     info.timing_->beat0_offset_in_seconds_ = StringToFloat((*info.params_)[1]);
     info.has_own_timing_ = true;
   }
@@ -808,7 +808,7 @@ void SSCLoader::ProcessWarps(
     const float beat = StringToFloat(array_warp_values[0]);
     const float new_beat = StringToFloat(array_warp_values[1]);
     // Early versions were absolute in beats. They should be relative.
-    if ((version < VERSION_SPLIT_TIMING && new_beat > beat)) {
+    if ((version < kVersionSplitTiming && new_beat > beat)) {
       out.AddSegment(WarpSegment(BeatToNoteRow(beat), new_beat - beat));
     } else if (new_beat > 0) {
       out.AddSegment(WarpSegment(BeatToNoteRow(beat), new_beat));
@@ -944,13 +944,13 @@ bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
             }
             break;
           case LNDID_chartname:
-            if (stored_version >= VERSION_CHART_NAME_TAG &&
+            if (stored_version >= kVersionChartNameTag &&
                 out.GetChartName() != matcher) {
               trying_steps = false;
             }
             break;
           case LNDID_description:
-            if (stored_version < VERSION_CHART_NAME_TAG) {
+            if (stored_version < kVersionChartNameTag) {
               if (out.GetChartName() != matcher) {
                 trying_steps = false;
               }
@@ -1079,7 +1079,7 @@ bool SSCLoader::LoadFromSimfile(const std::string& path, Song& out) {
       }
     }
   }
-  out.version_ = STEPFILE_VERSION_NUMBER;
+  out.version_ = kStepfileVersionNumber;
   out.FixupBackgroundChanges();
   return true;
 }
@@ -1090,7 +1090,7 @@ bool SSCLoader::LoadEditFromFile(
   LOG->Trace("SSCLoader::LoadEditFromFile(%s)", edit_file_path.c_str());
 
   int bytes = FILEMAN->GetFileSizeInBytes(edit_file_path);
-  if (bytes > MAX_EDIT_STEPS_SIZE_BYTES) {
+  if (bytes > kMaxEditStepsSizeBytes) {
     LOG->UserLog(
         "Edit file", edit_file_path,
         "is unreasonably large. It won't be loaded.");
@@ -1222,7 +1222,7 @@ bool SSCLoader::LoadEditFromMsd(
           return false;
         }
         if (song->GetNumStepsLoadedFromProfile(slot) >=
-            MAX_EDITS_PER_SONG_PER_PROFILE) {
+            kMaxEditsPerSongPerProfile) {
           LOG->UserLog(
               "Song file", song_full_title,
               "already has the maximum number of edits allowed for "
