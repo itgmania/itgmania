@@ -32,12 +32,12 @@ jobs:
     name: "${{ matrix.name }} - ClubFantastic: ${{ matrix.club_fantastic }}"
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
 
       - name: Install dependencies
-        uses: ./.github/actions/setup-env
+        uses: $/.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
           ccache: 'false'
@@ -69,13 +69,13 @@ jobs:
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ITGmania-${{ github.sha }}-${{ matrix.os }}-ClubFantastic-${{ matrix.club_fantastic }}
           path: ${{ env.ARTIFACT_PATH }}
           archive: false
 
-      - uses: actions/attest@v4
+      - uses: actions/attest@v4.2.2
         with:
           subject-name: ITGmania-${{ github.sha }}-${{ matrix.os }}-ClubFantastic-${{ matrix.club_fantastic }}
           subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
