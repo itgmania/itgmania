@@ -41,7 +41,7 @@ runs:
 
     - name: ccache
       if: inputs.ccache == 'true'
-      uses: actions/cache@v5
+      uses: actions/cache@v5.1.0
       with:
         path: .ccache
         key: ${{ inputs.os }}-ccache-${{ github.ref }}
@@ -58,7 +58,7 @@ runs:
 
     - name: Add msbuild to PATH
       if: runner.os == 'Windows'
-      uses: microsoft/setup-msbuild@v3
+      uses: microsoft/setup-msbuild@v3.0.0
       with:
         msbuild-architecture: x64
 

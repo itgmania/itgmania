@@ -38,11 +38,11 @@ jobs:
             name: Windows
     name: ${{ matrix.name }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
       - name: Install dependencies
-        uses: ./.github/actions/setup-env
+        uses: $/.github/actions/setup-env
         with:
           os: ${{ matrix.os }}
           ccache: 'true'
