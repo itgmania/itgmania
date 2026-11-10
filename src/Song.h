@@ -53,15 +53,12 @@ struct LyricSegment {
   RageColor color_;   /** @brief The color of the lyrics. */
 };
 
-/** @brief Holds all music metadata and steps for one song. */
-class Song {
-  std::string song_dir_;
-  std::string pre_customify_song_dir_;
-
- public:
-  void SetSongDir(const std::string dir) { song_dir_ = dir; }
-  std::string GetSongDir() { return song_dir_; }
-  std::string GetPreCustomifyDir() { return pre_customify_song_dir_; }
+/** @brief Holds all non-Steps metadata for one song.
+ *  This is separate from Song to make copying all non-Steps metadata easier
+ *  without manually specifying every individual member variable.
+ */
+struct SongData {
+  SongData();
 
   /** @brief When should this song be displayed in the music wheel? */
   enum SelectionDisplay {
@@ -70,10 +67,137 @@ class Song {
                 */
   } selection_display_;
 
+  /**
+   * @brief Filename associated with this file.
+   * This will always have a .SSC extension. If we loaded a .SSC, this will
+   * point to it, but if we loaded any other type, this will point to
+   * a generated .SSC filename. */
+  std::string song_file_name_;
+
+  /** @brief The group this Song is in. */
+  std::string group_name_;
+
+  /** @brief The base directory name that this Song is in. */
+  std::string song_name_;
+
+  /**
+   * @brief the Profile this came from.
+   * This is ProfileSlot_Invalid if it wasn't loaded from a profile. */
+  ProfileSlot loaded_from_profile_;
+  bool enabled_;
+
+  /** @brief The title of the Song. */
+  std::string main_title_;
+  /** @brief The subtitle of the Song, if it exists. */
+  std::string sub_title_;
+  /** @brief The artist of the Song, if it exists. */
+  std::string artist_;
+  /** @brief The transliterated title of the Song, if it exists. */
+  std::string main_title_translit_;
+  /** @brief The transliterated subtitle of the Song, if it exists. */
+  std::string sub_title_translit_;
+  /** @brief The transliterated artist of the Song, if it exists. */
+  std::string artist_translit_;
+
+  /** @brief The version of the song/file. */
+  float version_;
+  /** @brief The genre of the song/file. */
+  std::string genre_;
+
+  /**
+   * @brief The person who worked with the song file who should be credited.
+   * This is read and saved, but never actually used. */
+  std::string credit_;
+
+  std::string origin_;  // song origin (for .ssc format)
+
+  std::string music_file_;
+  std::string preview_file_;
+
+  /** @brief The length of the music file. */
+  float music_length_seconds_;
+  float music_sample_start_seconds_;
+  float music_sample_length_seconds_;
+  DisplayBPM display_bpm_type_;
+  float specified_bpm_min_;
+  float specified_bpm_max_;  // if a range, then Min != Max
+
+  std::string banner_file_;  // typically a 16:5 ratio graphic (e.g. 256x80)
+  std::string jacket_file_;  // typically square (e.g. 192x192, 256x256)
+  std::string cd_file_;      // square (e.g. 128x128 [DDR 1st-3rd])
+  std::string disc_file_;  // rectangular (e.g. 256x192 [Pump], 200x150 [MGD3])
+  /** @brief The location of the lyrics file, if it exists. */
+  std::string lyrics_file_;
+  std::string background_file_;
+  std::string cd_title_file_;
+  std::string preview_vid_file_;
+
+  AttackArray attacks_;
+  std::vector<std::string> attack_string_;
+
+  // For loading only:
+  bool has_music_, has_banner_, has_background_;
+
+  /** @brief The Song's TimingData. */
+  TimingData song_timing_;
+
+  typedef std::vector<BackgroundChange> VBackgroundChange;
+
+  /**
+   * @brief The list of LyricSegments.
+   * This must be sorted before gameplay. */
+  std::vector<LyricSegment> lyric_segments_;
+
+  /**
+   * @brief An array of keysound file names (e.g. "beep.wav").
+   * The index in this array corresponds to the index in TapNote.
+   * If you  change the index in here, you must change all NoteData too.
+   * Any note that doesn't have a value in the range of this array
+   * means "this note doesn't have a keysound". */
+  std::vector<std::string> keysound_file_;
+
+ protected:
+  std::string song_dir_;
+  std::string pre_customify_song_dir_;
+
+  /** @brief The first second that a note is hit. */
+  float first_second_;
+  /** @brief The last second that a note is hit. */
+  float last_second_;
+  /** @brief The last second of the song for playing purposes. */
+  float specified_last_second_;
+  /**
+   * @brief The background changes (sorted by layer) that are for this Song.
+   * This uses an AutoPtr instead of a raw pointer so that the
+   * auto gen'd copy constructor works correctly.
+   * This must be sorted before gameplay. */
+  AutoPtrCopyOnWrite<VBackgroundChange>
+      background_changes_[NUM_BackgroundLayer];
+  /**
+   * @brief The foreground changes that are for this Song.
+   * This uses an AutoPtr instead of a raw pointer so that the
+   * auto gen'd copy constructor works correctly.
+   * This must be sorted before gameplay. */
+  AutoPtrCopyOnWrite<VBackgroundChange> foreground_changes_;
+
+  bool loaded_from_autosave_;
+};
+
+/** @brief Holds all music metadata and steps for one song. */
+class Song : public SongData {
+ public:
+  void SetSongDir(const std::string dir) { song_dir_ = dir; }
+  std::string GetSongDir() { return song_dir_; }
+  std::string GetPreCustomifyDir() { return pre_customify_song_dir_; }
+
   Song();
   ~Song();
+  Song(const Song&) = delete;
+  Song& operator=(const Song&) = delete;
+  Song(Song&&) = delete;
+  Song& operator=(Song&&) = delete;
   void Reset();
-  void DetachSteps();
+  void CopyMetadataFrom(const SongData& other);
 
   /**
    * @brief Load a song from the chosen directory.
@@ -150,38 +274,6 @@ class Song {
   // Directory this song data came from:
   const std::string& GetSongDir() const { return song_dir_; }
 
-  /**
-   * @brief Filename associated with this file.
-   * This will always have a .SSC extension. If we loaded a .SSC, this will
-   * point to it, but if we loaded any other type, this will point to
-   * a generated .SSC filename. */
-  std::string song_file_name_;
-
-  /** @brief The group this Song is in. */
-  std::string group_name_;
-
-  /** @brief The base directory name that this Song is in. */
-  std::string song_name_;
-
-  /**
-   * @brief the Profile this came from.
-   * This is ProfileSlot_Invalid if it wasn't loaded from a profile. */
-  ProfileSlot loaded_from_profile_;
-  bool enabled_;
-
-  /** @brief The title of the Song. */
-  std::string main_title_;
-  /** @brief The subtitle of the Song, if it exists. */
-  std::string sub_title_;
-  /** @brief The artist of the Song, if it exists. */
-  std::string artist_;
-  /** @brief The transliterated title of the Song, if it exists. */
-  std::string main_title_translit_;
-  /** @brief The transliterated subtitle of the Song, if it exists. */
-  std::string sub_title_translit_;
-  /** @brief The transliterated artist of the Song, if it exists. */
-  std::string artist_translit_;
-
   /* If PREFSMAN->m_bShowNative is off, these are the same as GetTranslit*
    * below. Otherwise, they return the main titles. */
   std::string GetDisplayMainTitle() const;
@@ -215,42 +307,6 @@ class Song {
   std::string GetDisplayFullTitle() const;
   std::string GetTranslitFullTitle() const;
 
-  /** @brief The version of the song/file. */
-  float version_;
-  /** @brief The genre of the song/file. */
-  std::string genre_;
-
-  /**
-   * @brief The person who worked with the song file who should be credited.
-   * This is read and saved, but never actually used. */
-  std::string credit_;
-
-  std::string origin_;  // song origin (for .ssc format)
-
-  std::string music_file_;
-  std::string preview_file_;
-
-  /** @brief The length of the music file. */
-  float music_length_seconds_;
-  float music_sample_start_seconds_;
-  float music_sample_length_seconds_;
-  DisplayBPM display_bpm_type_;
-  float specified_bpm_min_;
-  float specified_bpm_max_;  // if a range, then Min != Max
-
-  std::string banner_file_;  // typically a 16:5 ratio graphic (e.g. 256x80)
-  std::string jacket_file_;  // typically square (e.g. 192x192, 256x256)
-  std::string cd_file_;      // square (e.g. 128x128 [DDR 1st-3rd])
-  std::string disc_file_;  // rectangular (e.g. 256x192 [Pump], 200x150 [MGD3])
-  /** @brief The location of the lyrics file, if it exists. */
-  std::string lyrics_file_;
-  std::string background_file_;
-  std::string cd_title_file_;
-  std::string preview_vid_file_;
-
-  AttackArray attacks_;
-  std::vector<std::string> attack_string_;
-
   static std::string GetSongAssetPath(
       std::string path, const std::string& song_path);
   std::string GetMusicPath() const;
@@ -266,9 +322,6 @@ class Song {
   float GetPreviewStartSeconds() const;
 
   std::string GetCacheFile(std::string path);
-
-  // For loading only:
-  bool has_music_, has_banner_, has_background_;
 
   bool HasMusic() const;
   /**
@@ -291,9 +344,6 @@ class Song {
 
   bool Matches(std::string group, std::string song) const;
 
-  /** @brief The Song's TimingData. */
-  TimingData song_timing_;
-
   float GetFirstBeat() const;
   float GetFirstSecondNoOffset() const;
   float GetFirstSecond() const;
@@ -308,29 +358,7 @@ class Song {
   void SetLastSecondNoOffset(const float f);
   void SetSpecifiedLastSecond(const float f);
 
-  typedef std::vector<BackgroundChange> VBackgroundChange;
-
  private:
-  /** @brief The first second that a note is hit. */
-  float first_second_;
-  /** @brief The last second that a note is hit. */
-  float last_second_;
-  /** @brief The last second of the song for playing purposes. */
-  float specified_last_second_;
-  /**
-   * @brief The background changes (sorted by layer) that are for this Song.
-   * This uses an AutoPtr instead of a raw pointer so that the
-   * auto gen'd copy constructor works correctly.
-   * This must be sorted before gameplay. */
-  AutoPtrCopyOnWrite<VBackgroundChange>
-      background_changes_[NUM_BackgroundLayer];
-  /**
-   * @brief The foreground changes that are for this Song.
-   * This uses an AutoPtr instead of a raw pointer so that the
-   * auto gen'd copy constructor works correctly.
-   * This must be sorted before gameplay. */
-  AutoPtrCopyOnWrite<VBackgroundChange> foreground_changes_;
-
   void TidyUpData(
       bool from_cache, const std::set<std::string>& blacklisted_images);
 
@@ -345,11 +373,6 @@ class Song {
   std::vector<BackgroundChange>& GetBackgroundChanges(BackgroundLayer bl);
   const std::vector<BackgroundChange>& GetForegroundChanges() const;
   std::vector<BackgroundChange>& GetForegroundChanges();
-
-  /**
-   * @brief The list of LyricSegments.
-   * This must be sorted before gameplay. */
-  std::vector<LyricSegment> lyric_segments_;
 
   /* [splittiming]
           void AddBPMSegment( const BPMSegment &seg ) { m_Timing.AddBPMSegment(
@@ -453,14 +476,6 @@ class Song {
   bool IsStepsUsingDifferentTiming(Steps* steps) const;
   bool AnyChartUsesSplitTiming() const;
 
-  /**
-   * @brief An array of keysound file names (e.g. "beep.wav").
-   * The index in this array corresponds to the index in TapNote.
-   * If you  change the index in here, you must change all NoteData too.
-   * Any note that doesn't have a value in the range of this array
-   * means "this note doesn't have a keysound". */
-  std::vector<std::string> keysound_file_;
-
   std::string GetAttackString() const {
     return join(":", this->attack_string_);
   }
@@ -469,7 +484,6 @@ class Song {
   void PushSelf(lua_State* L);
 
  private:
-  bool loaded_from_autosave_;
   /** @brief the Steps that belong to this Song. */
   std::vector<Steps*> steps_;
   /** @brief the Steps of a particular StepsType that belong to this Song. */

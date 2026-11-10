@@ -81,7 +81,7 @@ static std::vector<std::string> GetImageCacheDirs() {
   return image_dirs;
 }
 
-Song::Song() {
+SongData::SongData() {
   FOREACH_BackgroundLayer(i) background_changes_[i] =
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
   foreground_changes_ =
@@ -106,6 +106,8 @@ Song::Song() {
   loaded_from_autosave_ = false;
 }
 
+Song::Song() = default;
+
 Song::~Song() {
   for (Steps* s : steps_) {
     RageUtil::SafeDelete(s);
@@ -120,11 +122,8 @@ Song::~Song() {
   // that all pointers to this Song and its Steps are invalidated.
 }
 
-void Song::DetachSteps() {
-  steps_.clear();
-  FOREACH_ENUM(StepsType, st)
-  steps_by_type_[st].clear();
-  unknown_style_steps_.clear();
+void Song::CopyMetadataFrom(const SongData& other) {
+  SongData::operator=(other);
 }
 
 float Song::GetFirstSecond() const {
@@ -181,8 +180,7 @@ void Song::Reset() {
   }
   unknown_style_steps_.clear();
 
-  Song empty;
-  *this = empty;
+  CopyMetadataFrom(SongData());
 
   // It's the responsibility of the owner of this Song to make sure
   // that all pointers to this Song and its Steps are invalidated.
@@ -464,15 +462,28 @@ bool Song::ReloadFromSongDir(std::string dir) {
   // Also invalidate the cache entry so the next load sees the previous removal.
   FILEMAN->FlushDirCache(Dirname(GetCacheFilePath()));
 
-  RemoveAutoGenNotes();
-  std::vector<Steps*> v_old_steps = steps_;
-
   Song copy;
   if (!copy.LoadFromSongDir(dir)) {
     return false;
   }
   copy.RemoveAutoGenNotes();
-  *this = copy;
+  RemoveAutoGenNotes();
+
+  std::vector<Steps*> v_old_steps = steps_;
+  steps_.clear();
+  FOREACH_ENUM(StepsType, i)
+  steps_by_type_[i].clear();
+
+  for (Steps* s : unknown_style_steps_) {
+    RageUtil::SafeDelete(s);
+  }
+  unknown_style_steps_ = std::move(copy.unknown_style_steps_);
+  copy.unknown_style_steps_.clear();
+  for (Steps* s : unknown_style_steps_) {
+    s->song_ = this;
+  }
+
+  CopyMetadataFrom(copy);
 
   if (SONGMAN->GetGroup(this) != nullptr) {
     song_timing_.beat0_group_offset_in_seconds_ =
@@ -489,8 +500,8 @@ bool Song::ReloadFromSongDir(std::string dir) {
    * (instead of the copy used above), and constructing a map to let us
    * easily find the new steps. */
   std::map<StepsID, Steps*> m_new_steps;
-  for (std::vector<Steps*>::const_iterator it = steps_.begin();
-       it != steps_.end(); ++it) {
+  for (std::vector<Steps*>::const_iterator it = copy.steps_.begin();
+       it != copy.steps_.end(); ++it) {
     (*it)->song_ = this;
     StepsID id;
     id.FromSteps(*it);
@@ -512,12 +523,6 @@ bool Song::ReloadFromSongDir(std::string dir) {
     }
   }
 
-  // Now we wipe out the new pointers, which were shallow copied and not deep
-  // copied...
-  steps_.clear();
-  FOREACH_ENUM(StepsType, i)
-  steps_by_type_[i].clear();
-
   /* Then we copy as many Steps as possible on top of the old pointers.
    * The only pointers that change are pointers to Steps that are not in the
    * reverted file, which we delete, and pointers to Steps that are in the
@@ -535,7 +540,7 @@ bool Song::ReloadFromSongDir(std::string dir) {
       delete *it_old;
     } else {
       Steps* old_steps = *it_old;
-      *old_steps = *(it_new->second);
+      old_steps->CopyDataFrom(*(it_new->second));
       AddSteps(old_steps);
       m_new_steps.erase(it_new);
     }
@@ -544,7 +549,7 @@ bool Song::ReloadFromSongDir(std::string dir) {
   for (std::map<StepsID, Steps*>::const_iterator it = m_new_steps.begin();
        it != m_new_steps.end(); ++it) {
     Steps* new_steps = new Steps(this);
-    *new_steps = *(it->second);
+    new_steps->CopyDataFrom(*(it->second));
     AddSteps(new_steps);
   }
 

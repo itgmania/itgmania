@@ -2186,9 +2186,6 @@ void ScreenEdit::Init() {
 }
 
 ScreenEdit::~ScreenEdit() {
-  // UGLY: Don't delete the Song's steps.
-  song_last_save_.DetachSteps();
-
   LOG->Trace("ScreenEdit::~ScreenEdit()");
   sound_music_->StopPlaying();
 
@@ -7287,7 +7284,7 @@ void ScreenEdit::CopyToLastSave() {
   const std::vector<Steps*>& steps = GAMESTATE->cur_song_->GetStepsByStepsType(
       GAMESTATE->cur_steps_[main_player_]->steps_type_);
   for (Steps* it : steps) {
-    steps_last_save_.push_back(*it);
+    steps_last_save_.push_back(it->Clone());
   }
 }
 
@@ -7295,7 +7292,7 @@ void ScreenEdit::CopyFromLastSave() {
   // We are assuming two things here:
   // 1) No steps can be created by ScreenEdit
   // 2) No steps can be deleted by ScreenEdit (except possibly when we exit)
-  *GAMESTATE->cur_song_ = song_last_save_;
+  GAMESTATE->cur_song_->CopyMetadataFrom(song_last_save_);
   const std::vector<Steps*>& steps = GAMESTATE->cur_song_->GetStepsByStepsType(
       GAMESTATE->cur_steps_[main_player_]->steps_type_);
   ASSERT_M(
@@ -7304,7 +7301,7 @@ void ScreenEdit::CopyFromLastSave() {
           "Step sizes don't match: %d, %d", int(steps.size()),
           int(steps_last_save_.size())));
   for (unsigned i = 0; i < steps.size(); ++i) {
-    *steps[i] = steps_last_save_[i];
+    steps[i]->CopyDataFrom(*steps_last_save_[i]);
   }
 }
 
