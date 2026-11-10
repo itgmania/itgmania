@@ -2,6 +2,7 @@
 #define SONG_H
 
 #include <array>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -393,8 +394,8 @@ class Song : public SongData {
      fBeat ); }
   */
 
-  Steps* CreateSteps();
-  void InitSteps(Steps* steps);
+  std::unique_ptr<Steps> CreateSteps();
+  void InitSteps(Steps& steps);
 
   /* [splittiming]
   float SongGetBeatFromElapsedTime( float fElapsedTime ) const
@@ -435,7 +436,7 @@ class Song : public SongData {
   bool HasStepsTypeAndDifficulty(StepsType st, Difficulty dc) const;
   // TODO: Allow for a non const version.
   const std::vector<Steps*>& GetAllSteps() const { return steps_; }
-  const std::vector<Steps*>& GetUnknownStyleSteps() const {
+  const std::vector<std::unique_ptr<Steps>>& GetUnknownStyleSteps() const {
     return unknown_style_steps_;
   }
   const std::vector<Steps*>& GetStepsByStepsType(StepsType st) const {
@@ -457,9 +458,8 @@ class Song : public SongData {
 
   /**
    * @brief Add the chosen Steps to the Song.
-   * We are responsible for deleting the memory pointed to by pSteps!
-   * @param pSteps the new steps. */
-  void AddSteps(Steps* steps);
+   * @param steps the new steps. */
+  void AddSteps(std::unique_ptr<Steps> steps);
   void DeleteSteps(const Steps* steps, bool re_auto_gen = true);
 
   void FreeAllLoadedFromProfile(
@@ -471,7 +471,7 @@ class Song : public SongData {
   void GetStepsLoadedFromProfile(
       ProfileSlot slot, std::vector<Steps*>& steps_out) const;
   int GetNumStepsLoadedFromProfile(ProfileSlot slot) const;
-  bool IsEditAlreadyLoaded(Steps* steps) const;
+  bool IsEditAlreadyLoaded(const Steps& steps) const;
 
   bool IsStepsUsingDifferentTiming(Steps* steps) const;
   bool AnyChartUsesSplitTiming() const;
@@ -484,12 +484,13 @@ class Song : public SongData {
   void PushSelf(lua_State* L);
 
  private:
+  std::vector<std::unique_ptr<Steps>> owned_steps_;
   /** @brief the Steps that belong to this Song. */
   std::vector<Steps*> steps_;
   /** @brief the Steps of a particular StepsType that belong to this Song. */
   std::array<std::vector<Steps*>, NUM_StepsType> steps_by_type_;
   /** @brief the Steps that are of unrecognized Styles. */
-  std::vector<Steps*> unknown_style_steps_;
+  std::vector<std::unique_ptr<Steps>> unknown_style_steps_;
 };
 
 #endif

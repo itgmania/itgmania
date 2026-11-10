@@ -797,15 +797,13 @@ bool DWILoader::LoadFromDir(
         EqualsNoCase(value_name, "DOUBLE") ||
         EqualsNoCase(value_name, "COUPLE") ||
         EqualsNoCase(value_name, "SOLO")) {
-      Steps* new_notes = out.CreateSteps();
+      std::unique_ptr<Steps> new_notes = out.CreateSteps();
       LoadFromDWITokens(
           params[0], params[1], params[2], params[3],
           (num_params == 5) ? params[4] : std::string(""), *new_notes, path);
       if (new_notes->steps_type_ != StepsType_Invalid) {
         new_notes->SetFilename(path);
-        out.AddSteps(new_notes);
-      } else {
-        delete new_notes;
+        out.AddSteps(std::move(new_notes));
       }
     } else if (
         EqualsNoCase(value_name, "DISPLAYTITLE") ||

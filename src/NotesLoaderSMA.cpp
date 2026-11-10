@@ -417,17 +417,18 @@ bool SMALoader::LoadFromSimfile(const std::string& path, Song& out) {
         continue;
       }
 
-      Steps* new_notes = new Steps(&out);
+      std::unique_ptr<Steps> new_notes = out.CreateSteps();
 
       LoadFromTokens(
           params[1], params[2], params[3], params[4], params[5], params[6],
           *new_notes);
       new_notes->SetFilename(path);
-      out.AddSteps(new_notes);
 
       // Handle timing changes and convert negative bpms/stops
       timing = &new_notes->timing_;
       ProcessBPMsAndStops(*timing, bpm_changes, stops);
+
+      out.AddSteps(std::move(new_notes));
     } else if (value_name == "TIMESIGNATURES" || value_name == "LEADTRACK")
       ;
     else {

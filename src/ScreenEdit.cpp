@@ -7323,10 +7323,11 @@ void ScreenEdit::RevertFromDisk() {
     // put a blank Steps in its place.  Note that this does not have to be the
     // work of someone maliciously changing the simfile; it could happen to
     // someone editing a new stepchart and reverting from disk, for example.
-    new_steps = GAMESTATE->cur_song_->CreateSteps();
-    new_steps->CreateBlank(id.GetStepsType());
-    new_steps->SetDifficulty(id.GetDifficulty());
-    GAMESTATE->cur_song_->AddSteps(new_steps);
+    std::unique_ptr<Steps> created_steps = GAMESTATE->cur_song_->CreateSteps();
+    created_steps->CreateBlank(id.GetStepsType());
+    created_steps->SetDifficulty(id.GetDifficulty());
+    new_steps = created_steps.get();
+    GAMESTATE->cur_song_->AddSteps(std::move(created_steps));
   }
   GAMESTATE->cur_steps_[PLAYER_1].Set(new_steps);
   steps_ = new_steps;
