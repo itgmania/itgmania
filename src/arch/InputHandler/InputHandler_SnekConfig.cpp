@@ -185,7 +185,9 @@ void InputHandler_SnekConfig::InputThreadMain() {
     }
   }
 
-  SendSafeDisconnect();
+  // after manually polling, set sensor 0 to go back into game mode
+  // on disconnect we will send the proper disconnect command.
+  SendCommand(SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, 0, res);
 }
 
 bool InputHandler_SnekConfig::SendCommand(
