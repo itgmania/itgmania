@@ -178,6 +178,11 @@ static const float g_fLightEffectRiseSeconds = 0.075f;
 static const float g_fLightEffectFalloffSeconds = 0.35f;
 static const float g_fCoinPulseTime = 0.100f;
 void LightsManager::Update(float delta_time) {
+  // Give drivers a main-thread hook for state produced by the lights worker.
+  for (LightsDriver* driver : drivers_) {
+    driver->Update();
+  }
+
   // Update actor effect lights.
   FOREACH_CabinetLight(cl) {
     float time = delta_time;

@@ -20,6 +20,10 @@ class LightsDriver : public RageDriver {
 
   virtual void Set(const LightsState* ls) = 0;
 
+  // Called from the main thread once per frame. Drivers that need to publish
+  // state to main-thread-only systems can hand it off here from Set().
+  virtual void Update() {}
+
   // Reset all lights to off
   void Reset();
 };

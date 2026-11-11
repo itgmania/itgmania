@@ -17,7 +17,7 @@ LightsDriver_SystemMessage::LightsDriver_SystemMessage() {}
 LightsDriver_SystemMessage::~LightsDriver_SystemMessage() {}
 
 void LightsDriver_SystemMessage::Set(const LightsState* ls) {
-  if (!PREFSMAN || !LIGHTSMAN || !SCREENMAN) {
+  if (!PREFSMAN || !LIGHTSMAN) {
     return;
   }
 
@@ -41,7 +41,31 @@ void LightsDriver_SystemMessage::Set(const LightsState* ls) {
     s += "\n";
   }
 
-  SCREENMAN->SystemMessageNoAnimate(s);
+  // Set() runs on the lights worker thread. Keep only the newest state so the
+  // main thread can publish it without allowing light updates to backlog.
+  std::lock_guard<std::mutex> lock(pending_message_mutex_);
+  pending_message_ = std::move(s);
+  message_pending_ = true;
+}
+
+void LightsDriver_SystemMessage::Update() {
+  if (!SCREENMAN) {
+    return;
+  }
+
+  std::string message;
+  {
+    std::lock_guard<std::mutex> lock(pending_message_mutex_);
+    if (!message_pending_) {
+      return;
+    }
+    message.swap(pending_message_);
+    message_pending_ = false;
+  }
+
+  // Screen messages update theme actors and must only be sent by the main
+  // thread, which also renders those actors.
+  SCREENMAN->SystemMessageNoAnimate(message);
 }
 
 /*
