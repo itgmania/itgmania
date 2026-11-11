@@ -2,6 +2,9 @@
 #ifndef LightsDriver_SystemMessage_H
 #define LightsDriver_SystemMessage_H
 
+#include <mutex>
+#include <string>
+
 #include "LightsDriver.h"
 
 class LightsDriver_SystemMessage : public LightsDriver {
@@ -10,6 +13,12 @@ class LightsDriver_SystemMessage : public LightsDriver {
   virtual ~LightsDriver_SystemMessage();
 
   virtual void Set(const LightsState* ls);
+  virtual void Update();
+
+ private:
+  std::mutex pending_message_mutex_;
+  std::string pending_message_;
+  bool message_pending_ = false;
 };
 
 #endif
