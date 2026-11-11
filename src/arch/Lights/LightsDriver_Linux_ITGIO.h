@@ -6,13 +6,18 @@
 
 class LightsDriver_Linux_ITGIO : public LightsDriver_Linux_Leds {
  public:
+  inline static constexpr const char* kGameControllerLightFile =
+      "/sys/class/leds/itgio::output%d/brightness";
+
   LightsDriver_Linux_ITGIO() {}
   virtual ~LightsDriver_Linux_ITGIO() {}
+
+  static bool ShouldAutoLoad();
 
   virtual void Set(const LightsState* ls);
 
   virtual const char* GetGameControllerLightFile() {
-    return "/sys/class/leds/itgio::output%d/brightness";
+    return kGameControllerLightFile;
   }
 };
 

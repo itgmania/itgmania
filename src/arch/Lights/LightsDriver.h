@@ -50,11 +50,13 @@ class RegisterAutoDetectLightsDriver {
       CreateClass<LightsDriver_##x, RageDriver>)
 #define REGISTER_LIGHTS_DRIVER_CLASS(name) \
   REGISTER_LIGHTS_DRIVER_CLASS2(name, name)
-// Opts a lights driver into startup auto-detection. LightsDriver_<name> must
-// provide a static ShouldAutoLoad() predicate.
-#define REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(name)               \
+// Opts a lights driver into startup auto-detection. LightsDriver_<class_name>
+// must provide a static ShouldAutoLoad() predicate.
+#define REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(name, class_name)  \
   static RegisterAutoDetectLightsDriver register_autodetect_##name( \
-      #name, &LightsDriver_##name::ShouldAutoLoad)
+      #name, &LightsDriver_##class_name::ShouldAutoLoad)
+#define REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(name) \
+  REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(name, name)
 
 // allows you to make a new class name, but register as an older alias name.
 // ex: REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID) will allow older
