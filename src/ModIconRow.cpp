@@ -78,7 +78,7 @@ struct OptionColumnEntry {
 };
 
 // todo: metric these? -aj
-static const OptionColumnEntry g_OptionColumnEntries[] = {
+static const OptionColumnEntry kOptionColumnEntries[] = {
     {"Boost", 0},
     {"Brake", 0},
     {"Wave", 0},
@@ -129,9 +129,9 @@ int OptionToPreferredColumn(std::string option_text) {
     return 0;
   }
 
-  for (unsigned i = 0; i < ARRAYLEN(g_OptionColumnEntries); i++) {
-    if (g_OptionColumnEntries[i].string_ == option_text) {
-      return g_OptionColumnEntries[i].slot_index_;
+  for (unsigned i = 0; i < ARRAYLEN(kOptionColumnEntries); i++) {
+    if (kOptionColumnEntries[i].string_ == option_text) {
+      return kOptionColumnEntries[i].slot_index_;
     }
   }
 

@@ -61,10 +61,10 @@ const char* CodeNames[] = {
     "OperatorMenu"};
 XToString(Code);
 
-static InputQueueCode g_CodeItems[NUM_Code];
+static InputQueueCode code_items[NUM_Code];
 
 bool CodeDetector::EnteredCode(GameController controller, Code code) {
-  return g_CodeItems[code].EnteredCode(controller);
+  return code_items[code].EnteredCode(controller);
 }
 
 void CodeDetector::RefreshCacheItems(std::string s_class) {
@@ -72,7 +72,7 @@ void CodeDetector::RefreshCacheItems(std::string s_class) {
     s_class = "CodeDetector";
   }
   FOREACH_ENUM(Code, c) {
-    InputQueueCode& item = g_CodeItems[c];
+    InputQueueCode& item = code_items[c];
     const std::string code_name = CodeToString(c);
     const std::string buttons_names = THEME->GetMetric(s_class, code_name);
 

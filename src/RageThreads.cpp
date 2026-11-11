@@ -125,8 +125,8 @@ const char* ThreadSlot::GetFormattedCheckpoint(int lineno) {
   return checkpoints_[lineno].GetFormattedCheckpoint();
 }
 
-static ThreadSlot g_ThreadSlots[MAX_THREADS];
-struct ThreadSlot* g_pUnknownThreadSlot = nullptr;
+static ThreadSlot thread_slots[MAX_THREADS];
+struct ThreadSlot* unknown_thread_slot = nullptr;
 
 /* Lock this mutex before using or modifying m_pImpl.  Other values are just
  * identifiers, so possibly racing over them is harmless (simply using a stale
@@ -146,11 +146,11 @@ static RageMutex& GetUnknownThreadSlotLock() {
 static int FindEmptyThreadSlot() {
   LockMut(GetThreadSlotsLock());
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
+    if (thread_slots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
 
-    g_ThreadSlots[entry].used_.store(true, std::memory_order_release);
+    thread_slots[entry].used_.store(true, std::memory_order_release);
     return entry;
   }
 
@@ -178,21 +178,21 @@ static void InitThreads() {
 
   /* Register the "unknown thread" slot. */
   int slot = FindEmptyThreadSlot();
-  strcpy(g_ThreadSlots[slot].name_, "Unknown thread");
-  g_ThreadSlots[slot].id_ = GetInvalidThreadId();
-  sprintf(g_ThreadSlots[slot].thread_formatted_output_, "Unknown thread");
-  g_pUnknownThreadSlot = &g_ThreadSlots[slot];
+  strcpy(thread_slots[slot].name_, "Unknown thread");
+  thread_slots[slot].id_ = GetInvalidThreadId();
+  sprintf(thread_slots[slot].thread_formatted_output_, "Unknown thread");
+  unknown_thread_slot = &thread_slots[slot];
 }
 
 static ThreadSlot* GetThreadSlotFromID(uint64_t id) {
   InitThreads();
 
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
+    if (!thread_slots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (g_ThreadSlots[entry].id_ == id) {
-      return &g_ThreadSlots[entry];
+    if (thread_slots[entry].id_ == id) {
+      return &thread_slots[entry];
     }
   }
   return nullptr;
@@ -202,7 +202,7 @@ static ThreadSlot* GetCurThreadSlot() {
   return GetThreadSlotFromID(RageThread::GetCurrentThreadID());
 }
 
-static ThreadSlot* GetUnknownThreadSlot() { return g_pUnknownThreadSlot; }
+static ThreadSlot* GetUnknownThreadSlot() { return unknown_thread_slot; }
 
 RageThread::RageThread() : slot_(nullptr), name_("unnamed") {}
 
@@ -234,7 +234,7 @@ void RageThread::Create(int (*fn)(void*), void* data) {
   LockMut(GetThreadSlotsLock());
 
   int slotno = FindEmptyThreadSlot();
-  slot_ = &g_ThreadSlots[slotno];
+  slot_ = &thread_slots[slotno];
 
   strcpy(slot_->name_, name_.c_str());
 
@@ -255,7 +255,7 @@ RageThreadRegister::RageThreadRegister(const std::string& name) {
 
   int slot = FindEmptyThreadSlot();
 
-  slot_ = &g_ThreadSlots[slot];
+  slot_ = &thread_slots[slot];
 
   strcpy(slot_->name_, name.c_str());
   sprintf(slot_->thread_formatted_output_, "Thread: %s", name.c_str());
@@ -290,7 +290,7 @@ bool RageThread::EnumThreadIDs(int n, uint64_t& id) {
   }
 
   LockMut(GetThreadSlotsLock());
-  const ThreadSlot* slot = &g_ThreadSlots[n];
+  const ThreadSlot* slot = &thread_slots[n];
 
   if (slot->used_.load(std::memory_order_acquire)) {
     id = slot->id_;
@@ -329,29 +329,29 @@ void RageThread::Resume() {
 void RageThread::HaltAllThreads(bool kill) {
   const uint64_t this_thread_id = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
+    if (!thread_slots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (this_thread_id == g_ThreadSlots[entry].id_ ||
-        g_ThreadSlots[entry].impl_ == nullptr) {
+    if (this_thread_id == thread_slots[entry].id_ ||
+        thread_slots[entry].impl_ == nullptr) {
       continue;
     }
-    g_ThreadSlots[entry].impl_->Halt(kill);
+    thread_slots[entry].impl_->Halt(kill);
   }
 }
 
 void RageThread::ResumeAllThreads() {
   const uint64_t this_thread_id = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].used_.load(std::memory_order_acquire)) {
+    if (!thread_slots[entry].used_.load(std::memory_order_acquire)) {
       continue;
     }
-    if (this_thread_id == g_ThreadSlots[entry].id_ ||
-        g_ThreadSlots[entry].impl_ == nullptr) {
+    if (this_thread_id == thread_slots[entry].id_ ||
+        thread_slots[entry].impl_ == nullptr) {
       continue;
     }
 
-    g_ThreadSlots[entry].impl_->Resume();
+    thread_slots[entry].impl_->Resume();
   }
 }
 
@@ -360,8 +360,8 @@ uint64_t RageThread::GetInvalidThreadID() { return GetInvalidThreadId(); }
 
 /* Normally, checkpoints are only seen in crash logs.  It's occasionally useful
  * to see them in logs, but this outputs a huge amount of text. */
-static bool g_LogCheckpoints = false;
-void Checkpoints::LogCheckpoints(bool on) { g_LogCheckpoints = on; }
+static bool log_checkpoints = false;
+void Checkpoints::LogCheckpoints(bool on) { log_checkpoints = on; }
 
 void Checkpoints::SetCheckpoint(
     const char* file, int line, const std::string& message) {
@@ -393,7 +393,7 @@ void Checkpoints::SetCheckpoint(
 
   slot->checkpoints_[slot->cur_checkpoint_].Set(file, line, message);
 
-  if (g_LogCheckpoints) {
+  if (log_checkpoints) {
     LOG->Trace("%s", slot->checkpoints_[slot->cur_checkpoint_].formatted_buf_);
   }
 
@@ -409,13 +409,13 @@ void Checkpoints::SetCheckpoint(
 
 /* This is called under crash conditions.  Be careful. */
 static const char* GetCheckpointLog(int slotno, int lineno) {
-  ThreadSlot& slot = g_ThreadSlots[slotno];
+  ThreadSlot& slot = thread_slots[slotno];
   if (!slot.used_.load(std::memory_order_acquire)) {
     return nullptr;
   }
 
   /* Only show the "Unknown thread" entry if it has at least one checkpoint. */
-  if (&slot == g_pUnknownThreadSlot &&
+  if (&slot == unknown_thread_slot &&
       slot.GetFormattedCheckpoint(0) == nullptr) {
     return nullptr;
   }

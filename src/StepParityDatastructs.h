@@ -14,10 +14,10 @@
 
 namespace StepParity {
 
-const int INVALID_COLUMN = -1;
-const float CLM_SECOND_INVALID = -1;
+const int kInvalidColumn = -1;
+const float kClmSecondInvalid = -1;
 // Currently we only support 4 and 8 panel.
-const int MAX_COLUMNS = 8;
+const int kMaxColumns = 8;
 
 enum Foot {
   Foot_None = 0,
@@ -33,14 +33,14 @@ enum Foot {
 /// foot placement on the dance stage.
 typedef std::vector<Foot> FootPlacement;
 
-const std::vector<uint16_t> FOOT_MASKS = {0, 1, 2, 4, 8};
+const std::vector<uint16_t> kFootMasks = {0, 1, 2, 4, 8};
 
-const std::array<StepParity::Foot, 4> FEET = {
+const std::array<StepParity::Foot, 4> kFeet = {
     Foot_LeftHeel, Foot_LeftToe, Foot_RightHeel, Foot_RightToe};
 // A map for getting the other part of the foot, when you don't actually care
 // what part it is.
 // OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
-const std::array<StepParity::Foot, 5> OTHER_PART_OF_FOOT = {
+const std::array<StepParity::Foot, 5> kOtherPartOfFoot = {
     Foot_None, Foot_LeftToe, Foot_LeftHeel, Foot_RightToe, Foot_RightHeel};
 
 struct StagePoint {
@@ -51,11 +51,11 @@ struct StagePoint {
 // StageLayout represents the relative position of each panel on the dance
 // stage, and provides some basic math function
 struct StageLayout {
-  static const int kMaxTable = MAX_COLUMNS * MAX_COLUMNS;
+  static const int kMaxTable = kMaxColumns * kMaxColumns;
 
   StepsType type_;
   int column_count_;
-  std::array<StagePoint, MAX_COLUMNS> columns_ = {};
+  std::array<StagePoint, kMaxColumns> columns_ = {};
   std::vector<int> up_arrows_;
   std::vector<int> down_arrows_;
   std::vector<int> side_arrows_;
@@ -94,19 +94,19 @@ struct StageLayout {
            (p1.x_ - p2.x_) * (p1.x_ - p2.x_);
   }
   float getDistance(int left_index, int right_index) const {
-    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
+    if (left_index == kInvalidColumn || right_index == kInvalidColumn) {
       return 0;
     }
     return distances_[left_index * column_count_ + right_index];
   }
   float getXFacingPenalty(int left_index, int right_index) const {
-    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
+    if (left_index == kInvalidColumn || right_index == kInvalidColumn) {
       return 0;
     }
     return facing_x_penalties_[left_index * column_count_ + right_index];
   }
   float getYFacingPenalty(int left_index, int right_index) const {
-    if (left_index == INVALID_COLUMN || right_index == INVALID_COLUMN) {
+    if (left_index == kInvalidColumn || right_index == kInvalidColumn) {
       return 0;
     }
     return facing_y_penalties_[left_index * column_count_ + right_index];
@@ -136,13 +136,13 @@ struct StageLayout {
     return negative ? -dy : dy;
   }
   StagePoint averagePoint(int left_index, int right_index) const {
-    if (left_index == INVALID_COLUMN && right_index == INVALID_COLUMN) {
+    if (left_index == kInvalidColumn && right_index == kInvalidColumn) {
       return {0, 0};
     }
-    if (left_index == INVALID_COLUMN) {
+    if (left_index == kInvalidColumn) {
       return columns_[right_index];
     }
-    if (right_index == INVALID_COLUMN) {
+    if (right_index == kInvalidColumn) {
       return columns_[left_index];
     }
     return avg_points_[left_index * column_count_ + right_index];
@@ -157,7 +157,7 @@ struct StageLayout {
 /// @brief Represents a specific possible state of the player's position
 /// for a given row of the step chart.
 struct State {
-  StepParity::Foot combined_columns_[MAX_COLUMNS] =
+  StepParity::Foot combined_columns_[kMaxColumns] =
       {};  // The resulting position of the player
 
   // masks that indicate which foot moved/is holding.
@@ -192,17 +192,17 @@ struct IntermediateNoteData {
 /// empty.
 struct Row {
   // notes for the given row
-  std::array<IntermediateNoteData, MAX_COLUMNS> notes_ = {};
+  std::array<IntermediateNoteData, kMaxColumns> notes_ = {};
   // Any active hold notes, including ones that started before this row
-  std::array<IntermediateNoteData, MAX_COLUMNS> holds_ = {};
+  std::array<IntermediateNoteData, kMaxColumns> holds_ = {};
 
   // If a mine occurred either on this row, or on a row on its own immediately
   // preceding this one, the time of when that mine occurred, indexed by column.
-  std::array<float, MAX_COLUMNS> mines_ = {};
+  std::array<float, kMaxColumns> mines_ = {};
   // The same thing, but for fake mines
-  std::array<float, MAX_COLUMNS> fake_mines_ = {};
+  std::array<float, kMaxColumns> fake_mines_ = {};
 
-  std::array<Foot, MAX_COLUMNS> columns_ = {};
+  std::array<Foot, kMaxColumns> columns_ = {};
   std::array<int, NUM_Foot> where_the_feet_are_;
 
   // bit masks for quick comparisons
@@ -219,7 +219,7 @@ struct Row {
 
   Row(int column_count) {
     column_count_ = column_count;
-    where_the_feet_are_.fill(INVALID_COLUMN);
+    where_the_feet_are_.fill(kInvalidColumn);
   }
 
   void setFootPlacement(const StepParity::State* state);
@@ -231,8 +231,8 @@ struct RowCounter {
   std::vector<IntermediateNoteData> notes_;
   // Any holds that are active for the current row
   std::vector<IntermediateNoteData> active_holds_;
-  float last_column_second_ = CLM_SECOND_INVALID;
-  float last_column_beat_ = CLM_SECOND_INVALID;
+  float last_column_second_ = kClmSecondInvalid;
+  float last_column_beat_ = kClmSecondInvalid;
 
   // The time at which a mine occurred for the current row,
   // indexed by column
@@ -257,8 +257,8 @@ struct RowCounter {
     next_mines_ = std::vector<float>(column_count, 0);
     next_fake_mines_ = std::vector<float>(column_count, 0);
 
-    last_column_second_ = CLM_SECOND_INVALID;
-    last_column_beat_ = CLM_SECOND_INVALID;
+    last_column_second_ = kClmSecondInvalid;
+    last_column_beat_ = kClmSecondInvalid;
   }
 };
 

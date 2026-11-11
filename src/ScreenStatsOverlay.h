@@ -14,7 +14,7 @@
 #include "Screen.h"
 #include "ThemeMetric.h"
 
-const int NUM_SKIPS_TO_SHOW = 5;
+const int kNumSkipsToShow = 5;
 
 class ScreenStatsOverlay : public Screen {
  public:
@@ -28,7 +28,7 @@ class ScreenStatsOverlay : public Screen {
 
   BitmapText text_stats_;
   Quad quad_skip_background_;
-  std::array<BitmapText, NUM_SKIPS_TO_SHOW> text_skips_;
+  std::array<BitmapText, kNumSkipsToShow> text_skips_;
   RageTimer timer_skip_;
   int last_skip_;
 

@@ -76,7 +76,7 @@ struct EventDevice {
   DeviceButton abs_mapping_low_[ABS_MAX];
 };
 
-static std::vector<EventDevice*> g_apEventDevices;
+static std::vector<EventDevice*> event_devices;
 
 static bool BitIsSet(const uint8_t* array, uint32_t bit) {
   return !!(array[bit / 8] & (1 << (bit % 8)));
@@ -323,10 +323,10 @@ InputHandler_Linux_Event::~InputHandler_Linux_Event() {
     StopThread();
   }
 
-  for (int i = 0; i < (int)g_apEventDevices.size(); ++i) {
-    delete g_apEventDevices[i];
+  for (int i = 0; i < (int)event_devices.size(); ++i) {
+    delete event_devices[i];
   }
-  g_apEventDevices.clear();
+  event_devices.clear();
 
   udev_monitor_unref(udev_monitor_);
   udev_unref(udev_);
@@ -355,7 +355,7 @@ bool InputHandler_Linux_Event::TryDevice(std::string devfile) {
     }
     /* Thread is stopped! DO NOT RETURN */
     {
-      g_apEventDevices.push_back(dev);
+      event_devices.push_back(dev);
     }
     if (hotplug) {
       StartThread();
@@ -395,9 +395,9 @@ void InputHandler_Linux_Event::InputThread() {
       max_fd = std::max(max_fd, udev_fd_);
     }
 
-    for (int i = 0; i < (int)g_apEventDevices.size(); ++i) {
-      int fd = g_apEventDevices[i]->fd_;
-      if (!g_apEventDevices[i]->IsOpen()) {
+    for (int i = 0; i < (int)event_devices.size(); ++i) {
+      int fd = event_devices[i]->fd_;
+      if (!event_devices[i]->IsOpen()) {
         continue;
       }
 
@@ -436,22 +436,22 @@ void InputHandler_Linux_Event::InputThread() {
       }
     }
 
-    for (int i = 0; i < (int)g_apEventDevices.size(); ++i) {
-      if (!g_apEventDevices[i]->IsOpen()) {
+    for (int i = 0; i < (int)event_devices.size(); ++i) {
+      if (!event_devices[i]->IsOpen()) {
         continue;
       }
 
-      if (!FD_ISSET(g_apEventDevices[i]->fd_, &fdset)) {
+      if (!FD_ISSET(event_devices[i]->fd_, &fdset)) {
         continue;
       }
 
       input_event event;
-      int ret = read(g_apEventDevices[i]->fd_, &event, sizeof(event));
+      int ret = read(event_devices[i]->fd_, &event, sizeof(event));
       if (ret == -1) {
         LOG->Warn(
             "Error reading from %s: %s; disabled",
-            g_apEventDevices[i]->path_.c_str(), strerror(errno));
-        g_apEventDevices[i]->Close();
+            event_devices[i]->path_.c_str(), strerror(errno));
+        event_devices[i]->Close();
         input_mutex_.Lock();
         devices_changed_ = true;
         input_mutex_.Unlock();
@@ -462,7 +462,7 @@ void InputHandler_Linux_Event::InputThread() {
         LOG->Warn(
             "Unexpected packet (size %i != %i) from joystick %i; disabled", ret,
             (int)sizeof(event), i);
-        g_apEventDevices[i]->Close();
+        event_devices[i]->Close();
         input_mutex_.Lock();
         devices_changed_ = true;
         input_mutex_.Unlock();
@@ -499,36 +499,33 @@ void InputHandler_Linux_Event::InputThread() {
               num,
               32);  // max number of joystick buttons.  Make this a constant?
           ButtonPressed(DeviceInput(
-              g_apEventDevices[i]->dev_, enum_add2(JOY_BUTTON_1, num),
+              event_devices[i]->dev_, enum_add2(JOY_BUTTON_1, num),
               event.value != 0, event_time));
           break;
         }
 
         case EV_ABS: {
           ASSERT_M(event.code < ABS_MAX, ssprintf("%i", event.code));
-          DeviceButton neg = g_apEventDevices[i]->abs_mapping_low_[event.code];
-          DeviceButton pos = g_apEventDevices[i]->abs_mapping_high_[event.code];
+          DeviceButton neg = event_devices[i]->abs_mapping_low_[event.code];
+          DeviceButton pos = event_devices[i]->abs_mapping_high_[event.code];
 
           float l = SCALE(
-              int(event.value),
-              (float)g_apEventDevices[i]->abs_min_[event.code],
-              (float)g_apEventDevices[i]->abs_max_[event.code], -1.0f, 1.0f);
-          if (GamePreferences::m_AxisFix) {
+              int(event.value), (float)event_devices[i]->abs_min_[event.code],
+              (float)event_devices[i]->abs_max_[event.code], -1.0f, 1.0f);
+          if (GamePreferences::axis_fix) {
             // Up if between 0.0001 and 0.5 or if less than -0.5
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, neg,
+                event_devices[i]->dev_, neg,
                 (l < -0.5) || ((l > 0.0001) && (l < 0.5)), event_time));
             // Down if between 0.0001 and 0.5 or if more than 0.5
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, pos,
+                event_devices[i]->dev_, pos,
                 (l > 0.5) || ((l > 0.0001) && (l < 0.5)), event_time));
           } else {
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, neg, std::max(-l, 0.0f),
-                event_time));
+                event_devices[i]->dev_, neg, std::max(-l, 0.0f), event_time));
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->dev_, pos, std::max(+l, 0.0f),
-                event_time));
+                event_devices[i]->dev_, pos, std::max(+l, 0.0f), event_time));
           }
           break;
         }
@@ -541,8 +538,8 @@ void InputHandler_Linux_Event::InputThread() {
 
 void InputHandler_Linux_Event::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& devices_out) {
-  for (unsigned i = 0; i < g_apEventDevices.size(); ++i) {
-    EventDevice* dev = g_apEventDevices[i];
+  for (unsigned i = 0; i < event_devices.size(); ++i) {
+    EventDevice* dev = event_devices[i];
     devices_out.push_back(InputDeviceInfo(dev->dev_, dev->name_));
   }
 

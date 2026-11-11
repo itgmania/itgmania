@@ -22,7 +22,7 @@ class Course;
 class Trail;
 typedef std::pair<Difficulty, StepsType> DifficultyAndStepsType;
 
-const int NUM_RANKING_LINES = 5;
+const int kNumRankingLines = 5;
 
 enum RankingType {
   RankingType_Category,       // Top N HighScores for one Category
@@ -77,11 +77,11 @@ class ScreenRanking : public ScreenAttract {
   BitmapText text_category_;      // for category
   BitmapText text_course_title_;  // for course
 
-  AutoActor spr_bullets_[NUM_RANKING_LINES];   // for category and course
-  BitmapText text_names_[NUM_RANKING_LINES];   // for category and course
-  BitmapText text_scores_[NUM_RANKING_LINES];  // for category and course
-  BitmapText text_points_[NUM_RANKING_LINES];  // for course
-  BitmapText text_time_[NUM_RANKING_LINES];    // for course
+  AutoActor spr_bullets_[kNumRankingLines];   // for category and course
+  BitmapText text_names_[kNumRankingLines];   // for category and course
+  BitmapText text_scores_[kNumRankingLines];  // for category and course
+  BitmapText text_points_[kNumRankingLines];  // for course
+  BitmapText text_time_[kNumRankingLines];    // for course
   ThemeMetric1D<RageColor> STEPS_TYPE_COLOR;
 
   LocalizedString NO_SCORE_NAME;

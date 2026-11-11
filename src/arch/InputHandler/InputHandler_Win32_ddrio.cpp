@@ -43,7 +43,7 @@ static DDRIO_SETLIGHTS_HDXSPANEL ddrio_set_lights_hdxs_panel;
 typedef int (*DDRIO_FINI)();
 static DDRIO_FINI ddrio_fini;
 
-HINSTANCE hDDRIOdll = nullptr;
+HINSTANCE ddrio_dll = nullptr;
 
 REGISTER_INPUT_HANDLER_CLASS2(ddrio, Win32_ddrio);
 
@@ -110,9 +110,9 @@ int ddrio_filter(unsigned int, struct _EXCEPTION_POINTERS*) {
 }
 
 bool InputHandler_Win32_ddrio::LoadDLL() {
-  hDDRIOdll = LoadLibrary("ddrio.dll");
+  ddrio_dll = LoadLibrary("ddrio.dll");
 
-  if (hDDRIOdll == nullptr) {
+  if (ddrio_dll == nullptr) {
     MessageBox(
         nullptr,
         "Could not load ddrio.dll. Ensure it is in the Program directory, the "
@@ -123,7 +123,7 @@ bool InputHandler_Win32_ddrio::LoadDLL() {
     return false;
   }
 
-  _ddriodll_loaded = true;
+  ddriodll_loaded = true;
 
   return true;
 }
@@ -131,29 +131,29 @@ bool InputHandler_Win32_ddrio::LoadDLL() {
 bool InputHandler_Win32_ddrio::MapFunctions() {
   __try {
     // pull the functions we need out of the dll.
-    ddrio_io_init = (DDRIO_IO_INIT)GetProcAddress(hDDRIOdll, "ddr_io_init");
+    ddrio_io_init = (DDRIO_IO_INIT)GetProcAddress(ddrio_dll, "ddr_io_init");
     ddrio_io_read_pad =
-        (DDRIO_READ_PAD)GetProcAddress(hDDRIOdll, "ddr_io_read_pad");
-    ddrio_fini = (DDRIO_FINI)GetProcAddress(hDDRIOdll, "ddr_io_fini");
+        (DDRIO_READ_PAD)GetProcAddress(ddrio_dll, "ddr_io_read_pad");
+    ddrio_fini = (DDRIO_FINI)GetProcAddress(ddrio_dll, "ddr_io_fini");
 
     // these are technically optional depending on the device in question.
     ddrio_set_lights_p3io = (DDRIO_SETLIGHTS_P3IO)GetProcAddress(
-        hDDRIOdll, "ddr_io_set_lights_p3io");
+        ddrio_dll, "ddr_io_set_lights_p3io");
     ddrio_set_lights_extio = (DDRIO_SETLIGHTS_P3IO)GetProcAddress(
-        hDDRIOdll, "ddr_io_set_lights_extio");
+        ddrio_dll, "ddr_io_set_lights_extio");
     ddrio_set_lights_hdxs_panel = (DDRIO_SETLIGHTS_P3IO)GetProcAddress(
-        hDDRIOdll, "ddr_io_set_lights_hdxs_panel");
+        ddrio_dll, "ddr_io_set_lights_hdxs_panel");
   } __except (ddrio_filter(GetExceptionCode(), GetExceptionInformation())) {
     MessageBox(nullptr, "Could not map functions in ddrio.dll", "ERROR", MB_OK);
-    FreeLibrary(hDDRIOdll);
+    FreeLibrary(ddrio_dll);
   }
 
   return true;
 }
 
 InputHandler_Win32_ddrio::InputHandler_Win32_ddrio() {
-  if (!_ddriodll_loaded && LoadDLL()) {
-    _ddriodll_loaded = MapFunctions();
+  if (!ddriodll_loaded && LoadDLL()) {
+    ddriodll_loaded = MapFunctions();
   }
 
   bool ddr_init = false;
@@ -173,7 +173,7 @@ InputHandler_Win32_ddrio::InputHandler_Win32_ddrio() {
 
   shutdown_ = false;
 
-  if (_ddriodll_loaded && ddr_init && PREFSMAN->threaded_input_) {
+  if (ddriodll_loaded && ddr_init && PREFSMAN->threaded_input_) {
     input_thread_.SetName("ddrio thread");
     input_thread_.Create(InputThread_Start, this);
   }

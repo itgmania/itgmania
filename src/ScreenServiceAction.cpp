@@ -45,11 +45,11 @@ static LocalizedString MACHINE_EDITS_CLEARED(
 static std::string ClearMachineEdits() {
   std::vector<std::string> edit_files;
   GetDirListing(
-      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_STEPS_SUBDIR +
+      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + kEditStepsSubdir +
           "*.edit",
       edit_files, false, true);
   GetDirListing(
-      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_COURSES_SUBDIR +
+      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + kEditCoursesSubdir +
           "*.crs",
       edit_files, false, true);
 
@@ -79,7 +79,7 @@ static PlayerNumber GetFirstReadyMemoryCard() {
     return pn;
   }
 
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 static LocalizedString MEMORY_CARD_EDITS_NOT_CLEARED(
@@ -88,7 +88,7 @@ static LocalizedString EDITS_CLEARED(
     "ScreenServiceAction", "%d edits cleared, %d errors.");
 static std::string ClearMemoryCardEdits() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return MEMORY_CARD_EDITS_NOT_CLEARED.GetValue();
   }
 
@@ -96,11 +96,11 @@ static std::string ClearMemoryCardEdits() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string dir = MEM_CARD_MOUNT_POINT[pn] +
+  std::string dir = kMemCardMountPoint[pn] +
                     (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
   std::vector<std::string> edit_files;
-  GetDirListing(dir + EDIT_STEPS_SUBDIR + "*.edit", edit_files, false, true);
-  GetDirListing(dir + EDIT_COURSES_SUBDIR + "*.crs", edit_files, false, true);
+  GetDirListing(dir + kEditStepsSubdir + "*.edit", edit_files, false, true);
+  GetDirListing(dir + kEditCoursesSubdir + "*.crs", edit_files, false, true);
   int edit_count = edit_files.size();
   int removed_count = std::count_if(
       edit_files.begin(), edit_files.end(),
@@ -120,7 +120,7 @@ static LocalizedString ERROR_SAVING_MACHINE_STATS(
     "ScreenServiceAction", "Error saving machine stats to P%d card.");
 static std::string TransferStatsMachineToMemoryCard() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return STATS_NOT_SAVED.GetValue();
   }
 
@@ -128,7 +128,7 @@ static std::string TransferStatsMachineToMemoryCard() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string dir = MEM_CARD_MOUNT_POINT[pn];
+  std::string dir = kMemCardMountPoint[pn];
   dir += "MachineProfile/";
 
   bool saved = PROFILEMAN->GetMachineProfile()->SaveAllToDir(
@@ -154,7 +154,7 @@ static LocalizedString PROFILE_CORRUPT(
     "The profile on P%d card contains corrupt or tampered data.");
 static std::string TransferStatsMemoryCardToMachine() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return STATS_NOT_LOADED.GetValue();
   }
 
@@ -162,7 +162,7 @@ static std::string TransferStatsMemoryCardToMachine() {
     MEMCARDMAN->MountCard(pn);
   }
 
-  std::string dir = MEM_CARD_MOUNT_POINT[pn];
+  std::string dir = kMemCardMountPoint[pn];
   dir += "MachineProfile/";
 
   Profile backup = *PROFILEMAN->GetMachineProfile();
@@ -201,8 +201,8 @@ static void CopyEdits(
   num_errored = 0;
 
   {
-    std::string from_dir = from_profile_dir + EDIT_STEPS_SUBDIR;
-    std::string to_dir = to_profile_dir + EDIT_STEPS_SUBDIR;
+    std::string from_dir = from_profile_dir + kEditStepsSubdir;
+    std::string to_dir = to_profile_dir + kEditStepsSubdir;
 
     std::vector<std::string> files;
     GetDirListing(from_dir + "*.edit", files, false, false);
@@ -231,8 +231,8 @@ static void CopyEdits(
   // TODO: Seprarate copying stats for steps and courses
 
   {
-    std::string from_dir = from_profile_dir + EDIT_COURSES_SUBDIR;
-    std::string to_dir = to_profile_dir + EDIT_COURSES_SUBDIR;
+    std::string from_dir = from_profile_dir + kEditCoursesSubdir;
+    std::string to_dir = to_profile_dir + kEditCoursesSubdir;
 
     std::vector<std::string> files;
     GetDirListing(from_dir + "*.crs", files, false, false);
@@ -339,16 +339,16 @@ static void SyncEdits(
   num_failed = 0;
 
   SyncFiles(
-      from_dir + EDIT_STEPS_SUBDIR, to_dir + EDIT_STEPS_SUBDIR, "*.edit",
+      from_dir + kEditStepsSubdir, to_dir + kEditStepsSubdir, "*.edit",
       num_added, num_deleted, num_overwritten, num_failed);
   SyncFiles(
-      from_dir + EDIT_COURSES_SUBDIR, to_dir + EDIT_COURSES_SUBDIR, "*.crs",
+      from_dir + kEditCoursesSubdir, to_dir + kEditCoursesSubdir, "*.crs",
       num_added, num_deleted, num_overwritten, num_failed);
 }
 
 static std::string CopyEditsMachineToMemoryCard() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return EDITS_NOT_COPIED.GetValue();
   }
 
@@ -357,7 +357,7 @@ static std::string CopyEditsMachineToMemoryCard() {
   }
 
   std::string from_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
-  std::string to_dir = MEM_CARD_MOUNT_POINT[pn] +
+  std::string to_dir = kMemCardMountPoint[pn] +
                        (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
 
   std::vector<std::string> vs;
@@ -373,7 +373,7 @@ static std::string CopyEditsMachineToMemoryCard() {
 
 static std::string SyncEditsMachineToMemoryCard() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return EDITS_NOT_COPIED.GetValue();
   }
 
@@ -387,7 +387,7 @@ static std::string SyncEditsMachineToMemoryCard() {
   int num_failed = 0;
 
   std::string from_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
-  std::string to_dir = MEM_CARD_MOUNT_POINT[pn] +
+  std::string to_dir = kMemCardMountPoint[pn] +
                        (std::string)PREFSMAN->memory_card_profile_subdir_ + "/";
   SyncEdits(
       from_dir, to_dir, num_added, num_deleted, num_overwritten, num_failed);
@@ -410,7 +410,7 @@ static LocalizedString COPIED_FROM_CARD(
     "ScreenServiceAction", "Copied from P%d card:");
 static std::string CopyEditsMemoryCardToMachine() {
   PlayerNumber pn = GetFirstReadyMemoryCard();
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return EDITS_NOT_COPIED.GetValue();
   }
 
@@ -425,7 +425,7 @@ static std::string CopyEditsMemoryCardToMachine() {
   vs.push_back(ssprintf(COPIED_FROM_CARD.GetValue().c_str(), pn + 1));
 
   for (const std::string& sub_dir : sub_dirs) {
-    std::string from_dir = MEM_CARD_MOUNT_POINT[pn] + sub_dir + "/";
+    std::string from_dir = kMemCardMountPoint[pn] + sub_dir + "/";
     std::string to_dir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
 
     std::string s = CopyEdits(from_dir, to_dir, sub_dir);

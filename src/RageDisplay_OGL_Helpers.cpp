@@ -6,7 +6,7 @@
 #include "RageUtil.h"
 
 namespace {
-std::map<GLenum, std::string> g_Strings;
+std::map<GLenum, std::string> g_strings;
 void InitStringMap() {
   static bool initialized = false;
   if (initialized) {
@@ -14,7 +14,7 @@ void InitStringMap() {
   }
   initialized = true;
 
-#define X(a) g_Strings[a] = #a;
+#define X(a) g_strings[a] = #a;
   X(GL_RGBA8);
   X(GL_RGBA4);
   X(GL_RGB5_A1);
@@ -43,8 +43,8 @@ void InitStringMap() {
 void RageDisplay_Legacy_Helpers::Init() { InitStringMap(); }
 
 std::string RageDisplay_Legacy_Helpers::GLToString(GLenum e) {
-  if (g_Strings.find(e) != g_Strings.end()) {
-    return g_Strings[e];
+  if (g_strings.find(e) != g_strings.end()) {
+    return g_strings[e];
   }
 
   return ssprintf("%i", int(e));

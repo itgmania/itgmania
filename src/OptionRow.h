@@ -33,7 +33,7 @@ class OptionRowType {
   std::string metrics_group_;
 
   BitmapText text_item_;
-  OptionsCursor underline_[NUM_PLAYERS];
+  OptionsCursor underline_[kNumPlayers];
   AutoActor spr_frame_;
   BitmapText text_title_;
   ModIcon mod_icon_;
@@ -70,7 +70,7 @@ class OptionRow : public ActorFrame {
 
   void ImportOptions(const std::vector<PlayerNumber>& vpns);
   int ExportOptions(
-      const std::vector<PlayerNumber>& vpns, bool row_has_focus[NUM_PLAYERS]);
+      const std::vector<PlayerNumber>& vpns, bool row_has_focus[kNumPlayers]);
 
   enum RowType { RowType_Normal, RowType_Exit };
 
@@ -140,20 +140,20 @@ class OptionRow : public ActorFrame {
   std::vector<BitmapText*>
       text_items_;  // size depends on m_bRowIsLong and which players are joined
   std::vector<OptionsCursor*>
-      underline_[NUM_PLAYERS];  // size depends on m_bRowIsLong and which
+      underline_[kNumPlayers];  // size depends on m_bRowIsLong and which
                                 // players are joined
 
   Actor* spr_frame_;
   BitmapText* text_title_;
-  ModIcon* mod_icons_[NUM_PLAYERS];
+  ModIcon* mod_icons_[kNumPlayers];
 
   bool first_item_goes_down_;
-  std::array<bool, NUM_PLAYERS> row_has_focus_;
+  std::array<bool, kNumPlayers> row_has_focus_;
 
-  int choice_in_row_with_focus_[NUM_PLAYERS];  // this choice has input focus
+  int choice_in_row_with_focus_[kNumPlayers];  // this choice has input focus
   // Only one will true at a time if m_pHand->m_Def.bMultiSelect
   std::vector<bool>
-      selected_[NUM_PLAYERS];  // size = m_pHand->m_Def.choices.size()
+      selected_[kNumPlayers];  // size = m_pHand->m_Def.choices.size()
 
  public:
   void SetDestination(Actor::TweenState& ts, bool tween);

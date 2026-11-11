@@ -4,7 +4,7 @@
 #include <string>
 /** @brief Defines common frame to character mappings for Fonts. */
 namespace FontCharmaps {
-extern const wchar_t M_SKIP;
+extern const wchar_t kMSkip;
 const wchar_t* get_char_map(std::string name);
 };  // namespace FontCharmaps
 

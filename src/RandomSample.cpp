@@ -57,7 +57,7 @@ bool RandomSample::LoadSoundDir(std::string dir, int max_to_load) {
 
   std::shuffle(
       array_sound_files.begin(), array_sound_files.end(),
-      g_RandomNumberGenerator);
+      random_number_generator);
   const unsigned int new_size = std::min<unsigned int>(
       array_sound_files.size(), static_cast<unsigned int>(max_to_load));
   array_sound_files.resize(new_size);

@@ -130,9 +130,9 @@ Steps* MakeFullSteps(Song& song) {
   steps->SetMeter(13);
   steps->SetCredit("Full credit");
 
-  RadarValues radar[NUM_PLAYERS];
-  TechCounts tech[NUM_PLAYERS];
-  for (int pn = 0; pn < NUM_PLAYERS; ++pn) {
+  RadarValues radar[kNumPlayers];
+  TechCounts tech[kNumPlayers];
+  for (int pn = 0; pn < kNumPlayers; ++pn) {
     for (int rc = 0; rc < NUM_RadarCategory; ++rc) {
       radar[pn][rc] = static_cast<float>(100 * pn + rc) + 0.5f;
     }
@@ -271,7 +271,7 @@ void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
   EXPECT_EQ(expected.GetMusicFile(), actual.GetMusicFile());
   EXPECT_EQ(expected.GetFilename(), actual.GetFilename());
 
-  for (int pn = 0; pn < NUM_PLAYERS; ++pn) {
+  for (int pn = 0; pn < kNumPlayers; ++pn) {
     const PlayerNumber player = static_cast<PlayerNumber>(pn);
     EXPECT_EQ(expected.GetRadarValues(player), actual.GetRadarValues(player));
     EXPECT_EQ(expected.GetTechCounts(player), actual.GetTechCounts(player));
@@ -478,7 +478,7 @@ TEST_F(SongCacheBinaryTest, WrongVersionFails) {
   std::string data;
   AppendU32(data, 4);
   data += "ITGC";
-  AppendU32(data, static_cast<uint32_t>(FILE_CACHE_VERSION + 1));
+  AppendU32(data, static_cast<uint32_t>(kFileCacheVersion + 1));
 
   const std::string path = CachePath("wrong_version.bin");
   ASSERT_TRUE(WriteBytes(path, data));

@@ -16,12 +16,12 @@
  */
 
 // Number of printable characters used to encode lights
-static const size_t CABINET_SEXTET_COUNT = 1;
-static const size_t CONTROLLER_SEXTET_COUNT = 6;
+static const size_t kCabinetSextetCount = 1;
+static const size_t kControllerSextetCount = 6;
 
 // Number of bytes to contain the full pack and a trailing LF
-static const size_t FULL_SEXTET_COUNT =
-    CABINET_SEXTET_COUNT + (NUM_GameController * CONTROLLER_SEXTET_COUNT) + 1;
+static const size_t kFullSextetCount =
+    kCabinetSextetCount + (NUM_GameController * kControllerSextetCount) + 1;
 
 // Serialization routines
 
@@ -67,7 +67,7 @@ inline size_t packCabinetLights(const LightsState* ls, uint8_t* buffer) {
       ls->cabinet_lights_[LIGHT_MARQUEE_LR_RIGHT],
       ls->cabinet_lights_[LIGHT_BASS_LEFT],
       ls->cabinet_lights_[LIGHT_BASS_RIGHT]);
-  return CABINET_SEXTET_COUNT;
+  return kCabinetSextetCount;
 }
 
 // Packs the button lights for a controller into 6 printable sextets and
@@ -117,7 +117,7 @@ inline size_t packControllerLights(
       ls->game_button_lights_[gc][GAME_BUTTON_CUSTOM_19], false, false, false,
       false, false);
 
-  return CONTROLLER_SEXTET_COUNT;
+  return kControllerSextetCount;
 }
 
 inline size_t packLine(uint8_t* buffer, const LightsState* ls) {

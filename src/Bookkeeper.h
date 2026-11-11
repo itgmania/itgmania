@@ -18,10 +18,10 @@ class Bookkeeper {
   void CoinInserted();
 
   int GetCoinsTotal() const;
-  void GetCoinsLastDays(int coins[NUM_LAST_DAYS]) const;
-  void GetCoinsLastWeeks(int coins[NUM_LAST_WEEKS]) const;
-  void GetCoinsByDayOfWeek(int coins[DAYS_IN_WEEK]) const;
-  void GetCoinsByHour(int coins[HOURS_IN_DAY]) const;
+  void GetCoinsLastDays(int coins[kNumLastDays]) const;
+  void GetCoinsLastWeeks(int coins[kNumLastWeeks]) const;
+  void GetCoinsByDayOfWeek(int coins[kDaysInWeek]) const;
+  void GetCoinsByHour(int coins[kHoursInDay]) const;
   void WriteCoinsFile(int coins);
   void ReadCoinsFile(int& coins);
 

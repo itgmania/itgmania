@@ -21,8 +21,8 @@
 #include "archutils/win32/crash.h"
 #include "global.h"
 
-static HANDLE g_hInstanceMutex;
-static bool g_bIsMultipleInstance = false;
+static HANDLE instance_mutex;
+static bool is_multiple_instance = false;
 
 void InvalidParameterHandler(
     const wchar_t* expression, const wchar_t* function, const wchar_t* file,
@@ -46,15 +46,15 @@ ArchHooks_Win32::ArchHooks_Win32() {
    * that for the main thread. */
   SetThreadPriorityBoost(GetCurrentThread(), TRUE);
 
-  g_hInstanceMutex = CreateMutex(nullptr, TRUE, PRODUCT_ID);
+  instance_mutex = CreateMutex(nullptr, TRUE, PRODUCT_ID);
 
-  g_bIsMultipleInstance = false;
+  is_multiple_instance = false;
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
-    g_bIsMultipleInstance = true;
+    is_multiple_instance = true;
   }
 }
 
-ArchHooks_Win32::~ArchHooks_Win32() { CloseHandle(g_hInstanceMutex); }
+ArchHooks_Win32::~ArchHooks_Win32() { CloseHandle(instance_mutex); }
 
 void ArchHooks_Win32::DumpDebugInfo() {
   /* This is a good time to do the debug search: before we actually
@@ -85,7 +85,7 @@ static BOOL CALLBACK GetEnabledPopup(HWND hwnd, LPARAM lparam) {
 }
 
 bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[]) {
-  if (!g_bIsMultipleInstance) {
+  if (!is_multiple_instance) {
     return false;
   }
 

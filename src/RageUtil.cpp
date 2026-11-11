@@ -36,7 +36,7 @@
 #include "StdString.h"
 #include "global.h"
 
-const std::string CUSTOM_SONG_PATH = "/@mem/";
+const std::string kCustomSongPath = "/@mem/";
 
 void UnicodeUpperLower(wchar_t*, size_t, const unsigned char*);
 
@@ -593,9 +593,9 @@ std::string custom_songify_path(const std::string& path) {
   std::vector<std::string> parts;
   split(path, "/", parts, false);
   if (parts.size() < 2) {
-    return CUSTOM_SONG_PATH + path;
+    return kCustomSongPath + path;
   }
-  return CUSTOM_SONG_PATH + parts[parts.size() - 2] + "/" +
+  return kCustomSongPath + parts[parts.size() - 2] + "/" +
          parts[parts.size() - 1];
 }
 
@@ -1233,7 +1233,7 @@ wchar_t utf8_get_char(const std::string& s) {
   unsigned start = 0;
   wchar_t ret;
   if (!utf8_to_wchar_ec(s, start, ret)) {
-    return INVALID_CHAR;
+    return kInvalidChar;
   }
   return ret;
 }
@@ -1301,7 +1301,7 @@ void MakeUpper(char* p, size_t len) {
     }
 
     int remaining = len - (p - start);
-    p += UnicodeDoUpper(p, remaining, g_UpperCase);
+    p += UnicodeDoUpper(p, remaining, upper_case);
   }
 }
 
@@ -1324,7 +1324,7 @@ void UnicodeUpperLower(
 }
 
 void MakeUpper(wchar_t* p, size_t len) {
-  UnicodeUpperLower(p, len, g_UpperCase);
+  UnicodeUpperLower(p, len, upper_case);
 }
 
 float StringToFloat(const std::string& string) {
@@ -1353,7 +1353,7 @@ int StringToInt(const std::string& str, size_t* pos, int base, int except_val) {
   return except_val;
 }
 
-const wchar_t INVALID_CHAR = 0xFFFD; /* U+FFFD REPLACEMENT CHARACTER */
+const wchar_t kInvalidChar = 0xFFFD; /* U+FFFD REPLACEMENT CHARACTER */
 
 std::wstring RStringToWstring(const std::string& s) {
   std::wstring ret;
@@ -1369,7 +1369,7 @@ std::wstring RStringToWstring(const std::string& s) {
 
     wchar_t ch = L'\0';
     if (!utf8_to_wchar(s.data(), s.size(), start, ch)) {
-      ch = INVALID_CHAR;
+      ch = kInvalidChar;
     }
     ret += ch;
   }
@@ -1530,7 +1530,7 @@ void Replace_Unicode_Markers(std::string& text) {
     unsigned int num;
     sscanf(text.c_str() + pos, hex ? "&x%x;" : "&#%u;", &num);
     if (num > 0xFFFF) {
-      num = INVALID_CHAR;
+      num = kInvalidChar;
     }
 
     text.replace(pos, p - pos, WcharToUTF8(wchar_t(num)));
@@ -1606,12 +1606,12 @@ std::string Capitalize(const std::string& s) {
 
   char* buf = const_cast<char*>(s.c_str());
 
-  UnicodeDoUpper(buf, s.size(), g_UpperCase);
+  UnicodeDoUpper(buf, s.size(), upper_case);
 
   return buf;
 }
 
-unsigned char g_UpperCase[256] = {
+unsigned char upper_case[256] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
     0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
     0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23,

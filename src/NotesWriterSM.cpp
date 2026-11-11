@@ -342,7 +342,7 @@ static LocalizedString ERROR_WRITING_FILE(
 bool NotesWriterSM::WriteEditFileToMachine(
     const Song* song, Steps* steps, std::string& error_out) {
   std::string dir =
-      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_STEPS_SUBDIR;
+      PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + kEditStepsSubdir;
 
   std::string path = dir + GetEditFileName(song, steps);
 

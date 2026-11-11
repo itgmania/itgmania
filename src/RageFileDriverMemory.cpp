@@ -169,7 +169,7 @@ static struct FileDriverEntry_MEM : public FileDriverEntry {
   RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverMem();
   }
-} const g_RegisterDriver;
+} const kRegisterDriver;
 
 /*
  * (c) 2004 Glenn Maynard

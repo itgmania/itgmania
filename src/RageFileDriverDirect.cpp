@@ -33,7 +33,7 @@ static struct FileDriverEntry_DIR : public FileDriverEntry {
   RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverDirect(root);
   }
-} const g_RegisterDriver;
+} const kRegisterDriver;
 
 /* Direct read-only filesystem access: */
 static struct FileDriverEntry_DIRRO : public FileDriverEntry {
@@ -41,7 +41,7 @@ static struct FileDriverEntry_DIRRO : public FileDriverEntry {
   RageFileDriver* Create(const std::string& root) const {
     return new RageFileDriverDirectReadOnly(root);
   }
-} const g_RegisterDriver2;
+} const kRegisterDriver2;
 
 RageFileDriverDirect::RageFileDriverDirect(const std::string& root)
     : RageFileDriver(new DirectFilenameDB(root)) {
@@ -240,7 +240,7 @@ bool RageFileDriverDirectReadOnly::Remove(const std::string& /* sPath */) {
   return false;
 }
 
-static const unsigned int BUFSIZE = 1024 * 64;
+static const unsigned int kBufsize = 1024 * 64;
 RageFileObjDirect::RageFileObjDirect(
     const std::string& path, int fd, int mode) {
   path_ = path;
@@ -250,7 +250,7 @@ RageFileObjDirect::RageFileObjDirect(
   ASSERT(fd_ != -1);
 
   if (mode_ & RageFile::WRITE) {
-    this->EnableWriteBuffering(BUFSIZE);
+    this->EnableWriteBuffering(kBufsize);
   }
 }
 

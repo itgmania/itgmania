@@ -38,7 +38,7 @@ enum SegmentEffectType {
 
 const std::string& TimingSegmentTypeToString(TimingSegmentType tst);
 
-const int ROW_INVALID = -1;
+const int kRowInvalid = -1;
 
 /**
  * @brief The base timing segment for make glorious benefit wolfman
@@ -56,7 +56,7 @@ struct TimingSegment {
   virtual bool IsNotable() const = 0;
 
   // don't allow base TimingSegments to be instantiated directly
-  TimingSegment(int row = ROW_INVALID) : start_row_(row) {}
+  TimingSegment(int row = kRowInvalid) : start_row_(row) {}
 
   TimingSegment(const TimingSegment& other) : start_row_(other.GetRow()) {}
 
@@ -243,7 +243,7 @@ struct TickcountSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new TickcountSegment(*this); }
 
-  TickcountSegment(int start_row = ROW_INVALID, int ticks = kDefaultTickCount)
+  TickcountSegment(int start_row = kRowInvalid, int ticks = kDefaultTickCount)
       : TimingSegment(start_row), ticks_per_beat_(ticks) {}
 
   TickcountSegment(const TickcountSegment& other)
@@ -294,7 +294,7 @@ struct ComboSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new ComboSegment(*this); }
 
-  ComboSegment(int start_row = ROW_INVALID, int combo = 1, int miss_combo = 1)
+  ComboSegment(int start_row = kRowInvalid, int combo = 1, int miss_combo = 1)
       : TimingSegment(start_row), combo_(combo), miss_combo_(miss_combo) {}
 
   ComboSegment(const ComboSegment& other)
@@ -353,7 +353,7 @@ struct LabelSegment : public TimingSegment {
   TimingSegment* Copy() const { return new LabelSegment(*this); }
 
   LabelSegment(
-      int start_row = ROW_INVALID, const std::string& label = std::string())
+      int start_row = kRowInvalid, const std::string& label = std::string())
       : TimingSegment(start_row), label_(label) {}
 
   LabelSegment(const LabelSegment& other)
@@ -402,7 +402,7 @@ struct BPMSegment : public TimingSegment {
   TimingSegment* Copy() const { return new BPMSegment(*this); }
 
   // note that this takes a BPM, not a BPS (compatibility)
-  BPMSegment(int start_row = ROW_INVALID, float bpm = 0.0f)
+  BPMSegment(int start_row = kRowInvalid, float bpm = 0.0f)
       : TimingSegment(start_row) {
     SetBPM(bpm);
   }
@@ -457,7 +457,7 @@ struct TimeSignatureSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new TimeSignatureSegment(*this); }
 
-  TimeSignatureSegment(int start_row = ROW_INVALID, int num = 4, int denom = 4)
+  TimeSignatureSegment(int start_row = kRowInvalid, int num = 4, int denom = 4)
       : TimingSegment(start_row), numerator_(num), denominator_(denom) {}
 
   TimeSignatureSegment(const TimeSignatureSegment& other)
@@ -536,7 +536,7 @@ struct SpeedSegment : public TimingSegment {
   enum BaseUnit { UNIT_BEATS, UNIT_SECONDS };
 
   SpeedSegment(
-      int start_row = ROW_INVALID, float ratio = 1.0f, float delay = 0.0f,
+      int start_row = kRowInvalid, float ratio = 1.0f, float delay = 0.0f,
       BaseUnit unit = UNIT_BEATS)
       : TimingSegment(start_row), ratio_(ratio), delay_(delay), unit_(unit) {}
 
@@ -612,7 +612,7 @@ struct ScrollSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new ScrollSegment(*this); }
 
-  ScrollSegment(int start_row = ROW_INVALID, float ratio = 1.0f)
+  ScrollSegment(int start_row = kRowInvalid, float ratio = 1.0f)
       : TimingSegment(start_row), ratio_(ratio) {}
 
   ScrollSegment(const ScrollSegment& other)
@@ -653,7 +653,7 @@ struct StopSegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new StopSegment(*this); }
 
-  StopSegment(int start_row = ROW_INVALID, float seconds = 0.0f)
+  StopSegment(int start_row = kRowInvalid, float seconds = 0.0f)
       : TimingSegment(start_row), seconds_(seconds) {}
 
   StopSegment(const StopSegment& other)
@@ -695,7 +695,7 @@ struct DelaySegment : public TimingSegment {
 
   TimingSegment* Copy() const { return new DelaySegment(*this); }
 
-  DelaySegment(int start_row = ROW_INVALID, float seconds = 0)
+  DelaySegment(int start_row = kRowInvalid, float seconds = 0)
       : TimingSegment(start_row), seconds_(seconds) {}
 
   DelaySegment(const DelaySegment& other)

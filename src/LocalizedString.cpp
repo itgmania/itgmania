@@ -5,7 +5,7 @@
 #include "RageUtil.h"
 #include "SubscriptionManager.h"
 
-static SubscriptionManager<LocalizedString> m_Subscribers;
+static SubscriptionManager<LocalizedString> subscribers;
 
 class LocalizedStringImplDefault : public ILocalizedStringImpl {
  public:
@@ -23,19 +23,19 @@ class LocalizedStringImplDefault : public ILocalizedStringImpl {
   std::string value_;
 };
 
-static LocalizedString::MakeLocalizer g_pMakeLocalizedStringImpl =
+static LocalizedString::MakeLocalizer make_localized_string_impl =
     LocalizedStringImplDefault::Create;
 
 void LocalizedString::RegisterLocalizer(MakeLocalizer func) {
-  g_pMakeLocalizedStringImpl = func;
-  for (LocalizedString* pLoc : *m_Subscribers.subscribers_) {
+  make_localized_string_impl = func;
+  for (LocalizedString* pLoc : *subscribers.subscribers_) {
     pLoc->CreateImpl();
   }
 }
 
 LocalizedString::LocalizedString(
     const std::string& group, const std::string& name) {
-  m_Subscribers.Subscribe(this);
+  subscribers.Subscribe(this);
 
   group_ = group;
   name_ = name;
@@ -45,7 +45,7 @@ LocalizedString::LocalizedString(
 }
 
 LocalizedString::LocalizedString(const LocalizedString& other) {
-  m_Subscribers.Subscribe(this);
+  subscribers.Subscribe(this);
 
   group_ = other.group_;
   name_ = other.name_;
@@ -55,14 +55,14 @@ LocalizedString::LocalizedString(const LocalizedString& other) {
 }
 
 LocalizedString::~LocalizedString() {
-  m_Subscribers.Unsubscribe(this);
+  subscribers.Unsubscribe(this);
 
   RageUtil::SafeDelete(impl_);
 }
 
 void LocalizedString::CreateImpl() {
   RageUtil::SafeDelete(impl_);
-  impl_ = g_pMakeLocalizedStringImpl();
+  impl_ = make_localized_string_impl();
   impl_->Load(group_, name_);
 }
 

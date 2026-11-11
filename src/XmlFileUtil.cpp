@@ -47,19 +47,19 @@ bool XmlFileUtil::LoadFromFileShowErrors(XNode& xml, const std::string& file) {
   return success;
 }
 
-static const char chXMLTagOpen = '<';
-static const char chXMLTagClose = '>';
-static const char chXMLQuestion =
+static const char kXmlTagOpen = '<';
+static const char kXmlTagClose = '>';
+static const char kXmlQuestion =
     '?';  // used in checking for meta tags: "<?TAG ... ?/>"
-static const char chXMLTagPre = '/';
-static const char chXMLExclamation = '!';
-static const char chXMLDash = '-';
+static const char kXmlTagPre = '/';
+static const char kXmlExclamation = '!';
+static const char kXmlDash = '-';
 
-static std::map<std::string, std::string> g_mapEntitiesToChars;
-static std::map<char, std::string> g_mapCharsToEntities;
+static std::map<std::string, std::string> map_entities_to_chars;
+static std::map<char, std::string> map_chars_to_entities;
 
 static void InitEntities() {
-  if (!g_mapEntitiesToChars.empty()) {
+  if (!map_entities_to_chars.empty()) {
     return;
   }
 
@@ -90,8 +90,8 @@ static void InitEntities() {
 
   for (unsigned i = 0; i < ARRAYLEN(kEntityTable); ++i) {
     const Entity& ent = kEntityTable[i];
-    g_mapEntitiesToChars[ent.entity_] = std::string(1, ent.c_);
-    g_mapCharsToEntities[ent.c_] = ent.entity_;
+    map_entities_to_chars[ent.entity_] = std::string(1, ent.c_);
+    map_chars_to_entities[ent.c_] = ent.entity_;
   }
 }
 
@@ -139,8 +139,8 @@ std::string::size_type LoadAttributes(
 
     // close tag
     if (offset < xml.size() &&
-        (xml[offset] == chXMLTagClose || xml[offset] == chXMLTagPre ||
-         xml[offset] == chXMLQuestion || xml[offset] == chXMLDash)) {
+        (xml[offset] == kXmlTagClose || xml[offset] == kXmlTagPre ||
+         xml[offset] == kXmlQuestion || xml[offset] == kXmlDash)) {
       return offset;  // well-formed tag
     }
 
@@ -200,7 +200,7 @@ std::string::size_type LoadAttributes(
 
       std::string value;
       SetString(xml, offset, end, &value, true);
-      ReplaceEntityText(value, g_mapEntitiesToChars);
+      ReplaceEntityText(value, map_entities_to_chars);
       attr->SetValue(value);
       offset = end;
 
@@ -229,13 +229,13 @@ std::string::size_type LoadInternal(
   p_node->Clear();
 
   // <
-  offset = xml.find(chXMLTagOpen, offset);
+  offset = xml.find(kXmlTagOpen, offset);
   if (offset == std::string::npos) {
     return std::string::npos;
   }
 
   // </
-  if (xml[offset + 1] == chXMLTagPre) {
+  if (xml[offset + 1] == kXmlTagPre) {
     return offset;
   }
 
@@ -277,16 +277,16 @@ std::string::size_type LoadInternal(
   // current pointer:   ^               ^              ^
 
   if (offset < xml.size() &&
-      (xml[offset] == chXMLTagPre || xml[offset] == chXMLQuestion ||
-       xml[offset] == chXMLDash)) {
+      (xml[offset] == kXmlTagPre || xml[offset] == kXmlQuestion ||
+       xml[offset] == kXmlDash)) {
     offset++;
 
     // skip over 2nd dash
-    if (offset < xml.size() && xml[offset] == chXMLDash) {
+    if (offset < xml.size() && xml[offset] == kXmlDash) {
       offset++;
     }
 
-    if (offset == xml.size() || xml[offset] != chXMLTagClose) {
+    if (offset == xml.size() || xml[offset] != kXmlTagClose) {
       // error: <TAG ... / >
       if (error_out.empty()) {
         error_out = "Element must be closed.";
@@ -303,8 +303,8 @@ std::string::size_type LoadInternal(
     // just loaded is a meta tag, then Load ourself again using the rest
     // of the file until we reach a non-meta tag.
     if (!p_node->GetName().empty() &&
-        (p_node->GetName()[0] == chXMLQuestion ||
-         p_node->GetName()[0] == chXMLExclamation)) {
+        (p_node->GetName()[0] == kXmlQuestion ||
+         p_node->GetName()[0] == kXmlExclamation)) {
       offset = LoadInternal(p_node, xml, error_out, offset);
     }
 
@@ -316,7 +316,7 @@ std::string::size_type LoadInternal(
   if (p_node->GetAttr(XNode::kTextAttribute) == nullptr) {
     // Text Value
     ++offset;
-    std::string::size_type end = xml.find(chXMLTagOpen, offset);
+    std::string::size_type end = xml.find(kXmlTagOpen, offset);
     if (end == std::string::npos) {
       if (error_out.empty()) {
         error_out = ssprintf(
@@ -331,7 +331,7 @@ std::string::size_type LoadInternal(
     SetString(xml, offset, end, &value, true);
 
     offset = end;
-    ReplaceEntityText(value, g_mapEntitiesToChars);
+    ReplaceEntityText(value, map_entities_to_chars);
 
     p_node->AppendAttr(XNode::kTextAttribute, value);
   }
@@ -355,8 +355,8 @@ std::string::size_type LoadInternal(
     // open/close tag <TAG ..> ... </TAG>
     //                             ^- current pointer
     // CloseTag case
-    if (offset + 1 < xml.size() && xml[offset] == chXMLTagOpen &&
-        xml[offset + 1] == chXMLTagPre) {
+    if (offset + 1 < xml.size() && xml[offset] == kXmlTagOpen &&
+        xml[offset + 1] == kXmlTagPre) {
       // </Close>
       offset += 2;  // C
 
@@ -394,9 +394,9 @@ std::string::size_type LoadInternal(
     } else  // Alone child Tag Loaded
     {
       if (p_node->GetAttr(XNode::kTextAttribute) == nullptr &&
-          offset < xml.size() && xml[offset] != chXMLTagOpen) {
+          offset < xml.size() && xml[offset] != kXmlTagOpen) {
         // Text Value
-        std::string::size_type end = xml.find(chXMLTagOpen, offset);
+        std::string::size_type end = xml.find(kXmlTagOpen, offset);
         if (end == std::string::npos) {
           // error cos not exist CloseTag </TAG>
           if (error_out.empty()) {
@@ -410,7 +410,7 @@ std::string::size_type LoadInternal(
         SetString(xml, offset, end, &value, true);
 
         offset = end;
-        ReplaceEntityText(value, g_mapEntitiesToChars);
+        ReplaceEntityText(value, map_entities_to_chars);
         p_node->AppendAttr(XNode::kTextAttribute, value);
       }
     }
@@ -441,7 +441,7 @@ bool GetXMLInternal(
       continue;
     }
     std::string attr(p->second->GetValue<std::string>());
-    ReplaceEntityText(attr, g_mapCharsToEntities);
+    ReplaceEntityText(attr, map_chars_to_entities);
     WRITE(" ");
     WRITE(p->first);
     WRITE("='");
@@ -477,7 +477,7 @@ bool GetXMLInternal(
       }
       std::string s;
       text->GetValue(s);
-      ReplaceEntityText(s, g_mapCharsToEntities);
+      ReplaceEntityText(s, map_chars_to_entities);
       WRITE(s);
     }
 

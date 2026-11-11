@@ -29,13 +29,13 @@ class BeginnerHelper : public ActorFrame {
  protected:
   void Step(PlayerNumber pn, int cstep);
 
-  std::array<NoteData, NUM_PLAYERS> note_data_;
-  std::array<bool, NUM_PLAYERS> player_enabled_;
-  std::array<Model*, NUM_PLAYERS> dancer_;
+  std::array<NoteData, kNumPlayers> note_data_;
+  std::array<bool, kNumPlayers> player_enabled_;
+  std::array<Model*, kNumPlayers> dancer_;
   Model* dance_pad_;
   Sprite flash_;
   AutoActor background_;
-  std::array<std::array<Sprite, 4>, NUM_PLAYERS>
+  std::array<std::array<Sprite, 4>, kNumPlayers>
       step_circle_;  // More memory, but much easier to manage.
 
   int last_row_checked_;

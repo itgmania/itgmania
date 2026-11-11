@@ -37,7 +37,7 @@ ScreenEnding::ScreenEnding() {
     GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
     GAMESTATE->SetCurrentStyle(
         GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(), "versus"),
-        PLAYER_INVALID);
+        kPlayerInvalid);
     GAMESTATE->JoinPlayer(PLAYER_1);
     GAMESTATE->JoinPlayer(PLAYER_2);
     GAMESTATE->cur_song_.Set(SONGMAN->GetRandomSong());

@@ -16,7 +16,7 @@
 #include "global.h"
 
 /** @brief Load the difficulty names from CourseLoaderCRS. */
-extern const char* g_CRSDifficultyNames[];  // in CourseLoaderCRS
+extern const char* crs_difficulty_names[];  // in CourseLoaderCRS
 
 /**
  * @brief Get the string of the course difficulty.
@@ -24,7 +24,7 @@ extern const char* g_CRSDifficultyNames[];  // in CourseLoaderCRS
  * @return the string.
  */
 static std::string DifficultyToCRSString(CourseDifficulty val) {
-  return g_CRSDifficultyNames[val];
+  return crs_difficulty_names[val];
 }
 
 bool CourseWriterCRS::Write(

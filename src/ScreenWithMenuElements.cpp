@@ -78,13 +78,13 @@ void ScreenWithMenuElements::Init() {
 
   spr_underlay_.Load(THEME->GetPathB(name_, "underlay"));
   spr_underlay_->SetName("Underlay");
-  spr_underlay_->SetDrawOrder(DRAW_ORDER_UNDERLAY);
+  spr_underlay_->SetDrawOrder(kDrawOrderUnderlay);
   this->AddChild(spr_underlay_);
   LOAD_ALL_COMMANDS(spr_underlay_);
 
   spr_overlay_.Load(THEME->GetPathB(name_, "overlay"));
   spr_overlay_->SetName("Overlay");
-  spr_overlay_->SetDrawOrder(DRAW_ORDER_OVERLAY);
+  spr_overlay_->SetDrawOrder(kDrawOrderOverlay);
   this->AddChild(spr_overlay_);
   LOAD_ALL_COMMANDS(spr_overlay_);
 
@@ -93,7 +93,7 @@ void ScreenWithMenuElements::Init() {
     AutoActor decorations;
     decorations.LoadB(name_, "decorations");
     decorations->SetName("Decorations");
-    decorations->SetDrawOrder(DRAW_ORDER_DECORATIONS);
+    decorations->SetDrawOrder(kDrawOrderDecorations);
     ActorFrame* frame =
         dynamic_cast<ActorFrame*>(static_cast<Actor*>(decorations));
     if (frame) {
@@ -107,19 +107,19 @@ void ScreenWithMenuElements::Init() {
 
   in_.SetName("In");
   in_.Load(THEME->GetPathB(name_, "in"));
-  in_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  in_.SetDrawOrder(kDrawOrderTransitions);
   this->AddChild(&in_);
   LOAD_ALL_COMMANDS(in_);
 
   out_.SetName("Out");
   out_.Load(THEME->GetPathB(name_, "out"));
-  out_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  out_.SetDrawOrder(kDrawOrderTransitions);
   this->AddChild(&out_);
   LOAD_ALL_COMMANDS(out_);
 
   cancel_.SetName("Cancel");
   cancel_.Load(THEME->GetPathB(name_, "cancel"));
-  cancel_.SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  cancel_.SetDrawOrder(kDrawOrderTransitions);
   this->AddChild(&cancel_);
   LOAD_ALL_COMMANDS(cancel_);
 

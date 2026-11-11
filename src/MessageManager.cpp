@@ -91,10 +91,10 @@ static const char* MessageIDNames[] = {
 };
 XToString(MessageID);
 
-static RageMutex g_Mutex("MessageManager");
+static RageMutex mutex("MessageManager");
 
 typedef std::set<IMessageSubscriber*> SubscribersSet;
-static std::map<std::string, SubscribersSet> g_MessageToSubscribers;
+static std::map<std::string, SubscribersSet> message_to_subscribers;
 
 Message::Message(const std::string& s) {
   name_ = s;
@@ -150,9 +150,9 @@ MessageManager::~MessageManager() {
 
 void MessageManager::Subscribe(
     IMessageSubscriber* subscriber, const std::string& message) {
-  LockMut(g_Mutex);
+  LockMut(mutex);
 
-  SubscribersSet& subs = g_MessageToSubscribers[message];
+  SubscribersSet& subs = message_to_subscribers[message];
 #ifdef DEBUG
   SubscribersSet::iterator iter = subs.find(subscriber);
   ASSERT_M(
@@ -168,9 +168,9 @@ void MessageManager::Subscribe(IMessageSubscriber* subscriber, MessageID m) {
 
 void MessageManager::Unsubscribe(
     IMessageSubscriber* subscriber, const std::string& message) {
-  LockMut(g_Mutex);
+  LockMut(mutex);
 
-  SubscribersSet& subs = g_MessageToSubscribers[message];
+  SubscribersSet& subs = message_to_subscribers[message];
   SubscribersSet::iterator iter = subs.find(subscriber);
   ASSERT(iter != subs.end());
   subs.erase(iter);
@@ -182,11 +182,11 @@ void MessageManager::Broadcast(Message& msg) const {
   }
   msg.SetBroadcast(true);
 
-  LockMut(g_Mutex);
+  LockMut(mutex);
 
   std::map<std::string, SubscribersSet>::const_iterator iter =
-      g_MessageToSubscribers.find(msg.GetName());
-  if (iter == g_MessageToSubscribers.end()) {
+      message_to_subscribers.find(msg.GetName());
+  if (iter == message_to_subscribers.end()) {
     return;
   }
 
@@ -207,7 +207,7 @@ void MessageManager::Broadcast(MessageID m) const {
 
 bool MessageManager::IsSubscribedToMessage(
     IMessageSubscriber* subscriber, const std::string& message) const {
-  SubscribersSet& subs = g_MessageToSubscribers[message];
+  SubscribersSet& subs = message_to_subscribers[message];
   return subs.find(subscriber) != subs.end();
 }
 

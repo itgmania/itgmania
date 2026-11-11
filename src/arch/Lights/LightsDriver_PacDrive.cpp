@@ -12,9 +12,9 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(PacDrive);
 
-static Preference<std::string> g_sPacDriveLightOrdering(
+static Preference<std::string> pac_drive_light_ordering(
     "PacDriveLightOrdering", "openitg");
-int iPacDriveLightOrder = 0;
+int pac_drive_light_order = 0;
 
 LightsDriver_PacDrive::LightsDriver_PacDrive()
     : dev_{
@@ -23,10 +23,10 @@ LightsDriver_PacDrive::LightsDriver_PacDrive()
   prev_led_state_.raw_ = 0;
   memset(state_.raw_state_, 0x00, sizeof(state_.raw_state_));
 
-  std::string light_order = g_sPacDriveLightOrdering.Get();
+  std::string light_order = pac_drive_light_ordering.Get();
   if (CompareNoCase(light_order, "lumenar") == 0 ||
       CompareNoCase(light_order, "openitg") == 0) {
-    iPacDriveLightOrder = 1;
+    pac_drive_light_order = 1;
   }
 }
 
@@ -37,7 +37,7 @@ void LightsDriver_PacDrive::Set(const LightsState* ls) {
     return;
   }
 
-  switch (iPacDriveLightOrder) {
+  switch (pac_drive_light_order) {
     case 1:
       /*
        * OpenITG (LumenAR) Order:

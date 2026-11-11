@@ -11,8 +11,8 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 
-extern Preference<float> g_fLightsFalloffSeconds;
-extern Preference<float> g_fLightsAheadSeconds;
+extern Preference<float> lights_falloff_seconds;
+extern Preference<float> lights_ahead_seconds;
 
 enum CabinetLight {
   LIGHT_MARQUEE_UP_LEFT,

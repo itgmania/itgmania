@@ -60,15 +60,15 @@ static ThemeMetric<bool> RAND_BG_CHANGES_WHEN_BPM_CHANGES(
 static ThemeMetric<bool> RAND_BG_ENDS_AT_LAST_BEAT(
     "Background", "RandomBGEndsAtLastBeat");
 
-static Preference<bool> g_bShowDanger("ShowDanger", true);
-static Preference<float> g_fBGBrightness("BGBrightness", 0.7f);
-static Preference<RandomBackgroundMode> g_RandomBackgroundMode(
+static Preference<bool> show_danger("ShowDanger", true);
+static Preference<float> bg_brightness("BGBrightness", 0.7f);
+static Preference<RandomBackgroundMode> random_background_mode(
     "RandomBackgroundMode", BGMODE_RANDOMMOVIES);
-static Preference<int> g_iNumBackgrounds("NumBackgrounds", 10);
-static Preference<bool> g_bSongBackgrounds("SongBackgrounds", true);
+static Preference<int> num_backgrounds("NumBackgrounds", 10);
+static Preference<bool> song_backgrounds("SongBackgrounds", true);
 
 // Width of the region separating the left and right brightness areas:
-static float g_fBackgroundCenterWidth = 40;
+static float background_center_width = 40;
 
 class BrightnessOverlay : public ActorFrame {
  public:
@@ -80,7 +80,7 @@ class BrightnessOverlay : public ActorFrame {
   void Set(float brightness);
 
  private:
-  Quad quad_bg_brightness_[NUM_PLAYERS];
+  Quad quad_bg_brightness_[kNumPlayers];
   Quad quad_bg_brightness_fade_;
 };
 
@@ -327,7 +327,7 @@ bool BackgroundImpl::Layer::CreateBackground(
     std::vector<std::string> paths, throw_away;
 
     // Look for BGAnims in the song dir
-    if (s_to_resolve == SONG_BACKGROUND_FILE) {
+    if (s_to_resolve == kSongBackgroundFile) {
       paths.push_back(
           song->HasBackground()
               ? song->GetBackgroundPath()
@@ -383,20 +383,20 @@ bool BackgroundImpl::Layer::CreateBackground(
       case FT_Bitmap:
       case FT_Sprite:
       case FT_Movie:
-        effect = SBE_StretchNormal;
+        effect = kSbeStretchNormal;
         break;
       case FT_Lua:
       case FT_Model:
-        effect = SBE_UpperLeft;
+        effect = kSbeUpperLeft;
         break;
       case FT_Xml:
-        effect = SBE_Centered;
+        effect = kSbeCentered;
         break;
       case FT_Directory:
         if (DoesFileExist(vs_resolved[0] + "/default.lua")) {
-          effect = SBE_UpperLeft;
+          effect = kSbeUpperLeft;
         } else {
-          effect = SBE_Centered;
+          effect = kSbeCentered;
         }
         break;
     }
@@ -417,11 +417,11 @@ bool BackgroundImpl::Layer::CreateBackground(
     if (paths.empty()) {
       LuaHelpers::ReportScriptErrorFmt(
           "BackgroundEffect '%s' is missing.", effect.c_str());
-      effect = SBE_Centered;
+      effect = kSbeCentered;
     } else if (paths.size() > 1) {
       LuaHelpers::ReportScriptErrorFmt(
           "BackgroundEffect '%s' has more than one match.", effect.c_str());
-      effect = SBE_Centered;
+      effect = kSbeCentered;
     } else {
       effect_file = paths[0];
       break;
@@ -446,7 +446,7 @@ bool BackgroundImpl::Layer::CreateBackground(
 BackgroundDef BackgroundImpl::Layer::CreateRandomBGA(
     const Song* song, const std::string& effect,
     std::deque<BackgroundDef>& random_bg_animations, Actor* parent) {
-  if (g_RandomBackgroundMode == BGMODE_OFF) {
+  if (random_background_mode == BGMODE_OFF) {
     return BackgroundDef();
   }
 
@@ -559,21 +559,21 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   Init();
   Unload();
   song_ = song;
-  static_background_def_.file1_ = SONG_BACKGROUND_FILE;
+  static_background_def_.file1_ = kSongBackgroundFile;
 
-  if (g_fBGBrightness == 0.0f) {
+  if (bg_brightness == 0.0f) {
     return;
   }
 
   // Choose a bunch of backgrounds that we'll use for the random file marker
   {
     std::vector<std::string> throw_away, names;
-    switch (g_RandomBackgroundMode) {
+    switch (random_background_mode) {
       default:
         ASSERT_M(
             0, ssprintf(
                    "Invalid RandomBackgroundMode: %i",
-                   int(g_RandomBackgroundMode)));
+                   int(random_background_mode)));
         break;
       case BGMODE_OFF:
         break;
@@ -589,7 +589,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
     // Pick the same random items every time the song is played.
     RandomGen rnd(GetHashForString(song->GetSongDir()));
     std::shuffle(names.begin(), names.end(), rnd);
-    int size = std::min((int)g_iNumBackgrounds, (int)names.size());
+    int size = std::min((int)num_backgrounds, (int)names.size());
     names.resize(size);
 
     for (const std::string& s : names) {
@@ -608,7 +608,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
 
   // Set to not show any BGChanges, whether scripted or random if
   // m_bStaticBackground is on
-  if (!g_bSongBackgrounds ||
+  if (!song_backgrounds ||
       GAMESTATE->song_options_.GetCurrent().static_background_) {
     // Backgrounds are disabled; just display the song background.
     BackgroundChange change;
@@ -632,7 +632,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
         bool is_already_loaded =
             layer.bg_animations_.find(bd) != layer.bg_animations_.end();
 
-        if (bd.file1_ != RANDOM_BACKGROUND_FILE && !is_already_loaded) {
+        if (bd.file1_ != kRandomBackgroundFile && !is_already_loaded) {
           if (layer.CreateBackground(song_, bd, this)) {
             ;  // do nothing.  Create was successful.
           } else {
@@ -715,7 +715,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   // LoadFromRandom.
   for (unsigned i = 0; i < mainlayer.bg_changes_.size(); i++) {
     const BackgroundChange bg_change = mainlayer.bg_changes_[i];
-    if (bg_change.def_.file1_ != RANDOM_BACKGROUND_FILE) {
+    if (bg_change.def_.file1_ != kRandomBackgroundFile) {
       continue;
     }
 
@@ -904,7 +904,7 @@ void BackgroundImpl::Update(float delta_time) {
 }
 
 void BackgroundImpl::DrawPrimitives() {
-  if (g_fBGBrightness == 0.0f) {
+  if (bg_brightness == 0.0f) {
     return;
   }
 
@@ -948,7 +948,7 @@ bool BackgroundImpl::IsDangerAllVisible() {
   FOREACH_EnabledPlayer(p) if (
       GAMESTATE->GetPlayerFailType(GAMESTATE->player_state_[p]) ==
       FailType_Off) return false;
-  if (!g_bShowDanger) {
+  if (!show_danger) {
     return false;
   }
 
@@ -963,7 +963,7 @@ bool BackgroundImpl::IsDangerAllVisible() {
 
 BrightnessOverlay::BrightnessOverlay() {
   float quad_width = (RIGHT_EDGE - LEFT_EDGE) / 2;
-  quad_width -= g_fBackgroundCenterWidth / 2;
+  quad_width -= background_center_width / 2;
 
   quad_bg_brightness_[0].StretchTo(
       RectF(LEFT_EDGE, TOP_EDGE, LEFT_EDGE + quad_width, BOTTOM_EDGE));
@@ -1004,7 +1004,7 @@ void BrightnessOverlay::SetActualBrightness() {
       1 -
       GAMESTATE->player_state_[PLAYER_2]->player_options_.GetCurrent().cover_;
 
-  float base_bg_brightness = g_fBGBrightness;
+  float base_bg_brightness = bg_brightness;
 
   // Revision:  Themes that implement a training mode should handle the
   // brightness for it.  The engine should not force the brightness for

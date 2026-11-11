@@ -18,10 +18,10 @@ class TimingData;
  * @brief The highest allowable speed before Warps come in.
  *
  * This was brought in from StepMania 4's recent betas. */
-const float FAST_BPM_WARP = 9999999.f;
+const float kFastBpmWarp = 9999999.f;
 
 /** @brief The maximum file size for edits. */
-const int MAX_EDIT_STEPS_SIZE_BYTES = 60 * 1024;  // 60KB
+const int kMaxEditStepsSizeBytes = 60 * 1024;  // 60KB
 
 /** @brief Reads a Song from an .SM file. */
 struct SMLoader {

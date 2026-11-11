@@ -5,7 +5,7 @@
 /** @brief Definition of common ScreenMessages and helpers. */
 typedef std::string ScreenMessage;
 
-extern const ScreenMessage SM_Invalid;
+extern const ScreenMessage kSmInvalid;
 extern const ScreenMessage SM_None;
 extern const ScreenMessage SM_MenuTimer;
 extern const ScreenMessage SM_DoneFadingIn;

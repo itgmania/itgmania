@@ -51,7 +51,7 @@ struct TapScoreDistribution {
   }
 };
 
-static TapScoreDistribution g_Distributions[NUM_SKILL_LEVELS];
+static TapScoreDistribution distributions[kNumSkillLevels];
 
 void PlayerAI::InitFromDisk() {
   IniFile ini;
@@ -60,15 +60,15 @@ void PlayerAI::InitFromDisk() {
     LuaHelpers::ReportScriptErrorFmt(
         "Error trying to read \"%s\" to load AI player skill settings.",
         AI_PATH);
-    for (int i = 0; i < NUM_SKILL_LEVELS; ++i) {
-      g_Distributions[i].SetDefaultWeights();
-      g_Distributions[i].ChangeWeightsToPercents();
+    for (int i = 0; i < kNumSkillLevels; ++i) {
+      distributions[i].SetDefaultWeights();
+      distributions[i].ChangeWeightsToPercents();
     }
   } else {
-    for (int i = 0; i < NUM_SKILL_LEVELS; i++) {
+    for (int i = 0; i < kNumSkillLevels; i++) {
       std::string sKey = ssprintf("Skill%d", i);
       XNode* node = ini.GetChild(sKey);
-      TapScoreDistribution& dist = g_Distributions[i];
+      TapScoreDistribution& dist = distributions[i];
       if (node == nullptr) {
         LuaHelpers::ReportScriptErrorFmt(
             "AI.ini: \"%s\" section doesn't exist.", sKey.c_str());
@@ -127,17 +127,17 @@ TapNoteScore PlayerAI::GetTapNoteScore(const PlayerState* player_state) {
             : 0;
 
     ASSERT_M(
-        cpu_skill >= 0 && cpu_skill < NUM_SKILL_LEVELS,
+        cpu_skill >= 0 && cpu_skill < kNumSkillLevels,
         ssprintf("%i", cpu_skill));
     ASSERT_M(
         player_state->player_controller_ == PC_CPU,
         ssprintf("%i", player_state->player_controller_));
 
     cpu_skill -= sum_of_attack_levels * 3;
-    rage_clamp(cpu_skill, 0, NUM_SKILL_LEVELS - 1);
+    rage_clamp(cpu_skill, 0, kNumSkillLevels - 1);
   }
 
-  TapScoreDistribution& distribution = g_Distributions[cpu_skill];
+  TapScoreDistribution& distribution = distributions[cpu_skill];
 
   TapNoteScore score = distribution.GetTapNoteScore();
 

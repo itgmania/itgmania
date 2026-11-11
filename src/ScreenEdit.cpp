@@ -76,16 +76,16 @@
 #include "XmlFile.h"
 #include "global.h"
 
-static Preference<float> g_iDefaultRecordLength("DefaultRecordLength", 4);
-static Preference<bool> g_bEditorShowBGChangesPlay(
+static Preference<float> default_record_length("DefaultRecordLength", 4);
+static Preference<bool> editor_show_bg_changes_play(
     "EditorShowBGChangesPlay", true);
 
 /** @brief How long must the button be held to generate a hold in record mode?
  * Note this must be a float, if it isn't then record mode can't tell if you're
  * trying to input a hold or not. */
-constexpr static float record_hold_default = 0.3f;
-float record_hold_seconds = record_hold_default;
-constexpr static float time_between_autosave = 300.0f;  // 5 minutes. -Kyz
+constexpr static float kRecordHoldDefault = 0.3f;
+float record_hold_seconds = kRecordHoldDefault;
+constexpr static float kTimeBetweenAutosave = 300.0f;  // 5 minutes. -Kyz
 static float GetMouseScreenX();
 static float GetMouseScreenY();
 
@@ -825,7 +825,7 @@ void ScreenEdit::InitEditMappings() {
   IniFile mapping_ini;
   // Only use the mappings file if it exists.  It's meant to be optional, and
   // only used in rare cases like someone having critical keys broken. -Kyz
-  if (mapping_ini.ReadFile(SpecialFiles::EDIT_MODE_KEYMAPS_PATH)) {
+  if (mapping_ini.ReadFile(SpecialFiles::kEditModeKeymapsPath)) {
     LoadKeymapSectionIntoMappingsMember(
         mapping_ini.GetChild("Edit"), edit_mappings_device_input_);
     LoadKeymapSectionIntoMappingsMember(
@@ -850,8 +850,8 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(
       std::string joined_names;
       attr->second->GetValue(joined_names);
       std::vector<std::string> key_names;
-      split(joined_names, DEVICE_INPUT_SEPARATOR, key_names, false);
-      for (size_t k = 0; k < key_names.size() && k < NUM_EDIT_TO_DEVICE_SLOTS;
+      split(joined_names, kDeviceInputSeparator, key_names, false);
+      for (size_t k = 0; k < key_names.size() && k < kNumEditToDeviceSlots;
            ++k) {
         DeviceInput devi;
         devi.FromString(key_names[k]);
@@ -872,13 +872,12 @@ EditButton ScreenEdit::DeviceToEdit(const DeviceInput& device_i) const {
 
   /* First, search to see if a key that requires a modifier is pressed. */
   FOREACH_EditButton(e) {
-    for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS; ++slot) {
+    for (int slot = 0; slot < kNumEditToDeviceSlots; ++slot) {
       if (current_map->button_[e][slot] == device_i &&
           current_map->hold_[e][0].IsValid()) {
         /* The button maps to this function, and has one or more shift modifiers
          * attached. */
-        for (int holdslot = 0; holdslot < NUM_EDIT_TO_DEVICE_SLOTS;
-             ++holdslot) {
+        for (int holdslot = 0; holdslot < kNumEditToDeviceSlots; ++holdslot) {
           DeviceInput di = current_map->hold_[e][holdslot];
           if (di.IsValid() && INPUTFILTER->IsBeingPressed(di)) {
             return e;
@@ -891,7 +890,7 @@ EditButton ScreenEdit::DeviceToEdit(const DeviceInput& device_i) const {
   /* No shifted keys matched.  See if any unshifted inputs are bound to this
    * key. */
   FOREACH_EditButton(e) {
-    for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS; ++slot) {
+    for (int slot = 0; slot < kNumEditToDeviceSlots; ++slot) {
       if (current_map->button_[e][slot] == device_i &&
           !current_map->hold_[e][0].IsValid()) {
         /* The button maps to this function. */
@@ -913,7 +912,7 @@ EditButton ScreenEdit::MenuButtonToEditButton(GameButton menu_i) const {
   const MapEditButtonToMenuButton* current_map = GetCurrentMenuButtonMap();
 
   FOREACH_EditButton(e) {
-    for (int slot = 0; slot < NUM_EDIT_TO_MENU_SLOTS; ++slot) {
+    for (int slot = 0; slot < kNumEditToMenuSlots; ++slot) {
       if (current_map->button_[e][slot] == menu_i) {
         /* The button maps to this function. */
         return e;
@@ -933,7 +932,7 @@ bool ScreenEdit::EditPressed(EditButton button, const DeviceInput& device_i) {
 
   /* First, search to see if a key that requires a modifier is pressed. */
   bool primary_button_pressed = false;
-  for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS; ++slot) {
+  for (int slot = 0; slot < kNumEditToDeviceSlots; ++slot) {
     if (current_map->button_[button][slot] == device_i) {
       primary_button_pressed = true;
     }
@@ -949,7 +948,7 @@ bool ScreenEdit::EditPressed(EditButton button, const DeviceInput& device_i) {
     return true;
   }
 
-  for (int holdslot = 0; holdslot < NUM_EDIT_TO_DEVICE_SLOTS; ++holdslot) {
+  for (int holdslot = 0; holdslot < kNumEditToDeviceSlots; ++holdslot) {
     DeviceInput di = current_map->hold_[button][holdslot];
     if (INPUTFILTER->IsBeingPressed(di)) {
       return true;
@@ -962,7 +961,7 @@ bool ScreenEdit::EditPressed(EditButton button, const DeviceInput& device_i) {
 
 bool ScreenEdit::EditToDevice(
     EditButton button, int slot_num, DeviceInput& device_i) const {
-  ASSERT(slot_num < NUM_EDIT_TO_DEVICE_SLOTS);
+  ASSERT(slot_num < kNumEditToDeviceSlots);
   const MapEditToDI* current_map = GetCurrentDeviceInputMap();
   if (current_map->button_[button][slot_num].IsValid()) {
     device_i = current_map->button_[button][slot_num];
@@ -973,7 +972,7 @@ bool ScreenEdit::EditToDevice(
 }
 
 bool ScreenEdit::EditIsBeingPressed(EditButton button) const {
-  for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS; ++slot) {
+  for (int slot = 0; slot < kNumEditToDeviceSlots; ++slot) {
     DeviceInput device_i;
     if (EditToDevice(button, slot, device_i) &&
         INPUTFILTER->IsBeingPressed(device_i)) {
@@ -1068,25 +1067,25 @@ int GetRowsFromAnswers(int choice, const std::vector<int>& answers) {
   }
 }
 
-static MenuDef g_EditHelp(
+static MenuDef edit_help(
     "ScreenMiniMenuEditHelp"
     // fill this in dynamically
 );
 
-static MenuDef g_AttackAtTimeMenu(
+static MenuDef attack_at_time_menu(
     "ScreenMiniMenuAttackAtTimeMenu"
     // fill this in dynamically
 );
 
-static MenuDef g_IndividualAttack(
+static MenuDef individual_attack(
     "ScreenMiniMenuIndividualAttack"
     // fill this in dynamically
 );
 
-static MenuDef g_KeysoundTrack(
+static MenuDef keysound_track(
     "ScreenMiniMenuKeysoundTrack");  // fill this in dynamically
 
-static MenuDef g_AdjustSyncMenu(
+static MenuDef adjust_sync_menu(
     "ScreenMiniMenuAdjustSyncMenu"
     // fill this in dynamically
 );
@@ -1100,7 +1099,7 @@ static LocalizedString DETECT_BPM_NO_RESULTS(
 static LocalizedString APPLIED_SYNC(
     "ScreenEdit", "Applied %.3f BPM with an offset of %+.3f.");
 
-static MenuDef g_MainMenu(
+static MenuDef main_menu(
     "ScreenMiniMenuMainMenu",
     MenuRowDef(
         ScreenEdit::play_whole_song, "Play whole song", true, EditMode_Practice,
@@ -1150,7 +1149,7 @@ static MenuDef g_MainMenu(
         ScreenEdit::exit, "Exit Edit Mode", true, EditMode_Practice, true, true,
         0, nullptr));
 
-static MenuDef g_AlterMenu(
+static MenuDef alter_menu(
     "ScreenMiniMenuAlterMenu",
     MenuRowDef(
         ScreenEdit::cut, "Cut", true, EditMode_Practice, true, true, 0,
@@ -1218,7 +1217,7 @@ static MenuDef g_AlterMenu(
         ScreenEdit::routine_mirror_2_to_1, "Mirror Player 2 to 1", true,
         EditMode_Full, true, true, 0, nullptr));
 
-static MenuDef g_AreaMenu(
+static MenuDef area_menu(
     "ScreenMiniMenuAreaMenu",
     MenuRowDef(
         ScreenEdit::paste_at_current_beat, "Paste at current beat", true,
@@ -1263,7 +1262,7 @@ static MenuDef g_AreaMenu(
 
 );
 
-static MenuDef g_StepsInformation(
+static MenuDef steps_information(
     "ScreenMiniMenuStepsInformation",
     MenuRowDef(
         ScreenEdit::difficulty, "Difficulty", true, EditMode_Practice, true,
@@ -1299,7 +1298,7 @@ static MenuDef g_StepsInformation(
         ScreenEdit::step_music, "Music File", true, EditMode_Full, true, true,
         0, nullptr));
 
-static MenuDef g_StepsData(
+static MenuDef steps_data(
     "ScreenMiniMenuStepsData",
     MenuRowDef(
         ScreenEdit::tap_notes, "Tap Steps", false, EditMode_Full, true, true, 0,
@@ -1343,7 +1342,7 @@ static MenuDef g_StepsData(
         ScreenEdit::chaos, "Chaos", false, EditMode_Full, true, true, 0,
         nullptr));
 
-static MenuDef g_SongInformation(
+static MenuDef song_information(
     "ScreenMiniMenuSongInformation",
     MenuRowDef(
         ScreenEdit::main_title, "Main title", true, EditMode_Practice, true,
@@ -1400,7 +1399,7 @@ static bool EnabledIfClipboardTimingIsSafe() {
   return clipboard_full_timing != nullptr &&
          clipboard_full_timing->IsSafeFullTiming();
 }
-static MenuDef g_TimingDataInformation(
+static MenuDef timing_data_information(
     "ScreenMiniMenuTimingDataInformation",
     MenuRowDef(
         ScreenEdit::beat_0_offset, "Beat 0 Offset", true, EditMode_Full, true,
@@ -1466,7 +1465,7 @@ static MenuDef g_TimingDataInformation(
         ScreenEdit::erase_step_timing, "Erase step timing", true, EditMode_Full,
         true, true, 0, nullptr));
 
-static MenuDef g_TimingDataChangeInformation(
+static MenuDef timing_data_change_information(
     "ScreenMiniMenuTimingDataChangeInformation",
     MenuRowDef(
         ScreenEdit::timing_all, "All timing", true, EditMode_Full, true, true,
@@ -1533,7 +1532,7 @@ static bool EnabledIfSet2GlobalBGAnimation();
 static bool EnabledIfSet2GlobalMovie();
 static bool EnabledIfSet2GlobalMovieSongGroup();
 static bool EnabledIfSet2GlobalMovieSongGroupAndGenre();
-static MenuDef g_BackgroundChange(
+static MenuDef background_change(
     "ScreenMiniMenuBackgroundChange",
     MenuRowDef(
         ScreenEdit::layer, "Layer", false, EditMode_Full, true, false, 0, ""),
@@ -1622,82 +1621,82 @@ static MenuDef g_BackgroundChange(
 static bool EnabledIfSet1SongBGAnimation() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] ==
              song_bganimation &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_song_bganimation]
+         !background_change.rows_[ScreenEdit::file1_song_bganimation]
               .choices_.empty();
 }
 static bool EnabledIfSet1SongMovie() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] == song_movie &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_song_movie]
+         !background_change.rows_[ScreenEdit::file1_song_movie]
               .choices_.empty();
 }
 static bool EnabledIfSet1SongBitmap() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] == song_bitmap &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_song_still]
+         !background_change.rows_[ScreenEdit::file1_song_still]
               .choices_.empty();
 }
 static bool EnabledIfSet1GlobalBGAnimation() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] ==
              global_bganimation &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_global_bganimation]
+         !background_change.rows_[ScreenEdit::file1_global_bganimation]
               .choices_.empty();
 }
 static bool EnabledIfSet1GlobalMovie() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] ==
              global_movie &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_global_movie]
+         !background_change.rows_[ScreenEdit::file1_global_movie]
               .choices_.empty();
 }
 static bool EnabledIfSet1GlobalMovieSongGroup() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] ==
              global_movie_song_group &&
-         !g_BackgroundChange.rows_[ScreenEdit::file1_global_movie_song_group]
+         !background_change.rows_[ScreenEdit::file1_global_movie_song_group]
               .choices_.empty();
 }
 static bool EnabledIfSet1GlobalMovieSongGroupAndGenre() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file1_type] ==
              global_movie_song_group_and_genre &&
-         !g_BackgroundChange
+         !background_change
               .rows_[ScreenEdit::file1_global_movie_song_group_and_genre]
               .choices_.empty();
 }
 static bool EnabledIfSet2SongBGAnimation() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] ==
              song_bganimation &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_song_bganimation]
+         !background_change.rows_[ScreenEdit::file2_song_bganimation]
               .choices_.empty();
 }
 static bool EnabledIfSet2SongMovie() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] == song_movie &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_song_movie]
+         !background_change.rows_[ScreenEdit::file2_song_movie]
               .choices_.empty();
 }
 static bool EnabledIfSet2SongBitmap() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] == song_bitmap &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_song_still]
+         !background_change.rows_[ScreenEdit::file2_song_still]
               .choices_.empty();
 }
 static bool EnabledIfSet2GlobalBGAnimation() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] ==
              global_bganimation &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_global_bganimation]
+         !background_change.rows_[ScreenEdit::file2_global_bganimation]
               .choices_.empty();
 }
 static bool EnabledIfSet2GlobalMovie() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] ==
              global_movie &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_global_movie]
+         !background_change.rows_[ScreenEdit::file2_global_movie]
               .choices_.empty();
 }
 static bool EnabledIfSet2GlobalMovieSongGroup() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] ==
              global_movie_song_group &&
-         !g_BackgroundChange.rows_[ScreenEdit::file2_global_movie_song_group]
+         !background_change.rows_[ScreenEdit::file2_global_movie_song_group]
               .choices_.empty();
 }
 static bool EnabledIfSet2GlobalMovieSongGroupAndGenre() {
   return ScreenMiniMenu::last_answers_[ScreenEdit::file2_type] ==
              global_movie_song_group_and_genre &&
-         !g_BackgroundChange
+         !background_change
               .rows_[ScreenEdit::file2_global_movie_song_group_and_genre]
               .choices_.empty();
 }
@@ -1710,7 +1709,7 @@ static std::string GetOneBakedRandomFile(Song* song, bool try_genre = true) {
   return names.empty() ? std::string() : names[RandomInt(names.size())];
 }
 
-static MenuDef g_InsertTapAttack(
+static MenuDef insert_tap_attack(
     "ScreenMiniMenuInsertTapAttack",
     MenuRowDef(
         -1, "Duration seconds", true, EditMode_Practice, true, false, 3, "5",
@@ -1719,7 +1718,7 @@ static MenuDef g_InsertTapAttack(
         -1, "Set modifiers", true, EditMode_Practice, true, true, 0,
         "Press Start"));
 
-static MenuDef g_InsertCourseAttack(
+static MenuDef insert_course_attack(
     "ScreenMiniMenuInsertCourseAttack",
     MenuRowDef(
         ScreenEdit::duration, "Duration seconds", true, EditMode_Practice, true,
@@ -1731,7 +1730,7 @@ static MenuDef g_InsertCourseAttack(
         ScreenEdit::remove, "Remove", true, EditMode_Practice, true, true, 0,
         "Press Start"));
 
-static MenuDef g_CourseMode(
+static MenuDef course_mode(
     "ScreenMiniMenuCourseDisplay",
     MenuRowDef(
         -1, "Play mods from course", true, EditMode_Practice, true, false, 0,
@@ -1739,10 +1738,10 @@ static MenuDef g_CourseMode(
 
 // HACK: need to remember the track we're inserting on so that we can lay the
 // attack note after coming back from menus.
-static int g_iLastInsertTapAttackTrack = -1;
-static float g_fLastInsertAttackDurationSeconds = -1;
-static float g_fLastInsertAttackPositionSeconds = -1;
-static BackgroundLayer g_CurrentBGChangeLayer = BACKGROUND_LAYER_Invalid;
+static int last_insert_tap_attack_track = -1;
+static float last_insert_attack_duration_seconds = -1;
+static float last_insert_attack_position_seconds = -1;
+static BackgroundLayer current_bg_change_layer = BACKGROUND_LAYER_Invalid;
 
 static void SetDefaultEditorNoteSkin(
     size_t num, std::string& name_out, std::string& default_value_out) {
@@ -1758,14 +1757,14 @@ static std::string RoutineEditorNoteSkinName(size_t i) {
   return ssprintf("RoutineEditorNoteSkinP%i", int(i + 1));
 }
 static ThemeMetric1D<std::string> ROUTINE_EDITOR_NOTE_SKIN(
-    "ScreenEdit", RoutineEditorNoteSkinName, NUM_PLAYERS);
+    "ScreenEdit", RoutineEditorNoteSkinName, kNumPlayers);
 
 static std::string GetRoutineEditorNoteSkin(PlayerNumber pn) {
   return ROUTINE_EDITOR_NOTE_SKIN.GetValue(pn);
 }
 
-static Preference1D<std::string> EDITOR_NOTE_SKINS(
-    SetDefaultEditorNoteSkin, NUM_PLAYERS);
+static Preference1D<std::string> editor_note_skins(
+    SetDefaultEditorNoteSkin, kNumPlayers);
 
 static ThemeMetric<std::string> EDIT_MODIFIERS("ScreenEdit", "EditModifiers");
 
@@ -1973,7 +1972,7 @@ void ScreenEdit::Init() {
   CopyToLastSave();
 
   current_action_ = MAIN_MENU_CHOICE_INVALID;
-  input_player_number_ = PLAYER_INVALID;
+  input_player_number_ = kPlayerInvalid;
 
   if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
           ->style_type_ == StyleType_TwoPlayersSharedSides) {
@@ -1993,7 +1992,7 @@ void ScreenEdit::Init() {
   return_to_record_menu_after_play_ = false;
   beat_to_return_to_ = 0;
 
-  selected_tap_ = TAP_ORIGINAL_TAP;
+  selected_tap_ = tap_original_tap;
 
   GAMESTATE->gameplay_lead_in_.Set(true);
   GAMESTATE->edit_mode_ = EDIT_MODE.GetValue();
@@ -2029,11 +2028,11 @@ void ScreenEdit::Init() {
     GAMESTATE->did_mode_change_note_skin_ = true;
     FOREACH_PlayerNumber(pn) {
       std::string note_skin = routine_edit ? GetRoutineEditorNoteSkin(pn)
-                                           : EDITOR_NOTE_SKINS[pn].Get();
+                                           : editor_note_skins[pn].Get();
       if (!NOTESKIN->DoesNoteSkinExist(note_skin)) {
         // Fall back to the user's editor preference if the routine variant
         // is missing (e.g. user removed the couples noteskin).
-        note_skin = EDITOR_NOTE_SKINS[pn].Get();
+        note_skin = editor_note_skins[pn].Get();
       }
       if (NOTESKIN->DoesNoteSkinExist(note_skin)) {
         PO_GROUP_ASSIGN(
@@ -2053,9 +2052,9 @@ void ScreenEdit::Init() {
   // displayed. (Perhaps this should be a noteskin metric.) -aj
   std::string edit_note_skin = routine_edit
                                    ? GetRoutineEditorNoteSkin(main_player_)
-                                   : EDITOR_NOTE_SKINS[main_player_].Get();
+                                   : editor_note_skins[main_player_].Get();
   if (!NOTESKIN->DoesNoteSkinExist(edit_note_skin)) {
-    edit_note_skin = EDITOR_NOTE_SKINS[main_player_].Get();
+    edit_note_skin = editor_note_skins[main_player_].Get();
   }
   if (NOTESKIN->DoesNoteSkinExist(edit_note_skin)) {
     PO_GROUP_ASSIGN(
@@ -2125,7 +2124,7 @@ void ScreenEdit::Init() {
   allow_center.Load("ScreenGameplay", "AllowCenter1Player");
   bool center_enabled =
       (Preference<bool>::GetPreferenceByName("Center1Player")->Get() &&
-       GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->style_type_ ==
+       GAMESTATE->GetCurrentStyle(kPlayerInvalid)->style_type_ ==
            StyleType_OnePlayerOneSide) &&
       GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
       GAMESTATE->play_mode_ != PLAY_MODE_RAVE && allow_center;
@@ -2350,8 +2349,8 @@ void ScreenEdit::Update(float delta_time) {
       } else if (secs_held > record_hold_seconds) {
         // create or extend a hold or roll note
         TapNote tn = EditIsBeingPressed(EDIT_BUTTON_LAY_ROLL)
-                         ? TAP_ORIGINAL_ROLL_HEAD
-                         : TAP_ORIGINAL_HOLD_HEAD;
+                         ? tap_original_roll_head
+                         : tap_original_hold_head;
 
         tn.pn_ = input_player_number_;
         note_data_record_.AddHoldNote(
@@ -2612,7 +2611,7 @@ void ScreenEdit::UpdateTextInfo() {
     text += ssprintf(
         DIFFICULTY_FORMAT.GetValue().c_str(), DIFFICULTY.GetValue().c_str(),
         DifficultyToString(steps_->GetDifficulty()).c_str());
-    if (input_player_number_ != PLAYER_INVALID) {
+    if (input_player_number_ != kPlayerInvalid) {
       text += ssprintf(
           ROUTINE_PLAYER_FORMAT.GetValue().c_str(),
           ROUTINE_PLAYER.GetValue().c_str(), input_player_number_ + 1);
@@ -2732,8 +2731,8 @@ void ScreenEdit::UpdateTextInfo() {
           PREVIEW_LENGTH_FORMAT.GetValue().c_str(),
           PREVIEW_LENGTH.GetValue().c_str(),
           song_->music_sample_length_seconds_);
-      if (record_hold_seconds < record_hold_default - .001f ||
-          record_hold_seconds > record_hold_default + .001f) {
+      if (record_hold_seconds < kRecordHoldDefault - .001f ||
+          record_hold_seconds > kRecordHoldDefault + .001f) {
         text += ssprintf(
             RECORD_HOLD_TIME_FORMAT.GetValue().c_str(),
             RECORD_HOLD_TIME.GetValue().c_str(), record_hold_seconds);
@@ -3107,7 +3106,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         sound_remove_note_.Play(true);
         SetDirty(true);
         SaveUndo("Remove Hold");
-        note_data_edit_.SetTapNote(col, head_row, TAP_EMPTY);
+        note_data_edit_.SetTapNote(col, head_row, tap_empty);
         // Don't CheckNumberOfNotesAndUndo.  We don't want to revert any change
         // that removes notes.
       } else if (
@@ -3116,12 +3115,12 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         sound_remove_note_.Play(true);
         SetDirty(true);
         SaveUndo("Remove Note");
-        note_data_edit_.SetTapNote(col, song_index, TAP_EMPTY);
+        note_data_edit_.SetTapNote(col, song_index, tap_empty);
         // Don't CheckNumberOfNotesAndUndo.  We don't want to revert any change
         // that removes notes.
       } else if (EditIsBeingPressed(EDIT_BUTTON_LAY_TAP_ATTACK)) {
-        g_iLastInsertTapAttackTrack = col;
-        EditMiniMenu(&g_InsertTapAttack, SM_BackFromInsertTapAttack);
+        last_insert_tap_attack_track = col;
+        EditMiniMenu(&insert_tap_attack, SM_BackFromInsertTapAttack);
       } else {
         sound_add_note_.Play(true);
         SetDirty(true);
@@ -3137,16 +3136,16 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
     case EDIT_BUTTON_CYCLE_TAP_LEFT: {
       switch (selected_tap_.type_) {
         case TapNoteType_Tap:
-          selected_tap_ = TAP_ORIGINAL_FAKE;
+          selected_tap_ = tap_original_fake;
           break;
         case TapNoteType_Mine:
-          selected_tap_ = TAP_ORIGINAL_TAP;
+          selected_tap_ = tap_original_tap;
           break;
         case TapNoteType_Lift:
-          selected_tap_ = TAP_ORIGINAL_MINE;
+          selected_tap_ = tap_original_mine;
           break;
         case TapNoteType_Fake:
-          selected_tap_ = TAP_ORIGINAL_LIFT;
+          selected_tap_ = tap_original_lift;
           break;
           DEFAULT_FAIL(selected_tap_.type_);
       }
@@ -3155,16 +3154,16 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
     case EDIT_BUTTON_CYCLE_TAP_RIGHT: {
       switch (selected_tap_.type_) {
         case TapNoteType_Tap:
-          selected_tap_ = TAP_ORIGINAL_MINE;
+          selected_tap_ = tap_original_mine;
           break;
         case TapNoteType_Mine:
-          selected_tap_ = TAP_ORIGINAL_LIFT;
+          selected_tap_ = tap_original_lift;
           break;
         case TapNoteType_Lift:
-          selected_tap_ = TAP_ORIGINAL_FAKE;
+          selected_tap_ = tap_original_fake;
           break;
         case TapNoteType_Fake:
-          selected_tap_ = TAP_ORIGINAL_TAP;
+          selected_tap_ = tap_original_tap;
           break;
           DEFAULT_FAIL(selected_tap_.type_);
       }
@@ -3356,13 +3355,12 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
       return true;
     case EDIT_BUTTON_OPEN_AREA_MENU: {
       // TODO: Improve behavior if timing changes are shifted down on beat 0.
-      g_AreaMenu.rows_[shift_pauses_forward].b_enabled_ = (GetBeat() != 0);
-      g_AreaMenu.rows_[paste_at_current_beat].b_enabled_ =
-          !clipboard_.IsEmpty();
-      g_AreaMenu.rows_[paste_at_begin_marker].b_enabled_ =
+      area_menu.rows_[shift_pauses_forward].b_enabled_ = (GetBeat() != 0);
+      area_menu.rows_[paste_at_current_beat].b_enabled_ = !clipboard_.IsEmpty();
+      area_menu.rows_[paste_at_begin_marker].b_enabled_ =
           !clipboard_.IsEmpty() != 0 && note_field_edit_.begin_marker_ != -1;
-      g_AreaMenu.rows_[undo].b_enabled_ = !undo_stack_.empty();
-      EditMiniMenu(&g_AreaMenu, SM_BackFromAreaMenu);
+      area_menu.rows_[undo].b_enabled_ = !undo_stack_.empty();
+      EditMiniMenu(&area_menu, SM_BackFromAreaMenu);
     }
       return true;
     case EDIT_BUTTON_OPEN_ALTER_MENU: {
@@ -3372,16 +3370,16 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         SCREENMAN->SystemMessage(ALTER_MENU_NO_SELECTION);
         SCREENMAN->PlayInvalidSound();
       } else {
-        bool is_routine = (input_player_number_ != PLAYER_INVALID);
-        g_AlterMenu.rows_[routine_invert_notes].b_enabled_ = is_routine;
-        g_AlterMenu.rows_[routine_mirror_1_to_2].b_enabled_ = is_routine;
-        g_AlterMenu.rows_[routine_mirror_2_to_1].b_enabled_ = is_routine;
-        EditMiniMenu(&g_AlterMenu, SM_BackFromAlterMenu);
+        bool is_routine = (input_player_number_ != kPlayerInvalid);
+        alter_menu.rows_[routine_invert_notes].b_enabled_ = is_routine;
+        alter_menu.rows_[routine_mirror_1_to_2].b_enabled_ = is_routine;
+        alter_menu.rows_[routine_mirror_2_to_1].b_enabled_ = is_routine;
+        EditMiniMenu(&alter_menu, SM_BackFromAlterMenu);
       }
       return true;
     }
     case EDIT_BUTTON_OPEN_EDIT_MENU:
-      EditMiniMenu(&g_MainMenu, SM_BackFromMainMenu);
+      EditMiniMenu(&main_menu, SM_BackFromMainMenu);
       return true;
     case EDIT_BUTTON_OPEN_INPUT_HELP:
       DoHelp();
@@ -3666,10 +3664,10 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         switch (edit_b) {
           DEFAULT_FAIL(edit_b);
           case EDIT_BUTTON_OPEN_BGCHANGE_LAYER1_MENU:
-            g_CurrentBGChangeLayer = BACKGROUND_LAYER_1;
+            current_bg_change_layer = BACKGROUND_LAYER_1;
             break;
           case EDIT_BUTTON_OPEN_BGCHANGE_LAYER2_MENU:
-            g_CurrentBGChangeLayer = BACKGROUND_LAYER_2;
+            current_bg_change_layer = BACKGROUND_LAYER_2;
             break;
         }
 
@@ -3677,14 +3675,14 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
           // Fill in option names
           std::vector<std::string> throw_away;
 
-          MenuDef& menu = g_BackgroundChange;
+          MenuDef& menu = background_change;
 
           menu.rows_[layer].choices_[0] =
-              ssprintf("%d", g_CurrentBGChangeLayer);
+              ssprintf("%d", current_bg_change_layer);
           BackgroundUtil::GetBackgroundTransitions(
               "", throw_away, menu.rows_[transition].choices_);
-          g_BackgroundChange.rows_[transition].choices_.insert(
-              g_BackgroundChange.rows_[transition].choices_.begin(),
+          background_change.rows_[transition].choices_.insert(
+              background_change.rows_[transition].choices_.begin(),
               "None");  // add "no transition"
           BackgroundUtil::GetBackgroundEffects(
               "", throw_away, menu.rows_[effect].choices_);
@@ -3736,7 +3734,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
           bool already_bg_change_here = false;
           BackgroundChange bg_change;
           for (BackgroundChange& bgc :
-               song_->GetBackgroundChanges(g_CurrentBGChangeLayer)) {
+               song_->GetBackgroundChanges(current_bg_change_layer)) {
             if (bgc.start_beat_ ==
                 GAMESTATE->player_state_[main_player_]->position_.song_beat_) {
               already_bg_change_here = true;
@@ -3772,7 +3770,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
               bg_change.transition_);
           menu.rows_[effect].SetDefaultChoiceIfPresent(bg_change.def_.effect_);
           menu.rows_[file1_type].default_choice_ = none;
-          if (bg_change.def_.file1_ == RANDOM_BACKGROUND_FILE) {
+          if (bg_change.def_.file1_ == kRandomBackgroundFile) {
             menu.rows_[file1_type].default_choice_ = dynamic_random;
           }
           if (menu.rows_[file1_song_bganimation].SetDefaultChoiceIfPresent(
@@ -3805,7 +3803,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
                 global_movie_song_group_and_genre;
           }
           menu.rows_[file2_type].default_choice_ = none;
-          if (bg_change.def_.file2_ == RANDOM_BACKGROUND_FILE) {
+          if (bg_change.def_.file2_ == kRandomBackgroundFile) {
             menu.rows_[file2_type].default_choice_ = dynamic_random;
           }
           if (menu.rows_[file2_song_bganimation].SetDefaultChoiceIfPresent(
@@ -3840,7 +3838,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
           menu.rows_[color1].SetDefaultChoiceIfPresent(bg_change.def_.color1_);
           menu.rows_[color2].SetDefaultChoiceIfPresent(bg_change.def_.color2_);
 
-          EditMiniMenu(&g_BackgroundChange, SM_BackFromBGChange);
+          EditMiniMenu(&background_change, SM_BackFromBGChange);
         }
       } else {
         SCREENMAN->SystemMessage(BG_CHANGE_STEP_TIMING);
@@ -3849,10 +3847,10 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
       return true;
 
     case EDIT_BUTTON_OPEN_COURSE_MENU: {
-      g_CourseMode.rows_[0].choices_.clear();
-      g_CourseMode.rows_[0].choices_.push_back(
+      course_mode.rows_[0].choices_.clear();
+      course_mode.rows_[0].choices_.push_back(
           CommonMetrics::LocalizeOptionItem("Off", false));
-      g_CourseMode.rows_[0].default_choice_ = 0;
+      course_mode.rows_[0].default_choice_ = 0;
 
       std::vector<Course*> courses;
       SONGMAN->GetAllCourses(courses, false);
@@ -3868,15 +3866,15 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         }
 
         if (uses_this_song) {
-          g_CourseMode.rows_[0].choices_.push_back(crs->GetDisplayFullTitle());
+          course_mode.rows_[0].choices_.push_back(crs->GetDisplayFullTitle());
           if (crs == GAMESTATE->cur_course_) {
-            g_CourseMode.rows_[0].default_choice_ =
-                g_CourseMode.rows_[0].choices_.size() - 1;
+            course_mode.rows_[0].default_choice_ =
+                course_mode.rows_[0].choices_.size() - 1;
           }
         }
       }
 
-      EditMiniMenu(&g_CourseMode, SM_BackFromCourseModeMenu);
+      EditMiniMenu(&course_mode, SM_BackFromCourseModeMenu);
     }
       return true;
     case EDIT_BUTTON_OPEN_STEP_ATTACK_MENU: {
@@ -3898,21 +3896,21 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         const std::string s_duration =
             std::to_string(ce.attacks_[attack].secs_remaining_);
 
-        g_InsertCourseAttack.rows_[remove].b_enabled_ = true;
-        if (g_InsertCourseAttack.rows_[duration].choices_.size() == 9) {
-          g_InsertCourseAttack.rows_[duration].choices_.push_back(s_duration);
+        insert_course_attack.rows_[remove].b_enabled_ = true;
+        if (insert_course_attack.rows_[duration].choices_.size() == 9) {
+          insert_course_attack.rows_[duration].choices_.push_back(s_duration);
         } else {
-          g_InsertCourseAttack.rows_[duration].choices_.back() = s_duration;
+          insert_course_attack.rows_[duration].choices_.back() = s_duration;
         }
-        g_InsertCourseAttack.rows_[duration].default_choice_ = 9;
+        insert_course_attack.rows_[duration].default_choice_ = 9;
       } else {
-        if (g_InsertCourseAttack.rows_[duration].choices_.size() == 10) {
-          g_InsertCourseAttack.rows_[duration].choices_.pop_back();
+        if (insert_course_attack.rows_[duration].choices_.size() == 10) {
+          insert_course_attack.rows_[duration].choices_.pop_back();
         }
-        g_InsertCourseAttack.rows_[duration].default_choice_ = 3;
+        insert_course_attack.rows_[duration].default_choice_ = 3;
       }
 
-      EditMiniMenu(&g_InsertCourseAttack, SM_BackFromInsertCourseAttack);
+      EditMiniMenu(&insert_course_attack, SM_BackFromInsertCourseAttack);
     }
       return true;
     case EDIT_BUTTON_ADD_STEP_MODS: {
@@ -3946,8 +3944,8 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
           GAMESTATE->player_state_[main_player_]->player_options_;
       this->original_player_options_.Assign(
           ModsLevel_Preferred, to_edit.GetPreferred());
-      g_fLastInsertAttackPositionSeconds = start;
-      g_fLastInsertAttackDurationSeconds = end - start;
+      last_insert_attack_position_seconds = start;
+      last_insert_attack_duration_seconds = end - start;
       to_edit.Assign(ModsLevel_Stage, po);
       SCREENMAN->AddNewScreenToTop(
           SET_MOD_SCREEN, SM_BackFromInsertStepAttackPlayerOptions);
@@ -3985,8 +3983,8 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
               NoteRowToBeat(note_field_edit_.end_marker_));
         }
       }
-      g_fLastInsertAttackPositionSeconds = f_start;
-      g_fLastInsertAttackDurationSeconds = f_end - f_start;
+      last_insert_attack_position_seconds = f_start;
+      last_insert_attack_duration_seconds = f_end - f_start;
       GAMESTATE->player_state_[main_player_]->player_options_.Assign(
           ModsLevel_Stage, po);
       SCREENMAN->AddNewScreenToTop(
@@ -4036,7 +4034,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
           note_field_edit_.end_marker_ != -1) {
         HandleAlterMenuChoice(record);
       } else {
-        if (g_iDefaultRecordLength.Get() == -1) {
+        if (default_record_length.Get() == -1) {
           start_playing_at_ =
               BeatToNoteRow(GetAppropriatePosition().song_beat_);
           stop_playing_at_ =
@@ -4044,9 +4042,9 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
         } else {
           start_playing_at_ = BeatToNoteRow(ftruncf(
               GetAppropriatePosition().song_beat_,
-              g_iDefaultRecordLength.Get()));
+              default_record_length.Get()));
           stop_playing_at_ =
-              start_playing_at_ + BeatToNoteRow(g_iDefaultRecordLength.Get());
+              start_playing_at_ + BeatToNoteRow(default_record_length.Get());
         }
 
         if (GAMESTATE->cur_steps_[0]->IsAnEdit()) {
@@ -4101,7 +4099,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
       return true;
 
     case EDIT_BUTTON_RECORD_HOLD_RESET:
-      record_hold_seconds = record_hold_default;
+      record_hold_seconds = kRecordHoldDefault;
       return true;
 
     case EDIT_BUTTON_RECORD_HOLD_OFF:
@@ -4137,11 +4135,11 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton edit_b) {
       return true;
 
     case EDIT_BUTTON_SWITCH_PLAYERS:
-      if (input_player_number_ == PLAYER_INVALID) {
+      if (input_player_number_ == kPlayerInvalid) {
         return false;
       }
       enum_add(input_player_number_, 1);
-      if (input_player_number_ == NUM_PLAYERS) {
+      if (input_player_number_ == kNumPlayers) {
         input_player_number_ = PLAYER_1;
       }
       sound_switch_player_.Play(true);
@@ -4199,10 +4197,10 @@ bool ScreenEdit::InputRecord(const InputEventPlus& input, EditButton edit_b) {
       // Remove hold if any so that we don't have taps inside of a hold.
       int head_row;
       if (note_data_record_.IsHoldNoteAtRow(col, row, &head_row)) {
-        note_data_record_.SetTapNote(col, head_row, TAP_EMPTY);
+        note_data_record_.SetTapNote(col, head_row, tap_empty);
       }
 
-      TapNote tn = TAP_ORIGINAL_TAP;
+      TapNote tn = tap_original_tap;
       tn.pn_ = input_player_number_;
       note_data_record_.SetTapNote(col, row, tn);
       note_field_record_.Step(col, TNS_W1);
@@ -4446,7 +4444,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
                           NoteRowToBeat(start_playing_at_)) -
                       PREFSMAN->edit_record_mode_lead_in_;
       GAMESTATE->UpdateSongPosition(
-          seconds, GetAppropriateTiming(), RageZeroTimer);
+          seconds, GetAppropriateTiming(), kRageZeroTimer);
 
       GAMESTATE->gameplay_lead_in_.Set(false);
 
@@ -4476,7 +4474,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
       player_manager_.SetupAutoplay();
       player_manager_.ReloadNoteData(note_data_edit_);
 
-      if (g_bEditorShowBGChangesPlay) {
+      if (editor_show_bg_changes_play) {
         /* FirstBeat affects backgrounds, so commit changes to memory (not to
          * disk) and recalc it. */
         Steps* steps = GAMESTATE->cur_steps_[main_player_];
@@ -4512,7 +4510,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
   spr_overlay_->PlayCommand(EditStateToString(em));
   spr_underlay_->PlayCommand(EditStateToString(em));
 
-  background_.SetVisible(g_bEditorShowBGChangesPlay && em != STATE_EDITING);
+  background_.SetVisible(editor_show_bg_changes_play && em != STATE_EDITING);
   text_input_tips_.SetVisible(em == STATE_EDITING);
   text_info_.SetVisible(em == STATE_EDITING);
   // Play the OnCommands again so that these will be re-hidden if the OnCommand
@@ -4528,7 +4526,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
       em == STATE_RECORDING || em == STATE_RECORDING_PAUSED);
 
   player_manager_.SetVisible(em == STATE_PLAYING);
-  foreground_.SetVisible(g_bEditorShowBGChangesPlay && em != STATE_EDITING);
+  foreground_.SetVisible(editor_show_bg_changes_play && em != STATE_EDITING);
 
   switch (em) {
     case STATE_PLAYING:
@@ -4565,7 +4563,7 @@ void ScreenEdit::ScrollTo(float destination_beat) {
   SetBeat(destination_beat);
 
   // check to see if they're holding a button
-  for (int n = 0; n < NUM_EDIT_BUTTON_COLUMNS; n++) {
+  for (int n = 0; n < kNumEditButtonColumns; n++) {
     int col = n;
 
     // Ctrl + number = input to right half
@@ -4590,8 +4588,8 @@ void ScreenEdit::ScrollTo(float destination_beat) {
     // segment that the user made.  Dragging the hold bigger can only absorb and
     // remove other taps, so dragging won't cause us to exceed the note limit.
     TapNote tn = EditIsBeingPressed(EDIT_BUTTON_LAY_ROLL)
-                     ? TAP_ORIGINAL_ROLL_HEAD
-                     : TAP_ORIGINAL_HOLD_HEAD;
+                     ? tap_original_roll_head
+                     : tap_original_hold_head;
 
     tn.pn_ = input_player_number_;
     note_data_edit_.AddHoldNote(col, start_row, end_row, tn);
@@ -4771,7 +4769,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
       sm == SM_BackFromTickcountChange && !ScreenTextEntry::cancelled_last_) {
     int tick = StringToInt(ScreenTextEntry::last_answer_);
 
-    if (tick >= 0 && tick <= ROWS_PER_BEAT) {
+    if (tick >= 0 && tick <= kRowsPerBeat) {
       GetAppropriateTimingForUpdate().AddSegment(
           TickcountSegment(GetRow(), tick));
     }
@@ -4866,7 +4864,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
     const int num = ScreenMiniMenu::last_answers_[0];
     GAMESTATE->cur_course_.Set(nullptr);
     if (num != 0) {
-      const std::string name = g_CourseMode.rows_[0].choices_[num];
+      const std::string name = course_mode.rows_[0].choices_[num];
       Course* course = SONGMAN->FindCourse(name);
 
       int course_entry_index = -1;
@@ -4974,8 +4972,8 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
     SOUND->StopMusic();
   } else if (sm == SM_BackFromInsertTapAttack) {
     int duration_choice = ScreenMiniMenu::last_answers_[0];
-    g_fLastInsertAttackDurationSeconds =
-        StringToFloat(g_InsertTapAttack.rows_[0].choices_[duration_choice]);
+    last_insert_attack_duration_seconds =
+        StringToFloat(insert_tap_attack.rows_[0].choices_[duration_choice]);
 
     SCREENMAN->AddNewScreenToTop(
         SET_MOD_SCREEN, SM_BackFromInsertTapAttackPlayerOptions);
@@ -4987,11 +4985,11 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
 
     TapNote tn(
         TapNoteType_Attack, TapNoteSubType_Invalid, TapNoteSource_Original,
-        s_mods, g_fLastInsertAttackDurationSeconds, -1);
+        s_mods, last_insert_attack_duration_seconds, -1);
     tn.pn_ = input_player_number_;
     SetDirty(true);
     SaveUndo("Add Attack");
-    note_data_edit_.SetTapNote(g_iLastInsertTapAttackTrack, row, tn);
+    note_data_edit_.SetTapNote(last_insert_tap_attack_track, row, tn);
     CheckNumberOfNotesAndUndo();
   } else if (
       sm == SM_BackFromEditingAttackStart &&
@@ -5103,33 +5101,33 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
         SetDirty(true);
       } else {
         Attack& attack = source_attacks[selected_attack_->index_];
-        g_IndividualAttack.rows_.clear();
+        individual_attack.rows_.clear();
 
-        g_IndividualAttack.rows_.push_back(MenuRowDef(
+        individual_attack.rows_.push_back(MenuRowDef(
             0, "Starting Time", true, EditMode_CourseMods, true, true, 0,
             nullptr));
-        g_IndividualAttack.rows_[0].SetOneUnthemedChoice(
+        individual_attack.rows_[0].SetOneUnthemedChoice(
             std::to_string(attack.start_second_));
-        g_IndividualAttack.rows_.push_back(MenuRowDef(
+        individual_attack.rows_.push_back(MenuRowDef(
             1, "Secs Remaining", true, EditMode_CourseMods, true, true, 0,
             nullptr));
-        g_IndividualAttack.rows_[1].SetOneUnthemedChoice(
+        individual_attack.rows_[1].SetOneUnthemedChoice(
             std::to_string(attack.secs_remaining_));
         std::vector<std::string> mods;
         split(attack.modifiers_, ",", mods);
         for (unsigned i = 0; i < mods.size(); ++i) {
           unsigned col = i + 2;
-          g_IndividualAttack.rows_.push_back(MenuRowDef(
+          individual_attack.rows_.push_back(MenuRowDef(
               col, ssprintf("Attack %d", i + 1), true, EditMode_CourseMods,
               false, true, 0, nullptr));
-          g_IndividualAttack.rows_[col].SetOneUnthemedChoice(mods[i].c_str());
+          individual_attack.rows_[col].SetOneUnthemedChoice(mods[i].c_str());
         }
 
-        g_IndividualAttack.rows_.push_back(MenuRowDef(
+        individual_attack.rows_.push_back(MenuRowDef(
             mods.size() + 2, "Add Mod", true, EditMode_CourseMods, true, true,
             0, nullptr));
 
-        EditMiniMenu(&g_IndividualAttack, SM_BackFromInsertStepAttack);
+        EditMiniMenu(&individual_attack, SM_BackFromInsertStepAttack);
       }
     }
   } else if (sm == SM_BackFromInsertCourseAttack) {
@@ -5140,13 +5138,13 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
 
     // TODO: Handle Song/Step Timing functions/switches here?
 
-    g_fLastInsertAttackPositionSeconds =
+    last_insert_attack_position_seconds =
         steps_->GetTimingData()->GetElapsedTimeFromBeat(
             GAMESTATE->position_.song_beat_);
-    g_fLastInsertAttackDurationSeconds =
-        StringToFloat(g_InsertCourseAttack.rows_[0].choices_[duration_choice]);
+    last_insert_attack_duration_seconds =
+        StringToFloat(insert_course_attack.rows_[0].choices_[duration_choice]);
     i_attack =
-        FindAttackAtTime(ce.attacks_, g_fLastInsertAttackPositionSeconds);
+        FindAttackAtTime(ce.attacks_, last_insert_attack_position_seconds);
 
     if (ScreenMiniMenu::last_row_code_ == ScreenEdit::remove) {
       ASSERT(i_attack >= 0);
@@ -5169,10 +5167,10 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
     PlayerOptions chosen = to_restore.GetPreferred();
     std::string mods = chosen.GetString();
 
-    if (g_fLastInsertAttackPositionSeconds >= 0) {
+    if (last_insert_attack_position_seconds >= 0) {
       Attack a(
-          ATTACK_LEVEL_1, g_fLastInsertAttackPositionSeconds,
-          g_fLastInsertAttackDurationSeconds, mods, false, false);
+          ATTACK_LEVEL_1, last_insert_attack_position_seconds,
+          last_insert_attack_duration_seconds, mods, false, false);
       if (selected_attack_.has_value()) {
         GetSelectedAttack() = a;
       } else {
@@ -5191,14 +5189,14 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
 
     Course* course = GAMESTATE->cur_course_;
     CourseEntry& ce = course->entries_[GAMESTATE->edit_course_entry_index_];
-    if (g_fLastInsertAttackPositionSeconds < 0) {
+    if (last_insert_attack_position_seconds < 0) {
       ce.modifiers_ = s_mods;
     } else {
       Attack a(
-          ATTACK_LEVEL_1, g_fLastInsertAttackPositionSeconds,
-          g_fLastInsertAttackDurationSeconds, s_mods, false, false);
+          ATTACK_LEVEL_1, last_insert_attack_position_seconds,
+          last_insert_attack_duration_seconds, s_mods, false, false);
       int i_attack =
-          FindAttackAtTime(ce.attacks_, g_fLastInsertAttackPositionSeconds);
+          FindAttackAtTime(ce.attacks_, last_insert_attack_position_seconds);
 
       if (i_attack >= 0) {
         ce.attacks_[i_attack] = a;
@@ -5266,8 +5264,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage sm) {
     }
   } else if (sm == SM_AutoSaveSuccessful) {
     LOG->Trace("AutoSave successful.");
-    next_autosave_time_ =
-        RageTimer::GetTimeSinceStart() + time_between_autosave;
+    next_autosave_time_ = RageTimer::GetTimeSinceStart() + kTimeBetweenAutosave;
     SCREENMAN->SystemMessage(AUTOSAVE_SUCCESSFUL);
   } else if (sm == SM_SaveFailed)  // save failed; stay in the editor
   {
@@ -5347,7 +5344,7 @@ void ScreenEdit::SetDirty(bool dirty) {
   if (dirty) {
     if (!dirty_) {
       next_autosave_time_ =
-          RageTimer::GetTimeSinceStart() + time_between_autosave;
+          RageTimer::GetTimeSinceStart() + kTimeBetweenAutosave;
     }
   } else {
     next_autosave_time_ = -1.0f;
@@ -5619,51 +5616,51 @@ void ScreenEdit::DisplayTimingMenu() {
   // bool bIsSelecting = ( (m_NoteFieldEdit.m_iEndMarker != -1) &&
   // (m_NoteFieldEdit.m_iBeginMarker != -1) );
 
-  g_TimingDataInformation.rows_[beat_0_offset].SetOneUnthemedChoice(
+  timing_data_information.rows_[beat_0_offset].SetOneUnthemedChoice(
       std::to_string(time.beat0_offset_in_seconds_));
-  g_TimingDataInformation.rows_[bpm].SetOneUnthemedChoice(
+  timing_data_information.rows_[bpm].SetOneUnthemedChoice(
       std::to_string(time.GetBPMAtRow(row)));
-  g_TimingDataInformation.rows_[stop].SetOneUnthemedChoice(
+  timing_data_information.rows_[stop].SetOneUnthemedChoice(
       std::to_string(time.GetStopAtRow(row)));
-  g_TimingDataInformation.rows_[delay].SetOneUnthemedChoice(
+  timing_data_information.rows_[delay].SetOneUnthemedChoice(
       std::to_string(time.GetDelayAtRow(row)));
 
-  g_TimingDataInformation.rows_[label].SetOneUnthemedChoice(
+  timing_data_information.rows_[label].SetOneUnthemedChoice(
       time.GetLabelAtRow(row).c_str());
-  g_TimingDataInformation.rows_[tickcount].SetOneUnthemedChoice(
+  timing_data_information.rows_[tickcount].SetOneUnthemedChoice(
       ssprintf("%d", time.GetTickcountAtRow(row)));
-  g_TimingDataInformation.rows_[combo].SetOneUnthemedChoice(ssprintf(
+  timing_data_information.rows_[combo].SetOneUnthemedChoice(ssprintf(
       "%d / %d", time.GetComboAtRow(row), time.GetMissComboAtRow(row)));
-  g_TimingDataInformation.rows_[warp].SetOneUnthemedChoice(
+  timing_data_information.rows_[warp].SetOneUnthemedChoice(
       std::to_string(time.GetWarpAtRow(row)));
-  g_TimingDataInformation.rows_[speed_percent].SetOneUnthemedChoice(
+  timing_data_information.rows_[speed_percent].SetOneUnthemedChoice(
       has_speed_on_this_row ? std::to_string(time.GetSpeedPercentAtRow(row))
                             : "---");
-  g_TimingDataInformation.rows_[speed_wait].SetOneUnthemedChoice(
+  timing_data_information.rows_[speed_wait].SetOneUnthemedChoice(
       has_speed_on_this_row ? std::to_string(time.GetSpeedWaitAtRow(row))
                             : "---");
 
   std::string starting =
       (time.GetSpeedModeAtRow(row) == 1 ? "Seconds" : "Beats");
-  g_TimingDataInformation.rows_[speed_mode].SetOneUnthemedChoice(
+  timing_data_information.rows_[speed_mode].SetOneUnthemedChoice(
       starting.c_str());
 
-  g_TimingDataInformation.rows_[scroll].SetOneUnthemedChoice(
+  timing_data_information.rows_[scroll].SetOneUnthemedChoice(
       std::to_string(time.GetScrollAtRow(row)));
-  g_TimingDataInformation.rows_[fake].SetOneUnthemedChoice(
+  timing_data_information.rows_[fake].SetOneUnthemedChoice(
       std::to_string(time.GetFakeAtRow(row)));
 
   // g_TimingDataInformation.rows[speed_percent].bEnabled = !bIsSelecting;
-  g_TimingDataInformation.rows_[speed_wait].b_enabled_ = has_speed_on_this_row;
-  g_TimingDataInformation.rows_[speed_mode].b_enabled_ = has_speed_on_this_row;
+  timing_data_information.rows_[speed_wait].b_enabled_ = has_speed_on_this_row;
+  timing_data_information.rows_[speed_mode].b_enabled_ = has_speed_on_this_row;
 
-  EditMiniMenu(&g_TimingDataInformation, SM_BackFromTimingDataInformation);
+  EditMiniMenu(&timing_data_information, SM_BackFromTimingDataInformation);
 }
 
 void ScreenEdit::DisplayTimingChangeMenu() {
   int row = GetRow();
   EditMiniMenu(
-      &g_TimingDataChangeInformation, SM_BackFromTimingDataChangeInformation);
+      &timing_data_change_information, SM_BackFromTimingDataChangeInformation);
 }
 
 static LocalizedString FIND_BPM("ScreenEdit", "Find BPM");
@@ -5673,21 +5670,21 @@ static LocalizedString SYNC_BPM("ScreenEdit", "BPM");
 static LocalizedString SYNC_NO_RESULTS("ScreenEdit", "Apply Sync");
 
 void ScreenEdit::DisplayAdjustSyncMenu() {
-  g_AdjustSyncMenu.rows_.clear();
+  adjust_sync_menu.rows_.clear();
 
-  g_AdjustSyncMenu.rows_.push_back(MenuRowDef(
+  adjust_sync_menu.rows_.push_back(MenuRowDef(
       adjust_sync_find_bpm, FIND_BPM, tempo_detector_ == nullptr, EditMode_Full,
       false, false, 0, nullptr));
 
   if (tempo_results_.empty()) {
     // Nothing has been detected yet, so there is nothing to apply.
-    g_AdjustSyncMenu.rows_.push_back(MenuRowDef(
+    adjust_sync_menu.rows_.push_back(MenuRowDef(
         adjust_sync_readonly, SYNC_NO_RESULTS, false, EditMode_Full, false,
         false, 0, nullptr));
-    g_AdjustSyncMenu.rows_.push_back(MenuRowDef(
+    adjust_sync_menu.rows_.push_back(MenuRowDef(
         adjust_sync_readonly, SYNC_OFFSET, false, EditMode_Full, false, false,
         0, "---"));
-    g_AdjustSyncMenu.rows_.push_back(MenuRowDef(
+    adjust_sync_menu.rows_.push_back(MenuRowDef(
         adjust_sync_readonly, SYNC_BPM, false, EditMode_Full, false, false, 0,
         "---"));
   } else {
@@ -5699,23 +5696,23 @@ void ScreenEdit::DisplayAdjustSyncMenu() {
           ssprintf(APPLY_SYNC.GetValue().c_str(), (int)i + 1), true,
           EditMode_Full, false, false, 0, nullptr);
       apply.SetOneUnthemedChoice(ssprintf("%.0f%%", result.fitness_ * 100));
-      g_AdjustSyncMenu.rows_.push_back(apply);
+      adjust_sync_menu.rows_.push_back(apply);
 
       MenuRowDef offset(
           adjust_sync_readonly, SYNC_OFFSET, false, EditMode_Full, false, false,
           0, nullptr);
       offset.SetOneUnthemedChoice(ssprintf("%+.3f", result.offset_));
-      g_AdjustSyncMenu.rows_.push_back(offset);
+      adjust_sync_menu.rows_.push_back(offset);
 
       MenuRowDef bpm(
           adjust_sync_readonly, SYNC_BPM, false, EditMode_Full, false, false, 0,
           nullptr);
       bpm.SetOneUnthemedChoice(ssprintf("%.3f", result.bpm_));
-      g_AdjustSyncMenu.rows_.push_back(bpm);
+      adjust_sync_menu.rows_.push_back(bpm);
     }
   }
 
-  EditMiniMenu(&g_AdjustSyncMenu, SM_BackFromAdjustSyncMenu);
+  EditMiniMenu(&adjust_sync_menu, SM_BackFromAdjustSyncMenu);
 }
 
 void ScreenEdit::StartTempoDetection() {
@@ -5838,49 +5835,49 @@ void ScreenEdit::HandleMainMenuChoice(
        * will no longer be saved to the profile. */
       Steps* steps = GAMESTATE->cur_steps_[PLAYER_1];
 
-      g_StepsInformation.rows_[difficulty].choices_.clear();
+      steps_information.rows_[difficulty].choices_.clear();
       FOREACH_ENUM(Difficulty, dc) {
-        g_StepsInformation.rows_[difficulty].choices_.push_back(
+        steps_information.rows_[difficulty].choices_.push_back(
             "|" + CustomDifficultyToLocalizedString(GetCustomDifficulty(
                       steps->steps_type_, dc, CourseType_Invalid)));
       }
-      g_StepsInformation.rows_[difficulty].default_choice_ =
+      steps_information.rows_[difficulty].default_choice_ =
           steps->GetDifficulty();
-      g_StepsInformation.rows_[difficulty].b_enabled_ =
+      steps_information.rows_[difficulty].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[meter].SetOneUnthemedChoice(
+      steps_information.rows_[meter].SetOneUnthemedChoice(
           ssprintf("%d", steps->GetMeter()));
-      g_StepsInformation.rows_[meter].b_enabled_ =
+      steps_information.rows_[meter].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Home);
-      g_StepsInformation.rows_[predict_meter].SetOneUnthemedChoice(
+      steps_information.rows_[predict_meter].SetOneUnthemedChoice(
           ssprintf("%.2f", steps->PredictMeter()));
-      g_StepsInformation.rows_[chartname].b_enabled_ =
+      steps_information.rows_[chartname].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[chartname].SetOneUnthemedChoice(
+      steps_information.rows_[chartname].SetOneUnthemedChoice(
           steps->GetChartName());
-      g_StepsInformation.rows_[description].b_enabled_ =
+      steps_information.rows_[description].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[description].SetOneUnthemedChoice(
+      steps_information.rows_[description].SetOneUnthemedChoice(
           steps->GetDescription());
-      g_StepsInformation.rows_[chartstyle].b_enabled_ =
+      steps_information.rows_[chartstyle].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[chartstyle].SetOneUnthemedChoice(
+      steps_information.rows_[chartstyle].SetOneUnthemedChoice(
           steps->GetChartStyle());
-      g_StepsInformation.rows_[step_credit].b_enabled_ =
+      steps_information.rows_[step_credit].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[step_credit].SetOneUnthemedChoice(
+      steps_information.rows_[step_credit].SetOneUnthemedChoice(
           steps->GetCredit());
-      g_StepsInformation.rows_[step_display_bpm].default_choice_ =
+      steps_information.rows_[step_display_bpm].default_choice_ =
           steps->GetDisplayBPM();
-      g_StepsInformation.rows_[step_min_bpm].SetOneUnthemedChoice(
+      steps_information.rows_[step_min_bpm].SetOneUnthemedChoice(
           std::to_string(steps->GetMinBPM()));
-      g_StepsInformation.rows_[step_max_bpm].SetOneUnthemedChoice(
+      steps_information.rows_[step_max_bpm].SetOneUnthemedChoice(
           std::to_string(steps->GetMaxBPM()));
-      g_StepsInformation.rows_[step_music].b_enabled_ =
+      steps_information.rows_[step_music].b_enabled_ =
           (EDIT_MODE.GetValue() >= EditMode_Full);
-      g_StepsInformation.rows_[step_music].SetOneUnthemedChoice(
+      steps_information.rows_[step_music].SetOneUnthemedChoice(
           steps->GetMusicFile());
-      EditMiniMenu(&g_StepsInformation, SM_BackFromStepsInformation, SM_None);
+      EditMiniMenu(&steps_information, SM_BackFromStepsInformation, SM_None);
     } break;
     case view_steps_data: {
       float music_seconds = sound_music_->GetLengthSeconds();
@@ -5889,66 +5886,66 @@ void ScreenEdit::HandleMainMenuChoice(
           GAMEMAN->GetStepsTypeInfo(steps->steps_type_).steps_type_category_;
       if (cat == StepsTypeCategory_Couple || cat == StepsTypeCategory_Routine) {
         std::pair<int, int> tmp = note_data_edit_.GetNumTapNotesTwoPlayer();
-        g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
+        steps_data.rows_[tap_notes].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumJumpsTwoPlayer();
-        g_StepsData.rows_[jumps].SetOneUnthemedChoice(
+        steps_data.rows_[jumps].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumHandsTwoPlayer();
-        g_StepsData.rows_[hands].SetOneUnthemedChoice(
+        steps_data.rows_[hands].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumQuadsTwoPlayer();
-        g_StepsData.rows_[quads].SetOneUnthemedChoice(
+        steps_data.rows_[quads].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumHoldNotesTwoPlayer();
-        g_StepsData.rows_[holds].SetOneUnthemedChoice(
+        steps_data.rows_[holds].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumMinesTwoPlayer();
-        g_StepsData.rows_[mines].SetOneUnthemedChoice(
+        steps_data.rows_[mines].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumRollsTwoPlayer();
-        g_StepsData.rows_[rolls].SetOneUnthemedChoice(
+        steps_data.rows_[rolls].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumLiftsTwoPlayer();
-        g_StepsData.rows_[lifts].SetOneUnthemedChoice(
+        steps_data.rows_[lifts].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
         tmp = note_data_edit_.GetNumFakesTwoPlayer();
-        g_StepsData.rows_[fakes].SetOneUnthemedChoice(
+        steps_data.rows_[fakes].SetOneUnthemedChoice(
             ssprintf("%d / %d", tmp.first, tmp.second));
       } else {
-        g_StepsData.rows_[tap_notes].SetOneUnthemedChoice(
+        steps_data.rows_[tap_notes].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumTapNotes()));
-        g_StepsData.rows_[jumps].SetOneUnthemedChoice(
+        steps_data.rows_[jumps].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumJumps()));
-        g_StepsData.rows_[hands].SetOneUnthemedChoice(
+        steps_data.rows_[hands].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumHands()));
-        g_StepsData.rows_[quads].SetOneUnthemedChoice(
+        steps_data.rows_[quads].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumQuads()));
-        g_StepsData.rows_[holds].SetOneUnthemedChoice(
+        steps_data.rows_[holds].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumHoldNotes()));
-        g_StepsData.rows_[mines].SetOneUnthemedChoice(
+        steps_data.rows_[mines].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumMines()));
-        g_StepsData.rows_[rolls].SetOneUnthemedChoice(
+        steps_data.rows_[rolls].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumRolls()));
-        g_StepsData.rows_[lifts].SetOneUnthemedChoice(
+        steps_data.rows_[lifts].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumLifts()));
-        g_StepsData.rows_[fakes].SetOneUnthemedChoice(
+        steps_data.rows_[fakes].SetOneUnthemedChoice(
             ssprintf("%d", note_data_edit_.GetNumFakes()));
       }
       RadarValues radar;
       radar.Zero();
       NoteDataUtil::CalculateRadarValues(note_data_edit_, music_seconds, radar);
-      g_StepsData.rows_[stream].SetOneUnthemedChoice(
+      steps_data.rows_[stream].SetOneUnthemedChoice(
           ssprintf("%.2f", radar[RadarCategory_Stream]));
-      g_StepsData.rows_[voltage].SetOneUnthemedChoice(
+      steps_data.rows_[voltage].SetOneUnthemedChoice(
           ssprintf("%.2f", radar[RadarCategory_Voltage]));
-      g_StepsData.rows_[air].SetOneUnthemedChoice(
+      steps_data.rows_[air].SetOneUnthemedChoice(
           ssprintf("%.2f", radar[RadarCategory_Air]));
-      g_StepsData.rows_[freeze].SetOneUnthemedChoice(
+      steps_data.rows_[freeze].SetOneUnthemedChoice(
           ssprintf("%.2f", radar[RadarCategory_Freeze]));
-      g_StepsData.rows_[chaos].SetOneUnthemedChoice(
+      steps_data.rows_[chaos].SetOneUnthemedChoice(
           ssprintf("%.2f", radar[RadarCategory_Chaos]));
-      EditMiniMenu(&g_StepsData, SM_BackFromStepsData, SM_None);
+      EditMiniMenu(&steps_data, SM_BackFromStepsData, SM_None);
       break;
     }
     case save:
@@ -5975,34 +5972,33 @@ void ScreenEdit::HandleMainMenuChoice(
       break;
     case edit_song_info: {
       const Song* song = GAMESTATE->cur_song_;
-      g_SongInformation.rows_[main_title].SetOneUnthemedChoice(
+      song_information.rows_[main_title].SetOneUnthemedChoice(
           song->main_title_);
-      g_SongInformation.rows_[sub_title].SetOneUnthemedChoice(song->sub_title_);
-      g_SongInformation.rows_[artist].SetOneUnthemedChoice(song->artist_);
-      g_SongInformation.rows_[genre].SetOneUnthemedChoice(song->genre_);
-      g_SongInformation.rows_[credit].SetOneUnthemedChoice(song->credit_);
-      g_SongInformation.rows_[preview].SetOneUnthemedChoice(
-          song->preview_file_);
-      g_SongInformation.rows_[main_title_transliteration].SetOneUnthemedChoice(
+      song_information.rows_[sub_title].SetOneUnthemedChoice(song->sub_title_);
+      song_information.rows_[artist].SetOneUnthemedChoice(song->artist_);
+      song_information.rows_[genre].SetOneUnthemedChoice(song->genre_);
+      song_information.rows_[credit].SetOneUnthemedChoice(song->credit_);
+      song_information.rows_[preview].SetOneUnthemedChoice(song->preview_file_);
+      song_information.rows_[main_title_transliteration].SetOneUnthemedChoice(
           song->main_title_translit_);
-      g_SongInformation.rows_[sub_title_transliteration].SetOneUnthemedChoice(
+      song_information.rows_[sub_title_transliteration].SetOneUnthemedChoice(
           song->sub_title_translit_);
-      g_SongInformation.rows_[artist_transliteration].SetOneUnthemedChoice(
+      song_information.rows_[artist_transliteration].SetOneUnthemedChoice(
           song->artist_translit_);
-      g_SongInformation.rows_[last_second_hint].SetOneUnthemedChoice(
+      song_information.rows_[last_second_hint].SetOneUnthemedChoice(
           std::to_string(song->GetSpecifiedLastSecond()));
-      g_SongInformation.rows_[preview_start].SetOneUnthemedChoice(
+      song_information.rows_[preview_start].SetOneUnthemedChoice(
           std::to_string(song->music_sample_start_seconds_));
-      g_SongInformation.rows_[preview_length].SetOneUnthemedChoice(
+      song_information.rows_[preview_length].SetOneUnthemedChoice(
           std::to_string(song->music_sample_length_seconds_));
-      g_SongInformation.rows_[display_bpm].default_choice_ =
+      song_information.rows_[display_bpm].default_choice_ =
           song->display_bpm_type_;
-      g_SongInformation.rows_[min_bpm].SetOneUnthemedChoice(
+      song_information.rows_[min_bpm].SetOneUnthemedChoice(
           std::to_string(song->specified_bpm_min_));
-      g_SongInformation.rows_[max_bpm].SetOneUnthemedChoice(
+      song_information.rows_[max_bpm].SetOneUnthemedChoice(
           std::to_string(song->specified_bpm_max_));
 
-      EditMiniMenu(&g_SongInformation, SM_BackFromSongInformation);
+      EditMiniMenu(&song_information, SM_BackFromSongInformation);
     } break;
     case edit_timing_data: {
       DisplayTimingMenu();
@@ -6089,14 +6085,14 @@ static bool ConvertMappingInputToMapping(
 
 static bool ArbitraryRemapValidate(
     const std::string& answer, std::string& error_out) {
-  int mapping[MAX_NOTE_TRACKS];
+  int mapping[kMaxNoteTracks];
   return ConvertMappingInputToMapping(answer, mapping, error_out);
 }
 
 void ScreenEdit::HandleArbitraryRemapping(const std::string& mapstr) {
   const NoteData old_clipboard(clipboard_);
   HandleAlterMenuChoice(cut, false);
-  int mapping[MAX_NOTE_TRACKS];
+  int mapping[kMaxNoteTracks];
   std::string error;
   // error is actually reported by the validate function, and unused here.
   if (ConvertMappingInputToMapping(mapstr, mapping, error)) {
@@ -6139,7 +6135,7 @@ void ScreenEdit::HandleAlterMenuChoice(
   }
 
   if (save_undo) {
-    SaveUndo(g_AlterMenu.rows_[c].name_);
+    SaveUndo(alter_menu.rows_[c].name_);
   }
 
   switch (c) {
@@ -6340,7 +6336,7 @@ void ScreenEdit::HandleAlterMenuChoice(
         case arbitrary_remap:
           ScreenTextEntry::TextEntry(
               SM_BackFromArbitraryRemap, ENTER_ARBITRARY_MAPPING, "1, 2, 3, 4",
-              MAX_NOTE_TRACKS * 4,
+              kMaxNoteTracks * 4,
               // 2 chars for digit, one for comma, one for space.
               ArbitraryRemapValidate);
           break;
@@ -6475,8 +6471,8 @@ void ScreenEdit::HandleAlterMenuChoice(
       float start_beat = NoteRowToBeat(note_field_edit_.begin_marker_);
       float end_beat = NoteRowToBeat(note_field_edit_.end_marker_);
       const TimingData& timing = GetAppropriateTiming();
-      float& start = g_fLastInsertAttackPositionSeconds;
-      float& length = g_fLastInsertAttackDurationSeconds;
+      float& start = last_insert_attack_position_seconds;
+      float& length = last_insert_attack_duration_seconds;
       start = timing.GetElapsedTimeFromBeat(start_beat);
       length = timing.GetElapsedTimeFromBeat(end_beat) - start;
 
@@ -6616,7 +6612,7 @@ void ScreenEdit::HandleAreaMenuChoice(
   }
 
   if (save_undo) {
-    SaveUndo(g_AreaMenu.rows_[c].name_);
+    SaveUndo(area_menu.rows_[c].name_);
   }
 
   switch (c) {
@@ -6740,16 +6736,15 @@ void ScreenEdit::HandleStepsInformationChoice(
     case chartname: {
       ScreenTextEntry::TextEntry(
           SM_None, ENTER_NEW_CHART_NAME, steps_->GetChartName(),
-          MAX_STEPS_DESCRIPTION_LENGTH, SongUtil::ValidateCurrentStepsChartName,
+          kMaxStepsDescriptionLength, SongUtil::ValidateCurrentStepsChartName,
           ChangeChartName, nullptr);
       break;
     }
     case description: {
       ScreenTextEntry::TextEntry(
           SM_None, ENTER_NEW_DESCRIPTION, steps_->GetDescription(),
-          MAX_STEPS_DESCRIPTION_LENGTH,
-          SongUtil::ValidateCurrentStepsDescription, ChangeDescription,
-          nullptr);
+          kMaxStepsDescriptionLength, SongUtil::ValidateCurrentStepsDescription,
+          ChangeDescription, nullptr);
       break;
     }
     case chartstyle: {
@@ -7036,7 +7031,7 @@ void ScreenEdit::HandleTimingDataInformationChoice(
       break;
     case paste_timing_from_clip:
       clipboard_full_timing_.CopyRange(
-          0, MAX_NOTE_ROW, TimingSegmentType_Invalid, GetRow(),
+          0, kMaxNoteRow, TimingSegmentType_Invalid, GetRow(),
           GetAppropriateTimingForUpdate());
       break;
     case copy_full_timing: {
@@ -7108,7 +7103,7 @@ void ScreenEdit::HandleTimingDataChangeChoice(
     begin = GetRow();
   }
   if (end < 0) {
-    end = MAX_NOTE_ROW;
+    end = kMaxNoteRow;
   }
   switch (timing_change_menu_purpose_) {
     case menu_is_for_copying:
@@ -7132,7 +7127,7 @@ void ScreenEdit::HandleBGChangeChoice(
     BGChangeChoice c, const std::vector<int>& answers) {
   BackgroundChange new_change;
 
-  auto& changes = song_->GetBackgroundChanges(g_CurrentBGChangeLayer);
+  auto& changes = song_->GetBackgroundChanges(current_bg_change_layer);
   for (auto iter = changes.begin(); iter != changes.end(); ++iter) {
     if (iter->start_beat_ == GAMESTATE->position_.song_beat_) {
       new_change = *iter;
@@ -7144,23 +7139,23 @@ void ScreenEdit::HandleBGChangeChoice(
 
   new_change.start_beat_ = GAMESTATE->position_.song_beat_;
   new_change.rate_ =
-      StringToFloat(g_BackgroundChange.rows_[rate].choices_[answers[rate]]) /
+      StringToFloat(background_change.rows_[rate].choices_[answers[rate]]) /
       100.f;
   new_change.transition_ =
       answers[transition]
-          ? g_BackgroundChange.rows_[transition].choices_[answers[transition]]
+          ? background_change.rows_[transition].choices_[answers[transition]]
           : std::string();
   new_change.def_.effect_ =
       answers[effect]
-          ? g_BackgroundChange.rows_[effect].choices_[answers[effect]]
+          ? background_change.rows_[effect].choices_[answers[effect]]
           : std::string();
   new_change.def_.color1_ =
       answers[color1]
-          ? g_BackgroundChange.rows_[color1].choices_[answers[color1]]
+          ? background_change.rows_[color1].choices_[answers[color1]]
           : std::string();
   new_change.def_.color2_ =
       answers[color2]
-          ? g_BackgroundChange.rows_[color2].choices_[answers[color2]]
+          ? background_change.rows_[color2].choices_[answers[color2]]
           : std::string();
   switch (answers[file1_type]) {
     DEFAULT_FAIL(answers[file1_type]);
@@ -7168,7 +7163,7 @@ void ScreenEdit::HandleBGChangeChoice(
       new_change.def_.file1_ = "";
       break;
     case dynamic_random:
-      new_change.def_.file1_ = RANDOM_BACKGROUND_FILE;
+      new_change.def_.file1_ = kRandomBackgroundFile;
       break;
     case baked_random:
       new_change.def_.file1_ = GetOneBakedRandomFile(song_);
@@ -7183,9 +7178,9 @@ void ScreenEdit::HandleBGChangeChoice(
       BGChangeChoice row1 =
           (BGChangeChoice)(file1_song_bganimation + answers[file1_type]);
       new_change.def_.file1_ =
-          g_BackgroundChange.rows_[row1].choices_.empty()
+          background_change.rows_[row1].choices_.empty()
               ? std::string("")
-              : g_BackgroundChange.rows_[row1].choices_[answers[row1]];
+              : background_change.rows_[row1].choices_[answers[row1]];
     } break;
   }
   switch (answers[file2_type]) {
@@ -7194,7 +7189,7 @@ void ScreenEdit::HandleBGChangeChoice(
       new_change.def_.file2_ = "";
       break;
     case dynamic_random:
-      new_change.def_.file2_ = RANDOM_BACKGROUND_FILE;
+      new_change.def_.file2_ = kRandomBackgroundFile;
       break;
     case baked_random:
       new_change.def_.file2_ = GetOneBakedRandomFile(song_);
@@ -7209,18 +7204,18 @@ void ScreenEdit::HandleBGChangeChoice(
       BGChangeChoice row2 =
           (BGChangeChoice)(file2_song_bganimation + answers[file2_type]);
       new_change.def_.file2_ =
-          g_BackgroundChange.rows_[row2].choices_.empty()
+          background_change.rows_[row2].choices_.empty()
               ? std::string("")
-              : g_BackgroundChange.rows_[row2].choices_[answers[row2]];
+              : background_change.rows_[row2].choices_[answers[row2]];
     } break;
   }
 
   if (c == delete_change || new_change.def_.file1_.empty()) {
     // don't add
   } else {
-    song_->AddBackgroundChange(g_CurrentBGChangeLayer, new_change);
+    song_->AddBackgroundChange(current_bg_change_layer, new_change);
   }
-  g_CurrentBGChangeLayer = BACKGROUND_LAYER_Invalid;
+  current_bg_change_layer = BACKGROUND_LAYER_Invalid;
 }
 
 void ScreenEdit::SetupCourseAttacks() {
@@ -7489,7 +7484,7 @@ void ScreenEdit::PasteClipboardAtCurrentBeat(bool include_timing) {
   const bool pasted_timing = include_timing && clipboard_has_timing_;
   if (pasted_timing) {
     clipboard_full_timing_.CopyRange(
-        0, MAX_NOTE_ROW, TimingSegmentType_Invalid, GetRow(),
+        0, kMaxNoteRow, TimingSegmentType_Invalid, GetRow(),
         GetAppropriateTimingForUpdate());
     SetDirty(true);
   }
@@ -7576,7 +7571,7 @@ float ScreenEdit::GetMaximumBeatForNewNote() const {
       return end_beat;
     }
     case EditMode_Full:
-      return NoteRowToBeat(MAX_NOTE_ROW);
+      return NoteRowToBeat(kMaxNoteRow);
   }
 }
 
@@ -7620,7 +7615,7 @@ struct EditHelpLine {
   }
 };
 // TODO: Identify which of these can be removed and sent to a readme.
-static const EditHelpLine g_EditHelpLines[] = {
+static const EditHelpLine kEditHelpLines[] = {
     EditHelpLine(
         "Move cursor", EDIT_BUTTON_SCROLL_UP_LINE,
         EDIT_BUTTON_SCROLL_DOWN_LINE),
@@ -7688,7 +7683,7 @@ static const EditHelpLine g_EditHelpLines[] = {
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {
-  for (int s = 0; s < NUM_EDIT_TO_DEVICE_SLOTS; s++) {
+  for (int s = 0; s < kNumEditToDeviceSlots; s++) {
     DeviceInput press = editmap.button_[eb][s];
     if (press.IsValid()) {
       return true;
@@ -7720,7 +7715,7 @@ static std::string GetDeviceButtonsLocalized(
       continue;
     }
 
-    for (int s = 0; s < NUM_EDIT_TO_DEVICE_SLOTS; s++) {
+    for (int s = 0; s < kNumEditToDeviceSlots; s++) {
       DeviceInput di_press = editmap.button_[eb][s];
       DeviceInput di_hold = editmap.hold_[eb][s];
       if (di_press.IsValid()) {
@@ -7784,7 +7779,7 @@ void ScreenEdit::DoStepAttackMenu() {
   AttackArray attacks = GetAttacksForEditing();
   std::vector<int> points = FindAllAttacksAtTime(attacks, start_time);
 
-  g_AttackAtTimeMenu.rows_.clear();
+  attack_at_time_menu.rows_.clear();
   unsigned index = 0;
 
   for (int& i : points) {
@@ -7793,14 +7788,14 @@ void ScreenEdit::DoStepAttackMenu() {
         "%g -> %g (%d mod[s])", start_time, start_time + attack.secs_remaining_,
         attack.GetNumAttacks());
 
-    g_AttackAtTimeMenu.rows_.push_back(MenuRowDef(
+    attack_at_time_menu.rows_.push_back(MenuRowDef(
         index++, desc, true, EditMode_CourseMods, false, false, 0, "Modify",
         "Delete"));
   }
-  g_AttackAtTimeMenu.rows_.push_back(MenuRowDef(
+  attack_at_time_menu.rows_.push_back(MenuRowDef(
       index, "Add Attack", true, EditMode_CourseMods, true, true, 0, nullptr));
 
-  EditMiniMenu(&g_AttackAtTimeMenu, SM_BackFromAttackAtTime);
+  EditMiniMenu(&attack_at_time_menu, SM_BackFromAttackAtTime);
 }
 
 static LocalizedString TRACK_NUM("ScreenEdit", "Track %d");
@@ -7808,7 +7803,7 @@ static LocalizedString NO_KEYSND("ScreenEdit", "None");
 static LocalizedString NEWKEYSND("ScreenEdit", "New Sound");
 
 void ScreenEdit::DoKeyboardTrackMenu() {
-  g_KeysoundTrack.rows_.clear();
+  keysound_track.rows_.clear();
   std::vector<std::string>& kses = song_->keysound_file_;
 
   std::vector<std::string> choices;
@@ -7828,22 +7823,22 @@ void ScreenEdit::DoKeyboardTrackMenu() {
       ++found_keysounds;
     }
 
-    g_KeysoundTrack.rows_.push_back(MenuRowDef(
+    keysound_track.rows_.push_back(MenuRowDef(
         i, ssprintf(TRACK_NUM.GetValue().c_str(), i + 1), true, EditMode_Full,
         false, false, key_index, choices));
   }
-  g_KeysoundTrack.rows_.push_back(MenuRowDef(
+  keysound_track.rows_.push_back(MenuRowDef(
       note_data_edit_.GetNumTracks(), "Remove Keysound", found_keysounds > 0,
       EditMode_Full, false, false, 0, kses));
 
-  EditMiniMenu(&g_KeysoundTrack, SM_BackFromKeysoundTrack);
+  EditMiniMenu(&keysound_track, SM_BackFromKeysoundTrack);
 }
 
 void ScreenEdit::DoHelp() {
-  g_EditHelp.rows_.clear();
+  edit_help.rows_.clear();
 
-  for (unsigned i = 0; i < ARRAYLEN(g_EditHelpLines); ++i) {
-    const EditHelpLine& hl = g_EditHelpLines[i];
+  for (unsigned i = 0; i < ARRAYLEN(kEditHelpLines); ++i) {
+    const EditHelpLine& hl = kEditHelpLines[i];
 
     if (!IsMapped(hl.veb_[0], edit_mappings_device_input_)) {
       continue;
@@ -7861,16 +7856,16 @@ void ScreenEdit::DoHelp() {
 
     // TODO: Better way of hiding routine only key on non-routine.
     if (hl.veb_[0] == EDIT_BUTTON_SWITCH_PLAYERS &&
-        input_player_number_ == PLAYER_INVALID) {
+        input_player_number_ == kPlayerInvalid) {
       continue;
     }
 
-    g_EditHelp.rows_.push_back(MenuRowDef(
+    edit_help.rows_.push_back(MenuRowDef(
         -1, description, false, EditMode_Practice, false, false, 0,
         buttons.c_str()));
   }
 
-  EditMiniMenu(&g_EditHelp);
+  EditMiniMenu(&edit_help);
 }
 
 void ScreenEdit::SeekSong(float second) {

@@ -64,7 +64,7 @@ static const char* ProfileActionNames[] = {
 };
 XToString(ProfileAction);
 XToLocalizedString(ProfileAction);
-static MenuDef g_TempMenu("ScreenMiniMenuContext");
+static MenuDef temp_menu("ScreenMiniMenuContext");
 
 static LocalizedString PROFILE_NAME_BLANK(
     "ScreenEditMenu", "Profile name cannot be blank.");
@@ -164,10 +164,10 @@ void ScreenOptionsManageProfiles::BeginScreen() {
     def.name_ = profile->display_name_;
     def.explanation_name_ = "Select Profile";
 
-    PlayerNumber pn = PLAYER_INVALID;
+    PlayerNumber pn = kPlayerInvalid;
     FOREACH_PlayerNumber(
         p) if (s == ProfileManager::default_local_profile_id_[p].Get()) pn = p;
-    if (pn != PLAYER_INVALID) {
+    if (pn != kPlayerInvalid) {
       def.choices_.push_back(PlayerNumberToLocalizedString(pn));
     }
     option_row_handlers.push_back(hand);
@@ -238,7 +238,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage(const ScreenMessage sm) {
 
       GAMESTATE->edit_local_profile_id_.Set(profile_id);
 
-      if (num_profiles < NUM_PLAYERS) {
+      if (num_profiles < kNumPlayers) {
         int first_unused = -1;
         int index = 0;
         for (const Preference<std::string>* i :
@@ -330,8 +330,8 @@ void ScreenOptionsManageProfiles::HandleScreenMessage(const ScreenMessage sm) {
         case ProfileAction_Rename: {
           ScreenTextEntry::TextEntry(
               SM_BackFromRename, ENTER_PROFILE_NAME, profile->display_name_,
-              PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName,
-              nullptr, nullptr, false, ValidateAppendProfileName);
+              kProfileMaxDisplayNameLength, ValidateLocalProfileName, nullptr,
+              nullptr, false, ValidateAppendProfileName);
         } break;
         case ProfileAction_Delete: {
           std::string title = profile->display_name_;
@@ -432,17 +432,17 @@ void ScreenOptionsManageProfiles::ProcessMenuStart(const InputEventPlus&) {
     }
     ScreenTextEntry::TextEntry(
         SM_BackFromEnterNameForNew, ENTER_PROFILE_NAME, potential_name,
-        PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName, nullptr,
+        kProfileMaxDisplayNameLength, ValidateLocalProfileName, nullptr,
         nullptr, false, ValidateAppendProfileName);
   } else if (row.GetRowType() == OptionRow::RowType_Exit) {
     SCREENMAN->PlayStartSound();
     this->BeginFadingOut();
   } else  // a profile
   {
-    g_TempMenu.rows_.clear();
+    temp_menu.rows_.clear();
 
 #define ADD_ACTION(i)                                                          \
-  g_TempMenu.rows_.push_back(MenuRowDef(                                       \
+  temp_menu.rows_.push_back(MenuRowDef(                                        \
       i, ProfileActionToLocalizedString(i), true, EditMode_Home, false, false, \
       0, ""));
 
@@ -474,7 +474,7 @@ void ScreenOptionsManageProfiles::ProcessMenuStart(const InputEventPlus&) {
     this->GetWidthXY(PLAYER_1, cur_row, 0, width, x, y);
 
     ScreenMiniMenu::MiniMenu(
-        &g_TempMenu, SM_BackFromContextMenu, SM_BackFromContextMenu, (float)x,
+        &temp_menu, SM_BackFromContextMenu, SM_BackFromContextMenu, (float)x,
         SCREEN_CENTER_Y);
   }
 }

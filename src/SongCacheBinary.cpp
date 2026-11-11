@@ -23,7 +23,7 @@
 
 namespace {
 
-constexpr char MAGIC[] = "ITGC";
+constexpr char kMagic[] = "ITGC";
 
 // Little-endian byte stream helpers. All multi-byte values are written out
 // byte by byte so the format is not tied to the host's endianness.
@@ -363,15 +363,15 @@ void ReadAttacks(
 }
 
 void WriteHeader(Writer& w) {
-  w.Str(MAGIC);
-  w.U32(static_cast<uint32_t>(FILE_CACHE_VERSION));
+  w.Str(kMagic);
+  w.U32(static_cast<uint32_t>(kFileCacheVersion));
 }
 
 bool ReadHeader(Reader& r) {
   const std::string magic = r.Str();
   const uint32_t cache_version = r.U32();
-  return r.Ok() && magic == MAGIC &&
-         cache_version == static_cast<uint32_t>(FILE_CACHE_VERSION);
+  return r.Ok() && magic == kMagic &&
+         cache_version == static_cast<uint32_t>(kFileCacheVersion);
 }
 
 void WriteSong(Writer& w, const Song& song) {
@@ -545,13 +545,13 @@ void ReadSteps(Reader& r, Song& song) {
   steps->SetMusicFile(r.Str());
   steps->SetFilename(r.Str());
 
-  RadarValues radar[NUM_PLAYERS];
+  RadarValues radar[kNumPlayers];
   FOREACH_PlayerNumber(pn) {
     FOREACH_ENUM(RadarCategory, rc) { radar[pn][rc] = r.F32(); }
   }
   steps->SetRadarValues(radar);
 
-  TechCounts tech[NUM_PLAYERS];
+  TechCounts tech[kNumPlayers];
   FOREACH_PlayerNumber(pn) {
     FOREACH_ENUM(TechCountsCategory, tcc) { tech[pn][tcc] = r.F32(); }
   }
@@ -669,7 +669,7 @@ bool Read(Song& song, const std::string& path, bool tidy_up_data) {
 
   song.song_timing_.file_ = path;
   song.song_file_name_ = path;
-  song.version_ = STEPFILE_VERSION_NUMBER;
+  song.version_ = kStepfileVersionNumber;
 
   ReadSong(r, song);
   if (!r.Ok()) {

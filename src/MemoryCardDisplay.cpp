@@ -15,7 +15,7 @@
 REGISTER_ACTOR_CLASS(MemoryCardDisplay);
 
 MemoryCardDisplay::MemoryCardDisplay() {
-  player_number_ = PLAYER_INVALID;
+  player_number_ = kPlayerInvalid;
   last_seen_state_ = MemoryCardState_Invalid;
 }
 

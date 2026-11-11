@@ -35,16 +35,16 @@
 #endif
 
 // Statistics stuff
-RageTimer g_LastCheckTimer;
-int g_iFPS, g_iVPF, g_iCFPS;
+RageTimer last_check_timer;
+int fps, vpf, cfps;
 
-int RageDisplay::GetFPS() const { return g_iFPS; }
-int RageDisplay::GetVPF() const { return g_iVPF; }
-int RageDisplay::GetCumFPS() const { return g_iCFPS; }
+int RageDisplay::GetFPS() const { return fps; }
+int RageDisplay::GetVPF() const { return vpf; }
+int RageDisplay::GetCumFPS() const { return cfps; }
 
-static int g_iFramesRenderedSinceLastCheck, g_iFramesRenderedSinceLastReset,
-    g_iVertsRenderedSinceLastCheck, g_iNumChecksSinceLastReset;
-static RageTimer g_LastFrameEndedAt(RageZeroTimer);
+static int frames_rendered_since_last_check, frames_rendered_since_last_reset,
+    verts_rendered_since_last_check, num_checks_since_last_reset;
+static RageTimer last_frame_ended_at(kRageZeroTimer);
 
 struct Centering {
   Centering(
@@ -58,13 +58,13 @@ struct Centering {
   int translate_x_, translate_y_, add_width_, add_height_;
 };
 
-static std::vector<Centering> g_CenteringStack(1, Centering(0, 0, 0, 0));
+static std::vector<Centering> centering_stack(1, Centering(0, 0, 0, 0));
 
 RageDisplay* DISPLAY =
     nullptr;  // global and accessible from anywhere in our program
 
-Preference<bool> LOG_FPS("LogFPS", false);
-Preference<float> g_fFrameLimitPercent("FrameLimitPercent", 0.0f);
+Preference<bool> log_fps("LogFPS", false);
+Preference<float> frame_limit_percent("FrameLimitPercent", 0.0f);
 
 static const char* RagePixelFormatNames[] = {
     "RGBA8", "BGRA8", "RGBA4", "RGB5A1", "RGB5",
@@ -138,19 +138,19 @@ std::string RageDisplay::SetVideoMode(
 }
 
 void RageDisplay::ProcessStatsOnFlip() {
-  g_iFramesRenderedSinceLastCheck++;
-  g_iFramesRenderedSinceLastReset++;
+  frames_rendered_since_last_check++;
+  frames_rendered_since_last_reset++;
 
-  if (g_LastCheckTimer.Ago() >= 1.0f)  // update stats every 1 sec.
+  if (last_check_timer.Ago() >= 1.0f)  // update stats every 1 sec.
   {
-    float actual_time = g_LastCheckTimer.GetDeltaTime();
-    g_iNumChecksSinceLastReset++;
-    g_iFPS = std::lrint(g_iFramesRenderedSinceLastCheck / actual_time);
-    g_iCFPS = g_iFramesRenderedSinceLastReset / g_iNumChecksSinceLastReset;
-    g_iCFPS = std::lrint(g_iCFPS / actual_time);
-    g_iVPF = g_iVertsRenderedSinceLastCheck / g_iFramesRenderedSinceLastCheck;
-    g_iFramesRenderedSinceLastCheck = g_iVertsRenderedSinceLastCheck = 0;
-    if (LOG_FPS) {
+    float actual_time = last_check_timer.GetDeltaTime();
+    num_checks_since_last_reset++;
+    fps = std::lrint(frames_rendered_since_last_check / actual_time);
+    cfps = frames_rendered_since_last_reset / num_checks_since_last_reset;
+    cfps = std::lrint(cfps / actual_time);
+    vpf = verts_rendered_since_last_check / frames_rendered_since_last_check;
+    frames_rendered_since_last_check = verts_rendered_since_last_check = 0;
+    if (log_fps) {
       std::string stats = GetStats();
       Replace(stats, "\n", ", ");
       LOG->Trace("%s", stats.c_str());
@@ -159,11 +159,11 @@ void RageDisplay::ProcessStatsOnFlip() {
 }
 
 void RageDisplay::ResetStats() {
-  g_iFPS = g_iVPF = 0;
-  g_iFramesRenderedSinceLastCheck = g_iFramesRenderedSinceLastReset = 0;
-  g_iNumChecksSinceLastReset = 0;
-  g_iVertsRenderedSinceLastCheck = 0;
-  g_LastCheckTimer.GetDeltaTime();
+  fps = vpf = 0;
+  frames_rendered_since_last_check = frames_rendered_since_last_reset = 0;
+  num_checks_since_last_reset = 0;
+  verts_rendered_since_last_check = 0;
+  last_check_timer.GetDeltaTime();
 }
 
 std::string RageDisplay::GetStats() const {
@@ -191,7 +191,7 @@ bool RageDisplay::BeginFrame() {
 void RageDisplay::EndFrame() { ProcessStatsOnFlip(); }
 
 void RageDisplay::StatsAddVerts(int num_verts_rendered) {
-  g_iVertsRenderedSinceLastCheck += num_verts_rendered;
+  verts_rendered_since_last_check += num_verts_rendered;
 }
 
 /* Draw a line as a quad.  GL_LINES with SmoothLines off can draw line
@@ -250,7 +250,7 @@ void RageDisplay::DrawCircleInternal(const RageSpriteVertex& p, float radius) {
   v[0] = p;
 
   for (int i = 0; i < subdivisions + 1; ++i) {
-    const float rotation = float(i) / subdivisions * 2 * PI;
+    const float rotation = float(i) / subdivisions * 2 * kPi;
     const float x = std::cos(rotation) * radius;
     const float y = -std::sin(rotation) * radius;
     v[1 + i] = v[0];
@@ -370,18 +370,18 @@ class MatrixStack {
   const RageMatrix* GetTop() const { return &stack_.back(); }
 };
 
-static RageMatrix g_CenteringMatrix;
-static MatrixStack g_ProjectionStack;
-static MatrixStack g_ViewStack;
-static MatrixStack g_WorldStack;
-static MatrixStack g_TextureStack;
+static RageMatrix centering_matrix;
+static MatrixStack projection_stack;
+static MatrixStack view_stack;
+static MatrixStack world_stack;
+static MatrixStack texture_stack;
 
 RageDisplay::RageDisplay() {
-  RageMatrixIdentity(&g_CenteringMatrix);
-  g_ProjectionStack = MatrixStack();
-  g_ViewStack = MatrixStack();
-  g_WorldStack = MatrixStack();
-  g_TextureStack = MatrixStack();
+  RageMatrixIdentity(&centering_matrix);
+  projection_stack = MatrixStack();
+  view_stack = MatrixStack();
+  world_stack = MatrixStack();
+  texture_stack = MatrixStack();
 
   // Register with Lua.
   {
@@ -399,57 +399,57 @@ RageDisplay::~RageDisplay() {
 }
 
 const RageMatrix* RageDisplay::GetCentering() const {
-  return &g_CenteringMatrix;
+  return &centering_matrix;
 }
 
 const RageMatrix* RageDisplay::GetProjectionTop() const {
-  return g_ProjectionStack.GetTop();
+  return projection_stack.GetTop();
 }
 
 const RageMatrix* RageDisplay::GetViewTop() const {
-  return g_ViewStack.GetTop();
+  return view_stack.GetTop();
 }
 
 const RageMatrix* RageDisplay::GetWorldTop() const {
-  return g_WorldStack.GetTop();
+  return world_stack.GetTop();
 }
 
 const RageMatrix* RageDisplay::GetTextureTop() const {
-  return g_TextureStack.GetTop();
+  return texture_stack.GetTop();
 }
 
-void RageDisplay::PushMatrix() { g_WorldStack.Push(); }
+void RageDisplay::PushMatrix() { world_stack.Push(); }
 
-void RageDisplay::PopMatrix() { g_WorldStack.Pop(); }
+void RageDisplay::PopMatrix() { world_stack.Pop(); }
 
 void RageDisplay::TranslateWorld(float x, float y, float z) {
-  g_WorldStack.Translate(x, y, z);
+  world_stack.Translate(x, y, z);
 }
 
 void RageDisplay::Scale(float x, float y, float z) {
-  g_WorldStack.ScaleLocal(x, y, z);
+  world_stack.ScaleLocal(x, y, z);
 }
 
-void RageDisplay::SkewX(float amount) { g_WorldStack.SkewX(amount); }
+void RageDisplay::SkewX(float amount) { world_stack.SkewX(amount); }
 
-void RageDisplay::SkewY(float amount) { g_WorldStack.SkewY(amount); }
+void RageDisplay::SkewY(float amount) { world_stack.SkewY(amount); }
 
 void RageDisplay::PostMultMatrix(const RageMatrix& m) {
-  g_WorldStack.MultMatrix(m);
+  world_stack.MultMatrix(m);
 }
 
 void RageDisplay::PreMultMatrix(const RageMatrix& m) {
-  g_WorldStack.MultMatrixLocal(m);
+  world_stack.MultMatrixLocal(m);
 }
 
-void RageDisplay::LoadIdentity() { g_WorldStack.LoadIdentity(); }
+void RageDisplay::LoadIdentity() { world_stack.LoadIdentity(); }
 
-void RageDisplay::TexturePushMatrix() { g_TextureStack.Push(); }
+void RageDisplay::TexturePushMatrix() { texture_stack.Push(); }
 
-void RageDisplay::TexturePopMatrix() { g_TextureStack.Pop(); }
+void RageDisplay::TexturePopMatrix() { texture_stack.Pop(); }
 
 void RageDisplay::TextureTranslate(float x, float y) {
-  g_TextureStack.TranslateLocal(x, y, 0);
+  texture_stack.TranslateLocal(x, y, 0);
 }
 
 void RageDisplay::LoadMenuPerspective(
@@ -458,12 +458,12 @@ void RageDisplay::LoadMenuPerspective(
   // fovDegrees == 0 gives ortho projection.
   if (fov_degrees == 0) {
     float left = 0, right = width, bottom = height, top = 0;
-    g_ProjectionStack.LoadMatrix(
+    projection_stack.LoadMatrix(
         GetOrthoMatrix(left, right, bottom, top, -1000, +1000));
-    g_ViewStack.LoadIdentity();
+    view_stack.LoadIdentity();
   } else {
     rage_clamp(fov_degrees, 0.1f, 179.9f);
-    float fov_radians = fov_degrees / 180.f * PI;
+    float fov_radians = fov_degrees / 180.f * kPi;
     float theta = fov_radians / 2;
     float dist_camera_from_image = width / 2 / std::tan(theta);
 
@@ -474,14 +474,14 @@ void RageDisplay::LoadMenuPerspective(
     vanish_point_y -= height / 2;
 
     // It's the caller's responsibility to push first.
-    g_ProjectionStack.LoadMatrix(GetFrustumMatrix(
+    projection_stack.LoadMatrix(GetFrustumMatrix(
         (vanish_point_x - width / 2) / dist_camera_from_image,
         (vanish_point_x + width / 2) / dist_camera_from_image,
         (vanish_point_y + height / 2) / dist_camera_from_image,
         (vanish_point_y - height / 2) / dist_camera_from_image, 1,
         dist_camera_from_image + 1000));
 
-    g_ViewStack.LoadMatrix(RageLookAt(
+    view_stack.LoadMatrix(RageLookAt(
         -vanish_point_x + width / 2, -vanish_point_y + height / 2,
         dist_camera_from_image, -vanish_point_x + width / 2,
         -vanish_point_y + height / 2, 0, 0.0f, 1.0f, 0.0f));
@@ -489,13 +489,13 @@ void RageDisplay::LoadMenuPerspective(
 }
 
 void RageDisplay::CameraPushMatrix() {
-  g_ProjectionStack.Push();
-  g_ViewStack.Push();
+  projection_stack.Push();
+  view_stack.Push();
 }
 
 void RageDisplay::CameraPopMatrix() {
-  g_ProjectionStack.Pop();
-  g_ViewStack.Pop();
+  projection_stack.Pop();
+  view_stack.Pop();
 }
 
 /* gluLookAt. The result is pre-multiplied to the matrix (M = L * M) instead of
@@ -504,18 +504,18 @@ void RageDisplay::LoadLookAt(
     float fov, const RageVector3& eye, const RageVector3& at,
     const RageVector3& up) {
   float aspect = GetActualVideoModeParams().display_aspect_ratio_;
-  g_ProjectionStack.LoadMatrix(GetPerspectiveMatrix(fov, aspect, 1, 1000));
+  projection_stack.LoadMatrix(GetPerspectiveMatrix(fov, aspect, 1, 1000));
 
   // Flip the Y coordinate, so positive numbers go down.
-  g_ProjectionStack.Scale(1, -1, 1);
+  projection_stack.Scale(1, -1, 1);
 
-  g_ViewStack.LoadMatrix(RageLookAt(
+  view_stack.LoadMatrix(RageLookAt(
       eye.x_, eye.y_, eye.z_, at.x_, at.y_, at.z_, up.x_, up.y_, up.z_));
 }
 
 RageMatrix RageDisplay::GetPerspectiveMatrix(
     float fovy, float aspect, float z_near, float z_far) {
-  float ymax = z_near * std::tan(fovy * PI / 360.0f);
+  float ymax = z_near * std::tan(fovy * kPi / 360.0f);
   float ymin = -ymax;
   float xmin = ymin * aspect;
   float xmax = ymax * aspect;
@@ -585,19 +585,19 @@ void RageDisplay::ResolutionChanged() {
 }
 
 void RageDisplay::CenteringPushMatrix() {
-  g_CenteringStack.push_back(g_CenteringStack.back());
-  ASSERT(g_CenteringStack.size() < 100);  // overflow
+  centering_stack.push_back(centering_stack.back());
+  ASSERT(centering_stack.size() < 100);  // overflow
 }
 
 void RageDisplay::CenteringPopMatrix() {
-  g_CenteringStack.pop_back();
-  ASSERT(g_CenteringStack.size() > 0);  // underflow
+  centering_stack.pop_back();
+  ASSERT(centering_stack.size() > 0);  // underflow
   UpdateCentering();
 }
 
 void RageDisplay::ChangeCentering(
     int translate_x, int translate_y, int add_width, int add_height) {
-  g_CenteringStack.back() =
+  centering_stack.back() =
       Centering(translate_x, translate_y, add_width, add_height);
 
   UpdateCentering();
@@ -625,8 +625,8 @@ RageMatrix RageDisplay::GetCenteringMatrix(
 }
 
 void RageDisplay::UpdateCentering() {
-  const Centering& p = g_CenteringStack.back();
-  g_CenteringMatrix = GetCenteringMatrix(
+  const Centering& p = centering_stack.back();
+  centering_matrix = GetCenteringMatrix(
       (float)p.translate_x_, (float)p.translate_y_, (float)p.add_width_,
       (float)p.add_height_);
 }
@@ -795,12 +795,12 @@ void RageDisplay::DrawCircle(const RageSpriteVertex& v, float radius) {
 int GetFrameLimitIntervalAsMicroseconds(
     const ActualVideoModeParams& vm) noexcept {
   const bool no_valid_frame_timing_history_or_vsync =
-      !vm.vsync_ && vm.rate_ > 0 && g_fFrameLimitPercent.Get() > 0.0f &&
-      !g_LastFrameEndedAt.IsZero();
+      !vm.vsync_ && vm.rate_ > 0 && frame_limit_percent.Get() > 0.0f &&
+      !last_frame_ended_at.IsZero();
 
   int delay_microseconds = 0;
   if (no_valid_frame_timing_history_or_vsync) {
-    float frame_time = g_LastFrameEndedAt.GetDeltaTime();
+    float frame_time = last_frame_ended_at.GetDeltaTime();
     float expected_time = 1.0f / vm.rate_;
 
     /* This is typically used to turn some of the delay that would normally
@@ -808,7 +808,7 @@ int GetFrameLimitIntervalAsMicroseconds(
      * up the CPU.  If we overshoot the sleep, then we'll miss the vsync,
      * so allow tweaking the amount of time we expect a frame to take.
      * Frame limiting is disabled by setting this to 0. */
-    expected_time *= g_fFrameLimitPercent.Get();
+    expected_time *= frame_limit_percent.Get();
     float extra_time = expected_time - frame_time;
 
     delay_microseconds = int(extra_time * 1000000);
@@ -831,7 +831,7 @@ void RageDisplay::FrameLimitBeforeVsync() {
   }
 }
 
-void RageDisplay::FrameLimitAfterVsync() { g_LastFrameEndedAt.Touch(); }
+void RageDisplay::FrameLimitAfterVsync() { last_frame_ended_at.Touch(); }
 
 RageCompiledGeometry::~RageCompiledGeometry() {}
 
@@ -878,7 +878,7 @@ void RageCompiledGeometry::Set(const std::vector<msMesh>& meshes) {
 // Register with Lua.
 static void register_REFRESH_DEFAULT(lua_State* L) {
   lua_pushstring(L, "REFRESH_DEFAULT");
-  lua_pushinteger(L, REFRESH_DEFAULT);
+  lua_pushinteger(L, kRefreshDefault);
   lua_settable(L, LUA_GLOBALSINDEX);
 }
 REGISTER_WITH_LUA_FUNCTION(register_REFRESH_DEFAULT);

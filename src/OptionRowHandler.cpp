@@ -215,7 +215,7 @@ class OptionRowHandlerList : public OptionRowHandler {
           for (unsigned a = 1; a < cmd.args_.size(); a++) {
             std::string arg = cmd.args_[a];
             PlayerNumber pn = (PlayerNumber)(StringToInt(arg) - 1);
-            ASSERT(pn >= 0 && pn < NUM_PLAYERS);
+            ASSERT(pn >= 0 && pn < kNumPlayers);
             def_.enabled_for_players_.insert(pn);
           }
         } else if (name == "exportonchange") {
@@ -274,7 +274,7 @@ class OptionRowHandlerList : public OptionRowHandler {
   }
   void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       std::vector<bool>& sel_out = selected_out[p];
 
@@ -335,7 +335,7 @@ class OptionRowHandlerList : public OptionRowHandler {
 
   int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       const std::vector<bool>& sel = selected[p];
 
@@ -635,7 +635,7 @@ class OptionRowHandlerSteps : public OptionRowHandler {
   }
   virtual void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       std::vector<bool>& sel_out = selected_out[p];
 
@@ -674,7 +674,7 @@ class OptionRowHandlerSteps : public OptionRowHandler {
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       const std::vector<bool>& sel = selected[p];
 
@@ -748,7 +748,7 @@ class OptionRowHandlerListGroups : public OptionRowHandlerList {
     def_.one_choice_for_all_players_ = true;
     def_.allow_theme_items_ = false;  // we theme the text ourself
     def_.name_ = "Group";
-    default_.song_group_ = GROUP_ALL;
+    default_.song_group_ = kGroupAll;
 
     std::vector<std::string> song_groups;
     SONGMAN->GetSongGroupNames(song_groups);
@@ -757,7 +757,7 @@ class OptionRowHandlerListGroups : public OptionRowHandlerList {
     {
       def_.choices_.push_back("AllGroups");
       GameCommand mc;
-      mc.song_group_ = GROUP_ALL;
+      mc.song_group_ = kGroupAll;
       list_entries_.push_back(mc);
     }
 
@@ -1168,7 +1168,7 @@ class OptionRowHandlerLua : public OptionRowHandler {
 
   virtual void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     if (!table_is_sane_) {
       return;
     }
@@ -1227,7 +1227,7 @@ class OptionRowHandlerLua : public OptionRowHandler {
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     if (!table_is_sane_) {
       return 0;
     }
@@ -1364,7 +1364,7 @@ class OptionRowHandlerConfig : public OptionRowHandler {
   }
   virtual void ImportOption(
       OptionRow*, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       std::vector<bool>& sel_out = selected_out[p];
 
@@ -1374,7 +1374,7 @@ class OptionRowHandlerConfig : public OptionRowHandler {
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     bool changed = false;
 
     for (const PlayerNumber& p : vpns) {
@@ -1457,7 +1457,7 @@ class OptionRowHandlerStepsType : public OptionRowHandler {
 
   virtual void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {
+      std::vector<bool> selected_out[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       std::vector<bool>& sel_out = selected_out[p];
 
@@ -1476,7 +1476,7 @@ class OptionRowHandlerStepsType : public OptionRowHandler {
   }
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     for (const PlayerNumber& p : vpns) {
       const std::vector<bool>& sel = selected[p];
 
@@ -1515,10 +1515,10 @@ class OptionRowHandlerGameCommand : public OptionRowHandler {
   }
   virtual void ImportOption(
       OptionRow* row, const std::vector<PlayerNumber>& vpns,
-      std::vector<bool> selected_out[NUM_PLAYERS]) const {}
+      std::vector<bool> selected_out[kNumPlayers]) const {}
   virtual int ExportOption(
       const std::vector<PlayerNumber>& vpns,
-      const std::vector<bool> selected[NUM_PLAYERS]) const {
+      const std::vector<bool> selected[kNumPlayers]) const {
     if (selected[PLAYER_1][0] || selected[PLAYER_2][0]) {
       gc_.ApplyToAllPlayers();
     }

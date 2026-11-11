@@ -244,7 +244,7 @@ static void WriteTimingTags(
  * @param f the file in question.
  * @param out the Song in question. */
 static void WriteGlobalTags(RageFile& f, const Song& out) {
-  f.PutLine(ssprintf("#VERSION:%.2f;", STEPFILE_VERSION_NUMBER));
+  f.PutLine(ssprintf("#VERSION:%.2f;", kStepfileVersionNumber));
   f.PutLine(ssprintf("#TITLE:%s;", SmEscape(out.main_title_).c_str()));
   f.PutLine(ssprintf("#SUBTITLE:%s;", SmEscape(out.sub_title_).c_str()));
   f.PutLine(ssprintf("#ARTIST:%s;", SmEscape(out.artist_).c_str()));

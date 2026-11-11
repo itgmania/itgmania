@@ -15,21 +15,21 @@
 #include "global.h"
 
 // xxx: don't hardcode the port address. -aj
-static const int PORT_ADDRESS = 0x378;
-static const bool SCREEN_DEBUG = false;
+static const int kPortAddress = 0x378;
+static const bool kScreenDebug = false;
 
 REGISTER_LIGHTS_DRIVER_CLASS(LinuxParallel);
 
 LightsDriver_LinuxParallel::LightsDriver_LinuxParallel() {
   // Give ports permissions and reset all bits to zero
-  ioperm(PORT_ADDRESS, 1, 1);
-  outb(0, PORT_ADDRESS);
+  ioperm(kPortAddress, 1, 1);
+  outb(0, kPortAddress);
 }
 
 LightsDriver_LinuxParallel::~LightsDriver_LinuxParallel() {
   // Reset all bits to zero and free the port's permissions
-  outb(0, PORT_ADDRESS);
-  ioperm(PORT_ADDRESS, 1, 0);
+  outb(0, kPortAddress);
+  ioperm(kPortAddress, 1, 0);
 }
 
 void LightsDriver_LinuxParallel::Set(const LightsState* ls) {
@@ -66,15 +66,15 @@ void LightsDriver_LinuxParallel::Set(const LightsState* ls) {
     }
     s += "\n";
   }
-  s += ssprintf("Output Port: 0x%x\n", PORT_ADDRESS);
+  s += ssprintf("Output Port: 0x%x\n", kPortAddress);
   s += ssprintf("Output Byte: %i\n", output);
 
-  if (SCREEN_DEBUG) {
+  if (kScreenDebug) {
     SCREENMAN->SystemMessageNoAnimate(s);
   }
 
   // Send byte to port
-  outb(output, PORT_ADDRESS);
+  outb(output, kPortAddress);
 }
 
 /*

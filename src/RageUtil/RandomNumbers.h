@@ -12,7 +12,7 @@ class MersenneTwister : public std::mt19937 {
 
 typedef MersenneTwister RandomGen;
 
-extern RandomGen g_RandomNumberGenerator;
+extern RandomGen random_number_generator;
 
 /**
  * @brief Return a float between the low and high values.
@@ -22,13 +22,13 @@ extern RandomGen g_RandomNumberGenerator;
  */
 inline float RandomFloat(float low, float high) {
   std::uniform_real_distribution<> dist(low, high);
-  return dist(g_RandomNumberGenerator);
+  return dist(random_number_generator);
 }
 
 // Returns an integer between nLow and nHigh inclusive
 inline int RandomInt(int low, int high) {
   std::uniform_int_distribution<> dist(low, high);
-  return dist(g_RandomNumberGenerator);
+  return dist(random_number_generator);
 }
 
 // Returns an integer between 0 and n-1 inclusive (replacement for rand() % n).

@@ -66,7 +66,7 @@ void ScreenSyncOverlay::UpdateText() {
   // Update Status
   std::vector<std::string> vs;
 
-  PlayerController pc = GamePreferences::m_AutoPlay.Get();
+  PlayerController pc = GamePreferences::auto_play.Get();
   switch (pc) {
     case PC_HUMAN:
       break;

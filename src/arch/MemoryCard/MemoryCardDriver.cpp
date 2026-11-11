@@ -14,7 +14,7 @@
 // Provides platform-specific ARCH_MEMORY_CARD_DRIVER selection.
 #include "arch/arch_default.h"
 
-static const std::string TEMP_MOUNT_POINT = "/@mctemptimeout/";
+static const std::string kTempMountPoint = "/@mctemptimeout/";
 
 enum MemoryCardDriverType {
   MemoryCardDriverType_USB,
@@ -28,7 +28,7 @@ XToString(MemoryCardDriverType);
 StringToX(MemoryCardDriverType);
 LuaXType(MemoryCardDriverType);
 
-Preference<MemoryCardDriverType> g_MemoryCardDriver(
+Preference<MemoryCardDriverType> memory_card_driver(
     "MemoryCardDriver", MemoryCardDriverType_USB, nullptr,
     PreferenceType::Immutable);
 
@@ -129,10 +129,10 @@ bool MemoryCardDriver::DoOneUpdate(
          * and then unmount it until Mount() is called. */
         d.state_ = UsbStorageDevice::STATE_READY;
 
-        FILEMAN->Mount("dirro", d.os_mount_dir_, TEMP_MOUNT_POINT);
+        FILEMAN->Mount("dirro", d.os_mount_dir_, kTempMountPoint);
         d.is_name_available_ = PROFILEMAN->FastLoadProfileNameFromMemoryCard(
-            TEMP_MOUNT_POINT, d.name_);
-        FILEMAN->Unmount("dirro", d.os_mount_dir_, TEMP_MOUNT_POINT);
+            kTempMountPoint, d.name_);
+        FILEMAN->Unmount("dirro", d.os_mount_dir_, kTempMountPoint);
       }
 
       this->Unmount(&d);
@@ -152,7 +152,7 @@ bool MemoryCardDriver::DoOneUpdate(
 MemoryCardDriver* MemoryCardDriver::Create() {
   MemoryCardDriver* ret = nullptr;
 
-  switch (g_MemoryCardDriver) {
+  switch (memory_card_driver) {
     case MemoryCardDriverType_Directory:
       ret = new MemoryCardDriverThreaded_Folder;
       break;

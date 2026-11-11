@@ -20,19 +20,19 @@ class LuaClass;
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 
 /** @brief The background layer. */
-constexpr int DRAW_ORDER_BEFORE_EVERYTHING = -200;
+constexpr int kDrawOrderBeforeEverything = -200;
 /** @brief The underlay layer. */
-constexpr int DRAW_ORDER_UNDERLAY = -100;
+constexpr int kDrawOrderUnderlay = -100;
 /** @brief The decorations layer. */
-constexpr int DRAW_ORDER_DECORATIONS = 0;
+constexpr int kDrawOrderDecorations = 0;
 /** @brief The overlay layer.
  *
  * Normal screen elements go here. */
-constexpr int DRAW_ORDER_OVERLAY = 100;
+constexpr int kDrawOrderOverlay = 100;
 /** @brief The transitions layer. */
-constexpr int DRAW_ORDER_TRANSITIONS = 200;
+constexpr int kDrawOrderTransitions = 200;
 /** @brief The over everything layer. */
-constexpr int DRAW_ORDER_AFTER_EVERYTHING = 300;
+constexpr int kDrawOrderAfterEverything = 300;
 
 /** @brief The different horizontal alignments. */
 enum HorizAlign {
@@ -55,24 +55,24 @@ enum VertAlign {
 LuaDeclareType(VertAlign);
 
 /** @brief The left horizontal alignment constant. */
-constexpr float align_left = 0.0f;
+constexpr float kAlignLeft = 0.0f;
 /** @brief The center horizontal alignment constant. */
-constexpr float align_center = 0.5f;
+constexpr float kAlignCenter = 0.5f;
 /** @brief The right horizontal alignment constant. */
-constexpr float align_right = 1.0f;
+constexpr float kAlignRight = 1.0f;
 /** @brief The top vertical alignment constant. */
-constexpr float align_top = 0.0f;
+constexpr float kAlignTop = 0.0f;
 /** @brief The middle vertical alignment constant. */
-constexpr float align_middle = 0.5f;
+constexpr float kAlignMiddle = 0.5f;
 /** @brief The bottom vertical alignment constant. */
-constexpr float align_bottom = 1.0f;
+constexpr float kAlignBottom = 1.0f;
 
 // This is the number of colors in Actor::diffuse.  Actor has multiple
 // diffuse colors so that each edge can be a different color, and the actor
 // is drawn with a gradient between them.
 // I doubt I actually found all the places that touch diffuse and rely on the
 // number of diffuse colors, so change this at your own risk. -Kyz
-constexpr int NUM_DIFFUSE_COLORS = 4;
+constexpr int kNumDiffuseColors = 4;
 
 // ssc futures:
 /*
@@ -242,7 +242,7 @@ class Actor : public MessageSubscriber {
      * @brief Four values making up the diffuse in this TweenState.
      *
      * 0 = UpperLeft, 1 = UpperRight, 2 = LowerLeft, 3 = LowerRight */
-    RageColor diffuse_[NUM_DIFFUSE_COLORS];
+    RageColor diffuse_[kNumDiffuseColors];
     /** @brief The glow color for this TweenState. */
     RageColor glow_;
     /** @brief A magical value that nobody really knows the use for. ;) */
@@ -486,12 +486,12 @@ class Actor : public MessageSubscriber {
   void SetGlobalDiffuseColor(RageColor c);
 
   virtual void SetDiffuse(RageColor c) {
-    for (int i = 0; i < NUM_DIFFUSE_COLORS; i++) {
+    for (int i = 0; i < kNumDiffuseColors; i++) {
       DestTweenState().diffuse_[i] = c;
     }
   };
   virtual void SetDiffuseAlpha(float f) {
-    for (int i = 0; i < NUM_DIFFUSE_COLORS; ++i) {
+    for (int i = 0; i < kNumDiffuseColors; ++i) {
       RageColor c = GetDiffuses(i);
       c.a_ = f;
       SetDiffuses(i, c);

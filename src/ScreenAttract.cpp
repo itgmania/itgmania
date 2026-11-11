@@ -23,7 +23,7 @@
 
 ThemeMetric<bool> BACK_GOES_TO_START_SCREEN(
     "ScreenAttract", "BackGoesToStartScreen");
-Preference<float> g_fSoundVolumeAttract("SoundVolumeAttract", 1.0f);
+Preference<float> sound_volume_attract("SoundVolumeAttract", 1.0f);
 
 REGISTER_SCREEN_CLASS(ScreenAttract);
 void ScreenAttract::Init() {
@@ -57,7 +57,7 @@ void ScreenAttract::SetAttractVolume(bool in_attract) {
   if (in_attract) {
     if (GAMESTATE->IsTimeToPlayAttractSounds()) {
       SOUNDMAN->SetVolumeOfNonCriticalSounds(
-          g_fSoundVolumeAttract);  // unmute attract sounds
+          sound_volume_attract);  // unmute attract sounds
     } else {
       SOUNDMAN->SetVolumeOfNonCriticalSounds(0.0f);  // mute attract sounds
     }

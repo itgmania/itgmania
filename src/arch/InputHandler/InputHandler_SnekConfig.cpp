@@ -30,7 +30,7 @@ REGISTER_INPUT_HANDLER_CLASS(SnekConfig);
 
 // this is the bit position of the response, mapped to the panel number it
 // matches to.
-static constexpr SnekBitMapping sensorBitMappingDance[] = {
+static constexpr SnekBitMapping kSensorBitMappingDance[] = {
     {14, PLAYER_2, PadPanel_Up},    {15, PLAYER_1, PadPanel_Up},
     {16, PLAYER_1, PadPanel_Left},  {17, PLAYER_2, PadPanel_Left},
     {18, PLAYER_1, PadPanel_Down},  {19, PLAYER_2, PadPanel_Down},
@@ -155,7 +155,7 @@ void InputHandler_SnekConfig::InputThreadMain() {
 
       // walk through only the bits are are interested in (via the sensor
       // mapping)
-      for (const auto& mapping : sensorBitMappingDance) {
+      for (const auto& mapping : kSensorBitMappingDance) {
         const uint32_t mask = 1u << mapping.bit_position_;
 
         if ((changed & mask) == 0) {

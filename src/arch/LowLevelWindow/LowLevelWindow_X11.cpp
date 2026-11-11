@@ -30,19 +30,19 @@ using namespace X11Helper;
 #include <dbus/dbus.h>
 
 // Display ID for treating the entire X screen as the display
-const std::string ID_XSCREEN = "XSCREEN_RANDR";
+const std::string kIdXscreen = "XSCREEN_RANDR";
 
-static GLXContext g_pContext = nullptr;
-static bool g_bChangedScreenSize = false;
-static SizeID g_iOldSize = None;
-static Rotation g_OldRotation = RR_Rotate_0;
-static XRRScreenConfiguration* g_pScreenConfig = nullptr;
-static RRMode g_originalRandRMode = None;
-static RROutput g_usedCrtc = None;
-static int g_iRandRVerMinor = 0;
-static int g_iRandRVerMajor = 0;
-static bool g_bUseXRandR12 = false;
-static bool g_bUseXinerama = false;
+static GLXContext g_context = nullptr;
+static bool changed_screen_size = false;
+static SizeID old_size = None;
+static Rotation old_rotation = RR_Rotate_0;
+static XRRScreenConfiguration* screen_config = nullptr;
+static RRMode original_randr_mode = None;
+static RROutput used_crtc = None;
+static int randr_ver_minor = 0;
+static int randr_ver_major = 0;
+static bool use_xrandr12 = false;
+static bool use_xinerama = false;
 
 inline float calcRandRRefresh(
     unsigned long pixel_clock, int h_total, int v_total) {
@@ -60,23 +60,24 @@ LowLevelWindow_X11::LowLevelWindow_X11() {
     RageException::Throw("%s", FAILED_CONNECTION_XSERVER.GetValue().c_str());
   }
 
-  if (XRRQueryVersion(Dpy, &g_iRandRVerMajor, &g_iRandRVerMinor) &&
-      g_iRandRVerMajor >= 1 && g_iRandRVerMinor >= 2) {
-    g_bUseXRandR12 = true;
+  if (XRRQueryVersion(g_dpy, &randr_ver_major, &randr_ver_minor) &&
+      randr_ver_major >= 1 && randr_ver_minor >= 2) {
+    use_xrandr12 = true;
   }
 #ifdef HAVE_XINERAMA
   int xinerama_event_base = 0;
   int xinerama_error_base = 0;
   Atom fullscreen_monitors =
-      XInternAtom(Dpy, "_NET_WM_FULLSCREEN_MONITORS", False);
-  if (XineramaQueryExtension(Dpy, &xinerama_event_base, &xinerama_error_base) &&
-      NetWMSupported(Dpy, fullscreen_monitors)) {
-    g_bUseXinerama = true;
+      XInternAtom(g_dpy, "_NET_WM_FULLSCREEN_MONITORS", False);
+  if (XineramaQueryExtension(
+          g_dpy, &xinerama_event_base, &xinerama_error_base) &&
+      NetWMSupported(g_dpy, fullscreen_monitors)) {
+    use_xinerama = true;
   }
 #endif
 
-  const int screen = DefaultScreen(Dpy);
-  int x_server_version = XVendorRelease(Dpy); /* eg. 40201001 */
+  const int screen = DefaultScreen(g_dpy);
+  int x_server_version = XVendorRelease(g_dpy); /* eg. 40201001 */
   int major = x_server_version / 10000000;
   x_server_version %= 10000000;
   int minor = x_server_version / 100000;
@@ -85,39 +86,40 @@ LowLevelWindow_X11::LowLevelWindow_X11() {
   x_server_version %= 1000;
   int patch = x_server_version;
 
-  LOG->Info("Display: %s (screen %i)", DisplayString(Dpy), screen);
+  LOG->Info("Display: %s (screen %i)", DisplayString(g_dpy), screen);
   LOG->Info(
-      "X server vendor: %s [%i.%i.%i.%i]", XServerVendor(Dpy), major, minor,
+      "X server vendor: %s [%i.%i.%i.%i]", XServerVendor(g_dpy), major, minor,
       revision, patch);
   LOG->Info(
       "Server GLX vendor: %s [%s]",
-      glXQueryServerString(Dpy, screen, GLX_VENDOR),
-      glXQueryServerString(Dpy, screen, GLX_VERSION));
+      glXQueryServerString(g_dpy, screen, GLX_VENDOR),
+      glXQueryServerString(g_dpy, screen, GLX_VERSION));
   LOG->Info(
-      "Client GLX vendor: %s [%s]", glXGetClientString(Dpy, GLX_VENDOR),
-      glXGetClientString(Dpy, GLX_VERSION));
+      "Client GLX vendor: %s [%s]", glXGetClientString(g_dpy, GLX_VENDOR),
+      glXGetClientString(g_dpy, GLX_VERSION));
   was_windowed_ = true;
-  g_pScreenConfig = XRRGetScreenInfo(Dpy, RootWindow(Dpy, DefaultScreen(Dpy)));
+  screen_config =
+      XRRGetScreenInfo(g_dpy, RootWindow(g_dpy, DefaultScreen(g_dpy)));
 }
 
 LowLevelWindow_X11::~LowLevelWindow_X11() {
   UninhibitScreensaver();
 
-  if (FatalError) {
+  if (fatal_error) {
     return;
   }
 
   // Reset the display
   if (!was_windowed_) {
     RestoreOutputConfig();
-    XUngrabKeyboard(Dpy, CurrentTime);
+    XUngrabKeyboard(g_dpy, CurrentTime);
   }
-  if (g_pContext) {
-    glXDestroyContext(Dpy, g_pContext);
-    g_pContext = nullptr;
+  if (g_context) {
+    glXDestroyContext(g_dpy, g_context);
+    g_context = nullptr;
   }
-  XDestroyWindow(Dpy, Win);
-  Win = None;
+  XDestroyWindow(g_dpy, g_win);
+  g_win = None;
   CloseXConnection();
 }
 
@@ -240,25 +242,25 @@ void LowLevelWindow_X11::UninhibitScreensaver() {
  * Restore saved X screen/CRTC configuration
  */
 void LowLevelWindow_X11::RestoreOutputConfig() {
-  if (g_bChangedScreenSize) {
+  if (changed_screen_size) {
     XRRSetScreenConfig(
-        Dpy, g_pScreenConfig, RootWindow(Dpy, DefaultScreen(Dpy)), g_iOldSize,
-        g_OldRotation, CurrentTime);
+        g_dpy, screen_config, RootWindow(g_dpy, DefaultScreen(g_dpy)), old_size,
+        old_rotation, CurrentTime);
   }
-  if (g_usedCrtc != None) {
-    ASSERT(g_bUseXRandR12);
-    XRRScreenResources* res = XRRGetScreenResources(Dpy, Win);
-    XRRCrtcInfo* conf = XRRGetCrtcInfo(Dpy, res, g_usedCrtc);
+  if (used_crtc != None) {
+    ASSERT(use_xrandr12);
+    XRRScreenResources* res = XRRGetScreenResources(g_dpy, g_win);
+    XRRCrtcInfo* conf = XRRGetCrtcInfo(g_dpy, res, used_crtc);
     XRRSetCrtcConfig(
-        Dpy, res, g_usedCrtc, conf->timestamp, conf->x, conf->y,
-        g_originalRandRMode, conf->rotation, conf->outputs, conf->noutput);
+        g_dpy, res, used_crtc, conf->timestamp, conf->x, conf->y,
+        original_randr_mode, conf->rotation, conf->outputs, conf->noutput);
     XRRFreeScreenResources(res);
     XRRFreeCrtcInfo(conf);
   }
-  g_iOldSize = None;
-  g_bChangedScreenSize = false;
-  g_usedCrtc = None;
-  g_OldRotation = RR_Rotate_0;
+  old_size = None;
+  changed_screen_size = false;
+  used_crtc = None;
+  old_rotation = RR_Rotate_0;
 }
 
 void* LowLevelWindow_X11::GetProcAddress(std::string s) {
@@ -274,7 +276,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
   // routine, so ensure our event mask includes these, restore it on exit
   XWindowAttributes win_attrib;
   auto restore = [&](XWindowAttributes* attr) {
-    XSelectInput(Dpy, Win, attr->your_event_mask);
+    XSelectInput(g_dpy, g_win, attr->your_event_mask);
   };
   auto restore_attrib = std::unique_ptr<XWindowAttributes, decltype(restore)>(
       &win_attrib, restore);
@@ -284,9 +286,9 @@ std::string LowLevelWindow_X11::TryVideoMode(
   int window_height = p.height_;
   bool render_offscreen = false;
 
-  if (g_pContext == nullptr || p.bpp_ != current_params_.bpp_ ||
+  if (g_context == nullptr || p.bpp_ != current_params_.bpp_ ||
       was_windowed_ != p.windowed_) {
-    bool first_run = g_pContext == nullptr;
+    bool first_run = g_context == nullptr;
     // Different depth, or we didn't make a window before. New context.
     new_device_out = true;
 
@@ -317,7 +319,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
 
     vis_attribs[i++] = None;
 
-    XVisualInfo* xvi = glXChooseVisual(Dpy, DefaultScreen(Dpy), vis_attribs);
+    XVisualInfo* xvi =
+        glXChooseVisual(g_dpy, DefaultScreen(g_dpy), vis_attribs);
     if (xvi == nullptr) {
       return "No visual available for that depth.";
     }
@@ -325,33 +328,33 @@ std::string LowLevelWindow_X11::TryVideoMode(
     // I get strange behavior if I add override redirect after creating the
     // window. So, let's recreate the window when changing that state.
     if (!MakeWindow(
-            Win, xvi->screen, xvi->depth, xvi->visual, p.width_, p.height_,
+            g_win, xvi->screen, xvi->depth, xvi->visual, p.width_, p.height_,
             !p.windowed_)) {
       return "Failed to create the window.";
     }
 
     char* window_title = const_cast<char*>(p.window_title_.c_str());
     XChangeProperty(
-        Dpy, Win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
+        g_dpy, g_win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
         reinterpret_cast<unsigned char*>(window_title), strlen(window_title));
 
-    if (g_pContext) {
-      glXDestroyContext(Dpy, g_pContext);
+    if (g_context) {
+      glXDestroyContext(g_dpy, g_context);
     }
-    g_pContext = glXCreateContext(Dpy, xvi, nullptr, True);
+    g_context = glXCreateContext(g_dpy, xvi, nullptr, True);
 
-    glXMakeCurrent(Dpy, Win, g_pContext);
+    glXMakeCurrent(g_dpy, g_win, g_context);
 
-    XGetWindowAttributes(Dpy, Win, &win_attrib);
+    XGetWindowAttributes(g_dpy, g_win, &win_attrib);
     XSelectInput(
-        Dpy, Win,
+        g_dpy, g_win,
         win_attrib.your_event_mask | StructureNotifyMask | PropertyChangeMask);
 
-    XMapWindow(Dpy, Win);
+    XMapWindow(g_dpy, g_win);
 
     XEvent ev;
     do {
-      XWindowEvent(Dpy, Win, StructureNotifyMask, &ev);
+      XWindowEvent(g_dpy, g_win, StructureNotifyMask, &ev);
     } while (ev.type != MapNotify);
 
     // I can't find official docs saying what happens if you re-init GLEW.
@@ -364,9 +367,9 @@ std::string LowLevelWindow_X11::TryVideoMode(
     // We're remodeling the existing window, and not touching the context.
     new_device_out = false;
 
-    XGetWindowAttributes(Dpy, Win, &win_attrib);
+    XGetWindowAttributes(g_dpy, g_win, &win_attrib);
     XSelectInput(
-        Dpy, Win,
+        g_dpy, g_win,
         win_attrib.your_event_mask | StructureNotifyMask | PropertyChangeMask);
 
     if (!p.windowed_) {
@@ -380,7 +383,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       // So, set the event mask so we're notified when the window is resized...
       // Send the resize command...
       XResizeWindow(
-          Dpy, Win, static_cast<unsigned int>(p.width_),
+          g_dpy, g_win, static_cast<unsigned int>(p.width_),
           static_cast<unsigned int>(p.height_));
 
       // We'll wait for the notification once we've done everything else,
@@ -393,16 +396,16 @@ std::string LowLevelWindow_X11::TryVideoMode(
   if (!p.windowed_) {
     RestoreOutputConfig();
 
-    if (p.display_id_ == ID_XSCREEN || p.display_id_.empty()) {
+    if (p.display_id_ == kIdXscreen || p.display_id_.empty()) {
       // If the user changed the resolution while StepMania was windowed we
       // overwrite the resolution to restore with it at exit.
-      g_iOldSize =
-          XRRConfigCurrentConfiguration(g_pScreenConfig, &g_OldRotation);
+      old_size = XRRConfigCurrentConfiguration(screen_config, &old_rotation);
       was_windowed_ = false;
 
       // Find a matching mode.
       int sizes_xct;
-      XRRScreenSize* sizes_x = XRRSizes(Dpy, DefaultScreen(Dpy), &sizes_xct);
+      XRRScreenSize* sizes_x =
+          XRRSizes(g_dpy, DefaultScreen(g_dpy), &sizes_xct);
       ASSERT_M(sizes_xct != 0, "Couldn't get resolution list from X server");
 
       int size_match = -1;
@@ -413,33 +416,33 @@ std::string LowLevelWindow_X11::TryVideoMode(
           break;
         }
       }
-      if (size_match != g_iOldSize) {
-        g_bChangedScreenSize = true;
+      if (size_match != old_size) {
+        changed_screen_size = true;
       }
 
       // Set this mode.
       // XXX: This doesn't handle if the config has changed since we queried it
       // (see man Xrandr)
       Status s = XRRSetScreenConfig(
-          Dpy, g_pScreenConfig, RootWindow(Dpy, DefaultScreen(Dpy)), size_match,
-          1, CurrentTime);
+          g_dpy, screen_config, RootWindow(g_dpy, DefaultScreen(g_dpy)),
+          size_match, 1, CurrentTime);
       if (s) {
         return "Failed to set screen config";
       }
 
-      XMoveWindow(Dpy, Win, 0, 0);
+      XMoveWindow(g_dpy, g_win, 0, 0);
 
-      XRaiseWindow(Dpy, Win);
+      XRaiseWindow(g_dpy, g_win);
 
       // We want to prevent the WM from catching anything that comes from the
       // keyboard. We should do this every time on fullscreen and not only we
       // entering from windowed mode because we could lose focus at resolution
       // change and that will leave the user input locked.
       while (XGrabKeyboard(
-          Dpy, Win, True, GrabModeAsync, GrabModeAsync, CurrentTime));
+          g_dpy, g_win, True, GrabModeAsync, GrabModeAsync, CurrentTime));
 
     } else {
-      ASSERT(g_bUseXRandR12);
+      ASSERT(use_xrandr12);
       /* === Configuring a specific CRTC === */
       // Arcane and undocumented but PROPER XRandR 1.2 method.
       // What we do is directly reconfigure the CRTC of the primary display,
@@ -447,7 +450,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       // leaving user's desktop unmolested.
       LOG->Info("LowLevelWindow_X11: Using XRandR");
 
-      XRRScreenResources* scr_res = XRRGetScreenResources(Dpy, Win);
+      XRRScreenResources* scr_res = XRRGetScreenResources(g_dpy, g_win);
       ASSERT(scr_res != nullptr);
       ASSERT(scr_res->ncrtc > 0);
       ASSERT(scr_res->noutput > 0);
@@ -460,7 +463,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
              i < static_cast<uint32_t>(scr_res->noutput) && target_out == None;
              ++i) {
           XRROutputInfo* out_info =
-              XRRGetOutputInfo(Dpy, scr_res, scr_res->outputs[i]);
+              XRRGetOutputInfo(g_dpy, scr_res, scr_res->outputs[i]);
           std::string out_name = std::string(
               out_info->name, static_cast<unsigned int>(out_info->nameLen));
           if (p.display_id_ == out_name) {
@@ -474,9 +477,9 @@ std::string LowLevelWindow_X11::TryVideoMode(
             "Did not find display output %s, trying another",
             p.display_id_.c_str());
         // didn't find named output, pick primary/or at least one that works
-        if (g_iRandRVerMajor >= 1 && g_iRandRVerMinor >= 3) {
+        if (randr_ver_major >= 1 && randr_ver_minor >= 3) {
           // RandR 1.3 can tell us what the primary display is.
-          target_out = XRRGetOutputPrimary(Dpy, Win);
+          target_out = XRRGetOutputPrimary(g_dpy, g_win);
         } else {
           // Only RandR 1.2. We'll look for a "Connected" output, or if we can't
           // find that, (it is possible the connection state could be unknown),
@@ -485,7 +488,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
           for (unsigned int i = 0; i < static_cast<uint32_t>(scr_res->noutput);
                ++i) {
             XRROutputInfo* out_info =
-                XRRGetOutputInfo(Dpy, scr_res, scr_res->outputs[i]);
+                XRRGetOutputInfo(g_dpy, scr_res, scr_res->outputs[i]);
             if (out_info->connection ==
                 RR_Connected) {  // Check for CONNECTED state: Connected == 0
               connected = scr_res->outputs[i];
@@ -502,7 +505,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
 
       // if the target output is not currently being driven by a crtc,
       // find an unused crtc that can be connected to it
-      XRROutputInfo* tgt_out_info = XRRGetOutputInfo(Dpy, scr_res, target_out);
+      XRROutputInfo* tgt_out_info =
+          XRRGetOutputInfo(g_dpy, scr_res, target_out);
       if (tgt_out_info == nullptr) {
         XRRFreeScreenResources(scr_res);
         return "Failed to find XRROutput";
@@ -513,7 +517,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
         for (unsigned int i = 0; i < static_cast<uint32_t>(tgt_out_info->ncrtc);
              ++i) {
           XRRCrtcInfo* crtc_info =
-              XRRGetCrtcInfo(Dpy, scr_res, tgt_out_info->crtcs[i]);
+              XRRGetCrtcInfo(g_dpy, scr_res, tgt_out_info->crtcs[i]);
           if (crtc_info->mode == None) {
             tgt_out_crtc = tgt_out_info->crtcs[i];
           }
@@ -522,7 +526,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       }
       ASSERT(tgt_out_crtc != None);
 
-      XRRCrtcInfo* old_conf = XRRGetCrtcInfo(Dpy, scr_res, tgt_out_crtc);
+      XRRCrtcInfo* old_conf = XRRGetCrtcInfo(g_dpy, scr_res, tgt_out_crtc);
 
       float refresh_diff = 99999;
       float refresh_rate = 0;
@@ -546,8 +550,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
           float temp_refresh = calcRandRRefresh(
               this_mi.dotClock, this_mi.hTotal, this_mi.vTotal);
           float temp_diff = std::abs(p.rate_ - temp_refresh);
-          if ((p.rate_ != REFRESH_DEFAULT && temp_diff < refresh_diff) ||
-              (p.rate_ == REFRESH_DEFAULT && temp_refresh > refresh_rate)) {
+          if ((p.rate_ != kRefreshDefault && temp_diff < refresh_diff) ||
+              (p.rate_ == kRefreshDefault && temp_refresh > refresh_rate)) {
             int j;
             // Ensure that the output supports the mode
             for (j = 0; j < tgt_out_info->nmode; j++) {
@@ -566,17 +570,17 @@ std::string LowLevelWindow_X11::TryVideoMode(
       }
       rate = std::round(refresh_rate);
 
-      g_usedCrtc = tgt_out_crtc;
-      g_originalRandRMode = old_conf->mode;
+      used_crtc = tgt_out_crtc;
+      original_randr_mode = old_conf->mode;
 
       const std::string tgt_out_name = std::string(
           tgt_out_info->name, static_cast<unsigned int>(tgt_out_info->nameLen));
       LOG->Info(
           "XRandR output config using CRTC %lu in mode %lu, driving output %s",
-          g_usedCrtc, mode, tgt_out_name.c_str());
+          used_crtc, mode, tgt_out_name.c_str());
       // and FIRE!
       Status s = XRRSetCrtcConfig(
-          Dpy, scr_res, g_usedCrtc, old_conf->timestamp, old_conf->x,
+          g_dpy, scr_res, used_crtc, old_conf->timestamp, old_conf->x,
           old_conf->y, mode, old_conf->rotation, old_conf->outputs,
           old_conf->noutput);
       if (s) {
@@ -589,7 +593,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
       // We don't move to absolute 0,0 because that may be in the area of a
       // different output. Instead we preserved the corner of our CRTC; go to
       // that.
-      XMoveWindow(Dpy, Win, old_conf->x, old_conf->y);
+      XMoveWindow(g_dpy, g_win, old_conf->x, old_conf->y);
 
       // Final cleanup
       XRRFreeCrtcInfo(old_conf);
@@ -598,29 +602,30 @@ std::string LowLevelWindow_X11::TryVideoMode(
     }
     was_windowed_ = false;
 
-    XRaiseWindow(Dpy, Win);
+    XRaiseWindow(g_dpy, g_win);
 
     // We want to prevent the WM from catching anything that comes from the
     // keyboard. We should do this every time on fullscreen and not only we
     // entering from windowed mode because we could lose focus at resolution
     // change and that will leave the user input locked.
     while (XGrabKeyboard(
-        Dpy, Win, True, GrabModeAsync, GrabModeAsync, CurrentTime));
+        g_dpy, g_win, True, GrabModeAsync, GrabModeAsync, CurrentTime));
   } else  // if(p.windowed)
   {
     if (!was_windowed_) {
       // Return the display to the mode it was in before we fullscreened.
       RestoreOutputConfig();
-      XUngrabKeyboard(Dpy, CurrentTime);
+      XUngrabKeyboard(g_dpy, CurrentTime);
       was_windowed_ = true;
     }
 
-    Atom net_wm_state = XInternAtom(Dpy, "_NET_WM_STATE", False);
-    Atom fullscreen_state = XInternAtom(Dpy, "_NET_WM_STATE_FULLSCREEN", False);
+    Atom net_wm_state = XInternAtom(g_dpy, "_NET_WM_STATE", False);
+    Atom fullscreen_state =
+        XInternAtom(g_dpy, "_NET_WM_STATE_FULLSCREEN", False);
     Atom maximized_vert =
-        XInternAtom(Dpy, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+        XInternAtom(g_dpy, "_NET_WM_STATE_MAXIMIZED_VERT", False);
     Atom maximized_horz =
-        XInternAtom(Dpy, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+        XInternAtom(g_dpy, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
     // if FSBW, find matching monitor, move window to its origin,
     // then set fullscreen hint, and set the CurrentParams.outWidth,
     // CurrentParams.outHeight to the values of that display otherwise set the
@@ -662,33 +667,33 @@ std::string LowLevelWindow_X11::TryVideoMode(
       //   and fullscreen resetting FULLSCREEN hint.
       XSizeHints hints;
       hints.flags = 0;
-      XSetWMNormalHints(Dpy, Win, &hints);
+      XSetWMNormalHints(g_dpy, g_win, &hints);
 #if defined(HAVE_XINERAMA)
-      if (!g_bUseXinerama || !SetWMFullscreenMonitors(*target))
+      if (!use_xinerama || !SetWMFullscreenMonitors(*target))
 #endif
       {
-        SetWMState(win_attrib.root, Win, 0, maximized_horz);
-        SetWMState(win_attrib.root, Win, 0, maximized_vert);
-        SetWMState(win_attrib.root, Win, 0, fullscreen_state);
+        SetWMState(win_attrib.root, g_win, 0, maximized_horz);
+        SetWMState(win_attrib.root, g_win, 0, maximized_vert);
+        SetWMState(win_attrib.root, g_win, 0, fullscreen_state);
 
-        XFlush(Dpy);
+        XFlush(g_dpy);
         XResizeWindow(
-            Dpy, Win, static_cast<unsigned int>(window_width),
+            g_dpy, g_win, static_cast<unsigned int>(window_width),
             static_cast<unsigned int>(window_height));
         XMoveWindow(
-            Dpy, Win, target->currentBounds().left_,
+            g_dpy, g_win, target->currentBounds().left_,
             target->currentBounds().top_);
-        XRaiseWindow(Dpy, Win);
+        XRaiseWindow(g_dpy, g_win);
 
-        SetWMState(win_attrib.root, Win, 1, fullscreen_state);
-        SetWMState(win_attrib.root, Win, 1, maximized_horz);
-        SetWMState(win_attrib.root, Win, 1, maximized_vert);
+        SetWMState(win_attrib.root, g_win, 1, fullscreen_state);
+        SetWMState(win_attrib.root, g_win, 1, maximized_horz);
+        SetWMState(win_attrib.root, g_win, 1, maximized_vert);
       }
     } else {
       window_width = p.width_;
       window_height = p.height_;
 
-      SetWMState(win_attrib.root, Win, 0, fullscreen_state);
+      SetWMState(win_attrib.root, g_win, 0, fullscreen_state);
       // Make a window fixed size, don't let resize it or maximize it.
       // Do this before resizing the window so that pane-style WMs (Ion,
       // ratpoison) don't resize us back inappropriately.
@@ -700,7 +705,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
         hints.min_height = hints.max_height = window_height;
         hints.win_gravity = CenterGravity;
 
-        XSetWMNormalHints(Dpy, Win, &hints);
+        XSetWMNormalHints(g_dpy, g_win, &hints);
       }
       /* Workaround for metacity and compiz: if the window have the same
        * resolution or higher than the screen, it gets automaximized even
@@ -708,8 +713,8 @@ std::string LowLevelWindow_X11::TryVideoMode(
        * changing from fullscreen to window mode and our screen resolution
        * is bigger. */
       {
-        SetWMState(win_attrib.root, Win, 1, maximized_vert);
-        SetWMState(win_attrib.root, Win, 1, maximized_horz);
+        SetWMState(win_attrib.root, g_win, 1, maximized_vert);
+        SetWMState(win_attrib.root, g_win, 1, maximized_horz);
 
         // This one is needed for compiz, if the window reaches out of bounds of
         // the screen it becames destroyed, only the window, the program is left
@@ -731,7 +736,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
     // Set our V-sync hint.
     if (GLXEW_EXT_swap_control) {  // I haven't seen this actually implemented
                                    // yet, but why not.
-      glXSwapIntervalEXT(Dpy, Win, current_params_.vsync_ ? 1 : 0);
+      glXSwapIntervalEXT(g_dpy, g_win, current_params_.vsync_ ? 1 : 0);
     }
     // XXX: These two might be server-global. I should look into whether
     // to try to preserve the original value on exit.
@@ -759,11 +764,11 @@ std::string LowLevelWindow_X11::TryVideoMode(
 void LowLevelWindow_X11::LogDebugInformation() const {
   LOG->Info(
       "Direct rendering: %s",
-      glXIsDirect(Dpy, glXGetCurrentContext()) ? "yes" : "no");
+      glXIsDirect(g_dpy, glXGetCurrentContext()) ? "yes" : "no");
 }
 
 bool LowLevelWindow_X11::IsSoftwareRenderer(std::string& error) {
-  if (glXIsDirect(Dpy, glXGetCurrentContext())) {
+  if (glXIsDirect(g_dpy, glXGetCurrentContext())) {
     return false;
   }
 
@@ -771,14 +776,14 @@ bool LowLevelWindow_X11::IsSoftwareRenderer(std::string& error) {
   return true;
 }
 
-void LowLevelWindow_X11::SwapBuffers() { glXSwapBuffers(Dpy, Win); }
+void LowLevelWindow_X11::SwapBuffers() { glXSwapBuffers(g_dpy, g_win); }
 
 void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
-  int screen_num = DefaultScreen(Dpy);
-  Screen* screen = ScreenOfDisplay(Dpy, screen_num);
+  int screen_num = DefaultScreen(g_dpy);
+  Screen* screen = ScreenOfDisplay(g_dpy, screen_num);
 
   XWindowAttributes win_attr = XWindowAttributes();
-  if (XGetWindowAttributes(Dpy, Win, &win_attr)) {
+  if (XGetWindowAttributes(g_dpy, g_win, &win_attr)) {
     screen = win_attr.screen;
     screen_num = XScreenNumberOfScreen(screen);
   }
@@ -786,7 +791,7 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
   // Create a display spec for the entire X screen itself
   // First get current config
   Rotation cur_rotation;
-  XRRScreenConfiguration* screen_conf = XRRGetScreenInfo(Dpy, Win);
+  XRRScreenConfiguration* screen_conf = XRRGetScreenInfo(g_dpy, g_win);
   const short cur_rate = XRRConfigCurrentRate(screen_conf);
   SizeID cur_size_id =
       XRRConfigCurrentConfiguration(screen_conf, &cur_rotation);
@@ -797,13 +802,13 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
 
   std::set<DisplayMode> screen_modes;
   int nsizes = 0;
-  XRRScreenSize* screen_sizes = XRRSizes(Dpy, screen_num, &nsizes);
+  XRRScreenSize* screen_sizes = XRRSizes(g_dpy, screen_num, &nsizes);
   DisplayMode screen_cur_mode{};
   for (unsigned int idx = 0, mode_idx = 0;
        nsizes >= 0 && idx < static_cast<uint32_t>(nsizes); ++idx) {
     XRRScreenSize& size = screen_sizes[idx];
     int nrates = 0;
-    short* rates = XRRRates(Dpy, screen_num, idx, &nrates);
+    short* rates = XRRRates(g_dpy, screen_num, idx, &nrates);
     for (unsigned int r_idx = 0;
          nrates >= 0 && r_idx < static_cast<uint32_t>(nrates);
          ++r_idx, ++mode_idx) {
@@ -820,7 +825,7 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
   const RectI screen_bounds(
       0, 0, screen_sizes[cur_size_id].width, screen_sizes[cur_size_id].height);
   const DisplaySpec screen_spec(
-      ID_XSCREEN, "X Screen", screen_modes, screen_cur_mode, screen_bounds,
+      kIdXscreen, "X Screen", screen_modes, screen_cur_mode, screen_bounds,
       true);
   out.insert(screen_spec);
   // XRRScreenSize array from XRRSizes does *not* have to be returned (valgrind
@@ -828,12 +833,12 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
   // XRRFreeScreenSize, etc)
   XRRFreeScreenConfigInfo(screen_conf);
 
-  if (g_bUseXRandR12) {
+  if (use_xrandr12) {
     // Build per-output DisplaySpecs
 
     // First, get the list of resolutions that'll be referenced (by RRMode) in
     // each OutputInfo
-    XRRScreenResources* scr_res = XRRGetScreenResources(Dpy, Win);
+    XRRScreenResources* scr_res = XRRGetScreenResources(g_dpy, g_win);
     std::map<RRMode, DisplayMode> output_modes;
     for (int i = 0; i < scr_res->nmode; ++i) {
       const XRRModeInfo& mode = scr_res->modes[i];
@@ -847,7 +852,7 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
     for (unsigned int out_idx = 0;
          out_idx < static_cast<uint32_t>(scr_res->noutput); ++out_idx) {
       XRROutputInfo* out_info =
-          XRRGetOutputInfo(Dpy, scr_res, scr_res->outputs[out_idx]);
+          XRRGetOutputInfo(g_dpy, scr_res, scr_res->outputs[out_idx]);
       if (out_info->nmode > 0) {
         // Get the current configuration of the Output, if it's being driven by
         // a crtc
@@ -855,7 +860,7 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
         bool portrait = false;
         int crtc_x = 0, crtc_y = 0;
         if (out_info->crtc != None) {
-          XRRCrtcInfo* conf = XRRGetCrtcInfo(Dpy, scr_res, out_info->crtc);
+          XRRCrtcInfo* conf = XRRGetCrtcInfo(g_dpy, scr_res, out_info->crtc);
           cur_rr_mode = conf->mode;
           portrait = (conf->rotation & (RR_Rotate_90 | RR_Rotate_270)) != 0;
           crtc_x = conf->x;
@@ -933,10 +938,10 @@ RenderTarget_X11::RenderTarget_X11(LowLevelWindow_X11* wind) {
 
 RenderTarget_X11::~RenderTarget_X11() {
   if (pbuffer_context_) {
-    glXDestroyContext(Dpy, pbuffer_context_);
+    glXDestroyContext(g_dpy, pbuffer_context_);
   }
   if (pbuffer_) {
-    glXDestroyPbuffer(Dpy, pbuffer_);
+    glXDestroyPbuffer(g_dpy, pbuffer_);
   }
   if (tex_handle_) {
     glDeleteTextures(1, reinterpret_cast<GLuint*>(&tex_handle_));
@@ -976,21 +981,21 @@ void RenderTarget_X11::Create(
       param.with_depth_buffer_ ? 16 : (int)GLX_DONT_CARE,
       None};
   int i_configs;
-  GLXFBConfig* p_configs =
-      glXChooseFBConfig(Dpy, DefaultScreen(Dpy), config_attribs, &i_configs);
+  GLXFBConfig* p_configs = glXChooseFBConfig(
+      g_dpy, DefaultScreen(g_dpy), config_attribs, &i_configs);
   ASSERT(p_configs);
 
   const int pbuffer_attribs[] = {
       GLX_PBUFFER_WIDTH, param.width_, GLX_PBUFFER_HEIGHT, param.height_, None};
 
   for (int i = 0; i < i_configs; ++i) {
-    pbuffer_ = glXCreatePbuffer(Dpy, p_configs[i], pbuffer_attribs);
+    pbuffer_ = glXCreatePbuffer(g_dpy, p_configs[i], pbuffer_attribs);
     if (pbuffer_ == 0) {
       continue;
     }
 
-    XVisualInfo* visual = glXGetVisualFromFBConfig(Dpy, p_configs[i]);
-    pbuffer_context_ = glXCreateContext(Dpy, visual, g_pContext, True);
+    XVisualInfo* visual = glXGetVisualFromFBConfig(g_dpy, p_configs[i]);
+    pbuffer_context_ = glXCreateContext(g_dpy, visual, g_context, True);
     ASSERT(pbuffer_context_);
     XFree(visual);
     break;
@@ -1027,7 +1032,7 @@ void RenderTarget_X11::Create(
 void RenderTarget_X11::StartRenderingTo() {
   old_context_ = glXGetCurrentContext();
   old_drawable_ = glXGetCurrentDrawable();
-  glXMakeCurrent(Dpy, pbuffer_, pbuffer_context_);
+  glXMakeCurrent(g_dpy, pbuffer_, pbuffer_context_);
 
   glViewport(0, 0, width_, height_);
 }
@@ -1046,16 +1051,16 @@ void RenderTarget_X11::FinishRenderingTo() {
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  glXMakeCurrent(Dpy, old_drawable_, old_context_);
+  glXMakeCurrent(g_dpy, old_drawable_, old_context_);
   old_context_ = nullptr;
   old_drawable_ = 0;
 }
 
 bool LowLevelWindow_X11::SupportsRenderToTexture() const {
   // Server must support pbuffers:
-  const int screen = DefaultScreen(Dpy);
+  const int screen = DefaultScreen(g_dpy);
   float version =
-      strtof(glXQueryServerString(Dpy, screen, GLX_VERSION), nullptr);
+      strtof(glXQueryServerString(g_dpy, screen, GLX_VERSION), nullptr);
   if (version < 1.3f) {
     return false;
   }
@@ -1086,8 +1091,8 @@ bool NetWMSupported(Display* dpy, Atom feature) {
 }
 
 bool LowLevelWindow_X11::SupportsFullscreenBorderlessWindow() const {
-  Atom fullscreen = XInternAtom(Dpy, "_NET_WM_STATE_FULLSCREEN", False);
-  return NetWMSupported(Dpy, fullscreen);
+  Atom fullscreen = XInternAtom(g_dpy, "_NET_WM_STATE_FULLSCREEN", False);
+  return NetWMSupported(g_dpy, fullscreen);
 }
 
 RenderTarget* LowLevelWindow_X11::CreateRenderTarget() {

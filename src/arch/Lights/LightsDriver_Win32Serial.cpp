@@ -9,21 +9,21 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(Win32Serial);
 
-static Preference<std::string> g_sLightsComPort("LightsComPort", "COM54");
+static Preference<std::string> lights_com_port("LightsComPort", "COM54");
 
-HANDLE serialPort;
+HANDLE serial_port;
 
 LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
   // Ensure a non-match the first time
   last_output_[0] = 0;
 
-  std::string com_port = g_sLightsComPort.Get();
+  std::string com_port = lights_com_port.Get();
 
-  serialPort = CreateFile(
+  serial_port = CreateFile(
       std::string("\\\\.\\").append(com_port).c_str(), GENERIC_WRITE, 0, NULL,
       OPEN_EXISTING, 0, NULL);
 
-  if (serialPort == INVALID_HANDLE_VALUE) {
+  if (serial_port == INVALID_HANDLE_VALUE) {
     MessageBox(
         nullptr, "Could not find a device on the configured COM port.", "ERROR",
         MB_OK);
@@ -33,7 +33,7 @@ LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
   DCB dcb_serial_params = {0};
   dcb_serial_params.DCBlength = sizeof(dcb_serial_params);
 
-  if (GetCommState(serialPort, &dcb_serial_params) == 0) {
+  if (GetCommState(serial_port, &dcb_serial_params) == 0) {
     MessageBox(
         nullptr, "Could not connect to a device on the configured COM port.",
         "ERROR", MB_OK);
@@ -45,7 +45,7 @@ LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
   dcb_serial_params.StopBits = ONESTOPBIT;  // Setting StopBits = 1
   dcb_serial_params.Parity = NOPARITY;      // Setting Parity = None
 
-  if (SetCommState(serialPort, &dcb_serial_params) == 0) {
+  if (SetCommState(serial_port, &dcb_serial_params) == 0) {
     MessageBox(
         nullptr,
         "Could not setup the device parameters on the configured COM port.",
@@ -60,7 +60,7 @@ LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
   timeouts.WriteTotalTimeoutConstant = 50;    // in milliseconds
   timeouts.WriteTotalTimeoutMultiplier = 10;  // in milliseconds
 
-  if (SetCommTimeouts(serialPort, &timeouts) == 0) {
+  if (SetCommTimeouts(serial_port, &timeouts) == 0) {
     MessageBox(
         nullptr,
         "Could not set the device timeouts on the configured COM port.",
@@ -70,22 +70,22 @@ LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
 }
 
 LightsDriver_Win32Serial::~LightsDriver_Win32Serial() {
-  CloseHandle(serialPort);
+  CloseHandle(serial_port);
 }
 
 void LightsDriver_Win32Serial::Set(const LightsState* ls) {
-  if (serialPort != INVALID_HANDLE_VALUE) {
-    uint8_t buffer[FULL_SEXTET_COUNT];
+  if (serial_port != INVALID_HANDLE_VALUE) {
+    uint8_t buffer[kFullSextetCount];
 
     packLine(buffer, ls);
 
     // Only write if the message has changed since the last write.
-    if (memcmp(buffer, last_output_, FULL_SEXTET_COUNT) != 0) {
+    if (memcmp(buffer, last_output_, kFullSextetCount) != 0) {
       DWORD bytes_written = 0;
-      WriteFile(serialPort, buffer, FULL_SEXTET_COUNT, &bytes_written, NULL);
+      WriteFile(serial_port, buffer, kFullSextetCount, &bytes_written, NULL);
 
       // Remember last message
-      memcpy(last_output_, buffer, FULL_SEXTET_COUNT);
+      memcpy(last_output_, buffer, kFullSextetCount);
     }
   }
 }

@@ -47,12 +47,12 @@ void ScreenBookkeeping::Init() {
   LOAD_ALL_COMMANDS_AND_SET_XY(text_title_);
   this->AddChild(&text_title_);
 
-  for (int i = 0; i < NUM_BOOKKEEPING_COLS; i++) {
+  for (int i = 0; i < kNumBookkeepingCols; i++) {
     text_data_[i].LoadFromFont(THEME->GetPathF(name_, "data"));
     text_data_[i].SetName("Data");
     LOAD_ALL_COMMANDS_AND_SET_XY(text_data_[i]);
     float x = SCALE(
-        i, 0.f, NUM_BOOKKEEPING_COLS - 1, SCREEN_LEFT + 50, SCREEN_RIGHT - 160);
+        i, 0.f, kNumBookkeepingCols - 1, SCREEN_LEFT + 50, SCREEN_RIGHT - 160);
     text_data_[i].SetX(x);
     this->AddChild(&text_data_[i]);
   }
@@ -161,7 +161,7 @@ void ScreenBookkeeping::UpdateView() {
       const int song_per_col = 15;
 
       int song_index = 0;
-      for (int i = 0; i < NUM_BOOKKEEPING_COLS; i++) {
+      for (int i = 0; i < kNumBookkeepingCols; i++) {
         std::string s;
         for (int j = 0; j < song_per_col; j++) {
           if (song_index < (int)songs.size()) {
@@ -177,19 +177,18 @@ void ScreenBookkeeping::UpdateView() {
           }
         }
         text_data_[i].SetText(s);
-        text_data_[i].SetHorizAlign(align_left);
+        text_data_[i].SetHorizAlign(kAlignLeft);
       }
     } break;
     case BookkeepingView_LastDays: {
-      text_title_.SetText(
-          ssprintf(LAST_DAYS.GetValue().c_str(), NUM_LAST_DAYS));
+      text_title_.SetText(ssprintf(LAST_DAYS.GetValue().c_str(), kNumLastDays));
 
-      int coins[NUM_LAST_DAYS];
+      int coins[kNumLastDays];
       BOOKKEEPER->GetCoinsLastDays(coins);
       int total_last = 0;
 
       std::string title, data;
-      for (int i = 0; i < NUM_LAST_DAYS; i++) {
+      for (int i = 0; i < kNumLastDays; i++) {
         title += LastDayToLocalizedString(i) + "\n";
         data += ssprintf("%d", coins[i]) + "\n";
         total_last += coins[i];
@@ -199,17 +198,17 @@ void ScreenBookkeeping::UpdateView() {
       data += ssprintf("%i\n", total_last);
 
       text_data_[0].SetText("");
-      text_data_[1].SetHorizAlign(align_left);
+      text_data_[1].SetHorizAlign(kAlignLeft);
       text_data_[1].SetText(title);
       text_data_[2].SetText("");
-      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetHorizAlign(kAlignRight);
       text_data_[3].SetText(data);
     } break;
     case BookkeepingView_LastWeeks: {
       text_title_.SetText(
-          ssprintf(LAST_WEEKS.GetValue().c_str(), NUM_LAST_WEEKS));
+          ssprintf(LAST_WEEKS.GetValue().c_str(), kNumLastWeeks));
 
-      int coins[NUM_LAST_WEEKS];
+      int coins[kNumLastWeeks];
       BOOKKEEPER->GetCoinsLastWeeks(coins);
 
       std::string title, data;
@@ -221,54 +220,54 @@ void ScreenBookkeeping::UpdateView() {
                   ssprintf(": %d", coins[week]) + "\n";
         }
 
-        text_data_[col].SetHorizAlign(align_left);
+        text_data_[col].SetHorizAlign(kAlignLeft);
         text_data_[col].SetText(temp);
       }
     } break;
     case BookkeepingView_DayOfWeek: {
       text_title_.SetText(DAY_OF_WEEK);
 
-      int coins[DAYS_IN_WEEK];
+      int coins[kDaysInWeek];
       BOOKKEEPER->GetCoinsByDayOfWeek(coins);
 
       std::string title, data;
-      for (int i = 0; i < DAYS_IN_WEEK; i++) {
+      for (int i = 0; i < kDaysInWeek; i++) {
         title += DayOfWeekToString(i) + "\n";
         data += ssprintf("%d", coins[i]) + "\n";
       }
 
       text_data_[0].SetText("");
-      text_data_[1].SetHorizAlign(align_left);
+      text_data_[1].SetHorizAlign(kAlignLeft);
       text_data_[1].SetText(title);
       text_data_[2].SetText("");
-      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetHorizAlign(kAlignRight);
       text_data_[3].SetText(data);
     } break;
     case BookkeepingView_HourOfDay: {
       text_title_.SetText(HOUR_OF_DAY);
 
-      int coins[HOURS_IN_DAY];
+      int coins[kHoursInDay];
       BOOKKEEPER->GetCoinsByHour(coins);
 
       std::string title1, data1;
-      for (int i = 0; i < HOURS_IN_DAY / 2; i++) {
+      for (int i = 0; i < kHoursInDay / 2; i++) {
         title1 += HourInDayToLocalizedString(i) + "\n";
         data1 += ssprintf("%d", coins[i]) + "\n";
       }
 
       std::string title2, data2;
-      for (int i = (HOURS_IN_DAY / 2); i < HOURS_IN_DAY; i++) {
+      for (int i = (kHoursInDay / 2); i < kHoursInDay; i++) {
         title2 += HourInDayToLocalizedString(i) + "\n";
         data2 += ssprintf("%d", coins[i]) + "\n";
       }
 
-      text_data_[0].SetHorizAlign(align_left);
+      text_data_[0].SetHorizAlign(kAlignLeft);
       text_data_[0].SetText(title1);
-      text_data_[1].SetHorizAlign(align_right);
+      text_data_[1].SetHorizAlign(kAlignRight);
       text_data_[1].SetText(data1);
-      text_data_[2].SetHorizAlign(align_left);
+      text_data_[2].SetHorizAlign(kAlignLeft);
       text_data_[2].SetText(title2);
-      text_data_[3].SetHorizAlign(align_right);
+      text_data_[3].SetHorizAlign(kAlignRight);
       text_data_[3].SetText(data2);
     } break;
     default:

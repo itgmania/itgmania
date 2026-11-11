@@ -59,7 +59,7 @@ class GraphLine : public Actor {
     verts[0] = v;
 
     for (int i = 0; i < subdivisions + 1; ++i) {
-      const float rotation = float(i) / subdivisions * 2 * PI;
+      const float rotation = float(i) / subdivisions * 2 * kPi;
       const float x = std::cos(rotation) * radius;
       const float y = -std::sin(rotation) * radius;
       verts[1 + i] = v;

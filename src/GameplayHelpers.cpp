@@ -32,7 +32,7 @@ std::vector<NotefieldMargins> GetNotefieldMargins() {
     ++next_player_slot;
   }
 
-  Enum::Push(lua_ptr, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->style_type_);
+  Enum::Push(lua_ptr, GAMESTATE->GetCurrentStyle(kPlayerInvalid)->style_type_);
   std::string err = "Error running MarginFunction: ";
 
   // Run the lua code.

@@ -445,7 +445,7 @@ class TimingData {
   bool operator!=(const TimingData& other) const { return !operator==(other); }
 
   void ScaleRegion(
-      float scale = 1, int start_row = 0, int end_row = MAX_NOTE_ROW,
+      float scale = 1, int start_row = 0, int end_row = kMaxNoteRow,
       bool adjust_bpm = false);
   void InsertRows(int start_row, int rows_to_add);
   void DeleteRows(int start_row, int rows_to_delete);

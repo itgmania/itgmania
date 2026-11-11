@@ -13,14 +13,14 @@
 
 REGISTER_SOUND_DRIVER_CLASS2("DirectSound-sw-legacy", DSound_Software);
 
-static const int channels = 2;
-static const int bytes_per_frame = channels * 2; /* 16-bit */
-static const int safe_writeahead = 1024 * 4;     /* in frames */
-static int g_iMaxWriteahead;
+static const int kChannels = 2;
+static const int kBytesPerFrame = kChannels * 2; /* 16-bit */
+static const int kSafeWriteahead = 1024 * 4;     /* in frames */
+static int max_writeahead;
 
 /* We'll fill the buffer in chunks this big. */
-static const int num_chunks = 8;
-static int chunksize() { return g_iMaxWriteahead / num_chunks; }
+static const int kNumChunks = 8;
+static int chunksize() { return max_writeahead / kNumChunks; }
 
 void RageSoundDriver_DSound_Software::MixerThread() {
   if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL)) {
@@ -55,7 +55,7 @@ void RageSoundDriver_DSound_Software::MixerThread() {
     }
 
     this->Mix(
-        (int16_t*)locked_buf, len / bytes_per_frame, play_pos,
+        (int16_t*)locked_buf, len / kBytesPerFrame, play_pos,
         pcm_->GetPosition());
 
     pcm_->release_output_buf(locked_buf, len);
@@ -90,9 +90,9 @@ std::string RageSoundDriver_DSound_Software::Init() {
     return "Driver unusable (emulated device)";
   }
 
-  g_iMaxWriteahead = safe_writeahead;
+  max_writeahead = kSafeWriteahead;
   if (PREFSMAN->sound_write_ahead_) {
-    g_iMaxWriteahead = PREFSMAN->sound_write_ahead_;
+    max_writeahead = PREFSMAN->sound_write_ahead_;
   }
 
   /* Create a DirectSound stream, but don't force it into hardware. */
@@ -104,8 +104,8 @@ std::string RageSoundDriver_DSound_Software::Init() {
   // This sample_rate_ (driver's) is then passed as the sample_rate parameter
   // to DSoundBuf::Init()
   error = pcm_->Init(
-      ds_, DSoundBuf::HW_DONT_CARE, channels, sample_rate_, 16,
-      g_iMaxWriteahead);
+      ds_, DSoundBuf::HW_DONT_CARE, kChannels, sample_rate_, 16,
+      max_writeahead);
   if (error != "") {
     return error;
   }
@@ -143,7 +143,7 @@ void RageSoundDriver_DSound_Software::SetupDecodingThread() {
 }
 
 float RageSoundDriver_DSound_Software::GetPlayLatency() const {
-  return (1.0f / sample_rate_) * g_iMaxWriteahead;
+  return (1.0f / sample_rate_) * max_writeahead;
 }
 
 int RageSoundDriver_DSound_Software::GetSampleRate() const {

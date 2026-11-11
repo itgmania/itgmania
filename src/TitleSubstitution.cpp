@@ -9,8 +9,8 @@
 #include "XmlFileUtil.h"
 #include "global.h"
 
-static const std::string TRANSLATIONS_PATH = "Data/Translations.xml";
-static const std::string ERASE_MARKER = "-erase-";
+static const std::string kTranslationsPath = "Data/Translations.xml";
+static const std::string kEraseMarker = "-erase-";
 
 struct TitleTrans {
   Regex title_from_, sub_from_, artist_from_;
@@ -99,7 +99,7 @@ void TitleSubst::Subst(TitleFields& tf) {
         tf.title_translit_ = tf.title_;
       }
       tf.title_ =
-          (tt->replacement_.title_ != ERASE_MARKER) ? to.title_ : std::string();
+          (tt->replacement_.title_ != kEraseMarker) ? to.title_ : std::string();
       FontCharAliases::ReplaceMarkers(tf.title_);
     }
     if (!tt->replacement_.subtitle_.empty() &&
@@ -107,7 +107,7 @@ void TitleSubst::Subst(TitleFields& tf) {
       if (tt->translit_) {
         tf.subtitle_translit_ = tf.subtitle_;
       }
-      tf.subtitle_ = (tt->replacement_.subtitle_ != ERASE_MARKER)
+      tf.subtitle_ = (tt->replacement_.subtitle_ != kEraseMarker)
                          ? to.subtitle_
                          : std::string();
       FontCharAliases::ReplaceMarkers(tf.subtitle_);
@@ -117,7 +117,7 @@ void TitleSubst::Subst(TitleFields& tf) {
       if (tt->translit_) {
         tf.artist_translit_ = tf.artist_;
       }
-      tf.artist_ = (tt->replacement_.artist_ != ERASE_MARKER) ? to.artist_
+      tf.artist_ = (tt->replacement_.artist_ != kEraseMarker) ? to.artist_
                                                               : std::string();
       FontCharAliases::ReplaceMarkers(tf.artist_);
     }
@@ -125,20 +125,20 @@ void TitleSubst::Subst(TitleFields& tf) {
     /* These are used when applying kanji to a field that doesn't have the
      * correct data.  Should be used sparingly. */
     if (!tt->replacement_.title_translit_.empty()) {
-      tf.title_translit_ = (tt->replacement_.title_translit_ != ERASE_MARKER)
+      tf.title_translit_ = (tt->replacement_.title_translit_ != kEraseMarker)
                                ? tt->replacement_.title_translit_
                                : std::string();
       FontCharAliases::ReplaceMarkers(tf.title_translit_);
     }
     if (!tt->replacement_.subtitle_translit_.empty()) {
       tf.subtitle_translit_ =
-          (tt->replacement_.subtitle_translit_ != ERASE_MARKER)
+          (tt->replacement_.subtitle_translit_ != kEraseMarker)
               ? tt->replacement_.subtitle_translit_
               : std::string();
       FontCharAliases::ReplaceMarkers(tf.subtitle_translit_);
     }
     if (!tt->replacement_.artist_translit_.empty()) {
-      tf.artist_translit_ = (tt->replacement_.artist_translit_ != ERASE_MARKER)
+      tf.artist_translit_ = (tt->replacement_.artist_translit_ != kEraseMarker)
                                 ? tt->replacement_.artist_translit_
                                 : std::string();
       FontCharAliases::ReplaceMarkers(tf.artist_translit_);
@@ -151,7 +151,7 @@ void TitleSubst::Subst(TitleFields& tf) {
 }
 
 TitleSubst::TitleSubst(const std::string& section) {
-  Load(TRANSLATIONS_PATH, section);
+  Load(kTranslationsPath, section);
 }
 
 void TitleSubst::Load(const std::string& filename, const std::string& section) {

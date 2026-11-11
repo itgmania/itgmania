@@ -7,7 +7,7 @@
 
 /** @brief Constants for working with the RageFileManager. */
 namespace RageFileManagerUtil {
-extern std::string sDirOfExecutable;
+extern std::string g_dir_of_executable;
 }
 
 class RageFileDriver;

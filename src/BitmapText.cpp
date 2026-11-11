@@ -40,16 +40,16 @@ REGISTER_ACTOR_CLASS(BitmapText);
  * fading are annoying to optimize, but rarely used. Iterating over every
  * character in Draw() is dumb. */
 
-static std::vector<RageColor> RAINBOW_COLORS;
+static std::vector<RageColor> rainbow_colors;
 
 BitmapText::BitmapText() {
   // Loading these theme metrics is slow, so only do it every 20th time.
   // todo: why not check to see if you need to bother updating this at all? -aj
   static int reload_counter = 0;
   if (reload_counter % 20 == 0) {
-    RAINBOW_COLORS.resize(THEME->GetMetricI("BitmapText", "NumRainbowColors"));
-    for (unsigned i = 0; i < RAINBOW_COLORS.size(); ++i) {
-      RAINBOW_COLORS[i] =
+    rainbow_colors.resize(THEME->GetMetricI("BitmapText", "NumRainbowColors"));
+    for (unsigned i = 0; i < rainbow_colors.size(); ++i) {
+      rainbow_colors[i] =
           THEME->GetMetricC("BitmapText", ssprintf("RainbowColor%i", i + 1));
     }
   }
@@ -738,14 +738,14 @@ void BitmapText::DrawPrimitives() noexcept {
     // render the diffuse pass
     if (rainbow_scroll_) {
       int color_index =
-          int(RageTimer::GetTimeSinceStart() / 0.200) % RAINBOW_COLORS.size();
+          int(RageTimer::GetTimeSinceStart() / 0.200) % rainbow_colors.size();
       for (size_t i = 0; i < vertices_.size(); i += 4) {
-        const RageColor color = RAINBOW_COLORS[color_index];
+        const RageColor color = rainbow_colors[color_index];
         for (size_t j = i; j < i + 4; j++) {
           vertices_[j].c_ = color;
         }
 
-        color_index = (color_index + 1) % RAINBOW_COLORS.size();
+        color_index = (color_index + 1) % rainbow_colors.size();
       }
     } else {
       size_t i = 0;
@@ -774,8 +774,8 @@ void BitmapText::DrawPrimitives() noexcept {
         }
         end = std::min(end, vertices_.size());  // clamp to vertex size
         std::vector<RageColor> temp_attr_diffuse(
-            NUM_DIFFUSE_COLORS, internal_diffuse_);
-        for (size_t c = 0; c < NUM_DIFFUSE_COLORS; ++c) {
+            kNumDiffuseColors, internal_diffuse_);
+        for (size_t c = 0; c < kNumDiffuseColors; ++c) {
           temp_attr_diffuse[c] *= attr.diffuse_[c];
           if (mult_attrs_with_diffuse_) {
             temp_attr_diffuse[c] *= temp_state_->diffuse_[c];
@@ -1003,7 +1003,7 @@ void BitmapText::Attribute::FromStack(lua_State* L, int pos) {
   // Get the diffuse colors.
   lua_getfield(L, tab, "Diffuses");
   if (!lua_isnil(L, -1)) {
-    for (int i = 1; i <= NUM_DIFFUSE_COLORS; ++i) {
+    for (int i = 1; i <= kNumDiffuseColors; ++i) {
       lua_rawgeti(L, -i, i);
       diffuse_[i - 1].FromStack(L, -1);
     }

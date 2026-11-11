@@ -27,24 +27,24 @@
 #include "global.h"
 
 // Actor registration
-static std::map<std::string, CreateActorFn>* g_pmapRegistrees = nullptr;
+static std::map<std::string, CreateActorFn>* registrees = nullptr;
 
 static bool IsRegistered(const std::string& class_name) {
-  return g_pmapRegistrees->find(class_name) != g_pmapRegistrees->end();
+  return registrees->find(class_name) != registrees->end();
 }
 
 void ActorUtil::Register(const std::string& class_name, CreateActorFn pfn) {
-  if (g_pmapRegistrees == nullptr) {
-    g_pmapRegistrees = new std::map<std::string, CreateActorFn>;
+  if (registrees == nullptr) {
+    registrees = new std::map<std::string, CreateActorFn>;
   }
 
   std::map<std::string, CreateActorFn>::iterator iter =
-      g_pmapRegistrees->find(class_name);
+      registrees->find(class_name);
   ASSERT_M(
-      iter == g_pmapRegistrees->end(),
+      iter == registrees->end(),
       ssprintf("Actor class '%s' already registered.", class_name.c_str()));
 
-  (*g_pmapRegistrees)[class_name] = pfn;
+  (*registrees)[class_name] = pfn;
 }
 
 /* Resolves actor paths a la LoadActor("..."), with autowildcarding and .redir
@@ -201,8 +201,8 @@ Actor* ActorUtil::LoadFromNode(const XNode* p_node, Actor* parent_actor) {
   }
 
   std::map<std::string, CreateActorFn>::iterator iter =
-      g_pmapRegistrees->find(s_class);
-  if (iter == g_pmapRegistrees->end()) {
+      registrees->find(s_class);
+  if (iter == registrees->end()) {
     std::string file;
     if (legacy && node.GetAttrValue("File", file) && file != "") {
       std::string path;
@@ -511,8 +511,8 @@ LuaXType(FileType);
 // convenience so the for-loop lines can be shorter.
 typedef std::map<std::string, FileType> etft_cont_t;
 typedef std::map<FileType, std::vector<std::string> > fttel_cont_t;
-etft_cont_t ExtensionToFileType;
-fttel_cont_t FileTypeToExtensionList;
+etft_cont_t extension_to_file_type;
+fttel_cont_t file_type_to_extension_list;
 
 void ActorUtil::InitFileTypeLists() {
   // This function creates things to serve two purposes:
@@ -520,61 +520,61 @@ void ActorUtil::InitFileTypeLists() {
   // 2.  A reverse map for things that need a list of extensions to look for.
   // The first section creates the map from extensions to filetypes, then the
   // second section uses that map to build the reverse map.
-  ExtensionToFileType["lua"] = FT_Lua;
+  extension_to_file_type["lua"] = FT_Lua;
 
-  ExtensionToFileType["xml"] = FT_Xml;
+  extension_to_file_type["xml"] = FT_Xml;
 
-  ExtensionToFileType["ini"] = FT_Ini;
+  extension_to_file_type["ini"] = FT_Ini;
 
   // Update RageSurfaceUtils when adding new image formats.
-  ExtensionToFileType["bmp"] = FT_Bitmap;
-  ExtensionToFileType["gif"] = FT_Bitmap;
-  ExtensionToFileType["jpeg"] = FT_Bitmap;
-  ExtensionToFileType["jpg"] = FT_Bitmap;
-  ExtensionToFileType["png"] = FT_Bitmap;
+  extension_to_file_type["bmp"] = FT_Bitmap;
+  extension_to_file_type["gif"] = FT_Bitmap;
+  extension_to_file_type["jpeg"] = FT_Bitmap;
+  extension_to_file_type["jpg"] = FT_Bitmap;
+  extension_to_file_type["png"] = FT_Bitmap;
 
   // Update RageSoundReader_FileReader when adding new sound formats.
-  ExtensionToFileType["mp3"] = FT_Sound;
-  ExtensionToFileType["oga"] = FT_Sound;
-  ExtensionToFileType["ogg"] = FT_Sound;
-  ExtensionToFileType["wav"] = FT_Sound;
+  extension_to_file_type["mp3"] = FT_Sound;
+  extension_to_file_type["oga"] = FT_Sound;
+  extension_to_file_type["ogg"] = FT_Sound;
+  extension_to_file_type["wav"] = FT_Sound;
 
   // ffmpeg takes care of loading videos, not sure whether this list should
   // have everything ffmpeg supports.
-  ExtensionToFileType["avi"] = FT_Movie;
-  ExtensionToFileType["f4v"] = FT_Movie;
-  ExtensionToFileType["flv"] = FT_Movie;
-  ExtensionToFileType["mkv"] = FT_Movie;
-  ExtensionToFileType["mp4"] = FT_Movie;
-  ExtensionToFileType["mpeg"] = FT_Movie;
-  ExtensionToFileType["mpg"] = FT_Movie;
-  ExtensionToFileType["mov"] = FT_Movie;
-  ExtensionToFileType["ogv"] = FT_Movie;
-  ExtensionToFileType["webm"] = FT_Movie;
-  ExtensionToFileType["wmv"] = FT_Movie;
+  extension_to_file_type["avi"] = FT_Movie;
+  extension_to_file_type["f4v"] = FT_Movie;
+  extension_to_file_type["flv"] = FT_Movie;
+  extension_to_file_type["mkv"] = FT_Movie;
+  extension_to_file_type["mp4"] = FT_Movie;
+  extension_to_file_type["mpeg"] = FT_Movie;
+  extension_to_file_type["mpg"] = FT_Movie;
+  extension_to_file_type["mov"] = FT_Movie;
+  extension_to_file_type["ogv"] = FT_Movie;
+  extension_to_file_type["webm"] = FT_Movie;
+  extension_to_file_type["wmv"] = FT_Movie;
 
-  ExtensionToFileType["sprite"] = FT_Sprite;
+  extension_to_file_type["sprite"] = FT_Sprite;
 
-  ExtensionToFileType["txt"] = FT_Model;
+  extension_to_file_type["txt"] = FT_Model;
 
   // When adding new extensions, do not add them below this line.  This line
   // marks the point where the function switches to building the reverse map.
-  for (etft_cont_t::iterator curr_ext = ExtensionToFileType.begin();
-       curr_ext != ExtensionToFileType.end(); ++curr_ext) {
-    FileTypeToExtensionList[curr_ext->second].push_back(curr_ext->first);
+  for (etft_cont_t::iterator curr_ext = extension_to_file_type.begin();
+       curr_ext != extension_to_file_type.end(); ++curr_ext) {
+    file_type_to_extension_list[curr_ext->second].push_back(curr_ext->first);
   }
 }
 
 const std::vector<std::string>& ActorUtil::GetTypeExtensionList(FileType ft) {
-  return FileTypeToExtensionList[ft];
+  return file_type_to_extension_list[ft];
 }
 
 FileType ActorUtil::GetFileType(const std::string& path) {
   std::string ext = GetExtension(path);
   MakeLower(ext);
 
-  etft_cont_t::iterator conversion_entry = ExtensionToFileType.find(ext);
-  if (conversion_entry != ExtensionToFileType.end()) {
+  etft_cont_t::iterator conversion_entry = extension_to_file_type.find(ext);
+  if (conversion_entry != extension_to_file_type.end()) {
     return conversion_entry->second;
   } else if (path.size() > 0 && path[path.size() - 1] == '/') {
     return FT_Directory;

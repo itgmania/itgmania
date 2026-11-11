@@ -199,7 +199,7 @@ void KeyboardDevice::GetDevicesAndDescriptions(
 
 // http://lists.apple.com/archives/carbon-dev/2005/Feb/msg00071.html
 // index represents USB keyboard usage value, content is Mac virtual keycode
-static UInt8 g_iUsbKeyToMacVirtualKey[256] = {
+static UInt8 usb_key_to_mac_virtual_key[256] = {
     0xFF,  // 00 no event
     0xFF,  // 01 ErrorRollOver
     0xFF,  // 02 POSTFail
@@ -474,7 +474,7 @@ static UInt8 g_iUsbKeyToMacVirtualKey[256] = {
     0xFF,  // FF no event
 };
 
-static UInt8 g_iDeviceButtonToMacVirtualKey[KEY_OTHER_0];
+static UInt8 device_button_to_mac_virtual_key[KEY_OTHER_0];
 
 bool KeyboardDevice::DeviceButtonToMacVirtualKey(
     DeviceButton button, UInt8& mac_vk_out) {
@@ -482,20 +482,20 @@ bool KeyboardDevice::DeviceButtonToMacVirtualKey(
 
   if (!inited) {
     memset(
-        g_iDeviceButtonToMacVirtualKey, 0xFF,
-        sizeof(g_iDeviceButtonToMacVirtualKey));
+        device_button_to_mac_virtual_key, 0xFF,
+        sizeof(device_button_to_mac_virtual_key));
     for (int usb_key = 0; usb_key < 256; ++usb_key) {
       DeviceButton button2;
       if (UsbKeyToDeviceButton(usb_key, button2) &&
-          size_t(button2) < sizeof(g_iDeviceButtonToMacVirtualKey)) {
-        g_iDeviceButtonToMacVirtualKey[button2] =
-            g_iUsbKeyToMacVirtualKey[usb_key];
+          size_t(button2) < sizeof(device_button_to_mac_virtual_key)) {
+        device_button_to_mac_virtual_key[button2] =
+            usb_key_to_mac_virtual_key[usb_key];
       }
     }
     inited = true;
   }
-  if (button < sizeof(g_iDeviceButtonToMacVirtualKey)) {
-    mac_vk_out = g_iDeviceButtonToMacVirtualKey[button];
+  if (button < sizeof(device_button_to_mac_virtual_key)) {
+    mac_vk_out = device_button_to_mac_virtual_key[button];
   } else {
     mac_vk_out = 0xFF;
   }

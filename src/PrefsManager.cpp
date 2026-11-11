@@ -133,7 +133,7 @@ XToString(SyncOffset);
 StringToX(SyncOffset);
 LuaXType(SyncOffset);
 
-bool g_bAutoRestart = false;
+bool auto_restart = false;
 #ifdef DEBUG
 #define TRUE_IF_DEBUG true
 #else
@@ -146,13 +146,13 @@ void ValidateDisplayAspectRatio(float& val) {
   }
 }
 
-void ValidateSongsPerPlay(int& val) { rage_clamp(val, 0, MAX_SONGS_PER_PLAY); }
+void ValidateSongsPerPlay(int& val) { rage_clamp(val, 0, kMaxSongsPerPlay); }
 
 PrefsManager::PrefsManager()
     : current_game_("CurrentGame", ""),
 
       announcer_("Announcer", ""),
-      theme_("Theme", SpecialFiles::BASE_THEME_NAME),
+      theme_("Theme", SpecialFiles::kBaseThemeName),
       default_modifiers_("DefaultModifiers", ""),
 
       windowed_("Windowed", true),
@@ -169,7 +169,7 @@ PrefsManager::PrefsManager()
       high_resolution_textures_(
           "HighResolutionTextures", HighResolutionTextures_Auto),
       max_texture_resolution_("MaxTextureResolution", 2048),
-      refresh_rate_("RefreshRate", REFRESH_DEFAULT),
+      refresh_rate_("RefreshRate", kRefreshDefault),
       allow_multitexture_("AllowMultitexture", true),
       fullscreen_is_borderless_window_("FullscreenIsBorderlessWindow", true),
       show_stats_("ShowStats", TRUE_IF_DEBUG),
@@ -423,23 +423,22 @@ void PrefsManager::RestoreGamePrefs() {
 
   // give Static.ini a chance to clobber the saved game prefs
   ReadPrefsFromFile(
-      SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true);
+      SpecialFiles::kStaticIniPath, GetPreferencesSection(), true);
 }
 
 PrefsManager::GamePrefs::GamePrefs()
     : announcer_(""),
-      theme_(SpecialFiles::BASE_THEME_NAME),
+      theme_(SpecialFiles::kBaseThemeName),
       default_modifiers_("") {}
 
 void PrefsManager::ReadPrefsFromDisk() {
-  ReadDefaultsFromFile(
-      SpecialFiles::DEFAULTS_INI_PATH, GetPreferencesSection());
+  ReadDefaultsFromFile(SpecialFiles::kDefaultsIniPath, GetPreferencesSection());
   IPreference::LoadAllDefaults();
 
-  ReadPrefsFromFile(SpecialFiles::PREFERENCES_INI_PATH, "Options", false);
-  ReadGamePrefsFromIni(SpecialFiles::PREFERENCES_INI_PATH);
+  ReadPrefsFromFile(SpecialFiles::kPreferencesIniPath, "Options", false);
+  ReadGamePrefsFromIni(SpecialFiles::kPreferencesIniPath);
   ReadPrefsFromFile(
-      SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true);
+      SpecialFiles::kStaticIniPath, GetPreferencesSection(), true);
 
   TranslateDeprecatedFlags();
 
@@ -453,7 +452,7 @@ void PrefsManager::ResetToFactoryDefaults() {
   Init();
   IPreference::LoadAllDefaults();
   ReadPrefsFromFile(
-      SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true);
+      SpecialFiles::kStaticIniPath, GetPreferencesSection(), true);
 
   TranslateDeprecatedFlags();
 
@@ -470,7 +469,7 @@ void PrefsManager::ReadPrefsFromFile(
   ReadPrefsFromIni(ini, section, is_static);
 }
 
-static const std::string GAME_SECTION_PREFIX = "Game-";
+static const std::string kGameSectionPrefix = "Game-";
 
 void PrefsManager::ReadPrefsFromIni(
     const IniFile& ini, const std::string& section, bool is_static) {
@@ -508,12 +507,12 @@ void PrefsManager::ReadGamePrefsFromIni(const std::string& s_ini) {
 
   FOREACH_CONST_Child(&ini, section) {
     std::string section_name = section->GetName();
-    if (!BeginsWith(section_name, GAME_SECTION_PREFIX)) {
+    if (!BeginsWith(section_name, kGameSectionPrefix)) {
       continue;
     }
 
     std::string game = Right(
-        section_name, section_name.length() - GAME_SECTION_PREFIX.length());
+        section_name, section_name.length() - kGameSectionPrefix.length());
     GamePrefs& gp = map_game_name_to_game_prefs_[game];
 
     // todo: read more prefs here? -aj
@@ -560,7 +559,7 @@ void PrefsManager::TranslateDeprecatedFlags() {
 void PrefsManager::SavePrefsToDisk() {
   IniFile ini;
   SavePrefsToIni(ini);
-  ini.WriteFile(SpecialFiles::PREFERENCES_INI_PATH);
+  ini.WriteFile(SpecialFiles::kPreferencesIniPath);
 }
 
 void PrefsManager::SavePrefsToIni(IniFile& ini) {
@@ -588,7 +587,7 @@ std::string PrefsManager::GetPreferencesSection() const {
   std::string section = "Options";
 
   // OK if this fails
-  GetFileContents(SpecialFiles::TYPE_TXT_FILE, section, true);
+  GetFileContents(SpecialFiles::kTypeTxtFile, section, true);
 
   // OK if this fails
   GetCommandlineArgument("Type", &section);

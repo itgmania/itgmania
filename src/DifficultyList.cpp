@@ -27,9 +27,9 @@
 /** @brief Specifies the max number of charts available for a song.
  *
  * This includes autogenned charts. */
-inline constexpr int MAX_METERS =
+inline constexpr int kMaxMeters =
     (Enum::to_integral(NUM_Difficulty) * Enum::to_integral(NUM_StepsType)) +
-    MAX_EDITS_PER_SONG;
+    kMaxEditsPerSong;
 
 REGISTER_ACTOR_CLASS(StepsDisplayList);
 
@@ -58,7 +58,7 @@ void StepsDisplayList::LoadFromNode(const XNode* node) {
   NUM_SHOWN_ITEMS.Load(name_, "NumShownItems");
   MOVE_COMMAND.Load(name_, "MoveCommand");
 
-  lines_.resize(MAX_METERS);
+  lines_.resize(kMaxMeters);
 
   FOREACH_ENUM(PlayerNumber, pn) {
     const XNode* child = node->GetChild(ssprintf("CursorP%i", pn + 1));
@@ -122,7 +122,7 @@ int StepsDisplayList::GetCurrentRowIndex(PlayerNumber pn) const {
 
 // Update m_fY and m_bHidden[].
 void StepsDisplayList::UpdatePositions() {
-  int current_row[NUM_PLAYERS];
+  int current_row[kNumPlayers];
   FOREACH_HumanPlayer(p) current_row[p] = GetCurrentRowIndex(p);
 
   const int total = NUM_SHOWN_ITEMS;
@@ -217,7 +217,7 @@ void StepsDisplayList::UpdatePositions() {
 }
 
 void StepsDisplayList::PositionItems() {
-  for (size_t i = 0; i < MAX_METERS; ++i) {
+  for (size_t i = 0; i < kMaxMeters; ++i) {
     bool unused = (i >= rows_.size());
     lines_[i].meter_.SetVisible(!unused);
   }
@@ -239,7 +239,7 @@ void StepsDisplayList::PositionItems() {
     lines_[m].meter_.SetY(row.y_);
   }
 
-  for (size_t m = 0; m < MAX_METERS; ++m) {
+  for (size_t m = 0; m < kMaxMeters; ++m) {
     bool hidden = true;
     if (shown_ && m < rows_.size()) {
       hidden = rows_[m].hidden_;
@@ -277,7 +277,7 @@ void StepsDisplayList::SetFromGameState() {
     for (const Difficulty& d : difficulties) {
       rows_[i].dc_ = d;
       lines_[i].meter_.SetFromStepsTypeAndMeterAndDifficultyAndCourseType(
-          GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_, 0, d,
+          GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_, 0, d,
           CourseType_Invalid);
       ++i;
     }
@@ -295,14 +295,14 @@ void StepsDisplayList::SetFromGameState() {
     }
   }
 
-  while (i < MAX_METERS) {
+  while (i < kMaxMeters) {
     lines_[i++].meter_.Unset();
   }
 
   UpdatePositions();
   PositionItems();
 
-  for (size_t m = 0; m < MAX_METERS; ++m) {
+  for (size_t m = 0; m < kMaxMeters; ++m) {
     lines_[m].meter_.FinishTweening();
   }
 }

@@ -31,18 +31,18 @@
 #include "XmlFile.h"
 #include "global.h"
 
-static Preference<bool> g_bPalettedImageCache("PalettedImageCache", false);
+static Preference<bool> paletted_image_cache("PalettedImageCache", false);
 
 /* Neither a global or a file scope static can be used for this because
  * the order of initialization of nonlocal objects is unspecified. */
 // const std::string IMAGE_CACHE_INDEX = SpecialFiles::CACHE_DIR +
 // "images.cache";
-#define IMAGE_CACHE_INDEX (SpecialFiles::CACHE_DIR + "images.cache")
+#define IMAGE_CACHE_INDEX (SpecialFiles::kCacheDir + "images.cache")
 
 /* Maximum resolution a cached banner image is scaled down to. Must be powers
  * of two. */
-static const int MAX_BANNER_CACHE_WIDTH = 256;
-static const int MAX_BANNER_CACHE_HEIGHT = 128;
+static const int kMaxBannerCacheWidth = 256;
+static const int kMaxBannerCacheHeight = 128;
 
 static int nearest_power_of_two(int v) {
   const int up = power_of_two(v);
@@ -52,7 +52,7 @@ static int nearest_power_of_two(int v) {
 }
 
 /* Bump this to invalidate the on-disk image cache. */
-static const int IMAGE_CACHE_VERSION = 1;
+static const int kImageCacheVersion = 1;
 
 /* Call CacheImage to cache a image by path.  If the image is already
  * cached, it'll be recreated.  This is efficient if the image hasn't changed,
@@ -75,11 +75,11 @@ static const int IMAGE_CACHE_VERSION = 1;
 
 ImageCache* IMAGECACHE;  // global and accessible from anywhere in our program
 
-static std::map<std::string, RageSurface*> g_ImagePathToImage;
-static int g_iDemandRefcount = 0;
+static std::map<std::string, RageSurface*> image_path_to_image;
+static int demand_refcount = 0;
 
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
-static RageMutex g_ImageCacheMutex("ImageCache");
+static RageMutex image_cache_mutex("ImageCache");
 
 std::string ImageCache::GetImageCachePath(
     std::string image_dir, std::string image_path) {
@@ -90,8 +90,8 @@ std::string ImageCache::GetImageCachePath(
  * cache files will not be created if they don't exist; that should be done
  * by CacheImage or LoadImage on startup. */
 void ImageCache::Demand(std::string image_dir) {
-  ++g_iDemandRefcount;
-  if (g_iDemandRefcount > 1) {
+  ++demand_refcount;
+  if (demand_refcount > 1) {
     return;
   }
 
@@ -99,11 +99,11 @@ void ImageCache::Demand(std::string image_dir) {
     return;
   }
 
-  LockMut(g_ImageCacheMutex);
+  LockMut(image_cache_mutex);
   FOREACH_CONST_Child(&image_data_, p) {
     std::string image_path = p->GetName();
 
-    if (g_ImagePathToImage.find(image_path) != g_ImagePathToImage.end()) {
+    if (image_path_to_image.find(image_path) != image_path_to_image.end()) {
       continue; /* already loaded */
     }
 
@@ -113,14 +113,14 @@ void ImageCache::Demand(std::string image_dir) {
       continue; /* doesn't exist */
     }
 
-    g_ImagePathToImage[image_path] = image;
+    image_path_to_image[image_path] = image;
   }
 }
 
 /* Release images loaded on demand. */
 void ImageCache::Undemand(std::string image_dir) {
-  --g_iDemandRefcount;
-  if (g_iDemandRefcount != 0) {
+  --demand_refcount;
+  if (demand_refcount != 0) {
     return;
   }
 
@@ -149,8 +149,8 @@ void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
 
   for (int tries = 0; tries < 2; ++tries) {
     {
-      LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(image_path) != g_ImagePathToImage.end()) {
+      LockMut(image_cache_mutex);
+      if (image_path_to_image.find(image_path) != image_path_to_image.end()) {
         return; /* already loaded */
       }
     }
@@ -177,24 +177,24 @@ void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
     }
 
     {
-      LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(image_path) != g_ImagePathToImage.end()) {
+      LockMut(image_cache_mutex);
+      if (image_path_to_image.find(image_path) != image_path_to_image.end()) {
         /* already loaded */
         delete image;
       } else {
-        g_ImagePathToImage[image_path] = image;
+        image_path_to_image[image_path] = image;
       }
     }
   }
 }
 
 void ImageCache::UnloadAllImages() {
-  LockMut(g_ImageCacheMutex);
-  for (auto& it : g_ImagePathToImage) {
+  LockMut(image_cache_mutex);
+  for (auto& it : image_path_to_image) {
     delete it.second;
   }
 
-  g_ImagePathToImage.clear();
+  image_path_to_image.clear();
 }
 
 ImageCache::ImageCache() : delay_save_cache_(false) { ReadFromDisk(); }
@@ -215,12 +215,12 @@ static void EmptyDir(std::string dir) {
 }
 
 void ImageCache::ReadFromDisk() {
-  LockMut(g_ImageCacheMutex);
+  LockMut(image_cache_mutex);
   image_data_.ReadFile(IMAGE_CACHE_INDEX);  // don't care if this fails
 
   int cache_version = -1;
   image_data_.GetValue("Cache", "CacheVersion", cache_version);
-  if (cache_version == IMAGE_CACHE_VERSION) {
+  if (cache_version == kImageCacheVersion) {
     return;
   }
 
@@ -228,11 +228,11 @@ void ImageCache::ReadFromDisk() {
   std::vector<std::string> image_dir;
   split(CommonMetrics::IMAGES_TO_CACHE, ",", image_dir);
   for (unsigned i = 0; i < image_dir.size(); ++i) {
-    EmptyDir(SpecialFiles::CACHE_DIR + image_dir[i] + "/");
+    EmptyDir(SpecialFiles::kCacheDir + image_dir[i] + "/");
   }
 
   image_data_.Clear();
-  image_data_.SetValue("Cache", "CacheVersion", IMAGE_CACHE_VERSION);
+  image_data_.SetValue("Cache", "CacheVersion", kImageCacheVersion);
   image_data_.WriteFile(IMAGE_CACHE_INDEX);
 }
 
@@ -331,7 +331,7 @@ RageTextureID ImageCache::LoadCachedImage(
   // LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", sImagePath.c_str(),
   // ID.filename.c_str() );
 
-  LockMut(g_ImageCacheMutex);
+  LockMut(image_cache_mutex);
 
   /* Hack: make sure Image::Load doesn't change our return value and end up
    * reloading. */
@@ -340,7 +340,7 @@ RageTextureID ImageCache::LoadCachedImage(
   }
 
   /* It's not in a texture.  Do we have it loaded? */
-  if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end()) {
+  if (image_path_to_image.find(image_path) == image_path_to_image.end()) {
     /* Oops, the image is missing.  Warn and continue. */
     if (PREFSMAN->image_cache_ != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", image_path.c_str());
@@ -351,7 +351,7 @@ RageTextureID ImageCache::LoadCachedImage(
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
    * only have to convert once. */
-  RageSurface*& image = g_ImagePathToImage[image_path];
+  RageSurface*& image = image_path_to_image[image_path];
   ASSERT(image != nullptr);
 
   int source_width = 0, source_height = 0;
@@ -403,7 +403,7 @@ void ImageCache::CacheImage(std::string image_dir, std::string image_path) {
       unsigned cur_full_hash;
       const unsigned full_hash = GetHashForFile(image_path);
       {
-        LockMut(g_ImageCacheMutex);
+        LockMut(image_cache_mutex);
         if (image_data_.GetValue(image_path, "FullHash", cur_full_hash) &&
             cur_full_hash == full_hash) {
           cache_up_to_date = true;
@@ -443,8 +443,8 @@ void ImageCache::CacheImageInternal(
   int height = nearest_power_of_two(source_height / 2);
 
   if (image_dir == "Banner") {
-    width = std::min(width, MAX_BANNER_CACHE_WIDTH);
-    height = std::min(height, MAX_BANNER_CACHE_HEIGHT);
+    width = std::min(width, kMaxBannerCacheWidth);
+    height = std::min(height, kMaxBannerCacheHeight);
   }
 
   RageSurfaceUtils::Zoom(image, width, height);
@@ -465,7 +465,7 @@ void ImageCache::CacheImageInternal(
    * though, since we only load one cached image into a texture at once, and the
    * speed hit may not matter on newer ATI cards.  RGBA is safer, though.
    */
-  if (g_bPalettedImageCache) {
+  if (paletted_image_cache) {
     if (image->fmt_.bytes_per_pixel_ != 1) {
       RageSurfaceUtils::Palettize(image);
     }
@@ -486,18 +486,18 @@ void ImageCache::CacheImageInternal(
   RageSurfaceUtils::SaveSurface(image, cache_path);
 
   {
-    LockMut(g_ImageCacheMutex);
+    LockMut(image_cache_mutex);
 
     /* If an old image is loaded, free it. */
-    if (g_ImagePathToImage.find(image_path) != g_ImagePathToImage.end()) {
-      RageSurface* oldimg = g_ImagePathToImage[image_path];
+    if (image_path_to_image.find(image_path) != image_path_to_image.end()) {
+      RageSurface* oldimg = image_path_to_image[image_path];
       delete oldimg;
-      g_ImagePathToImage.erase(image_path);
+      image_path_to_image.erase(image_path);
     }
 
     if (PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_PRELOAD) {
       /* Keep it; we're just going to load it anyway. */
-      g_ImagePathToImage[image_path] = image;
+      image_path_to_image[image_path] = image;
     } else {
       delete image;
     }
@@ -515,7 +515,7 @@ void ImageCache::CacheImageInternal(
 }
 
 void ImageCache::WriteToDisk() {
-  LockMut(g_ImageCacheMutex);
+  LockMut(image_cache_mutex);
   image_data_.WriteFile(IMAGE_CACHE_INDEX);
 }
 

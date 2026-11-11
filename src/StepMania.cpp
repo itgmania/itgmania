@@ -88,7 +88,7 @@ void ShutdownGame();
 bool HandleGlobalInputs(const InputEventPlus& input);
 void HandleInputEvents(float delta_time);
 
-static Preference<bool> g_bAllowMultipleInstances(
+static Preference<bool> allow_multiple_instances(
     "AllowMultipleInstances", false);
 
 void StepMania::GetPreferredVideoModeParams(VideoModeParams& params_out) {
@@ -162,7 +162,7 @@ static void StoreActualGraphicOptions() {
     PREFSMAN->display_height_.Set(params.height_);
   }
   PREFSMAN->display_color_depth_.Set(params.bpp_);
-  if (PREFSMAN->refresh_rate_ != REFRESH_DEFAULT) {
+  if (PREFSMAN->refresh_rate_ != kRefreshDefault) {
     PREFSMAN->refresh_rate_.Set(params.rate_);
   }
   PREFSMAN->vsync_.Set(params.vsync_);
@@ -313,7 +313,7 @@ void ShutdownGame() {
 }
 
 static void HandleException(const std::string& error) {
-  if (g_bAutoRestart) {
+  if (auto_restart) {
     HOOKS->RestartProgram();
   }
 
@@ -395,7 +395,7 @@ struct VideoCardDefaults {
     texture_size_ = texture_size;
     smooth_lines_ = smooth_lines;
   }
-} const g_VideoCardDefaults[] = {
+} const kVideoCardDefaults[] = {
     // These lines correspond to the struct defined above.
     VideoCardDefaults(
         "OpenGL",   // Video card name (generic Mac/Linux)
@@ -438,8 +438,8 @@ bool CheckVideoDefaultSettings() {
   VideoCardDefaults defaults;
 
   unsigned i;
-  for (i = 0; i < ARRAYLEN(g_VideoCardDefaults); i++) {
-    defaults = g_VideoCardDefaults[i];
+  for (i = 0; i < ARRAYLEN(kVideoCardDefaults); i++) {
+    defaults = kVideoCardDefaults[i];
 
     std::string driver_regex = defaults.driver_regex_;
     Regex regex(driver_regex);
@@ -450,7 +450,7 @@ bool CheckVideoDefaultSettings() {
       break;
     }
   }
-  if (i >= ARRAYLEN(g_VideoCardDefaults)) {
+  if (i >= ARRAYLEN(kVideoCardDefaults)) {
     FAIL_M("Failed to match video driver");
   }
 
@@ -718,11 +718,11 @@ static void MountFolders(
 }
 
 static void WriteLogHeader() {
-  LOG->Info("%s%s", PRODUCT_FAMILY, product_version);
+  LOG->Info("%s%s", PRODUCT_FAMILY, kProductVersion);
 
   LOG->Info(
-      "Compiled %s @ %s (build %s)", version_date, version_time,
-      ::sm_version_git_hash);
+      "Compiled %s @ %s (build %s)", kVersionDate, kVersionTime,
+      ::kSmVersionGitHash);
 
   time_t cur_time;
   time(&cur_time);
@@ -780,9 +780,9 @@ int sm_main(int argc, char* argv[]) {
 
   // Almost everything uses this to read and write files.  Load this early.
   FILEMAN = new RageFileManager(argv[0]);
-  FILEMAN->ProtectPath(SpecialFiles::DEFAULTS_INI_PATH);
-  FILEMAN->ProtectPath(SpecialFiles::STATIC_INI_PATH);
-  FILEMAN->ProtectPath(SpecialFiles::PREFERENCES_INI_PATH);
+  FILEMAN->ProtectPath(SpecialFiles::kDefaultsIniPath);
+  FILEMAN->ProtectPath(SpecialFiles::kStaticIniPath);
+  FILEMAN->ProtectPath(SpecialFiles::kPreferencesIniPath);
   FILEMAN->MountInitialFilesystems();
 
   bool portable = DoesFileExist("/Portable.ini");
@@ -805,7 +805,7 @@ int sm_main(int argc, char* argv[]) {
    * another instance, we don't try to clobber its log.  We also want to do this
    * before opening the loading window, so if we give focus away, we don't flash
    * the window. */
-  if (!g_bAllowMultipleInstances.Get() &&
+  if (!allow_multiple_instances.Get() &&
       HOOKS->CheckForMultipleInstances(argc, argv)) {
     ShutdownGame();
     return 0;
@@ -828,7 +828,7 @@ int sm_main(int argc, char* argv[]) {
   MountFolders(
       "dir", PREFSMAN->additional_course_folders_writable_.Get(), "/Courses");
 
-  MountTreeOfZips(SpecialFiles::PACKAGES_DIR);
+  MountTreeOfZips(SpecialFiles::kPackagesDir);
 
   /* One of the above filesystems might contain files that affect preferences
    * (e.g. Data/Static.ini). Re-read preferences. */

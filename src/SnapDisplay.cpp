@@ -23,8 +23,8 @@ void SnapDisplay::Load() {
   num_cols_ = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
                   ->cols_per_player_;
 
-  spr_indicators_[0].SetX(-ARROW_SIZE * (num_cols_ / 2 + 0.5f));
-  spr_indicators_[1].SetX(ARROW_SIZE * (num_cols_ / 2 + 0.5f));
+  spr_indicators_[0].SetX(-kArrowSize * (num_cols_ / 2 + 0.5f));
+  spr_indicators_[1].SetX(kArrowSize * (num_cols_ / 2 + 0.5f));
 }
 
 bool SnapDisplay::PrevSnapMode() {

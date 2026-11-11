@@ -15,7 +15,7 @@
 class DisplaySpec;
 typedef std::set<DisplaySpec> DisplaySpecs;
 
-const int REFRESH_DEFAULT = 0;
+const int kRefreshDefault = 0;
 struct RageSurface;
 enum TextureUnit {
   TextureUnit_1,

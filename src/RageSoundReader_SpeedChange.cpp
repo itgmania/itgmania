@@ -11,7 +11,7 @@
 #include "RageUtil.h"
 #include "global.h"
 
-static const int WINDOW_SIZE_MS = 30;
+static const int kWindowSizeMs = 30;
 
 RageSoundReader_SpeedChange::RageSoundReader_SpeedChange(
     RageSoundReader* source)
@@ -34,7 +34,7 @@ void RageSoundReader_SpeedChange::SetSpeedRatio(float ratio) {
 }
 
 int RageSoundReader_SpeedChange::GetWindowSizeFrames() const {
-  return (WINDOW_SIZE_MS * GetSampleRate()) / 1000;
+  return (kWindowSizeMs * GetSampleRate()) / 1000;
 }
 
 void RageSoundReader_SpeedChange::Reset() {

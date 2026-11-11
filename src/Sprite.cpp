@@ -26,7 +26,7 @@
 
 REGISTER_ACTOR_CLASS(Sprite);
 
-const float min_state_delay = 0.0001f;
+const float kMinStateDelay = 0.0001f;
 
 Sprite::Sprite() {
   texture_ = nullptr;
@@ -394,8 +394,8 @@ void Sprite::UpdateAnimationState() {
     // UpdateAnimationState changed to not loop forever on negative state
     // delay.  This allows a state to last forever when it is reached, so
     // the animation has a built-in ending point. -Kyz
-    while (states_[cur_state_].delay_ > min_state_delay &&
-           secs_into_state_ + min_state_delay > states_[cur_state_].delay_)
+    while (states_[cur_state_].delay_ > kMinStateDelay &&
+           secs_into_state_ + kMinStateDelay > states_[cur_state_].delay_)
     // it's time to switch frames
     {
       // increment frame and reset the counter

@@ -28,14 +28,14 @@ XToString(SetTimeSelection);
 /** @brief A foreach iterator through the time selections. */
 #define FOREACH_SetTimeSelection(s) FOREACH_ENUM(SetTimeSelection, s)
 
-const float g_X[NUM_SetTimeSelection] = {320, 320, 320, 320, 320, 320};
+const float kX[NUM_SetTimeSelection] = {320, 320, 320, 320, 320, 320};
 
-const float g_Y[NUM_SetTimeSelection] = {140, 180, 220, 260, 300, 340};
+const float kY[NUM_SetTimeSelection] = {140, 180, 220, 260, 300, 340};
 
-static float GetTitleX(SetTimeSelection s) { return g_X[s] - 80; }
-static float GetTitleY(SetTimeSelection s) { return g_Y[s]; }
-static float GetValueX(SetTimeSelection s) { return g_X[s] + 80; }
-static float GetValueY(SetTimeSelection s) { return g_Y[s]; }
+static float GetTitleX(SetTimeSelection s) { return kX[s] - 80; }
+static float GetTitleY(SetTimeSelection s) { return kY[s]; }
+static float GetValueX(SetTimeSelection s) { return kX[s] + 80; }
+static float GetValueY(SetTimeSelection s) { return kY[s]; }
 
 REGISTER_SCREEN_CLASS(ScreenSetTime);
 

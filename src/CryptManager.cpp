@@ -32,9 +32,9 @@
 CryptManager* CRYPTMAN =
     nullptr;  // global and accessible from anywhere in our program
 
-static const std::string PRIVATE_KEY_PATH = "Data/private.rsa";
-static const std::string PUBLIC_KEY_PATH = "Data/public.rsa";
-static const std::string ALTERNATE_PUBLIC_KEY_DIR = "Data/keys/";
+static const std::string kPrivateKeyPath = "Data/private.rsa";
+static const std::string kPublicKeyPath = "Data/public.rsa";
+static const std::string kAlternatePublicKeyDir = "Data/keys/";
 
 static bool HashFile(RageFileBasic& f, unsigned char buf_hash[20], int i_hash) {
   hash_state hash;
@@ -63,7 +63,7 @@ static bool HashFile(RageFileBasic& f, unsigned char buf_hash[20], int i_hash) {
   return true;
 }
 
-static const int KEY_LENGTH = 1024;
+static const int kKeyLength = 1024;
 #define MAX_SIGNATURE_SIZE_BYTES 1024  // 1 KB
 
 /*
@@ -76,7 +76,7 @@ static const int KEY_LENGTH = 1024;
  *
  */
 
-static PRNGWrapper* g_pPRNG = nullptr;
+static PRNGWrapper* g_prng = nullptr;
 ltc_math_descriptor ltc_mp = ltm_desc;
 
 CryptManager::CryptManager() {
@@ -89,7 +89,7 @@ CryptManager::CryptManager() {
     LUA->Release(L);
   }
 
-  g_pPRNG = new PRNGWrapper(&yarrow_desc);
+  g_prng = new PRNGWrapper(&yarrow_desc);
 }
 
 void CryptManager::GenerateGlobalKeys() {
@@ -100,8 +100,8 @@ void CryptManager::GenerateGlobalKeys() {
   RSAKeyWrapper key;
   std::string s_key;
   std::string error;
-  if (!DoesFileExist(PRIVATE_KEY_PATH) ||
-      !GetFileContents(PRIVATE_KEY_PATH, s_key) || !key.Load(s_key, error)) {
+  if (!DoesFileExist(kPrivateKeyPath) ||
+      !GetFileContents(kPrivateKeyPath, s_key) || !key.Load(s_key, error)) {
     generate = true;
   }
   if (!error.empty()) {
@@ -109,8 +109,8 @@ void CryptManager::GenerateGlobalKeys() {
   }
 
   error.clear();
-  if (!DoesFileExist(PUBLIC_KEY_PATH) ||
-      !GetFileContents(PUBLIC_KEY_PATH, s_key) || !key.Load(s_key, error)) {
+  if (!DoesFileExist(kPublicKeyPath) ||
+      !GetFileContents(kPublicKeyPath, s_key) || !key.Load(s_key, error)) {
     generate = true;
   }
   if (!error.empty()) {
@@ -119,12 +119,12 @@ void CryptManager::GenerateGlobalKeys() {
 
   if (generate) {
     LOG->Warn("Keys missing or failed to load.  Generating new keys");
-    GenerateRSAKeyToFile(KEY_LENGTH, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH);
+    GenerateRSAKeyToFile(kKeyLength, kPrivateKeyPath, kPublicKeyPath);
   }
 }
 
 CryptManager::~CryptManager() {
-  RageUtil::SafeDelete(g_pPRNG);
+  RageUtil::SafeDelete(g_prng);
   // Unregister with Lua.
   LUA->UnsetGlobal("CRYPTMAN");
 }
@@ -156,7 +156,7 @@ void CryptManager::GenerateRSAKey(
 
   rsa_key key;
   ret = rsa_make_key(
-      &g_pPRNG->prng_, g_pPRNG->i_prng_, key_length / 8, 65537, &key);
+      &g_prng->prng_, g_prng->i_prng_, key_length / 8, 65537, &key);
   if (ret != CRYPT_OK) {
     LOG->Warn("GenerateRSAKey(%i) error: %s", key_length, error_to_string(ret));
     return;
@@ -200,9 +200,9 @@ void CryptManager::GenerateRSAKeyToFile(
 
 void CryptManager::SignFileToFile(
     std::string path, std::string signature_file) {
-  std::string priv_filename = PRIVATE_KEY_PATH;
+  std::string priv_filename = kPrivateKeyPath;
   if (signature_file.empty()) {
-    signature_file = path + SIGNATURE_APPEND;
+    signature_file = path + kSignatureAppend;
   }
 
   std::string priv_key;
@@ -253,7 +253,7 @@ bool CryptManager::Sign(
 
   int ret = rsa_sign_hash_ex(
       buf_hash, sizeof(buf_hash), signature, &signature_len, LTC_PKCS_1_V1_5,
-      &g_pPRNG->prng_, g_pPRNG->i_prng_, hash, 0, &key.key_);
+      &g_prng->prng_, g_prng->i_prng_, hash, 0, &key.key_);
   if (ret != CRYPT_OK) {
     LOG->Warn("SignFileToFile error: %s", error_to_string(ret));
     return false;
@@ -265,12 +265,12 @@ bool CryptManager::Sign(
 
 bool CryptManager::VerifyFileWithFile(
     std::string path, std::string signature_file) {
-  if (VerifyFileWithFile(path, signature_file, PUBLIC_KEY_PATH)) {
+  if (VerifyFileWithFile(path, signature_file, kPublicKeyPath)) {
     return true;
   }
 
   std::vector<std::string> keys;
-  GetDirListing(ALTERNATE_PUBLIC_KEY_DIR, keys, false, true);
+  GetDirListing(kAlternatePublicKeyDir, keys, false, true);
   for (unsigned i = 0; i < keys.size(); ++i) {
     const std::string& key = keys[i];
     LOG->Trace("Trying alternate key \"%s\" ...", key.c_str());
@@ -286,7 +286,7 @@ bool CryptManager::VerifyFileWithFile(
 bool CryptManager::VerifyFileWithFile(
     std::string path, std::string signature_file, std::string public_key_file) {
   if (signature_file.empty()) {
-    signature_file = path + SIGNATURE_APPEND;
+    signature_file = path + kSignatureAppend;
   }
 
   std::string public_key;
@@ -351,8 +351,8 @@ bool CryptManager::Verify(
 }
 
 void CryptManager::GetRandomBytes(void* data, int bytes) {
-  int ret = prng_descriptor[g_pPRNG->i_prng_].read(
-      (unsigned char*)data, bytes, &g_pPRNG->prng_);
+  int ret = prng_descriptor[g_prng->i_prng_].read(
+      (unsigned char*)data, bytes, &g_prng->prng_);
   ASSERT(ret == bytes);
 }
 

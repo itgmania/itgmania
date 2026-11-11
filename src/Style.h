@@ -13,9 +13,9 @@
 #include "PlayerNumber.h"
 
 /** @brief Each style can have a maximum amount of columns to work with. */
-const int MAX_COLS_PER_PLAYER = MAX_NOTE_TRACKS;
+const int kMaxColsPerPlayer = kMaxNoteTracks;
 /** @brief Provide a default value for an invalid column. */
-static const int Column_Invalid = -1;
+static const int kColumnInvalid = -1;
 
 class NoteData;
 struct Game;
@@ -64,14 +64,14 @@ class Style {
   };
 
   /** @brief Map each players' colun to a track in the NoteData. */
-  ColumnInfo column_info_[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
+  ColumnInfo column_info_[kNumPlayers][kMaxColsPerPlayer];
 
   /* This maps from game inputs to columns. More than one button may map to a
    * single column. */
   enum { NO_MAPPING = -1, END_MAPPING = -2 };
   /** @brief Map each input to a column, or GameButton_Invalid. */
   int input_column_[NUM_GameController][NUM_GameButton];
-  int column_draw_order_[MAX_COLS_PER_PLAYER];
+  int column_draw_order_[kMaxColsPerPlayer];
   /** @brief Does this style need to be zoomed out with two players due to too
    * many columns? */
   // Design change:  Instead of having a flag in the style that toggles a

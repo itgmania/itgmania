@@ -21,7 +21,7 @@
  * with the Waiei Group.ini-lua project still actively
  * being developed.
  */
-const std::string INI_FILE = "Pack.ini";
+const std::string kIniFile = "Pack.ini";
 
 static std::string GetInternalGroupName(
     ProfileSlot prof_slot, std::string group_name) {
@@ -51,11 +51,11 @@ Group::Group(
   std::string pack_ini_path;
   // songs from profile
   if (prof_slot != ProfileSlot_Invalid) {
-    pack_ini_path = dir + "/" + INI_FILE;
+    pack_ini_path = dir + "/" + kIniFile;
     path_ = dir;
     group_name_ = GetInternalGroupName(prof_slot, group_dir_name);
   } else {
-    pack_ini_path = dir + group_dir_name + "/" + INI_FILE;
+    pack_ini_path = dir + group_dir_name + "/" + kIniFile;
     path_ = dir + group_dir_name;
     group_name_ = Basename(group_dir_name);
   }

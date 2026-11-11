@@ -15,13 +15,13 @@ FontManager* FONT =
 
 // map from file name to a texture holder
 typedef std::pair<std::string, std::string> FontName;
-static std::map<FontName, Font*> g_mapPathToFont;
+static std::map<FontName, Font*> map_path_to_font;
 
 FontManager::FontManager() {}
 
 FontManager::~FontManager() {
-  for (std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();
-       i != g_mapPathToFont.end(); ++i) {
+  for (std::map<FontName, Font*>::iterator i = map_path_to_font.begin();
+       i != map_path_to_font.end(); ++i) {
     const FontName& fn = i->first;
     Font* font = i->second;
     if (font->ref_count_ > 0) {
@@ -44,8 +44,8 @@ Font* FontManager::LoadFont(
   CHECKPOINT_M(ssprintf(
       "FontManager::LoadFont(%s).", font_or_texture_file_path.c_str()));
   const FontName new_name(font_or_texture_file_path, chars);
-  std::map<FontName, Font*>::iterator p = g_mapPathToFont.find(new_name);
-  if (p != g_mapPathToFont.end()) {
+  std::map<FontName, Font*>::iterator p = map_path_to_font.find(new_name);
+  if (p != map_path_to_font.end()) {
     font = p->second;
     font->ref_count_++;
     return font;
@@ -53,7 +53,7 @@ Font* FontManager::LoadFont(
 
   Font* f = new Font;
   f->Load(font_or_texture_file_path, chars);
-  g_mapPathToFont[new_name] = f;
+  map_path_to_font[new_name] = f;
   return f;
 }
 
@@ -65,8 +65,8 @@ Font* FontManager::CopyFont(Font* font) {
 void FontManager::UnloadFont(Font* fp) {
   CHECKPOINT_M(ssprintf("FontManager::UnloadFont(%s).", fp->path_.c_str()));
 
-  for (std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();
-       i != g_mapPathToFont.end(); ++i) {
+  for (std::map<FontName, Font*>::iterator i = map_path_to_font.begin();
+       i != map_path_to_font.end(); ++i) {
     if (i->second != fp) {
       continue;
     }
@@ -77,8 +77,8 @@ void FontManager::UnloadFont(Font* fp) {
     i->second->ref_count_--;
 
     if (fp->ref_count_ == 0) {
-      delete i->second;          // free the texture
-      g_mapPathToFont.erase(i);  // and remove the key in the map
+      delete i->second;           // free the texture
+      map_path_to_font.erase(i);  // and remove the key in the map
     }
     return;
   }

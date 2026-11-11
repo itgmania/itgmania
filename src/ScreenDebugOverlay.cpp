@@ -56,16 +56,16 @@
 #include "XmlToLua.h"
 #include "global.h"
 
-static bool g_bIsDisplayed = false;
-static bool g_bIsSlow = false;
-static bool g_bIsHalt = false;
-static RageTimer g_HaltTimer(RageZeroTimer);
-static float g_fImageScaleCurrent = 1;
-static float g_fImageScaleDestination = 1;
+static bool is_displayed = false;
+static bool is_slow = false;
+static bool is_halt = false;
+static RageTimer halt_timer(kRageZeroTimer);
+static float image_scale_current = 1;
+static float image_scale_destination = 1;
 
 // This will disable the debug menu ENTIRELY - including F6 for autosync, F8 for
 // autoplay, etc
-static bool g_bEnableDebugMenu = true;
+static bool enable_debug_menu = true;
 
 // DebugLine theming
 static const ThemeMetric<RageColor> BACKGROUND_COLOR(
@@ -96,14 +96,14 @@ static LocalizedString MUTE_ACTIONS_OFF(
     "ScreenDebugOverlay", "Mute actions off");
 
 class IDebugLine;
-static std::vector<IDebugLine*>* g_pvpSubscribers = nullptr;
+static std::vector<IDebugLine*>* subscribers = nullptr;
 class IDebugLine {
  public:
   IDebugLine() {
-    if (g_pvpSubscribers == nullptr) {
-      g_pvpSubscribers = new std::vector<IDebugLine*>;
+    if (subscribers == nullptr) {
+      subscribers = new std::vector<IDebugLine*>;
     }
-    g_pvpSubscribers->push_back(this);
+    subscribers->push_back(this);
   }
   virtual ~IDebugLine() {}
   enum Type { all_screens, gameplay_only };
@@ -150,15 +150,15 @@ ScreenDebugOverlay::~ScreenDebugOverlay() {
   text_function_.clear();
 }
 
-const int MAX_DEBUG_LINES = 30;
+const int kMaxDebugLines = 30;
 struct MapDebugToDI {
   DeviceInput hold_for_debug1_;
   DeviceInput hold_for_debug2_;
   DeviceInput hold_for_slow_;
   DeviceInput hold_for_fast_;
   DeviceInput toggle_mute_;
-  DeviceInput debug_button_[MAX_DEBUG_LINES];
-  DeviceInput gameplay_button_[MAX_DEBUG_LINES];
+  DeviceInput debug_button_[kMaxDebugLines];
+  DeviceInput gameplay_button_[kMaxDebugLines];
   std::map<DeviceInput, int> page_button_;
   void Clear() {
     hold_for_debug1_.MakeInvalid();
@@ -166,13 +166,13 @@ struct MapDebugToDI {
     hold_for_slow_.MakeInvalid();
     hold_for_fast_.MakeInvalid();
     toggle_mute_.MakeInvalid();
-    for (int i = 0; i < MAX_DEBUG_LINES; i++) {
+    for (int i = 0; i < kMaxDebugLines; i++) {
       debug_button_[i].MakeInvalid();
       gameplay_button_[i].MakeInvalid();
     }
   }
 };
-static MapDebugToDI g_Mappings;
+static MapDebugToDI mappings;
 
 static LocalizedString IN_GAMEPLAY("ScreenDebugOverlay", "%s in gameplay");
 static std::string GetDebugButtonName(const IDebugLine* line) {
@@ -202,75 +202,75 @@ static bool GetKeyFromMap(const std::map<U, V>& m, const V& val, U& key) {
 
 static LocalizedString DEBUG_MENU("ScreenDebugOverlay", "Debug Menu");
 void ScreenDebugOverlay::Init() {
-  g_bEnableDebugMenu = PREFSMAN->debug_menu_enabled_.Get();
+  enable_debug_menu = PREFSMAN->debug_menu_enabled_.Get();
 
   Screen::Init();
 
-  if (!g_bEnableDebugMenu) {
+  if (!enable_debug_menu) {
     return;
   }
 
   // Init debug mappings
   // TODO: Arch-specific?
   {
-    g_Mappings.Clear();
+    mappings.Clear();
 
-    g_Mappings.hold_for_debug1_ = DeviceInput(DEVICE_KEYBOARD, KEY_F3);
-    g_Mappings.hold_for_debug2_.MakeInvalid();
-    g_Mappings.hold_for_slow_ = DeviceInput(DEVICE_KEYBOARD, KEY_ACCENT);
-    g_Mappings.hold_for_fast_ = DeviceInput(DEVICE_KEYBOARD, KEY_TAB);
-    g_Mappings.toggle_mute_ = DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE);
+    mappings.hold_for_debug1_ = DeviceInput(DEVICE_KEYBOARD, KEY_F3);
+    mappings.hold_for_debug2_.MakeInvalid();
+    mappings.hold_for_slow_ = DeviceInput(DEVICE_KEYBOARD, KEY_ACCENT);
+    mappings.hold_for_fast_ = DeviceInput(DEVICE_KEYBOARD, KEY_TAB);
+    mappings.toggle_mute_ = DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE);
 
     /* TODO: Find a better way of indicating which option is which here.
      * Maybe we should take a page from ScreenEdit's menus and make
      * RowDefs()? */
 
     int i = 0;
-    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F8);
-    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F7);
-    g_Mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F6);
+    mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F8);
+    mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F7);
+    mappings.gameplay_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_F6);
     i = 0;
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C1);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C2);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C3);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C4);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C5);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C6);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C7);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C8);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C9);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C0);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cq);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cw);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ce);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cr);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ct);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ci);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Co);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cp);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ca);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cs);
-    g_Mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cd);
-    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F5)] = 0;
-    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F6)] = 1;
-    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F7)] = 2;
-    g_Mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C1);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C2);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C3);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C4);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C5);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C6);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C7);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C8);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C9);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_C0);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cq);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cw);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ce);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cr);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ct);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ci);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Co);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cp);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Ca);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cs);
+    mappings.debug_button_[i++] = DeviceInput(DEVICE_KEYBOARD, KEY_Cd);
+    mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F5)] = 0;
+    mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F6)] = 1;
+    mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F7)] = 2;
+    mappings.page_button_[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
   }
 
   std::map<std::string, int> next_debug_button;
   int next_gameplay_button = 0;
-  for (IDebugLine* p : *g_pvpSubscribers) {
+  for (IDebugLine* p : *subscribers) {
     std::string page_name = p->GetPageName();
 
     DeviceInput di;
     switch (p->GetType()) {
       case IDebugLine::all_screens:
-        di = g_Mappings.debug_button_[next_debug_button[page_name]++];
+        di = mappings.debug_button_[next_debug_button[page_name]++];
         break;
       case IDebugLine::gameplay_only:
-        di = g_Mappings.gameplay_button_[next_gameplay_button++];
+        di = mappings.gameplay_button_[next_gameplay_button++];
         break;
     }
     p->button_ = di;
@@ -301,7 +301,7 @@ void ScreenDebugOverlay::Init() {
     int page = s - start;
 
     DeviceInput di;
-    bool b = GetKeyFromMap(g_Mappings.page_button_, page, di);
+    bool b = GetKeyFromMap(mappings.page_button_, page, di);
     ASSERT(b);
 
     std::string button = INPUTMAN->GetDeviceSpecificInputString(di);
@@ -317,12 +317,12 @@ void ScreenDebugOverlay::Init() {
     this->AddChild(p);
   }
 
-  for (auto p = g_pvpSubscribers->begin(); p != g_pvpSubscribers->end(); ++p) {
+  for (auto p = subscribers->begin(); p != subscribers->end(); ++p) {
     {
       BitmapText* bt = new BitmapText;
       bt->SetName("ButtonText");
       bt->LoadFromFont(THEME->GetPathF("ScreenDebugOverlay", "line"));
-      bt->SetHorizAlign(align_right);
+      bt->SetHorizAlign(kAlignRight);
       bt->SetText("blah");
       LOAD_ALL_COMMANDS_AND_ON_COMMAND(*bt);
       text_button_.push_back(bt);
@@ -332,7 +332,7 @@ void ScreenDebugOverlay::Init() {
       BitmapText* bt = new BitmapText;
       bt->SetName("FunctionText");
       bt->LoadFromFont(THEME->GetPathF("ScreenDebugOverlay", "line"));
-      bt->SetHorizAlign(align_left);
+      bt->SetHorizAlign(kAlignLeft);
       bt->SetText("blah");
       LOAD_ALL_COMMANDS_AND_ON_COMMAND(*bt);
       text_function_.push_back(bt);
@@ -344,48 +344,47 @@ void ScreenDebugOverlay::Init() {
 }
 
 void ScreenDebugOverlay::Update(float delta_time) {
-  if (!g_bEnableDebugMenu) {
+  if (!enable_debug_menu) {
     return;
   }
 
   {
     float rate = 1;
-    if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_fast_)) {
-      if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
+    if (INPUTFILTER->IsBeingPressed(mappings.hold_for_fast_)) {
+      if (INPUTFILTER->IsBeingPressed(mappings.hold_for_slow_)) {
         rate = 0;  // both; stop time
       } else {
         rate *= 4;
       }
-    } else if (INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_slow_)) {
+    } else if (INPUTFILTER->IsBeingPressed(mappings.hold_for_slow_)) {
       rate /= 4;
     }
 
-    if (g_bIsHalt) {
+    if (is_halt) {
       rate = 0;
-    } else if (g_bIsSlow) {
+    } else if (is_slow) {
       rate /= 4;
     }
 
     GameLoop::SetUpdateRate(rate);
   }
 
-  bool centering_needs_update =
-      g_fImageScaleCurrent != g_fImageScaleDestination;
-  fapproach(g_fImageScaleCurrent, g_fImageScaleDestination, delta_time);
+  bool centering_needs_update = image_scale_current != image_scale_destination;
+  fapproach(image_scale_current, image_scale_destination, delta_time);
   if (centering_needs_update) {
     DISPLAY->ChangeCentering(
         PREFSMAN->center_image_translate_x_,
         PREFSMAN->center_image_translate_y_,
         PREFSMAN->center_image_add_width_ - (int)SCREEN_WIDTH +
-            (int)(g_fImageScaleCurrent * SCREEN_WIDTH),
+            (int)(image_scale_current * SCREEN_WIDTH),
         PREFSMAN->center_image_add_height_ - (int)SCREEN_HEIGHT +
-            (int)(g_fImageScaleCurrent * SCREEN_HEIGHT));
+            (int)(image_scale_current * SCREEN_HEIGHT));
   }
 
   Screen::Update(delta_time);
 
-  this->SetVisible(g_bIsDisplayed && !forced_hidden_);
-  if (!g_bIsDisplayed) {
+  this->SetVisible(is_displayed && !forced_hidden_);
+  if (!is_displayed) {
     return;
   }
 
@@ -403,9 +402,9 @@ void ScreenDebugOverlay::UpdateText() {
 
   // todo: allow changing of various spacing/location things -aj
   int offset = 0;
-  auto sub_start = g_pvpSubscribers->begin();
+  auto sub_start = subscribers->begin();
   for (std::vector<IDebugLine*>::const_iterator p = sub_start;
-       p != g_pvpSubscribers->end(); ++p) {
+       p != subscribers->end(); ++p) {
     std::string page_name = (*p)->GetPageName();
 
     int i = p - sub_start;
@@ -448,11 +447,11 @@ void ScreenDebugOverlay::UpdateText() {
     txt2.SetText(s1 + s2);
   }
 
-  if (g_bIsHalt) {
+  if (is_halt) {
     /* More than once I've paused the game accidentally and wasted time
      * figuring out why, so warn. */
-    if (g_HaltTimer.Ago() >= 5.0f) {
-      g_HaltTimer.Touch();
+    if (halt_timer.Ago() >= 5.0f) {
+      halt_timer.Touch();
       LOG->Warn("Game halted");
     }
   }
@@ -469,33 +468,33 @@ static bool GetValueFromMap(const std::map<U, V>& m, const U& key, V& val) {
 }
 
 bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
-  if (!g_bEnableDebugMenu) {
+  if (!enable_debug_menu) {
     return Screen::Input(input);
   }
 
-  if (input.device_i_ == g_Mappings.hold_for_debug1_ ||
-      input.device_i_ == g_Mappings.hold_for_debug2_) {
+  if (input.device_i_ == mappings.hold_for_debug1_ ||
+      input.device_i_ == mappings.hold_for_debug2_) {
     bool holding_neither =
-        (!g_Mappings.hold_for_debug1_.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
-        (!g_Mappings.hold_for_debug2_.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
+        (!mappings.hold_for_debug1_.IsValid() ||
+         !INPUTFILTER->IsBeingPressed(mappings.hold_for_debug1_)) &&
+        (!mappings.hold_for_debug2_.IsValid() ||
+         !INPUTFILTER->IsBeingPressed(mappings.hold_for_debug2_));
     bool holding_both =
-        (!g_Mappings.hold_for_debug1_.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug1_)) &&
-        (!g_Mappings.hold_for_debug2_.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.hold_for_debug2_));
+        (!mappings.hold_for_debug1_.IsValid() ||
+         INPUTFILTER->IsBeingPressed(mappings.hold_for_debug1_)) &&
+        (!mappings.hold_for_debug2_.IsValid() ||
+         INPUTFILTER->IsBeingPressed(mappings.hold_for_debug2_));
     if (holding_neither) {
       forced_hidden_ = false;
     }
 
     if (holding_both) {
-      g_bIsDisplayed = true;
+      is_displayed = true;
     } else {
-      g_bIsDisplayed = false;
+      is_displayed = false;
     }
   }
-  if (input.device_i_ == g_Mappings.toggle_mute_) {
+  if (input.device_i_ == mappings.toggle_mute_) {
     PREFSMAN->mute_actions_.Set(!PREFSMAN->mute_actions_);
     SCREENMAN->SystemMessage(
         PREFSMAN->mute_actions_ ? MUTE_ACTIONS_ON.GetValue()
@@ -503,8 +502,8 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
   }
 
   int page = 0;
-  if (g_bIsDisplayed &&
-      GetValueFromMap(g_Mappings.page_button_, input.device_i_, page)) {
+  if (is_displayed &&
+      GetValueFromMap(mappings.page_button_, input.device_i_, page)) {
     if (input.type_ != IET_FIRST_PRESS) {
       return true;  // eat the input but do nothing
     }
@@ -513,9 +512,9 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
     return true;
   }
 
-  auto start = g_pvpSubscribers->begin();
+  auto start = subscribers->begin();
   for (std::vector<IDebugLine*>::const_iterator p = start;
-       p != g_pvpSubscribers->end(); ++p) {
+       p != subscribers->end(); ++p) {
     std::string page_name = (*p)->GetPageName();
 
     int i = p - start;
@@ -525,7 +524,7 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
     IDebugLine::Type type = (*p)->GetType();
     switch (type) {
       case IDebugLine::all_screens:
-        if (!g_bIsDisplayed) {
+        if (!is_displayed) {
           continue;
         }
         if (page_name != GetCurrentPageName()) {
@@ -650,7 +649,7 @@ class DebugLineAutoplay : public IDebugLine {
     return AUTO_PLAY.GetValue() + " (+Shift = AI)";
   }
   virtual std::string GetDisplayValue() {
-    PlayerController pc = GamePreferences::m_AutoPlay.Get();
+    PlayerController pc = GamePreferences::auto_play.Get();
     switch (pc) {
       case PC_HUMAN:
         return OFF.GetValue();
@@ -667,10 +666,10 @@ class DebugLineAutoplay : public IDebugLine {
   }
   virtual Type GetType() const { return IDebugLine::gameplay_only; }
   virtual bool IsEnabled() {
-    return GamePreferences::m_AutoPlay.Get() != PC_HUMAN;
+    return GamePreferences::auto_play.Get() != PC_HUMAN;
   }
   virtual void DoAndLog(std::string& message_out) {
-    ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
+    ASSERT(GAMESTATE->GetMasterPlayerNumber() != kPlayerInvalid);
     PlayerController pc =
         GAMESTATE->player_state_[GAMESTATE->GetMasterPlayerNumber()]
             ->player_controller_;
@@ -682,9 +681,9 @@ class DebugLineAutoplay : public IDebugLine {
     } else {
       pc = (pc == PC_AUTOPLAY) ? PC_HUMAN : PC_AUTOPLAY;
     }
-    GamePreferences::m_AutoPlay.Set(pc);
+    GamePreferences::auto_play.Set(pc);
     FOREACH_HumanPlayer(p) GAMESTATE->player_state_[p]->player_controller_ =
-        GamePreferences::m_AutoPlay;
+        GamePreferences::auto_play;
 
     IDebugLine::DoAndLog(message_out);
   }
@@ -708,7 +707,7 @@ class DebugLineAssist : public IDebugLine {
            GAMESTATE->song_options_.GetSong().assist_metronome_;
   }
   virtual void DoAndLog(std::string& message_out) {
-    ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
+    ASSERT(GAMESTATE->GetMasterPlayerNumber() != kPlayerInvalid);
     bool holding_shift =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT));
     bool b;
@@ -779,13 +778,13 @@ class DebugLineCoinMode : public IDebugLine {
   virtual bool IsEnabled() { return true; }
   virtual void DoAndLog(std::string& message_out) {
     if (GAMESTATE->GetCoinMode() == CoinMode_Home) {
-      GamePreferences::m_CoinMode.Set(CoinMode_Free);
+      GamePreferences::coin_mode.Set(CoinMode_Free);
     } else if (
         GAMESTATE->GetCoinMode() == CoinMode_Free &&
         !GAMESTATE->IsEventMode()) {
-      GamePreferences::m_CoinMode.Set(CoinMode_Pay);
+      GamePreferences::coin_mode.Set(CoinMode_Pay);
     } else {
-      GamePreferences::m_CoinMode.Set(CoinMode_Home);
+      GamePreferences::coin_mode.Set(CoinMode_Home);
     }
     SCREENMAN->RefreshCreditsMessages();
     IDebugLine::DoAndLog(message_out);
@@ -794,9 +793,9 @@ class DebugLineCoinMode : public IDebugLine {
 
 class DebugLineSlow : public IDebugLine {
   virtual std::string GetDisplayTitle() { return SLOW.GetValue(); }
-  virtual bool IsEnabled() { return g_bIsSlow; }
+  virtual bool IsEnabled() { return is_slow; }
   virtual void DoAndLog(std::string& message_out) {
-    g_bIsSlow = !g_bIsSlow;
+    is_slow = !is_slow;
     SetSpeed();
     IDebugLine::DoAndLog(message_out);
   }
@@ -804,10 +803,10 @@ class DebugLineSlow : public IDebugLine {
 
 class DebugLineHalt : public IDebugLine {
   virtual std::string GetDisplayTitle() { return HALT.GetValue(); }
-  virtual bool IsEnabled() { return g_bIsHalt; }
+  virtual bool IsEnabled() { return is_halt; }
   virtual void DoAndLog(std::string& message_out) {
-    g_bIsHalt = !g_bIsHalt;
-    g_HaltTimer.Touch();
+    is_halt = !is_halt;
+    halt_timer.Touch();
     SetSpeed();
     IDebugLine::DoAndLog(message_out);
   }
@@ -864,18 +863,18 @@ class DebugLineShowMasks : public IDebugLine {
   }
 };
 
-static ProfileSlot g_ProfileSlot = ProfileSlot_Machine;
+static ProfileSlot profile_slot = ProfileSlot_Machine;
 static bool IsSelectProfilePersistent() {
-  if (g_ProfileSlot == ProfileSlot_Machine) {
+  if (profile_slot == ProfileSlot_Machine) {
     return true;
   }
-  return PROFILEMAN->IsPersistentProfile((PlayerNumber)g_ProfileSlot);
+  return PROFILEMAN->IsPersistentProfile((PlayerNumber)profile_slot);
 }
 
 class DebugLineProfileSlot : public IDebugLine {
   virtual std::string GetDisplayTitle() { return PROFILE.GetValue(); }
   virtual std::string GetDisplayValue() {
-    switch (g_ProfileSlot) {
+    switch (profile_slot) {
       case ProfileSlot_Machine:
         return "Machine";
       case ProfileSlot_Player1:
@@ -889,9 +888,9 @@ class DebugLineProfileSlot : public IDebugLine {
   virtual bool IsEnabled() { return IsSelectProfilePersistent(); }
   virtual std::string GetPageName() const { return "Profiles"; }
   virtual void DoAndLog(std::string& message_out) {
-    enum_add(g_ProfileSlot, +1);
-    if (g_ProfileSlot == NUM_ProfileSlot) {
-      g_ProfileSlot = ProfileSlot_Player1;
+    enum_add(profile_slot, +1);
+    if (profile_slot == NUM_ProfileSlot) {
+      profile_slot = ProfileSlot_Player1;
     }
 
     IDebugLine::DoAndLog(message_out);
@@ -1095,10 +1094,10 @@ class DebugLineWriteProfiles : public IDebugLine {
   virtual void DoAndLog(std::string& message_out) {
     // Also save bookkeeping and profile info for debugging
     // so we don't have to play through a whole song to get new output.
-    if (g_ProfileSlot == ProfileSlot_Machine) {
+    if (profile_slot == ProfileSlot_Machine) {
       GAMESTATE->SaveLocalData();
     } else {
-      PlayerNumber pn = (PlayerNumber)g_ProfileSlot;
+      PlayerNumber pn = (PlayerNumber)profile_slot;
       GAMESTATE->SaveCurrentSettingsToProfile(pn);
       GAMESTATE->SavePlayerProfile(pn);
     }
@@ -1150,12 +1149,12 @@ class DebugLineFlushLog : public IDebugLine {
 class DebugLinePullBackCamera : public IDebugLine {
   virtual std::string GetDisplayTitle() { return PULL_BACK_CAMERA.GetValue(); }
   virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return g_fImageScaleDestination != 1; }
+  virtual bool IsEnabled() { return image_scale_destination != 1; }
   virtual void DoAndLog(std::string& message_out) {
-    if (g_fImageScaleDestination == 1) {
-      g_fImageScaleDestination = 0.5f;
+    if (image_scale_destination == 1) {
+      image_scale_destination = 0.5f;
     } else {
-      g_fImageScaleDestination = 1;
+      image_scale_destination = 1;
     }
     IDebugLine::DoAndLog(message_out);
   }

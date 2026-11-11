@@ -69,12 +69,12 @@ void GetAllEditCourses(std::vector<Course*>& courses_out);
 bool Save(Course* course);
 bool RenameAndSave(Course* course, std::string name);
 
-extern int MAX_NAME_LENGTH;
-extern int MAX_PER_PROFILE;
-extern int MIN_WORKOUT_MINUTES;
-extern int MAX_WORKOUT_MINUTES;
+extern int max_name_length;
+extern int max_per_profile;
+extern int min_workout_minutes;
+extern int max_workout_minutes;
 
-extern bool s_bNewCourseNeedsName;  // if true, we are working with a Course
+extern bool new_course_needs_name;  // if true, we are working with a Course
                                     // that has never been named
 };  // namespace EditCourseUtil
 

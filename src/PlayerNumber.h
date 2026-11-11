@@ -14,15 +14,15 @@ enum PlayerNumber {
   NUM_PlayerNumber,  // leave this at the end
   PlayerNumber_Invalid
 };
-const PlayerNumber NUM_PLAYERS = NUM_PlayerNumber;
-const PlayerNumber PLAYER_INVALID = PlayerNumber_Invalid;
+const PlayerNumber kNumPlayers = NUM_PlayerNumber;
+const PlayerNumber kPlayerInvalid = PlayerNumber_Invalid;
 const std::string& PlayerNumberToString(PlayerNumber pn);
 const std::string& PlayerNumberToLocalizedString(PlayerNumber pn);
 LuaDeclareType(PlayerNumber);
 /** @brief A foreach loop to handle the different players. */
 #define FOREACH_PlayerNumber(pn) FOREACH_ENUM(PlayerNumber, pn)
 
-const PlayerNumber OPPOSITE_PLAYER[NUM_PLAYERS] = {PLAYER_2, PLAYER_1};
+const PlayerNumber kOppositePlayer[kNumPlayers] = {PLAYER_2, PLAYER_1};
 
 #endif
 

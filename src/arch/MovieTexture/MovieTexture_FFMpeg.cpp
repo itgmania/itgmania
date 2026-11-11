@@ -25,7 +25,7 @@
 #include "global.h"
 
 static void FixLilEndian() {
-  if constexpr (!Endian::little) {
+  if constexpr (!Endian::kLittle) {
     return;
   }
 
@@ -35,8 +35,8 @@ static void FixLilEndian() {
   }
   initialized = true;
 
-  for (int i = 0; i < AVPixelFormats[i].bpp_; ++i) {
-    AVPixelFormat_t& pf = AVPixelFormats[i];
+  for (int i = 0; i < av_pixel_formats[i].bpp_; ++i) {
+    AVPixelFormat_t& pf = av_pixel_formats[i];
 
     if (!pf.byte_swap_on_little_endian_) {
       continue;
@@ -63,8 +63,8 @@ static int FindCompatibleAVFormat(bool high_color) {
   if (DISPLAY == nullptr) {
     return -1;
   }
-  for (int i = 0; AVPixelFormats[i].bpp_; ++i) {
-    AVPixelFormat_t& fmt = AVPixelFormats[i];
+  for (int i = 0; av_pixel_formats[i].bpp_; ++i) {
+    AVPixelFormat_t& fmt = av_pixel_formats[i];
     if (fmt.yuv_ != PixelFormatYCbCr_Invalid) {
       EffectMode em = MovieTexture_Generic::GetEffectMode(fmt.yuv_);
       if (!DISPLAY->IsEffectModeSupported(em)) {
@@ -102,16 +102,16 @@ RageSurface* RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
   if (av_texfmt_index == -1) {
     /* No dice.  Use the first avcodec format of the preferred bit depth,
      * and let the display system convert. */
-    for (av_texfmt_index = 0; AVPixelFormats[av_texfmt_index].bpp_;
+    for (av_texfmt_index = 0; av_pixel_formats[av_texfmt_index].bpp_;
          ++av_texfmt_index) {
-      if (AVPixelFormats[av_texfmt_index].high_color_ == prefer_high_color) {
+      if (av_pixel_formats[av_texfmt_index].high_color_ == prefer_high_color) {
         break;
       }
     }
-    ASSERT(AVPixelFormats[av_texfmt_index].bpp_ != 0);
+    ASSERT(av_pixel_formats[av_texfmt_index].bpp_ != 0);
   }
 
-  const AVPixelFormat_t* pfd = &AVPixelFormats[av_texfmt_index];
+  const AVPixelFormat_t* pfd = &av_pixel_formats[av_texfmt_index];
   av_texfmt = pfd->pf_;
   fmtout = pfd->yuv_;
 

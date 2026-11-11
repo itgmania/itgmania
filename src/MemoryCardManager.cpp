@@ -53,31 +53,31 @@ static void MemoryCardUsbLevelInit(
   default_value_out = -1;
 }
 
-static Preference<bool> g_bMemoryCards("MemoryCards", false);
-static Preference<bool> g_bMemoryCardProfiles("MemoryCardProfiles", true);
+static Preference<bool> memory_cards("MemoryCards", false);
+static Preference<bool> memory_card_profiles("MemoryCardProfiles", true);
 
 // if set, always use the device that mounts to this point
 Preference1D<std::string> MemoryCardManager::memory_card_os_mount_point_(
-    MemoryCardOsMountPointInit, NUM_PLAYERS, PreferenceType::Immutable);
+    MemoryCardOsMountPointInit, kNumPlayers, PreferenceType::Immutable);
 
 // Look for this level, bus, port when assigning cards. -1 = match any
 Preference1D<int> MemoryCardManager::memory_card_usb_bus_(
-    MemoryCardUsbBusInit, NUM_PLAYERS, PreferenceType::Immutable);
+    MemoryCardUsbBusInit, kNumPlayers, PreferenceType::Immutable);
 Preference1D<int> MemoryCardManager::memory_card_usb_port_(
-    MemoryCardUsbPortInit, NUM_PLAYERS, PreferenceType::Immutable);
+    MemoryCardUsbPortInit, kNumPlayers, PreferenceType::Immutable);
 Preference1D<int> MemoryCardManager::memory_card_usb_level_(
-    MemoryCardUsbLevelInit, NUM_PLAYERS, PreferenceType::Immutable);
+    MemoryCardUsbLevelInit, kNumPlayers, PreferenceType::Immutable);
 
 Preference<std::string> MemoryCardManager::editor_memory_card_os_mount_point_(
     "EditorMemoryCardOsMountPoint", "", nullptr, PreferenceType::Immutable);
 
-const std::string MEM_CARD_MOUNT_POINT[NUM_PLAYERS] = {
+const std::string kMemCardMountPoint[kNumPlayers] = {
     // @ is important; see RageFileManager LoadedDriver::GetPath
     "/@mc1/",
     "/@mc2/",
 };
 
-static const std::string MEM_CARD_MOUNT_POINT_INTERNAL[NUM_PLAYERS] = {
+static const std::string kMemCardMountPointInternal[kNumPlayers] = {
     // @ is important; see RageFileManager LoadedDriver::GetPath
     "/@mc1int/",
     "/@mc2int/",
@@ -146,7 +146,7 @@ bool ThreadedMemoryCardWorker::StorageDevicesChanged(
 ThreadedMemoryCardWorker::ThreadedMemoryCardWorker()
     : RageWorkerThread("MemoryCardWorker"),
       usb_storage_devices_mutex_("UsbStorageDevicesMutex") {
-  if (g_bMemoryCards) {
+  if (memory_cards) {
     driver_ = MemoryCardDriver::Create();
   } else {
     driver_ = new MemoryCardDriver_Null;
@@ -256,10 +256,10 @@ bool ThreadedMemoryCardWorker::Unmount(
   return finished;
 }
 
-static ThreadedMemoryCardWorker* g_pWorker = nullptr;
+static ThreadedMemoryCardWorker* worker = nullptr;
 
 MemoryCardManager::MemoryCardManager() {
-  ASSERT(g_pWorker == nullptr);
+  ASSERT(worker == nullptr);
 
   // Register with Lua.
   {
@@ -270,7 +270,7 @@ MemoryCardManager::MemoryCardManager() {
     LUA->Release(L);
   }
 
-  g_pWorker = new ThreadedMemoryCardWorker;
+  worker = new ThreadedMemoryCardWorker;
 
   FOREACH_PlayerNumber(p) {
     card_locked_[p] = false;
@@ -290,9 +290,9 @@ MemoryCardManager::MemoryCardManager() {
    * the internal mount for now, since we don't know where we'll mount to yet;
    * nothing reads from it until it's mounted, anyway. */
   FOREACH_PlayerNumber(pn) {
-    FILEMAN->Mount("dir", "(empty)", MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
+    FILEMAN->Mount("dir", "(empty)", kMemCardMountPointInternal[pn]);
     FILEMAN->Mount(
-        "timeout", MEM_CARD_MOUNT_POINT_INTERNAL[pn], MEM_CARD_MOUNT_POINT[pn]);
+        "timeout", kMemCardMountPointInternal[pn], kMemCardMountPoint[pn]);
   }
 }
 
@@ -300,12 +300,12 @@ MemoryCardManager::~MemoryCardManager() {
   // Unregister with Lua.
   LUA->UnsetGlobal("MEMCARDMAN");
 
-  ASSERT(g_pWorker != nullptr);
-  RageUtil::SafeDelete(g_pWorker);
+  ASSERT(worker != nullptr);
+  RageUtil::SafeDelete(worker);
 
   FOREACH_PlayerNumber(pn) {
-    FILEMAN->Unmount("", "", MEM_CARD_MOUNT_POINT[pn]);
-    FILEMAN->Unmount("", "", MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
+    FILEMAN->Unmount("", "", kMemCardMountPoint[pn]);
+    FILEMAN->Unmount("", "", kMemCardMountPointInternal[pn]);
   }
 }
 
@@ -313,7 +313,7 @@ void MemoryCardManager::Update() {
   std::vector<UsbStorageDevice> old;
 
   old = storage_devices_;  // copy
-  if (!g_pWorker->StorageDevicesChanged(storage_devices_)) {
+  if (!worker->StorageDevicesChanged(storage_devices_)) {
     return;
   }
 
@@ -324,7 +324,7 @@ void MemoryCardManager::Update() {
 
 // Assign cards from m_vStorageDevices to m_Device.
 void MemoryCardManager::UpdateAssignments() {
-  if (!g_bMemoryCardProfiles.Get()) {
+  if (!memory_card_profiles.Get()) {
     return;
   }
 
@@ -507,12 +507,12 @@ void MemoryCardManager::CheckStateChanges() {
 }
 
 void MemoryCardManager::WaitForCheckingToComplete() {
-  g_pWorker->SetTimeout(5);
+  worker->SetTimeout(5);
 
   /* If either player's card is in STATE_CHECKING, we need to give it a chance
    * to finish up before returning. */
   bool logged = false;
-  while (!g_pWorker->IsTimedOut()) {
+  while (!worker->IsTimedOut()) {
     // Check for changes.
     Update();
 
@@ -532,13 +532,13 @@ void MemoryCardManager::WaitForCheckingToComplete() {
           "One or more cards are in STATE_CHECKING; waiting for them ...");
     }
 
-    if (!g_pWorker->WaitForOneHeartbeat()) {
+    if (!worker->WaitForOneHeartbeat()) {
       LOG->Trace("STATE_CHECKING wait timed out");
       break;
     }
   }
 
-  g_pWorker->SetTimeout(-1);
+  worker->SetTimeout(-1);
 }
 
 bool MemoryCardManager::CardInserted(PlayerNumber pn) {
@@ -569,7 +569,7 @@ void MemoryCardManager::LockCard(PlayerNumber pn) {
 void MemoryCardManager::UnlockCard(PlayerNumber pn) {
   card_locked_[pn] = false;
 
-  g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::detect_and_mount);
+  worker->SetMountThreadState(ThreadedMemoryCardWorker::detect_and_mount);
 
   // If a memory card was inserted too late last game, allow it now.
   CheckStateChanges();
@@ -592,7 +592,7 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int timeout) {
     this->PauseMountingThread();
   }
 
-  if (!g_pWorker->Mount(&device_[pn], static_cast<float>(timeout))) {
+  if (!worker->Mount(&device_[pn], static_cast<float>(timeout))) {
     LOG->Trace("MemoryCardManager::MountCard: mount failed");
     if (starting_memory_card_access) {
       this->UnPauseMountingThread();
@@ -607,11 +607,11 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int timeout) {
   SetCardAccessTimeLimit(pn, static_cast<float>(timeout));
 
   RageFileDriver* driver =
-      FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
+      FILEMAN->GetFileDriver(kMemCardMountPointInternal[pn]);
   if (driver == nullptr) {
     LOG->Warn(
         "FILEMAN->GetFileDriver(%s) failed",
-        MEM_CARD_MOUNT_POINT_INTERNAL[pn].c_str());
+        kMemCardMountPointInternal[pn].c_str());
     return true;
   }
 
@@ -619,8 +619,8 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int timeout) {
   driver->Remount(device_[pn].os_mount_dir_);
 
   // Flush mountpoints pointing to what we've mounted.
-  FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT[pn]);
-  FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
+  FILEMAN->FlushDirCache(kMemCardMountPoint[pn]);
+  FILEMAN->FlushDirCache(kMemCardMountPointInternal[pn]);
 
   FILEMAN->ReleaseFileDriver(driver);
 
@@ -652,13 +652,13 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn, int timeout) {
   SetCardAccessTimeLimit(pn, -1);
 
   // Leave our own filesystem drivers mounted.  Unmount the kernel mount.
-  if (!g_pWorker->Unmount(&device_[pn], static_cast<float>(timeout))) {
+  if (!worker->Unmount(&device_[pn], static_cast<float>(timeout))) {
     LOG->Warn("MemoryCardManager::UnmountCard: unmount failed");
   }
 
   // Flush mountpoints pointing to what we've unmounted.
-  FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT[pn]);
-  FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
+  FILEMAN->FlushDirCache(kMemCardMountPoint[pn]);
+  FILEMAN->FlushDirCache(kMemCardMountPointInternal[pn]);
 
   mounted_[pn] = false;
 
@@ -671,14 +671,14 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn, int timeout) {
 
   /* If memory card profiles are disabled, then this was assigned by passing to
    * a UsbStorageDevice to MountCard.  Remove the temporary assignment. */
-  if (!g_bMemoryCardProfiles.Get()) {
+  if (!memory_card_profiles.Get()) {
     device_[pn] = UsbStorageDevice();
     CheckStateChanges();
   }
 }
 
 void MemoryCardManager::SetCardAccessTimeLimit(PlayerNumber pn, float seconds) {
-  RageFileDriver* driver = FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT[pn]);
+  RageFileDriver* driver = FILEMAN->GetFileDriver(kMemCardMountPoint[pn]);
   if (driver == nullptr) {
     return;
   }
@@ -703,13 +703,13 @@ std::string MemoryCardManager::GetName(PlayerNumber pn) const {
 void MemoryCardManager::PauseMountingThread() {
   LOG->Trace("MemoryCardManager::PauseMountingThread");
 
-  g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::paused);
+  worker->SetMountThreadState(ThreadedMemoryCardWorker::paused);
 }
 
 void MemoryCardManager::UnPauseMountingThread() {
   LOG->Trace("MemoryCardManager::UnPauseMountingThread");
 
-  g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::detect_and_mount);
+  worker->SetMountThreadState(ThreadedMemoryCardWorker::detect_and_mount);
 }
 
 // lua start

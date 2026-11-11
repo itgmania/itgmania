@@ -44,7 +44,7 @@ void AddPlayerStatsToProfile(
     Profile* profile, const StageStats& ss, PlayerNumber pn);
 XNode* MakeRecentScoreNode(
     const StageStats& ss, Trail* trail, const PlayerStageStats& pss);
-Preference<bool> g_PadmissEnabled("MemoryCardPadmissEnabled", false);
+Preference<bool> padmiss_enabled("MemoryCardPadmissEnabled", false);
 
 StatsManager::StatsManager() {
   // Register with Lua.
@@ -130,7 +130,7 @@ void AddPlayerStatsToProfile(
     profile->num_songs_played_by_style_[id]++;
     profile->num_songs_played_by_difficulty_[steps->GetDifficulty()]++;
 
-    int meter = std::clamp(steps->GetMeter(), 0, MAX_METER);
+    int meter = std::clamp(steps->GetMeter(), 0, kMaxMeter);
     profile->num_songs_played_by_meter_[meter]++;
   }
 
@@ -231,7 +231,7 @@ void StatsManager::CommitStatsToProfiles(const StageStats* ss) {
     }
 
     // No marathons etc for now...
-    if (g_PadmissEnabled.Get() && ss->play_mode_ == PLAY_MODE_REGULAR) {
+    if (padmiss_enabled.Get() && ss->play_mode_ == PLAY_MODE_REGULAR) {
       SavePadmissScore(ss, pn);
     }
   }
@@ -277,7 +277,7 @@ void StatsManager::SaveUploadFile(const StageStats* ss) {
   bool saved = XmlFileUtil::SaveToFile(xml.get(), fn, "", false);
 
   if (saved) {
-    std::string stats_xml_sig_file = fn + SIGNATURE_APPEND;
+    std::string stats_xml_sig_file = fn + kSignatureAppend;
     CryptManager::SignFileToFile(fn, stats_xml_sig_file);
   }
 }

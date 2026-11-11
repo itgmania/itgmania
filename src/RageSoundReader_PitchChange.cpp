@@ -18,12 +18,12 @@
 #include "RageSoundReader_Resample_Good.h"
 #include "RageSoundReader_SpeedChange.h"
 
-static Preference<bool> g_bRateModPreservesPitch("RateModPreservesPitch", true);
+static Preference<bool> rate_mod_preserves_pitch("RateModPreservesPitch", true);
 
 RageSoundReader_PitchChange::RageSoundReader_PitchChange(
     RageSoundReader* source)
     : RageSoundReader_Filter(nullptr) {
-  bool preserve_pitch = g_bRateModPreservesPitch.Get();
+  bool preserve_pitch = rate_mod_preserves_pitch.Get();
 
   speed_change_ = new RageSoundReader_SpeedChange(source);
   if (preserve_pitch) {
@@ -60,7 +60,7 @@ int RageSoundReader_PitchChange::Read(float* buf, int frames) {
    * immediately on the next Read().  When this is true, apply the ratio to the
    * resampler and the speed changer simultaneously, so they take effect as
    * closely together as possible. */
-  bool preserve_pitch = g_bRateModPreservesPitch.Get();
+  bool preserve_pitch = rate_mod_preserves_pitch.Get();
   if ((!preserve_pitch) || ((last_set_speed_ratio_ != speed_ratio_ ||
                              last_set_pitch_ratio_ != pitch_ratio_) &&
                             speed_change_->NextReadWillStep())) {

@@ -27,7 +27,7 @@ struct lua_State;
  *
  * In In The Groove, this limit was 12: we do not need such a limit now.
  */
-const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
+const int kMaxStepsDescriptionLength = 255;
 
 /**
  * @brief Current version of GrooveStats hash.
@@ -35,7 +35,7 @@ const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
  * If this is incremented, FILE_CACHE_VERSION must also be incremented so that
  * existing cache files are regenerated.
  */
-const int CURRENT_GROOVE_STATS_HASH_VERSION = 3;
+const int kCurrentGrooveStatsHashVersion = 3;
 
 /** @brief The different ways of displaying the BPM. */
 enum DisplayBPM {
@@ -162,8 +162,8 @@ class Steps {
 
   void SetLoadedFromProfile(ProfileSlot slot) { loaded_from_profile_ = slot; }
   void SetMeter(int meter);
-  void SetRadarValues(const RadarValues v[NUM_PLAYERS]);
-  void SetTechCounts(const TechCounts ts[NUM_PLAYERS]);
+  void SetRadarValues(const RadarValues v[kNumPlayers]);
+  void SetTechCounts(const TechCounts ts[kNumPlayers]);
   void SetNpsPerMeasure(std::vector<std::vector<float>>& nps_per_measure);
   void SetNotesPerMeasure(std::vector<std::vector<int>>& notes_per_measure);
   void SetStreamBreakdown(std::vector<StreamBreakdown>& stream_breakdown);
@@ -341,10 +341,10 @@ class Steps {
    * MAX_METER. */
   int meter_;
   /** @brief The radar values used for each player. */
-  RadarValues radar_values_[NUM_PLAYERS];
+  RadarValues radar_values_[kNumPlayers];
 
   /** @brief The tech stats used for each player */
-  TechCounts tech_counts_[NUM_PLAYERS];
+  TechCounts tech_counts_[kNumPlayers];
 
   std::vector<std::vector<float>> nps_per_measure_;
   std::vector<std::vector<int>> notes_per_measure_;

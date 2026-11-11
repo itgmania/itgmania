@@ -130,7 +130,7 @@ void EditModePlayerManager::SetupAutoplay() {
       GAMESTATE->player_state_[player.first]->player_controller_ = PC_AUTOPLAY;
     } else {
       GAMESTATE->player_state_[player.first]->player_controller_ =
-          GamePreferences::m_AutoPlay;
+          GamePreferences::auto_play;
     }
   }
 }

@@ -144,17 +144,17 @@ HighScoreImpl::HighScoreImpl() {
   life_remaining_seconds_ = 0;
   is_routine_ = false;
 
-  player_names_ = std::vector<std::string>(NUM_PLAYERS, "");
-  player_grades_ = std::vector<Grade>(NUM_PLAYERS, Grade_NoData);
-  player_scores_ = std::vector<unsigned int>(NUM_PLAYERS, 0);
-  player_percent_d_ps_ = std::vector<float>(NUM_PLAYERS, 0);
-  player_max_combos_ = std::vector<unsigned int>(NUM_PLAYERS, 0);
-  player_guids_ = std::vector<std::string>(NUM_PLAYERS, "");
+  player_names_ = std::vector<std::string>(kNumPlayers, "");
+  player_grades_ = std::vector<Grade>(kNumPlayers, Grade_NoData);
+  player_scores_ = std::vector<unsigned int>(kNumPlayers, 0);
+  player_percent_d_ps_ = std::vector<float>(kNumPlayers, 0);
+  player_max_combos_ = std::vector<unsigned int>(kNumPlayers, 0);
+  player_guids_ = std::vector<std::string>(kNumPlayers, "");
 
   player_tap_note_scores_.resize(
-      NUM_PLAYERS, std::array<int, NUM_TapNoteScore>{});
+      kNumPlayers, std::array<int, NUM_TapNoteScore>{});
   player_hold_note_scores_.resize(
-      NUM_PLAYERS, std::array<int, NUM_HoldNoteScore>{});
+      kNumPlayers, std::array<int, NUM_HoldNoteScore>{});
 
   // Initialize each array to zeros
   for (auto& scores_array : player_tap_note_scores_) {
@@ -668,7 +668,7 @@ class LunaHighScore : public Luna<HighScore> {
   static int IsFillInMarker(T* p, lua_State* L) {
     bool is_fill_in_marker = false;
     FOREACH_PlayerNumber(pn) is_fill_in_marker |=
-        p->GetName() == RANKING_TO_FILL_IN_MARKER[pn];
+        p->GetName() == kRankingToFillInMarker[pn];
     lua_pushboolean(L, is_fill_in_marker);
     return 1;
   }

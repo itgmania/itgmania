@@ -117,7 +117,7 @@ void CourseUtil::SortCoursePointerArrayByRanking(
     std::vector<Course*>& courses_in_out) {
   for (unsigned i = 0; i < courses_in_out.size(); i++) {
     courses_in_out[i]->UpdateCourseStats(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
+        GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_);
   }
   sort(
       courses_in_out.begin(), courses_in_out.end(),
@@ -128,7 +128,7 @@ void CourseUtil::SortCoursePointerArrayByTotalDifficulty(
     std::vector<Course*>& courses_in_out) {
   for (unsigned i = 0; i < courses_in_out.size(); i++) {
     courses_in_out[i]->UpdateCourseStats(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_);
+        GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_);
   }
   sort(
       courses_in_out.begin(), courses_in_out.end(),
@@ -181,7 +181,7 @@ void CourseUtil::SortCoursePointerArrayByAvgDifficulty(
   course_sort_val.clear();
   for (unsigned i = 0; i < courses_in_out.size(); ++i) {
     int meter = courses_in_out[i]->GetMeter(
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_,
+        GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_,
         Difficulty_Medium);
     course_sort_val[courses_in_out[i]] = ssprintf("%06i", meter);
   }
@@ -371,11 +371,11 @@ void CourseUtil::WarnOnInvalidMods(std::string mods) {
   }
 }
 
-int EditCourseUtil::MAX_NAME_LENGTH = 16;
-int EditCourseUtil::MAX_PER_PROFILE = 32;
-int EditCourseUtil::MIN_WORKOUT_MINUTES = 4;
-int EditCourseUtil::MAX_WORKOUT_MINUTES = 90;
-bool EditCourseUtil::s_bNewCourseNeedsName = false;
+int EditCourseUtil::max_name_length = 16;
+int EditCourseUtil::max_per_profile = 32;
+int EditCourseUtil::min_workout_minutes = 4;
+int EditCourseUtil::max_workout_minutes = 90;
+bool EditCourseUtil::new_course_needs_name = false;
 
 bool EditCourseUtil::Save(Course* course) {
   return EditCourseUtil::RenameAndSave(course, course->GetDisplayFullTitle());
@@ -384,12 +384,12 @@ bool EditCourseUtil::Save(Course* course) {
 bool EditCourseUtil::RenameAndSave(Course* course, std::string new_name) {
   ASSERT(!new_name.empty());
 
-  EditCourseUtil::s_bNewCourseNeedsName = false;
+  EditCourseUtil::new_course_needs_name = false;
 
   std::string new_file_path;
   if (course->IsAnEdit()) {
     new_file_path = PROFILEMAN->GetProfileDir(ProfileSlot_Machine) +
-                    EDIT_COURSES_SUBDIR + new_name + ".crs";
+                    kEditCoursesSubdir + new_name + ".crs";
   } else {
     std::string dir, name, ext;
     splitpath(course->path_, dir, name, ext);
@@ -461,8 +461,8 @@ bool EditCourseUtil::ValidateEditCourseName(
 }
 
 void EditCourseUtil::UpdateAndSetTrail() {
-  ASSERT(GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr);
-  StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_;
+  ASSERT(GAMESTATE->GetCurrentStyle(kPlayerInvalid) != nullptr);
+  StepsType st = GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_;
   Trail* trail = nullptr;
   if (GAMESTATE->cur_course_) {
     trail = GAMESTATE->cur_course_->GetTrailForceRegenCache(st);

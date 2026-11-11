@@ -163,7 +163,7 @@ static int find_address(const void* p, const void** starts, const void** ends) {
   return -1;
 }
 
-static void* SavedStackPointer = nullptr;
+static void* saved_stack_pointer = nullptr;
 
 void InitializeBacktrace() {
   static bool initialized = false;
@@ -174,14 +174,14 @@ void InitializeBacktrace() {
 
   /* We might have a different stack in the signal handler.  Record a pointer
    * that lies in the real stack, so we can look it up later. */
-  SavedStackPointer = __builtin_frame_address(0);
+  saved_stack_pointer = __builtin_frame_address(0);
 }
 
 /* backtrace() for x86 Linux, tested with kernel 2.4.18, glibc 2.3.1. */
-const void *g_ReadableBegin[1024], *g_ReadableEnd[1024];
-const void *g_ExecutableBegin[1024], *g_ExecutableEnd[1024];
+const void *readable_begin[1024], *readable_end[1024];
+const void *executable_begin[1024], *executable_end[1024];
 /* Indexes in g_ReadableBegin of the stack(s), or -1: */
-int g_StackBlock1, g_StackBlock2;
+int stack_block1, stack_block2;
 
 /* This matches the layout of the stack.  The frame pointer makes the
  * stack a linked list. */
@@ -192,13 +192,13 @@ struct StackFrame {
 
 /* Return true if the given pointer is in readable memory, and on the stack. */
 bool IsOnStack(const void* p) {
-  int val = find_address(p, g_ReadableBegin, g_ReadableEnd);
-  return val != -1 && (val == g_StackBlock1 || val == g_StackBlock2);
+  int val = find_address(p, readable_begin, readable_end);
+  return val != -1 && (val == stack_block1 || val == stack_block2);
 }
 
 /* Return true if the given pointer is in executable memory. */
 bool IsExecutableAddress(const void* p) {
-  int val = find_address(p, g_ExecutableBegin, g_ExecutableEnd);
+  int val = find_address(p, executable_begin, executable_end);
   return val != -1;
 }
 
@@ -308,15 +308,14 @@ bool IsValidFrame(const StackFrame* frame) {
 static void do_backtrace(
     const void** buf, size_t size, const BacktraceContext* ctx) {
   /* Read /proc/pid/maps to find the address range of the stack. */
-  get_readable_ranges(g_ReadableBegin, g_ReadableEnd, 1024);
+  get_readable_ranges(readable_begin, readable_end, 1024);
   get_readable_ranges(
-      g_ExecutableBegin, g_ExecutableEnd, 1024,
-      READABLE_ONLY | EXECUTABLE_ONLY);
+      executable_begin, executable_end, 1024, READABLE_ONLY | EXECUTABLE_ONLY);
 
   /* Find the stack memory blocks. */
-  g_StackBlock1 = find_address(ctx->sp_, g_ReadableBegin, g_ReadableEnd);
-  g_StackBlock2 =
-      find_address(SavedStackPointer, g_ReadableBegin, g_ReadableEnd);
+  stack_block1 = find_address(ctx->sp_, readable_begin, readable_end);
+  stack_block2 =
+      find_address(saved_stack_pointer, readable_begin, readable_end);
 
   /* Put eip at the top of the backtrace. */
   /* XXX: We want EIP even if it's not valid, but we can't put NULL on the

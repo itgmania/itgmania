@@ -280,7 +280,7 @@ void ScoreKeeperNormal::HandleTapScoreNone() {
   if (PENALIZE_TAP_SCORE_NONE) {
     player_stage_stats_->cur_combo_ = 0;
 
-    if (player_state_->player_number_ != PLAYER_INVALID) {
+    if (player_state_->player_number_ != kPlayerInvalid) {
       MESSAGEMAN->Broadcast(enum_add2(
           Message_CurrentComboChangedP1, player_state_->player_number_));
     }
@@ -568,7 +568,7 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int row) {
         score_of_last_tap, num_taps_in_row, row);  // This should work?
   }
 
-  if (player_state_->player_number_ != PLAYER_INVALID) {
+  if (player_state_->player_number_ != kPlayerInvalid) {
     MESSAGEMAN->Broadcast(enum_add2(
         Message_CurrentComboChangedP1, player_state_->player_number_));
   }
@@ -577,7 +577,7 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int row) {
 
   // handle combo logic
 #ifndef DEBUG
-  if ((GamePreferences::m_AutoPlay != PC_HUMAN ||
+  if ((GamePreferences::auto_play != PC_HUMAN ||
        player_state_->player_options_.GetCurrent().player_auto_play_ != 0) &&
       !GAMESTATE->demonstration_or_jukebox_)  // cheaters always prosper >:D -aj
                                               // comment edit

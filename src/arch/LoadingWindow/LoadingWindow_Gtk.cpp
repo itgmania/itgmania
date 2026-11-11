@@ -14,7 +14,7 @@
 static GtkWidget* label;
 static GtkWidget* window;
 static GtkWidget* splash;
-static GtkWidget* progressBar;
+static GtkWidget* progress_bar;
 
 LoadingWindow_Gtk::LoadingWindow_Gtk() {}
 
@@ -46,13 +46,13 @@ std::string LoadingWindow_Gtk::Init() {
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_label_set_line_wrap(GTK_LABEL(label), FALSE);
 
-  progressBar = gtk_progress_bar_new();
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), 0.0);
+  progress_bar = gtk_progress_bar_new();
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress_bar), 0.0);
 
   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(window), vbox);
   gtk_box_pack_start(GTK_BOX(vbox), splash, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(vbox), progressBar, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(vbox), progress_bar, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
   gtk_widget_show_all(window);
@@ -121,7 +121,7 @@ static void UpdateProgress(int progress, int total_work) {
   if (fraction < 0.0) {
     fraction = 0.0;
   }
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), fraction);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress_bar), fraction);
   gtk_main_iteration_do(FALSE);
 }
 
@@ -138,7 +138,7 @@ void LoadingWindow_Gtk::SetTotalWork(const int total_work) {
 void LoadingWindow_Gtk::SetIndeterminate(bool indeterminate) {
   LoadingWindow::SetIndeterminate(indeterminate);
 
-  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progressBar));
+  gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress_bar));
   gtk_main_iteration_do(FALSE);
 }
 

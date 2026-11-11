@@ -24,7 +24,7 @@
  *
  * In the traditional summary, only the last three stages are shown.
  * If any extra stages are passed, those get shown as well. */
-const int MAX_SONGS_TO_SHOW = 5;
+const int kMaxSongsToShow = 5;
 /** @brief The different judgment lines shown. */
 enum JudgmentLine {
   JudgmentLine_W1,   /**< The line showing absolutely perfect hits. */
@@ -74,48 +74,48 @@ class ScreenEvaluation : public ScreenWithMenuElements {
   // banner area
   Banner large_banner_;
   AutoActor spr_large_banner_frame_;
-  BitmapText text_player_options_[NUM_PLAYERS];
+  BitmapText text_player_options_[kNumPlayers];
   BitmapText text_song_options_;
-  AutoActor spr_disqualified_[NUM_PLAYERS];
-  Banner small_banner_[MAX_SONGS_TO_SHOW];
-  AutoActor spr_small_banner_frame_[MAX_SONGS_TO_SHOW];
+  AutoActor spr_disqualified_[kNumPlayers];
+  Banner small_banner_[kMaxSongsToShow];
+  AutoActor spr_small_banner_frame_[kMaxSongsToShow];
 
   // grade area
-  AutoActor spr_grade_frame_[NUM_PLAYERS];
-  GradeDisplay grades_[NUM_PLAYERS];
+  AutoActor spr_grade_frame_[kNumPlayers];
+  GradeDisplay grades_[kNumPlayers];
 
   // points area
-  PercentageDisplay percent_[NUM_PLAYERS];
-  AutoActor spr_percent_frame_[NUM_PLAYERS];
+  PercentageDisplay percent_[kNumPlayers];
+  AutoActor spr_percent_frame_[kNumPlayers];
 
   // bonus area
-  AutoActor spr_bonus_frame_[NUM_PLAYERS];
-  Sprite spr_possible_bar_[NUM_PLAYERS][NUM_RadarCategory];
-  Sprite spr_actual_bar_[NUM_PLAYERS][NUM_RadarCategory];
+  AutoActor spr_bonus_frame_[kNumPlayers];
+  Sprite spr_possible_bar_[kNumPlayers][NUM_RadarCategory];
+  Sprite spr_actual_bar_[kNumPlayers][NUM_RadarCategory];
 
   // survived area
-  AutoActor spr_survived_frame_[NUM_PLAYERS];
-  BitmapText text_survived_number_[NUM_PLAYERS];
+  AutoActor spr_survived_frame_[kNumPlayers];
+  BitmapText text_survived_number_[kNumPlayers];
 
   // win area
-  AutoActor spr_win_frame_[NUM_PLAYERS];
-  Sprite spr_win_[NUM_PLAYERS];
+  AutoActor spr_win_frame_[kNumPlayers];
+  Sprite spr_win_[kNumPlayers];
 
   // judgment area
   AutoActor spr_shared_judgment_line_labels_[NUM_JudgmentLine];
-  RollingNumbers text_judgment_line_number_[NUM_JudgmentLine][NUM_PLAYERS];
+  RollingNumbers text_judgment_line_number_[NUM_JudgmentLine][kNumPlayers];
 
   // stats area
-  AutoActor spr_detail_frame_[NUM_PLAYERS];
-  BitmapText text_detail_text_[NUM_DetailLine][NUM_PLAYERS];
+  AutoActor spr_detail_frame_[kNumPlayers];
+  BitmapText text_detail_text_[NUM_DetailLine][kNumPlayers];
 
   // score area
   AutoActor spr_score_label_;
-  RollingNumbers text_score_[NUM_PLAYERS];
+  RollingNumbers text_score_[kNumPlayers];
 
   // time area
   AutoActor spr_time_label_;
-  BitmapText text_time_[NUM_PLAYERS];
+  BitmapText text_time_[kNumPlayers];
 
   RageSound sound_start_;  // sound played if the player passes or fails
 
@@ -123,7 +123,7 @@ class ScreenEvaluation : public ScreenWithMenuElements {
   ThemeMetric<std::string> ROLLING_NUMBERS_CLASS;
   ThemeMetric<std::string> ROLLING_NUMBERS_MAX_COMBO_CLASS;
   /** @brief Did a player save a screenshot of their score? */
-  bool saved_screenshot_[NUM_PLAYERS];
+  bool saved_screenshot_[kNumPlayers];
 };
 
 #endif

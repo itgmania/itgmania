@@ -24,7 +24,7 @@
 #include "ThemeMetric.h"
 #include "global.h"
 
-const float FULL_LIFE_SECONDS = 1.5f * 60;
+const float kFullLifeSeconds = 1.5f * 60;
 
 static ThemeMetric<float> METER_WIDTH("LifeMeterTime", "MeterWidth");
 static ThemeMetric<float> METER_HEIGHT("LifeMeterTime", "MeterHeight");
@@ -32,7 +32,7 @@ static ThemeMetric<float> DANGER_THRESHOLD("LifeMeterTime", "DangerThreshold");
 static ThemeMetric<float> INITIAL_VALUE("LifeMeterTime", "InitialValue");
 static ThemeMetric<float> MIN_LIFE_TIME("LifeMeterTime", "MinLifeTime");
 
-static const float g_fTimeMeterSecondsChangeInit[] = {
+static const float kTimeMeterSecondsChangeInit[] = {
     +0.0f,  // SE_CheckpointHit
     +0.2f,  // SE_W1
     +0.0f,  // SE_W2
@@ -46,15 +46,15 @@ static const float g_fTimeMeterSecondsChangeInit[] = {
     -4.0f,  // SE_LetGo
     -0.0f,  // SE_Missed
 };
-static_assert(ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent);
+static_assert(ARRAYLEN(kTimeMeterSecondsChangeInit) == NUM_ScoreEvent);
 
 static void TimeMeterSecondsChangeInit(
     size_t /*ScoreEvent*/ i, std::string& name_out, float& default_value_out) {
   name_out = "TimeMeterSecondsChange" + ScoreEventToString((ScoreEvent)i);
-  default_value_out = g_fTimeMeterSecondsChangeInit[i];
+  default_value_out = kTimeMeterSecondsChangeInit[i];
 }
 
-static Preference1D<float> g_fTimeMeterSecondsChange(
+static Preference1D<float> time_meter_seconds_change(
     TimeMeterSecondsChangeInit, NUM_ScoreEvent);
 
 LifeMeterTime::LifeMeterTime() {
@@ -121,13 +121,13 @@ void LifeMeterTime::OnLoadSong() {
     RadarValues radars = steps->GetRadarValues(player_state_->player_number_);
     float scorable_things =
         radars[RadarCategory_TapsAndHolds] + radars[RadarCategory_Lifts];
-    if (g_fTimeMeterSecondsChange[SE_Held] > 0.0f) {
+    if (time_meter_seconds_change[SE_Held] > 0.0f) {
       scorable_things +=
           radars[RadarCategory_Holds] + radars[RadarCategory_Rolls];
     }
     // Calculate the amount of time to give for the player to need 80% W1.
     float gainable_score_time =
-        scorable_things * g_fTimeMeterSecondsChange[SE_W1];
+        scorable_things * time_meter_seconds_change[SE_W1];
     gain_seconds = song_len - (gainable_score_time * INITIAL_VALUE);
   }
 
@@ -149,31 +149,31 @@ void LifeMeterTime::ChangeLife(TapNoteScore tns) {
     default:
       FAIL_M(ssprintf("Invalid TapNoteScore: %i", tns));
     case TNS_W1:
-      meter_change = g_fTimeMeterSecondsChange[SE_W1];
+      meter_change = time_meter_seconds_change[SE_W1];
       break;
     case TNS_W2:
-      meter_change = g_fTimeMeterSecondsChange[SE_W2];
+      meter_change = time_meter_seconds_change[SE_W2];
       break;
     case TNS_W3:
-      meter_change = g_fTimeMeterSecondsChange[SE_W3];
+      meter_change = time_meter_seconds_change[SE_W3];
       break;
     case TNS_W4:
-      meter_change = g_fTimeMeterSecondsChange[SE_W4];
+      meter_change = time_meter_seconds_change[SE_W4];
       break;
     case TNS_W5:
-      meter_change = g_fTimeMeterSecondsChange[SE_W5];
+      meter_change = time_meter_seconds_change[SE_W5];
       break;
     case TNS_Miss:
-      meter_change = g_fTimeMeterSecondsChange[SE_Miss];
+      meter_change = time_meter_seconds_change[SE_Miss];
       break;
     case TNS_HitMine:
-      meter_change = g_fTimeMeterSecondsChange[SE_HitMine];
+      meter_change = time_meter_seconds_change[SE_HitMine];
       break;
     case TNS_CheckpointHit:
-      meter_change = g_fTimeMeterSecondsChange[SE_CheckpointHit];
+      meter_change = time_meter_seconds_change[SE_CheckpointHit];
       break;
     case TNS_CheckpointMiss:
-      meter_change = g_fTimeMeterSecondsChange[SE_CheckpointMiss];
+      meter_change = time_meter_seconds_change[SE_CheckpointMiss];
       break;
   }
 
@@ -192,13 +192,13 @@ void LifeMeterTime::ChangeLife(HoldNoteScore hns, TapNoteScore tns) {
     default:
       FAIL_M(ssprintf("Invalid HoldNoteScore: %i", hns));
     case HNS_Held:
-      meter_change = g_fTimeMeterSecondsChange[SE_Held];
+      meter_change = time_meter_seconds_change[SE_Held];
       break;
     case HNS_LetGo:
-      meter_change = g_fTimeMeterSecondsChange[SE_LetGo];
+      meter_change = time_meter_seconds_change[SE_LetGo];
       break;
     case HNS_Missed:
-      meter_change = g_fTimeMeterSecondsChange[SE_Missed];
+      meter_change = time_meter_seconds_change[SE_Missed];
       break;
   }
 
@@ -263,7 +263,7 @@ void LifeMeterTime::Update(float delta_time) {
 }
 
 float LifeMeterTime::GetLife() const {
-  float percent = GetLifeSeconds() / FULL_LIFE_SECONDS;
+  float percent = GetLifeSeconds() / kFullLifeSeconds;
   rage_clamp(percent, 0, 1);
   return percent;
 }

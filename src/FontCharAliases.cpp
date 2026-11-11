@@ -9,8 +9,8 @@
 
 // Map from "&foo;" to a UTF-8 string.
 typedef std::map<std::string, wchar_t, StdStringLessNoCase> aliasmap;
-static aliasmap CharAliases;
-static std::map<std::string, std::string> CharAliasRepl;
+static aliasmap char_aliases;
+static std::map<std::string, std::string> char_alias_repl;
 
 /* Editing this file in VC6 will be rather ugly, since it contains a lot of
  * UTF-8. Just don't change anything you can't read. :) */
@@ -70,12 +70,12 @@ And here's one for a kanji page:
  */
 
 static void InitCharAliases() {
-  if (!CharAliases.empty()) {
+  if (!char_aliases.empty()) {
     return;
   }
 
-  CharAliases["default"] = FONT_DEFAULT_GLYPH;  // ?
-  CharAliases["invalid"] = INVALID_CHAR;        // 0xFFFD
+  char_aliases["default"] = kFontDefaultGlyph;  // ?
+  char_aliases["invalid"] = kInvalidChar;       // 0xFFFD
 
   // The comments here are UTF-8; they won't show up in VC6
   // (use a better editor then -aj)
@@ -359,30 +359,30 @@ static void InitCharAliases() {
       codepoint = next_internal_use_codepoint++;
     }
 
-    CharAliases[aliases[n].str_] = codepoint;
+    char_aliases[aliases[n].str_] = codepoint;
   }
 
-  for (aliasmap::const_iterator i = CharAliases.begin(); i != CharAliases.end();
-       ++i) {
+  for (aliasmap::const_iterator i = char_aliases.begin();
+       i != char_aliases.end(); ++i) {
     std::string from = i->first;
     std::string to = WcharToUTF8(i->second);
     MakeLower(from);
-    CharAliasRepl[from] = to;
+    char_alias_repl[from] = to;
   }
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.
 void FontCharAliases::ReplaceMarkers(std::string& text) {
   InitCharAliases();
-  ReplaceEntityText(text, CharAliasRepl);
+  ReplaceEntityText(text, char_alias_repl);
   Replace_Unicode_Markers(text);
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.
 bool FontCharAliases::GetChar(std::string& codepoint, wchar_t& ch) {
   InitCharAliases();
-  aliasmap::const_iterator i = CharAliases.find(codepoint);
-  if (i == CharAliases.end()) {
+  aliasmap::const_iterator i = char_aliases.find(codepoint);
+  if (i == char_aliases.end()) {
     return false;
   }
 

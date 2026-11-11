@@ -2,26 +2,26 @@
 
 #include <string>
 
-const std::string SpecialFiles::PACKAGES_DIR = "Packages/";
-const std::string SpecialFiles::KEYMAPS_PATH = "Save/Keymaps.ini";
-const std::string SpecialFiles::EDIT_MODE_KEYMAPS_PATH =
+const std::string SpecialFiles::kPackagesDir = "Packages/";
+const std::string SpecialFiles::kKeymapsPath = "Save/Keymaps.ini";
+const std::string SpecialFiles::kEditModeKeymapsPath =
     "Save/EditMode_Keymaps.ini";
-const std::string SpecialFiles::PREFERENCES_INI_PATH = "Save/Preferences.ini";
-const std::string SpecialFiles::THEMES_DIR = "Themes/";
-const std::string SpecialFiles::LANGUAGES_SUBDIR = "Languages/";
+const std::string SpecialFiles::kPreferencesIniPath = "Save/Preferences.ini";
+const std::string SpecialFiles::kThemesDir = "Themes/";
+const std::string SpecialFiles::kLanguagesSubdir = "Languages/";
 // TODO: A theme should be able to specify a base language.
-const std::string SpecialFiles::BASE_LANGUAGE = "en";
-const std::string SpecialFiles::METRICS_FILE = "metrics.ini";
-const std::string SpecialFiles::CACHE_DIR = "Cache/";
-const std::string SpecialFiles::BASE_THEME_NAME = "_fallback";
-const std::string SpecialFiles::DEFAULTS_INI_PATH = "Data/Defaults.ini";
-const std::string SpecialFiles::STATIC_INI_PATH = "Data/Static.ini";
-const std::string SpecialFiles::TYPE_TXT_FILE = "Data/Type.txt";
-const std::string SpecialFiles::CA_BUNDLE_PATH = "Data/ca-bundle.crt";
-const std::string SpecialFiles::SONGS_DIR = "Songs/";
-const std::string SpecialFiles::COURSES_DIR = "Courses/";
-const std::string SpecialFiles::NOTESKINS_DIR = "NoteSkins/";
-const std::string SpecialFiles::COINS_INI = "Save/Coin.ini";
+const std::string SpecialFiles::kBaseLanguage = "en";
+const std::string SpecialFiles::kMetricsFile = "metrics.ini";
+const std::string SpecialFiles::kCacheDir = "Cache/";
+const std::string SpecialFiles::kBaseThemeName = "_fallback";
+const std::string SpecialFiles::kDefaultsIniPath = "Data/Defaults.ini";
+const std::string SpecialFiles::kStaticIniPath = "Data/Static.ini";
+const std::string SpecialFiles::kTypeTxtFile = "Data/Type.txt";
+const std::string SpecialFiles::kCaBundlePath = "Data/ca-bundle.crt";
+const std::string SpecialFiles::kSongsDir = "Songs/";
+const std::string SpecialFiles::kCoursesDir = "Courses/";
+const std::string SpecialFiles::kNoteskinsDir = "NoteSkins/";
+const std::string SpecialFiles::kCoinsIni = "Save/Coin.ini";
 
 /*
  * (c) 2003-2005 Chris Danford

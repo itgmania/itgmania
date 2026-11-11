@@ -40,11 +40,11 @@
 
 REGISTER_INPUT_HANDLER_CLASS2(DirectInput, DInput);
 
-static std::vector<DIDevice> Devices;
-static std::vector<XIDevice> XDevices;
+static std::vector<DIDevice> g_devices;
+static std::vector<XIDevice> xdevices;
 
 // Number of joysticks found:
-static int g_iNumJoysticks;
+static int num_joysticks;
 
 template <typename T>
 inline void SafeRelease(T*& p) {
@@ -216,7 +216,7 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* did_instance, void* context) {
 
   switch (device.type_) {
     case DIDevice::JOYSTICK:
-      if (g_iNumJoysticks == NUM_JOYSTICKS) {
+      if (num_joysticks == kNumJoysticks) {
         return DIENUM_CONTINUE;
       }
 
@@ -224,8 +224,8 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* did_instance, void* context) {
         return DIENUM_CONTINUE;
       }
 
-      device.dev_ = enum_add2(DEVICE_JOY1, g_iNumJoysticks);
-      g_iNumJoysticks++;
+      device.dev_ = enum_add2(DEVICE_JOY1, num_joysticks);
+      num_joysticks++;
       break;
 
     case DIDevice::KEYBOARD:
@@ -237,7 +237,7 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* did_instance, void* context) {
       break;
   }
 
-  Devices.push_back(device);
+  g_devices.push_back(device);
 
   return DIENUM_CONTINUE;
 }
@@ -273,7 +273,7 @@ static int GetNumHidDevices() {
 
 static int GetNumJoysticksSlow() {
   int count = 0;
-  HRESULT hr = g_dinput->EnumDevices(
+  HRESULT hr = dinput->EnumDevices(
       DI8DEVCLASS_GAMECTRL, CountDevicesCallback, &count, DIEDFL_ATTACHEDONLY);
   if (hr != DI_OK) {
     LOG->Warn(hr_ssprintf(hr, "g_dinput->EnumDevices").c_str());
@@ -287,7 +287,7 @@ InputHandler_DInput::InputHandler_DInput() {
   CheckForDirectInputDebugMode();
 
   shutdown_ = false;
-  g_iNumJoysticks = 0;
+  num_joysticks = 0;
 
   // find xinput joysticks first
   for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
@@ -297,18 +297,18 @@ InputHandler_DInput::InputHandler_DInput() {
     if (XInputGetState(i, &state) == ERROR_SUCCESS) {
       XIDevice xdevice;
       xdevice.name_ = ssprintf("XInput Device %u", i + 1);
-      xdevice.dev_ = enum_add2(InputDevice::DEVICE_JOY1, g_iNumJoysticks);
+      xdevice.dev_ = enum_add2(InputDevice::DEVICE_JOY1, num_joysticks);
       xdevice.x_input_slot_ = i;
-      g_iNumJoysticks++;
+      num_joysticks++;
 
-      XDevices.push_back(xdevice);
+      xdevices.push_back(xdevice);
     }
   }
-  LOG->Info("Found %u XInput devices.", XDevices.size());
+  LOG->Info("Found %u XInput devices.", xdevices.size());
 
   AppInstance inst;
   HRESULT hr = DirectInput8Create(
-      inst.Get(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&g_dinput,
+      inst.Get(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&dinput,
       nullptr);
   if (hr != DI_OK) {
     RageException::Throw(
@@ -317,7 +317,7 @@ InputHandler_DInput::InputHandler_DInput() {
 
   LOG->Trace(
       "InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_KEYBOARD)");
-  hr = g_dinput->EnumDevices(
+  hr = dinput->EnumDevices(
       DI8DEVCLASS_KEYBOARD, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY);
   if (hr != DI_OK) {
     RageException::Throw(
@@ -327,7 +327,7 @@ InputHandler_DInput::InputHandler_DInput() {
 
   LOG->Trace(
       "InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_JOYSTICK)");
-  hr = g_dinput->EnumDevices(
+  hr = dinput->EnumDevices(
       DI8DEVCLASS_GAMECTRL, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY);
   if (hr != DI_OK) {
     RageException::Throw(
@@ -337,7 +337,7 @@ InputHandler_DInput::InputHandler_DInput() {
 
   // mouse
   LOG->Trace("InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_MOUSE)");
-  hr = g_dinput->EnumDevices(
+  hr = dinput->EnumDevices(
       DI8DEVCLASS_POINTER, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY);
   if (hr != DI_OK) {
     RageException::Throw(
@@ -345,22 +345,23 @@ InputHandler_DInput::InputHandler_DInput() {
             .c_str());
   }
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].Open()) {
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (g_devices[i].Open()) {
       continue;
     }
 
-    Devices.erase(Devices.begin() + i);
+    g_devices.erase(g_devices.begin() + i);
     i--;
     continue;
   }
 
-  LOG->Info("Found %u DirectInput devices:", Devices.size());
-  for (unsigned i = 0; i < Devices.size(); ++i) {
+  LOG->Info("Found %u DirectInput devices:", g_devices.size());
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
     LOG->Info(
         "   %d: '%s' axes: %d, hats: %d, buttons: %d (%s)", i,
-        Devices[i].name_.c_str(), Devices[i].axes_, Devices[i].hats_,
-        Devices[i].buttons_, Devices[i].buffered_ ? "buffered" : "unbuffered");
+        g_devices[i].name_.c_str(), g_devices[i].axes_, g_devices[i].hats_,
+        g_devices[i].buttons_,
+        g_devices[i].buffered_ ? "buffered" : "unbuffered");
   }
 
   last_seen_num_hid_devices_ = GetNumHidDevices();
@@ -389,34 +390,34 @@ void InputHandler_DInput::ShutdownThread() {
 }
 
 InputHandler_DInput::~InputHandler_DInput() {
-  XDevices.clear();
+  xdevices.clear();
 
   ShutdownThread();
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    Devices[i].Close();
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    g_devices[i].Close();
   }
 
-  Devices.clear();
-  g_dinput->Release();
-  g_dinput = nullptr;
+  g_devices.clear();
+  dinput->Release();
+  dinput = nullptr;
 }
 
 void InputHandler_DInput::WindowReset() {
   // We need to reopen keyboards.
   ShutdownThread();
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].type_ != Devices[i].KEYBOARD) {
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (g_devices[i].type_ != g_devices[i].KEYBOARD) {
       continue;
     }
 
-    Devices[i].Close();
+    g_devices[i].Close();
 
     // We lose buffered inputs here, so we need to clear all pressed keys.
-    INPUTFILTER->ResetDevice(Devices[i].dev_);
+    INPUTFILTER->ResetDevice(g_devices[i].dev_);
 
-    bool ret = Devices[i].Open();
+    bool ret = g_devices[i].Open();
 
     // Reopening it should succeed.
     ASSERT(ret);
@@ -821,7 +822,7 @@ void InputHandler_DInput::UpdateBuffered(
             }
 
             float l = SCALE(int(evtbuf[i].dwData), 0.0f, 100.0f, 0.0f, 1.0f);
-            if (GamePreferences::m_AxisFix) {
+            if (GamePreferences::axis_fix) {
               ButtonPressed(DeviceInput(dev, up, (l == 0) || (l == -1), tm));
               ButtonPressed(DeviceInput(dev, down, (l == 0) || (l == 1), tm));
 
@@ -849,9 +850,9 @@ void InputHandler_DInput::UpdateBuffered(
   }
 }
 
-inline constexpr short XINPUT_GAMEPAD_THUMB_MIN =
+inline constexpr short kXInputGamepadThumbMin =
     std::numeric_limits<short>::min();
-inline constexpr short XINPUT_GAMEPAD_THUMB_MAX =
+inline constexpr short kXInputGamepadThumbMax =
     std::numeric_limits<short>::max();
 
 void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
@@ -866,11 +867,11 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
             std::pow(state.Gamepad.sThumbLY, 2)) >
         XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
       lx = SCALE(
-          state.Gamepad.sThumbLX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
-          XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+          state.Gamepad.sThumbLX + 0.f, kXInputGamepadThumbMin + 0.f,
+          kXInputGamepadThumbMax + 0.f, -1.0f, 1.0f);
       ly = SCALE(
-          state.Gamepad.sThumbLY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
-          XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+          state.Gamepad.sThumbLY + 0.f, kXInputGamepadThumbMin + 0.f,
+          kXInputGamepadThumbMax + 0.f, -1.0f, 1.0f);
     }
     ButtonPressed(DeviceInput(device.dev_, JOY_LEFT, std::max(-lx, 0.f), tm));
     ButtonPressed(DeviceInput(device.dev_, JOY_RIGHT, std::max(+lx, 0.f), tm));
@@ -884,11 +885,11 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
             std::pow(state.Gamepad.sThumbRY, 2)) >
         XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
       rx = SCALE(
-          state.Gamepad.sThumbRX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
-          XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+          state.Gamepad.sThumbRX + 0.f, kXInputGamepadThumbMin + 0.f,
+          kXInputGamepadThumbMax + 0.f, -1.0f, 1.0f);
       ry = SCALE(
-          state.Gamepad.sThumbRY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f,
-          XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+          state.Gamepad.sThumbRY + 0.f, kXInputGamepadThumbMin + 0.f,
+          kXInputGamepadThumbMax + 0.f, -1.0f, 1.0f);
     }
     ButtonPressed(DeviceInput(device.dev_, JOY_LEFT_2, std::max(-rx, 0.f), tm));
     ButtonPressed(
@@ -957,23 +958,23 @@ void InputHandler_DInput::UpdateXInput(XIDevice& device, const RageTimer& tm) {
 }
 
 void InputHandler_DInput::PollAndAcquireDevices(bool buffered) {
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (Devices[i].buffered_ != buffered) {
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (g_devices[i].buffered_ != buffered) {
       continue;
     }
 
-    HRESULT hr = Devices[i].device_->Poll();
+    HRESULT hr = g_devices[i].device_->Poll();
     if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
-      INPUTFILTER->ResetDevice(Devices[i].dev_);
+      INPUTFILTER->ResetDevice(g_devices[i].dev_);
 
       /* This will fail with "access denied" on the keyboard if we don't
        * have focus. */
-      hr = Devices[i].device_->Acquire();
+      hr = g_devices[i].device_->Acquire();
       if (hr != DI_OK) {
         continue;
       }
 
-      Devices[i].device_->Poll();
+      g_devices[i].device_->Poll();
     }
   }
 }
@@ -986,24 +987,24 @@ void InputHandler_DInput::Update() {
     PollAndAcquireDevices(true);
   }
 
-  for (unsigned i = 0; i < XDevices.size(); ++i) {
-    UpdateXInput(XDevices[i], RageZeroTimer);
+  for (unsigned i = 0; i < xdevices.size(); ++i) {
+    UpdateXInput(xdevices[i], kRageZeroTimer);
   }
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered_) {
-      UpdatePolled(Devices[i], RageZeroTimer);
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (!g_devices[i].buffered_) {
+      UpdatePolled(g_devices[i], kRageZeroTimer);
     } else if (!input_thread_.IsCreated()) {
       // If we have an input thread, it'll handle buffered devices.
-      UpdateBuffered(Devices[i], RageZeroTimer);
+      UpdateBuffered(g_devices[i], kRageZeroTimer);
     }
   }
 
   InputHandler::UpdateTimer();
 }
 
-const float POLL_FOR_JOYSTICK_CHANGES_LENGTH_SECONDS = 15.0f;
-const float POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS = 0.25f;
+const float kPollForJoystickChangesLengthSeconds = 15.0f;
+const float kPollForJoystickChangesEverySeconds = 0.25f;
 
 bool InputHandler_DInput::DevicesChanged() {
   /* GetNumJoysticksSlow() blocks DirectInput for a while even if called from a
@@ -1025,13 +1026,13 @@ bool InputHandler_DInput::DevicesChanged() {
   if (old_num_hid_devices != last_seen_num_hid_devices_) {
     LOG->Warn("HID devices changes");
     num_times_left_to_poll_for_joysticks_changed_ =
-        (int)(POLL_FOR_JOYSTICK_CHANGES_LENGTH_SECONDS /
-              POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS);
+        (int)(kPollForJoystickChangesLengthSeconds /
+              kPollForJoystickChangesEverySeconds);
   }
 
   if (num_times_left_to_poll_for_joysticks_changed_ > 0) {
     static RageTimer timer_poll_joysticks;
-    if (timer_poll_joysticks.Ago() >= POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS) {
+    if (timer_poll_joysticks.Ago() >= kPollForJoystickChangesEverySeconds) {
       num_times_left_to_poll_for_joysticks_changed_--;
       timer_poll_joysticks.Touch();
       LOG->Warn("polling for joystick changes");
@@ -1061,19 +1062,19 @@ void InputHandler_DInput::InputThreadMain() {
 
   std::vector<DIDevice*> buffered_devices;
   HANDLE handle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered_) {
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (!g_devices[i].buffered_) {
       continue;
     }
 
-    buffered_devices.push_back(&Devices[i]);
+    buffered_devices.push_back(&g_devices[i]);
 
-    Devices[i].device_->Unacquire();
-    HRESULT hr = Devices[i].device_->SetEventNotification(handle);
+    g_devices[i].device_->Unacquire();
+    HRESULT hr = g_devices[i].device_->SetEventNotification(handle);
     if (FAILED(hr)) {
       LOG->Warn("IDirectInputDevice2_SetEventNotification failed on %i", i);
     }
-    Devices[i].device_->Acquire();
+    g_devices[i].device_->Acquire();
   }
 
   while (!shutdown_) {
@@ -1107,13 +1108,13 @@ void InputHandler_DInput::InputThreadMain() {
   }
   CHECKPOINT;
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    if (!Devices[i].buffered_) {
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    if (!g_devices[i].buffered_) {
       continue;
     }
 
-    Devices[i].device_->Unacquire();
-    Devices[i].device_->SetEventNotification(nullptr);
+    g_devices[i].device_->Unacquire();
+    g_devices[i].device_->SetEventNotification(nullptr);
   }
 
   CloseHandle(handle);
@@ -1121,12 +1122,13 @@ void InputHandler_DInput::InputThreadMain() {
 
 void InputHandler_DInput::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& devices_out) {
-  for (unsigned i = 0; i < XDevices.size(); ++i) {
-    devices_out.push_back(InputDeviceInfo(XDevices[i].dev_, XDevices[i].name_));
+  for (unsigned i = 0; i < xdevices.size(); ++i) {
+    devices_out.push_back(InputDeviceInfo(xdevices[i].dev_, xdevices[i].name_));
   }
 
-  for (unsigned i = 0; i < Devices.size(); ++i) {
-    devices_out.push_back(InputDeviceInfo(Devices[i].dev_, Devices[i].name_));
+  for (unsigned i = 0; i < g_devices.size(); ++i) {
+    devices_out.push_back(
+        InputDeviceInfo(g_devices[i].dev_, g_devices[i].name_));
   }
 }
 
@@ -1179,7 +1181,7 @@ wchar_t InputHandler_DInput::DeviceButtonToChar(
       return '\0';
   }
 
-  for (const DIDevice& d : Devices) {
+  for (const DIDevice& d : g_devices) {
     if (d.type_ != DIDevice::KEYBOARD) {
       continue;
     }

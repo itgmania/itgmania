@@ -85,7 +85,7 @@ static void DumpAVIDebugInfo(const std::string& fn) {
       type.c_str());
 }
 
-static Preference<std::string> g_sMovieDrivers(
+static Preference<std::string> movie_drivers(
     "MovieDrivers", "");  // "" == default
 /* Try drivers in order of preference until we find one that works. */
 static LocalizedString MOVIE_DRIVERS_EMPTY(
@@ -95,7 +95,7 @@ static LocalizedString COULDNT_CREATE_MOVIE_DRIVER(
 RageMovieTexture* RageMovieTexture::Create(RageTextureID id) {
   DumpAVIDebugInfo(id.filename_);
 
-  std::string drivers = g_sMovieDrivers;
+  std::string drivers = movie_drivers;
   std::vector<std::string> drivers_to_try;
 
   if (drivers.empty()) {

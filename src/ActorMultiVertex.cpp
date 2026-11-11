@@ -23,14 +23,14 @@
 #include "XmlFile.h"
 #include "global.h"
 
-const float min_state_delay = 0.0001f;
+const float kMinStateDelay = 0.0001f;
 
 static const char* DrawModeNames[] = {
     "Quads",     "QuadStrip",          "Fan", "Strip", "Triangles",
     "LineStrip", "SymmetricQuadStrip",
 };
 
-static const int DrawModeVertexGroupSizes[] = {
+static const int kDrawModeVertexGroupSizes[] = {
     4,  // Quads
     2,  // QuadStrip
     1,  // Fan
@@ -42,7 +42,7 @@ static const int DrawModeVertexGroupSizes[] = {
     1,  // DrawMode_Invalid
 };
 
-static const int DrawModeMinimumToDraw[] = {
+static const int kDrawModeMinimumToDraw[] = {
     4,  // Quads
     4,  // QuadStrip
     3,  // Fan
@@ -382,8 +382,8 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update) {
   }
   bool state_changed = force_update;
   if (states_.size() > 1) {
-    while (states_[cur_state_].delay_ > min_state_delay &&
-           secs_into_state_ + min_state_delay > states_[cur_state_].delay_) {
+    while (states_[cur_state_].delay_ > kMinStateDelay &&
+           secs_into_state_ + kMinStateDelay > states_[cur_state_].delay_) {
       secs_into_state_ -= states_[cur_state_].delay_;
       cur_state_ = (cur_state_ + 1) % states_.size();
       state_changed = true;
@@ -607,8 +607,8 @@ int ActorMultiVertex::AMV_TweenState::GetSafeNumToDraw(
   if (num == -1 || num > max) {
     num = max;
   }
-  num -= (num % DrawModeVertexGroupSizes[dm]);
-  if (num < DrawModeMinimumToDraw[dm]) {
+  num -= (num % kDrawModeVertexGroupSizes[dm]);
+  if (num < kDrawModeMinimumToDraw[dm]) {
     num = 0;
   }
   return num;

@@ -24,7 +24,7 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
-const float PARTICLE_SPEED = 300;
+const float kParticleSpeed = 300;
 
 #define MAX_TILES_WIDE int(SCREEN_WIDTH / 32 + 2)
 #define MAX_TILES_HIGH int(SCREEN_HEIGHT / 32 + 2)
@@ -289,28 +289,28 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& s_path) {
           case EFFECT_PARTICLES_FLOAT_UP:
           case EFFECT_PARTICLES_SPIRAL_OUT:
             particle_velocity_.push_back(
-                RageVector3(0, -PARTICLE_SPEED * sprite->GetZoom(), 0));
+                RageVector3(0, -kParticleSpeed * sprite->GetZoom(), 0));
             break;
           case EFFECT_PARTICLES_FLOAT_DOWN:
           case EFFECT_PARTICLES_SPIRAL_IN:
             particle_velocity_.push_back(
-                RageVector3(0, PARTICLE_SPEED * sprite->GetZoom(), 0));
+                RageVector3(0, kParticleSpeed * sprite->GetZoom(), 0));
             break;
           case EFFECT_PARTICLES_FLOAT_LEFT:
             particle_velocity_.push_back(
-                RageVector3(-PARTICLE_SPEED * sprite->GetZoom(), 0, 0));
+                RageVector3(-kParticleSpeed * sprite->GetZoom(), 0, 0));
             break;
           case EFFECT_PARTICLES_FLOAT_RIGHT:
             particle_velocity_.push_back(
-                RageVector3(+PARTICLE_SPEED * sprite->GetZoom(), 0, 0));
+                RageVector3(+kParticleSpeed * sprite->GetZoom(), 0, 0));
             break;
           case EFFECT_PARTICLES_BOUNCE:
             particles_bounce_ = true;
             sprite->SetZoom(1);
             particle_velocity_.push_back(RageVector3(randomf(), randomf(), 0));
             RageVec3Normalize(&particle_velocity_[i], &particle_velocity_[i]);
-            particle_velocity_[i].x_ *= PARTICLE_SPEED;
-            particle_velocity_[i].y_ *= PARTICLE_SPEED;
+            particle_velocity_[i].x_ *= kParticleSpeed;
+            particle_velocity_[i].y_ *= kParticleSpeed;
             break;
           default:
             FAIL_M(ssprintf("Unrecognized layer effect: %i", effect));
@@ -349,16 +349,16 @@ void BGAnimationLayer::LoadFromAniLayerFile(const std::string& s_path) {
             case EFFECT_TILE_STILL:
               break;
             case EFFECT_TILE_SCROLL_LEFT:
-              tile_velocity_x_ = -PARTICLE_SPEED;
+              tile_velocity_x_ = -kParticleSpeed;
               break;
             case EFFECT_TILE_SCROLL_RIGHT:
-              tile_velocity_x_ = +PARTICLE_SPEED;
+              tile_velocity_x_ = +kParticleSpeed;
               break;
             case EFFECT_TILE_SCROLL_UP:
-              tile_velocity_y_ = -PARTICLE_SPEED;
+              tile_velocity_y_ = -kParticleSpeed;
               break;
             case EFFECT_TILE_SCROLL_DOWN:
-              tile_velocity_y_ = +PARTICLE_SPEED;
+              tile_velocity_y_ = +kParticleSpeed;
               break;
             case EFFECT_TILE_FLIP_X:
               sprite->SetEffectSpin(RageVector3(180, 0, 0));

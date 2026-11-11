@@ -19,12 +19,12 @@ using CrashHandler::DebugBreak;
 using CrashHandler::IsDebuggerPresent;
 #endif
 
-static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
-static void (*g_CleanupHandler)(const std::string& sError) = nullptr;
+static uint64_t handler_thread_id = RageThread::GetInvalidThreadID();
+static void (*cleanup_handler)(const std::string& sError) = nullptr;
 void RageException::SetCleanupHandler(
     void (*handler)(const std::string& error)) {
-  g_HandlerThreadID = RageThread::GetCurrentThreadID();
-  g_CleanupHandler = handler;
+  handler_thread_id = RageThread::GetCurrentThreadID();
+  cleanup_handler = handler;
 }
 
 /* This is no longer actually implemented by throwing an exception, but it acts
@@ -56,11 +56,11 @@ void RageException::Throw(const char* fmt, ...) {
 #endif
 
   ASSERT_M(
-      g_HandlerThreadID == RageThread::GetInvalidThreadID() ||
-          g_HandlerThreadID == RageThread::GetCurrentThreadID(),
+      handler_thread_id == RageThread::GetInvalidThreadID() ||
+          handler_thread_id == RageThread::GetCurrentThreadID(),
       ssprintf("RageException::Throw() on another thread: %s", error.c_str()));
-  if (g_CleanupHandler != nullptr) {
-    g_CleanupHandler(error);
+  if (cleanup_handler != nullptr) {
+    cleanup_handler(error);
   }
 
   exit(1);

@@ -36,9 +36,9 @@
 RageFileManager* FILEMAN = nullptr;
 
 /* Lock this before touching any of these globals (except FILEMAN itself). */
-static RageEvent* g_Mutex;
+static RageEvent* mutex;
 
-std::string RageFileManagerUtil::sDirOfExecutable;
+std::string RageFileManagerUtil::g_dir_of_executable;
 
 struct LoadedDriver {
   /* A loaded driver may have a base path, which modifies the path we
@@ -58,25 +58,25 @@ struct LoadedDriver {
   std::string GetPath(const std::string& path) const;
 };
 
-static std::vector<LoadedDriver*> g_pDrivers;
-static std::map<const RageFileBasic*, LoadedDriver*> g_mFileDriverMap;
+static std::vector<LoadedDriver*> g_drivers;
+static std::map<const RageFileBasic*, LoadedDriver*> file_driver_map;
 
 static void ReferenceAllDrivers(std::vector<LoadedDriver*>& driver_list) {
-  g_Mutex->Lock();
-  driver_list = g_pDrivers;
+  mutex->Lock();
+  driver_list = g_drivers;
   for (unsigned i = 0; i < driver_list.size(); ++i) {
     ++driver_list[i]->refs_;
   }
-  g_Mutex->Unlock();
+  mutex->Unlock();
 }
 
 static void UnreferenceAllDrivers(std::vector<LoadedDriver*>& driver_list) {
-  g_Mutex->Lock();
+  mutex->Lock();
   for (unsigned i = 0; i < driver_list.size(); ++i) {
     --driver_list[i]->refs_;
   }
-  g_Mutex->Broadcast();
-  g_Mutex->Unlock();
+  mutex->Broadcast();
+  mutex->Unlock();
 
   /* Clear the temporary list, to make it clear that the drivers may no longer
    * be accessed. */
@@ -89,21 +89,21 @@ RageFileDriver* RageFileManager::GetFileDriver(std::string mountpoint) {
     mountpoint += '/';
   }
 
-  g_Mutex->Lock();
+  mutex->Lock();
   RageFileDriver* ret = nullptr;
-  for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (g_pDrivers[i]->type_ == "mountpoints") {
+  for (unsigned i = 0; i < g_drivers.size(); ++i) {
+    if (g_drivers[i]->type_ == "mountpoints") {
       continue;
     }
-    if (CompareNoCase(g_pDrivers[i]->mount_point_, mountpoint)) {
+    if (CompareNoCase(g_drivers[i]->mount_point_, mountpoint)) {
       continue;
     }
 
-    ret = g_pDrivers[i]->driver_;
-    ++g_pDrivers[i]->refs_;
+    ret = g_drivers[i]->driver_;
+    ++g_drivers[i]->refs_;
     break;
   }
-  g_Mutex->Unlock();
+  mutex->Unlock();
 
   return ret;
 }
@@ -111,19 +111,19 @@ RageFileDriver* RageFileManager::GetFileDriver(std::string mountpoint) {
 void RageFileManager::ReleaseFileDriver(RageFileDriver* driver) {
   ASSERT(driver != nullptr);
 
-  g_Mutex->Lock();
+  mutex->Lock();
   unsigned i;
-  for (i = 0; i < g_pDrivers.size(); ++i) {
-    if (g_pDrivers[i]->driver_ == driver) {
+  for (i = 0; i < g_drivers.size(); ++i) {
+    if (g_drivers[i]->driver_ == driver) {
       break;
     }
   }
-  ASSERT(i != g_pDrivers.size());
+  ASSERT(i != g_drivers.size());
 
-  --g_pDrivers[i]->refs_;
+  --g_drivers[i]->refs_;
 
-  g_Mutex->Broadcast();
-  g_Mutex->Unlock();
+  mutex->Broadcast();
+  mutex->Unlock();
 }
 
 size_t zipRead(void* opaque, mz_uint64 file_ofs, void* buf, size_t n) {
@@ -298,7 +298,7 @@ class RageFileDriverMountpoints : public RageFileDriver {
     }
   }
 };
-static RageFileDriverMountpoints* g_Mountpoints = nullptr;
+static RageFileDriverMountpoints* mountpoints = nullptr;
 
 static std::string ExtractDirectory(std::string path) {
   // return the directory containing sPath
@@ -396,28 +396,28 @@ static std::string GetDirOfExecutable(std::string argv0) {
 }
 
 static void ChangeToDirOfExecutable(const std::string& argv0) {
-  RageFileManagerUtil::sDirOfExecutable = GetDirOfExecutable(argv0);
+  RageFileManagerUtil::g_dir_of_executable = GetDirOfExecutable(argv0);
 
   /* Set the CWD.  Any effects of this is platform-specific; most files are read
    * and written through RageFile.  See also RageFileManager::RageFileManager.
    */
 #if defined(_WINDOWS)
-  if (_chdir((RageFileManagerUtil::sDirOfExecutable + "/..").c_str()))
+  if (_chdir((RageFileManagerUtil::g_dir_of_executable + "/..").c_str()))
 #elif defined(UNIX)
-  if (chdir((RageFileManagerUtil::sDirOfExecutable + "/").c_str()))
+  if (chdir((RageFileManagerUtil::g_dir_of_executable + "/").c_str()))
 #elif defined(MACOSX)
   /* If the basename is not MacOS, then we've likely been launched via the
    * command line through a symlink. Assume this is the case and change to the
    * dir of the symlink. */
-  if (Basename(RageFileManagerUtil::sDirOfExecutable) == "MacOS") {
-    CollapsePath(RageFileManagerUtil::sDirOfExecutable += "/../../../");
+  if (Basename(RageFileManagerUtil::g_dir_of_executable) == "MacOS") {
+    CollapsePath(RageFileManagerUtil::g_dir_of_executable += "/../../../");
   }
-  if (chdir(RageFileManagerUtil::sDirOfExecutable.c_str()))
+  if (chdir(RageFileManagerUtil::g_dir_of_executable.c_str()))
 #endif
   {
     LOG->Warn(
         "Can't set current working directory to %s",
-        RageFileManagerUtil::sDirOfExecutable.c_str());
+        RageFileManagerUtil::g_dir_of_executable.c_str());
     return;
   }
 }
@@ -426,14 +426,14 @@ RageFileManager::RageFileManager(const std::string& argv0) {
   CHECKPOINT_M(argv0);
   ChangeToDirOfExecutable(argv0);
 
-  g_Mutex = new RageEvent("RageFileManager");
+  mutex = new RageEvent("RageFileManager");
 
-  g_Mountpoints = new RageFileDriverMountpoints;
+  mountpoints = new RageFileDriverMountpoints;
   LoadedDriver* loaded_driver = new LoadedDriver;
-  loaded_driver->driver_ = g_Mountpoints;
+  loaded_driver->driver_ = mountpoints;
   loaded_driver->mount_point_ = "/";
   loaded_driver->type_ = "mountpoints";
-  g_pDrivers.push_back(loaded_driver);
+  g_drivers.push_back(loaded_driver);
 
   /* The mount path is unused, but must be nonempty. */
   RageFileManager::Mount("mem", "(cache)", "/@mem");
@@ -449,11 +449,11 @@ RageFileManager::RageFileManager(const std::string& argv0) {
 }
 
 void RageFileManager::MountInitialFilesystems() {
-  HOOKS->MountInitialFilesystems(RageFileManagerUtil::sDirOfExecutable);
+  HOOKS->MountInitialFilesystems(RageFileManagerUtil::g_dir_of_executable);
 }
 
 void RageFileManager::MountUserFilesystems() {
-  HOOKS->MountUserFilesystems(RageFileManagerUtil::sDirOfExecutable);
+  HOOKS->MountUserFilesystems(RageFileManagerUtil::g_dir_of_executable);
 }
 
 RageFileManager::~RageFileManager() {
@@ -462,17 +462,17 @@ RageFileManager::~RageFileManager() {
 
   /* Note that drivers can use previously-loaded drivers, eg. to load a ZIP
    * from the FS.  Unload drivers in reverse order. */
-  for (int i = g_pDrivers.size() - 1; i >= 0; --i) {
-    delete g_pDrivers[i]->driver_;
-    delete g_pDrivers[i];
+  for (int i = g_drivers.size() - 1; i >= 0; --i) {
+    delete g_drivers[i]->driver_;
+    delete g_drivers[i];
   }
-  g_pDrivers.clear();
+  g_drivers.clear();
 
   //	delete g_Mountpoints; // g_Mountpoints was in g_pDrivers
-  g_Mountpoints = nullptr;
+  mountpoints = nullptr;
 
-  delete g_Mutex;
-  g_Mutex = nullptr;
+  delete mutex;
+  mutex = nullptr;
 }
 
 /* path must be normalized (FixSlashesInPlace, CollapsePath). */
@@ -699,10 +699,10 @@ static void AdjustMountpoint(std::string& mount_point) {
 }
 
 static void AddFilesystemDriver(LoadedDriver* loaded_driver) {
-  g_Mutex->Lock();
-  g_pDrivers.insert(g_pDrivers.begin(), loaded_driver);
-  g_Mountpoints->LoadFromDrivers(g_pDrivers);
-  g_Mutex->Unlock();
+  mutex->Lock();
+  g_drivers.insert(g_drivers.begin(), loaded_driver);
+  mountpoints->LoadFromDrivers(g_drivers);
+  mutex->Unlock();
 }
 
 bool RageFileManager::Mount(
@@ -776,39 +776,39 @@ void RageFileManager::Unmount(
   /* Find all drivers we want to delete.  Remove them from g_pDrivers, and move
    * them into aDriverListToUnmount. */
   std::vector<LoadedDriver*> driver_list_to_unmount;
-  g_Mutex->Lock();
-  for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (!type.empty() && CompareNoCase(g_pDrivers[i]->type_, type)) {
+  mutex->Lock();
+  for (unsigned i = 0; i < g_drivers.size(); ++i) {
+    if (!type.empty() && CompareNoCase(g_drivers[i]->type_, type)) {
       continue;
     }
-    if (!root.empty() && CompareNoCase(g_pDrivers[i]->root_, root)) {
+    if (!root.empty() && CompareNoCase(g_drivers[i]->root_, root)) {
       continue;
     }
     if (!mount_point.empty() &&
-        CompareNoCase(g_pDrivers[i]->mount_point_, mount_point)) {
+        CompareNoCase(g_drivers[i]->mount_point_, mount_point)) {
       continue;
     }
 
-    ++g_pDrivers[i]->refs_;
-    driver_list_to_unmount.push_back(g_pDrivers[i]);
-    g_pDrivers.erase(g_pDrivers.begin() + i);
+    ++g_drivers[i]->refs_;
+    driver_list_to_unmount.push_back(g_drivers[i]);
+    g_drivers.erase(g_drivers.begin() + i);
     --i;
   }
 
-  g_Mountpoints->LoadFromDrivers(g_pDrivers);
+  mountpoints->LoadFromDrivers(g_drivers);
 
-  g_Mutex->Unlock();
+  mutex->Unlock();
 
   /* Now we have a list of drivers to remove. */
   while (driver_list_to_unmount.size()) {
     /* If the driver has more than one reference, somebody other than us is
      * using it; wait for that operation to complete. Note that two Unmount()
      * calls that want to remove the same mountpoint will deadlock here. */
-    g_Mutex->Lock();
+    mutex->Lock();
     while (driver_list_to_unmount[0]->refs_ > 1) {
-      g_Mutex->Wait();
+      mutex->Wait();
     }
-    g_Mutex->Unlock();
+    mutex->Unlock();
 
     delete driver_list_to_unmount[0]->driver_;
     delete driver_list_to_unmount[0];
@@ -817,13 +817,13 @@ void RageFileManager::Unmount(
 }
 
 void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& mounts) {
-  LockMut(*g_Mutex);
+  LockMut(*mutex);
 
-  for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
+  for (unsigned i = 0; i < g_drivers.size(); ++i) {
     DriverLocation l;
-    l.mount_point_ = g_pDrivers[i]->mount_point_;
-    l.type_ = g_pDrivers[i]->type_;
-    l.root_ = g_pDrivers[i]->root_;
+    l.mount_point_ = g_drivers[i]->mount_point_;
+    l.type_ = g_drivers[i]->type_;
+    l.root_ = g_drivers[i]->root_;
     mounts.push_back(l);
   }
 }
@@ -831,23 +831,23 @@ void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& mounts) {
 void RageFileManager::FlushDirCache(const std::string& raw_path) {
   std::string path = raw_path;
 
-  LockMut(*g_Mutex);
+  LockMut(*mutex);
 
   if (path == "") {
-    for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-      g_pDrivers[i]->driver_->FlushDirCache("");
+    for (unsigned i = 0; i < g_drivers.size(); ++i) {
+      g_drivers[i]->driver_->FlushDirCache("");
     }
     return;
   }
 
   /* Flush a specific path. */
   NormalizePath(path);
-  for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    const std::string& driver_path = g_pDrivers[i]->GetPath(path);
+  for (unsigned i = 0; i < g_drivers.size(); ++i) {
+    const std::string& driver_path = g_drivers[i]->GetPath(path);
     if (driver_path.size() == 0) {
       continue;
     }
-    g_pDrivers[i]->driver_->FlushDirCache(driver_path);
+    g_drivers[i]->driver_->FlushDirCache(driver_path);
   }
 }
 
@@ -973,20 +973,20 @@ RageFileBasic* RageFileManager::Open(
 
 void RageFileManager::CacheFile(
     const RageFileBasic* fb, const std::string& raw_path) {
-  g_Mutex->Lock();
+  mutex->Lock();
   std::map<const RageFileBasic*, LoadedDriver*>::iterator it =
-      g_mFileDriverMap.find(fb);
+      file_driver_map.find(fb);
 
   ASSERT_M(
-      it != g_mFileDriverMap.end(),
+      it != file_driver_map.end(),
       ssprintf("No recorded driver for file: %s", raw_path.c_str()));
 
   std::string path = raw_path;
   NormalizePath(path);
   path = it->second->GetPath(path);
   it->second->driver_->fdb_->CacheFile(path);
-  g_mFileDriverMap.erase(it);
-  g_Mutex->Unlock();
+  file_driver_map.erase(it);
+  mutex->Unlock();
 }
 
 RageFileBasic* RageFileManager::OpenForReading(
@@ -1081,9 +1081,9 @@ RageFileBasic* RageFileManager::OpenForWriting(
     int this_error;
     RageFileBasic* ret = ld.driver_->Open(driver_path, mode, this_error);
     if (ret) {
-      g_Mutex->Lock();
-      g_mFileDriverMap[ret] = &ld;
-      g_Mutex->Unlock();
+      mutex->Lock();
+      file_driver_map[ret] = &ld;
+      mutex->Unlock();
       UnreferenceAllDrivers(driver_list);
       return ret;
     }

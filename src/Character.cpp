@@ -68,7 +68,7 @@ bool Character::Load(std::string char_dir) {
     return false;
   }
   for (int i = 0; i < NUM_ATTACK_LEVELS; i++) {
-    for (int j = 0; j < NUM_ATTACKS_PER_LEVEL; j++) {
+    for (int j = 0; j < kNumAttacksPerLevel; j++) {
       ini.GetValue(
           "Character", ssprintf("Level%dAttack%d", i + 1, j + 1),
           attacks_[i][j]);

@@ -20,8 +20,8 @@
 LuaDebugManager* LUADEBUG = nullptr;
 
 namespace {
-const char* const DefaultAddress = "127.0.0.1:8173";
-const int DefaultTimeoutMs = 50;
+const char* const kDefaultAddress = "127.0.0.1:8173";
+const int kDefaultTimeoutMs = 50;
 }  // namespace
 
 namespace LuaDebug {
@@ -31,7 +31,7 @@ class Server : public ix::SocketServer {
       Debugger& debugger, const std::string& address, bool start_paused) {
     // Split the address to host and port.
     std::string url =
-        std::string("tcp://") + (address.empty() ? DefaultAddress : address);
+        std::string("tcp://") + (address.empty() ? kDefaultAddress : address);
     std::string protocol;
     std::string host;
     std::string path;
@@ -136,7 +136,8 @@ class Server : public ix::SocketServer {
         }
         ASSERT(free_space <= INT_MAX);
 
-        ix::PollResultType poll_result = socket.isReadyToRead(DefaultTimeoutMs);
+        ix::PollResultType poll_result =
+            socket.isReadyToRead(kDefaultTimeoutMs);
         if (poll_result == ix::PollResultType::Timeout) {
           continue;
         }

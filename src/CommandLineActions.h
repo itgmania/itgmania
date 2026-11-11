@@ -23,7 +23,7 @@ class CommandLineArgs {
  * @brief A list of command line arguemnts to process while the game is running.
  * These args could have come from this process or passed to this process
  * from another process. */
-extern std::vector<CommandLineArgs> ToProcess;
+extern std::vector<CommandLineArgs> to_process;
 }  // namespace CommandLineActions
 
 #endif

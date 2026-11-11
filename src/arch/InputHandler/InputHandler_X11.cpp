@@ -230,39 +230,39 @@ static DeviceButton XSymToDeviceButton(int key) {
 }
 
 InputHandler_X11::InputHandler_X11() {
-  if (Dpy == nullptr || Win == None) {
+  if (g_dpy == nullptr || g_win == None) {
     return;
   }
   XWindowAttributes win_attrib;
 
-  XGetWindowAttributes(Dpy, Win, &win_attrib);
+  XGetWindowAttributes(g_dpy, g_win, &win_attrib);
   // todo: add ButtonMotionMask, Button(1-5)MotionMask,
   // (EnterWindowMask/LeaveWindowMask?) -aj
   XSelectInput(
-      Dpy, Win,
+      g_dpy, g_win,
       win_attrib.your_event_mask | KeyPressMask | KeyReleaseMask |
           ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
           FocusChangeMask);
 }
 
 InputHandler_X11::~InputHandler_X11() {
-  if (Dpy == nullptr || Win == None || FatalError) {
+  if (g_dpy == nullptr || g_win == None || fatal_error) {
     return;
   }
   // TODO: Determine if we even need to set this back (or is the window
   // destroyed just after this?)
   XWindowAttributes win_attrib;
 
-  XGetWindowAttributes(Dpy, Win, &win_attrib);
+  XGetWindowAttributes(g_dpy, g_win, &win_attrib);
   XSelectInput(
-      Dpy, Win,
+      g_dpy, g_win,
       win_attrib.your_event_mask &
           ~(KeyPressMask | KeyReleaseMask | ButtonPressMask |
             ButtonReleaseMask | PointerMotionMask | FocusChangeMask));
 }
 
 void InputHandler_X11::Update() {
-  if (Dpy == nullptr || Win == None) {
+  if (g_dpy == nullptr || g_win == None) {
     InputHandler::UpdateTimer();
     return;
   }
@@ -276,7 +276,7 @@ void InputHandler_X11::Update() {
   // events that we'd pick up and discard.
   // todo: add other masks? (like the ones for drag'n drop) -aj
   while (XCheckWindowEvent(
-      Dpy, Win,
+      g_dpy, g_win,
       KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
           PointerMotionMask | FocusChangeMask,
       &event)) {
@@ -343,7 +343,7 @@ void InputHandler_X11::Update() {
 
 void InputHandler_X11::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& devices_out) {
-  if (Dpy && Win) {
+  if (g_dpy && g_win) {
     devices_out.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "Keyboard"));
     devices_out.push_back(InputDeviceInfo(DEVICE_MOUSE, "Mouse"));
   }

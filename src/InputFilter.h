@@ -150,7 +150,7 @@ class InputFilter {
   float GetMouseWheel() { return mouse_coords_.z_; }
 
   PadSensorState* getFullSensorState(PlayerNumber pn) {
-    if (pn < NUM_PLAYERS) {
+    if (pn < kNumPlayers) {
       return &sensors_[pn];
     }
     return nullptr;
@@ -172,7 +172,7 @@ class InputFilter {
   MouseCoordinates mouse_coords_;
 
   // debug sensors.
-  PadSensorState sensors_[NUM_PLAYERS];
+  PadSensorState sensors_[kNumPlayers];
 
   InputFilter(const InputFilter& rhs);
   InputFilter& operator=(const InputFilter& rhs);

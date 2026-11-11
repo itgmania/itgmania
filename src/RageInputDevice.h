@@ -8,8 +8,8 @@
 #include "EnumHelper.h"
 #include "RageTimer.h"
 
-const int NUM_JOYSTICKS = 32;
-const int NUM_PUMPS = 2;
+const int kNumJoysticks = 32;
+const int kNumPumps = 2;
 
 enum InputDevice {
   DEVICE_KEYBOARD = 0,
@@ -59,10 +59,10 @@ enum InputDevice {
 const std::string& InputDeviceToString(InputDevice i);
 InputDevice StringToInputDevice(const std::string& s);
 inline bool IsJoystick(InputDevice id) {
-  return DEVICE_JOY1 <= id && id < DEVICE_JOY1 + NUM_JOYSTICKS;
+  return DEVICE_JOY1 <= id && id < DEVICE_JOY1 + kNumJoysticks;
 }
 inline bool IsPump(InputDevice id) {
-  return DEVICE_PUMP1 <= id && id < DEVICE_PUMP1 + NUM_PUMPS;
+  return DEVICE_PUMP1 <= id && id < DEVICE_PUMP1 + kNumPumps;
 }
 inline bool IsMouse(InputDevice id) { return id == DEVICE_MOUSE; }
 
@@ -390,14 +390,14 @@ struct DeviceInput {
         level_(0),
         z_(0),
         down_(false),
-        ts_(RageZeroTimer) {}
+        ts_(kRageZeroTimer) {}
   DeviceInput(InputDevice d, DeviceButton b, float l = 0)
       : device_(d),
         button_(b),
         level_(l),
         z_(0),
         down_(l > 0.5f),
-        ts_(RageZeroTimer) {}
+        ts_(kRageZeroTimer) {}
   DeviceInput(InputDevice d, DeviceButton b, float l, const RageTimer& t)
       : device_(d),
         button_(b),

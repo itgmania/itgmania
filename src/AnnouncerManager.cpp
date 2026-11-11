@@ -13,8 +13,8 @@
 AnnouncerManager* ANNOUNCER =
     nullptr;  // global and accessible from anywhere in our program
 
-const std::string EMPTY_ANNOUNCER_NAME = "Empty";
-const std::string ANNOUNCERS_DIR = "Announcers/";
+const std::string kEmptyAnnouncerName = "Empty";
+const std::string kAnnouncersDir = "Announcers/";
 
 AnnouncerManager::AnnouncerManager() {
   // Register with Lua.
@@ -33,14 +33,14 @@ AnnouncerManager::~AnnouncerManager() {
 }
 
 void AnnouncerManager::GetAnnouncerNames(std::vector<std::string>& add_to) {
-  GetDirListing(ANNOUNCERS_DIR + "*", add_to, true);
+  GetDirListing(kAnnouncersDir + "*", add_to, true);
 
   StripCvsAndSvn(add_to);
   StripMacResourceForks(add_to);
 
   // strip out the empty announcer folder
   for (int i = add_to.size() - 1; i >= 0; i--) {
-    if (!strcasecmp(add_to[i].c_str(), EMPTY_ANNOUNCER_NAME.c_str())) {
+    if (!strcasecmp(add_to[i].c_str(), kEmptyAnnouncerName.c_str())) {
       add_to.erase(add_to.begin() + i, add_to.begin() + i + 1);
     }
   }
@@ -63,7 +63,7 @@ bool AnnouncerManager::DoesAnnouncerExist(std::string announcer_name) {
 
 std::string AnnouncerManager::GetAnnouncerDirFromName(
     std::string announcer_name) {
-  return ANNOUNCERS_DIR + announcer_name + "/";
+  return kAnnouncersDir + announcer_name + "/";
 }
 
 void AnnouncerManager::SwitchAnnouncer(std::string new_announcer_name) {

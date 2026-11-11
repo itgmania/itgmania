@@ -10,11 +10,11 @@
 
 struct Game;
 
-const int NUM_GAME_TO_DEVICE_SLOTS =
+const int kNumGameToDeviceSlots =
     5;  // five device inputs may map to one game input
-const int NUM_SHOWN_GAME_TO_DEVICE_SLOTS = 3;
-const int NUM_USER_GAME_TO_DEVICE_SLOTS = 2;
-extern const std::string DEVICE_INPUT_SEPARATOR;
+const int kNumShownGameToDeviceSlots = 3;
+const int kNumUserGameToDeviceSlots = 2;
+extern const std::string kDeviceInputSeparator;
 
 struct AutoMappingEntry {
   AutoMappingEntry(int, DeviceButton db, GameButton gb, bool b)
@@ -171,7 +171,7 @@ class InputMappings {
 
   // map from a GameInput to multiple DeviceInputs
   DeviceInput gi_to_di_[NUM_GameController][NUM_GameButton]
-                       [NUM_GAME_TO_DEVICE_SLOTS];
+                       [kNumGameToDeviceSlots];
 
   void Clear();
   void Unmap(InputDevice id);

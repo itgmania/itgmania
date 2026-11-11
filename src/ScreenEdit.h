@@ -37,7 +37,7 @@
 #include "TimingData.h"
 #include "TimingSegments.h"
 
-const int NUM_EDIT_BUTTON_COLUMNS = 10;
+const int kNumEditButtonColumns = 10;
 struct MenuDef;
 
 /** @brief What is going on with the Editor? */
@@ -193,18 +193,18 @@ enum EditButton {
 };
 /** @brief A special foreach loop for the different edit buttons. */
 #define FOREACH_EditButton(e) FOREACH_ENUM(EditButton, e)
-const int NUM_EDIT_TO_DEVICE_SLOTS = 2;
-const int NUM_EDIT_TO_MENU_SLOTS = 2;
+const int kNumEditToDeviceSlots = 2;
+const int kNumEditToMenuSlots = 2;
 
 /* g_MapEditToDI is a simple mapping: edit functions map to DeviceInputs.
  * If g_MapEditToDIHold for a given edit function is valid, then at least one
  * input in g_MapEditToDIHold must be held when pressing any key in
  * g_MapEditToDI for the input to occur. */
 struct MapEditToDI {
-  DeviceInput button_[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
-  DeviceInput hold_[NUM_EditButton][NUM_EDIT_TO_DEVICE_SLOTS];
+  DeviceInput button_[NUM_EditButton][kNumEditToDeviceSlots];
+  DeviceInput hold_[NUM_EditButton][kNumEditToDeviceSlots];
   void Clear() {
-    FOREACH_EditButton(e) for (int slot = 0; slot < NUM_EDIT_TO_DEVICE_SLOTS;
+    FOREACH_EditButton(e) for (int slot = 0; slot < kNumEditToDeviceSlots;
                                ++slot) {
       button_[e][slot].MakeInvalid();
       hold_[e][slot].MakeInvalid();
@@ -216,11 +216,11 @@ struct MapEditToDI {
  * @brief This is similar to MapEditToDI,
  * but maps GameButton instead of DeviceInput. */
 struct MapEditButtonToMenuButton {
-  GameButton button_[NUM_EditButton][NUM_EDIT_TO_MENU_SLOTS];
+  GameButton button_[NUM_EditButton][kNumEditToMenuSlots];
   MapEditButtonToMenuButton() { Clear(); }
   void Clear() {
-    FOREACH_EditButton(e) for (int slot = 0; slot < NUM_EDIT_TO_MENU_SLOTS;
-                               ++slot) button_[e][slot] = GameButton_Invalid;
+    FOREACH_EditButton(e) for (int slot = 0; slot < kNumEditToMenuSlots; ++slot)
+        button_[e][slot] = GameButton_Invalid;
   }
 };
 /** @brief Edit, record, playback, and synchronize notes. */

@@ -24,7 +24,7 @@
 #include "RageThreads.h"
 
 extern uint64_t GetInvalidThreadId();
-extern const char* g_pCrashHandlerArgv0;
+extern const char* crash_handler_argv0;
 
 static void safe_print(int fd, ...) {
   va_list ap;
@@ -57,7 +57,7 @@ static void GetExecutableName(char* buf, int bufsize) {
 }
 #else
 static void GetExecutableName(char* buf, int bufsize) {
-  strncpy(buf, g_pCrashHandlerArgv0, bufsize);
+  strncpy(buf, crash_handler_argv0, bufsize);
   buf[bufsize - 1] = 0;
 }
 #endif
@@ -216,7 +216,7 @@ static void parent_process(int to_child, const CrashData* crash) {
  * one!  So, we have to do it all ourself. */
 
 static void RunCrashHandler(const CrashData* crash) {
-  if (g_pCrashHandlerArgv0 == nullptr) {
+  if (crash_handler_argv0 == nullptr) {
     safe_print(
         fileno(stderr),
         "Crash handler failed: CrashHandlerHandleArgs was not called\n",

@@ -70,8 +70,8 @@ SongManager* SONGMAN =
     nullptr;  // global and accessible from anywhere in our program
 
 /** @brief The file that contains various random attacks. */
-const std::string ATTACK_FILE = "/Data/RandomAttacks.txt";
-const std::string EDIT_SUBDIR = "Edits/";
+const std::string kAttackFile = "/Data/RandomAttacks.txt";
+const std::string kEditSubdir = "Edits/";
 
 static const ThemeMetric<RageColor> EXTRA_COLOR("SongManager", "ExtraColor");
 static const ThemeMetric<int> EXTRA_COLOR_METER(
@@ -86,9 +86,8 @@ static const ThemeMetric<bool> MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT(
 static const ThemeMetric<int> EXTRA_STAGE2_DIFFICULTY_MAX(
     "SongManager", "ExtraStage2DifficultyMax");
 
-static Preference<std::string> g_sDisabledSongs("DisabledSongs", "");
-static Preference<bool> g_bHideIncompleteCourses(
-    "HideIncompleteCourses", false);
+static Preference<std::string> g_disabled_songs("DisabledSongs", "");
+static Preference<bool> hide_incomplete_courses("HideIncompleteCourses", false);
 
 std::string SONG_GROUP_COLOR_NAME(size_t i) {
   return ssprintf("SongGroupColor%i", (int)i + 1);
@@ -100,7 +99,7 @@ std::string PROFILE_SONG_GROUP_COLOR_NAME(size_t i) {
   return ssprintf("ProfileSongGroupColor%i", (int)i + 1);
 }
 
-static const float next_loading_window_update = 0.02f;
+static const float kNextLoadingWindowUpdate = 0.02f;
 
 // The fields we need to load each song. We create an entry for each song in
 // every pack so the sGroupDirNameField is duplicated for all songs in a pack.
@@ -174,9 +173,9 @@ static LocalizedString SANITY_CHECKING_GROUPS(
     "SongManager", "Sanity checking groups...");
 
 void SongManager::Reload(bool allow_fast_load, LoadingWindow* ld) {
-  FILEMAN->FlushDirCache(SpecialFiles::SONGS_DIR);
-  FILEMAN->FlushDirCache(SpecialFiles::COURSES_DIR);
-  FILEMAN->FlushDirCache(EDIT_SUBDIR);
+  FILEMAN->FlushDirCache(SpecialFiles::kSongsDir);
+  FILEMAN->FlushDirCache(SpecialFiles::kCoursesDir);
+  FILEMAN->FlushDirCache(kEditSubdir);
 
   if (ld) {
     ld->SetText(RELOADING);
@@ -260,9 +259,9 @@ void SongManager::Reload(bool allow_fast_load, LoadingWindow* ld) {
 }
 
 void SongManager::LoadAdditions(LoadingWindow* ld) {
-  FILEMAN->FlushDirCache(SpecialFiles::SONGS_DIR);
-  FILEMAN->FlushDirCache(SpecialFiles::COURSES_DIR);
-  FILEMAN->FlushDirCache(EDIT_SUBDIR);
+  FILEMAN->FlushDirCache(SpecialFiles::kSongsDir);
+  FILEMAN->FlushDirCache(SpecialFiles::kCoursesDir);
+  FILEMAN->FlushDirCache(kEditSubdir);
 
   InitAll(ld, /*onlyAdditions=*/true);
 
@@ -277,7 +276,7 @@ void SongManager::InitSongsFromDisk(LoadingWindow* ld, bool only_additions) {
   // an entry. -Kyz
   SONGINDEX->delay_save_cache_ = true;
   IMAGECACHE->delay_save_cache_ = true;
-  LoadSongDir(SpecialFiles::SONGS_DIR, ld, only_additions);
+  LoadSongDir(SpecialFiles::kSongsDir, ld, only_additions);
   LoadEnabledSongsFromPref();
   SONGINDEX->SaveCacheIndex();
   SONGINDEX->delay_save_cache_ = false;
@@ -454,7 +453,7 @@ void SongManager::LoadSongDir(
        array_group_dirs)  // foreach dir in /Songs/
   {
     if (ld &&
-        loading_window_last_update_time.Ago() > next_loading_window_update) {
+        loading_window_last_update_time.Ago() > kNextLoadingWindowUpdate) {
       loading_window_last_update_time.Touch();
       ld->SetProgress(sanity_index);
       ld->SetText(
@@ -624,7 +623,7 @@ void SongManager::LoadSongDir(
       // result in some jumpy behavior, althought the limiting on how often the
       // window is updated may improve that.
       if (ld &&
-          loading_window_last_update_time.Ago() > next_loading_window_update) {
+          loading_window_last_update_time.Ago() > kNextLoadingWindowUpdate) {
         std::string group_base_name = Basename(song_to_load.group_dir_name_);
         loading_window_last_update_time.Touch();
         ld->SetProgress(loaded_songs_processed);
@@ -1060,7 +1059,7 @@ const std::vector<Song*>& SongManager::GetSongs(
     const std::string& group_name) const {
   static const std::vector<Song*> kEmpty;
 
-  if (group_name == GROUP_ALL) {
+  if (group_name == kGroupAll) {
     return songs_;
   }
   std::map<std::string, SongPointerVector, Comp>::const_iterator iter =
@@ -1213,12 +1212,12 @@ void SongManager::InitCoursesFromDisk(LoadingWindow* ld, bool only_additions) {
   std::vector<std::string> course_group_names;
   // Find all group directories in Courses dir
   GetDirListing(
-      SpecialFiles::COURSES_DIR + "*", course_group_names, true, true);
+      SpecialFiles::kCoursesDir + "*", course_group_names, true, true);
   StripCvsAndSvn(course_group_names);
   StripMacResourceForks(course_group_names);
 
   // Search for courses both in COURSES_DIR and in subdirectories
-  course_group_names.push_back(SpecialFiles::COURSES_DIR);
+  course_group_names.push_back(SpecialFiles::kCoursesDir);
   SortRStringArray(course_group_names);
 
   int course_index = 0;
@@ -1247,7 +1246,7 @@ void SongManager::InitCoursesFromDisk(LoadingWindow* ld, bool only_additions) {
       }
 
       if (ld &&
-          loading_window_last_update_time.Ago() > next_loading_window_update) {
+          loading_window_last_update_time.Ago() > kNextLoadingWindowUpdate) {
         loading_window_last_update_time.Touch();
         ld->SetProgress(course_index);
         ld->SetText(
@@ -1260,7 +1259,7 @@ void SongManager::InitCoursesFromDisk(LoadingWindow* ld, bool only_additions) {
       Course* course = new Course;
       CourseLoaderCRS::LoadFromCRSFile(course_path, *course);
 
-      if (g_bHideIncompleteCourses.Get() && course->incomplete_) {
+      if (hide_incomplete_courses.Get() && course->incomplete_) {
         delete course;
         continue;
       }
@@ -1360,14 +1359,14 @@ void SongManager::InitAutogenCourses() {
 void SongManager::InitRandomAttacks() {
   GAMESTATE->random_attacks_.clear();
 
-  if (!IsAFile(ATTACK_FILE)) {
+  if (!IsAFile(kAttackFile)) {
     LOG->Trace("File Data/RandomAttacks.txt was not found");
   } else {
     MsdFile msd;
 
-    if (!msd.ReadFile(ATTACK_FILE, true)) {
+    if (!msd.ReadFile(kAttackFile, true)) {
       LuaHelpers::ReportScriptErrorFmt(
-          "Error opening file '%s' for reading: %s.", ATTACK_FILE.c_str(),
+          "Error opening file '%s' for reading: %s.", kAttackFile.c_str(),
           msd.GetError().c_str());
     } else {
       for (unsigned i = 0; i < msd.GetNumValues(); i++) {
@@ -1511,12 +1510,12 @@ void SongManager::SaveEnabledSongsToPref() {
       disabled_songs.push_back(sid.ToString());
     }
   }
-  g_sDisabledSongs.Set(join(";", disabled_songs));
+  g_disabled_songs.Set(join(";", disabled_songs));
 }
 
 void SongManager::LoadEnabledSongsFromPref() {
   std::vector<std::string> disabled_songs;
-  split(g_sDisabledSongs, ";", disabled_songs, true);
+  split(g_disabled_songs, ";", disabled_songs, true);
 
   for (const std::string& s : disabled_songs) {
     SongID sid;
@@ -1577,7 +1576,7 @@ bool SongManager::GetExtraStageInfoFromCourse(
     Steps*& steps_out, StepsType stype) {
   const std::string course_suffix =
       preferred_group + (extra2 ? "/extra2.crs" : "/extra1.crs");
-  std::string course_path = SpecialFiles::SONGS_DIR + course_suffix;
+  std::string course_path = SpecialFiles::kSongsDir + course_suffix;
 
   Course course;
   CourseLoaderCRS::LoadFromCRSFile(course_path, course);
@@ -1623,7 +1622,7 @@ bool CompareNotesPointersForExtra(const Steps* n1, const Steps* n2) {
 void SongManager::GetExtraStageInfo(
     bool extra2, const Style* sd, Song*& song_out, Steps*& steps_out) {
   std::string group = GAMESTATE->preferred_song_group_;
-  if (group == GROUP_ALL) {
+  if (group == kGroupAll) {
     if (GAMESTATE->cur_song_ == nullptr) {
       // This normally shouldn't happen, but it's helpful to permit it for
       // testing.
@@ -1833,7 +1832,7 @@ Song* SongManager::FindSong(std::string path) const {
 
 Song* SongManager::FindSong(std::string group, std::string song) const {
   // foreach song
-  const std::vector<Song*>& songs = GetSongs(group.empty() ? GROUP_ALL : group);
+  const std::vector<Song*>& songs = GetSongs(group.empty() ? kGroupAll : group);
   for (Song* s : songs) {
     if (s->Matches(group, song)) {
       return s;
@@ -1937,12 +1936,12 @@ void SongManager::UpdateShuffled() {
   // update shuffled
   shuffled_songs_ = songs_;
   std::shuffle(
-      shuffled_songs_.begin(), shuffled_songs_.end(), g_RandomNumberGenerator);
+      shuffled_songs_.begin(), shuffled_songs_.end(), random_number_generator);
 
   shuffled_courses_ = courses_;
   std::shuffle(
       shuffled_courses_.begin(), shuffled_courses_.end(),
-      g_RandomNumberGenerator);
+      random_number_generator);
 }
 
 void SongManager::SetPreferredSongsFromTable(
@@ -2240,15 +2239,15 @@ void SongManager::RefreshCourseGroupInfo() {
 void SongManager::LoadStepEditsFromProfileDir(
     const std::string& profile_dir, ProfileSlot slot) {
   // Load all edit steps
-  std::string dir = profile_dir + EDIT_STEPS_SUBDIR;
+  std::string dir = profile_dir + kEditStepsSubdir;
   SSCLoader loader_ssc;
   SMLoader loader_sm;
   int num_edits_loaded = GetNumEditsLoadedFromProfile(slot);
 
   // Pass 1: Flat folder (old style)
   std::vector<std::string> files;
-  int size = std::min(
-      (int)files.size(), MAX_EDIT_STEPS_PER_PROFILE - num_edits_loaded);
+  int size =
+      std::min((int)files.size(), kMaxEditStepsPerProfile - num_edits_loaded);
   GetDirListing(dir + "*.edit", files, false, true);
 
   // XXX: If some edits are invalid and they're close to the edit limit, this
@@ -2263,7 +2262,7 @@ void SongManager::LoadStepEditsFromProfileDir(
     }
   }
 
-  if ((int)files.size() > MAX_EDIT_STEPS_PER_PROFILE - num_edits_loaded) {
+  if ((int)files.size() > kMaxEditStepsPerProfile - num_edits_loaded) {
     LuaHelpers::ReportScriptErrorFmt(
         "Profile %s has too many edits; some have been skipped.",
         ProfileSlotToString(slot).c_str());
@@ -2297,7 +2296,7 @@ void SongManager::LoadStepEditsFromProfileDir(
       // case anyway.
       GetDirListing(dir + song_dir + "/*.edit", edits, false, true);
       size = std::min(
-          (int)edits.size(), MAX_EDIT_STEPS_PER_PROFILE - num_edits_loaded);
+          (int)edits.size(), kMaxEditStepsPerProfile - num_edits_loaded);
 
       for (int k = 0; k < size; k++) {
         std::string fn = edits[k];
@@ -2309,7 +2308,7 @@ void SongManager::LoadStepEditsFromProfileDir(
         }
       }
 
-      if ((int)edits.size() > MAX_EDIT_STEPS_PER_PROFILE - num_edits_loaded) {
+      if ((int)edits.size() > kMaxEditStepsPerProfile - num_edits_loaded) {
         LuaHelpers::ReportScriptErrorFmt(
             "Profile %s has too many edits; some have been skipped.",
             ProfileSlotToString(slot).c_str());
@@ -2326,14 +2325,14 @@ void SongManager::LoadStepEditsFromProfileDir(
 void SongManager::LoadCourseEditsFromProfileDir(
     const std::string& profile_dir, ProfileSlot slot) {
   // Load all edit courses
-  std::string dir = profile_dir + EDIT_COURSES_SUBDIR;
+  std::string dir = profile_dir + kEditCoursesSubdir;
 
   std::vector<std::string> files;
   GetDirListing(dir + "*.crs", files, false, true);
 
   int num_edits_loaded = GetNumEditsLoadedFromProfile(slot);
-  int size = std::min(
-      (int)files.size(), MAX_EDIT_COURSES_PER_PROFILE - num_edits_loaded);
+  int size =
+      std::min((int)files.size(), kMaxEditCoursesPerProfile - num_edits_loaded);
 
   for (int i = 0; i < size; i++) {
     std::string fn = files[i];

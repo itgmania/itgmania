@@ -133,8 +133,8 @@ State* StepParityGenerator::initResultState(
   result_state->combined_mask_ = 0;
 
   for (int i = 0; i < NUM_Foot; i++) {
-    result_state->where_the_feet_are_[i] = INVALID_COLUMN;
-    result_state->what_note_the_foot_is_hitting_[i] = INVALID_COLUMN;
+    result_state->where_the_feet_are_[i] = kInvalidColumn;
+    result_state->what_note_the_foot_is_hitting_[i] = kInvalidColumn;
     result_state->did_the_foot_move_[i] = false;
     result_state->is_the_foot_holding_[i] = false;
   }
@@ -170,7 +170,7 @@ State* StepParityGenerator::initResultState(
     }
 
     uint16_t bit = 0x1 << i;
-    uint16_t foot_mask = FOOT_MASKS[columns[i]];
+    uint16_t foot_mask = kFootMasks[columns[i]];
     if ((row.hold_mask_ & bit) != 0) {
       result_state->holding_mask_ |= foot_mask;
     }
@@ -309,7 +309,7 @@ void StepParityGenerator::CreateRows(const NoteData& in) {
   RowCounter counter = RowCounter(column_count);
 
   NoteData::all_tracks_const_iterator curr_note =
-      in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+      in.GetTapNoteRangeAllTracks(0, kMaxNoteRow);
 
   for (; !curr_note.IsAtEnd(); ++curr_note) {
     int col = curr_note.Track();
@@ -380,7 +380,7 @@ void StepParityGenerator::CreateRows(const NoteData& in) {
 
     if (counter.last_column_second_ != note.second_) {
       // We're past the previous row, so save all of the previous row's data.
-      if (counter.last_column_second_ != CLM_SECOND_INVALID) {
+      if (counter.last_column_second_ != kClmSecondInvalid) {
         AddRow(counter);
       }
 

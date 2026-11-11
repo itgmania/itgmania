@@ -21,14 +21,14 @@
  * takes more CPU than filling 4k frames, and may cause a skip. */
 
 // The amount of data to read at once:
-static const unsigned g_iReadBlockSizeFrames = 4096;  // 4K frames
+static const unsigned kReadBlockSizeFrames = 4096;  // 4K frames
 
 // The maximum number of frames to buffer:
-static const int g_iStreamingBufferFrames = 1024 * 128;  // 128K frames
+static const int kStreamingBufferFrames = 1024 * 128;  // 128K frames
 
 /* When a sound has fewer than g_iMinFillFrames buffered, buffer at maximum
  * speed. Once beyond that, fill at a limited rate. */
-static const int g_iMinFillFrames = 1024 * 16;  // 16K frames
+static const int kMinFillFrames = 1024 * 16;  // 16K frames
 
 RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer(
     RageSoundReader* source)
@@ -37,7 +37,7 @@ RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer(
   channels_ = source->GetNumChannels();
 
   int frame_size = sizeof(float) * this->GetNumChannels();
-  data_buffer_.reserve(g_iStreamingBufferFrames * frame_size, frame_size);
+  data_buffer_.reserve(kStreamingBufferFrames * frame_size, frame_size);
 
   eof_ = false;
   shutdown_thread_ = false;
@@ -133,8 +133,7 @@ int RageSoundReader_ThreadedBuffer::SetPosition(int frame) {
 
 int RageSoundReader_ThreadedBuffer::GetEmptyFrames() const {
   int samples_per_frame = this->GetNumChannels();
-  if (g_iReadBlockSizeFrames * samples_per_frame >
-      data_buffer_.num_writable()) {
+  if (kReadBlockSizeFrames * samples_per_frame > data_buffer_.num_writable()) {
     return 0;
   }
   return data_buffer_.num_writable() / samples_per_frame;
@@ -192,10 +191,10 @@ void RageSoundReader_ThreadedBuffer::BufferingThread() {
     // Fill some data.
     filling_ = true;
 
-    int frames_to_fill = g_iReadBlockSizeFrames;
-    if (GetFilledFrames() < g_iMinFillFrames) {
+    int frames_to_fill = kReadBlockSizeFrames;
+    if (GetFilledFrames() < kMinFillFrames) {
       frames_to_fill =
-          std::max(frames_to_fill, g_iMinFillFrames - GetFilledFrames());
+          std::max(frames_to_fill, kMinFillFrames - GetFilledFrames());
     }
 
     int ret = FillFrames(frames_to_fill);
@@ -213,7 +212,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread() {
     /* Sleep proportionately to the amount of data we buffered, so we
      * fill at a reasonable pace. */
     const float time_to_sleep =
-        static_cast<float>(g_iReadBlockSizeFrames) / (sample_rate_ * 2.0f);
+        static_cast<float>(kReadBlockSizeFrames) / (sample_rate_ * 2.0f);
 
     if (event_.WaitTimeoutSupported()) {
       RageTimer time;
@@ -257,8 +256,7 @@ int RageSoundReader_ThreadedBuffer::FillBlock() {
 
   int samples_per_frame = this->GetNumChannels();
   ASSERT(
-      g_iReadBlockSizeFrames * samples_per_frame <=
-      data_buffer_.num_writable());
+      kReadBlockSizeFrames * samples_per_frame <= data_buffer_.num_writable());
 
   int got_frames;
   int next_source_frame = 0;
@@ -272,7 +270,7 @@ int RageSoundReader_ThreadedBuffer::FillBlock() {
     float* buf = data_buffer_.get_write_pointer(&buf_size);
     ASSERT((buf_size % samples_per_frame) == 0);
     got_frames = source_->RetriedRead(
-        buf, std::min(g_iReadBlockSizeFrames, buf_size / samples_per_frame),
+        buf, std::min(kReadBlockSizeFrames, buf_size / samples_per_frame),
         &next_source_frame, &rate);
   }
 

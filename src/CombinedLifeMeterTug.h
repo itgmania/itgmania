@@ -23,7 +23,7 @@ class CombinedLifeMeterTug : public CombinedLifeMeter {
   virtual void HandleTapScoreNone(PlayerNumber pn);
 
  protected:
-  std::array<MeterDisplay, NUM_PLAYERS> stream_;
+  std::array<MeterDisplay, kNumPlayers> stream_;
   AutoActor spr_separator_;
   AutoActor spr_frame_;
 };

@@ -66,7 +66,7 @@ const std::string& EditMenuActionToString(EditMenuAction ema);
 const std::string& EditMenuActionToLocalizedString(EditMenuAction ema);
 
 /** @brief How many arrows are used for the EditMenu? */
-const int NUM_ARROWS = 2;
+const int kNumArrows = 2;
 
 /**
  * @brief UI on Edit Menu screen.
@@ -119,7 +119,7 @@ class EditMenu : public ActorFrame {
    * @return the current group. */
   std::string GetSelectedGroup() const {
     if (!SHOW_GROUPS.GetValue()) {
-      return GROUP_ALL;
+      return kGroupAll;
     }
     int groups = static_cast<int>(groups_.size());
     RETURN_IF_INVALID(selection_[ROW_GROUP] >= groups, "");
@@ -207,7 +207,7 @@ class EditMenu : public ActorFrame {
   void GetGroupsToShow(std::vector<std::string>& groups_out);
 
   void UpdateArrows();
-  AutoActor spr_arrows_[NUM_ARROWS];
+  AutoActor spr_arrows_[kNumArrows];
 
   EditMenuRow selected_row_;
   EditMenuRow GetFirstRow() const {

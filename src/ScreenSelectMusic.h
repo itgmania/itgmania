@@ -88,7 +88,7 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
 
   std::vector<Steps*> steps_;
   std::vector<Trail*> trails_;
-  int selection_[NUM_PLAYERS];
+  int selection_[kNumPlayers];
 
   RageTimer timer_idle_comment_;
   ThemeMetric<float> IDLE_COMMENT_SECONDS;
@@ -156,21 +156,21 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
 
   FadingBanner banner_;
   Sprite spr_cd_title_front_, spr_cd_title_back_;
-  AutoActor spr_high_score_frame_[NUM_PLAYERS];
-  BitmapText text_high_score_[NUM_PLAYERS];
+  AutoActor spr_high_score_frame_[kNumPlayers];
+  BitmapText text_high_score_[kNumPlayers];
   MusicWheel music_wheel_;
-  OptionsList options_list_[NUM_PLAYERS];
+  OptionsList options_list_[kNumPlayers];
 
   SelectionState selection_state_;
-  bool steps_chosen_[NUM_PLAYERS];  // only used in
+  bool steps_chosen_[kNumPlayers];  // only used in
                                     // SelectionState_SelectingSteps
   bool go_to_options_;
   std::string sample_music_to_play_;
   TimingData* sample_music_timing_data_;
   float sample_start_seconds_, sample_length_seconds_;
   bool allow_options_menu_, allow_options_menu_repeat_;
-  bool select_is_down_[NUM_PLAYERS];
-  bool accept_select_release_[NUM_PLAYERS];
+  bool select_is_down_[kNumPlayers];
+  bool accept_select_release_[kNumPlayers];
 
   bool preview_disabled_;
 

@@ -30,7 +30,7 @@ enum KeyboardRow {
 /** @brief A special foreach loop for the KeyboardRow enum. */
 #define FOREACH_KeyboardRow(i) FOREACH_ENUM(KeyboardRow, i)
 /** @brief The maximum number of keys per row. */
-const int KEYS_PER_ROW = 13;
+const int kKeysPerRow = 13;
 /** @brief The list of very special keys inside some rows. */
 enum KeyboardRowSpecialKey {
   SPACEBAR = 2,  /**< The space bar key. */
@@ -167,7 +167,7 @@ class ScreenTextEntryVisual : public ScreenTextEntry {
   KeyboardRow focus_y_;
 
   AutoActor spr_cursor_;
-  BitmapText* text_keys_[NUM_KeyboardRow][KEYS_PER_ROW];
+  BitmapText* text_keys_[NUM_KeyboardRow][kKeysPerRow];
 
   RageSound snd_change_;
 

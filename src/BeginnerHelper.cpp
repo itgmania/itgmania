@@ -76,14 +76,14 @@ BeginnerHelper::~BeginnerHelper() {
 
 bool BeginnerHelper::Init(int dance_pad_type) {
   ASSERT(!initialized_);
-  if (!CanUse(PLAYER_INVALID)) {
+  if (!CanUse(kPlayerInvalid)) {
     return false;
   }
 
   // If no players were successfully added, bail.
   {
     bool any_loaded = false;
-    for (int pn = 0; pn < NUM_PLAYERS; pn++) {
+    for (int pn = 0; pn < kNumPlayers; pn++) {
       if (player_enabled_[pn]) {
         any_loaded = true;
       }
@@ -106,7 +106,7 @@ bool BeginnerHelper::Init(int dance_pad_type) {
   }
 
   // Load StepCircle graphics
-  for (int lsc = 0; lsc < NUM_PLAYERS; lsc++) {
+  for (int lsc = 0; lsc < kNumPlayers; lsc++) {
     for (int lsce = 0; lsce < 4; lsce++) {
       step_circle_[lsc][lsce].Load(
           THEME->GetPathG("BeginnerHelper", "stepcircle"));
@@ -155,7 +155,7 @@ bool BeginnerHelper::Init(int dance_pad_type) {
     ActorUtil::LoadAllCommands(dance_pad_, "BeginnerHelper");
   }
 
-  for (int pl = 0; pl < NUM_PLAYERS; pl++)  // Load players
+  for (int pl = 0; pl < kNumPlayers; pl++)  // Load players
   {
     // Skip if not enabled
     if (!player_enabled_[pl]) {
@@ -223,7 +223,7 @@ void BeginnerHelper::ShowStepCircle(PlayerNumber pn, int cstep) {
 
 void BeginnerHelper::AddPlayer(PlayerNumber pn, const NoteData& ns) {
   ASSERT(!initialized_);
-  ASSERT(pn >= 0 && pn < NUM_PLAYERS);
+  ASSERT(pn >= 0 && pn < kNumPlayers);
   ASSERT(GAMESTATE->IsHumanPlayer(pn));
 
   if (!CanUse(pn)) {
@@ -250,7 +250,7 @@ bool BeginnerHelper::CanUse(PlayerNumber pn) {
   // This does not pass PLAYER_INVALID to GetCurrentStyle because that would
   // only check the first non-nullptr style.  Both styles need to be checked.
   // -Kyz
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return GAMESTATE->GetCurrentStyle(PLAYER_1)->can_use_beginner_helper_ ||
            GAMESTATE->GetCurrentStyle(PLAYER_2)->can_use_beginner_helper_;
   }
@@ -286,7 +286,7 @@ void BeginnerHelper::DrawPrimitives() {
   }
 
   // Draw StepCircles
-  for (int scd = 0; scd < NUM_PLAYERS; scd++) {
+  for (int scd = 0; scd < kNumPlayers; scd++) {
     for (int scde = 0; scde < 4; scde++) {
       step_circle_[scd][scde].Draw();
     }
@@ -404,7 +404,7 @@ void BeginnerHelper::Update(float delta_time) {
   FOREACH_HumanPlayer(pu) {
     // Update dancer's animation and StepCircles
     dancer_[pu]->Update(beat);
-    for (int scu = 0; scu < NUM_PLAYERS; scu++) {
+    for (int scu = 0; scu < kNumPlayers; scu++) {
       for (int scue = 0; scue < 4; scue++) {
         step_circle_[scu][scue].Update(beat);
       }

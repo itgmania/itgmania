@@ -92,7 +92,7 @@ void ScreenOptionsManageCourses::BeginScreen() {
   std::vector<const Style*> styles;
   GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_, styles);
   const Style* style = styles[0];
-  GAMESTATE->SetCurrentStyle(style, PLAYER_INVALID);
+  GAMESTATE->SetCurrentStyle(style, kPlayerInvalid);
 
   if (GAMESTATE->st_edit_ == StepsType_Invalid ||
       GAMESTATE->cd_edit_ == Difficulty_Invalid) {
@@ -181,7 +181,7 @@ void ScreenOptionsManageCourses::HandleScreenMessage(const ScreenMessage sm) {
       course->loaded_from_profile_ = ProfileSlot_Machine;
       SONGMAN->AddCourse(course);
       GAMESTATE->cur_course_.Set(course);
-      EditCourseUtil::s_bNewCourseNeedsName = true;
+      EditCourseUtil::new_course_needs_name = true;
       EditCourseUtil::UpdateAndSetTrail();
 
       SCREENMAN->SetNewScreen(CREATE_NEW_SCREEN);
@@ -238,11 +238,11 @@ void ScreenOptionsManageCourses::ProcessMenuStart(const InputEventPlus&) {
   {
     std::vector<Course*> courses;
     EditCourseUtil::GetAllEditCourses(courses);
-    if (courses.size() >= (size_t)EditCourseUtil::MAX_PER_PROFILE) {
+    if (courses.size() >= (size_t)EditCourseUtil::max_per_profile) {
       std::string s = ssprintf(
           (YOU_HAVE_MAX.GetValue() + "\n\n" + YOU_MUST_DELETE.GetValue())
               .c_str(),
-          EditCourseUtil::MAX_PER_PROFILE);
+          EditCourseUtil::max_per_profile);
       ScreenPrompt::Prompt(SM_None, s);
       return;
     }
@@ -255,7 +255,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart(const InputEventPlus&) {
   {
     GAMESTATE->cur_course_.Set(GetCourseWithFocus());
     EditCourseUtil::UpdateAndSetTrail();
-    EditCourseUtil::s_bNewCourseNeedsName = false;
+    EditCourseUtil::new_course_needs_name = false;
     ScreenOptions::BeginFadingOut();
   }
 }

@@ -231,7 +231,7 @@ void RageMatrixScale(
 }
 
 void RageMatrixRotationY(RageMatrix* out, float theta) {
-  theta *= PI / 180;
+  theta *= kPi / 180;
 
   RageMatrixIdentity(out);
   out->m_[0][0] = std::cos(theta);
@@ -246,9 +246,9 @@ void RageMatrixRotationY(RageMatrix* out, float theta) {
  * multiplies), by removing the parts of the matrix multiplies that we know will
  * be 0. */
 void RageMatrixRotationXYZ(RageMatrix* out, float r_x, float r_y, float r_z) {
-  r_x *= PI / 180;
-  r_y *= PI / 180;
-  r_z *= PI / 180;
+  r_x *= kPi / 180;
+  r_y *= kPi / 180;
+  r_z *= kPi / 180;
 
   const float c_x = std::cos(r_x);
   const float s_x = std::sin(r_x);
@@ -336,7 +336,7 @@ void RageQuatMultiply(
 }
 
 RageVector4 RageQuatFromH(float theta) {
-  theta *= PI / 180.0f;
+  theta *= kPi / 180.0f;
   theta /= 2.0f;
   theta *= -1;
   const float c = std::cos(theta);
@@ -346,7 +346,7 @@ RageVector4 RageQuatFromH(float theta) {
 }
 
 RageVector4 RageQuatFromP(float theta) {
-  theta *= PI / 180.0f;
+  theta *= kPi / 180.0f;
   theta /= 2.0f;
   theta *= -1;
   const float c = std::cos(theta);
@@ -356,7 +356,7 @@ RageVector4 RageQuatFromP(float theta) {
 }
 
 RageVector4 RageQuatFromR(float theta) {
-  theta *= PI / 180.0f;
+  theta *= kPi / 180.0f;
   theta /= 2.0f;
   theta *= -1;
   const float c = std::cos(theta);
@@ -369,7 +369,7 @@ RageVector4 RageQuatFromR(float theta) {
 
 /* prh.xyz -> heading, pitch, roll */
 void RageQuatFromHPR(RageVector4* out, RageVector3 hpr) {
-  hpr *= PI;
+  hpr *= kPi;
   hpr /= 180.0f;
   hpr /= 2.0f;
 
@@ -487,7 +487,7 @@ RageMatrix RageLookAt(
 }
 
 void RageMatrixAngles(RageMatrix* out, const RageVector3& angles) {
-  const RageVector3 angles_radians(angles * 2 * PI / 360);
+  const RageVector3 angles_radians(angles * 2 * kPi / 360);
 
   const float sy = std::sin(angles_radians[2]);
   const float cy = std::cos(angles_radians[2]);
@@ -519,20 +519,20 @@ void RageMatrixTranspose(RageMatrix* out, const RageMatrix* in) {
 }
 
 float RageSquare(float angle) {
-  float f_angle = std::fmod(angle, (PI * 2));
+  float f_angle = std::fmod(angle, (kPi * 2));
   // Hack: This ensures the hold notes don't flicker right before they're hit.
   if (f_angle < 0.01f) {
-    f_angle += PI * 2;
+    f_angle += kPi * 2;
   }
-  return f_angle >= PI ? -1.0 : 1.0;
+  return f_angle >= kPi ? -1.0 : 1.0;
 }
 
 float RageTriangle(float angle) {
-  float f_angle = std::fmod(angle, PI * 2.0f);
+  float f_angle = std::fmod(angle, kPi * 2.0f);
   if (f_angle < 0.0) {
-    f_angle += PI * 2.0;
+    f_angle += kPi * 2.0;
   }
-  double result = f_angle * (1 / PI);
+  double result = f_angle * (1 / kPi);
   if (result < .5) {
     return result * 2.0;
   } else if (result < 1.5) {

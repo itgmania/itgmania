@@ -8,7 +8,7 @@
 #include "Compiler.h"
 #include "Platform.h"
 
-constexpr float PI = 3.1415926536f;
+constexpr float kPi = 3.1415926536f;
 
 struct lua_State;
 struct RageVector2;

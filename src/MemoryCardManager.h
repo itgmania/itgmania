@@ -11,7 +11,7 @@
 #include "RageTimer.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 
-extern const std::string MEM_CARD_MOUNT_POINT[NUM_PLAYERS];
+extern const std::string kMemCardMountPoint[kNumPlayers];
 
 class MemoryCardManager {
  public:
@@ -69,18 +69,18 @@ class MemoryCardManager {
 
   std::vector<UsbStorageDevice> storage_devices_;  // all currently connected
 
-  bool card_locked_[NUM_PLAYERS];
-  bool mounted_[NUM_PLAYERS];  // card is currently mounted
+  bool card_locked_[kNumPlayers];
+  bool mounted_[kNumPlayers];  // card is currently mounted
 
   UsbStorageDevice
-      device_[NUM_PLAYERS];  // device in the memory card slot, blank if none
+      device_[kNumPlayers];  // device in the memory card slot, blank if none
   UsbStorageDevice
-      final_device_[NUM_PLAYERS];  // device in the memory card slot when we
+      final_device_[kNumPlayers];  // device in the memory card slot when we
                                    // finalized, blank if none
 
-  MemoryCardState state_[NUM_PLAYERS];
-  RageTimer state_changed_at_[NUM_PLAYERS];
-  std::string error_[NUM_PLAYERS];  // if MemoryCardState_Error
+  MemoryCardState state_[kNumPlayers];
+  RageTimer state_changed_at_[kNumPlayers];
+  std::string error_[kNumPlayers];  // if MemoryCardState_Error
 
   RageSound sound_ready_;
   RageSound sound_error_;

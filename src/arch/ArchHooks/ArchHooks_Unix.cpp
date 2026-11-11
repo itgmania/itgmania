@@ -74,7 +74,7 @@ static bool EmergencyShutdown(int signal, siginfo_t* si, const ucontext_t* uc) {
  * GetSystemTimeInMicroseconds, if supported, so changes to the system clock
  * don't cause problems. */
 namespace {
-clockid_t g_Clock = CLOCK_REALTIME;
+clockid_t g_clock = CLOCK_REALTIME;
 void OpenGetTime() {
   static bool initialized = false;
 
@@ -90,23 +90,23 @@ void OpenGetTime() {
     return;
   }
 
-  g_Clock = CLOCK_MONOTONIC;
+  g_clock = CLOCK_MONOTONIC;
 }
 };  // namespace
 
 clockid_t ArchHooks_Unix::GetClock() {
   OpenGetTime();
-  return g_Clock;
+  return g_clock;
 }
 
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   OpenGetTime();
 
   timespec ts;
-  clock_gettime(g_Clock, &ts);
+  clock_gettime(g_clock, &ts);
 
   int64_t ret = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec) / 1000;
-  if (g_Clock != CLOCK_MONOTONIC) {
+  if (g_clock != CLOCK_MONOTONIC) {
     ret = ArchHooks::FixupTimeIfBackwards(ret);
   }
   return ret;

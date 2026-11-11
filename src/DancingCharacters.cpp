@@ -74,8 +74,8 @@ const ThemeMetric<RageColor> LIGHT_DDANGER_COLOR(
   THEME->GetMetricF("DancingCamera", "BeatsUntilNextCamPos")
 #define CAM_FOV THEME->GetMetricF("DancingCamera", "CameraFOV")
 
-const float MODEL_X_TWO_PLAYERS[NUM_PLAYERS] = {+8, -8};
-const float MODEL_ROTATIONY_TWO_PLAYERS[NUM_PLAYERS] = {-90, 90};
+const float kModelXTwoPlayers[kNumPlayers] = {+8, -8};
+const float kModelRotationyTwoPlayers[kNumPlayers] = {-90, 90};
 
 DancingCharacters::DancingCharacters()
     : draw_danger_light_(false),
@@ -103,7 +103,7 @@ DancingCharacters::DancingCharacters()
     }
 
     if (GAMESTATE->GetNumPlayersEnabled() == 2) {
-      character_[p]->SetX(MODEL_X_TWO_PLAYERS[p]);
+      character_[p]->SetX(kModelXTwoPlayers[p]);
     } else {
       character_[p]->SetX(MODEL_X_ONE_PLAYER);
     }
@@ -111,7 +111,7 @@ DancingCharacters::DancingCharacters()
     switch (GAMESTATE->play_mode_) {
       case PLAY_MODE_BATTLE:
       case PLAY_MODE_RAVE:
-        character_[p]->SetRotationY(MODEL_ROTATIONY_TWO_PLAYERS[p]);
+        character_[p]->SetRotationY(kModelRotationyTwoPlayers[p]);
       default:
         break;
     }

@@ -8,12 +8,12 @@
 #include "NoteTypes.h"
 #include "RageUtil.h"
 
-static const int ROWS_PER_MEASURE = ROWS_PER_BEAT * BEATS_PER_MEASURE;
+static const int kRowsPerMeasure = kRowsPerBeat * kBeatsPerMeasure;
 
 void MeasureInfo::CalculateMeasureInfo(
     const NoteData& in, TimingData* timing, MeasureInfo& out) {
   int last_row = in.GetLastRow();
-  int total_measure_count = last_row / ROWS_PER_MEASURE + 1;
+  int total_measure_count = last_row / kRowsPerMeasure + 1;
 
   out.notes_per_measure_.clear();
   out.nps_per_measure_.clear();
@@ -22,7 +22,7 @@ void MeasureInfo::CalculateMeasureInfo(
   out.nps_per_measure_.resize(total_measure_count, 0);
 
   NoteData::all_tracks_const_iterator curr_note =
-      in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+      in.GetTapNoteRangeAllTracks(0, kMaxNoteRow);
 
   int measure_index_out = 0;
 
@@ -40,7 +40,7 @@ void MeasureInfo::CalculateMeasureInfo(
       // current measure.
       out.notes_per_measure_[measure_index_out] += notes_this_row;
       // Update iMeasureIndex for the current row.
-      measure_index_out = curr_note.Row() / ROWS_PER_MEASURE;
+      measure_index_out = curr_note.Row() / kRowsPerMeasure;
       curr_row = curr_note.Row();
       notes_this_row = 0;
     }
@@ -66,8 +66,8 @@ void MeasureInfo::CalculateMeasureInfo(
     }
 
     float measure_duration =
-        timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * (m + 1)) -
-        timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * m);
+        timing->GetElapsedTimeFromBeat(kBeatsPerMeasure * (m + 1)) -
+        timing->GetElapsedTimeFromBeat(kBeatsPerMeasure * m);
 
     // FIXME: We subtract the time at the current measure from the time at the
     // next measure to determine the duration of this measure in seconds, and

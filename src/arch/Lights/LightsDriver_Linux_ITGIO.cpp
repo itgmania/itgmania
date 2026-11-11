@@ -10,9 +10,9 @@
 REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
 
 namespace {
-const int coin_counter_index = 14;
+const int kCoinCounterIndex = 14;
 
-const int cabinet_lights[] = {
+const int kCabinetLights[] = {
     8,   // LIGHT_MARQUEE_UP_LEFT
     10,  // LIGHT_MARQUEE_UP_RIGHT
     9,   // LIGHT_MARQUEE_LR_LEFT
@@ -21,7 +21,7 @@ const int cabinet_lights[] = {
     15,  // LIGHT_BASS_RIGHT
 };
 
-const int player1_lights[] = {
+const int kPlayer1Lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -55,7 +55,7 @@ const int player1_lights[] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_lights[] = {
+const int kPlayer2Lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -90,24 +90,24 @@ const int player2_lights[] = {
 };
 
 static_assert(
-    ARRAYLEN(cabinet_lights) == NUM_CabinetLight,
+    ARRAYLEN(kCabinetLights) == NUM_CabinetLight,
     "LightsDriver_Linux_ITGIO ARRAYLEN(cabinet_lights) != NUM_CabinetLight");
 static_assert(
-    ARRAYLEN(player1_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer1Lights) == NUM_GameButton,
     "LightsDriver_Linux_ITGIO ARRAYLEN(player1_lights) != NUM_GameButton");
 static_assert(
-    ARRAYLEN(player2_lights) == NUM_GameButton,
+    ARRAYLEN(kPlayer2Lights) == NUM_GameButton,
     "LightsDriver_Linux_ITGIO ARRAYLEN(player2_lights) != NUM_GameButton");
 
 }  // namespace
 
 void LightsDriver_Linux_ITGIO::Set(const LightsState* ls) {
-  SetCabinetLights(cabinet_lights, ls);
+  SetCabinetLights(kCabinetLights, ls);
 
-  SetGameControllerLights(GameController_1, player1_lights, ls);
-  SetGameControllerLights(GameController_2, player2_lights, ls);
+  SetGameControllerLights(GameController_1, kPlayer1Lights, ls);
+  SetGameControllerLights(GameController_2, kPlayer2Lights, ls);
 
-  SetCoinCounter(coin_counter_index, ls);
+  SetCoinCounter(kCoinCounterIndex, ls);
 
   previous_ls_ = *ls;
 }

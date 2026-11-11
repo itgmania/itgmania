@@ -13,7 +13,7 @@ class InputEventPlus {
         game_i_(),
         type_(IET_FIRST_PRESS),
         menu_i_(GameButton_Invalid),
-        pn_(PLAYER_INVALID),
+        pn_(kPlayerInvalid),
         input_list_() {}
   DeviceInput device_i_;
   GameInput game_i_;

@@ -27,7 +27,7 @@ struct TweenDecelerate : public ITween {
 };
 struct TweenSpring : public ITween {
   float Tween(float f) const {
-    return 1 - std::cos(f * PI * 2.5f) / (1 + f * 3);
+    return 1 - std::cos(f * kPi * 2.5f) / (1 + f * 3);
   }
   ITween* Copy() const { return new TweenSpring(*this); }
 };

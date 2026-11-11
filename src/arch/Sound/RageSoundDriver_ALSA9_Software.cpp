@@ -18,17 +18,17 @@
 
 REGISTER_SOUND_DRIVER_CLASS2("ALSA-sw", ALSA9_Software);
 
-static const int channels = 2;
-static const int samples_per_frame = channels;
-static const int bytes_per_frame = sizeof(int16_t) * samples_per_frame;
+static const int kChannels = 2;
+static const int kSamplesPerFrame = kChannels;
+static const int kBytesPerFrame = sizeof(int16_t) * kSamplesPerFrame;
 
 /* Linux 2.6 has a fine-grained scheduler.  We can almost always use a smaller
  * buffer size than in 2.4.  XXX: Some cards can handle smaller buffer sizes
  * than others. */
-static const unsigned g_iMaxWriteahead_linux_26 = 512;
-static const unsigned safe_writeahead = 1024 * 4;
-static unsigned g_iMaxWriteahead;
-const int num_chunks = 8;
+static const unsigned kMaxWriteaheadLinux26 = 512;
+static const unsigned kSafeWriteahead = 1024 * 4;
+static unsigned max_writeahead;
+const int kNumChunks = 8;
 
 int RageSoundDriver_ALSA9_Software::MixerThread_start(void* p) {
   ((RageSoundDriver_ALSA9_Software*)p)->MixerThread();
@@ -59,7 +59,7 @@ bool RageSoundDriver_ALSA9_Software::GetData() {
     buf = nullptr;
   }
   if (!buf) {
-    buf = new int16_t[frames_to_fill * samples_per_frame];
+    buf = new int16_t[frames_to_fill * kSamplesPerFrame];
     bufsize = frames_to_fill;
   }
 
@@ -91,22 +91,22 @@ std::string RageSoundDriver_ALSA9_Software::Init() {
     return ssprintf("Driver unusable: %s", error.c_str());
   }
 
-  g_iMaxWriteahead = safe_writeahead;
+  max_writeahead = kSafeWriteahead;
   std::string sys;
   int vers;
   GetKernel(sys, vers);
   LOG->Trace("OS: %s ver %06i", sys.c_str(), vers);
   if (sys == "Linux" && vers >= 20600) {
-    g_iMaxWriteahead = g_iMaxWriteahead_linux_26;
+    max_writeahead = kMaxWriteaheadLinux26;
   }
 
   if (PREFSMAN->sound_write_ahead_) {
-    g_iMaxWriteahead = PREFSMAN->sound_write_ahead_;
+    max_writeahead = PREFSMAN->sound_write_ahead_;
   }
 
   pcm_ = new Alsa9Buf();
   error = pcm_->Init(
-      g_iMaxWriteahead, g_iMaxWriteahead / num_chunks,
+      max_writeahead, max_writeahead / kNumChunks,
       PREFSMAN->sound_preferred_sample_rate_);
   if (error != "") {
     return error;
@@ -137,7 +137,7 @@ RageSoundDriver_ALSA9_Software::~RageSoundDriver_ALSA9_Software() {
 }
 
 float RageSoundDriver_ALSA9_Software::GetPlayLatency() const {
-  return float(g_iMaxWriteahead) / sample_rate_;
+  return float(max_writeahead) / sample_rate_;
 }
 
 /*

@@ -40,10 +40,10 @@ static LocalizedString SAVE_PROMPT("ScreenMapControllers", "SavePrompt");
 #define MAPPED_TO_COMMAND(gc, slot) \
   THEME->GetMetricA(name_, ssprintf("MappedToP%iS%iCommand", gc + 1, slot + 1))
 
-static const float g_fSecondsToWaitForInput = 0.05f;
+static const float kSecondsToWaitForInput = 0.05f;
 
 // reserve the 3rd slot for hard-coded keys
-static const int NUM_CHANGABLE_SLOTS = NUM_SHOWN_GAME_TO_DEVICE_SLOTS - 1;
+static const int kNumChangableSlots = kNumShownGameToDeviceSlots - 1;
 
 REGISTER_SCREEN_CLASS(ScreenMapControllers);
 
@@ -122,7 +122,7 @@ void ScreenMapControllers::Init() {
     ActorUtil::LoadAllCommands(list_header_center_, name_);
     line_.back()->AddChild(&list_header_center_);
     FOREACH_ENUM(GameController, c) {
-      for (int s = 0; s < NUM_SHOWN_GAME_TO_DEVICE_SLOTS; ++s) {
+      for (int s = 0; s < kNumShownGameToDeviceSlots; ++s) {
         BitmapText& text = list_header_labels_[c][s];
         text.LoadFromFont(THEME->GetPathF(name_, "title"));
         text.SetName("ListHeader");
@@ -167,7 +167,7 @@ void ScreenMapControllers::Init() {
     }
 
     FOREACH_ENUM(GameController, c) {
-      for (int s = 0; s < NUM_SHOWN_GAME_TO_DEVICE_SLOTS; s++) {
+      for (int s = 0; s < kNumShownGameToDeviceSlots; s++) {
         key->text_mapped_to_[c][s] = new BitmapText;
         key->text_mapped_to_[c][s]->SetName("MappedTo");
         key->text_mapped_to_[c][s]->LoadFromFont(
@@ -224,7 +224,7 @@ void ScreenMapControllers::Init() {
 
   warning_.Load(THEME->GetPathG(name_, "warning"));
   warning_->SetName("Warning");
-  warning_->SetDrawOrder(DRAW_ORDER_TRANSITIONS);
+  warning_->SetDrawOrder(kDrawOrderTransitions);
   this->AddChild(warning_);
   LOAD_ALL_COMMANDS(warning_);
 }
@@ -288,7 +288,7 @@ void ScreenMapControllers::Update(float delta_time) {
   if (!waiting_for_press_.IsZero() &&
       device_i_to_map_.IsValid())  // we're going to map an input
   {
-    if (waiting_for_press_.Ago() < g_fSecondsToWaitForInput) {
+    if (waiting_for_press_.Ago() < kSecondsToWaitForInput) {
       return; /* keep waiting */
     }
     waiting_for_press_.SetZero();
@@ -460,7 +460,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         }
         BeforeChangeFocus();
         if (cur_slot_ == 0) {
-          cur_slot_ = NUM_CHANGABLE_SLOTS - 1;
+          cur_slot_ = kNumChangableSlots - 1;
           --cur_controller_;
         } else {
           --cur_slot_;
@@ -475,7 +475,7 @@ bool ScreenMapControllers::Input(const InputEventPlus& input) {
         }
         BeforeChangeFocus();
         cur_slot_++;
-        if (cur_slot_ > NUM_CHANGABLE_SLOTS - 1) {
+        if (cur_slot_ > kNumChangableSlots - 1) {
           cur_slot_ = 0;
           cur_controller_++;
         }
@@ -575,7 +575,7 @@ void ScreenMapControllers::Refresh() {
   FOREACH_ENUM(GameController, p) {
     for (unsigned b = 0; b < keys_to_map_.size(); b++) {
       const KeyToMap* key = &keys_to_map_[b];
-      for (int s = 0; s < NUM_SHOWN_GAME_TO_DEVICE_SLOTS; s++) {
+      for (int s = 0; s < kNumShownGameToDeviceSlots; s++) {
         BitmapText* p_text = key->text_mapped_to_[p][s];
         GameInput cur_gi(p, key->game_button_);
         DeviceInput di;
@@ -623,7 +623,7 @@ bool ScreenMapControllers::CursorCanGoLeft() {
 }
 
 bool ScreenMapControllers::CursorCanGoRight() {
-  return !CursorOnAction() && (cur_slot_ < NUM_CHANGABLE_SLOTS - 1 ||
+  return !CursorOnAction() && (cur_slot_ < kNumChangableSlots - 1 ||
                                cur_controller_ < NUM_GameController - 1);
 }
 

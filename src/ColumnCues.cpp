@@ -13,7 +13,7 @@ void CalculateColumnCuesOnePlayer(
     const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
     float min_duration) {
   NoteData::all_tracks_const_iterator curr_note =
-      in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+      in.GetTapNoteRangeAllTracks(0, kMaxNoteRow);
   int curr_row = -1;
 
   std::vector<ColumnCue> all_column_cues;

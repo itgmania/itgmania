@@ -13,7 +13,7 @@
 #include "RageTypes.h"
 #include "global.h"
 
-static RageDisplay::RagePixelFormatDesc PIXEL_FORMAT_DESC[NUM_RagePixelFormat] =
+static RageDisplay::RagePixelFormatDesc pixel_format_desc[NUM_RagePixelFormat] =
     {{/* R8G8B8A8 */
       32,
       {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF}},
@@ -68,7 +68,7 @@ void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs& out) const {
 }
 
 RageSurface* RageDisplay_Null::CreateScreenshot() {
-  const RagePixelFormatDesc& desc = PIXEL_FORMAT_DESC[RagePixelFormat_RGB8];
+  const RagePixelFormatDesc& desc = pixel_format_desc[RagePixelFormat_RGB8];
   RageSurface* image = CreateSurface(
       640, 480, desc.bpp_, desc.masks_[0], desc.masks_[1], desc.masks_[2],
       desc.masks_[3]);
@@ -81,7 +81,7 @@ RageSurface* RageDisplay_Null::CreateScreenshot() {
 const RageDisplay::RagePixelFormatDesc* RageDisplay_Null::GetPixelFormatDesc(
     RagePixelFormat pf) const {
   ASSERT(pf >= 0 && pf < NUM_RagePixelFormat);
-  return &PIXEL_FORMAT_DESC[pf];
+  return &pixel_format_desc[pf];
 }
 
 RageMatrix RageDisplay_Null::GetOrthoMatrix(

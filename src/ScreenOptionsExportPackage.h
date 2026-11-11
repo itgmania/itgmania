@@ -12,8 +12,8 @@ class Course;
 
 // Can this be done any better? -aj
 namespace ExportPackages {
-std::string m_sPackageType;
-std::string m_sFolder;  // used for more subpages
+std::string g_package_type;
+std::string folder;  // used for more subpages
 }  // namespace ExportPackages
 
 /** @brief A menu for exporting packages. */

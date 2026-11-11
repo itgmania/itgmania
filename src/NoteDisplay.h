@@ -300,7 +300,7 @@ class NoteDisplay {
 // state of their rows and the parent state of the column. -Kyz
 
 struct NoteColumnRenderer : public Actor {
-  NoteDisplay* displays_[PLAYER_INVALID + 1];
+  NoteDisplay* displays_[kPlayerInvalid + 1];
   NoteFieldRenderArgs* field_render_args_;
   NoteColumnRenderArgs column_render_args_;
   int column_;

@@ -104,7 +104,7 @@ class BitmapText : public Actor {
   struct Attribute {
     Attribute() : length_(-1), glow_() {}
     int length_;
-    RageColor diffuse_[NUM_DIFFUSE_COLORS];
+    RageColor diffuse_[kNumDiffuseColors];
     RageColor glow_;
 
     void FromStack(lua_State* L, int pos);

@@ -20,14 +20,14 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 
-static std::once_flag g_timerInitFlag;
+static std::once_flag timer_init_flag;
 
 /* QueryPerformanceCounter variables below.
  * QueryPerformanceCounter and QueryPerformanceFrequency expect
  * a LARGE_INTEGER, which is a union. These functions store data
  * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
 namespace {
-LARGE_INTEGER g_liFrequency;
+LARGE_INTEGER frequency;
 }  // namespace
 
 static void InitTimer() {
@@ -35,12 +35,12 @@ static void InitTimer() {
   timeBeginPeriod(1);
 
   // Retrieve the number of ticks per second.
-  QueryPerformanceFrequency(&g_liFrequency);
+  QueryPerformanceFrequency(&frequency);
 }
 
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   // Make sure the timer is initialized.
-  std::call_once(g_timerInitFlag, InitTimer);
+  std::call_once(timer_init_flag, InitTimer);
 
   // Get the current time.
   LARGE_INTEGER current_time;
@@ -51,7 +51,7 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   // uptime at the usual 10 MHz (and a Fast Startup shutdown doesn't reset
   // uptime), after which the clock jumps by days in the middle of a session.
   const int64_t ticks = current_time.QuadPart;
-  const int64_t freq = g_liFrequency.QuadPart;
+  const int64_t freq = frequency.QuadPart;
   return (ticks / freq) * 1000000LL + (ticks % freq) * 1000000LL / freq;
 }
 

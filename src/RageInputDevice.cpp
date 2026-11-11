@@ -21,129 +21,129 @@ XToString(InputDeviceState);
 XToLocalizedString(InputDeviceState);
 LuaXType(InputDevice);
 
-static std::map<DeviceButton, std::string> g_mapNamesToString;
-static std::map<std::string, DeviceButton> g_mapStringToNames;
+static std::map<DeviceButton, std::string> map_names_to_string;
+static std::map<std::string, DeviceButton> map_string_to_names;
 static void InitNames() {
-  if (!g_mapNamesToString.empty()) {
+  if (!map_names_to_string.empty()) {
     return;
   }
 
-  g_mapNamesToString[KEY_PERIOD] = "period";
-  g_mapNamesToString[KEY_COMMA] = "comma";
-  g_mapNamesToString[KEY_COLON] = "colon";
-  g_mapNamesToString[KEY_SPACE] = "space";
-  g_mapNamesToString[KEY_DEL] = "delete";
-  g_mapNamesToString[KEY_BACKSLASH] = "backslash";
+  map_names_to_string[KEY_PERIOD] = "period";
+  map_names_to_string[KEY_COMMA] = "comma";
+  map_names_to_string[KEY_COLON] = "colon";
+  map_names_to_string[KEY_SPACE] = "space";
+  map_names_to_string[KEY_DEL] = "delete";
+  map_names_to_string[KEY_BACKSLASH] = "backslash";
 
-  g_mapNamesToString[KEY_BACK] = "backspace";
-  g_mapNamesToString[KEY_TAB] = "tab";
-  g_mapNamesToString[KEY_ENTER] = "enter";
-  g_mapNamesToString[KEY_PAUSE] = "pause";
-  g_mapNamesToString[KEY_ESC] = "escape";
+  map_names_to_string[KEY_BACK] = "backspace";
+  map_names_to_string[KEY_TAB] = "tab";
+  map_names_to_string[KEY_ENTER] = "enter";
+  map_names_to_string[KEY_PAUSE] = "pause";
+  map_names_to_string[KEY_ESC] = "escape";
 
-  g_mapNamesToString[KEY_F1] = "F1";
-  g_mapNamesToString[KEY_F2] = "F2";
-  g_mapNamesToString[KEY_F3] = "F3";
-  g_mapNamesToString[KEY_F4] = "F4";
-  g_mapNamesToString[KEY_F5] = "F5";
-  g_mapNamesToString[KEY_F6] = "F6";
-  g_mapNamesToString[KEY_F7] = "F7";
-  g_mapNamesToString[KEY_F8] = "F8";
-  g_mapNamesToString[KEY_F9] = "F9";
-  g_mapNamesToString[KEY_F10] = "F10";
-  g_mapNamesToString[KEY_F11] = "F11";
-  g_mapNamesToString[KEY_F12] = "F12";
-  g_mapNamesToString[KEY_F13] = "F13";
-  g_mapNamesToString[KEY_F14] = "F14";
-  g_mapNamesToString[KEY_F15] = "F15";
-  g_mapNamesToString[KEY_F16] = "F16";
+  map_names_to_string[KEY_F1] = "F1";
+  map_names_to_string[KEY_F2] = "F2";
+  map_names_to_string[KEY_F3] = "F3";
+  map_names_to_string[KEY_F4] = "F4";
+  map_names_to_string[KEY_F5] = "F5";
+  map_names_to_string[KEY_F6] = "F6";
+  map_names_to_string[KEY_F7] = "F7";
+  map_names_to_string[KEY_F8] = "F8";
+  map_names_to_string[KEY_F9] = "F9";
+  map_names_to_string[KEY_F10] = "F10";
+  map_names_to_string[KEY_F11] = "F11";
+  map_names_to_string[KEY_F12] = "F12";
+  map_names_to_string[KEY_F13] = "F13";
+  map_names_to_string[KEY_F14] = "F14";
+  map_names_to_string[KEY_F15] = "F15";
+  map_names_to_string[KEY_F16] = "F16";
 
-  g_mapNamesToString[KEY_LCTRL] = "left ctrl";
-  g_mapNamesToString[KEY_RCTRL] = "right ctrl";
-  g_mapNamesToString[KEY_LSHIFT] = "left shift";
-  g_mapNamesToString[KEY_RSHIFT] = "right shift";
-  g_mapNamesToString[KEY_LALT] = "left alt";
-  g_mapNamesToString[KEY_RALT] = "right alt";
-  g_mapNamesToString[KEY_LMETA] = "left meta";
-  g_mapNamesToString[KEY_RMETA] = "right meta";
+  map_names_to_string[KEY_LCTRL] = "left ctrl";
+  map_names_to_string[KEY_RCTRL] = "right ctrl";
+  map_names_to_string[KEY_LSHIFT] = "left shift";
+  map_names_to_string[KEY_RSHIFT] = "right shift";
+  map_names_to_string[KEY_LALT] = "left alt";
+  map_names_to_string[KEY_RALT] = "right alt";
+  map_names_to_string[KEY_LMETA] = "left meta";
+  map_names_to_string[KEY_RMETA] = "right meta";
   // Note: On Windows, the Super key is the Windows key. -aj
-  g_mapNamesToString[KEY_LSUPER] = "left super";
-  g_mapNamesToString[KEY_RSUPER] = "right super";
-  g_mapNamesToString[KEY_MENU] = "menu";
+  map_names_to_string[KEY_LSUPER] = "left super";
+  map_names_to_string[KEY_RSUPER] = "right super";
+  map_names_to_string[KEY_MENU] = "menu";
 
-  g_mapNamesToString[KEY_FN] = "function";
+  map_names_to_string[KEY_FN] = "function";
 
-  g_mapNamesToString[KEY_NUMLOCK] = "num lock";
-  g_mapNamesToString[KEY_SCRLLOCK] = "scroll lock";
-  g_mapNamesToString[KEY_CAPSLOCK] = "caps lock";
-  g_mapNamesToString[KEY_PRTSC] = "prtsc";
+  map_names_to_string[KEY_NUMLOCK] = "num lock";
+  map_names_to_string[KEY_SCRLLOCK] = "scroll lock";
+  map_names_to_string[KEY_CAPSLOCK] = "caps lock";
+  map_names_to_string[KEY_PRTSC] = "prtsc";
 
-  g_mapNamesToString[KEY_UP] = "up";
-  g_mapNamesToString[KEY_DOWN] = "down";
-  g_mapNamesToString[KEY_LEFT] = "left";
-  g_mapNamesToString[KEY_RIGHT] = "right";
+  map_names_to_string[KEY_UP] = "up";
+  map_names_to_string[KEY_DOWN] = "down";
+  map_names_to_string[KEY_LEFT] = "left";
+  map_names_to_string[KEY_RIGHT] = "right";
 
-  g_mapNamesToString[KEY_INSERT] = "insert";
-  g_mapNamesToString[KEY_HOME] = "home";
-  g_mapNamesToString[KEY_END] = "end";
-  g_mapNamesToString[KEY_PGUP] = "pgup";
-  g_mapNamesToString[KEY_PGDN] = "pgdn";
+  map_names_to_string[KEY_INSERT] = "insert";
+  map_names_to_string[KEY_HOME] = "home";
+  map_names_to_string[KEY_END] = "end";
+  map_names_to_string[KEY_PGUP] = "pgup";
+  map_names_to_string[KEY_PGDN] = "pgdn";
 
-  g_mapNamesToString[KEY_KP_C0] = "KP 0";
-  g_mapNamesToString[KEY_KP_C1] = "KP 1";
-  g_mapNamesToString[KEY_KP_C2] = "KP 2";
-  g_mapNamesToString[KEY_KP_C3] = "KP 3";
-  g_mapNamesToString[KEY_KP_C4] = "KP 4";
-  g_mapNamesToString[KEY_KP_C5] = "KP 5";
-  g_mapNamesToString[KEY_KP_C6] = "KP 6";
-  g_mapNamesToString[KEY_KP_C7] = "KP 7";
-  g_mapNamesToString[KEY_KP_C8] = "KP 8";
-  g_mapNamesToString[KEY_KP_C9] = "KP 9";
-  g_mapNamesToString[KEY_KP_SLASH] = "KP /";
-  g_mapNamesToString[KEY_KP_ASTERISK] = "KP *";
-  g_mapNamesToString[KEY_KP_HYPHEN] = "KP -";
-  g_mapNamesToString[KEY_KP_PLUS] = "KP +";
-  g_mapNamesToString[KEY_KP_PERIOD] = "KP .";
-  g_mapNamesToString[KEY_KP_EQUAL] = "KP =";
-  g_mapNamesToString[KEY_KP_ENTER] = "KP enter";
+  map_names_to_string[KEY_KP_C0] = "KP 0";
+  map_names_to_string[KEY_KP_C1] = "KP 1";
+  map_names_to_string[KEY_KP_C2] = "KP 2";
+  map_names_to_string[KEY_KP_C3] = "KP 3";
+  map_names_to_string[KEY_KP_C4] = "KP 4";
+  map_names_to_string[KEY_KP_C5] = "KP 5";
+  map_names_to_string[KEY_KP_C6] = "KP 6";
+  map_names_to_string[KEY_KP_C7] = "KP 7";
+  map_names_to_string[KEY_KP_C8] = "KP 8";
+  map_names_to_string[KEY_KP_C9] = "KP 9";
+  map_names_to_string[KEY_KP_SLASH] = "KP /";
+  map_names_to_string[KEY_KP_ASTERISK] = "KP *";
+  map_names_to_string[KEY_KP_HYPHEN] = "KP -";
+  map_names_to_string[KEY_KP_PLUS] = "KP +";
+  map_names_to_string[KEY_KP_PERIOD] = "KP .";
+  map_names_to_string[KEY_KP_EQUAL] = "KP =";
+  map_names_to_string[KEY_KP_ENTER] = "KP enter";
 
-  g_mapNamesToString[JOY_LEFT] = "Left1";
-  g_mapNamesToString[JOY_RIGHT] = "Right1";
-  g_mapNamesToString[JOY_UP] = "Up1";
-  g_mapNamesToString[JOY_DOWN] = "Down1";
+  map_names_to_string[JOY_LEFT] = "Left1";
+  map_names_to_string[JOY_RIGHT] = "Right1";
+  map_names_to_string[JOY_UP] = "Up1";
+  map_names_to_string[JOY_DOWN] = "Down1";
 
   // Secondary sticks:
-  g_mapNamesToString[JOY_LEFT_2] = "Left2";
-  g_mapNamesToString[JOY_RIGHT_2] = "Right2";
-  g_mapNamesToString[JOY_UP_2] = "Up2";
-  g_mapNamesToString[JOY_DOWN_2] = "Down2";
+  map_names_to_string[JOY_LEFT_2] = "Left2";
+  map_names_to_string[JOY_RIGHT_2] = "Right2";
+  map_names_to_string[JOY_UP_2] = "Up2";
+  map_names_to_string[JOY_DOWN_2] = "Down2";
 
-  g_mapNamesToString[JOY_Z_UP] = "Z-Up";
-  g_mapNamesToString[JOY_Z_DOWN] = "Z-Down";
-  g_mapNamesToString[JOY_ROT_UP] = "R-Up";
-  g_mapNamesToString[JOY_ROT_DOWN] = "R-Down";
-  g_mapNamesToString[JOY_ROT_LEFT] = "R-Left";
-  g_mapNamesToString[JOY_ROT_RIGHT] = "R-Right";
-  g_mapNamesToString[JOY_ROT_Z_UP] = "ZR-Up";
-  g_mapNamesToString[JOY_ROT_Z_DOWN] = "ZR-Down";
-  g_mapNamesToString[JOY_HAT_LEFT] = "H-Left";
-  g_mapNamesToString[JOY_HAT_RIGHT] = "H-Right";
-  g_mapNamesToString[JOY_HAT_UP] = "H-Up";
-  g_mapNamesToString[JOY_HAT_DOWN] = "H-Down";
-  g_mapNamesToString[JOY_AUX_1] = "Aux1";
-  g_mapNamesToString[JOY_AUX_2] = "Aux2";
-  g_mapNamesToString[JOY_AUX_3] = "Aux3";
-  g_mapNamesToString[JOY_AUX_4] = "Aux4";
+  map_names_to_string[JOY_Z_UP] = "Z-Up";
+  map_names_to_string[JOY_Z_DOWN] = "Z-Down";
+  map_names_to_string[JOY_ROT_UP] = "R-Up";
+  map_names_to_string[JOY_ROT_DOWN] = "R-Down";
+  map_names_to_string[JOY_ROT_LEFT] = "R-Left";
+  map_names_to_string[JOY_ROT_RIGHT] = "R-Right";
+  map_names_to_string[JOY_ROT_Z_UP] = "ZR-Up";
+  map_names_to_string[JOY_ROT_Z_DOWN] = "ZR-Down";
+  map_names_to_string[JOY_HAT_LEFT] = "H-Left";
+  map_names_to_string[JOY_HAT_RIGHT] = "H-Right";
+  map_names_to_string[JOY_HAT_UP] = "H-Up";
+  map_names_to_string[JOY_HAT_DOWN] = "H-Down";
+  map_names_to_string[JOY_AUX_1] = "Aux1";
+  map_names_to_string[JOY_AUX_2] = "Aux2";
+  map_names_to_string[JOY_AUX_3] = "Aux3";
+  map_names_to_string[JOY_AUX_4] = "Aux4";
 
-  g_mapNamesToString[MOUSE_LEFT] = "left mouse button";
-  g_mapNamesToString[MOUSE_RIGHT] = "right mouse button";
-  g_mapNamesToString[MOUSE_MIDDLE] = "middle mouse button";
-  g_mapNamesToString[MOUSE_WHEELUP] = "mousewheel up";
-  g_mapNamesToString[MOUSE_WHEELDOWN] = "mousewheel down";
+  map_names_to_string[MOUSE_LEFT] = "left mouse button";
+  map_names_to_string[MOUSE_RIGHT] = "right mouse button";
+  map_names_to_string[MOUSE_MIDDLE] = "middle mouse button";
+  map_names_to_string[MOUSE_WHEELUP] = "mousewheel up";
+  map_names_to_string[MOUSE_WHEELDOWN] = "mousewheel down";
 
   for (std::pair<const DeviceButton&, const std::string&> m :
-       g_mapNamesToString) {
-    g_mapStringToNames[m.second] = m.first;
+       map_names_to_string) {
+    map_string_to_names[m.second] = m.first;
   }
 }
 
@@ -155,8 +155,8 @@ std::string DeviceButtonToString(DeviceButton key) {
   // Check the name map first to allow making names for keys that are inside
   // the ascii range. -Kyz
   std::map<DeviceButton, std::string>::const_iterator it =
-      g_mapNamesToString.find(key);
-  if (it != g_mapNamesToString.end()) {
+      map_names_to_string.find(key);
+  if (it != map_names_to_string.end()) {
     return it->second;
   }
 
@@ -205,8 +205,8 @@ DeviceButton StringToDeviceButton(const std::string& s) {
   }
 
   std::map<std::string, DeviceButton>::const_iterator it =
-      g_mapStringToNames.find(s);
-  if (it != g_mapStringToNames.end()) {
+      map_string_to_names.find(s);
+  if (it != map_string_to_names.end()) {
     return it->second;
   }
 

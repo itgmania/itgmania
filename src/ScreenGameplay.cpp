@@ -123,12 +123,12 @@ AutoScreenMessage(SM_StartLoadingNextSong);
 AutoScreenMessage(SM_DoPrevScreen);
 AutoScreenMessage(SM_DoNextScreen);
 
-static Preference<bool> g_bCenter1Player("Center1Player", false);
-static Preference<bool> g_bShowLyrics("ShowLyrics", true);
-static Preference<bool> g_bEasterEggs("EasterEggs", true);
+static Preference<bool> center1_player("Center1Player", false);
+static Preference<bool> show_lyrics("ShowLyrics", true);
+static Preference<bool> easter_eggs("EasterEggs", true);
 
 PlayerInfo::PlayerInfo()
-    : pn_(PLAYER_INVALID),
+    : pn_(kPlayerInvalid),
       is_dummy_(false),
       dummy_index_(0),
       player_enabled_(false),
@@ -260,7 +260,7 @@ PlayerStageStats* PlayerInfo::GetPlayerStageStats() {
 }
 
 bool PlayerInfo::IsEnabled() {
-  if (pn_ != PLAYER_INVALID) {
+  if (pn_ != kPlayerInvalid) {
     return GAMESTATE->IsPlayerEnabled(pn_);
   } else if (is_dummy_) {
     return true;
@@ -313,7 +313,7 @@ std::vector<PlayerInfo>::iterator GetNextPlayerNumberInfo(
     if (iter->is_dummy_) {
       continue;
     }
-    if (iter->pn_ == PLAYER_INVALID) {
+    if (iter->pn_ == kPlayerInvalid) {
       continue;
     }
     return iter;
@@ -514,7 +514,7 @@ void ScreenGameplay::Init() {
 
   if (song_background_) {
     song_background_->SetName("SongBackground");
-    song_background_->SetDrawOrder(DRAW_ORDER_BEFORE_EVERYTHING);
+    song_background_->SetDrawOrder(kDrawOrderBeforeEverything);
     ActorUtil::LoadAllCommands(*song_background_, name_);
     this->AddChild(song_background_);
   }
@@ -522,14 +522,13 @@ void ScreenGameplay::Init() {
   if (song_foreground_) {
     song_foreground_->SetName("SongForeground");
     song_foreground_->SetDrawOrder(
-        DRAW_ORDER_OVERLAY +
-        1);  // on top of the overlay, but under transitions
+        kDrawOrderOverlay + 1);  // on top of the overlay, but under transitions
     ActorUtil::LoadAllCommands(*song_foreground_, name_);
     this->AddChild(song_foreground_);
   }
 
   if (PREFSMAN->show_beginner_helper_) {
-    beginner_helper_.SetDrawOrder(DRAW_ORDER_BEFORE_EVERYTHING);
+    beginner_helper_.SetDrawOrder(kDrawOrderBeforeEverything);
     beginner_helper_.SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
     this->AddChild(&beginner_helper_);
   }
@@ -543,7 +542,7 @@ void ScreenGameplay::Init() {
 
   std::vector<NotefieldMargins> margins = GetNotefieldMargins();
 
-  float left_edge[NUM_PLAYERS] = {0.0f, SCREEN_WIDTH / 2.0f};
+  float left_edge[kNumPlayers] = {0.0f, SCREEN_WIDTH / 2.0f};
   FOREACH_EnabledPlayerInfo(player_info_, pi) {
     std::string name = ssprintf("Player%s", pi->GetName().c_str());
     pi->player_->SetName(name);
@@ -605,7 +604,7 @@ void ScreenGameplay::Init() {
   }
 
   next_song_.Load(THEME->GetPathB(name_, "next course song"));
-  next_song_.SetDrawOrder(DRAW_ORDER_TRANSITIONS - 1);
+  next_song_.SetDrawOrder(kDrawOrderTransitions - 1);
   this->AddChild(&next_song_);
 
   // Add combined life meter
@@ -774,7 +773,7 @@ void ScreenGameplay::Init() {
     this->AddChild(pi->active_attack_list_);
   }
 
-  if (g_bShowLyrics) {
+  if (show_lyrics) {
     lyric_display_.SetName("LyricDisplay");
     LOAD_ALL_COMMANDS(lyric_display_);
     this->AddChild(&lyric_display_);
@@ -791,14 +790,14 @@ void ScreenGameplay::Init() {
 
     failed_.Load(THEME->GetPathB(name_, "failed"));
     failed_.SetDrawOrder(
-        DRAW_ORDER_TRANSITIONS - 1);  // on top of everything else
+        kDrawOrderTransitions - 1);  // on top of everything else
     this->AddChild(&failed_);
 
     text_debug_.LoadFromFont(THEME->GetPathF(name_, "debug"));
     text_debug_.SetName("Debug");
     LOAD_ALL_COMMANDS_AND_SET_XY(text_debug_);
     text_debug_.SetDrawOrder(
-        DRAW_ORDER_TRANSITIONS -
+        kDrawOrderTransitions -
         1);  // just under transitions, over the foreground
     this->AddChild(&text_debug_);
 
@@ -810,7 +809,7 @@ void ScreenGameplay::Init() {
       text_survive_time_.SetShadowLength(0);
       text_survive_time_.SetName("SurviveTime");
       LOAD_ALL_COMMANDS_AND_SET_XY(text_survive_time_);
-      text_survive_time_.SetDrawOrder(DRAW_ORDER_TRANSITIONS - 1);
+      text_survive_time_.SetDrawOrder(kDrawOrderTransitions - 1);
       text_survive_time_.SetDiffuse(RageColor(1, 1, 1, 0));
       this->AddChild(&text_survive_time_);
     }
@@ -892,10 +891,10 @@ bool ScreenGameplay::Center1Player() const {
    * If this check is modified, also modify the center check in
    * ScreenEdit::Init().
    */
-  return g_bCenter1Player && (bool)ALLOW_CENTER_1_PLAYER &&
+  return center1_player && (bool)ALLOW_CENTER_1_PLAYER &&
          GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
          GAMESTATE->play_mode_ != PLAY_MODE_RAVE &&
-         GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->style_type_ ==
+         GAMESTATE->GetCurrentStyle(kPlayerInvalid)->style_type_ ==
              StyleType_OnePlayerOneSide;
 }
 
@@ -1187,7 +1186,7 @@ void ScreenGameplay::LoadNextSong() {
     /* Increment the play count even if the player fails.  (It's still popular,
      * even if the people playing it aren't good at it.) */
     if (!GAMESTATE->demonstration_or_jukebox_) {
-      if (pi->pn_ != PLAYER_INVALID) {
+      if (pi->pn_ != kPlayerInvalid) {
         PROFILEMAN->IncrementStepsPlayCount(song, steps, pi->pn_);
       }
     }
@@ -1250,9 +1249,9 @@ void ScreenGameplay::LoadNextSong() {
         pi->GetPlayerState()->player_controller_ = PC_CPU;
         int meter = steps->GetMeter();
         int new_skill =
-            SCALE(meter, MIN_METER, MAX_METER, 0, NUM_SKILL_LEVELS - 1);
+            SCALE(meter, kMinMeter, kMaxMeter, 0, kNumSkillLevels - 1);
         /* Watch out: songs aren't actually bound by MAX_METER. */
-        new_skill = std::clamp(new_skill, 0, NUM_SKILL_LEVELS - 1);
+        new_skill = std::clamp(new_skill, 0, kNumSkillLevels - 1);
         pi->GetPlayerState()->cpu_skill_ = new_skill;
       } else {
         if (pi->GetPlayerState()
@@ -1260,8 +1259,7 @@ void ScreenGameplay::LoadNextSong() {
                 .player_auto_play_ != 0) {
           pi->GetPlayerState()->player_controller_ = PC_AUTOPLAY;
         } else {
-          pi->GetPlayerState()->player_controller_ =
-              GamePreferences::m_AutoPlay;
+          pi->GetPlayerState()->player_controller_ = GamePreferences::auto_play;
         }
       }
     }
@@ -2318,7 +2316,7 @@ void ScreenGameplay::SendCrossedMessages() {
     const int kNumMessagesToSend = 4;
     const float kMessageSpacingSeconds = 0.4f;
 
-    PlayerNumber pn = PLAYER_INVALID;
+    PlayerNumber pn = kPlayerInvalid;
     FOREACH_EnabledPlayerNumberInfo(player_info_, pi) {
       if (GAMESTATE->cur_steps_[pi->pn_]->GetDifficulty() ==
           Difficulty_Beginner) {
@@ -2326,7 +2324,7 @@ void ScreenGameplay::SendCrossedMessages() {
         break;
       }
     }
-    if (pn == PLAYER_INVALID) {
+    if (pn == kPlayerInvalid) {
       return;
     }
 
@@ -2368,7 +2366,7 @@ void ScreenGameplay::SendCrossedMessages() {
               MESSAGEMAN->Broadcast(msg);
             }
           } else {
-            const Style* style = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
+            const Style* style = GAMESTATE->GetCurrentStyle(kPlayerInvalid);
             std::string button = style->ColToButtonName(t);
             Message msg(i == 0 ? "NoteCrossed" : "NoteWillCross");
             msg.SetParam("ButtonName", button);
@@ -2481,7 +2479,7 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
      */
     bool holding_give_up = false;
     if (GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(
-            input.game_i_) == Column_Invalid) {
+            input.game_i_) == kColumnInvalid) {
       holding_give_up |= (START_GIVES_UP && input.menu_i_ == GAME_BUTTON_START);
       holding_give_up |= (BACK_GIVES_UP && input.menu_i_ == GAME_BUTTON_BACK);
     }
@@ -2515,7 +2513,7 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
      * disabled. */
     bool holding_back = false;
     if (GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(
-            input.game_i_) == Column_Invalid) {
+            input.game_i_) == kColumnInvalid) {
       holding_back |= input.menu_i_ == GAME_BUTTON_BACK && !BACK_GIVES_UP;
     }
 
@@ -2561,7 +2559,7 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
   if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
           ->style_type_ == StyleType_TwoPlayersSharedSides) {
     if (GAMESTATE->IsHumanPlayer(input.pn_)) {
-      if (GamePreferences::m_AutoPlay == PC_HUMAN &&
+      if (GamePreferences::auto_play == PC_HUMAN &&
           GAMESTATE->player_state_[input.pn_]
                   ->player_options_.GetCurrent()
                   .player_auto_play_ == 0) {
@@ -2588,7 +2586,7 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
     if (GAMESTATE->IsHumanPlayer(input.pn_)) {
       ResetGiveUpTimers(true);
 
-      if (GamePreferences::m_AutoPlay == PC_HUMAN &&
+      if (GamePreferences::auto_play == PC_HUMAN &&
           GAMESTATE->player_state_[input.pn_]
                   ->player_options_.GetCurrent()
                   .player_auto_play_ == 0) {
@@ -2926,7 +2924,7 @@ void ScreenGameplay::HandleScreenMessage(const ScreenMessage sm) {
 
     StartPlayingSong(MIN_SECONDS_TO_STEP_NEXT_SONG, 0);
   } else if (sm == SM_PlayToasty) {
-    if (g_bEasterEggs) {
+    if (easter_eggs) {
       if (PREFSMAN->allow_multiple_toasties_ || toasty_.IsWaiting()) {
         toasty_.Reset();
         toasty_.StartTransitioning();

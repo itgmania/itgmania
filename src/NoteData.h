@@ -166,7 +166,7 @@ class NoteData {
   bool IsFake(const TapNote& tn, const int row) const;
 
   std::pair<int, int> GetNumRowsWithSimultaneousTapsTwoPlayer(
-      int min_taps = 2, int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int min_taps = 2, int start_row = 0, int end_row = kMaxNoteRow) const;
 
   // These exist so that they can be revalidated when something that transforms
   // the NoteData occurs. -Kyz
@@ -192,7 +192,7 @@ class NoteData {
     if (iter != end(track)) {
       return iter->second;
     } else {
-      return TAP_EMPTY;
+      return tap_empty;
     }
   }
 
@@ -315,22 +315,22 @@ class NoteData {
   int GetLastRow() const;   // return the beat number of the last note
   float GetFirstBeat() const { return NoteRowToBeat(GetFirstRow()); }
   float GetLastBeat() const { return NoteRowToBeat(GetLastRow()); }
-  int GetNumTapNotes(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+  int GetNumTapNotes(int start_index = 0, int end_index = kMaxNoteRow) const;
   int GetNumTapNotesNoTiming(
-      int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+      int start_index = 0, int end_index = kMaxNoteRow) const;
   int GetNumTapNotesInRow(int row) const;
-  int GetNumMines(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+  int GetNumMines(int start_index = 0, int end_index = kMaxNoteRow) const;
   int GetNumRowsWithTapOrHoldHead(
-      int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+      int start_index = 0, int end_index = kMaxNoteRow) const;
   /* Optimization: for the default of start to end, use the second (faster).
    * XXX: Second what? -- Steve */
-  int GetNumHoldNotes(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
-  int GetNumRolls(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+  int GetNumHoldNotes(int start_index = 0, int end_index = kMaxNoteRow) const;
+  int GetNumRolls(int start_index = 0, int end_index = kMaxNoteRow) const;
 
   // Count rows that contain iMinTaps or more taps.
   int GetNumRowsWithSimultaneousTaps(
-      int min_taps, int start_index = 0, int end_index = MAX_NOTE_ROW) const;
-  int GetNumJumps(int start_index = 0, int end_index = MAX_NOTE_ROW) const {
+      int min_taps, int start_index = 0, int end_index = kMaxNoteRow) const;
+  int GetNumJumps(int start_index = 0, int end_index = kMaxNoteRow) const {
     return GetNumRowsWithSimultaneousTaps(2, start_index, end_index);
   }
 
@@ -341,45 +341,45 @@ class NoteData {
   // Count rows that need iMinSimultaneousPresses either tapped or held.
   int GetNumRowsWithSimultaneousPresses(
       int min_simultaneous_presses, int start_index = 0,
-      int end_index = MAX_NOTE_ROW) const;
-  int GetNumHands(int start_index = 0, int end_index = MAX_NOTE_ROW) const {
+      int end_index = kMaxNoteRow) const;
+  int GetNumHands(int start_index = 0, int end_index = kMaxNoteRow) const {
     return GetNumRowsWithSimultaneousPresses(3, start_index, end_index);
   }
-  int GetNumQuads(int start_index = 0, int end_index = MAX_NOTE_ROW) const {
+  int GetNumQuads(int start_index = 0, int end_index = kMaxNoteRow) const {
     return GetNumRowsWithSimultaneousPresses(4, start_index, end_index);
   }
 
   // and the other notetypes
-  int GetNumLifts(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
-  int GetNumFakes(int start_index = 0, int end_index = MAX_NOTE_ROW) const;
+  int GetNumLifts(int start_index = 0, int end_index = kMaxNoteRow) const;
+  int GetNumFakes(int start_index = 0, int end_index = kMaxNoteRow) const;
 
   // the couple/routine style variants of the above.
   std::pair<int, int> GetNumTapNotesTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumJumpsTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumHandsTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumQuadsTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumHoldNotesTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumMinesTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumRollsTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumLiftsTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   std::pair<int, int> GetNumFakesTwoPlayer(
-      int start_row = 0, int end_row = MAX_NOTE_ROW) const;
+      int start_row = 0, int end_row = kMaxNoteRow) const;
 
   // Transformations
   void LoadTransformed(

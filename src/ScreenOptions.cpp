@@ -765,7 +765,7 @@ void ScreenOptions::PositionRows(bool tween) {
     } else {
       row.SetVisible(true);
     }
-    for (int j = 0; j < NUM_DIFFUSE_COLORS; j++) {
+    for (int j = 0; j < kNumDiffuseColors; j++) {
       destination.diffuse_[j].a_ = hidden ? 0.0f : 1.0f;
     }
     if (!hidden) {
@@ -779,7 +779,7 @@ void ScreenOptions::PositionRows(bool tween) {
     destination.Init();
     destination.pos_.y_ = SEPARATE_EXIT_ROW_Y;
 
-    for (int j = 0; j < NUM_DIFFUSE_COLORS; j++) {
+    for (int j = 0; j < kNumDiffuseColors; j++) {
       destination.diffuse_[j].a_ = 1.0f;
     }
     separate_exit_row->SetDestination(destination, tween);
@@ -1438,7 +1438,7 @@ void ScreenOptions::MenuUpDown(const InputEventPlus& input, int dir) {
 }
 void ScreenOptions::RedrawOptions() {
   // Save current row indices before redraw
-  int saved_row[NUM_PLAYERS];
+  int saved_row[kNumPlayers];
   FOREACH_PlayerNumber(pn) saved_row[pn] = current_row_[pn];
 
   // RestartOptions();

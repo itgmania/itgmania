@@ -15,7 +15,7 @@
 class RageSoundBase;
 class RageTimer;
 class RageSoundMixBuffer;
-static const int samples_per_block = 512;
+static const int kSamplesPerBlock = 512;
 
 class RageSoundDriver : public RageDriver {
  public:
@@ -175,13 +175,13 @@ class RageSoundDriver : public RageDriver {
    * thread.
    */
   struct sound_block {
-    float buffer_[samples_per_block];
+    float buffer_[kSamplesPerBlock];
     float* buffer_next_;    // beginning of the unread data
     int frames_in_buffer_;  // total number of frames at buffer_next_
     // A span is one contiguous decoded segment with a known source-frame
     // range. The mixer uses these spans to map hardware playback time back to
     // the original sound position, even when one buffer contains several cuts.
-    MixingPositionInfo position_spans_[samples_per_block];
+    MixingPositionInfo position_spans_[kSamplesPerBlock];
     int position_span_count_;
     int current_position_span_;
     sound_block()

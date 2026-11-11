@@ -21,7 +21,7 @@ class AutoKeysounds {
   void LoadAutoplaySoundsInto(RageSoundReader_Chain* chain);
   static void LoadTracks(RageSoundReader*& shared);
 
-  NoteData auto_keysounds_only_[NUM_PLAYERS];
+  NoteData auto_keysounds_only_[kNumPlayers];
   RageSound sound_;
   RageSoundReader* shared_sound_;  // owned by m_sSound
 };

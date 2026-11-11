@@ -68,7 +68,7 @@ void StepsUtil::GetAllMatching(
     std::vector<SongAndSteps>& out) {
   std::vector<std::string> group_names = soc.group_names_;
   if (group_names.size() == 0) {
-    group_names.push_back(GROUP_ALL);
+    group_names.push_back(kGroupAll);
   }
   std::vector<Song*> songs;
   for (unsigned i = 0; i < group_names.size(); i++) {

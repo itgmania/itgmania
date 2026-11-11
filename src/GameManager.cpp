@@ -52,7 +52,7 @@ std::string StepsTypeInfo::GetLocalizedString() const {
   return name_;
 }
 
-static const StepsTypeInfo g_StepsTypeInfos[] = {
+static const StepsTypeInfo kStepsTypeInfos[] = {
     // dance
     {"dance-single", 4, true, StepsTypeCategory_Single},
     {"dance-double", 8, true, StepsTypeCategory_Double},
@@ -80,12 +80,12 @@ static const StepsTypeInfo g_StepsTypeInfos[] = {
      StepsTypeCategory_Single},  // XXX disable lights autogen for now
 };
 static_assert(
-    ARRAYLEN(g_StepsTypeInfos) == NUM_StepsType,
+    ARRAYLEN(kStepsTypeInfos) == NUM_StepsType,
     "ARRAYLEN(g_StepsTypeInfos) != NUM_StepsType");
 
 // Important:  Every game must define the buttons: "Start", "Back", "MenuLeft",
 // "Operator" and "MenuRight"
-static const AutoMappings g_AutoKeyMappings_Dance = AutoMappings(
+static const AutoMappings kAutoKeyMappingsDance = AutoMappings(
     "", "", "", AutoMappingEntry(0, KEY_DEL, GAME_BUTTON_MENULEFT, false),
     AutoMappingEntry(0, KEY_PGDN, GAME_BUTTON_MENURIGHT, false),
     AutoMappingEntry(0, KEY_HOME, GAME_BUTTON_MENUUP, false),
@@ -109,7 +109,7 @@ static const AutoMappings g_AutoKeyMappings_Dance = AutoMappings(
 // the problem with getting it from the noteskin is that this is meant to be
 // static const; if we switch to anything we likely won't get const anymore
 // but i may be talking out of my ass -aj
-static const int DANCE_COL_SPACING = 64;
+static const int kDanceColSpacing = 64;
 
 // static ThemeMetric<int>	DANCE_COL_SPACING("ColumnSpacing","Dance");
 //  named after a similar metric in Aldo_MX's build for
@@ -120,7 +120,7 @@ static const int DANCE_COL_SPACING = 64;
  * just arroweffects.cpp for rowspacing (ArrowRowSpacing)
  */
 
-static const Style g_Style_Dance_Single = {
+static const Style kStyleDanceSingle = {
     // STYLE_DANCE_SINGLE
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -134,17 +134,17 @@ static const Style g_Style_Dance_Single = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 1.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 1.5f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -156,7 +156,7 @@ static const Style g_Style_Dance_Single = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_Versus = {
+static const Style kStyleDanceVersus = {
     // STYLE_DANCE_VERSUS
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -170,17 +170,17 @@ static const Style g_Style_Dance_Versus = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 1.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 1.5f, nullptr},
         },
     },
     {{0, 3, 2, 1, Style::END_MAPPING}, {0, 3, 2, 1, Style::END_MAPPING}},
@@ -190,7 +190,7 @@ static const Style g_Style_Dance_Versus = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_Double = {
+static const Style kStyleDanceDouble = {
     // STYLE_DANCE_DOUBLE
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -204,25 +204,25 @@ static const Style g_Style_Dance_Double = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -234,7 +234,7 @@ static const Style g_Style_Dance_Double = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_Couple = {
+static const Style kStyleDanceCouple = {
     // STYLE_DANCE_COUPLE
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -248,17 +248,17 @@ static const Style g_Style_Dance_Couple = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 1.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_5, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_6, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 1.5f, nullptr},
+            {TRACK_5, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_6, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 1.5f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -270,7 +270,7 @@ static const Style g_Style_Dance_Couple = {
     true,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_Solo = {
+static const Style kStyleDanceSolo = {
     // STYLE_DANCE_SOLO
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -284,21 +284,21 @@ static const Style g_Style_Dance_Solo = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 2.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 2.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 2.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 2.5f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -310,7 +310,7 @@ static const Style g_Style_Dance_Solo = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_Couple_Edit = {
+static const Style kStyleDanceCoupleEdit = {
     // STYLE_DANCE_COUPLE
     false,                        // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -324,25 +324,25 @@ static const Style g_Style_Dance_Couple_Edit = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 4.f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 3.f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 2.f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 1.f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 1.f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 2.f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 3.f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 4.f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 4.f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 3.f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 2.f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 1.f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 1.f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 2.f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 3.f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 4.f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 4.f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 3.f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 2.f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 1.f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 1.f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 2.f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 3.f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 4.f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 4.f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 3.f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 2.f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 1.f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 1.f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 2.f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 3.f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 4.f, nullptr},
         },
     },
     {
@@ -356,7 +356,7 @@ static const Style g_Style_Dance_Couple_Edit = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Dance_ThreePanel = {
+static const Style kStyleDanceThreePanel = {
     // STYLE_DANCE_THREEPANEL
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -370,15 +370,15 @@ static const Style g_Style_Dance_ThreePanel = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 1.0f, nullptr},
-            {TRACK_2, +DANCE_COL_SPACING * 0.0f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 1.0f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.0f, nullptr},
+            {TRACK_2, +kDanceColSpacing * 0.0f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 1.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 1.0f, nullptr},
-            {TRACK_2, +DANCE_COL_SPACING * 0.0f, nullptr},
-            {TRACK_3, +DANCE_COL_SPACING * 1.0f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 1.0f, nullptr},
+            {TRACK_2, +kDanceColSpacing * 0.0f, nullptr},
+            {TRACK_3, +kDanceColSpacing * 1.0f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -428,7 +428,7 @@ static const Style g_Style_Dance_Solo_Versus =
         false, // m_bLockDifficulties
 };	*/
 
-static const Style g_Style_Dance_Routine = {
+static const Style kStyleDanceRoutine = {
     // STYLE_DANCE_ROUTINE
     true,                             // m_bUsedForGameplay
     true,                             // m_bUsedForEdit
@@ -442,25 +442,25 @@ static const Style g_Style_Dance_Routine = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -472,24 +472,19 @@ static const Style g_Style_Dance_Routine = {
     true,   // m_bLockDifficulties
 };
 
-static const Style* g_apGame_Dance_Styles[] = {&g_Style_Dance_Single,
-                                               &g_Style_Dance_Versus,
-                                               &g_Style_Dance_Double,
-                                               &g_Style_Dance_Couple,
-                                               &g_Style_Dance_Solo,
-                                               &g_Style_Dance_Couple_Edit,
-                                               &g_Style_Dance_Routine,
-                                               &g_Style_Dance_ThreePanel,
-                                               nullptr};
+static const Style* game_dance_styles[] = {
+    &kStyleDanceSingle,  &kStyleDanceVersus,     &kStyleDanceDouble,
+    &kStyleDanceCouple,  &kStyleDanceSolo,       &kStyleDanceCoupleEdit,
+    &kStyleDanceRoutine, &kStyleDanceThreePanel, nullptr};
 
-static const Game g_Game_Dance = {
-    "dance",                // m_szName
-    g_apGame_Dance_Styles,  // m_apStyles
-    false,                  // m_bCountNotesSeparately
-    false,                  // m_PlayersHaveSeparateStyles
-    {                       // m_InputScheme
-     "dance",               // m_szName
-     NUM_DANCE_BUTTONS,     // m_iButtonsPerController
+static const Game kGameDance = {
+    "dance",             // m_szName
+    game_dance_styles,   // m_apStyles
+    false,               // m_bCountNotesSeparately
+    false,               // m_PlayersHaveSeparateStyles
+    {                    // m_InputScheme
+     "dance",            // m_szName
+     NUM_DANCE_BUTTONS,  // m_iButtonsPerController
      {
          // m_szButtonNames
          {"Left", GAME_BUTTON_LEFT},
@@ -499,7 +494,7 @@ static const Game g_Game_Dance = {
          {"UpLeft", GameButton_Invalid},
          {"UpRight", GameButton_Invalid},
      },
-     &g_AutoKeyMappings_Dance},
+     &kAutoKeyMappingsDance},
     {
         {GameButtonType_Step},
         {GameButtonType_Step},
@@ -515,7 +510,7 @@ static const Game g_Game_Dance = {
     TNS_W5,  // m_mapW5To
 };
 
-static const AutoMappings g_AutoKeyMappings_Pump = AutoMappings(
+static const AutoMappings kAutoKeyMappingsPump = AutoMappings(
     "", "", "", AutoMappingEntry(0, KEY_Cq, PUMP_BUTTON_UPLEFT, false),
     AutoMappingEntry(0, KEY_Ce, PUMP_BUTTON_UPRIGHT, false),
     AutoMappingEntry(0, KEY_Cs, PUMP_BUTTON_CENTER, false),
@@ -537,9 +532,9 @@ static const AutoMappings g_AutoKeyMappings_Pump = AutoMappings(
 // apparently column spacing is 48px
 // static ThemeMetric<int>	PUMP_COL_SPACING
 // ("ColumnSpacing","Pump");
-static const int PUMP_COL_SPACING = 48;
+static const int kPumpColSpacing = 48;
 
-static const Style g_Style_Pump_Single = {
+static const Style kStylePumpSingle = {
     // STYLE_PUMP_SINGLE
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -553,19 +548,19 @@ static const Style g_Style_Pump_Single = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kPumpColSpacing * 2.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kPumpColSpacing * 2.0f, nullptr},
         },
     },
     {
@@ -579,7 +574,7 @@ static const Style g_Style_Pump_Single = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_Versus = {
+static const Style kStylePumpVersus = {
     // STYLE_PUMP_VERSUS
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -593,19 +588,19 @@ static const Style g_Style_Pump_Versus = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kPumpColSpacing * 2.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kPumpColSpacing * 2.0f, nullptr},
         },
     },
     {
@@ -619,7 +614,7 @@ static const Style g_Style_Pump_Versus = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_HalfDouble = {
+static const Style kStylePumpHalfDouble = {
     // STYLE_PUMP_HALFDOUBLE
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -633,21 +628,21 @@ static const Style g_Style_Pump_HalfDouble = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_4, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_5, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 2.5f + 4, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_4, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_5, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 2.5f + 4, nullptr},
         },
     },
     {// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -659,7 +654,7 @@ static const Style g_Style_Pump_HalfDouble = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_Double = {
+static const Style kStylePumpDouble = {
     // STYLE_PUMP_DOUBLE
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -673,29 +668,29 @@ static const Style g_Style_Pump_Double = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 4.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 3.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 3.5f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 4.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 4.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 3.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 2.5f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 3.5f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 4.5f + 4, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 4.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 3.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 3.5f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 4.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 4.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 3.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 2.5f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 3.5f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 4.5f + 4, nullptr},
         },
     },
     {
@@ -709,7 +704,7 @@ static const Style g_Style_Pump_Double = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_Couple = {
+static const Style kStylePumpCouple = {
     // STYLE_PUMP_COUPLE
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -723,19 +718,19 @@ static const Style g_Style_Pump_Couple = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kPumpColSpacing * 2.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_6, -PUMP_COL_SPACING * 2.0f, nullptr},
-            {TRACK_7, -PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 0.0f, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 1.0f, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 2.0f, nullptr},
+            {TRACK_6, -kPumpColSpacing * 2.0f, nullptr},
+            {TRACK_7, -kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_8, +kPumpColSpacing * 0.0f, nullptr},
+            {TRACK_9, +kPumpColSpacing * 1.0f, nullptr},
+            {TRACK_10, +kPumpColSpacing * 2.0f, nullptr},
         },
     },
     {
@@ -749,7 +744,7 @@ static const Style g_Style_Pump_Couple = {
     true,   // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_Couple_Edit = {
+static const Style kStylePumpCoupleEdit = {
     // STYLE_PUMP_EDIT_COUPLE
     false,                        // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -763,29 +758,29 @@ static const Style g_Style_Pump_Couple_Edit = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 5.0f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 4.0f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 3.0f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 2.0f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 1.0f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 1.0f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 2.0f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 3.0f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 4.0f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 5.0f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 5.0f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 4.0f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 3.0f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 2.0f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 1.0f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 1.0f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 2.0f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 3.0f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 4.0f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 5.0f + 4, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 5.0f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 4.0f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 3.0f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 2.0f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 1.0f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 1.0f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 2.0f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 3.0f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 4.0f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 5.0f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 5.0f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 4.0f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 3.0f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 2.0f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 1.0f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 1.0f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 2.0f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 3.0f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 4.0f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 5.0f + 4, nullptr},
         },
     },
     {
@@ -799,7 +794,7 @@ static const Style g_Style_Pump_Couple_Edit = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Pump_Routine = {
+static const Style kStylePumpRoutine = {
     // STYLE_PUMP_ROUTINE
     true,                             // m_bUsedForGameplay
     true,                             // m_bUsedForEdit
@@ -813,29 +808,29 @@ static const Style g_Style_Pump_Routine = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -PUMP_COL_SPACING * 4.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 3.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 3.5f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 4.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 4.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 3.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 2.5f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 3.5f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 4.5f + 4, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -PUMP_COL_SPACING * 4.5f - 4, nullptr},
-            {TRACK_2, -PUMP_COL_SPACING * 3.5f - 4, nullptr},
-            {TRACK_3, -PUMP_COL_SPACING * 2.5f - 4, nullptr},
-            {TRACK_4, -PUMP_COL_SPACING * 1.5f - 4, nullptr},
-            {TRACK_5, -PUMP_COL_SPACING * 0.5f - 4, nullptr},
-            {TRACK_6, +PUMP_COL_SPACING * 0.5f + 4, nullptr},
-            {TRACK_7, +PUMP_COL_SPACING * 1.5f + 4, nullptr},
-            {TRACK_8, +PUMP_COL_SPACING * 2.5f + 4, nullptr},
-            {TRACK_9, +PUMP_COL_SPACING * 3.5f + 4, nullptr},
-            {TRACK_10, +PUMP_COL_SPACING * 4.5f + 4, nullptr},
+            {TRACK_1, -kPumpColSpacing * 4.5f - 4, nullptr},
+            {TRACK_2, -kPumpColSpacing * 3.5f - 4, nullptr},
+            {TRACK_3, -kPumpColSpacing * 2.5f - 4, nullptr},
+            {TRACK_4, -kPumpColSpacing * 1.5f - 4, nullptr},
+            {TRACK_5, -kPumpColSpacing * 0.5f - 4, nullptr},
+            {TRACK_6, +kPumpColSpacing * 0.5f + 4, nullptr},
+            {TRACK_7, +kPumpColSpacing * 1.5f + 4, nullptr},
+            {TRACK_8, +kPumpColSpacing * 2.5f + 4, nullptr},
+            {TRACK_9, +kPumpColSpacing * 3.5f + 4, nullptr},
+            {TRACK_10, +kPumpColSpacing * 4.5f + 4, nullptr},
         },
     },
     {
@@ -849,20 +844,20 @@ static const Style g_Style_Pump_Routine = {
     true,   // m_bLockDifficulties
 };
 
-static const Style* g_apGame_Pump_Styles[] = {
-    &g_Style_Pump_Single,     &g_Style_Pump_Versus,
-    &g_Style_Pump_HalfDouble, &g_Style_Pump_Double,
-    &g_Style_Pump_Couple,     &g_Style_Pump_Couple_Edit,
-    &g_Style_Pump_Routine,    nullptr};
+static const Style* game_pump_styles[] = {
+    &kStylePumpSingle,     &kStylePumpVersus,
+    &kStylePumpHalfDouble, &kStylePumpDouble,
+    &kStylePumpCouple,     &kStylePumpCoupleEdit,
+    &kStylePumpRoutine,    nullptr};
 
-static const Game g_Game_Pump = {
-    "pump",                // m_szName
-    g_apGame_Pump_Styles,  // m_apStyles
-    false,                 // m_bCountNotesSeparately
-    false,                 // m_PlayersHaveSeparateStyles
-    {                      // m_InputScheme
-     "pump",               // m_szName
-     NUM_PUMP_BUTTONS,     // m_iButtonsPerController
+static const Game kGamePump = {
+    "pump",             // m_szName
+    game_pump_styles,   // m_apStyles
+    false,              // m_bCountNotesSeparately
+    false,              // m_PlayersHaveSeparateStyles
+    {                   // m_InputScheme
+     "pump",            // m_szName
+     NUM_PUMP_BUTTONS,  // m_iButtonsPerController
      {
          // m_szButtonNames
          {"UpLeft", GAME_BUTTON_UP},
@@ -871,7 +866,7 @@ static const Game g_Game_Pump = {
          {"DownLeft", GAME_BUTTON_LEFT},
          {"DownRight", GAME_BUTTON_RIGHT},
      },
-     &g_AutoKeyMappings_Pump},
+     &kAutoKeyMappingsPump},
     {
         {GameButtonType_Step},
         {GameButtonType_Step},
@@ -889,10 +884,10 @@ static const Game g_Game_Pump = {
 /** Techno *******************************************************************/
 
 // ThemeMetric<int>	TECHNO_COL_SPACING	("ColumnSpacing","Techno");
-static const int TECHNO_COL_SPACING = 56;
+static const int kTechnoColSpacing = 56;
 // ThemeMetric<int>	TECHNO_VERSUS_COL_SPACING
 // ("ColumnSpacing","TechnoVersus");
-static const Style g_Style_Techno_Single4 = {
+static const Style kStyleTechnoSingle4 = {
     // STYLE_TECHNO_SINGLE4
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -906,17 +901,17 @@ static const Style g_Style_Techno_Single4 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.5f, nullptr},
         },
     },
     {
@@ -930,7 +925,7 @@ static const Style g_Style_Techno_Single4 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Single5 = {
+static const Style kStyleTechnoSingle5 = {
     // STYLE_TECHNO_SINGLE5
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -944,19 +939,19 @@ static const Style g_Style_Techno_Single5 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 2.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 2.0f, nullptr},
         },
     },
     {
@@ -972,7 +967,7 @@ static const Style g_Style_Techno_Single5 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Single8 = {
+static const Style kStyleTechnoSingle8 = {
     // STYLE_TECHNO_SINGLE8
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -986,25 +981,25 @@ static const Style g_Style_Techno_Single8 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
     },
     {
@@ -1018,7 +1013,7 @@ static const Style g_Style_Techno_Single8 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Versus4 = {
+static const Style kStyleTechnoVersus4 = {
     // STYLE_TECHNO_VERSUS4
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -1032,17 +1027,17 @@ static const Style g_Style_Techno_Versus4 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.5f, nullptr},
         },
     },
     {
@@ -1056,7 +1051,7 @@ static const Style g_Style_Techno_Versus4 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Versus5 = {
+static const Style kStyleTechnoVersus5 = {
     // STYLE_TECHNO_VERSUS5
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -1070,19 +1065,19 @@ static const Style g_Style_Techno_Versus5 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 2.0f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 2.0f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_3, +TECHNO_COL_SPACING * 0.0f, nullptr},
-            {TRACK_4, +TECHNO_COL_SPACING * 1.0f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 2.0f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 2.0f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_3, +kTechnoColSpacing * 0.0f, nullptr},
+            {TRACK_4, +kTechnoColSpacing * 1.0f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 2.0f, nullptr},
         },
     },
     {
@@ -1098,7 +1093,7 @@ static const Style g_Style_Techno_Versus5 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Versus8 = {
+static const Style kStyleTechnoVersus8 = {
     // STYLE_TECHNO_VERSUS8
     true,                          // m_bUsedForGameplay
     false,                         // m_bUsedForEdit
@@ -1112,25 +1107,25 @@ static const Style g_Style_Techno_Versus8 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
     },
     {
@@ -1148,7 +1143,7 @@ static const Style g_Style_Techno_Versus8 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Double4 = {
+static const Style kStyleTechnoDouble4 = {
     // STYLE_TECHNO_DOUBLE4
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -1162,25 +1157,25 @@ static const Style g_Style_Techno_Double4 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 3.5f, nullptr},
         },
     },
     {
@@ -1194,7 +1189,7 @@ static const Style g_Style_Techno_Double4 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Double5 = {
+static const Style kStyleTechnoDouble5 = {
     // STYLE_TECHNO_DOUBLE5
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -1208,29 +1203,29 @@ static const Style g_Style_Techno_Double5 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_5, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_9, +TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_10, +TECHNO_COL_SPACING * 4.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_5, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_9, +kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_10, +kTechnoColSpacing * 4.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_5, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_7, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_8, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_9, +TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_10, +TECHNO_COL_SPACING * 4.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_5, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_7, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_8, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_9, +kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_10, +kTechnoColSpacing * 4.5f, nullptr},
         },
     },
     {
@@ -1246,7 +1241,7 @@ static const Style g_Style_Techno_Double5 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style g_Style_Techno_Double8 = {
+static const Style kStyleTechnoDouble8 = {
     // STYLE_TECHNO_DOUBLE8
     true,                         // m_bUsedForGameplay
     true,                         // m_bUsedForEdit
@@ -1260,41 +1255,41 @@ static const Style g_Style_Techno_Double8 = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -TECHNO_COL_SPACING * 7.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 6.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 5.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_5, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_6, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_7, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_8, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_9, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_10, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_11, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_12, +TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_13, +TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_14, +TECHNO_COL_SPACING * 5.5f, nullptr},
-            {TRACK_15, +TECHNO_COL_SPACING * 6.5f, nullptr},
-            {TRACK_16, +TECHNO_COL_SPACING * 7.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 7.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 6.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 5.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_5, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_6, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_7, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_8, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_9, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_10, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_11, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_12, +kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_13, +kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_14, +kTechnoColSpacing * 5.5f, nullptr},
+            {TRACK_15, +kTechnoColSpacing * 6.5f, nullptr},
+            {TRACK_16, +kTechnoColSpacing * 7.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -TECHNO_COL_SPACING * 7.5f, nullptr},
-            {TRACK_2, -TECHNO_COL_SPACING * 6.5f, nullptr},
-            {TRACK_3, -TECHNO_COL_SPACING * 5.5f, nullptr},
-            {TRACK_4, -TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_5, -TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_6, -TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_7, -TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_8, -TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_9, +TECHNO_COL_SPACING * 0.5f, nullptr},
-            {TRACK_10, +TECHNO_COL_SPACING * 1.5f, nullptr},
-            {TRACK_11, +TECHNO_COL_SPACING * 2.5f, nullptr},
-            {TRACK_12, +TECHNO_COL_SPACING * 3.5f, nullptr},
-            {TRACK_13, +TECHNO_COL_SPACING * 4.5f, nullptr},
-            {TRACK_14, +TECHNO_COL_SPACING * 5.5f, nullptr},
-            {TRACK_15, +TECHNO_COL_SPACING * 6.5f, nullptr},
-            {TRACK_16, +TECHNO_COL_SPACING * 7.5f, nullptr},
+            {TRACK_1, -kTechnoColSpacing * 7.5f, nullptr},
+            {TRACK_2, -kTechnoColSpacing * 6.5f, nullptr},
+            {TRACK_3, -kTechnoColSpacing * 5.5f, nullptr},
+            {TRACK_4, -kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_5, -kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_6, -kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_7, -kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_8, -kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_9, +kTechnoColSpacing * 0.5f, nullptr},
+            {TRACK_10, +kTechnoColSpacing * 1.5f, nullptr},
+            {TRACK_11, +kTechnoColSpacing * 2.5f, nullptr},
+            {TRACK_12, +kTechnoColSpacing * 3.5f, nullptr},
+            {TRACK_13, +kTechnoColSpacing * 4.5f, nullptr},
+            {TRACK_14, +kTechnoColSpacing * 5.5f, nullptr},
+            {TRACK_15, +kTechnoColSpacing * 6.5f, nullptr},
+            {TRACK_16, +kTechnoColSpacing * 7.5f, nullptr},
         },
     },
     {
@@ -1308,14 +1303,14 @@ static const Style g_Style_Techno_Double8 = {
     false,  // m_bLockDifficulties
 };
 
-static const Style* g_apGame_Techno_Styles[] = {
-    &g_Style_Techno_Single4, &g_Style_Techno_Single5,
-    &g_Style_Techno_Single8, &g_Style_Techno_Versus4,
-    &g_Style_Techno_Versus5, &g_Style_Techno_Versus8,
-    &g_Style_Techno_Double4, &g_Style_Techno_Double5,
-    &g_Style_Techno_Double8, nullptr};
+static const Style* game_techno_styles[] = {
+    &kStyleTechnoSingle4, &kStyleTechnoSingle5,
+    &kStyleTechnoSingle8, &kStyleTechnoVersus4,
+    &kStyleTechnoVersus5, &kStyleTechnoVersus8,
+    &kStyleTechnoDouble4, &kStyleTechnoDouble5,
+    &kStyleTechnoDouble8, nullptr};
 
-static const AutoMappings g_AutoKeyMappings_Techno = AutoMappings(
+static const AutoMappings kAutoKeyMappingsTechno = AutoMappings(
     "", "", "", AutoMappingEntry(0, KEY_Ca, TECHNO_BUTTON_LEFT, false),
     AutoMappingEntry(0, KEY_Cd, TECHNO_BUTTON_RIGHT, false),
     AutoMappingEntry(0, KEY_Cw, TECHNO_BUTTON_UP, false),
@@ -1335,14 +1330,14 @@ static const AutoMappings g_AutoKeyMappings_Techno = AutoMappings(
     AutoMappingEntry(0, KEY_KP_C1, TECHNO_BUTTON_DOWNLEFT, true),
     AutoMappingEntry(0, KEY_KP_C3, TECHNO_BUTTON_DOWNRIGHT, true));
 
-static const Game g_Game_Techno = {
-    "techno",                // m_szName
-    g_apGame_Techno_Styles,  // m_apStyles
-    false,                   // m_bCountNotesSeparately
-    false,                   // m_PlayersHaveSeparateStyles
-    {                        // m_InputScheme
-     "techno",               // m_szName
-     NUM_TECHNO_BUTTONS,     // m_iButtonsPerController
+static const Game kGameTechno = {
+    "techno",             // m_szName
+    game_techno_styles,   // m_apStyles
+    false,                // m_bCountNotesSeparately
+    false,                // m_PlayersHaveSeparateStyles
+    {                     // m_InputScheme
+     "techno",            // m_szName
+     NUM_TECHNO_BUTTONS,  // m_iButtonsPerController
      {
          // m_szButtonNames
          {"Left", GAME_BUTTON_LEFT},
@@ -1355,7 +1350,7 @@ static const Game g_Game_Techno = {
          {"DownLeft", GameButton_Invalid},
          {"DownRight", GameButton_Invalid},
      },
-     &g_AutoKeyMappings_Techno},
+     &kAutoKeyMappingsTechno},
     {
         {GameButtonType_Step},
         {GameButtonType_Step},
@@ -1376,7 +1371,7 @@ static const Game g_Game_Techno = {
 
 /** Lights *******************************************************************/
 
-static const AutoMappings g_AutoKeyMappings_Lights = AutoMappings(
+static const AutoMappings kAutoKeyMappingsLights = AutoMappings(
     "", "", "",
     AutoMappingEntry(0, KEY_Cq, LIGHTS_BUTTON_MARQUEE_UP_LEFT, false),
     AutoMappingEntry(0, KEY_Cw, LIGHTS_BUTTON_MARQUEE_UP_RIGHT, false),
@@ -1387,7 +1382,7 @@ static const AutoMappings g_AutoKeyMappings_Lights = AutoMappings(
     AutoMappingEntry(0, KEY_Cu, LIGHTS_BUTTON_BASS_LEFT, false),
     AutoMappingEntry(0, KEY_Ci, LIGHTS_BUTTON_BASS_RIGHT, false));
 
-static const Style g_Style_Lights_Cabinet = {
+static const Style kStyleLightsCabinet = {
     // STYLE_LIGHTS_CABINET
     true,                        // m_bUsedForGameplay
     true,                        // m_bUsedForEdit
@@ -1401,25 +1396,25 @@ static const Style g_Style_Lights_Cabinet = {
         // m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
         {
             // PLAYER_1
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
         {
             // PLAYER_2
-            {TRACK_1, -DANCE_COL_SPACING * 3.5f, nullptr},
-            {TRACK_2, -DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_3, -DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_4, -DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_5, +DANCE_COL_SPACING * 0.5f, nullptr},
-            {TRACK_6, +DANCE_COL_SPACING * 1.5f, nullptr},
-            {TRACK_7, +DANCE_COL_SPACING * 2.5f, nullptr},
-            {TRACK_8, +DANCE_COL_SPACING * 3.5f, nullptr},
+            {TRACK_1, -kDanceColSpacing * 3.5f, nullptr},
+            {TRACK_2, -kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_3, -kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_4, -kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_5, +kDanceColSpacing * 0.5f, nullptr},
+            {TRACK_6, +kDanceColSpacing * 1.5f, nullptr},
+            {TRACK_7, +kDanceColSpacing * 2.5f, nullptr},
+            {TRACK_8, +kDanceColSpacing * 3.5f, nullptr},
         },
     },
     {
@@ -1433,17 +1428,16 @@ static const Style g_Style_Lights_Cabinet = {
     false,  // m_bLockDifficulties
 };
 
-static const Style* g_apGame_Lights_Styles[] = {
-    &g_Style_Lights_Cabinet, nullptr};
+static const Style* game_lights_styles[] = {&kStyleLightsCabinet, nullptr};
 
-static const Game g_Game_Lights = {
-    "lights",                // m_szName
-    g_apGame_Lights_Styles,  // m_apStyles
-    false,                   // m_bCountNotesSeparately
-    false,                   // m_PlayersHaveSeparateStyles
-    {                        // m_InputScheme
-     "lights",               // m_szName
-     NUM_LIGHTS_BUTTONS,     // m_iButtonsPerController
+static const Game kGameLights = {
+    "lights",             // m_szName
+    game_lights_styles,   // m_apStyles
+    false,                // m_bCountNotesSeparately
+    false,                // m_PlayersHaveSeparateStyles
+    {                     // m_InputScheme
+     "lights",            // m_szName
+     NUM_LIGHTS_BUTTONS,  // m_iButtonsPerController
      {
          // m_szButtonNames
          {"MarqueeUpLeft", GAME_BUTTON_LEFT},
@@ -1455,7 +1449,7 @@ static const Game g_Game_Lights = {
          {"BassLeft", GameButton_Invalid},
          {"BassRight", GameButton_Invalid},
      },
-     &g_AutoKeyMappings_Lights},
+     &kAutoKeyMappingsLights},
     {
         {GameButtonType_Step},
         {GameButtonType_Step},
@@ -1473,11 +1467,11 @@ static const Game g_Game_Lights = {
     TNS_W5,  // m_mapW5To
 };
 
-static const Game* g_Games[] = {
-    &g_Game_Dance,
-    &g_Game_Pump,
-    &g_Game_Techno,
-    &g_Game_Lights,
+static const Game* g_games[] = {
+    &kGameDance,
+    &kGamePump,
+    &kGameTechno,
+    &kGameLights,
 };
 
 GameManager::GameManager() {
@@ -1512,8 +1506,8 @@ void GameManager::GetStylesForGame(
 }
 
 const Game* GameManager::GetGameForStyle(const Style* style) {
-  for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
-    const Game* game = g_Games[g];
+  for (size_t g = 0; g < ARRAYLEN(g_games); ++g) {
+    const Game* game = g_games[g];
     for (int s = 0; game->styles_[s]; ++s) {
       if (game->styles_[s] == style) {
         return game;
@@ -1524,8 +1518,8 @@ const Game* GameManager::GetGameForStyle(const Style* style) {
 }
 
 const Style* GameManager::GetEditorStyleForStepsType(StepsType st) {
-  for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
-    const Game* game = g_Games[g];
+  for (size_t g = 0; g < ARRAYLEN(g_games); ++g) {
+    const Game* game = g_games[g];
     for (int s = 0; game->styles_[s]; ++s) {
       const Style* style = game->styles_[s];
       if (style->steps_type_ == st && style->used_for_edit_) {
@@ -1636,8 +1630,8 @@ const Style* GameManager::GetFirstCompatibleStyle(
 }
 
 void GameManager::GetEnabledGames(std::vector<const Game*>& games_out) {
-  for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
-    const Game* game = g_Games[g];
+  for (size_t g = 0; g < ARRAYLEN(g_games); ++g) {
+    const Game* game = g_games[g];
     if (IsGameEnabled(game)) {
       games_out.push_back(game);
     }
@@ -1647,9 +1641,9 @@ void GameManager::GetEnabledGames(std::vector<const Game*>& games_out) {
 const Game* GameManager::GetDefaultGame() {
   const Game* p_default = nullptr;
   if (p_default == nullptr) {
-    for (size_t i = 0; p_default == nullptr && i < ARRAYLEN(g_Games); ++i) {
-      if (IsGameEnabled(g_Games[i])) {
-        p_default = g_Games[i];
+    for (size_t i = 0; p_default == nullptr && i < ARRAYLEN(g_games); ++i) {
+      if (IsGameEnabled(g_games[i])) {
+        p_default = g_games[i];
       }
     }
 
@@ -1669,14 +1663,14 @@ const StepsTypeInfo& GameManager::GetStepsTypeInfo(StepsType st) {
   ASSERT_M(
       st < NUM_StepsType,
       ssprintf("StepsType %d < NUM_StepsType (%d)", st, NUM_StepsType));
-  return g_StepsTypeInfos[st];
+  return kStepsTypeInfos[st];
 }
 
 StepsType GameManager::StringToStepsType(std::string steps_type) {
   MakeLower(steps_type);
 
   for (int i = 0; i < NUM_StepsType; i++) {
-    if (g_StepsTypeInfos[i].name_ == steps_type) {
+    if (kStepsTypeInfos[i].name_ == steps_type) {
       return StepsType(i);
     }
   }
@@ -1695,9 +1689,9 @@ std::string GameManager::StyleToLocalizedString(const Style* style) {
 }
 
 const Game* GameManager::StringToGame(std::string game) {
-  for (size_t i = 0; i < ARRAYLEN(g_Games); ++i) {
-    if (!CompareNoCase(game, g_Games[i]->name_)) {
-      return g_Games[i];
+  for (size_t i = 0; i < ARRAYLEN(g_games); ++i) {
+    if (!CompareNoCase(game, g_games[i]->name_)) {
+      return g_games[i];
     }
   }
 

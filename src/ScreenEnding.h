@@ -13,7 +13,7 @@ class ScreenEnding : public ScreenAttract {
   virtual bool Input(const InputEventPlus& input);
 
  private:
-  Sprite spr_remove_memory_card_[NUM_PLAYERS];
+  Sprite spr_remove_memory_card_[kNumPlayers];
 };
 
 #endif

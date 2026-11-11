@@ -7,7 +7,7 @@
 #include "TimingData.h"
 #include "global.h"
 
-static Preference<float> g_fVisualDelaySeconds("VisualDelaySeconds", 0.0f);
+static Preference<float> visual_delay_seconds("VisualDelaySeconds", 0.0f);
 
 void SongPosition::UpdateSongPosition(
     float position_seconds, const TimingData& timing,
@@ -38,13 +38,13 @@ void SongPosition::UpdateSongPosition(
   music_seconds_ = position_seconds;
 
   light_song_beat_ =
-      timing.GetBeatFromElapsedTime(position_seconds + g_fLightsAheadSeconds);
+      timing.GetBeatFromElapsedTime(position_seconds + lights_ahead_seconds);
 
   song_beat_no_offset_ =
       timing.GetBeatFromElapsedTimeNoOffset(position_seconds);
 
   music_seconds_visible_ =
-      position_seconds - g_fVisualDelaySeconds.Get() - additional_visual_delay;
+      position_seconds - visual_delay_seconds.Get() - additional_visual_delay;
   beat_info.elapsed_time_ = music_seconds_visible_;
   timing.GetBeatAndBPSFromElapsedTime(beat_info);
   song_beat_visible_ = beat_info.beat_;

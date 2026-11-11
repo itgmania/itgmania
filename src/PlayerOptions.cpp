@@ -81,7 +81,7 @@ ThemeMetric<float> RANDOM_EFFECT_CHANCE("PlayerOptions", "RandomEffectChance");
 ThemeMetric<float> RANDOM_HIDDEN_CHANCE("PlayerOptions", "RandomHiddenChance");
 ThemeMetric<float> RANDOM_SUDDEN_CHANCE("PlayerOptions", "RandomSuddenChance");
 
-static const float CMOD_DEFAULT = 200.0f;
+static const float kCmodDefault = 200.0f;
 // Is there a better place for this?
 // It needs to be a named constant because it's used in several places in
 // this file, but nothing else has a named constant for its default value.
@@ -101,7 +101,7 @@ void PlayerOptions::Init() {
   speed_time_spacing_ = 1.0f;
   scroll_speed_ = 1.0f;
   speed_scroll_speed_ = 1.0f;
-  scroll_bpm_ = CMOD_DEFAULT;
+  scroll_bpm_ = kCmodDefault;
   speed_scroll_bpm_ = 1.0f;
   ZERO(accels_);
   ONE(speed_accels_);
@@ -834,7 +834,7 @@ bool PlayerOptions::FromOneModString(
     max_scroll_bpm_ = 0;
   } else if (sscanf(bit.c_str(), "c%f", &level) == 1) {
     if (!std::isfinite(level) || level <= 0.0f) {
-      level = CMOD_DEFAULT;
+      level = kCmodDefault;
     }
     SET_FLOAT(scroll_bpm_)
     SET_FLOAT(time_spacing_)
@@ -864,7 +864,7 @@ bool PlayerOptions::FromOneModString(
     SET_FLOAT(time_spacing_);
     level = 1.0f;
     SET_FLOAT(scroll_speed_);
-    level = CMOD_DEFAULT;
+    level = kCmodDefault;
     SET_FLOAT(scroll_bpm_)
   } else if (bit == "life" || bit == "lives") {
     // level is a percentage for every other option, so multiply by 100. -Kyz
@@ -2517,7 +2517,7 @@ class LunaPlayerOptions : public Luna<PlayerOptions> {
     if (lua_isnumber(L, 1) && original_top >= 1) {
       p->scroll_speed_ = FArg(1);
       p->time_spacing_ = 0;
-      p->scroll_bpm_ = CMOD_DEFAULT;
+      p->scroll_bpm_ = kCmodDefault;
       p->max_scroll_bpm_ = 0;
     }
     if (lua_isnumber(L, 2) && original_top >= 2) {
@@ -2541,7 +2541,7 @@ class LunaPlayerOptions : public Luna<PlayerOptions> {
       if (!std::isfinite(speed) || speed <= 0.0f) {
         luaL_error(L, "MMod speed must be finite and greater than 0.");
       }
-      p->scroll_bpm_ = CMOD_DEFAULT;
+      p->scroll_bpm_ = kCmodDefault;
       p->time_spacing_ = 0;
       p->scroll_speed_ = 1;
       p->max_scroll_bpm_ = speed;

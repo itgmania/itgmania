@@ -99,7 +99,7 @@ struct GameStateImpl {
   GameStateMessageHandler subscriber_;
   GameStateImpl() { subscriber_.SubscribeToMessage("RefreshCreditText"); }
 };
-static GameStateImpl* g_pImpl = nullptr;
+static GameStateImpl* impl = nullptr;
 
 ThemeMetric<bool> ALLOW_LATE_JOIN("GameState", "AllowLateJoin");
 ThemeMetric<bool> USE_NAME_BLACKLIST("GameState", "UseNameBlacklist");
@@ -128,9 +128,9 @@ static ThemeMetric<bool> ARE_STAGE_PLAYER_MODS_FORCED(
 static ThemeMetric<bool> ARE_STAGE_SONG_MODS_FORCED(
     "GameState", "AreStageSongModsForced");
 
-static Preference<Premium> g_Premium("Premium", Premium_DoubleFor1Credit);
-static Preference<int> g_iPremiumFreeMinutes("PremiumFreeMinutes", 10);
-static Preference<float> g_fPremiumFreeSongGraceSeconds(
+static Preference<Premium> premium("Premium", Premium_DoubleFor1Credit);
+static Preference<int> premium_free_minutes("PremiumFreeMinutes", 10);
+static Preference<float> premium_free_song_grace_seconds(
     "PremiumFreeSongGraceSeconds", 150.0f);
 Preference<bool> GameState::auto_join_("AutoJoin", false);
 
@@ -162,7 +162,7 @@ GameState::GameState()
       edit_source_(Message_EditSourceStepsTypeChanged),
       edit_course_entry_index_(Message_EditCourseEntryIndexChanged),
       edit_local_profile_id_(Message_EditLocalProfileIDChanged) {
-  g_pImpl = new GameStateImpl;
+  impl = new GameStateImpl;
 
   cur_style_.Set(nullptr);
   FOREACH_PlayerNumber(rpn) { separated_styles_[rpn] = nullptr; }
@@ -216,7 +216,7 @@ GameState::~GameState() {
   FOREACH_PlayerNumber(p) RageUtil::SafeDelete(player_state_[p]);
 
   RageUtil::SafeDelete(environment_);
-  RageUtil::SafeDelete(g_pImpl);
+  RageUtil::SafeDelete(impl);
   RageUtil::SafeDelete(processed_timing_);
 }
 
@@ -247,7 +247,7 @@ void GameState::ApplyGameCommand(const std::string& command, PlayerNumber pn) {
     return;
   }
 
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     m.ApplyToAllPlayers();
   } else {
     m.Apply(pn);
@@ -259,7 +259,7 @@ void GameState::ApplyCmdline() {
   std::string player;
   for (int i = 0; GetCommandlineArgument("player", &player, i); ++i) {
     int pn = StringToInt(player) - 1;
-    if (!IsAnInt(player) || pn < 0 || pn >= NUM_PLAYERS) {
+    if (!IsAnInt(player) || pn < 0 || pn >= kNumPlayers) {
       RageException::Throw("Invalid argument \"--player=%s\".", player.c_str());
     }
 
@@ -294,18 +294,18 @@ void GameState::ResetPlayerOptions(PlayerNumber pn) {
 
 void GameState::Reset() {
   this->SetMasterPlayerNumber(
-      PLAYER_INVALID);  // must initialize for UnjoinPlayer
+      kPlayerInvalid);  // must initialize for UnjoinPlayer
 
   FOREACH_PlayerNumber(pn) UnjoinPlayer(pn);
 
   ASSERT(THEME != nullptr);
 
   time_game_started_.SetZero();
-  SetCurrentStyle(nullptr, PLAYER_INVALID);
+  SetCurrentStyle(nullptr, kPlayerInvalid);
   FOREACH_PlayerNumber(pn) MEMCARDMAN->UnlockCard(pn);
   *environment_ = LuaTable();
-  preferred_song_group_.Set(GROUP_ALL);
-  preferred_course_group_.Set(GROUP_ALL);
+  preferred_song_group_.Set(kGroupAll);
+  preferred_course_group_.Set(kGroupAll);
   fail_type_was_explicitly_set_ = false;
   sort_order_.Set(SortOrder_Invalid);
   preferred_sort_order_ = GetDefaultSort();
@@ -381,11 +381,11 @@ void GameState::JoinPlayer(PlayerNumber pn) {
   // Make sure the join will be successful before doing it. -Kyz
   {
     int players_joined = 0;
-    for (int i = 0; i < NUM_PLAYERS; ++i) {
+    for (int i = 0; i < kNumPlayers; ++i) {
       players_joined += side_is_joined_[i];
     }
     if (players_joined > 0) {
-      const Style* cur_style = GetCurrentStyle(PLAYER_INVALID);
+      const Style* cur_style = GetCurrentStyle(kPlayerInvalid);
       if (cur_style) {
         const Style* new_style = GAMEMAN->GetFirstCompatibleStyle(
             cur_game_, players_joined + 1, cur_style->steps_type_);
@@ -408,7 +408,7 @@ void GameState::JoinPlayer(PlayerNumber pn) {
 
   side_is_joined_[pn] = true;
 
-  if (this->GetMasterPlayerNumber() == PLAYER_INVALID) {
+  if (this->GetMasterPlayerNumber() == kPlayerInvalid) {
     this->SetMasterPlayerNumber(pn);
   }
 
@@ -430,7 +430,7 @@ void GameState::JoinPlayer(PlayerNumber pn) {
   // player is being joined and the current styletype is for two players,
   // assume that the second player will be joined immediately afterwards and
   // don't try to change the style. -Kyz
-  const Style* cur_style = GetCurrentStyle(PLAYER_INVALID);
+  const Style* cur_style = GetCurrentStyle(kPlayerInvalid);
   if (cur_style != nullptr &&
       !(pn == PLAYER_1 &&
         (cur_style->style_type_ == StyleType_TwoPlayersTwoSides ||
@@ -479,7 +479,7 @@ void GameState::UnjoinPlayer(PlayerNumber pn) {
       }
     }
     if (this->GetMasterPlayerNumber() == pn) {
-      this->SetMasterPlayerNumber(PLAYER_INVALID);
+      this->SetMasterPlayerNumber(kPlayerInvalid);
     }
   }
 
@@ -488,7 +488,7 @@ void GameState::UnjoinPlayer(PlayerNumber pn) {
   MESSAGEMAN->Broadcast(msg);
 
   // If there are no players left, reset some non-player-specific stuff, too.
-  if (this->GetMasterPlayerNumber() == PLAYER_INVALID) {
+  if (this->GetMasterPlayerNumber() == kPlayerInvalid) {
     SongOptions so;
     GetDefaultSongOptions(so);
     song_options_.Assign(ModsLevel_Preferred, so);
@@ -1021,14 +1021,14 @@ void GameState::SetCompatibleStylesForPlayers() {
           cur_course_->GetCourseStyle(cur_game_, GetNumSidesJoined());
       if (style != nullptr) {
         style_set = true;
-        SetCurrentStyle(style, PLAYER_INVALID);
+        SetCurrentStyle(style, kPlayerInvalid);
       }
-    } else if (GetCurrentStyle(PLAYER_INVALID) == nullptr) {
+    } else if (GetCurrentStyle(kPlayerInvalid) == nullptr) {
       std::vector<StepsType> vst;
       GAMEMAN->GetStepsTypesForGame(cur_game_, vst);
       const Style* style = GAMEMAN->GetFirstCompatibleStyle(
           cur_game_, GetNumSidesJoined(), vst[0]);
-      SetCurrentStyle(style, PLAYER_INVALID);
+      SetCurrentStyle(style, kPlayerInvalid);
     }
   }
   if (!style_set) {
@@ -1051,7 +1051,7 @@ void GameState::SetCompatibleStylesForPlayers() {
 }
 
 void GameState::ForceSharedSidesMatch() {
-  PlayerNumber pn_with_shared = PLAYER_INVALID;
+  PlayerNumber pn_with_shared = kPlayerInvalid;
   const Style* shared_style = nullptr;
   FOREACH_EnabledPlayer(pn) {
     const Style* style = GetCurrentStyle(pn);
@@ -1061,11 +1061,11 @@ void GameState::ForceSharedSidesMatch() {
       shared_style = style;
     }
   }
-  if (pn_with_shared != PLAYER_INVALID) {
+  if (pn_with_shared != kPlayerInvalid) {
     ASSERT_M(
         GetNumPlayersEnabled() == 2,
         "2 players must be enabled for shared sides.");
-    PlayerNumber other_pn = OPPOSITE_PLAYER[pn_with_shared];
+    PlayerNumber other_pn = kOppositePlayer[pn_with_shared];
     const Style* other_style = GetCurrentStyle(other_pn);
     ASSERT_M(
         other_style != nullptr,
@@ -1420,7 +1420,7 @@ void GameState::ActivatePremiumFree() {
   }
 
   premium_free_active_ = true;
-  premium_free_minutes_ = g_iPremiumFreeMinutes.Get();
+  premium_free_minutes_ = premium_free_minutes.Get();
   premium_free_start_time_.SetZero();
 }
 
@@ -1451,7 +1451,7 @@ float GameState::GetPremiumFreeSeconds() const {
 }
 
 float GameState::GetPremiumFreeSongGraceSeconds() const {
-  return std::clamp(g_fPremiumFreeSongGraceSeconds.Get(), 60.0f, 240.0f);
+  return std::clamp(premium_free_song_grace_seconds.Get(), 60.0f, 240.0f);
 }
 
 bool GameState::IsPremiumFreeExpired() const {
@@ -1590,7 +1590,7 @@ const Style* GameState::GetCurrentStyle(PlayerNumber pn) const {
   if (!GetCurrentGame()->players_have_separate_styles_) {
     return cur_style_;
   } else {
-    if (pn >= NUM_PLAYERS) {
+    if (pn >= kNumPlayers) {
       return separated_styles_[PLAYER_1] == nullptr
                  ? separated_styles_[PLAYER_2]
                  : separated_styles_[PLAYER_1];
@@ -1603,7 +1603,7 @@ void GameState::SetCurrentStyle(const Style* style, PlayerNumber pn) {
   if (!GetCurrentGame()->players_have_separate_styles_) {
     cur_style_.Set(style);
   } else {
-    if (pn == PLAYER_INVALID) {
+    if (pn == kPlayerInvalid) {
       FOREACH_PlayerNumber(rpn) { separated_styles_[rpn] = style; }
     } else {
       separated_styles_[pn] = style;
@@ -1614,13 +1614,13 @@ void GameState::SetCurrentStyle(const Style* style, PlayerNumber pn) {
         GetCurrentStyle(pn)->style_type_ == StyleType_OnePlayerTwoSides) {
       // If the other player is joined, unjoin them because this style only
       // allows one player.
-      PlayerNumber other_pn = OPPOSITE_PLAYER[this->GetMasterPlayerNumber()];
+      PlayerNumber other_pn = kOppositePlayer[this->GetMasterPlayerNumber()];
       if (GetNumSidesJoined() > 1) {
         UnjoinPlayer(other_pn);
       }
       INPUTMAPPER->SetJoinControllers(this->GetMasterPlayerNumber());
     } else {
-      INPUTMAPPER->SetJoinControllers(PLAYER_INVALID);
+      INPUTMAPPER->SetJoinControllers(kPlayerInvalid);
     }
   }
 }
@@ -1655,7 +1655,7 @@ bool GameState::IsPlayerEnabled(PlayerNumber pn) const {
 }
 
 bool GameState::IsPlayerEnabled(const PlayerState* player_state) const {
-  if (player_state->player_number_ != PLAYER_INVALID) {
+  if (player_state->player_number_ != kPlayerInvalid) {
     return IsPlayerEnabled(player_state->player_number_);
   }
   return false;
@@ -1668,7 +1668,7 @@ int GameState::GetNumPlayersEnabled() const {
 }
 
 bool GameState::IsHumanPlayer(PlayerNumber pn) const {
-  if (pn == PLAYER_INVALID) {
+  if (pn == kPlayerInvalid) {
     return false;
   }
 
@@ -1717,7 +1717,7 @@ int GameState::GetNumHumanPlayers() const {
 
 PlayerNumber GameState::GetFirstHumanPlayer() const {
   FOREACH_HumanPlayer(pn) return pn;
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 bool GameState::IsCpuPlayer(PlayerNumber pn) const {
@@ -2086,7 +2086,7 @@ void GameState::GetRankingFeats(
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
 
-            if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+            if (hs.GetName() != kRankingToFillInMarker[pn]) {
               continue;
             }
 
@@ -2116,7 +2116,7 @@ void GameState::GetRankingFeats(
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
 
-            if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+            if (hs.GetName() != kRankingToFillInMarker[pn]) {
               continue;
             }
 
@@ -2159,7 +2159,7 @@ void GameState::GetRankingFeats(
             PROFILEMAN->GetMachineProfile()->GetCategoryHighScoreList(st, rc);
         for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
           HighScore& hs = hsl.high_scores_[j];
-          if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+          if (hs.GetName() != kRankingToFillInMarker[pn]) {
             continue;
           }
 
@@ -2186,7 +2186,7 @@ void GameState::GetRankingFeats(
           HighScoreList& hsl = prof->GetCategoryHighScoreList(st, rc);
           for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
             HighScore& hs = hsl.high_scores_[j];
-            if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+            if (hs.GetName() != kRankingToFillInMarker[pn]) {
               continue;
             }
 
@@ -2219,7 +2219,7 @@ void GameState::GetRankingFeats(
         HighScoreList& hsl = profile->GetCourseHighScoreList(course, trail);
         for (unsigned i = 0; i < hsl.high_scores_.size(); i++) {
           HighScore& hs = hsl.high_scores_[i];
-          if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+          if (hs.GetName() != kRankingToFillInMarker[pn]) {
             continue;
           }
 
@@ -2247,7 +2247,7 @@ void GameState::GetRankingFeats(
         HighScoreList& hsl = prof->GetCourseHighScoreList(course, trail);
         for (unsigned i = 0; i < hsl.high_scores_.size(); i++) {
           HighScore& hs = hsl.high_scores_[i];
-          if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
+          if (hs.GetName() != kRankingToFillInMarker[pn]) {
             continue;
           }
 
@@ -2443,7 +2443,7 @@ bool GameState::DifficultiesLocked() const {
   if (IsCourseMode()) {
     return PREFSMAN->lock_course_difficulties_;
   }
-  if (GetCurrentStyle(PLAYER_INVALID)->lock_difficulties_) {
+  if (GetCurrentStyle(kPlayerInvalid)->lock_difficulties_) {
     return true;
   }
   return false;
@@ -2584,17 +2584,17 @@ bool GameState::IsEventMode() const {
 
 CoinMode GameState::GetCoinMode() const {
   // XXX: Event mode shouldn't be valid if CoinMode_Pay
-  if (IsEventMode() && GamePreferences::m_CoinMode == CoinMode_Pay) {
+  if (IsEventMode() && GamePreferences::coin_mode == CoinMode_Pay) {
     return CoinMode_Free;
   } else {
-    return GamePreferences::m_CoinMode;
+    return GamePreferences::coin_mode;
   }
 }
 
 ThemeMetric<bool> DISABLE_PREMIUM_IN_EVENT_MODE(
     "GameState", "DisablePremiumInEventMode");
 Premium GameState::GetPremium() const {
-  return DISABLE_PREMIUM_IN_EVENT_MODE ? Premium_Off : g_Premium;
+  return DISABLE_PREMIUM_IN_EVENT_MODE ? Premium_Off : premium;
 }
 
 float GameState::GetGoalPercentComplete(PlayerNumber pn) {
@@ -2644,39 +2644,39 @@ Profile* GameState::GetEditLocalProfile() {
 }
 
 PlayerNumber GetNextHumanPlayer(PlayerNumber pn) {
-  for (enum_add(pn, 1); pn < NUM_PLAYERS; enum_add(pn, 1)) {
+  for (enum_add(pn, 1); pn < kNumPlayers; enum_add(pn, 1)) {
     if (GAMESTATE->IsHumanPlayer(pn)) {
       return pn;
     }
   }
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 PlayerNumber GetNextEnabledPlayer(PlayerNumber pn) {
-  for (enum_add(pn, 1); pn < NUM_PLAYERS; enum_add(pn, 1)) {
+  for (enum_add(pn, 1); pn < kNumPlayers; enum_add(pn, 1)) {
     if (GAMESTATE->IsPlayerEnabled(pn)) {
       return pn;
     }
   }
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 PlayerNumber GetNextCpuPlayer(PlayerNumber pn) {
-  for (enum_add(pn, 1); pn < NUM_PLAYERS; enum_add(pn, 1)) {
+  for (enum_add(pn, 1); pn < kNumPlayers; enum_add(pn, 1)) {
     if (GAMESTATE->IsCpuPlayer(pn)) {
       return pn;
     }
   }
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 PlayerNumber GetNextPotentialCpuPlayer(PlayerNumber pn) {
-  for (enum_add(pn, 1); pn < NUM_PLAYERS; enum_add(pn, 1)) {
+  for (enum_add(pn, 1); pn < kNumPlayers; enum_add(pn, 1)) {
     if (!GAMESTATE->IsHumanPlayer(pn)) {
       return pn;
     }
   }
-  return PLAYER_INVALID;
+  return kPlayerInvalid;
 }
 
 // lua start
@@ -2701,7 +2701,7 @@ class LunaGameState : public Luna<GameState> {
     return 1;
   }
   static int ApplyGameCommand(T* p, lua_State* L) {
-    PlayerNumber pn = PLAYER_INVALID;
+    PlayerNumber pn = kPlayerInvalid;
     if (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) {
       // Legacy behavior: if an old-style numerical argument
       // is given, decrement it before trying to parse
@@ -3255,7 +3255,7 @@ class LunaGameState : public Luna<GameState> {
   static int SetCurrentPlayMode(T* p, lua_State* L) {
     PlayMode pm = Enum::Check<PlayMode>(L, 1);
     if (AreStyleAndPlayModeCompatible(
-            p, L, p->GetCurrentStyle(PLAYER_INVALID), pm)) {
+            p, L, p->GetCurrentStyle(kPlayerInvalid), pm)) {
       p->play_mode_.Set(pm);
     }
     COMMON_RETURN_SELF;
@@ -3280,7 +3280,7 @@ class LunaGameState : public Luna<GameState> {
       p->cur_steps_[PLAYER_1].Set(steps);
       p->SetCurrentStyle(
           GAMEMAN->GetEditorStyleForStepsType(steps->steps_type_),
-          PLAYER_INVALID);
+          kPlayerInvalid);
       p->cur_course_.Set(nullptr);
       return 0;
     }
@@ -3306,7 +3306,7 @@ class LunaGameState : public Luna<GameState> {
     p->cur_steps_[PLAYER_1].Set(steps);
     p->SetCurrentStyle(
         GAMEMAN->GetEditorStyleForStepsType(steps->steps_type_),
-        PLAYER_INVALID);
+        kPlayerInvalid);
     p->cur_course_.Set(nullptr);
     return 0;
   }

@@ -19,7 +19,7 @@
 #include "global.h"
 
 PlayerState::PlayerState() {
-  player_number_ = PLAYER_INVALID;
+  player_number_ = kPlayerInvalid;
   Reset();
 }
 

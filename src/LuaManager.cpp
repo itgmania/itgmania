@@ -35,7 +35,7 @@ struct Impl {
 
   RageMutex lock_;
 };
-static Impl* pImpl = nullptr;
+static Impl* impl = nullptr;
 
 #if defined(_MSC_VER)
 /* "interaction between '_setjmp' and C++ object destruction is non-portable"
@@ -65,7 +65,7 @@ bool FromStack<unsigned int>(Lua* L, unsigned int& object, int offset);
 template <>
 bool FromStack<std::string>(Lua* L, std::string& object, int offset);
 
-bool InReportScriptError = false;
+bool in_report_script_error = false;
 }  // namespace LuaHelpers
 
 void LuaManager::SetGlobal(const std::string& name, int val) {
@@ -265,18 +265,18 @@ static int LuaPanic(lua_State* L) {
 }
 
 // Actor registration
-static std::vector<RegisterWithLuaFn>* g_vRegisterActorTypes = nullptr;
+static std::vector<RegisterWithLuaFn>* register_actor_types = nullptr;
 
 void LuaManager::Register(RegisterWithLuaFn pfn) {
-  if (g_vRegisterActorTypes == nullptr) {
-    g_vRegisterActorTypes = new std::vector<RegisterWithLuaFn>;
+  if (register_actor_types == nullptr) {
+    register_actor_types = new std::vector<RegisterWithLuaFn>;
   }
 
-  g_vRegisterActorTypes->push_back(pfn);
+  register_actor_types->push_back(pfn);
 }
 
 LuaManager::LuaManager() {
-  pImpl = new Impl;
+  impl = new Impl;
   LUA = this;  // so that LUA is available when we call the Register functions
 
   lua_State* L = lua_open();
@@ -305,31 +305,31 @@ LuaManager::LuaManager() {
 
 LuaManager::~LuaManager() {
   lua_close(lua_main_);
-  RageUtil::SafeDelete(pImpl);
+  RageUtil::SafeDelete(impl);
 }
 
 Lua* LuaManager::Get() {
   bool locked = false;
-  if (!pImpl->lock_.IsLockedByThisThread()) {
-    pImpl->lock_.Lock();
+  if (!impl->lock_.IsLockedByThisThread()) {
+    impl->lock_.Lock();
     locked = true;
   }
 
   ASSERT(lua_gettop(lua_main_) == 1);
 
   lua_State* ret;
-  if (pImpl->free_state_list_.empty()) {
+  if (impl->free_state_list_.empty()) {
     ret = lua_newthread(lua_main_);
 
     // Store the new thread in THREAD_POOL, so it isn't collected.
     int last = lua_objlen(lua_main_, THREAD_POOL);
     lua_rawseti(lua_main_, THREAD_POOL, last + 1);
   } else {
-    ret = pImpl->free_state_list_.back();
-    pImpl->free_state_list_.pop_back();
+    ret = impl->free_state_list_.back();
+    impl->free_state_list_.pop_back();
   }
 
-  pImpl->active_states_[ret] = locked;
+  impl->active_states_[ret] = locked;
   if (LUADEBUG) {
     LUADEBUG->ActivateState(ret);
   }
@@ -340,15 +340,15 @@ void LuaManager::Release(Lua*& p) {
   if (LUADEBUG) {
     LUADEBUG->DeactivateState(p);
   }
-  pImpl->free_state_list_.push_back(p);
+  impl->free_state_list_.push_back(p);
 
   ASSERT(lua_gettop(p) == 0);
-  ASSERT(pImpl->active_states_.find(p) != pImpl->active_states_.end());
-  bool do_unlock = pImpl->active_states_[p];
-  pImpl->active_states_.erase(p);
+  ASSERT(impl->active_states_.find(p) != impl->active_states_.end());
+  bool do_unlock = impl->active_states_[p];
+  impl->active_states_.erase(p);
 
   if (do_unlock) {
-    pImpl->lock_.Unlock();
+    impl->lock_.Unlock();
   }
   p = nullptr;
 }
@@ -381,19 +381,19 @@ void LuaManager::Release(Lua*& p) {
  * LUA->Release(L1);
  */
 void LuaManager::YieldLua() {
-  ASSERT(pImpl->lock_.IsLockedByThisThread());
+  ASSERT(impl->lock_.IsLockedByThisThread());
 
-  pImpl->lock_.Unlock();
+  impl->lock_.Unlock();
 }
 
-void LuaManager::UnyieldLua() { pImpl->lock_.Lock(); }
+void LuaManager::UnyieldLua() { impl->lock_.Lock(); }
 
 void LuaManager::RegisterTypes() {
   Lua* L = Get();
 
-  if (g_vRegisterActorTypes) {
-    for (unsigned i = 0; i < g_vRegisterActorTypes->size(); i++) {
-      RegisterWithLuaFn fn = (*g_vRegisterActorTypes)[i];
+  if (register_actor_types) {
+    for (unsigned i = 0; i < register_actor_types->size(); i++) {
+      RegisterWithLuaFn fn = (*register_actor_types)[i];
       fn(L);
     }
   }
@@ -811,10 +811,10 @@ Dialog::Result LuaHelpers::ReportScriptError(
     const std::string& error, std::string error_type, bool use_abort) {
   // Protect from a recursion loop resulting from a mistake in the error
   // reporting lua.
-  if (!InReportScriptError) {
-    InReportScriptError = true;
+  if (!in_report_script_error) {
+    in_report_script_error = true;
     ScriptErrorMessage(error);
-    InReportScriptError = false;
+    in_report_script_error = false;
   }
   LOG->Warn("%s", error.c_str());
   if (use_abort) {
@@ -1033,13 +1033,13 @@ void LuaHelpers::PushValueFunc(lua_State* L, int args) {
 
 #include "ProductInfo.h"
 LuaFunction(ProductFamily, (std::string)PRODUCT_FAMILY);
-LuaFunction(ProductVersion, (std::string)product_version);
+LuaFunction(ProductVersion, (std::string)kProductVersion);
 LuaFunction(ProductID, (std::string)PRODUCT_ID);
 
-extern const char* const version_date;
-extern const char* const version_time;
-LuaFunction(VersionDate, (std::string)version_date);
-LuaFunction(VersionTime, (std::string)version_time);
+extern const char* const kVersionDate;
+extern const char* const kVersionTime;
+LuaFunction(VersionDate, (std::string)kVersionDate);
+LuaFunction(VersionTime, (std::string)kVersionTime);
 
 static float scale(float x, float l1, float h1, float l2, float h2) {
   return SCALE(x, l1, h1, l2, h2);

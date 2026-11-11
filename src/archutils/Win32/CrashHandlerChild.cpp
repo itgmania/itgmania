@@ -283,14 +283,14 @@ static bool ReadStringFromParent(int fd, std::string& out_string) {
 // General symbol lookup; uses VDDebugInfo for detailed information within the
 // process, and DbgHelp for simpler information about loaded DLLs.
 namespace SymbolLookup {
-HANDLE g_hParent;
+HANDLE g_parent;
 
 bool InitDbghelp() {
   static bool initted = false;
   if (!initted) {
     SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
 
-    if (!SymInitialize(g_hParent, nullptr, TRUE)) {
+    if (!SymInitialize(g_parent, nullptr, TRUE)) {
       return false;
     }
 
@@ -309,7 +309,7 @@ SYMBOL_INFO* GetSym(uintptr_t ptr, DWORD64& disp) {
   symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
   symbol->MaxNameLen = sizeof(buffer) - sizeof(SYMBOL_INFO) + 1;
 
-  if (!SymFromAddr(g_hParent, ptr, &disp, symbol)) {
+  if (!SymFromAddr(g_parent, ptr, &disp, symbol)) {
     return nullptr;
   }
 
@@ -368,7 +368,7 @@ void SymLookup(VDDebugInfo::Context* pctx, const void* ptr, char* buf) {
   }
 
   MEMORY_BASIC_INFORMATION meminfo;
-  VirtualQueryEx(g_hParent, ptr, &meminfo, sizeof meminfo);
+  VirtualQueryEx(g_parent, ptr, &meminfo, sizeof meminfo);
 
   char tmp[512];
   intptr_t address = VDDebugInfo::VDDebugInfoLookupRVA(
@@ -420,13 +420,13 @@ std::string SpliceProgramPath(std::string fn) {
 }
 
 namespace {
-VDDebugInfo::Context g_debugInfo;
+VDDebugInfo::Context debug_info;
 
 std::string ReportCallStack(const void* const* backtrace) {
-  if (!g_debugInfo.Loaded()) {
+  if (!debug_info.Loaded()) {
     return ssprintf(
-        "debug resource file '%s': %s.\n", g_debugInfo.filename_,
-        g_debugInfo.error_.c_str());
+        "debug resource file '%s': %s.\n", debug_info.filename_,
+        debug_info.error_.c_str());
   }
   /*
   if( g_debugInfo.nBuildNumber != int(version_num) )
@@ -440,7 +440,7 @@ std::string ReportCallStack(const void* const* backtrace) {
   std::string ret;
   for (int i = 0; backtrace[i]; ++i) {
     char buf[10240];
-    SymbolLookup::SymLookup(&g_debugInfo, backtrace[i], buf);
+    SymbolLookup::SymLookup(&debug_info, backtrace[i], buf);
     ret += ssprintf("%s\n", buf);
   }
 
@@ -461,8 +461,8 @@ static void MakeCrashReport(const CompleteCrashData& data, std::string& out) {
   out += ssprintf(
       "%s crash report (build %s, %s @ %s)\n"
       "--------------------------------------\n\n",
-      (std::string(PRODUCT_FAMILY) + product_version).c_str(),
-      ::sm_version_git_hash, version_date, version_time);
+      (std::string(PRODUCT_FAMILY) + kProductVersion).c_str(),
+      ::kSmVersionGitHash, kVersionDate, kVersionTime);
 
   out += ssprintf("Crash reason: %s\n", data.crash_info_.crash_reason_);
   out += ssprintf("\n");
@@ -523,7 +523,7 @@ bool ReadCrashDataFromParent(int fd, CompleteCrashData& data) {
 
   // 0. Read the parent handle.
   if (!ReadFromParent(
-          fd, &SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent))) {
+          fd, &SymbolLookup::g_parent, sizeof(SymbolLookup::g_parent))) {
     return false;
   }
 
@@ -689,9 +689,9 @@ void ChildProcess() {
   ReadCrashDataFromParent(_fileno(stdin), data);
 
   std::string crash_report;
-  VDDebugInfo::VDDebugInfoInitFromFile(&g_debugInfo);
+  VDDebugInfo::VDDebugInfoInitFromFile(&debug_info);
   MakeCrashReport(data, crash_report);
-  VDDebugInfo::VDDebugInfoDeinit(&g_debugInfo);
+  VDDebugInfo::VDDebugInfoDeinit(&debug_info);
 
   DoSave(crash_report);
 
@@ -700,8 +700,8 @@ void ChildProcess() {
   fclose(stdout);
 
   // Now that we've done that, the process is gone. Don't use g_hParent.
-  CloseHandle(SymbolLookup::g_hParent);
-  SymbolLookup::g_hParent = nullptr;
+  CloseHandle(SymbolLookup::g_parent);
+  SymbolLookup::g_parent = nullptr;
 
   CrashDialog cd;
   cd.Run(IDD_DISASM_CRASH);

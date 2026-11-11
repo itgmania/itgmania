@@ -31,7 +31,7 @@ ScreenTitleMenu::ScreenTitleMenu() {
    */
   GAMESTATE->Reset();
 
-  this->SubscribeToMessage(GamePreferences::m_CoinMode.GetName() + "Changed");
+  this->SubscribeToMessage(GamePreferences::coin_mode.GetName() + "Changed");
 }
 
 void ScreenTitleMenu::Init() {
@@ -87,7 +87,7 @@ bool ScreenTitleMenu::Input(const InputEventPlus& input) {
 }
 
 void ScreenTitleMenu::HandleMessage(const Message& msg) {
-  if (msg == GamePreferences::m_CoinMode.GetName() + "Changed") {
+  if (msg == GamePreferences::coin_mode.GetName() + "Changed") {
     /* If the CoinMode was changed, we need to reload this screen
      * so that the right m_aGameCommands will show */
     SCREENMAN->SetNewScreen(COIN_MODE_CHANGE_SCREEN);

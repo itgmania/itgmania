@@ -62,7 +62,7 @@ std::string RageSoundDriver_PulseAudio::Init() {
 #ifdef PA_PROP_APPLICATION_NAME /* proplist available only since 0.9.11 */
   pa_proplist* plist = pa_proplist_new();
   pa_proplist_sets(plist, PA_PROP_APPLICATION_NAME, PRODUCT_FAMILY);
-  pa_proplist_sets(plist, PA_PROP_APPLICATION_VERSION, product_version);
+  pa_proplist_sets(plist, PA_PROP_APPLICATION_VERSION, kProductVersion);
   pa_proplist_sets(plist, PA_PROP_MEDIA_ROLE, "game");
 
   LOG->Trace("Pulse: pa_context_new_with_proplist()...");

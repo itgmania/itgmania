@@ -35,7 +35,7 @@ InputMode StringToInputMode(const std::string& str);
 /** @brief A custom foreach loop for the player options for each player. */
 #define FOREACH_OptionsPlayer(pn)                                \
   for (PlayerNumber pn = GetNextHumanPlayer((PlayerNumber) - 1); \
-       pn != PLAYER_INVALID &&                                   \
+       pn != kPlayerInvalid &&                                   \
        (input_mode_ == INPUTMODE_INDIVIDUAL || pn == 0);         \
        pn = GetNextHumanPlayer(pn))
 
@@ -134,7 +134,7 @@ class ScreenOptions : public ScreenWithMenuElements {
   /** @brief Map menu lines to m_OptionRow entries. */
   std::vector<OptionRow*> rows_;
   /** @brief The current row each player is on. */
-  int current_row_[NUM_PLAYERS];
+  int current_row_[kNumPlayers];
 
   OptionRowType option_row_type_normal_;
   OptionRowType option_row_type_exit_;
@@ -142,24 +142,24 @@ class ScreenOptions : public ScreenWithMenuElements {
   Navigation options_navigation_;
   InputMode input_mode_;
 
-  int focus_x_[NUM_PLAYERS];
-  bool was_on_exit_[NUM_PLAYERS];
+  int focus_x_[kNumPlayers];
+  bool was_on_exit_[kNumPlayers];
 
   /** @brief True if at least one player pressed Start after selecting the song.
    *
    * TRICKY: People hold Start to get to PlayerOptions, then the repeat events
    * cause them to zip to the bottom. So, ignore Start repeat events until
    * we've seen one first pressed event. */
-  bool got_at_least_one_start_pressed_[NUM_PLAYERS];
+  bool got_at_least_one_start_pressed_[kNumPlayers];
 
   // actors
   ActorFrame frame_container_;
   AutoActor spr_page_;
 
-  OptionsCursor cursor_[NUM_PLAYERS];
-  AutoActor spr_line_highlight_[NUM_PLAYERS];
+  OptionsCursor cursor_[kNumPlayers];
+  AutoActor spr_line_highlight_[kNumPlayers];
 
-  BitmapText text_explanation_[NUM_PLAYERS];
+  BitmapText text_explanation_[kNumPlayers];
   BitmapText text_explanation_together_;
   DualScrollBar scroll_bar_;
   AutoActor spr_more_;

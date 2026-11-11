@@ -8,7 +8,7 @@
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
-extern LPDIRECTINPUT8 g_dinput;
+extern LPDIRECTINPUT8 dinput;
 
 #define INPUT_QSIZE 32
 

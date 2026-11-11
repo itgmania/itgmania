@@ -41,9 +41,9 @@ bool Style::GetUsesCenteredArrows() const {
 
 void Style::GetTransformedNoteDataForStyle(
     PlayerNumber pn, const NoteData& original, NoteData& note_data_out) const {
-  ASSERT(pn >= 0 && pn <= NUM_PLAYERS);
+  ASSERT(pn >= 0 && pn <= kNumPlayers);
 
-  int new_to_original_track[MAX_COLS_PER_PLAYER];
+  int new_to_original_track[kMaxColsPerPlayer];
   for (int col = 0; col < cols_per_player_; col++) {
     ColumnInfo col_info = column_info_[pn][col];
     new_to_original_track[col] = col_info.track_;
@@ -56,7 +56,7 @@ void Style::GetTransformedNoteDataForStyle(
 void Style::StyleInputToGameInput(
     int col, PlayerNumber pn, std::vector<GameInput>& ret) const {
   ASSERT_M(
-      pn < NUM_PLAYERS && col < MAX_COLS_PER_PLAYER,
+      pn < kNumPlayers && col < kMaxColsPerPlayer,
       ssprintf("P%i C%i", pn, col));
   bool using_one_side = style_type_ != StyleType_OnePlayerTwoSides &&
                         style_type_ != StyleType_TwoPlayersSharedSides;
@@ -93,16 +93,16 @@ void Style::StyleInputToGameInput(
 
 int Style::GameInputToColumn(const GameInput& game_i) const {
   if (game_i.button_ < GAME_BUTTON_NEXT) {
-    return Column_Invalid;
+    return kColumnInvalid;
   }
   int column_index = game_i.button_ - GAME_BUTTON_NEXT;
   if (input_column_[game_i.controller_][column_index] == NO_MAPPING) {
-    return Column_Invalid;
+    return kColumnInvalid;
   }
 
   for (int i = 0; i <= column_index; ++i) {
     if (input_column_[game_i.controller_][i] == END_MAPPING) {
-      return Column_Invalid;
+      return kColumnInvalid;
     }
   }
 
@@ -111,7 +111,7 @@ int Style::GameInputToColumn(const GameInput& game_i) const {
 
 void Style::GetMinAndMaxColX(
     PlayerNumber pn, float& mix_x_out, float& max_x_out) const {
-  ASSERT(pn != PLAYER_INVALID);
+  ASSERT(pn != kPlayerInvalid);
 
   mix_x_out = FLT_MAX;
   max_x_out = FLT_MIN;
@@ -192,10 +192,10 @@ class LunaStyle : public Luna<Style> {
 
   static int GetColumnDrawOrder(T* p, lua_State* L) {
     int col = IArg(1) - 1;
-    if (col < 0 || col >= p->cols_per_player_ * NUM_PLAYERS) {
+    if (col < 0 || col >= p->cols_per_player_ * kNumPlayers) {
       LuaHelpers::ReportScriptErrorFmt(
           "Style:GetColumnDrawOrder(): column %i out of range( 1 to %i )",
-          col + 1, p->cols_per_player_ * NUM_PLAYERS);
+          col + 1, p->cols_per_player_ * kNumPlayers);
       return 0;
     }
     lua_pushnumber(L, p->column_draw_order_[col] + 1);

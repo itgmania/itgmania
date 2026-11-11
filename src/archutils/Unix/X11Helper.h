@@ -18,14 +18,14 @@ void CloseXConnection();
 
 // The current Display (connection). Initialized by the first call to
 // OpenXConnection().
-extern Display* Dpy;
+extern Display* g_dpy;
 
 // The Window used by LowLevelWindow_X11 as the main window.
-extern Window Win;
+extern Window g_win;
 
 // Set to true when fatal error has occured and no further X11 calls should be
 // made.
-extern bool FatalError;
+extern bool fatal_error;
 
 // (Re)create the Window win.
 bool MakeWindow(

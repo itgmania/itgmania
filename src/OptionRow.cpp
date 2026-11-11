@@ -28,17 +28,17 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-const std::string NEXT_ROW_NAME = "NextRow";
-const std::string EXIT_NAME = "Exit";
+const std::string kNextRowName = "NextRow";
+const std::string kExitName = "Exit";
 
 std::string OptionRow::GetThemedItemText(int choice) const {
   std::string s = hand_->GetThemedItemText(choice);
 
   // HACK: Always theme the NEXT_ROW and EXIT items.
   if (first_item_goes_down_ && choice == 0) {
-    s = CommonMetrics::LocalizeOptionItem(NEXT_ROW_NAME, false);
+    s = CommonMetrics::LocalizeOptionItem(kNextRowName, false);
   } else if (row_type_ == OptionRow::RowType_Exit) {
-    s = CommonMetrics::LocalizeOptionItem(EXIT_NAME, false);
+    s = CommonMetrics::LocalizeOptionItem(kExitName, false);
   }
 
   return s;
@@ -92,9 +92,9 @@ void OptionRowType::Load(const std::string& metrics_group, Actor* parent) {
   ITEMS_END_X.Load(metrics_group, "ItemsEndX");
   ITEMS_GAP_X.Load(metrics_group, "ItemsGapX");
   ITEMS_MIN_BASE_ZOOM.Load(metrics_group, "ItemsMinBaseZoom");
-  ITEMS_LONG_ROW_X.Load(metrics_group, ITEMS_LONG_ROW_X_NAME, NUM_PLAYERS);
+  ITEMS_LONG_ROW_X.Load(metrics_group, ITEMS_LONG_ROW_X_NAME, kNumPlayers);
   ITEMS_LONG_ROW_SHARED_X.Load(metrics_group, "ItemsLongRowSharedX");
-  MOD_ICON_X.Load(metrics_group, MOD_ICON_X_NAME, NUM_PLAYERS);
+  MOD_ICON_X.Load(metrics_group, MOD_ICON_X_NAME, kNumPlayers);
   COLOR_SELECTED.Load(metrics_group, "ColorSelected");
   COLOR_NOT_SELECTED.Load(metrics_group, "ColorNotSelected");
   COLOR_DISABLED.Load(metrics_group, "ColorDisabled");
@@ -149,8 +149,8 @@ void OptionRow::LoadExit() {
   row_type_ = OptionRow::RowType_Exit;
   OptionRowHandler* hand = OptionRowHandlerUtil::MakeNull();
   hand->def_.select_type_ = SELECT_NONE;
-  hand->def_.name_ = EXIT_NAME;
-  hand->def_.choices_.push_back(EXIT_NAME);
+  hand->def_.name_ = kExitName;
+  hand->def_.choices_.push_back(kExitName);
   hand->def_.layout_type_ = LAYOUT_SHOW_ONE_IN_ROW;
   hand->def_.one_choice_for_all_players_ = true;
   hand_ = hand;
@@ -163,7 +163,7 @@ void OptionRow::ChoicesChanged(RowType type, bool reset_focus) {
       !hand_->def_.choices_.empty(), hand_->def_.name_ + " has no choices");
 
   // Remove the NextRow marker before reloading choices
-  if (hand_->def_.choices_[0] == NEXT_ROW_NAME) {
+  if (hand_->def_.choices_[0] == kNextRowName) {
     hand_->def_.choices_.erase(hand_->def_.choices_.begin());
     FOREACH_PlayerNumber(p) selected_[p].erase(selected_[p].begin());
   }
@@ -181,7 +181,7 @@ void OptionRow::ChoicesChanged(RowType type, bool reset_focus) {
 
   // TRICKY: Insert a down arrow as the first choice in the row.
   if (first_item_goes_down_) {
-    hand_->def_.choices_.insert(hand_->def_.choices_.begin(), NEXT_ROW_NAME);
+    hand_->def_.choices_.insert(hand_->def_.choices_.begin(), kNextRowName);
     FOREACH_PlayerNumber(p) selected_[p].insert(selected_[p].begin(), false);
   }
 
@@ -434,7 +434,7 @@ void OptionRow::AfterImportOptions(PlayerNumber pn) {
   // we need to copy p2 to p1, not p1 to p2.
   if (hand_->def_.one_choice_for_all_players_) {
     PlayerNumber copy_from = GAMESTATE->GetMasterPlayerNumber();
-    if (GAMESTATE->GetMasterPlayerNumber() == PLAYER_INVALID) {
+    if (GAMESTATE->GetMasterPlayerNumber() == kPlayerInvalid) {
       copy_from = PLAYER_1;
     }
     FOREACH_PlayerNumber(p) selected_[p] = selected_[copy_from];
@@ -951,7 +951,7 @@ void OptionRow::ImportOptions(const std::vector<PlayerNumber>& vpns) {
 }
 
 int OptionRow::ExportOptions(
-    const std::vector<PlayerNumber>& vpns, bool row_has_focus[NUM_PLAYERS]) {
+    const std::vector<PlayerNumber>& vpns, bool row_has_focus[kNumPlayers]) {
   ASSERT(hand_->def_.choices_.size() > 0);
 
   int change_mask = 0;

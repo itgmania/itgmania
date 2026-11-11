@@ -192,7 +192,7 @@ struct TapNote {
         sub_type_(TapNoteSubType_Invalid),
         source_(TapNoteSource_Original),
         result_(),
-        pn_(PLAYER_INVALID),
+        pn_(kPlayerInvalid),
         attack_modifiers_(""),
         attack_duration_seconds_(0),
         keysound_index_(-1),
@@ -206,7 +206,7 @@ struct TapNote {
         sub_type_(sub_type),
         source_(source),
         result_(),
-        pn_(PLAYER_INVALID),
+        pn_(kPlayerInvalid),
         attack_modifiers_(attack_modifiers),
         attack_duration_seconds_(attack_duration_seconds),
         keysound_index_(keysound_index),
@@ -259,26 +259,26 @@ struct TapNote {
   bool operator!=(const TapNote& other) const { return !operator==(other); }
 };
 
-extern TapNote TAP_EMPTY;                   // '0'
-extern TapNote TAP_ORIGINAL_TAP;            // '1'
-extern TapNote TAP_ORIGINAL_HOLD_HEAD;      // '2'
-extern TapNote TAP_ORIGINAL_ROLL_HEAD;      // '4'
-extern TapNote TAP_ORIGINAL_MINE;           // 'M'
-extern TapNote TAP_ORIGINAL_LIFT;           // 'L'
-extern TapNote TAP_ORIGINAL_ATTACK;         // 'A'
-extern TapNote TAP_ORIGINAL_AUTO_KEYSOUND;  // 'K'
-extern TapNote TAP_ORIGINAL_FAKE;           // 'F'
+extern TapNote tap_empty;                   // '0'
+extern TapNote tap_original_tap;            // '1'
+extern TapNote tap_original_hold_head;      // '2'
+extern TapNote tap_original_roll_head;      // '4'
+extern TapNote tap_original_mine;           // 'M'
+extern TapNote tap_original_lift;           // 'L'
+extern TapNote tap_original_attack;         // 'A'
+extern TapNote tap_original_auto_keysound;  // 'K'
+extern TapNote tap_original_fake;           // 'F'
 // extern TapNote TAP_ORIGINAL_MINE_HEAD;	// 'N' (tentative, we'll see
 // when iDance gets ripped.)
-extern TapNote TAP_ADDITION_TAP;
-extern TapNote TAP_ADDITION_MINE;
+extern TapNote tap_addition_tap;
+extern TapNote tap_addition_mine;
 
 /**
  * @brief The number of tracks allowed.
  *
  * TODO: Don't have a hard-coded track limit.
  */
-const int MAX_NOTE_TRACKS = 16;
+const int kMaxNoteTracks = 16;
 
 /**
  * @brief The number of rows per beat.
@@ -289,10 +289,10 @@ const int MAX_NOTE_TRACKS = 16;
  *
  * XXX: Some other forks try to keep this flexible by putting this in the
  * simfile. Is this a recommended course of action? -Wolfman2000 */
-const int ROWS_PER_BEAT = 48;
+const int kRowsPerBeat = 48;
 
 /** @brief The max number of rows allowed for a Steps pattern. */
-const int MAX_NOTE_ROW = (1 << 30);
+const int kMaxNoteRow = (1 << 30);
 
 /** @brief The list of quantized note types allowed at present. */
 enum NoteType {
@@ -332,20 +332,20 @@ inline int   BeatToNoteRow( float fBeatNum )
  * @param fBeatNum the beat to convert.
  * @return the note row. */
 inline int BeatToNoteRow(float beat_num) {
-  return std::lrint(beat_num * ROWS_PER_BEAT);
+  return std::lrint(beat_num * kRowsPerBeat);
 }  // round
 /**
  * @brief Convert the beat into a note row without rounding.
  * @param fBeatNum the beat to convert.
  * @return the note row. */
 inline int BeatToNoteRowNotRounded(float beat_num) {
-  return (int)(beat_num * ROWS_PER_BEAT);
+  return (int)(beat_num * kRowsPerBeat);
 }
 /**
  * @brief Convert the note row to a beat.
  * @param iRow the row to convert.
  * @return the beat. */
-inline float NoteRowToBeat(int row) { return row / (float)ROWS_PER_BEAT; }
+inline float NoteRowToBeat(int row) { return row / (float)kRowsPerBeat; }
 
 /**
  * @brief Scales the position.

@@ -14,8 +14,8 @@
  * properties that do not seek the sound, allowing these properties to be
  * changed with low latency.
  */
-RageMutex g_Mutex("PostBuffering");
-static float g_fMasterVolume = 1.0f;
+RageMutex mutex("PostBuffering");
+static float master_volume = 1.0f;
 
 RageSoundReader_PostBuffering::RageSoundReader_PostBuffering(
     RageSoundReader* source)
@@ -24,8 +24,8 @@ RageSoundReader_PostBuffering::RageSoundReader_PostBuffering(
 }
 
 void RageSoundReader_PostBuffering::SetMasterVolume(float volume) {
-  LockMut(g_Mutex);
-  g_fMasterVolume = volume;
+  LockMut(mutex);
+  master_volume = volume;
 }
 
 int RageSoundReader_PostBuffering::Read(float* buf, int frames) {
@@ -35,13 +35,13 @@ int RageSoundReader_PostBuffering::Read(float* buf, int frames) {
   }
 
   // Combine the sound's volume with master volume.
-  g_Mutex.Lock();
+  mutex.Lock();
 
   // Square the master so lower volumes are more sensitive.
   // This lines up better with perceived volume.
-  float volume = volume_ * g_fMasterVolume * g_fMasterVolume;
+  float volume = volume_ * master_volume * master_volume;
   volume = std::clamp(volume, 0.0f, 1.0f);
-  g_Mutex.Unlock();
+  mutex.Unlock();
 
   if (volume != 1.0f) {
     RageSoundUtil::Attenuate(buf, frames * this->GetNumChannels(), volume);

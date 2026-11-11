@@ -46,7 +46,7 @@ static ThemeMetric<TapNoteScore> g_MinScoreToMaintainCombo(
 static ThemeMetric<bool> g_MineHitIncrementsMissCombo(
     "Gameplay", "MineHitIncrementsMissCombo");
 
-const float LESSON_PASS_THRESHOLD = 0.8f;
+const float kLessonPassThreshold = 0.8f;
 
 Grade GetGradeFromPercent(float percent);
 
@@ -342,7 +342,7 @@ int PlayerStageStats::GetLessonScoreNeeded() const {
         return total +
                steps->GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds];
       });
-  return std::lrint(score * LESSON_PASS_THRESHOLD);
+  return std::lrint(score * kLessonPassThreshold);
 }
 
 void PlayerStageStats::ResetScoreForLesson() {

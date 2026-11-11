@@ -411,7 +411,7 @@ void Steps::CalculateRadarValues(
   } else {
     NoteDataUtil::CalculateRadarValues(
         temp_note_data, music_length_seconds, timing, radar_values_[0]);
-    std::fill_n(radar_values_ + 1, NUM_PLAYERS - 1, radar_values_[0]);
+    std::fill_n(radar_values_ + 1, kNumPlayers - 1, radar_values_[0]);
   }
 }
 
@@ -453,7 +453,7 @@ void Steps::CalculateTechCounts(const NoteData& temp_note_data) {
     std::vector<NoteAnnotation> temp_note_annotations;
     TechCounts::CalculateTechCountsFromRows(
         gen.rows_, layout, tech_counts_[0], temp_note_annotations);
-    std::fill_n(tech_counts_ + 1, NUM_PLAYERS - 1, tech_counts_[0]);
+    std::fill_n(tech_counts_ + 1, kNumPlayers - 1, tech_counts_[0]);
 
     NoteAnnotationCache cached_annotations;
     cached_annotations.decompressed_ = temp_note_annotations;
@@ -474,7 +474,7 @@ void Steps::CalculateMeasureInfo(const NoteData& temp_note_data) {
   std::vector<NoteData> split_note_data;
   if (NoteDataUtil::SplitCompositeOrStackedNoteData(
           temp_note_data, split_note_data, steps_type_)) {
-    measure_info_per_player.resize(NUM_PLAYERS);
+    measure_info_per_player.resize(kNumPlayers);
     FOREACH_PlayerNumber(pn) {
       MeasureInfo::CalculateMeasureInfo(
           split_note_data[pn], timing, measure_info_per_player[pn]);
@@ -615,10 +615,10 @@ void Steps::DeAutogen(bool copy_note_data) {
   difficulty_ = Real()->difficulty_;
   meter_ = Real()->meter_;
   std::copy(
-      Real()->radar_values_, Real()->radar_values_ + NUM_PLAYERS,
+      Real()->radar_values_, Real()->radar_values_ + kNumPlayers,
       radar_values_);
   std::copy(
-      Real()->tech_counts_, Real()->tech_counts_ + NUM_PLAYERS, tech_counts_);
+      Real()->tech_counts_, Real()->tech_counts_ + kNumPlayers, tech_counts_);
 
   nps_per_measure_.assign(
       Real()->nps_per_measure_.begin(), Real()->nps_per_measure_.end());
@@ -693,9 +693,9 @@ void Steps::SetChartStyle(std::string chart_style) {
 }
 
 bool Steps::MakeValidEditDescription(std::string& preferred_description) {
-  if (int(preferred_description.size()) > MAX_STEPS_DESCRIPTION_LENGTH) {
+  if (int(preferred_description.size()) > kMaxStepsDescriptionLength) {
     preferred_description =
-        Left(preferred_description, MAX_STEPS_DESCRIPTION_LENGTH);
+        Left(preferred_description, kMaxStepsDescriptionLength);
     return true;
   }
   return false;
@@ -739,14 +739,14 @@ const std::string& Steps::GetMusicFile() const { return music_file_; }
 
 void Steps::SetMusicFile(const std::string& file) { music_file_ = file; }
 
-void Steps::SetRadarValues(const RadarValues v[NUM_PLAYERS]) {
+void Steps::SetRadarValues(const RadarValues v[kNumPlayers]) {
   DeAutogen();
-  std::copy(v, v + NUM_PLAYERS, radar_values_);
+  std::copy(v, v + kNumPlayers, radar_values_);
 }
 
-void Steps::SetTechCounts(const TechCounts ts[NUM_PLAYERS]) {
+void Steps::SetTechCounts(const TechCounts ts[kNumPlayers]) {
   DeAutogen();
-  std::copy(ts, ts + NUM_PLAYERS, tech_counts_);
+  std::copy(ts, ts + kNumPlayers, tech_counts_);
 }
 
 void Steps::SetNoteAnnotations(
@@ -805,7 +805,7 @@ void Steps::CalculateGrooveStatsHash(const NoteData& note_data) {
   std::string key = BinaryToHex(CryptManager::GetSHA1ForString(sm_note_data));
   key = key.substr(0, 16);
   groove_stats_hash_ = key;
-  groove_stats_hash_version_ = CURRENT_GROOVE_STATS_HASH_VERSION;
+  groove_stats_hash_version_ = kCurrentGrooveStatsHashVersion;
 }
 
 std::string Steps::MinimizedChartString(const NoteData& note_data) {
@@ -1208,8 +1208,8 @@ class LunaSteps : public Luna<Steps> {
       lua_pushstring(L, "footPlacement");
       lua_createtable(L, 0, 0);
       int col_index = 1;
-      for (StepParity::Foot f : StepParity::FEET) {
-        if (rows[i].where_the_feet_are_[f] != StepParity::INVALID_COLUMN) {
+      for (StepParity::Foot f : StepParity::kFeet) {
+        if (rows[i].where_the_feet_are_[f] != StepParity::kInvalidColumn) {
           lua_pushnumber(L, rows[i].where_the_feet_are_[f] + 1);
           Enum::Push(L, f);
           lua_settable(L, -3);

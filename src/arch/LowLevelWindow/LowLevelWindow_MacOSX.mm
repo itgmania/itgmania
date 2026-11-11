@@ -19,13 +19,12 @@ extern "C" {
 #include <IOKit/graphics/IOGraphicsLib.h>
 }
 
-static const unsigned int g_iStyleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                                         NSWindowStyleMaskMiniaturizable |
-                                         NSWindowStyleMaskResizable;
-static bool g_bResized;
-static int g_iWidth;
-static int g_iHeight;
-static RageMutex g_ResizeLock("Window resize lock.");
+static const unsigned int kStyleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                                       NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+static bool resized;
+static int g_width;
+static int g_height;
+static RageMutex resize_lock("Window resize lock.");
 
 // Simple helper class
 class AutoreleasePool {
@@ -72,18 +71,18 @@ class AutoreleasePool {
 
 - (void)windowDidResize:(NSNotification*)notification {
   id window = [notification object];
-  NSSize size = [NSWindow contentRectForFrameRect:[window frame] styleMask:g_iStyleMask].size;
+  NSSize size = [NSWindow contentRectForFrameRect:[window frame] styleMask:kStyleMask].size;
 
-  LockMut(g_ResizeLock);
-  g_bResized = true;
-  g_iWidth = int(size.width);
-  g_iHeight = int(size.height);
+  LockMut(resize_lock);
+  resized = true;
+  g_width = int(size.width);
+  g_height = int(size.height);
 }
 
 - (void)setupWindow {
   NSRect rect = NSMakeRect(0, 0, 0, 0);
   window_ = [[NSWindow alloc] initWithContentRect:rect
-                                        styleMask:g_iStyleMask
+                                        styleMask:kStyleMask
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
 
@@ -460,7 +459,7 @@ int LowLevelWindow_MacOSX::ChangeDisplayMode(const VideoModeParams& p) {
     mode = CGDisplayCurrentMode(kCGDirectMainDisplay);
   }
 
-  if (p.rate_ == REFRESH_DEFAULT) {
+  if (p.rate_ == kRefreshDefault) {
     new_mode =
         CGDisplayBestModeForParameters(kCGDirectMainDisplay, p.bpp_, p.width_, p.height_, nil);
   } else {
@@ -603,16 +602,16 @@ void LowLevelWindow_MacOSX::Update() {
   // Keep the system from sleeping or the screen saver from activating.
   UpdateSystemActivity(IdleActivity);
 
-  LockMutex lock(g_ResizeLock);
-  if (likely(!g_bResized)) {
+  LockMutex lock(resize_lock);
+  if (likely(!resized)) {
     return;
   }
-  g_bResized = false;
-  if (current_params_.width_ == g_iWidth && current_params_.height_ == g_iHeight) {
+  resized = false;
+  if (current_params_.width_ == g_width && current_params_.height_ == g_height) {
     return;
   }
-  current_params_.width_ = g_iWidth;
-  current_params_.height_ = g_iHeight;
+  current_params_.width_ = g_width;
+  current_params_.height_ = g_height;
   lock.Unlock();  // Unlock before calling ResolutionChanged().
   dispatch_sync(dispatch_get_main_queue(), ^{
     [context_ update];

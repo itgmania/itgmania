@@ -7,15 +7,15 @@
 #include "EnumHelper.h"
 
 /** @brief The number of days we check for previously. */
-const int NUM_LAST_DAYS = 7;
+const int kNumLastDays = 7;
 /** @brief The number of weeks we check for previously. */
-const int NUM_LAST_WEEKS = 52;
+const int kNumLastWeeks = 52;
 /**
  * @brief The number of hours in a day. */
-const int HOURS_IN_DAY = 24;
+const int kHoursInDay = 24;
 /**
  * @brief The number of days that are in a week. */
-const int DAYS_IN_WEEK = 7;
+const int kDaysInWeek = 7;
 /** @brief Which month are we focusing on?
  *
  * Is there any reason why the actual months aren't defined

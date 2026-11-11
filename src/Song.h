@@ -25,14 +25,14 @@ void FixupPath(std::string& path, const std::string& song_path);
 std::string GetSongAssetPath(std::string path, const std::string& song_path);
 
 /** @brief The version of the .ssc file format. */
-const static float STEPFILE_VERSION_NUMBER = 0.83f;
+const static float kStepfileVersionNumber = 0.83f;
 
 /** @brief How many edits for this song can each profile have? */
-const int MAX_EDITS_PER_SONG_PER_PROFILE = 15;
+const int kMaxEditsPerSongPerProfile = 15;
 /** @brief How many edits for this song can be available? */
-const int MAX_EDITS_PER_SONG = MAX_EDITS_PER_SONG_PER_PROFILE * NUM_ProfileSlot;
+const int kMaxEditsPerSong = kMaxEditsPerSongPerProfile * NUM_ProfileSlot;
 
-extern const int FILE_CACHE_VERSION;
+extern const int kFileCacheVersion;
 
 /** @brief The different background layers available. */
 enum BackgroundLayer {

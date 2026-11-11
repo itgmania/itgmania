@@ -207,9 +207,9 @@ void BPMDisplay::SetBpmFromSteps(const Steps* steps) {
 
 void BPMDisplay::SetBpmFromCourse(const Course* course) {
   ASSERT(course != nullptr);
-  ASSERT(GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr);
+  ASSERT(GAMESTATE->GetCurrentStyle(kPlayerInvalid) != nullptr);
 
-  StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->steps_type_;
+  StepsType st = GAMESTATE->GetCurrentStyle(kPlayerInvalid)->steps_type_;
   Trail* trail = course->GetTrail(st);
   // GetTranslitFullTitle because "Crashinfo.txt is garbled because of the ANSI
   // output as usual." -f
@@ -254,7 +254,7 @@ void BPMDisplay::SetFromGameState() {
     return;
   }
   if (GAMESTATE->cur_course_.Get()) {
-    if (GAMESTATE->GetCurrentStyle(PLAYER_INVALID) == nullptr)
+    if (GAMESTATE->GetCurrentStyle(kPlayerInvalid) == nullptr)
       ;  // This is true when backing out from ScreenSelectCourse to
          // ScreenTitleMenu.  So, don't call SetBpmFromCourse where an assert
          // will fire.

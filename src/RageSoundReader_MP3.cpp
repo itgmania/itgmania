@@ -25,7 +25,7 @@ enum tagtype {
   TAGTYPE_ID3V2_FOOTER
 };
 
-static const int ID3_TAG_FLAG_FOOTERPRESENT = 0x10;
+static const int kId3TagFlagFooterpresent = 0x10;
 
 static tagtype tagtype(const unsigned char* data, id3_length_t length) {
   if (length >= 3 && data[0] == 'T' && data[1] == 'A' && data[2] == 'G') {
@@ -112,7 +112,7 @@ signed long id3_tag_query(const unsigned char* data, id3_length_t length) {
     case TAGTYPE_ID3V2:
       parse_header(&data, &version, &flags, &size);
 
-      if (flags & ID3_TAG_FLAG_FOOTERPRESENT) {
+      if (flags & kId3TagFlagFooterpresent) {
         size += 10;
       }
 

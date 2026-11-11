@@ -368,7 +368,7 @@ const glyph& Font::GetGlyph(wchar_t c) const {
 
   // If that's missing, use the default glyph.
   if (it == char_to_glyph_.end()) {
-    it = char_to_glyph_.find(FONT_DEFAULT_GLYPH);
+    it = char_to_glyph_.find(kFontDefaultGlyph);
   }
 
   if (it == char_to_glyph_.end()) {
@@ -381,7 +381,7 @@ const glyph& Font::GetGlyph(wchar_t c) const {
 
 bool Font::FontCompleteForString(const std::wstring& str) const {
   std::map<wchar_t, glyph*>::const_iterator map_default =
-      char_to_glyph_.find(FONT_DEFAULT_GLYPH);
+      char_to_glyph_.find(kFontDefaultGlyph);
   if (map_default == char_to_glyph_.end()) {
     RageException::Throw(
         "The default glyph is missing from the font \"%s\".", path_.c_str());
@@ -715,7 +715,7 @@ std::string FontPageSettings::MapRange(
   }
 
   while (*p_mapping != 0) {
-    if (*p_mapping != FontCharmaps::M_SKIP) {
+    if (*p_mapping != FontCharmaps::kMSkip) {
       char_to_glyph_no_[*p_mapping] = glyph_no;
     }
     p_mapping++;
@@ -730,7 +730,7 @@ std::string FontPageSettings::MapRange(
   return std::string();
 }
 
-static std::vector<std::string> LoadStack;
+static std::vector<std::string> load_stack;
 
 /* A font set is a set of files, eg:
  *
@@ -760,16 +760,16 @@ void Font::Load(const std::string& ini_path, std::string chars) {
   // LOG->Trace( "Font: Loading new font '%s'",sIniPath.c_str());
 
   // Check for recursion (recursive imports).
-  for (unsigned i = 0; i < LoadStack.size(); ++i) {
-    if (LoadStack[i] == ini_path) {
-      std::string str = join("\n", LoadStack);
+  for (unsigned i = 0; i < load_stack.size(); ++i) {
+    if (load_stack[i] == ini_path) {
+      std::string str = join("\n", load_stack);
       str += "\nCurrent font: " + ini_path;
       LuaHelpers::ReportScriptErrorFmt(
           "Font import recursion detected\n%s", str.c_str());
       return;
     }
   }
-  LoadStack.push_back(ini_path);
+  load_stack.push_back(ini_path);
 
   // The font is not already loaded. Figure out what we have.
   CHECKPOINT_M(
@@ -801,7 +801,7 @@ void Font::Load(const std::string& ini_path, std::string chars) {
   {
     std::vector<std::string> import_list;
 
-    bool is_top_level_font = LoadStack.size() == 1;
+    bool is_top_level_font = load_stack.size() == 1;
 
     // If this is a top-level font (not a subfont), load the default font first.
     if (is_top_level_font) {
@@ -900,9 +900,9 @@ void Font::Load(const std::string& ini_path, std::string chars) {
         "Font %s has no characters", ini_path.c_str());
   }
 
-  LoadStack.pop_back();
+  load_stack.pop_back();
 
-  if (LoadStack.empty()) {
+  if (load_stack.empty()) {
     // Cache ASCII glyphs.
     ZERO(char_to_glyph_cache_);
     std::map<wchar_t, glyph*>::iterator it;

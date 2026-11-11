@@ -44,25 +44,25 @@ class ScreenSelectCharacter : public ScreenWithMenuElements {
   bool AllAreFinishedChoosing() const;
   void MakeSelection(PlayerNumber pn);
 
-  int selected_character_[NUM_PLAYERS];
+  int selected_character_[kNumPlayers];
   enum {
     CHOOSING_HUMAN_CHARACTER,
     CHOOSING_CPU_CHARACTER,
     FINISHED_CHOOSING
-  } selection_row_[NUM_PLAYERS];
+  } selection_row_[kNumPlayers];
   PlayerNumber GetAffectedPlayerNumber(
       PlayerNumber
           pn);  // returns the number of the player that pn is selecting for
 
-  Sprite spr_title_[NUM_PLAYERS];
+  Sprite spr_title_[kNumPlayers];
 
-  Banner spr_icons_[NUM_PLAYERS][MAX_CHAR_ICONS_TO_SHOW];
+  Banner spr_icons_[kNumPlayers][MAX_CHAR_ICONS_TO_SHOW];
 
-  Sprite spr_card_[NUM_PLAYERS];
-  Sprite spr_card_arrows_[NUM_PLAYERS];
+  Sprite spr_card_[kNumPlayers];
+  Sprite spr_card_arrows_[kNumPlayers];
 
-  Sprite spr_attack_frame_[NUM_PLAYERS];
-  ModIcon attack_icons_[NUM_PLAYERS][NUM_ATTACK_LEVELS][NUM_ATTACKS_PER_LEVEL];
+  Sprite spr_attack_frame_[kNumPlayers];
+  ModIcon attack_icons_[kNumPlayers][NUM_ATTACK_LEVELS][kNumAttacksPerLevel];
 
   Sprite spr_explanation_;
 

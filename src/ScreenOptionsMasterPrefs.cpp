@@ -164,23 +164,23 @@ static void MoveNop(int& sel, bool to_sel, const ConfOption* conf_option) {
   }
 }
 
-static constexpr int PREMIUM_FREE_MIN_MINUTES = 5;
-static constexpr int PREMIUM_FREE_MAX_MINUTES = 60;
-static constexpr int NUM_PREMIUM_FREE_MINUTE_VALUES =
-    PREMIUM_FREE_MAX_MINUTES - PREMIUM_FREE_MIN_MINUTES + 1;
+static constexpr int kPremiumFreeMinMinutes = 5;
+static constexpr int kPremiumFreeMaxMinutes = 60;
+static constexpr int kNumPremiumFreeMinuteValues =
+    kPremiumFreeMaxMinutes - kPremiumFreeMinMinutes + 1;
 
 static void PremiumFreeMinuteChoices(std::vector<std::string>& out) {
-  for (int minutes = PREMIUM_FREE_MIN_MINUTES;
-       minutes <= PREMIUM_FREE_MAX_MINUTES; ++minutes) {
+  for (int minutes = kPremiumFreeMinMinutes; minutes <= kPremiumFreeMaxMinutes;
+       ++minutes) {
     out.push_back(ToString(minutes));
   }
 }
 
 static void PremiumFreeMinutes(
     int& sel, bool to_sel, const ConfOption* conf_option) {
-  int mapping[NUM_PREMIUM_FREE_MINUTE_VALUES];
-  for (int i = 0; i < NUM_PREMIUM_FREE_MINUTE_VALUES; ++i) {
-    mapping[i] = PREMIUM_FREE_MIN_MINUTES + i;
+  int mapping[kNumPremiumFreeMinuteValues];
+  for (int i = 0; i < kNumPremiumFreeMinuteValues; ++i) {
+    mapping[i] = kPremiumFreeMinMinutes + i;
   }
 
   MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
@@ -248,7 +248,7 @@ static void Language(int& sel, bool to_sel, const ConfOption* conf_option) {
     // If the current language doesn't exist, we'll show BASE_LANGUAGE, so
     // select that.
     for (unsigned i = 0; sel == -1 && i < vs.size(); ++i) {
-      if (!strcasecmp(vs[i].c_str(), SpecialFiles::BASE_LANGUAGE.c_str())) {
+      if (!strcasecmp(vs[i].c_str(), SpecialFiles::kBaseLanguage.c_str())) {
         sel = i;
       }
     }
@@ -256,7 +256,7 @@ static void Language(int& sel, bool to_sel, const ConfOption* conf_option) {
     if (sel == -1) {
       LOG->Warn(
           "Couldn't find language \"%s\" or fallback \"%s\"; using \"%s\"",
-          THEME->GetCurLanguage().c_str(), SpecialFiles::BASE_LANGUAGE.c_str(),
+          THEME->GetCurLanguage().c_str(), SpecialFiles::kBaseLanguage.c_str(),
           vs[0].c_str());
       sel = 0;
     }
@@ -647,7 +647,7 @@ static void MovieColorDepth(
 
 static void RefreshRate(int& sel, bool to_sel, const ConfOption* conf_option) {
   const int mapping[] = {
-      (int)REFRESH_DEFAULT, 60, 75, 85, 100, 120, 144, 165, 180, 240, 360};
+      (int)kRefreshDefault, 60, 75, 85, 100, 120, 144, 165, 180, 240, 360};
   MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
@@ -759,9 +759,9 @@ static void CustomSongsMaxMegabytes(
   int mapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 1000};
   MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
-static std::vector<ConfOption> g_ConfOptions;
+static std::vector<ConfOption> conf_options;
 static void InitializeConfOptions() {
-  if (!g_ConfOptions.empty()) {
+  if (!conf_options.empty()) {
     return;
   }
 
@@ -779,15 +779,15 @@ static void InitializeConfOptions() {
   // of MovePref<enum> to the correct mapping.  Harder yet is when there is a
   // float or a dynamic set of options, such as Language or Theme.
   // Those require individual attention.
-#define ADD(x) g_ConfOptions.push_back(x)
+#define ADD(x) conf_options.push_back(x)
   // Select game
   ADD(ConfOption("Game", GameSel, GameChoices));
-  g_ConfOptions.back().effects_ = OPT_CHANGE_GAME;
+  conf_options.back().effects_ = OPT_CHANGE_GAME;
 
   // Appearance options
   ADD(ConfOption("Language", Language, LanguageChoices));
   ADD(ConfOption("Theme", RequestedTheme, ThemeChoices));
-  g_ConfOptions.back().effects_ = OPT_APPLY_THEME;
+  conf_options.back().effects_ = OPT_APPLY_THEME;
 
   ADD(ConfOption("Announcer", Announcer, AnnouncerChoices));
   ADD(ConfOption("DefaultNoteSkin", DefaultNoteSkin, DefaultNoteSkinChoices));
@@ -807,7 +807,7 @@ static void InitializeConfOptions() {
   // Misc options
   ADD(ConfOption("AutogenSteps", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("OnlyPreferredDifficulties", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_SONG;
+  conf_options.back().effects_ = OPT_APPLY_SONG;
 
   ADD(ConfOption("AutogenGroupCourses", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("FastLoad", MovePref<bool>, "Off", "On"));
@@ -832,11 +832,11 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "BGBrightnessNoZero", BGBrightnessNoZero, "|10%", "|20%", "|30%", "|40%",
       "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
-  g_ConfOptions.back().pref_name_ = "BGBrightness";
+  conf_options.back().pref_name_ = "BGBrightness";
   ADD(ConfOption(
       "BGBrightnessOrStatic", BGBrightnessOrStatic, "Disabled", "25% Bright",
       "50% Bright", "75% Bright"));
-  g_ConfOptions.back().pref_name_ = "BGBrightness";
+  conf_options.back().pref_name_ = "BGBrightness";
   ADD(ConfOption(
       "StretchBackgrounds", MovePref<bool>, "Off",
       "On"));  // Deprecated, unused by default/_fallback. -Kyz
@@ -914,7 +914,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption("MenuTimer", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("CoinMode", MovePref<CoinMode>, "Home", "Pay", "Free Play"));
   ADD(ConfOption("CoinModeNoHome", CoinModeNoHome, "Pay", "Free Play"));
-  g_ConfOptions.back().pref_name_ = "CoinMode";
+  conf_options.back().pref_name_ = "CoinMode";
   ADD(ConfOption(
       "CoinsPerCredit", CoinsPerCredit, "|1", "|2", "|3", "|4", "|5", "|6",
       "|7", "|8", "|9", "|10", "|11", "|12", "|13", "|14", "|15", "|16"));
@@ -925,7 +925,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "SongsPerPlayOrEvent", SongsPerPlayOrEventMode, "|1", "|2", "|3", "|4",
       "|5", "Event"));
-  g_ConfOptions.back().pref_name_ = "SongsPerPlay";
+  conf_options.back().pref_name_ = "SongsPerPlay";
 
   ADD(ConfOption("EventMode", MovePref<bool>, "Off", "On (recommended)"));
   ADD(ConfOption(
@@ -934,7 +934,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "LifeDifficulty", LifeDifficulty, "|1", "|2", "|3", "|4", "|5", "|6",
       "|7"));
-  g_ConfOptions.back().pref_name_ = "LifeDifficultyScale";
+  conf_options.back().pref_name_ = "LifeDifficultyScale";
   ADD(ConfOption(
       "ProgressiveLifebar", MovePref<int>, "Off", "|1", "|2", "|3", "|4", "|5",
       "|6", "|7", "|8"));
@@ -956,10 +956,10 @@ static void InitializeConfOptions() {
       "2 Players for 1 Credit"));
   ADD(ConfOption(
       "PremiumFreeMinutes", PremiumFreeMinutes, PremiumFreeMinuteChoices));
-  g_ConfOptions.back().pref_name_ = "PremiumFreeMinutes";
+  conf_options.back().pref_name_ = "PremiumFreeMinutes";
   ADD(ConfOption(
       "JointPremium", JointPremium, "Off", "2 Players for 1 Credit"));
-  g_ConfOptions.back().pref_name_ = "Premium";
+  conf_options.back().pref_name_ = "Premium";
   ADD(ConfOption("ShowSongOptions", MovePref<Maybe>, "Ask", "Hide", "Show"));
   ADD(ConfOption("PercentageScoring", MovePref<bool>, "Off", "On"));
   ADD(ConfOption(
@@ -978,56 +978,56 @@ static void InitializeConfOptions() {
       "TNS_AvoidMine", "TNS_CheckpointMiss", "TNS_Miss", "TNS_W5", "TNS_W4",
       "TNS_W3", "TNS_W2", "TNS_W1", "TNS_CheckpointHit"));
   ADD(ConfOption("ProfileSortOrderAscending", MovePref<bool>, "No", "Yes"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_PROFILES;
+  conf_options.back().effects_ = OPT_APPLY_PROFILES;
   ADD(ConfOption(
       "ProfileSortOrder", MovePref<ProfileSortOrder>, "Priority", "Recent",
       "Alphabetical", "CreationTime"));
-  g_ConfOptions.back().pref_name_ = "ProfileSortOrder";
-  g_ConfOptions.back().effects_ = OPT_APPLY_PROFILES;
+  conf_options.back().pref_name_ = "ProfileSortOrder";
+  conf_options.back().effects_ = OPT_APPLY_PROFILES;
 
   // Graphic options
   ADD(ConfOption("Windowed", MovePref<bool>, "Full Screen", "Windowed"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "DisplayResolution", DisplayResolutionM, DisplayResolutionChoices));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS | OPT_APPLY_ASPECT_RATIO;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS | OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption(
       "DisplayAspectRatio", DisplayAspectRatio, "|3:4", "|1:1", "|4:3", "|5:4",
       "|16:10", "|16:9", "|8:3"));
-  g_ConfOptions.back().effects_ =
+  conf_options.back().effects_ =
       OPT_APPLY_GRAPHICS |
       OPT_APPLY_ASPECT_RATIO;  // need OPT_APPLY_GRAPHICS because if windowed
                                // the width may change to make square pixels
   ADD(ConfOption("WideScreen16_10", WideScreen16_10, "Off", "On"));
-  g_ConfOptions.back().pref_name_ = "DisplayAspectRatio";
-  g_ConfOptions.back().effects_ = OPT_APPLY_ASPECT_RATIO;
+  conf_options.back().pref_name_ = "DisplayAspectRatio";
+  conf_options.back().effects_ = OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption("WideScreen16_9", WideScreen16_9, "Off", "On"));
-  g_ConfOptions.back().pref_name_ = "DisplayAspectRatio";
-  g_ConfOptions.back().effects_ = OPT_APPLY_ASPECT_RATIO;
+  conf_options.back().pref_name_ = "DisplayAspectRatio";
+  conf_options.back().effects_ = OPT_APPLY_ASPECT_RATIO;
   ADD(ConfOption("DisplayColorDepth", DisplayColorDepth, "16bit", "32bit"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "HighResolutionTextures", MovePref<HighResolutionTextures>, "Auto",
       "Force Off", "Force On"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "MaxTextureResolution", MaxTextureResolution, "|256", "|512", "|1024",
       "|2048"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("TextureColorDepth", TextureColorDepth, "16bit", "32bit"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("MovieColorDepth", MovieColorDepth, "16bit", "32bit"));
   ADD(ConfOption("DelayedTextureDelete", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("CelShadeModels", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("SmoothLines", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption(
       "RefreshRate", RefreshRate, "Default", "|60", "|75", "|85", "|100",
       "|120", "|144", "|165", "|180", "|240", "|360"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("Vsync", MovePref<bool>, "No", "Yes"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_GRAPHICS;
+  conf_options.back().effects_ = OPT_APPLY_GRAPHICS;
   ADD(ConfOption("FastNoteRendering", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowStats", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("ShowBanners", MovePref<bool>, "Off", "On"));
@@ -1039,14 +1039,14 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "SoundVolume", SoundVolume, "Silent", "|10%", "|20%", "|30%", "|40%",
       "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
-  g_ConfOptions.back().effects_ = OPT_APPLY_SOUND;
+  conf_options.back().effects_ = OPT_APPLY_SOUND;
   ADD(ConfOption(
       "SoundVolumeAttract", SoundVolumeAttract, "Silent", "|10%", "|20%",
       "|30%", "|40%", "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
   ADD(ConfOption(
       "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz",
       "48000 Hz"));
-  g_ConfOptions.back().pref_name_ = "SoundPreferredSampleRate";
+  conf_options.back().pref_name_ = "SoundPreferredSampleRate";
   ADD(ConfOption(
       "VisualDelaySeconds", VisualDelaySeconds, "|-5", "|-4", "|-3", "|-2",
       "|-1", "|0", "|+1", "|+2", "|+3", "|+4", "|+5"));
@@ -1058,7 +1058,7 @@ static void InitializeConfOptions() {
     ADD(c);
   }
   ADD(ConfOption("DefaultSyncOffset", MovePref<SyncOffset>, "NULL", "|ITG"));
-  g_ConfOptions.back().effects_ = OPT_RELOAD_SONGS;
+  conf_options.back().effects_ = OPT_RELOAD_SONGS;
 
   ADD(ConfOption("EnableAttackSounds", MovePref<bool>, "No", "Yes"));
   ADD(ConfOption("EnableMineHitSound", MovePref<bool>, "No", "Yes"));
@@ -1075,8 +1075,8 @@ int ConfOption::GetEffects() const { return effects_ | OPT_SAVE_PREFERENCES; }
 
 ConfOption* ConfOption::Find(std::string name) {
   InitializeConfOptions();
-  for (unsigned i = 0; i < g_ConfOptions.size(); ++i) {
-    ConfOption* opt = &g_ConfOptions[i];
+  for (unsigned i = 0; i < conf_options.size(); ++i) {
+    ConfOption* opt = &conf_options[i];
     std::string match(opt->name_);
     if (CompareNoCase(match, name)) {
       continue;

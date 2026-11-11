@@ -214,17 +214,17 @@ MutexImpl* MakeMutex() { return new MutexImpl_Pthreads(); }
 #endif
 namespace {
 typedef int (*CONDATTR_SET_CLOCK)(pthread_condattr_t* attr, clockid_t clock_id);
-CONDATTR_SET_CLOCK g_CondattrSetclock = nullptr;
-bool bInitialized = false;
+CONDATTR_SET_CLOCK condattr_setclock = nullptr;
+bool initialized = false;
 
 #if defined(UNIX)
 clockid_t GetClock() { return ArchHooks_Unix::GetClock(); }
 
 void InitMonotonic() {
-  if (bInitialized) {
+  if (initialized) {
     return;
   }
-  bInitialized = true;
+  initialized = true;
 
   void* lib = nullptr;
 
@@ -235,10 +235,10 @@ void InitMonotonic() {
         break;
       }
 
-      g_CondattrSetclock =
+      condattr_setclock =
           (CONDATTR_SET_CLOCK)dlsym(lib, "pthread_condattr_setclock");
 
-      if (g_CondattrSetclock == nullptr) {
+      if (condattr_setclock == nullptr) {
         break;
       }
     }
@@ -247,7 +247,7 @@ void InitMonotonic() {
     pthread_condattr_t condattr;
     pthread_condattr_init(&condattr);
 
-    if (g_CondattrSetclock(&condattr, GetClock()) != 0) {
+    if (condattr_setclock(&condattr, GetClock()) != 0) {
       printf("pthread_condattr_setclock failed\n");
       pthread_condattr_destroy(&condattr);
       break;
@@ -258,17 +258,17 @@ void InitMonotonic() {
     return;
   } while (0);
 
-  g_CondattrSetclock = nullptr;
+  condattr_setclock = nullptr;
   if (lib != nullptr) {
     dlclose(lib);
   }
   lib = nullptr;
 }
 #elif defined(MACOSX)
-void InitMonotonic() { bInitialized = true; }
+void InitMonotonic() { initialized = true; }
 clockid_t GetClock() { return CLOCK_MONOTONIC; }
 #else
-void InitMonotonic() { bInitialized = true; }
+void InitMonotonic() { initialized = true; }
 
 clockid_t GetClock() { return CLOCK_REALTIME; }
 #endif
@@ -282,8 +282,8 @@ EventImpl_Pthreads::EventImpl_Pthreads(MutexImpl_Pthreads* parent) {
   pthread_condattr_t condattr;
   pthread_condattr_init(&condattr);
 
-  if (g_CondattrSetclock != nullptr) {
-    g_CondattrSetclock(&condattr, GetClock());
+  if (condattr_setclock != nullptr) {
+    condattr_setclock(&condattr, GetClock());
   }
 
   pthread_cond_init(&cond_, &condattr);
@@ -302,7 +302,7 @@ bool EventImpl_Pthreads::Wait(RageTimer* timeout) {
    * (no condattr_setclock), pthread_cond_timedwait has an inherent race
    * condition: the system clock may change before we call it. */
   timespec abstime;
-  if (g_CondattrSetclock != nullptr || GetClock() == CLOCK_REALTIME) {
+  if (condattr_setclock != nullptr || GetClock() == CLOCK_REALTIME) {
     /* If we support condattr_setclock, we'll set the condition to use
      * the same clock as RageTimer and can use it directly. If the
      * clock is CLOCK_REALTIME, that's the default anyway. */

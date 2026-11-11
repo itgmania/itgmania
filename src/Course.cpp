@@ -39,7 +39,7 @@
 #include "UnlockManager.h"
 #include "global.h"
 
-static Preference<int> MAX_SONGS_IN_EDIT_COURSE("MaxSongsInEditCourse", -1);
+static Preference<int> max_songs_in_edit_course("MaxSongsInEditCourse", -1);
 
 static const char* SongSortNames[] = {
     "Randomize", "MostPlays", "FewestPlays", "TopGrades", "LowestGrades",
@@ -59,22 +59,24 @@ struct OldStyleStringToSongSortMapHolder {
   }
 };
 
-OldStyleStringToSongSortMapHolder OldStyleStringToSongSortMapHolder_converter;
+OldStyleStringToSongSortMapHolder
+    old_style_string_to_song_sort_map_holder_converter;
 
 SongSort OldStyleStringToSongSort(const std::string& ss) {
   std::string s2 = ss;
   MakeLower(s2);
   std::map<std::string, SongSort>::iterator diff =
-      OldStyleStringToSongSortMapHolder_converter.conversion_map_.find(s2);
-  if (diff !=
-      OldStyleStringToSongSortMapHolder_converter.conversion_map_.end()) {
+      old_style_string_to_song_sort_map_holder_converter.conversion_map_.find(
+          s2);
+  if (diff != old_style_string_to_song_sort_map_holder_converter.conversion_map_
+                  .end()) {
     return diff->second;
   }
   return SongSort_Invalid;
 }
 
 /* Maximum lower value of ranges when difficult: */
-const int MAX_BOTTOM_RANGE = 10;
+const int kMaxBottomRange = 10;
 
 #define SORT_PREFERRED_COLOR THEME->GetMetricC("Course", "SortPreferredColor")
 #define SORT_LEVEL1_COLOR THEME->GetMetricC("Course", "SortLevel1Color")
@@ -658,7 +660,7 @@ bool Course::GetTrailUnsorted(
            * over MAX_BOTTOM_RANGE. */
           min_dist = std::min(std::max(min_dist, -low_meter + 1), max_dist);
           max_dist = std::max(
-              std::min(max_dist, MAX_BOTTOM_RANGE - high_meter), min_dist);
+              std::min(max_dist, kMaxBottomRange - high_meter), min_dist);
 
           int add;
           if (max_dist == min_dist) {
@@ -695,8 +697,8 @@ bool Course::GetTrailUnsorted(
       // LOG->Trace( "Chose: %s, %d", te.pSong->GetSongDir().c_str(),
       // te.pSteps->GetMeter() );
 
-      if (IsAnEdit() && MAX_SONGS_IN_EDIT_COURSE > 0 &&
-          int(trail.entries_.size()) >= MAX_SONGS_IN_EDIT_COURSE) {
+      if (IsAnEdit() && max_songs_in_edit_course > 0 &&
+          int(trail.entries_.size()) >= max_songs_in_edit_course) {
         break;
       }
     }
@@ -889,7 +891,7 @@ void Course::GetTrailUnsortedEndless(
          * MAX_BOTTOM_RANGE. */
         min_dist = std::min(std::max(min_dist, -low_meter + 1), max_dist);
         max_dist = std::max(
-            std::min(max_dist, MAX_BOTTOM_RANGE - high_meter), min_dist);
+            std::min(max_dist, kMaxBottomRange - high_meter), min_dist);
 
         int add;
         if (max_dist == min_dist) {
@@ -925,8 +927,8 @@ void Course::GetTrailUnsortedEndless(
     // LOG->Trace( "Chose: %s, %d", te.pSong->GetSongDir().c_str(),
     // te.pSteps->GetMeter() );
 
-    if (IsAnEdit() && MAX_SONGS_IN_EDIT_COURSE > 0 &&
-        int(trail.entries_.size()) >= MAX_SONGS_IN_EDIT_COURSE) {
+    if (IsAnEdit() && max_songs_in_edit_course > 0 &&
+        int(trail.entries_.size()) >= max_songs_in_edit_course) {
       break;
     }
   }

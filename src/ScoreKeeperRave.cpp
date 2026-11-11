@@ -67,7 +67,7 @@ static void SuperMeterPercentChangeInit(
   }
 }
 
-static Preference1D<float> g_fSuperMeterPercentChange(
+static Preference1D<float> super_meter_percent_change(
     SuperMeterPercentChangeInit, NUM_ScoreEvent);
 
 ScoreKeeperRave::ScoreKeeperRave(
@@ -79,7 +79,7 @@ void ScoreKeeperRave::HandleTapScore(const TapNote& tn) {
   float percent_to_move = 0;
 
   if (score == TNS_HitMine) {
-    percent_to_move = g_fSuperMeterPercentChange[SE_HitMine];
+    percent_to_move = super_meter_percent_change[SE_HitMine];
   }
 
   AddSuperMeterDelta(percent_to_move);
@@ -98,22 +98,22 @@ void ScoreKeeperRave::HandleTapRowScore(const NoteData& nd, int row) {
   switch (score_of_last_tap) {
     DEFAULT_FAIL(score_of_last_tap);
     case TNS_W1:
-      percent_to_move = g_fSuperMeterPercentChange[SE_W1];
+      percent_to_move = super_meter_percent_change[SE_W1];
       break;
     case TNS_W2:
-      percent_to_move = g_fSuperMeterPercentChange[SE_W2];
+      percent_to_move = super_meter_percent_change[SE_W2];
       break;
     case TNS_W3:
-      percent_to_move = g_fSuperMeterPercentChange[SE_W3];
+      percent_to_move = super_meter_percent_change[SE_W3];
       break;
     case TNS_W4:
-      percent_to_move = g_fSuperMeterPercentChange[SE_W4];
+      percent_to_move = super_meter_percent_change[SE_W4];
       break;
     case TNS_W5:
-      percent_to_move = g_fSuperMeterPercentChange[SE_W5];
+      percent_to_move = super_meter_percent_change[SE_W5];
       break;
     case TNS_Miss:
-      percent_to_move = g_fSuperMeterPercentChange[SE_Miss];
+      percent_to_move = super_meter_percent_change[SE_Miss];
       break;
   }
   AddSuperMeterDelta(percent_to_move);
@@ -125,7 +125,7 @@ void ScoreKeeperRave::HandleHoldScore(const TapNote& tn) {
   float percent_to_move = 0.0f;
   switch (tap_score) {
     case TNS_HitMine:
-      percent_to_move = g_fSuperMeterPercentChange[SE_HitMine];
+      percent_to_move = super_meter_percent_change[SE_HitMine];
       break;
     default:
       break;
@@ -136,13 +136,13 @@ void ScoreKeeperRave::HandleHoldScore(const TapNote& tn) {
   HoldNoteScore hold_score = tn.hold_result_.hns_;
   switch (hold_score) {
     case HNS_Held:
-      percent_to_move = g_fSuperMeterPercentChange[SE_Held];
+      percent_to_move = super_meter_percent_change[SE_Held];
       break;
     case HNS_LetGo:
-      percent_to_move = g_fSuperMeterPercentChange[SE_LetGo];
+      percent_to_move = super_meter_percent_change[SE_LetGo];
       break;
     case HNS_Missed:
-      percent_to_move = g_fSuperMeterPercentChange[SE_Missed];
+      percent_to_move = super_meter_percent_change[SE_Missed];
       break;
     default:
       break;
@@ -153,7 +153,7 @@ void ScoreKeeperRave::HandleHoldScore(const TapNote& tn) {
 extern ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE;
 void ScoreKeeperRave::HandleTapScoreNone() {
   if (PENALIZE_TAP_SCORE_NONE) {
-    float percent_to_move = g_fSuperMeterPercentChange[SE_Miss];
+    float percent_to_move = super_meter_percent_change[SE_Miss];
     AddSuperMeterDelta(percent_to_move);
   }
 }
@@ -238,7 +238,7 @@ void ScoreKeeperRave::LaunchAttack(AttackLevel al) {
   std::string attack_to_give;
 
   if (GAMESTATE->cur_characters_[pn] != nullptr) {
-    attack_to_give = attacks[RandomInt(NUM_ATTACKS_PER_LEVEL)];
+    attack_to_give = attacks[RandomInt(kNumAttacksPerLevel)];
   } else {
     // "If you add any noteskins here, you need to make sure they're cached,
     // too." -? Noteskins probably won't work here anymore. -aj
@@ -247,7 +247,7 @@ void ScoreKeeperRave::LaunchAttack(AttackLevel al) {
     attack_to_give = default_attacks[RandomInt(8)];
   }
 
-  PlayerNumber to_attack = OPPOSITE_PLAYER[pn];
+  PlayerNumber to_attack = kOppositePlayer[pn];
   PlayerState* player_state_to_attack = GAMESTATE->player_state_[to_attack];
 
   Attack a;

@@ -67,21 +67,21 @@ void RageFileDriver::FlushDirCache(const std::string& path) {
   fdb_->FlushDirCache(path);
 }
 
-const struct FileDriverEntry* g_pFileDriverList = nullptr;
+const struct FileDriverEntry* file_driver_list = nullptr;
 
 FileDriverEntry::FileDriverEntry(const std::string& type) {
-  link_ = g_pFileDriverList;
-  g_pFileDriverList = this;
+  link_ = file_driver_list;
+  file_driver_list = this;
   type_ = type;
 }
 
 FileDriverEntry::~FileDriverEntry() {
-  g_pFileDriverList = nullptr; /* invalidate */
+  file_driver_list = nullptr; /* invalidate */
 }
 
 RageFileDriver* MakeFileDriver(
     const std::string& type, const std::string& root) {
-  for (const FileDriverEntry* p = g_pFileDriverList; p; p = p->link_) {
+  for (const FileDriverEntry* p = file_driver_list; p; p = p->link_) {
     if (!CompareNoCase(p->type_, type)) {
       return p->Create(root);
     }

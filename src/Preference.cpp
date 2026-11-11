@@ -10,19 +10,19 @@
 #include "XmlFile.h"
 #include "global.h"
 
-static SubscriptionManager<IPreference> m_Subscribers;
+static SubscriptionManager<IPreference> subscribers;
 
 IPreference::IPreference(const std::string& name, PreferenceType type)
     : name_(name),
       do_not_write_(type == PreferenceType::Deprecated),
       immutable_(type == PreferenceType::Immutable) {
-  m_Subscribers.Subscribe(this);
+  subscribers.Subscribe(this);
 }
 
-IPreference::~IPreference() { m_Subscribers.Unsubscribe(this); }
+IPreference::~IPreference() { subscribers.Unsubscribe(this); }
 
 IPreference* IPreference::GetPreferenceByName(const std::string& name) {
-  for (IPreference* p : *m_Subscribers.subscribers_) {
+  for (IPreference* p : *subscribers.subscribers_) {
     if (!CompareNoCase(p->GetName(), name)) {
       return p;
     }
@@ -32,20 +32,20 @@ IPreference* IPreference::GetPreferenceByName(const std::string& name) {
 }
 
 void IPreference::LoadAllDefaults() {
-  for (IPreference* p : *m_Subscribers.subscribers_) {
+  for (IPreference* p : *subscribers.subscribers_) {
     p->LoadDefault();
   }
 }
 
 void IPreference::ReadAllPrefsFromNode(const XNode* node, bool is_static) {
   ASSERT(node != nullptr);
-  for (IPreference* p : *m_Subscribers.subscribers_) {
+  for (IPreference* p : *subscribers.subscribers_) {
     p->ReadFrom(node, is_static);
   }
 }
 
 void IPreference::SavePrefsToNode(XNode* node) {
-  for (IPreference* p : *m_Subscribers.subscribers_) {
+  for (IPreference* p : *subscribers.subscribers_) {
     p->WriteTo(node);
   }
 }
@@ -54,7 +54,7 @@ void IPreference::ReadAllDefaultsFromNode(const XNode* node) {
   if (node == nullptr) {
     return;
   }
-  for (IPreference* p : *m_Subscribers.subscribers_) {
+  for (IPreference* p : *subscribers.subscribers_) {
     p->ReadDefaultFrom(node);
   }
 }

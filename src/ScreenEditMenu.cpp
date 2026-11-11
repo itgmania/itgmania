@@ -28,7 +28,7 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-static const std::string TEMP_FILE_NAME = "--temp--";
+static const std::string kTempFileName = "--temp--";
 
 #define EXPLANATION_TEXT(row) \
   THEME->GetString(name_, "Explanation" + EditMenuRowToString(row))
@@ -41,7 +41,7 @@ REGISTER_SCREEN_CLASS(ScreenEditMenu);
 
 void ScreenEditMenu::Init() {
   // HACK: Disable any style set by the editor.
-  GAMESTATE->SetCurrentStyle(nullptr, PLAYER_INVALID);
+  GAMESTATE->SetCurrentStyle(nullptr, kPlayerInvalid);
 
   // Enable all players.
   FOREACH_PlayerNumber(pn) GAMESTATE->JoinPlayer(pn);
@@ -216,7 +216,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
   GAMESTATE->cur_song_.Set(song);
   GAMESTATE->cur_course_.Set(nullptr);
   GAMESTATE->SetCurrentStyle(
-      GAMEMAN->GetEditorStyleForStepsType(st), PLAYER_INVALID);
+      GAMEMAN->GetEditorStyleForStepsType(st), kPlayerInvalid);
   GAMESTATE->cur_steps_[PLAYER_1].Set(steps);
 
   // handle error cases
@@ -228,7 +228,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
   switch (selector_.EDIT_MODE) {
     case EditMode_Full: {
       std::string dir = song->GetSongDir();
-      std::string temp_file = dir + TEMP_FILE_NAME;
+      std::string temp_file = dir + kTempFileName;
       RageFile file;
       if (!file.Open(temp_file, RageFile::WRITE)) {
         ScreenPrompt::Prompt(SM_None, SONG_DIR_READ_ONLY);
@@ -334,7 +334,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
         ScreenTextEntry::TextEntry(
             SM_BackFromEditDescription, ENTER_EDIT_DESCRIPTION,
             GAMESTATE->cur_steps_[0]->GetDescription(),
-            MAX_STEPS_DESCRIPTION_LENGTH,
+            kMaxStepsDescriptionLength,
             SongUtil::ValidateCurrentStepsDescription,
             SetCurrentStepsDescription, DeleteCurrentSteps);
       } else {

@@ -79,18 +79,18 @@ void CalculateRadarValues(
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveHoldNotes(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void ChangeRollsToHolds(NoteData& in, int start_index, int end_index);
 void ChangeHoldsToRolls(NoteData& in, int start_index, int end_index);
 void RemoveSimultaneousNotes(
     NoteData& inout, int max_simultaneous, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 void RemoveJumps(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void RemoveHands(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void RemoveQuads(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 /**
  * @brief Remove all of a specific TapNote Type.
  * @param inout the Notedata to be transformed.
@@ -99,21 +99,21 @@ void RemoveQuads(
  * @param iEndIndex the ending point for transforming. */
 void RemoveSpecificTapNotes(
     NoteData& inout, TapNoteType tn, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 /**
  * @brief Remove all of the mines from the chart.
  * @param inout the Notedata to be transformed.
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveMines(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 /**
  * @brief Remove all of the lifts from the chart.
  * @param inout the Notedata to be transformed.
  * @param iStartIndex the starting point for transforming.
  * @param iEndIndex the ending point for transforming. */
 void RemoveLifts(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 /**
  * @brief Remove all of the fakes from the chart.
  * @param inout the Notedata to be transformed.
@@ -121,10 +121,10 @@ void RemoveLifts(
  * @param iEndIndex the ending point for transforming. */
 void RemoveFakes(
     NoteData& inout, const TimingData& timing_data, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 void RemoveStretch(
     NoteData& inout, StepsType st, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 void RemoveAllButOneTap(NoteData& inout, int row);
 /** @brief The types of transformations available for the NoteData. */
 enum TrackMapping {
@@ -149,32 +149,29 @@ enum TrackMapping {
 };
 void Turn(
     NoteData& inout, StepsType st, TrackMapping tt, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
-void Little(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Wide(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Big(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Quick(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void BMRize(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Skippy(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
+void Little(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Wide(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Big(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Quick(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void BMRize(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Skippy(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void InsertIntelligentTaps(
     NoteData& in, int window_size_rows, int insert_offset_rows,
     int window_stride_rows, bool skippy, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 void AddMines(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Echo(NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Echo(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void Stomp(
     NoteData& inout, StepsType st, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
-void Planted(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Floored(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
-void Twister(
-    NoteData& inout, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
+void Planted(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Floored(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
+void Twister(NoteData& inout, int start_index = 0, int end_index = kMaxNoteRow);
 void ConvertTapsToHolds(
     NoteData& inout, int simultaneous_holds, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 
 /**
  * @brief Convert all taps added via transforms into original style tap notes.
@@ -212,10 +209,10 @@ void TransformNoteData(
     StepsType st, Song* song);
 void TransformNoteData(
     NoteData& nd, const TimingData& timing_data, const PlayerOptions& po,
-    StepsType st, int start_index = 0, int end_index = MAX_NOTE_ROW);
+    StepsType st, int start_index = 0, int end_index = kMaxNoteRow);
 void ScaleRegion(
     NoteData& nd, float scale, int start_index = 0,
-    int end_index = MAX_NOTE_ROW);
+    int end_index = kMaxNoteRow);
 
 void InsertRows(NoteData& nd, int start_index, int rows_to_shift);
 void DeleteRows(NoteData& nd, int start_index, int rows_to_shift);

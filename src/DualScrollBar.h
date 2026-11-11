@@ -22,8 +22,8 @@ class DualScrollBar : public ActorFrame {
   float bar_height_;
   float bar_time_;
 
-  AutoActor spr_scroll_thumb_over_half_[NUM_PLAYERS];
-  AutoActor spr_scroll_thumb_under_half_[NUM_PLAYERS];
+  AutoActor spr_scroll_thumb_over_half_[kNumPlayers];
+  AutoActor spr_scroll_thumb_under_half_[kNumPlayers];
 };
 
 #endif

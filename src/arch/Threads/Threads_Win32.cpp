@@ -11,33 +11,33 @@
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
 
-const int MAX_THREADS = 128;
+const int kMaxThreads = 128;
 
-static std::unique_ptr<MutexImpl_Win32> g_pThreadIdMutex;
-static bool g_ThreadIdMutexInitialized = false;
-static std::mutex g_ThreadIdMutexInitLock;
+static std::unique_ptr<MutexImpl_Win32> thread_id_mutex;
+static bool thread_id_mutex_initialized = false;
+static std::mutex thread_id_mutex_init_lock;
 
 static void InitThreadIdMutex() {
-  std::lock_guard<std::mutex> lock(g_ThreadIdMutexInitLock);
-  if (g_ThreadIdMutexInitialized) {
+  std::lock_guard<std::mutex> lock(thread_id_mutex_init_lock);
+  if (thread_id_mutex_initialized) {
     return;
   }
 
   std::unique_ptr<MutexImpl_Win32> temp = std::make_unique<MutexImpl_Win32>();
-  g_ThreadIdMutexInitialized = true;
+  thread_id_mutex_initialized = true;
 
-  g_pThreadIdMutex = std::move(temp);
+  thread_id_mutex = std::move(temp);
 }
 
-static uint64_t g_ThreadIds[MAX_THREADS];
-static HANDLE g_ThreadHandles[MAX_THREADS];
-static std::mutex g_ThreadDataMutex;
+static uint64_t thread_ids[kMaxThreads];
+static HANDLE thread_handles[kMaxThreads];
+static std::mutex thread_data_mutex;
 
 HANDLE Win32ThreadIdToHandle(uint64_t id) {
-  std::lock_guard<std::mutex> lock(g_ThreadDataMutex);
-  for (int i = 0; i < MAX_THREADS; ++i) {
-    if (g_ThreadIds[i] == id) {
-      return g_ThreadHandles[i];
+  std::lock_guard<std::mutex> lock(thread_data_mutex);
+  for (int i = 0; i < kMaxThreads; ++i) {
+    if (thread_ids[i] == id) {
+      return thread_handles[i];
     }
   }
 
@@ -112,11 +112,11 @@ static DWORD WINAPI StartThread(LPVOID data) {
 
   DWORD ret = static_cast<DWORD>(self->func_(self->data_));
 
-  std::lock_guard<std::mutex> lock(g_ThreadDataMutex);
-  for (int i = 0; i < MAX_THREADS; ++i) {
-    if (g_ThreadIds[i] == RageThread::GetCurrentThreadID()) {
-      g_ThreadHandles[i] = nullptr;
-      g_ThreadIds[i] = 0;
+  std::lock_guard<std::mutex> lock(thread_data_mutex);
+  for (int i = 0; i < kMaxThreads; ++i) {
+    if (thread_ids[i] == RageThread::GetCurrentThreadID()) {
+      thread_handles[i] = nullptr;
+      thread_ids[i] = 0;
       break;
     }
   }
@@ -127,18 +127,18 @@ static DWORD WINAPI StartThread(LPVOID data) {
 static int GetOpenSlot(uint64_t id) {
   InitThreadIdMutex();
 
-  g_pThreadIdMutex->Lock();
+  thread_id_mutex->Lock();
 
   // Find an open slot in g_ThreadIds.
   int slot = 0;
-  while (slot < MAX_THREADS && g_ThreadIds[slot] != 0) {
+  while (slot < kMaxThreads && thread_ids[slot] != 0) {
     ++slot;
   }
-  ASSERT(slot < MAX_THREADS);
+  ASSERT(slot < kMaxThreads);
 
-  g_ThreadIds[slot] = id;
+  thread_ids[slot] = id;
 
-  g_pThreadIdMutex->Unlock();
+  thread_id_mutex->Unlock();
 
   return slot;
 }
@@ -161,7 +161,7 @@ ThreadImpl* MakeThisThread() {
   thread->thread_id_ = GetCurrentThreadId();
 
   int slot = GetOpenSlot(GetCurrentThreadId());
-  g_ThreadHandles[slot] = thread->thread_handle_;
+  thread_handles[slot] = thread->thread_handle_;
 
   return thread.release();
 }
@@ -182,7 +182,7 @@ ThreadImpl* MakeThread(
       ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str()));
 
   int slot = GetOpenSlot(thread->thread_id_);
-  g_ThreadHandles[slot] = thread->thread_handle_;
+  thread_handles[slot] = thread->thread_handle_;
 
   int ret = ResumeThread(thread->thread_handle_);
   ASSERT_M(

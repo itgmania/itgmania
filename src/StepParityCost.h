@@ -4,36 +4,36 @@
 #include "StepParityDatastructs.h"
 
 namespace StepParity {
-const int DOUBLESTEP = 850;
-const int BRACKETJACK = 20;
-const int JACK = 30;
-const int JUMP = 0;
-const int SLOW_BRACKET = 300;
-const int TWISTED_FOOT = 100000;
-const int BRACKETTAP = 400;
-const int HOLDSWITCH = 55;
-const int MINE = 10000;
-const int FOOTSWITCH = 325;
-const int MISSED_FOOTSWITCH = 500;
-const int FACING = 2;
-const int DISTANCE = 6;
-const int SPIN = 1000;
-const int SIDESWITCH = 130;
-const int CROWDED_BRACKET = 0;
-const int OTHER = 0;
+const int kDoublestep = 850;
+const int kBracketjack = 20;
+const int kJack = 30;
+const int kJump = 0;
+const int kSlowBracket = 300;
+const int kTwistedFoot = 100000;
+const int kBrackettap = 400;
+const int kHoldswitch = 55;
+const int kMine = 10000;
+const int kFootswitch = 325;
+const int kMissedFootswitch = 500;
+const int kFacing = 2;
+const int kDistance = 6;
+const int kSpin = 1000;
+const int kSideswitch = 130;
+const int kCrowdedBracket = 0;
+const int kOther = 0;
 
 // 0.1 = 1/16th note at 150bpm. Jacks quicker than this are harder.
 // Above this speed, footswitches should be prioritized
-constexpr float JACK_THRESHOLD = 0.1f;
+constexpr float kJackThreshold = 0.1f;
 // 0.15 = 1/8th at 200bpm, or 3/16th at 150bpm. Below this speed, jumps should
 // be prioritized
-constexpr float SLOW_BRACKET_THRESHOLD = 0.15f;
+constexpr float kSlowBracketThreshold = 0.15f;
 // 0.2 = 1/8th at 150bpm. Footswitches slower than this are harder.
 // Below this speed, jacks should be prioritized
-constexpr float SLOW_FOOTSWITCH_THRESHOLD = 0.2f;
+constexpr float kSlowFootswitchThreshold = 0.2f;
 // 0.4 = 1/4th at 150bpm. Once a footswitch gets slow enough, though,
 // just ignore it.
-constexpr float SLOW_FOOTSWITCH_IGNORE = 0.4f;
+constexpr float kSlowFootswitchIgnore = 0.4f;
 
 class StepParityCost {
  private:

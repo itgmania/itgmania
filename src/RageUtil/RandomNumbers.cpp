@@ -7,16 +7,16 @@
 #include "LuaBinding.h"
 #include "LuaManager.h"
 
-RandomGen g_RandomNumberGenerator;
+RandomGen random_number_generator;
 
 /* Extend MersenneTwister into Lua space. This is intended to replace
  * math.randomseed and math.random, so we conform to their behavior. */
 
 namespace {
-MersenneTwister g_LuaPRNG;
+MersenneTwister lua_prng;
 
 static int Seed(lua_State* L) {
-  g_LuaPRNG = MersenneTwister(IArg(1));
+  lua_prng = MersenneTwister(IArg(1));
   return 0;
 }
 
@@ -25,7 +25,7 @@ static int Random(lua_State* L) {
     /* [0..1) */
     case 0: {
       std::uniform_real_distribution<> dist(0, 1);
-      double r = dist(g_LuaPRNG);
+      double r = dist(lua_prng);
       lua_pushnumber(L, r);
       return 1;
     }
@@ -35,7 +35,7 @@ static int Random(lua_State* L) {
       int upper = IArg(1);
       luaL_argcheck(L, 1 <= upper, 1, "interval is empty");
       std::uniform_int_distribution<> dist(1, upper);
-      lua_pushnumber(L, dist(g_LuaPRNG));
+      lua_pushnumber(L, dist(lua_prng));
       return 1;
     }
     /* [l..u] */
@@ -44,7 +44,7 @@ static int Random(lua_State* L) {
       int upper = IArg(2);
       luaL_argcheck(L, lower < upper, 2, "interval is empty");
       std::uniform_int_distribution<> dist(lower, upper);
-      lua_pushnumber(L, dist(g_LuaPRNG));
+      lua_pushnumber(L, dist(lua_prng));
       return 1;
     }
 

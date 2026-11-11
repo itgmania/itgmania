@@ -17,10 +17,10 @@
 /* If true, preloaded sounds are stored in 16-bit instead of floats.  Most
  * processing happens after preloading, and it's usually a waste to store high-
  * resolution data for sound effects. */
-Preference<bool> g_bSoundPreload16bit("SoundPreload16bit", true);
+Preference<bool> sound_preload16bit("SoundPreload16bit", true);
 
 /* If a sound is smaller than this, we'll load it entirely into memory. */
-Preference<int> g_iSoundPreloadMaxSamples(
+Preference<int> sound_preload_max_samples(
     "SoundPreloadMaxSamples", 1024 * 1024);
 
 #define samplesize (buffer_is16_bit_ ? sizeof(int16_t) : sizeof(float))
@@ -46,7 +46,7 @@ RageSoundReader_Preload::RageSoundReader_Preload()
       sample_rate_(0),
       channels_(0),
       rate_(0.0f) {
-  buffer_is16_bit_ = g_bSoundPreload16bit.Get();
+  buffer_is16_bit_ = sound_preload16bit.Get();
 }
 
 int RageSoundReader_Preload::GetTotalFrames() const {
@@ -59,7 +59,7 @@ bool RageSoundReader_Preload::Open(RageSoundReader* source) {
   channels_ = source->GetNumChannels();
   rate_ = source->GetStreamToSourceRatio();
 
-  int max_samples = g_iSoundPreloadMaxSamples.Get();
+  int max_samples = sound_preload_max_samples.Get();
 
   /* Check the length, and see if we think it'll fit in the buffer. */
   int len = source->GetLength_Fast();

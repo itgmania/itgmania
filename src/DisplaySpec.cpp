@@ -55,10 +55,10 @@ class LunaDisplaySpec : public Luna<DisplaySpec> {
 LUA_REGISTER_CLASS(DisplaySpec)
 
 namespace {
-const char* DISPLAYSPECS = "DisplaySpecs";
+const char* const kDisplaySpecs = "DisplaySpecs";
 
 DisplaySpecs* check_DisplaySpecs(lua_State* L) {
-  void* ud = luaL_checkudata(L, 1, DISPLAYSPECS);
+  void* ud = luaL_checkudata(L, 1, kDisplaySpecs);
   luaL_argcheck(L, ud != nullptr, 1, "`DisplaySpecs` expected");
   return static_cast<DisplaySpecs*>(ud);
 }
@@ -105,7 +105,7 @@ int DisplaySpecs_get(lua_State* L) {
   return 1;
 }
 
-const luaL_Reg DisplaySpecs_meta[] = {
+const luaL_Reg kDisplaySpecsMeta[] = {
     {"__gc", DisplaySpecs_gc},
     {"__index", DisplaySpecs_get},
     {"__len", DisplaySpecs_len},
@@ -113,8 +113,8 @@ const luaL_Reg DisplaySpecs_meta[] = {
     {nullptr, nullptr}};
 
 void register_DisplaySpecs(lua_State* L) {
-  luaL_newmetatable(L, DISPLAYSPECS);
-  luaL_openlib(L, 0, DisplaySpecs_meta, 0);
+  luaL_newmetatable(L, kDisplaySpecs);
+  luaL_openlib(L, 0, kDisplaySpecsMeta, 0);
   lua_pop(L, 1);
 }
 }  // namespace
@@ -123,7 +123,7 @@ REGISTER_WITH_LUA_FUNCTION(register_DisplaySpecs);
 DisplaySpecs* pushDisplaySpecs(lua_State* L, const DisplaySpecs& specs) {
   void* vp_specs = lua_newuserdata(L, sizeof(DisplaySpecs));
   DisplaySpecs* pspecs = new (vp_specs) DisplaySpecs(specs);
-  luaL_getmetatable(L, DISPLAYSPECS);
+  luaL_getmetatable(L, kDisplaySpecs);
   lua_setmetatable(L, -2);
   return pspecs;
 }

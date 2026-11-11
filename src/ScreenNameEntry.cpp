@@ -61,11 +61,11 @@
       ssprintf("PlayerP%d%sX", p + 1, StyleTypeToString(styleType).c_str()))
 
 // cache for frequently used metrics
-static float g_fCharsZoomSmall;
-static float g_fCharsZoomLarge;
-static float g_fCharsSpacingY;
-static int g_iNumCharsToDrawBehind;
-static int g_iNumCharsToDrawTotal;
+static float chars_zoom_small;
+static float chars_zoom_large;
+static float chars_spacing_y;
+static int num_chars_to_draw_behind;
+static int num_chars_to_draw_total;
 
 void ScreenNameEntry::ScrollingText::Init(
     const std::string& name, const std::vector<float>& xs) {
@@ -85,22 +85,22 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives() {
       (closest_index - NUM_CHARS_TO_DRAW_BEHIND + CHARS_CHOICES.size()) %
       CHARS_CHOICES.size();
   float y = GRAY_ARROWS_Y +
-            (closest_y_offset - g_iNumCharsToDrawBehind) * g_fCharsSpacingY;
+            (closest_y_offset - num_chars_to_draw_behind) * chars_spacing_y;
 
   for (int i = 0; i < NUM_CHARS_TO_DRAW_TOTAL; ++i) {
     const std::string c = CHARS_CHOICES.substr(char_index, 1);
-    float zoom = g_fCharsZoomSmall;
+    float zoom = chars_zoom_small;
     float alpha = 1.f;
 
     if (char_index == closest_index) {
       zoom = SCALE(
-          std::abs(closest_y_offset), 0, 0.5f, g_fCharsZoomLarge,
-          g_fCharsZoomSmall);
+          std::abs(closest_y_offset), 0, 0.5f, chars_zoom_large,
+          chars_zoom_small);
     }
     if (i == 0) {
       alpha *= SCALE(closest_y_offset, -0.5f, 0.f, 0.f, 1.f);
     }
-    if (i == g_iNumCharsToDrawTotal - 1) {
+    if (i == num_chars_to_draw_total - 1) {
       alpha *= SCALE(closest_y_offset, 0.f, 0.5f, 1.f, 0.f);
     }
 
@@ -112,7 +112,7 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives() {
       stamp_.SetX(x);
       stamp_.Draw();
     }
-    y += g_fCharsSpacingY;
+    y += chars_spacing_y;
     char_index = (char_index + 1) % CHARS_CHOICES.size();
   }
 }
@@ -142,7 +142,7 @@ ScreenNameEntry::ScreenNameEntry() {
     GAMESTATE->play_mode_.Set(PLAY_MODE_REGULAR);
     GAMESTATE->SetCurrentStyle(
         GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(), "versus"),
-        PLAYER_INVALID);
+        kPlayerInvalid);
     StageStats ss;
     for (int z = 0; z < 3; ++z) {
       ss.played_songs_.push_back(SONGMAN->GetRandomSong());
@@ -186,11 +186,11 @@ void ScreenNameEntry::Init() {
   ScreenWithMenuElements::Init();
 
   // update cache
-  g_fCharsZoomSmall = CHARS_ZOOM_SMALL;
-  g_fCharsZoomLarge = CHARS_ZOOM_LARGE;
-  g_fCharsSpacingY = CHARS_SPACING_Y;
-  g_iNumCharsToDrawBehind = NUM_CHARS_TO_DRAW_BEHIND;
-  g_iNumCharsToDrawTotal = NUM_CHARS_TO_DRAW_TOTAL;
+  chars_zoom_small = CHARS_ZOOM_SMALL;
+  chars_zoom_large = CHARS_ZOOM_LARGE;
+  chars_spacing_y = CHARS_SPACING_Y;
+  num_chars_to_draw_behind = NUM_CHARS_TO_DRAW_BEHIND;
+  num_chars_to_draw_total = NUM_CHARS_TO_DRAW_TOTAL;
 
   // reset Player and Song Options
   {
@@ -199,7 +199,7 @@ void ScreenNameEntry::Init() {
     SO_GROUP_CALL(GAMESTATE->song_options_, ModsLevel_Stage, Init);
   }
 
-  std::vector<GameState::RankingFeat> feats[NUM_PLAYERS];
+  std::vector<GameState::RankingFeat> feats[kNumPlayers];
 
   // Find out if players deserve to enter their name
   FOREACH_PlayerNumber(p) {
@@ -362,7 +362,7 @@ bool ScreenNameEntry::Input(const InputEventPlus& input) {
   const int col =
       GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(input.game_i_);
   bool handled = false;
-  if (col != Column_Invalid && still_entering_name_[input.pn_]) {
+  if (col != kColumnInvalid && still_entering_name_[input.pn_]) {
     int string_index = col_to_string_index_[input.pn_][col];
     if (string_index != -1) {
       receptor_arrow_row_[input.pn_].Step(col, TNS_W1);

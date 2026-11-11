@@ -298,11 +298,11 @@ REGISTER_INPUT_HANDLER_CLASS(SextetStreamFromFile);
 #else
 #define DEFAULT_INPUT_FILENAME "Data/StepMania-Input-SextetStream.in"
 #endif
-static Preference<std::string> g_sSextetStreamInputFilename(
+static Preference<std::string> sextet_stream_input_filename(
     "SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
 
 InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile() {
-  impl_ = new Impl(this, g_sSextetStreamInputFilename);
+  impl_ = new Impl(this, sextet_stream_input_filename);
 }
 
 /*

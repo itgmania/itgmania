@@ -28,8 +28,8 @@
 
 REGISTER_ACTOR_CLASS(Model);
 
-static const float FRAMES_PER_SECOND = 30;
-static const std::string DEFAULT_ANIMATION_NAME = "default";
+static const float kFramesPerSecond = 30;
+static const std::string kDefaultAnimationName = "default";
 
 Model::Model() {
   texture_wrapping_ = true;
@@ -97,8 +97,8 @@ void Model::LoadPieces(
     }
   }
 
-  if (LoadMilkshapeAsciiBones(DEFAULT_ANIMATION_NAME, bones_path)) {
-    PlayAnimation(DEFAULT_ANIMATION_NAME);
+  if (LoadMilkshapeAsciiBones(kDefaultAnimationName, bones_path)) {
+    PlayAnimation(kDefaultAnimationName);
   }
 
   // Setup temp vertices (if necessary)
@@ -600,7 +600,7 @@ void Model::PlayAnimation(const std::string& ani_name, float play_rate) {
 }
 
 void Model::SetPosition(float seconds) {
-  cur_frame_ = FRAMES_PER_SECOND * seconds;
+  cur_frame_ = kFramesPerSecond * seconds;
   cur_frame_ =
       std::clamp(cur_frame_, (float)0, (float)cur_animation_->total_frames_);
 }
@@ -612,7 +612,7 @@ void Model::AdvanceFrame(float delta_time) {
 
   // LOG->Trace( "m_fCurFrame = %f", m_fCurFrame );
 
-  cur_frame_ += FRAMES_PER_SECOND * delta_time * cur_animation_rate_;
+  cur_frame_ += kFramesPerSecond * delta_time * cur_animation_rate_;
   if (cur_frame_ < 0 || cur_frame_ >= cur_animation_->total_frames_) {
     if (default_animation_ != "") {
       this->PlayAnimation(default_animation_, default_animation_rate_);
