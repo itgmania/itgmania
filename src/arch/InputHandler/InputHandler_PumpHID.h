@@ -21,6 +21,7 @@
  * -------------------------- NOTE --------------------------
  */
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -249,7 +250,7 @@ class InputHandler_PumpHID : public InputHandler {
   pumphid_output_state_t msg_from_device_;
   pumphid_input_state_t msg_to_device_;
 
-  bool shutdown_;
+  std::atomic<bool> shutdown_;
   RageThread input_thread_;
 
   void BroadcastFullSensorStateHelper(

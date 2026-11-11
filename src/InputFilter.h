@@ -5,6 +5,7 @@
 #define INPUT_FILTER_H
 
 #include <algorithm>
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -173,6 +174,9 @@ class InputFilter {
 
   // debug sensors.
   PadSensorState sensors_[NUM_PLAYERS];
+  std::atomic<bool> pending_sensor_states_[NUM_PLAYERS][NUM_PadPanel]
+                                          [NUM_PadSensor] = {};
+  std::atomic<bool> sensor_update_pending_{false};
 
   InputFilter(const InputFilter& rhs);
   InputFilter& operator=(const InputFilter& rhs);
