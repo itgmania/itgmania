@@ -6,6 +6,11 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(HidBlueDot);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(HidBlueDot);
+
+bool LightsDriver_HidBlueDot::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(VID, PID);
+}
 
 LightsDriver_HidBlueDot::LightsDriver_HidBlueDot()
     : cab_data_{0}, pad_data_{0}, dev_{VID, PID} {

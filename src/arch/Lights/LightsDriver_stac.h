@@ -72,6 +72,8 @@ class LightsDriver_stac : public LightsDriver {
   LightsDriver_stac();
   virtual ~LightsDriver_stac();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

@@ -11,6 +11,13 @@
 #include "archutils/Common/HidDevice.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(PacDrive);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(PacDrive);
+
+bool LightsDriver_PacDrive::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      PACDRIVE_VID, make_pids(PACDRIVE_PID, PACDRIVE_PID_MAX),
+      PACDRIVE_INTERFACE);
+}
 
 static Preference<std::string> g_sPacDriveLightOrdering(
     "PacDriveLightOrdering", "openitg");

@@ -7,6 +7,12 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(snek);
+
+bool LightsDriver_snek::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      SNEK_VID, SNEK_PID, SNEK_LIGHTING_INTERFACENUM);
+}
 
 LightsDriver_snek::LightsDriver_snek()
     : dev_{SNEK_VID, SNEK_PID, SNEK_LIGHTING_INTERFACENUM},
