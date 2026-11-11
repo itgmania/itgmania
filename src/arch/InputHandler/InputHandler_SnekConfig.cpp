@@ -169,11 +169,6 @@ void InputHandler_SnekConfig::InputThreadMain() {
         BroadcastFullSensorStateHelper(mapping, sensor_number, pressed);
       }
 
-      // inform listeners of a new state, as during this debug state the snek
-      // will not fire events over the gamepad endpoint
-      // as the response is sent via the config end point.
-      MESSAGEMAN->Broadcast("TestSensorRedrawEvent");
-
       sensor_state_[sensor_number] = new_state;
     }
 

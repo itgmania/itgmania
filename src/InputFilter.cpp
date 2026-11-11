@@ -11,6 +11,7 @@
 #include "GameInput.h"
 #include "InputMapper.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -313,6 +314,22 @@ void InputFilter::Update(float delta_time) {
 
   INPUTMAN->Update();
 
+  // Sensor-capable input drivers may report state from worker threads. Apply
+  // the latest values here so Lua always reads sensor state on the main thread,
+  // then coalesce all changes into one redraw notification per frame.
+  if (sensor_update_pending_.exchange(false)) {
+    for (size_t player = 0; player < NUM_PLAYERS; ++player) {
+      for (size_t panel = 0; panel < NUM_PadPanel; ++panel) {
+        for (size_t sensor = 0; sensor < NUM_PadSensor; ++sensor) {
+          sensors_[player].SetBinary(
+              static_cast<PadPanel>(panel), static_cast<PadSensor>(sensor),
+              pending_sensor_states_[player][panel][sensor].load());
+        }
+      }
+    }
+    MESSAGEMAN->Broadcast("TestSensorRedrawEvent");
+  }
+
   /* Make sure that nothing gets inserted while we do this, to prevent things
    * like "key pressed, key release, key repeat". */
   LockMut(*queuemutex_);
@@ -475,8 +492,10 @@ void InputFilter::UpdateMouseWheel(float z) { mouse_coords_.z_ = z; }
 
 bool InputFilter::setFullSensorStateBinary(
     PlayerNumber pn, PadPanel panel, PadSensor sensor, bool is_pressed) {
-  if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
-    sensors_[pn].SetBinary(panel, sensor, is_pressed);
+  if (pn >= 0 && pn < NUM_PlayerNumber && panel >= 0 &&
+      panel < NUM_PadPanel && sensor >= 0 && sensor < NUM_PadSensor) {
+    pending_sensor_states_[pn][panel][sensor] = is_pressed;
+    sensor_update_pending_ = true;
     return true;
   }
   return false;
