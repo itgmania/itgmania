@@ -70,6 +70,8 @@ class InputHandler_SnekConfig : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
+  static bool ShouldAutoLoad();
+
   bool IsConnected() { return dev_.IsConnected(); }
 
   void StartSensorDebugging();

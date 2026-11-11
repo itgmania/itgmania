@@ -27,6 +27,7 @@
 #include "archutils/Common/HidDevice.h"
 
 REGISTER_INPUT_HANDLER_CLASS(SnekConfig);
+REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(SnekConfig);
 
 // this is the bit position of the response, mapped to the panel number it
 // matches to.
@@ -36,6 +37,12 @@ static constexpr SnekBitMapping sensorBitMappingDance[] = {
     {18, PLAYER_1, PadPanel_Down},  {19, PLAYER_2, PadPanel_Down},
     {20, PLAYER_2, PadPanel_Right}, {21, PLAYER_1, PadPanel_Right},
 };
+
+// auto load the device if the device is plugged in.
+bool InputHandler_SnekConfig::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM);
+}
 
 InputHandler_SnekConfig::InputHandler_SnekConfig() {
   // do not start the thread when initialized.

@@ -25,6 +25,12 @@
 #include "archutils/Common/HidDevice.h"
 
 REGISTER_INPUT_HANDLER_CLASS(PumpHID);
+REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(PumpHID);
+
+bool InputHandler_PumpHID::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      PUMPHID_VID, kDevPids, PUMPHID_INTERFACE_NUM);
+}
 
 InputHandler_PumpHID::InputHandler_PumpHID() {
   // clear buffers etc.

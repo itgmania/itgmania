@@ -235,6 +235,8 @@ class InputHandler_PumpHID : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
+  static bool ShouldAutoLoad();
+
   bool IsConnected() { return dev_.IsConnected(); }
 
  private:
