@@ -100,9 +100,11 @@ class RegisterAutoDetectInputHandler {
   REGISTER_INPUT_HANDLER_CLASS2(name, name)
 // Opts an input handler into startup auto-detection. InputHandler_<name> must
 // provide a static ShouldAutoLoad() predicate.
-#define REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(name)               \
+#define REGISTER_AUTODETECT_INPUT_HANDLER_CLASS2(name, class_name)  \
   static RegisterAutoDetectInputHandler register_autodetect_##name( \
-      #name, &InputHandler_##name::ShouldAutoLoad)
+      #name, &InputHandler_##class_name::ShouldAutoLoad)
+#define REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(name) \
+  REGISTER_AUTODETECT_INPUT_HANDLER_CLASS2(name, name)
 
 #endif
 

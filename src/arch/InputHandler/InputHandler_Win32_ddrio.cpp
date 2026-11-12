@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "PrefsManager.h"
+#include "RageFileManager.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageUtil.h"
@@ -46,6 +47,18 @@ static DDRIO_FINI ddrio_fini;
 HINSTANCE hDDRIOdll = nullptr;
 
 REGISTER_INPUT_HANDLER_CLASS2(ddrio, Win32_ddrio);
+REGISTER_AUTODETECT_INPUT_HANDLER_CLASS2(ddrio, Win32_ddrio);
+
+std::string InputHandler_Win32_ddrio::GetDllPath() {
+  return RageFileManagerUtil::sDirOfExecutable + "/" + kDllFilename;
+}
+
+// checks to see if the file is on disk where it should be to autoload it.
+bool InputHandler_Win32_ddrio::ShouldAutoLoad() {
+  const DWORD attributes = GetFileAttributesA(GetDllPath().c_str());
+  return attributes != INVALID_FILE_ATTRIBUTES &&
+         (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
 
 struct shim_ctx {
   HANDLE barrier_;
@@ -110,7 +123,7 @@ int ddrio_filter(unsigned int, struct _EXCEPTION_POINTERS*) {
 }
 
 bool InputHandler_Win32_ddrio::LoadDLL() {
-  hDDRIOdll = LoadLibrary("ddrio.dll");
+  hDDRIOdll = LoadLibrary(kDllFilename);
 
   if (hDDRIOdll == nullptr) {
     MessageBox(
