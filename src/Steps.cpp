@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "BackgroundUtil.h"
 #include "ColumnCues.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
@@ -802,6 +803,33 @@ void Steps::CalculateGrooveStatsHash(const NoteData& note_data) {
   std::string bpm_string = join(",", bpm_strings);
 
   sm_note_data.append(bpm_string);
+  // Account for gimmicks and mods for the hash
+  const TimingSegmentType timing_types[] = {
+      SEGMENT_STOP, SEGMENT_DELAY, SEGMENT_WARP,
+      SEGMENT_SPEED, SEGMENT_SCROLL, SEGMENT_FAKE};
+  for (TimingSegmentType type : timing_types) {
+    sm_note_data.append("#" + TimingSegmentTypeToString(type) + ":");
+    sm_note_data.append(join(",", timing_data->ToVectorString(type)));
+    sm_note_data.append(";");
+  }
+
+  FOREACH_BackgroundLayer(layer) {
+    std::vector<std::string> change_strings;
+    for (const BackgroundChange& change : song_->GetBackgroundChanges(layer)) {
+      change_strings.push_back(change.ToString());
+    }
+    sm_note_data.append(ssprintf("#BGCHANGES%d:", static_cast<int>(layer) + 1));
+    sm_note_data.append(join(",", change_strings));
+    sm_note_data.append(";");
+  }
+  std::vector<std::string> foreground_strings;
+  for (const BackgroundChange& change : song_->GetForegroundChanges()) {
+    foreground_strings.push_back(change.ToString());
+  }
+  sm_note_data.append("#FGCHANGES:");
+  sm_note_data.append(join(",", foreground_strings));
+  sm_note_data.append(";");
+
   std::string key = BinaryToHex(CryptManager::GetSHA1ForString(sm_note_data));
   key = key.substr(0, 16);
   groove_stats_hash_ = key;
