@@ -21,6 +21,7 @@
 
 #include "RageTimer.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 
@@ -31,11 +32,7 @@ constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 const RageTimer RageZeroTimer(0, 0);
-static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
-
-static inline uint64_t GetTime() noexcept {
-  return ArchHooks::GetSystemTimeInMicroseconds();
-}
+static const auto g_iStartTime = std::chrono::steady_clock::now();
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
  * stability of the clock sync. Maintaining precision here is crucial. Too
@@ -46,24 +43,31 @@ static inline uint64_t GetTime() noexcept {
  * this is calculated and manifest as a _sudden_ drift of sync. Use caution
  * and do thorough testing if you change anything here. -sukibaby */
 double RageTimer::GetTimeSinceStart() {
-  const uint64_t usecs = (GetTime() - g_iStartTime);
-  return static_cast<double>(usecs / ONE_SECOND_IN_MICROSECONDS_DBL);
+  const auto diff = std::chrono::steady_clock::now() - g_iStartTime;
+  return std::chrono::duration<double>(diff).count();
 }
 
 int RageTimer::GetTimeSinceStartSeconds() {
-  const uint64_t usecs = (GetTime() - g_iStartTime);
-  return static_cast<int>(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+  const auto diff = std::chrono::steady_clock::now() - g_iStartTime;
+  return std::chrono::duration_cast<std::chrono::seconds>(diff).count();
 }
 
 uint64_t RageTimer::GetTimeSinceStartMicroseconds() {
-  return (GetTime() - g_iStartTime);
+  const auto diff = std::chrono::steady_clock::now() - g_iStartTime;
+  return std::chrono::duration_cast<
+             std::chrono::duration<uint64_t, std::micro>>(diff)
+      .count();
 }
 
 void RageTimer::Touch() {
-  uint64_t usecs = GetTime();
+  const auto dur = std::chrono::steady_clock::now().time_since_epoch();
 
-  this->secs_ = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-  this->us_ = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+  const auto secs = std::chrono::duration_cast<std::chrono::seconds>(dur);
+
+  this->secs_ = static_cast<uint64_t>(secs.count());
+  this->us_ = static_cast<uint64_t>(
+      std::chrono::duration_cast<std::chrono::microseconds>(dur - secs)
+          .count());
 }
 
 float RageTimer::Ago() const {
