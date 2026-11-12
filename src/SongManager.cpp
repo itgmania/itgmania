@@ -4,6 +4,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -767,7 +768,8 @@ void SongManager::FreeSongs() {
   song_group_names_.clear();
   song_group_banner_paths_.clear();
   map_songs_by_difficulty_.clear();
-  map_preferred_section_to_songs_.clear();
+  map_preferred_section_to_entries_.clear();
+  preferred_song_sort_.clear();
 
   for (Song* song : songs_) {
     RageUtil::SafeDelete(song);
@@ -918,9 +920,11 @@ RageColor SongManager::GetSongColor(const Song* song) const {
   if (USE_PREFERRED_SORT_COLOR) {
     int sort_index = 0;
     for (const PreferredSortSection& v : preferred_song_sort_) {
-      if (std::any_of(v.songs_.begin(), v.songs_.end(), [&](const Song* s) {
-            return s == song;
-          })) {
+      if (std::any_of(
+              v.entries_.begin(), v.entries_.end(),
+              [&](const PreferredSongEntry& entry) {
+                return entry.song_ == song;
+              })) {
         return SONG_GROUP_COLOR.GetValue(sort_index % NUM_SONG_GROUP_COLORS);
       }
 
@@ -1085,16 +1089,20 @@ void SongManager::GetPreferredSortSongs(std::vector<Song*>& add_to) const {
     return;
   }
   for (const PreferredSortSection& v : preferred_song_sort_) {
-    add_to.insert(add_to.end(), v.songs_.begin(), v.songs_.end());
+    for (const PreferredSongEntry& entry : v.entries_) {
+      add_to.push_back(entry.song_);
+    }
   }
 }
 
 std::string SongManager::SongToPreferredSortSectionName(
     const Song* song) const {
   for (const PreferredSortSection& v : preferred_song_sort_) {
-    if (std::any_of(v.songs_.begin(), v.songs_.end(), [&](const Song* s) {
-          return s == song;
-        })) {
+    if (std::any_of(
+            v.entries_.begin(), v.entries_.end(),
+            [&](const PreferredSongEntry& entry) {
+              return entry.song_ == song;
+            })) {
       return v.name_;
     }
   }
@@ -1103,11 +1111,11 @@ std::string SongManager::SongToPreferredSortSectionName(
 
 void SongManager::GetPreferredSortSongsBySectionName(
     const std::string& section_name, std::vector<Song*>& add_to) const {
-  // Use m_mapPreferredSectionToSongs
-  std::map<std::string, SongPointerVector>::const_iterator iter =
-      map_preferred_section_to_songs_.find(section_name);
-  if (iter != map_preferred_section_to_songs_.end()) {
-    add_to.insert(add_to.end(), iter->second.begin(), iter->second.end());
+  auto iter = map_preferred_section_to_entries_.find(section_name);
+  if (iter != map_preferred_section_to_entries_.end()) {
+    for (const PreferredSongEntry& entry : iter->second) {
+      add_to.push_back(entry.song_);
+    }
   }
 }
 
@@ -1949,7 +1957,7 @@ void SongManager::SetPreferredSongsFromTable(
     std::map<std::string, std::vector<Song*>> map_section_to_songs) {
   ASSERT(UNLOCKMAN != nullptr);
   preferred_song_sort_.clear();
-  map_preferred_section_to_songs_.clear();
+  map_preferred_section_to_entries_.clear();
 
   PreferredSortSection section;
   for (const std::pair<const std::string, std::vector<Song*>>& pair :
@@ -1967,10 +1975,10 @@ void SongManager::SetPreferredSongsFromTable(
         continue;
       }
 
-      section.songs_.push_back(song);
+      section.entries_.push_back(PreferredSongEntry{song});
     }
     preferred_song_sort_.push_back(section);
-    map_preferred_section_to_songs_[section.name_] = section.songs_;
+    map_preferred_section_to_entries_[section.name_] = section.entries_;
   }
 
   if (MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue()) {
@@ -1981,28 +1989,122 @@ void SongManager::SetPreferredSongsFromTable(
       if (ue.type_ == UnlockRewardType_Song) {
         Song* p_song = ue.song_.ToSong();
         if (p_song) {
-          pf_section.songs_.push_back(p_song);
+          pf_section.entries_.push_back(PreferredSongEntry{p_song});
         }
       }
     }
 
     preferred_song_sort_.push_back(pf_section);
-    map_preferred_section_to_songs_[pf_section.name_] = pf_section.songs_;
+    map_preferred_section_to_entries_[pf_section.name_] = pf_section.entries_;
   }
 
   // prune empty groups
   for (int i = preferred_song_sort_.size() - 1; i >= 0; i--) {
-    if (preferred_song_sort_[i].songs_.empty()) {
-      map_preferred_section_to_songs_.erase(preferred_song_sort_[i].name_);
+    if (preferred_song_sort_[i].entries_.empty()) {
+      map_preferred_section_to_entries_.erase(preferred_song_sort_[i].name_);
       preferred_song_sort_.erase(preferred_song_sort_.begin() + i);
     }
   }
 
   for (const PreferredSortSection& i : preferred_song_sort_) {
-    for (const Song* j : i.songs_) {
-      ASSERT(j != nullptr);
+    for (const PreferredSongEntry& entry : i.entries_) {
+      ASSERT(entry.song_ != nullptr);
     }
   }
+}
+
+Difficulty SongManager::ParsePreferredDifficulty(const std::string& str) {
+  std::string trimmed = str;
+  TrimLeft(trimmed);
+  TrimRight(trimmed);
+  if (trimmed.empty()) {
+    return Difficulty_Invalid;
+  }
+
+  const std::string kPrefix = "Difficulty_";
+  if (trimmed.size() > kPrefix.size() &&
+      CompareNoCase(Left(trimmed, kPrefix.size()), kPrefix) == 0) {
+    trimmed = trimmed.substr(kPrefix.size());
+  }
+
+  Difficulty dc = OldStyleStringToDifficulty(trimmed);
+  if (dc != Difficulty_Invalid) {
+    return dc;
+  }
+  return StringToDifficulty(trimmed);
+}
+
+namespace {
+bool ParsePinSuffix(
+    const std::string& suffix, Difficulty& difficulty_out,
+    std::string& edit_description_out) {
+  // Look for a pin to an edit difficulty.
+  const std::string kEditPrefix = "edit:";
+  if (suffix.size() >= kEditPrefix.size() &&
+      CompareNoCase(Left(suffix, kEditPrefix.size()), kEditPrefix) == 0) {
+    difficulty_out = Difficulty_Edit;
+    edit_description_out = suffix.substr(kEditPrefix.size());
+    TrimLeft(edit_description_out);
+    TrimRight(edit_description_out);
+    return true;
+  }
+
+  // Look for a pin to a standard difficulty.
+  Difficulty dc = SongManager::ParsePreferredDifficulty(suffix);
+  if (dc != Difficulty_Invalid) {
+    difficulty_out = dc;
+    edit_description_out.clear();
+    return true;
+  }
+  return false;
+}
+}  // namespace
+
+bool SongManager::ParsePreferredSongLine(
+    const std::string& line,
+    const std::function<bool(const std::string&)>& target_exists_fn,
+    std::string& song_or_group_out, Difficulty& difficulty_out,
+    std::string& edit_description_out) {
+  song_or_group_out.clear();
+  difficulty_out = Difficulty_Invalid;
+  edit_description_out.clear();
+
+  if (!target_exists_fn) {
+    return false;
+  }
+
+  std::string trimmed_right = line;
+  TrimRight(trimmed_right);
+  if (trimmed_right.empty()) {
+    return false;
+  }
+
+  // If the raw line already matches a song or group/* on disk, treat any
+  // colons in it as part of the song/group name (unpinned).
+  if (target_exists_fn(line)) {
+    song_or_group_out = line;
+    return true;
+  }
+
+  // Look for a suffix indicating a pinned difficulty (edit or otherwise).
+  // If so, the prefix before the ':' must reference a valid song or group/*.
+  for (size_t pos = line.rfind(':'); pos != std::string::npos && pos > 0;
+       pos = line.rfind(':', pos - 1)) {
+    Difficulty dc = Difficulty_Invalid;
+    std::string edit_desc;
+    if (!ParsePinSuffix(line.substr(pos + 1), dc, edit_desc)) {
+      continue;
+    }
+    std::string prefix = line.substr(0, pos);
+    if (target_exists_fn(prefix)) {
+      song_or_group_out = prefix;
+      difficulty_out = dc;
+      edit_description_out = edit_desc;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void SongManager::SetPreferredSongs(
@@ -2010,7 +2112,7 @@ void SongManager::SetPreferredSongs(
   ASSERT(UNLOCKMAN != nullptr);
 
   preferred_song_sort_.clear();
-  map_preferred_section_to_songs_.clear();
+  map_preferred_section_to_entries_.clear();
   std::vector<std::string> lines;
   std::string file = preferred_songs;
   if (!is_absolute) {
@@ -2021,14 +2123,31 @@ void SongManager::SetPreferredSongs(
     return;
   }
 
-  PreferredSortSection section;
+  // This is a helper function that is used to check if a song or group/*
+  // exists on disk, populating matched_songs when found.
+  std::vector<Song*> matched_songs;
+  std::function<bool(const std::string&)> target_exists =
+      [&](const std::string& candidate) -> bool {
+    matched_songs.clear();
+    if (EndsWith(candidate, "/*")) {
+      std::string group =
+          Left(candidate, candidate.length() - std::string("/*").length());
+      if (DoesSongGroupExist(group)) {
+        matched_songs = GetSongs(group);
+      }
+    } else if (Song* song = FindSong(candidate)) {
+      matched_songs.push_back(song);
+    }
+    return !matched_songs.empty();
+  };
 
+  PreferredSortSection section;
   for (std::string line : lines) {
     bool section_divider = BeginsWith(line, "---");
     if (section_divider) {
-      if (!section.songs_.empty()) {
+      if (!section.entries_.empty()) {
         preferred_song_sort_.push_back(section);
-        map_preferred_section_to_songs_[section.name_] = section.songs_;
+        map_preferred_section_to_entries_[section.name_] = section.entries_;
         section = PreferredSortSection();
       }
 
@@ -2036,37 +2155,30 @@ void SongManager::SetPreferredSongs(
       TrimLeft(section.name_);
       TrimRight(section.name_);
     } else {
-      /* if the line ends in slash-star, check if the section exists,
-       * and if it does, add all the songs in that group to the list. */
-      if (EndsWith(line, "/*")) {
-        std::string group =
-            Left(line, line.length() - std::string("/*").length());
-        if (DoesSongGroupExist(group)) {
-          // add all songs in group
-          const std::vector<Song*>& songs = GetSongs(group);
-          for (Song* song : songs) {
-            if (UNLOCKMAN->SongIsLocked(song) & LOCKED_SELECTABLE) {
-              continue;
-            }
-            section.songs_.push_back(song);
-          }
-        }
+      std::string song_or_group;
+      Difficulty pinned_difficulty = Difficulty_Invalid;
+      std::string pinned_edit_description;
+      if (!ParsePreferredSongLine(
+              line, target_exists, song_or_group, pinned_difficulty,
+              pinned_edit_description)) {
+        continue;
       }
 
-      Song* p_song = FindSong(line);
-      if (p_song == nullptr) {
-        continue;
+      // Add all matched songs to the section.
+      for (Song* song : matched_songs) {
+        if (UNLOCKMAN->SongIsLocked(song) & LOCKED_SELECTABLE) {
+          continue;
+        }
+        section.entries_.push_back(
+            PreferredSongEntry{
+                song, pinned_difficulty, pinned_edit_description});
       }
-      if (UNLOCKMAN->SongIsLocked(p_song) & LOCKED_SELECTABLE) {
-        continue;
-      }
-      section.songs_.push_back(p_song);
     }
   }
 
-  if (!section.songs_.empty()) {
+  if (!section.entries_.empty()) {
     preferred_song_sort_.push_back(section);
-    map_preferred_section_to_songs_[section.name_] = section.songs_;
+    map_preferred_section_to_entries_[section.name_] = section.entries_;
     section = PreferredSortSection();
   }
 
@@ -2078,7 +2190,7 @@ void SongManager::SetPreferredSongs(
       if (ue.type_ == UnlockRewardType_Song) {
         Song* p_song = ue.song_.ToSong();
         if (p_song) {
-          pf_section.songs_.push_back(p_song);
+          pf_section.entries_.push_back(PreferredSongEntry{p_song});
         }
       }
     }
@@ -2103,20 +2215,20 @@ void SongManager::SetPreferredSongs(
     // }
 
     preferred_song_sort_.push_back(pf_section);
-    map_preferred_section_to_songs_[pf_section.name_] = pf_section.songs_;
+    map_preferred_section_to_entries_[pf_section.name_] = pf_section.entries_;
   }
 
   // prune empty groups
   for (int i = preferred_song_sort_.size() - 1; i >= 0; i--) {
-    if (preferred_song_sort_[i].songs_.empty()) {
+    if (preferred_song_sort_[i].entries_.empty()) {
+      map_preferred_section_to_entries_.erase(preferred_song_sort_[i].name_);
       preferred_song_sort_.erase(preferred_song_sort_.begin() + i);
-      map_preferred_section_to_songs_.erase(preferred_song_sort_[i].name_);
     }
   }
 
   for (const PreferredSortSection& i : preferred_song_sort_) {
-    for (const Song* j : i.songs_) {
-      ASSERT(j != nullptr);
+    for (const PreferredSongEntry& entry : i.entries_) {
+      ASSERT(entry.song_ != nullptr);
     }
   }
 }

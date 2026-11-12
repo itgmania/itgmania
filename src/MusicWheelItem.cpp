@@ -1,6 +1,10 @@
 #include "MusicWheelItem.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <string>
+#include <vector>
 
 #include "ActorUtil.h"
 #include "BitmapText.h"
@@ -14,6 +18,7 @@
 #include "HighScore.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "RageTypes.h"
@@ -55,10 +60,62 @@ MusicWheelItemData::MusicWheelItemData(
       song_(song),
       group_(group),
       flags_(WheelNotifyIcon::Flags()),
+      pinned_difficulty_(Difficulty_Invalid),
+      pinned_edit_description_(""),
+      pinned_meter_(-1),
       section_count_(section_count),
       parent_section_(parent_section),
       label_(""),
       action_() {}
+
+bool MusicWheelItemData::IsPinned() const {
+  if (pinned_difficulty_ != Difficulty_Invalid) {
+    return true;
+  }
+  return pinned_meter_ >= 0 && PREFSMAN != nullptr &&
+         PREFSMAN->pin_steps_in_meter_sort_;
+}
+
+void MusicWheelItemData::GetPinnedStepsList(std::vector<Steps*>& out) const {
+  out.clear();
+  if (!IsPinned() || song_ == nullptr) {
+    return;
+  }
+
+  std::vector<Steps*> playable_steps;
+  SongUtil::GetPlayableSteps(song_, playable_steps);
+
+  // Pinning is based on difficulty (ie: within a playlist).
+  if (pinned_difficulty_ != Difficulty_Invalid) {
+    for (Steps* steps : playable_steps) {
+      if (steps->GetDifficulty() != pinned_difficulty_) {
+        continue;
+      }
+      if (pinned_difficulty_ == Difficulty_Edit &&
+          !pinned_edit_description_.empty()) {
+        // Compare both for compatibility with different .sm and .ssc formats.
+        if (CompareNoCase(steps->GetDescription(), pinned_edit_description_) !=
+                0 &&
+            CompareNoCase(steps->GetChartName(), pinned_edit_description_) !=
+                0) {
+          continue;
+        }
+      }
+      out.push_back(steps);
+    }
+    return;
+  }
+
+  // Pinning is based on meter (ie: sort by meter).
+  if (pinned_meter_ >= 0 && PREFSMAN != nullptr &&
+      PREFSMAN->pin_steps_in_meter_sort_) {
+    for (Steps* steps : playable_steps) {
+      if (steps->GetMeter() == pinned_meter_) {
+        out.push_back(steps);
+      }
+    }
+  }
+}
 
 MusicWheelItem::MusicWheelItem(std::string type) : WheelItemBase(type) {
   GRADES_SHOW_MACHINE.Load(type, "GradesShowMachine");
@@ -355,6 +412,12 @@ void MusicWheelItem::RefreshGrades() {
   if (wid == nullptr) {
     return;  // LoadFromWheelItemData() hasn't been called yet.
   }
+
+  std::vector<Steps*> pinned_list;
+  if (wid->song_ && wid->IsPinned()) {
+    wid->GetPinnedStepsList(pinned_list);
+  }
+
   FOREACH_HumanPlayer(p) {
     grade_display_[p]->SetVisible(false);
 
@@ -363,7 +426,10 @@ void MusicWheelItem::RefreshGrades() {
     }
 
     Difficulty dc;
-    if (GAMESTATE->cur_steps_[p]) {
+    if (GAMESTATE->HasPinnedSteps() &&
+        GAMESTATE->preferred_difficulty_[p] != Difficulty_Invalid) {
+      dc = GAMESTATE->preferred_difficulty_[p];
+    } else if (GAMESTATE->cur_steps_[p]) {
       dc = GAMESTATE->cur_steps_[p]->GetDifficulty();
     } else if (GAMESTATE->cur_trail_[p]) {
       dc = GAMESTATE->cur_trail_[p]->course_difficulty_;
@@ -394,16 +460,43 @@ void MusicWheelItem::RefreshGrades() {
     Profile* profile = PROFILEMAN->GetProfile(ps);
 
     HighScoreList* hsl = nullptr;
-    if (PROFILEMAN->IsPersistentProfile(ps) && dc != Difficulty_Invalid) {
-      if (wid->song_) {
-        const Steps* steps = SongUtil::GetStepsByDifficulty(wid->song_, st, dc);
+    if (PROFILEMAN->IsPersistentProfile(ps)) {
+      if (wid->song_ && wid->IsPinned()) {
+        const Steps* steps = nullptr;
+        auto cur_it = std::find(
+            pinned_list.begin(), pinned_list.end(), GAMESTATE->cur_steps_[p]);
+        if (cur_it != pinned_list.end()) {
+          // Active song: show the grade for the pinned chart the player chose.
+          steps = *cur_it;
+        } else if (!pinned_list.empty()) {
+          // Neighboring wheel items: pick the pinned chart closest to dc.
+          steps = pinned_list[0];
+          if (dc != Difficulty_Invalid) {
+            int best_diff = std::abs(steps->GetDifficulty() - dc);
+            for (size_t i = 1; i < pinned_list.size(); ++i) {
+              int d = std::abs(pinned_list[i]->GetDifficulty() - dc);
+              if (d < best_diff) {
+                steps = pinned_list[i];
+                best_diff = d;
+              }
+            }
+          }
+        }
         if (steps != nullptr) {
           hsl = &profile->GetStepsHighScoreList(wid->song_, steps);
         }
-      } else if (wid->course_) {
-        const Trail* trail = wid->course_->GetTrail(st, dc);
-        if (trail != nullptr) {
-          hsl = &profile->GetCourseHighScoreList(wid->course_, trail);
+      } else if (dc != Difficulty_Invalid) {
+        if (wid->song_) {
+          const Steps* steps =
+              SongUtil::GetStepsByDifficulty(wid->song_, st, dc);
+          if (steps != nullptr) {
+            hsl = &profile->GetStepsHighScoreList(wid->song_, steps);
+          }
+        } else if (wid->course_) {
+          const Trail* trail = wid->course_->GetTrail(st, dc);
+          if (trail != nullptr) {
+            hsl = &profile->GetCourseHighScoreList(wid->course_, trail);
+          }
         }
       }
     }

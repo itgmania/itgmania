@@ -616,6 +616,7 @@ endif()
 add_executable(itgmania_unit_tests
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_msd.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_playlist_pinning.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ragefile.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_song_cache_binary.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_timing_data.cpp")

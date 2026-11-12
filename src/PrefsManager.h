@@ -273,6 +273,7 @@ class PrefsManager {
   Preference<bool> disable_upload_dir_;
   Preference<bool> cel_shade_models_;
   Preference<bool> preferred_sort_uses_groups_;
+  Preference<bool> pin_steps_in_meter_sort_;
   Preference<float>
       debounce_coin_input_time_;  // allow users to apply a distinct debounce to
                                   // coin input

@@ -272,6 +272,7 @@ PrefsManager::PrefsManager()
       cel_shade_models_(
           "CelShadeModels", false),  // Work-In-Progress.. disable by default.
       preferred_sort_uses_groups_("PreferredSortUsesGroups", true),
+      pin_steps_in_meter_sort_("PinStepsInMeterSort", false),
       debounce_coin_input_time_("DebounceCoinInputTime", 0),
       reset_coins_at_startup_("ResetCoinsAtStartup", false),
 
