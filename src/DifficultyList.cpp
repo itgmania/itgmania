@@ -14,6 +14,7 @@
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "PrefsManager.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongUtil.h"
@@ -283,7 +284,16 @@ void StepsDisplayList::SetFromGameState() {
     }
   } else {
     std::vector<Steps*> steps;
-    SongUtil::GetPlayableSteps(song, steps);
+    const bool is_pinned_sort =
+        GAMESTATE->sort_order_ == SORT_PREFERRED ||
+        (GAMESTATE->sort_order_ == SORT_METER && PREFSMAN != nullptr &&
+         PREFSMAN->pin_steps_in_meter_sort_);
+    if (is_pinned_sort && GAMESTATE->HasPinnedSteps() &&
+        song == GAMESTATE->cur_song_) {
+      steps = GAMESTATE->pinned_steps_;
+    } else {
+      SongUtil::GetPlayableSteps(song, steps);
+    }
     // Should match the sort in ScreenSelectMusic::AfterMusicChange.
 
     rows_.resize(steps.size());
