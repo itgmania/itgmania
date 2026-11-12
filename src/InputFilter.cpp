@@ -492,8 +492,8 @@ void InputFilter::UpdateMouseWheel(float z) { mouse_coords_.z_ = z; }
 
 bool InputFilter::setFullSensorStateBinary(
     PlayerNumber pn, PadPanel panel, PadSensor sensor, bool is_pressed) {
-  if (pn >= 0 && pn < NUM_PlayerNumber && panel >= 0 &&
-      panel < NUM_PadPanel && sensor >= 0 && sensor < NUM_PadSensor) {
+  if (pn >= 0 && pn < NUM_PlayerNumber && panel >= 0 && panel < NUM_PadPanel &&
+      sensor >= 0 && sensor < NUM_PadSensor) {
     pending_sensor_states_[pn][panel][sensor] = is_pressed;
     sensor_update_pending_ = true;
     return true;
