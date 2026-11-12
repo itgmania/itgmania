@@ -22,6 +22,7 @@ bool LightsDriver_Linux_PIUIO_Leds::ShouldAutoLoad() {
 
 // NOTE: front usb ports are off by default, index 27 enables them.
 // It is currently unmapped.
+// the LED on the side of the device is 14 as well.
 
 namespace {
 const int coin_counter_index = 28;
