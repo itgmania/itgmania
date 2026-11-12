@@ -4,9 +4,11 @@
 #ifndef RAGE_SOUND_MANAGER_H
 #define RAGE_SOUND_MANAGER_H
 
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <string>
+#include <thread>
 
 class RageSound;
 class RageSoundBase;
@@ -49,9 +51,14 @@ class RageSoundManager {
   void AddLoadedSound(const std::string& path, RageSoundReader_Preload* sound);
 
  private:
+  void RunUpdateThread();
+  void StopUpdateThread();
+
   std::map<std::string, RageSoundReader_Preload*> map_preloaded_sounds_;
 
   RageSoundDriver* driver_;
+  std::atomic<bool> stop_update_thread_;
+  std::thread update_thread_;
 
   /* Prefs: */
   float volume_of_non_critical_sounds_;

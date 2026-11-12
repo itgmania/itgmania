@@ -175,7 +175,6 @@ bool RageSound::Load(
   /* If this sound is already preloaded and held by SOUNDMAN, just make a copy
    * of that.  Since RageSoundReader_Preload is refcounted, this is cheap. */
   RageSoundReader* sound = SOUNDMAN->GetLoadedSound(sound_file_path);
-  bool need_buffer = true;
   if (sound == nullptr) {
     std::string error;
     bool prebuffer;
@@ -188,16 +187,9 @@ bool RageSound::Load(
 
       sound = new RageSoundReader_Silence;
     }
-
-    /* If the sound is prebuffered into memory, we don't need to buffer reads.
-     */
-    if (prebuffer) {
-      need_buffer = false;
-    }
   } else {
     /* The sound we were given from SOUNDMAN is already preloaded. */
     precache = false;
-    need_buffer = false;
   }
 
   LoadSoundReader(sound);
@@ -210,13 +202,10 @@ bool RageSound::Load(
       SOUNDMAN->AddLoadedSound(
           sound_file_path, (RageSoundReader_Preload*)source_);
     }
-    need_buffer = false;
   }
 
   source_ = new RageSoundReader_Extend(source_);
-  if (need_buffer) {
-    source_ = new RageSoundReader_ThreadedBuffer(source_);
-  }
+  source_ = new RageSoundReader_ThreadedBuffer(source_);
   source_ = new RageSoundReader_PostBuffering(source_);
 
   if (params->support_rate_changing_) {
