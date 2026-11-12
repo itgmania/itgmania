@@ -1,5 +1,6 @@
 #include "GameLoop.h"
 
+#include <chrono>
 #include <cmath>
 #include <string>
 
@@ -27,7 +28,6 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
-static RageTimer g_GameplayTimer;
 static RageTimer g_LastInputTimer;
 
 static Preference<bool> g_bNeverBoostAppPriority(
@@ -237,11 +237,14 @@ void DoChangeGame() {
 }  // namespace
 
 void GameLoop::UpdateAllButDraw() {
-  // If the constant update delta is set, use that value. Otherwise, use the
-  // delta time from the gameplay timer.
-  float delta_time = (g_fConstantUpdateDeltaSeconds > 0)
-                         ? g_fConstantUpdateDeltaSeconds
-                         : g_GameplayTimer.GetDeltaTime();
+  const auto now = std::chrono::steady_clock::now();
+  static auto last_update = now;
+  float delta_time = std::chrono::duration<float>(now - last_update).count();
+  last_update = now;
+
+  if (g_fConstantUpdateDeltaSeconds > 0) {
+    delta_time = g_fConstantUpdateDeltaSeconds;
+  }
 
   // Use a static boolean to check the preference once per game launch.
   // This is a rarely used debug feature, so we try to skip it if possible.
