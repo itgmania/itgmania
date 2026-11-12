@@ -20,9 +20,7 @@ bool LightsDriver_stac::ShouldAutoLoad() {
 }
 
 LightsDriver_stac::LightsDriver_stac()
-    : devs_{
-          {STAC_VID, STAC_PID_P1, STAC_LIGHTING_INTERFACE},
-          {STAC_VID, STAC_PID_P2, STAC_LIGHTING_INTERFACE}},
+    : devs_{{STAC_VID, STAC_PID_P1, STAC_LIGHTING_INTERFACE}, {STAC_VID, STAC_PID_P2, STAC_LIGHTING_INTERFACE}},
       state_changed_{false},
       output_buffer_{{0}} {}
 
