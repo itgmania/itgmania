@@ -21,14 +21,13 @@
 #include "RageSoundManager.h"
 #include "RageTextureManager.h"
 #include "RageThreads.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
 #include "ScreenManager.h"
 #include "ThemeManager.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
-static RageTimer g_LastInputTimer;
+static auto last_input_timer = std::chrono::steady_clock::now();
 
 static Preference<bool> g_bNeverBoostAppPriority(
     "NeverBoostAppPriority", false);
@@ -47,7 +46,9 @@ void GameLoop::SetUpdateRate(float update_rate) { g_fUpdateRate = update_rate; }
 
 float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
 
-void GameLoop::ResetInputIdleTimer() { g_LastInputTimer.Touch(); }
+void GameLoop::ResetInputIdleTimer() {
+  last_input_timer = std::chrono::steady_clock::now();
+}
 
 static void CheckGameLoopTimerSkips(float delta_time) {
   static int last_fps = 0;
@@ -296,7 +297,11 @@ void GameLoop::RunGameLoop() {
     CheckFocus();
 
     float quit_idle_seconds = g_iQuitAfterIdleSeconds.Get();
-    if (quit_idle_seconds > 0 && g_LastInputTimer.Ago() > quit_idle_seconds) {
+    const float input_idle_seconds =
+        std::chrono::duration<float>(
+            std::chrono::steady_clock::now() - last_input_timer)
+            .count();
+    if (quit_idle_seconds > 0 && input_idle_seconds > quit_idle_seconds) {
       ArchHooks::SetUserQuit();
     }
 
