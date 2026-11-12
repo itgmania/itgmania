@@ -17,7 +17,6 @@
 #include "RageDisplay.h"
 #include "RageInput.h"
 #include "RageLog.h"
-#include "RageSoundManager.h"
 #include "RageTextureManager.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
@@ -251,10 +250,6 @@ void GameLoop::UpdateAllButDraw() {
   }
 
   delta_time *= g_fUpdateRate;
-
-  // Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush
-  // position data.
-  SOUNDMAN->Update();
 
   /* Update song beat information -before- calling update on all the classes
    * that depend on it. If you don't do this first, the classes are all acting
