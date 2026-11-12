@@ -410,8 +410,8 @@ void WriteSong(Writer& w, const Song& song) {
       steps.push_back(s);
     }
   }
-  for (const Steps* s : song.GetUnknownStyleSteps()) {
-    steps.push_back(s);
+  for (const auto& s : song.GetUnknownStyleSteps()) {
+    steps.push_back(s.get());
   }
   w.U32(static_cast<uint32_t>(steps.size()));
   for (const Steps* s : steps) {
@@ -531,7 +531,7 @@ void WriteSteps(Writer& w, const Steps& steps) {
 }
 
 void ReadSteps(Reader& r, Song& song) {
-  Steps* steps = song.CreateSteps();
+  std::unique_ptr<Steps> steps = song.CreateSteps();
   steps->steps_type_str_ = r.Str();
   // StepsType_Invalid is written for unknown-style steps.
   steps->steps_type_ = CheckRange<StepsType>(
@@ -624,7 +624,7 @@ void ReadSteps(Reader& r, Song& song) {
     ReadTiming(r, steps->timing_);
   }
 
-  song.AddSteps(steps);
+  song.AddSteps(std::move(steps));
 }
 
 }  // namespace

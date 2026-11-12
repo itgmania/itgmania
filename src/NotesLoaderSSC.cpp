@@ -1022,7 +1022,7 @@ bool SSCLoader::LoadFromSimfile(const std::string& path, Song& out) {
 
   int state = GETTING_SONG_INFO;
   const unsigned values = msd.GetNumValues();
-  Steps* new_notes = nullptr;
+  std::unique_ptr<Steps> new_notes;
   TimingData steps_timing;
 
   SongTagInfo reused_song_info(&*this, &out, path);
@@ -1048,7 +1048,7 @@ bool SSCLoader::LoadFromSimfile(const std::string& path, Song& out) {
           new_notes = out.CreateSteps();
           steps_timing = TimingData(out.song_timing_.beat0_offset_in_seconds_);
           reused_steps_info.has_own_timing_ = false;
-          reused_steps_info.steps_ = new_notes;
+          reused_steps_info.steps_ = new_notes.get();
           reused_steps_info.timing_ = &steps_timing;
         } else {
           // Silently ignore unrecognized tags, as was done before. -Kyz
@@ -1071,7 +1071,8 @@ bool SSCLoader::LoadFromSimfile(const std::string& path, Song& out) {
           new_notes->SetSMNoteData(params[1]);
           new_notes->TidyUpData();
           new_notes->SetFilename(path);
-          out.AddSteps(new_notes);
+          out.AddSteps(std::move(new_notes));
+          reused_steps_info.steps_ = nullptr;
         } else {
           // Silently ignore unrecognized tags, as was done before. -Kyz
         }
@@ -1114,7 +1115,7 @@ bool SSCLoader::LoadEditFromMsd(
     const MsdFile& msd, const std::string& edit_file_path, ProfileSlot slot,
     bool add_steps_to_song, Song* given_song /* = nullptr */) {
   Song* song = given_song;
-  Steps* new_notes = nullptr;
+  std::unique_ptr<Steps> new_notes;
   TimingData steps_timing;
 
   StepsTagInfo reused_steps_info(&*this, song, edit_file_path);
@@ -1135,7 +1136,7 @@ bool SSCLoader::LoadEditFromMsd(
         handler->second(reused_steps_info);
       } else if (TagEquals(value_name, "NOTEDATA")) {
         new_notes = song->CreateSteps();
-        reused_steps_info.steps_ = new_notes;
+        reused_steps_info.steps_ = new_notes.get();
         reused_steps_info.ssc_format_ = true;
       } else if (TagEquals(value_name, "NOTES")) {
         if (song == nullptr) {
@@ -1156,9 +1157,9 @@ bool SSCLoader::LoadEditFromMsd(
 
         // I have no idea what the purpose of this bAddStepsToSong flag is.
         // It looks like it causes LoadEditFromMsd to just throw away
-        // whatever steps data was loaded, possibly leaking the memory used
-        // by pNewNotes.  It was here before I rewrote LoadEditFromMsd to
-        // use a map instead of an else if chain, so I preserved it. -Kyz
+        // whatever steps data was loaded. It was here before I rewrote
+        // LoadEditFromMsd to use a map instead of an else if chain, so I
+        // preserved it. -Kyz
         if (!add_steps_to_song) {
           return true;
         }
@@ -1168,11 +1169,10 @@ bool SSCLoader::LoadEditFromMsd(
         // shouldn't be able to add charts of other difficulties. -Kyz
         if (new_notes != nullptr) {
           new_notes->SetDifficulty(Difficulty_Edit);
-          if (song->IsEditAlreadyLoaded(new_notes)) {
+          if (song->IsEditAlreadyLoaded(*new_notes)) {
             LOG->UserLog(
                 "Edit file", edit_file_path,
                 "is a duplicate of another edit that was already loaded.");
-            RageUtil::SafeDelete(new_notes);
             return false;
           }
         }
@@ -1194,7 +1194,7 @@ bool SSCLoader::LoadEditFromMsd(
         new_notes->SetDifficulty(Difficulty_Edit);
         new_notes->SetFilename(edit_file_path);
 
-        song->AddSteps(new_notes);
+        song->AddSteps(std::move(new_notes));
         return true;  // Only allow one Steps per edit file!
       } else {
         LOG->UserLog(

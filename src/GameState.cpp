@@ -3286,7 +3286,7 @@ class LunaGameState : public Luna<GameState> {
     }
     StepsType stype = Enum::Check<StepsType>(L, 3);
     Difficulty diff = Enum::Check<Difficulty>(L, 4);
-    Steps* new_steps = song->CreateSteps();
+    std::unique_ptr<Steps> new_steps = song->CreateSteps();
     std::string edit_name;
     // Form 2.
     if (steps == nullptr) {
@@ -3301,7 +3301,7 @@ class LunaGameState : public Luna<GameState> {
     }
     SongUtil::MakeUniqueEditDescription(song, stype, edit_name);
     steps->SetDescription(edit_name);
-    song->AddSteps(new_steps);
+    song->AddSteps(std::move(new_steps));
     p->cur_song_.Set(song);
     p->cur_steps_[PLAYER_1].Set(steps);
     p->SetCurrentStyle(
