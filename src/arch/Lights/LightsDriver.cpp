@@ -40,6 +40,9 @@ void LightsDriver::Create(
   std::vector<std::string> drivers_to_try;
   split(drivers, ",", drivers_to_try, true);
 
+  // allow_auto_detect is set by the detection of an empty LightsDriver
+  // preference if the user has specified a specific set of drivers to use,
+  // don't attempt to detect. respect the user's settings.
   if (allow_auto_detect) {
     for (const AutoDetectLightsDriver& auto_driver :
          GetAutoDetectLightsDrivers()) {

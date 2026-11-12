@@ -114,7 +114,12 @@ LightsManager::LightsManager() {
 
   lights_mode_ = LIGHTSMODE_JOINING;
   std::string driver = g_sLightsDriver.Get();
+
+  // only allow auto detecting of LightsDriver when the user has not specified a
+  // specific list of drivers.
+  // so only auto detect if the list es empty.
   const bool allow_auto_detect = driver.empty();
+
   if (driver.empty()) {
     driver = DEFAULT_LIGHTS_DRIVER;
   }
