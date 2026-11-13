@@ -29,6 +29,51 @@
 REGISTER_INPUT_HANDLER_CLASS(SnekConfig);
 REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(SnekConfig);
 
+namespace {
+// arrow buttons are disabled on the firmware side during debugging in this
+// version onward (v0.4) otherwise during debugging UP and RIGHT may blink (as
+// they are responses from the foot pcb)
+constexpr char SNEK_FIXED_OUTPUTS_BUILD_DATE[] = "20260302";
+
+// extract the std::string from a response packet
+std::string GetSnekVersion(
+    const std::array<uint8_t, SNEK_CONFIG_PACKETSIZE>& response) {
+  const char* version = reinterpret_cast<const char*>(&response[2]);
+  size_t length = 0;
+  const size_t max_length = response.size() - 2;
+  while (length < max_length && version[length] != '\0') {
+    ++length;
+  }
+  return std::string(version, length);
+}
+
+// attempt to extract a datecode from the version string
+// and check against the SNEK_FIXED_OUTPUTS_BUILD_DATE
+// to potentially warn the user.
+bool HasOldOutputButtonBug(const std::string& version) {
+  constexpr size_t date_length = 8;
+  constexpr size_t timestamp_length = 13;
+  for (size_t start = 0; start + timestamp_length <= version.size(); ++start) {
+    bool valid_timestamp = version[start + date_length] == '-';
+    for (size_t offset = 0; valid_timestamp && offset < timestamp_length;
+         ++offset) {
+      if (offset == date_length) {
+        continue;
+      }
+      const char digit = version[start + offset];
+      valid_timestamp = digit >= '0' && digit <= '9';
+    }
+
+    if (valid_timestamp) {
+      return version.compare(
+                 start, date_length, SNEK_FIXED_OUTPUTS_BUILD_DATE) < 0;
+    }
+  }
+
+  return false;
+}
+}  // namespace
+
 // this is the bit position of the response, mapped to the panel number it
 // matches to.
 static constexpr SnekBitMapping sensorBitMappingDance[] = {
@@ -53,8 +98,15 @@ InputHandler_SnekConfig::InputHandler_SnekConfig() {
 
     // get firmware information and check connection
     if (SendCommand(SNEK_CONFIG_OPCODE_GETINFO, 0, res)) {
-      LOG->Info(
-          "Found snek version: %s", reinterpret_cast<const char*>(&res[2]));
+      const std::string version = GetSnekVersion(res);
+      LOG->Info("Found snek version: %s", version.c_str());
+      if (HasOldOutputButtonBug(version)) {
+        LOG->Warn(
+            "The detected snek firmware [%s] may blink UP and RIGHT during "
+            "sensor debugging. "
+            "Please update the firmware on the device.",
+            version.c_str());
+      }
     } else {
       LOG->Warn("Failed to open snek config end point");
       return;
