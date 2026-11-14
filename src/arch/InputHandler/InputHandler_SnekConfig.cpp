@@ -30,6 +30,8 @@ REGISTER_INPUT_HANDLER_CLASS(SnekConfig);
 REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(SnekConfig);
 
 namespace {
+Preference<bool> g_bSnekSensorDebugging("SnekSensorDebugging", true);
+
 // arrow buttons are disabled on the firmware side during debugging in this
 // version onward (v0.4) otherwise during debugging UP and RIGHT may blink (as
 // they are responses from the foot pcb)
@@ -47,26 +49,28 @@ std::string GetSnekVersion(
   return std::string(version, length);
 }
 
-// attempt to extract a datecode from the version string
-// and check against the SNEK_FIXED_OUTPUTS_BUILD_DATE
-// to potentially warn the user.
-bool HasOldOutputButtonBug(const std::string& version) {
+// Attempt to extract a datecode from the version string and require a build
+// with the fixed output-button behavior before enabling sensor debugging.
+bool SupportsSensorDebugging(const std::string& version) {
   constexpr size_t date_length = 8;
-  constexpr size_t timestamp_length = 13;
-  for (size_t start = 0; start + timestamp_length <= version.size(); ++start) {
-    bool valid_timestamp = version[start + date_length] == '-';
-    for (size_t offset = 0; valid_timestamp && offset < timestamp_length;
-         ++offset) {
-      if (offset == date_length) {
-        continue;
-      }
-      const char digit = version[start + offset];
-      valid_timestamp = digit >= '0' && digit <= '9';
+  const auto is_digit = [](char value) { return value >= '0' && value <= '9'; };
+
+  for (size_t start = 0; start + date_length <= version.size(); ++start) {
+    if ((start > 0 && is_digit(version[start - 1])) ||
+        (start + date_length < version.size() &&
+         is_digit(version[start + date_length]))) {
+      continue;
     }
 
-    if (valid_timestamp) {
+    bool valid_date = true;
+    for (size_t offset = 0; valid_date && offset < date_length; ++offset) {
+      const char digit = version[start + offset];
+      valid_date = is_digit(digit);
+    }
+
+    if (valid_date) {
       return version.compare(
-                 start, date_length, SNEK_FIXED_OUTPUTS_BUILD_DATE) < 0;
+                 start, date_length, SNEK_FIXED_OUTPUTS_BUILD_DATE) >= 0;
     }
   }
 
@@ -100,10 +104,14 @@ InputHandler_SnekConfig::InputHandler_SnekConfig() {
     if (SendCommand(SNEK_CONFIG_OPCODE_GETINFO, 0, res)) {
       const std::string version = GetSnekVersion(res);
       LOG->Info("Found snek version: %s", version.c_str());
-      if (HasOldOutputButtonBug(version)) {
+      sensor_debugging_supported_ = SupportsSensorDebugging(version);
+      LOG->Info(
+          "Snek sensor debugging firmware support: %s",
+          sensor_debugging_supported_ ? "supported" : "NOT SUPPORTED");
+      if (!sensor_debugging_supported_) {
         LOG->Warn(
-            "The detected snek firmware [%s] may blink UP and RIGHT during "
-            "sensor debugging. "
+            "Sensor debugging during gameplay is disabled for snek firmware "
+            "[%s]. "
             "Please update the firmware on the device.",
             version.c_str());
       }
@@ -172,7 +180,8 @@ void InputHandler_SnekConfig::BroadcastFullSensorStateHelper(
 }
 
 void InputHandler_SnekConfig::StartSensorDebugging() {
-  if (!IsConnected() || debug_thread_ != nullptr) {
+  if (!g_bSnekSensorDebugging || !sensor_debugging_supported_ ||
+      !IsConnected() || debug_thread_ != nullptr) {
     return;
   }
 

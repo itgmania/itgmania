@@ -85,6 +85,7 @@ class InputHandler_SnekConfig : public InputHandler {
 
   std::atomic<bool> shutdown_;
   RageThread* debug_thread_ = nullptr;
+  bool sensor_debugging_supported_ = false;
 
   uint32_t sensor_state_[SNEK_CONFIG_NUM_SENSORS] = {};
 
