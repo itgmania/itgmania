@@ -83,6 +83,8 @@ class LightsDriver_fusion : public LightsDriver {
   LightsDriver_fusion();
   virtual ~LightsDriver_fusion();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

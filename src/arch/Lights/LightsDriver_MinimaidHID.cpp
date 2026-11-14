@@ -8,9 +8,14 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(MinimaidHID);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(MinimaidHID);
 // Register MinimaidHID under alias name: LinuxMinimaid for backward
 // compatibility
 REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID);
+
+bool LightsDriver_MinimaidHID::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(MM_VID, MM_PID, MM_LIGHTS_INTERFACE_NUM);
+}
 
 LightsDriver_MinimaidHID::LightsDriver_MinimaidHID()
     : dev_{MM_VID, MM_PID, MM_LIGHTS_INTERFACE_NUM} {}

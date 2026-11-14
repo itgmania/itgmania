@@ -6,13 +6,18 @@
 
 class LightsDriver_Linux_PIUIOBTN_Leds : public LightsDriver_Linux_Leds {
  public:
+  inline static constexpr const char* kGameControllerLightFile =
+      "/sys/class/leds/piuio::bboutput%d/brightness";
+
   LightsDriver_Linux_PIUIOBTN_Leds() {}
   virtual ~LightsDriver_Linux_PIUIOBTN_Leds() {}
+
+  static bool ShouldAutoLoad();
 
   virtual void Set(const LightsState* ls);
 
   virtual const char* GetGameControllerLightFile() {
-    return "/sys/class/leds/piuio::bboutput%d/brightness";
+    return kGameControllerLightFile;
   }
 };
 

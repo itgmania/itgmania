@@ -77,6 +77,8 @@ class LightsDriver_gpb : public LightsDriver {
   LightsDriver_gpb();
   virtual ~LightsDriver_gpb();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

@@ -44,6 +44,8 @@ class LightsDriver_HidBlueDot : public LightsDriver {
   LightsDriver_HidBlueDot();
   virtual ~LightsDriver_HidBlueDot();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

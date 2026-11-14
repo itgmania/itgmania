@@ -27,6 +27,56 @@
 #include "archutils/Common/HidDevice.h"
 
 REGISTER_INPUT_HANDLER_CLASS(SnekConfig);
+REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(SnekConfig);
+
+namespace {
+Preference<bool> g_bSnekSensorDebugging("SnekSensorDebugging", true);
+
+// arrow buttons are disabled on the firmware side during debugging in this
+// version onward (v0.4) otherwise during debugging UP and RIGHT may blink (as
+// they are responses from the foot pcb)
+constexpr char SNEK_FIXED_OUTPUTS_BUILD_DATE[] = "20260302";
+
+// extract the std::string from a response packet
+std::string GetSnekVersion(
+    const std::array<uint8_t, SNEK_CONFIG_PACKETSIZE>& response) {
+  const char* version = reinterpret_cast<const char*>(&response[2]);
+  size_t length = 0;
+  const size_t max_length = response.size() - 2;
+  while (length < max_length && version[length] != '\0') {
+    ++length;
+  }
+  return std::string(version, length);
+}
+
+// Attempt to extract a datecode from the version string and require a build
+// with the fixed output-button behavior before enabling sensor debugging.
+bool SupportsSensorDebugging(const std::string& version) {
+  constexpr size_t date_length = 8;
+  const auto is_digit = [](char value) { return value >= '0' && value <= '9'; };
+
+  for (size_t start = 0; start + date_length <= version.size(); ++start) {
+    if ((start > 0 && is_digit(version[start - 1])) ||
+        (start + date_length < version.size() &&
+         is_digit(version[start + date_length]))) {
+      continue;
+    }
+
+    bool valid_date = true;
+    for (size_t offset = 0; valid_date && offset < date_length; ++offset) {
+      const char digit = version[start + offset];
+      valid_date = is_digit(digit);
+    }
+
+    if (valid_date) {
+      return version.compare(
+                 start, date_length, SNEK_FIXED_OUTPUTS_BUILD_DATE) >= 0;
+    }
+  }
+
+  return false;
+}
+}  // namespace
 
 // this is the bit position of the response, mapped to the panel number it
 // matches to.
@@ -37,6 +87,12 @@ static constexpr SnekBitMapping sensorBitMappingDance[] = {
     {20, PLAYER_2, PadPanel_Right}, {21, PLAYER_1, PadPanel_Right},
 };
 
+// auto load the device if the device is plugged in.
+bool InputHandler_SnekConfig::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM);
+}
+
 InputHandler_SnekConfig::InputHandler_SnekConfig() {
   // do not start the thread when initialized.
   shutdown_ = true;
@@ -46,8 +102,19 @@ InputHandler_SnekConfig::InputHandler_SnekConfig() {
 
     // get firmware information and check connection
     if (SendCommand(SNEK_CONFIG_OPCODE_GETINFO, 0, res)) {
+      const std::string version = GetSnekVersion(res);
+      LOG->Info("Found snek version: %s", version.c_str());
+      sensor_debugging_supported_ = SupportsSensorDebugging(version);
       LOG->Info(
-          "Found snek version: %s", reinterpret_cast<const char*>(&res[2]));
+          "Snek sensor debugging firmware support: %s",
+          sensor_debugging_supported_ ? "supported" : "NOT SUPPORTED");
+      if (!sensor_debugging_supported_) {
+        LOG->Warn(
+            "Sensor debugging during gameplay is disabled for snek firmware "
+            "[%s]. "
+            "Please update the firmware on the device.",
+            version.c_str());
+      }
     } else {
       LOG->Warn("Failed to open snek config end point");
       return;
@@ -113,7 +180,8 @@ void InputHandler_SnekConfig::BroadcastFullSensorStateHelper(
 }
 
 void InputHandler_SnekConfig::StartSensorDebugging() {
-  if (!IsConnected() || debug_thread_ != nullptr) {
+  if (!g_bSnekSensorDebugging || !sensor_debugging_supported_ ||
+      !IsConnected() || debug_thread_ != nullptr) {
     return;
   }
 
@@ -178,7 +246,9 @@ void InputHandler_SnekConfig::InputThreadMain() {
     }
   }
 
-  SendSafeDisconnect();
+  // after manually polling, set sensor 0 to go back into game mode
+  // on disconnect we will send the proper disconnect command.
+  SendCommand(SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, 0, res);
 }
 
 bool InputHandler_SnekConfig::SendCommand(

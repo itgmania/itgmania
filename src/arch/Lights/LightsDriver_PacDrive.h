@@ -96,6 +96,8 @@ class LightsDriver_PacDrive : public LightsDriver {
   LightsDriver_PacDrive();
   virtual ~LightsDriver_PacDrive();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

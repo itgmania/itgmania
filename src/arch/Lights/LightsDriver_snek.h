@@ -115,6 +115,8 @@ class LightsDriver_snek : public LightsDriver {
   LightsDriver_snek();
   virtual ~LightsDriver_snek();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

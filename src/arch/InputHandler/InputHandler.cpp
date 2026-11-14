@@ -12,6 +12,7 @@
 #include "global.h"
 // #include "InputHandler_NSEvent.hpp"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -242,6 +243,23 @@ std::string InputHandler::GetLocalizedInputString(const DeviceInput& di) {
 
 DriverList InputHandler::driver_list_;
 
+namespace {
+struct AutoDetectInputDriver {
+  std::string name_;
+  InputHandler::AutoDetectFunction should_load_;
+};
+
+std::vector<AutoDetectInputDriver>& GetAutoDetectInputDrivers() {
+  static std::vector<AutoDetectInputDriver> drivers;
+  return drivers;
+}
+}  // namespace
+
+void InputHandler::RegisterAutoDetectDriver(
+    const std::string& name, AutoDetectFunction is_present) {
+  GetAutoDetectInputDrivers().push_back({name, is_present});
+}
+
 static LocalizedString INPUT_HANDLERS_EMPTY(
     "Arch", "Input Handlers cannot be empty.");
 void InputHandler::Create(
@@ -251,6 +269,42 @@ void InputHandler::Create(
 
   if (drivers_to_try.empty()) {
     RageException::Throw("%s", INPUT_HANDLERS_EMPTY.GetValue().c_str());
+  }
+
+  // Optional drivers may opt into startup detection using whatever predicate
+  // is appropriate for them (hardware enumeration, a required DLL, and so on).
+  // A non-empty InputDrivers preference is authoritative, so auto-detection is
+  // used only alongside the platform's default driver list.
+  if (drivers.empty()) {
+    for (const AutoDetectInputDriver& auto_driver :
+         GetAutoDetectInputDrivers()) {
+      const bool already_default =
+          std::find(
+              drivers_to_try.begin(), drivers_to_try.end(),
+              auto_driver.name_) != drivers_to_try.end();
+      if (already_default || !auto_driver.should_load_()) {
+        continue;
+      }
+
+      LOG->Info(
+          "Auto-detected %s; loading input handler", auto_driver.name_.c_str());
+      RageDriver* driver = InputHandler::driver_list_.Create(auto_driver.name_);
+      if (driver == nullptr) {
+        LOG->Warn(
+            "Auto-detected input handler %s is not registered",
+            auto_driver.name_.c_str());
+        continue;
+      }
+
+      InputHandler* handler = dynamic_cast<InputHandler*>(driver);
+      DEBUG_ASSERT(handler != nullptr);
+      add.push_back(handler);
+    }
+  } else {
+    LOG->Info(
+        "InputDrivers is explicitly configured as \"%s\"; automatic input "
+        "driver detection is disabled",
+        drivers.c_str());
   }
 
   for (const std::string& s : drivers_to_try) {

@@ -6,6 +6,7 @@
 #include "global.h"
 
 // We explicitly load these drivers as they should always be available.
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -14,12 +15,65 @@
 
 DriverList LightsDriver::driver_list_;
 
+namespace {
+struct AutoDetectLightsDriver {
+  std::string name_;
+  LightsDriver::AutoDetectFunction should_load_;
+};
+
+std::vector<AutoDetectLightsDriver>& GetAutoDetectLightsDrivers() {
+  static std::vector<AutoDetectLightsDriver> drivers;
+  return drivers;
+}
+}  // namespace
+
+void LightsDriver::RegisterAutoDetectDriver(
+    const std::string& name, AutoDetectFunction should_load) {
+  GetAutoDetectLightsDrivers().push_back({name, should_load});
+}
+
 void LightsDriver::Create(
-    const std::string& drivers, std::vector<LightsDriver*>& add) {
+    const std::string& drivers, std::vector<LightsDriver*>& add,
+    bool allow_auto_detect) {
   LOG->Trace("Initializing lights drivers: %s", drivers.c_str());
 
   std::vector<std::string> drivers_to_try;
   split(drivers, ",", drivers_to_try, true);
+
+  // allow_auto_detect is set by the detection of an empty LightsDriver
+  // preference if the user has specified a specific set of drivers to use,
+  // don't attempt to detect. respect the user's settings.
+  if (allow_auto_detect) {
+    for (const AutoDetectLightsDriver& auto_driver :
+         GetAutoDetectLightsDrivers()) {
+      const bool already_default =
+          std::find(
+              drivers_to_try.begin(), drivers_to_try.end(),
+              auto_driver.name_) != drivers_to_try.end();
+      if (already_default || !auto_driver.should_load_()) {
+        continue;
+      }
+
+      LOG->Info(
+          "Auto-detected %s; loading lights driver", auto_driver.name_.c_str());
+      RageDriver* driver = driver_list_.Create(auto_driver.name_);
+      if (driver == nullptr) {
+        LOG->Warn(
+            "Auto-detected lights driver %s is not registered",
+            auto_driver.name_.c_str());
+        continue;
+      }
+
+      LightsDriver* lights_driver = dynamic_cast<LightsDriver*>(driver);
+      ASSERT(lights_driver != nullptr);
+      add.push_back(lights_driver);
+    }
+  } else {
+    LOG->Info(
+        "LightsDriver is explicitly configured as \"%s\"; automatic lights "
+        "driver detection is disabled",
+        drivers.c_str());
+  }
 
   for (const std::string& driver : drivers_to_try) {
     RageDriver* ret = driver_list_.Create(driver);

@@ -11,8 +11,16 @@ struct LightsState;
 /** @brief Controls the lights. */
 class LightsDriver : public RageDriver {
  public:
+  // A startup-only predicate indicating whether an optional lights driver
+  // should be loaded automatically. The predicate may use any inexpensive,
+  // side-effect-free check appropriate for the driver.
+  using AutoDetectFunction = bool (*)();
+
   static void Create(
-      const std::string& driver, std::vector<LightsDriver*>& add);
+      const std::string& drivers, std::vector<LightsDriver*>& add,
+      bool allow_auto_detect);
+  static void RegisterAutoDetectDriver(
+      const std::string& name, AutoDetectFunction should_load);
   static DriverList driver_list_;
 
   LightsDriver() {}
@@ -28,12 +36,27 @@ class LightsDriver : public RageDriver {
   void Reset();
 };
 
+class RegisterAutoDetectLightsDriver {
+ public:
+  RegisterAutoDetectLightsDriver(
+      const std::string& name, LightsDriver::AutoDetectFunction should_load) {
+    LightsDriver::RegisterAutoDetectDriver(name, should_load);
+  }
+};
+
 #define REGISTER_LIGHTS_DRIVER_CLASS2(name, x) \
   static RegisterRageDriver register_##x(      \
       &LightsDriver::driver_list_, #name,      \
       CreateClass<LightsDriver_##x, RageDriver>)
 #define REGISTER_LIGHTS_DRIVER_CLASS(name) \
   REGISTER_LIGHTS_DRIVER_CLASS2(name, name)
+// Opts a lights driver into startup auto-detection. LightsDriver_<class_name>
+// must provide a static ShouldAutoLoad() predicate.
+#define REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(name, class_name)  \
+  static RegisterAutoDetectLightsDriver register_autodetect_##name( \
+      #name, &LightsDriver_##class_name::ShouldAutoLoad)
+#define REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(name) \
+  REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(name, name)
 
 // allows you to make a new class name, but register as an older alias name.
 // ex: REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID) will allow older
