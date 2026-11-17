@@ -804,9 +804,9 @@ void Steps::CalculateGrooveStatsHash(const NoteData& note_data) {
 
   sm_note_data.append(bpm_string);
   // Account for gimmicks and mods for the hash
-  const TimingSegmentType timing_types[] = {
-      SEGMENT_STOP, SEGMENT_DELAY, SEGMENT_WARP,
-      SEGMENT_SPEED, SEGMENT_SCROLL, SEGMENT_FAKE};
+  const TimingSegmentType timing_types[] = {SEGMENT_STOP,   SEGMENT_DELAY,
+                                            SEGMENT_WARP,   SEGMENT_SPEED,
+                                            SEGMENT_SCROLL, SEGMENT_FAKE};
   for (TimingSegmentType type : timing_types) {
     sm_note_data.append("#" + TimingSegmentTypeToString(type) + ":");
     sm_note_data.append(join(",", timing_data->ToVectorString(type)));
