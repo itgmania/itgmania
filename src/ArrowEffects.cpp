@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <string>
@@ -17,7 +18,6 @@
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageMath.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
 #include "Song.h"
@@ -390,9 +390,12 @@ void ArrowEffects::Init(PlayerNumber pn) {
   }
 }
 
+static auto last_time = std::chrono::steady_clock::now();
 void ArrowEffects::Update() {
-  static double last_time = 0.0;
-  double time = RageTimer::GetTimeSinceStart();
+  const auto time = std::chrono::steady_clock::now();
+  const auto diff = time - last_time;
+  const float diff_as_seconds =
+      std::chrono::duration<double>(time - last_time).count();
 
   FOREACH_EnabledPlayer(pn) {
     const Style* style = GAMESTATE->GetCurrentStyle(pn);
@@ -413,11 +416,11 @@ void ArrowEffects::Update() {
     }
 
     if (!position.freeze_ || !position.delay_) {
-      data.expand_seconds_ += static_cast<float>(time - last_time);
+      data.expand_seconds_ += diff_as_seconds;
       data.expand_seconds_ = std::fmod(
           data.expand_seconds_,
           (PI * 2) / (accels[PlayerOptions::ACCEL_EXPAND_PERIOD] + 1));
-      data.tan_expand_seconds_ += static_cast<float>(time - last_time);
+      data.tan_expand_seconds_ += diff_as_seconds;
       data.tan_expand_seconds_ = std::fmod(
           data.tan_expand_seconds_,
           (PI * 2) / (accels[PlayerOptions::ACCEL_TAN_EXPAND_PERIOD] + 1));
