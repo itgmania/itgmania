@@ -150,28 +150,27 @@ float ArrowEffects::GetTime() {
   double mult = 1.0 + static_cast<double>(curr_options->mod_timer_mult_);
   double offset = static_cast<double>(curr_options->mod_timer_offset_);
   ModTimerType modtimer = curr_options->mod_timer_type_;
-  double returned_time = 0;
-  switch (modtimer) {
-    case ModTimerType_Default:
-    case ModTimerType_Game:
-      returned_time = (RageTimer::GetTimeSinceStart() + offset) * mult;
-      break;
-    case ModTimerType_Beat:
-      returned_time =
-          (static_cast<double>(GAMESTATE->position_.song_beat_visible_) +
-           offset) *
-          mult;
-      break;
-    case ModTimerType_Song:
-      returned_time =
-          (static_cast<double>(GAMESTATE->position_.music_seconds_) + offset) *
-          mult;
-      break;
-    default:
-      returned_time = RageTimer::GetTimeSinceStart() + offset;
-      break;
+
+  if (modtimer == ModTimerType_Default || ModTimerType_Game) {
+    return (std::chrono::duration<double>(
+                std::chrono::steady_clock::now().time_since_epoch())
+                .count() +
+            offset) *
+           mult;
   }
-  return static_cast<float>(returned_time);
+  if (modtimer == ModTimerType_Beat) {
+    return (static_cast<double>(GAMESTATE->position_.song_beat_visible_) +
+            offset) *
+           mult;
+  }
+  if (modtimer == ModTimerType_Song) {
+    return (static_cast<double>(GAMESTATE->position_.music_seconds_) + offset) *
+           mult;
+  }
+  return (std::chrono::duration<double>(
+              std::chrono::steady_clock::now().time_since_epoch())
+              .count()) +
+         offset;
 }
 
 namespace {
