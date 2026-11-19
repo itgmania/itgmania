@@ -96,7 +96,7 @@ const Checkpoint kCheckpoints[] = {
     {"500h", 500 * kHour},
     {"1000h", 1000 * kHour},
     {"10000h", 10000 * kHour},
-    {"100000h", 100000 * kHour}, // 11 years!
+    {"100000h", 100000 * kHour},  // 11 years!
 };
 
 // We have to hardcode our own player options here since otherwise ArrowEffects
@@ -171,9 +171,11 @@ class ArrowEffectsTimeTest : public ::testing::Test {
     const double localMult = 1.0 + mult_mod;
 
     // return (RageTimer::GetTimeSinceStartFast()+offset)*mult;
-    const double before = (RageTimer::GetTimeSinceStart() + localOffset) * localMult;
+    const double before =
+        (RageTimer::GetTimeSinceStart() + localOffset) * localMult;
     const float t = ArrowEffects::GetTime();
-    const double after = (RageTimer::GetTimeSinceStart() + localOffset) * localMult;
+    const double after =
+        (RageTimer::GetTimeSinceStart() + localOffset) * localMult;
     const double slack = HalfUlp(after) + 1e-6;
     EXPECT_GE(static_cast<double>(t), before - slack);
     EXPECT_LE(static_cast<double>(t), after + slack);
@@ -186,7 +188,7 @@ class ArrowEffectsTimeTest : public ::testing::Test {
 
 TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_TracksSteadyClock) {
   ApplySettingsWithoutTimeBasedMods();
-  ExpectClockUnaffected(1.0,0.0);
+  ExpectClockUnaffected(1.0, 0.0);
   RecordProperty(
       "half_ulp_ms",
       std::to_string(HalfUlp(RageTimer::GetTimeSinceStart()) * 1000.0));
