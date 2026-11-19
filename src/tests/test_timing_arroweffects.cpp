@@ -176,9 +176,8 @@ class ArrowEffectsTimeTest : public ::testing::Test {
     const float t = ArrowEffects::GetTime();
     const double after =
         (RageTimer::GetTimeSinceStart() + localOffset) * localMult;
-    const double slack = HalfUlp(after) + 1e-6;
-    EXPECT_GE(static_cast<double>(t), before - slack);
-    EXPECT_LE(static_cast<double>(t), after + slack);
+    EXPECT_GE(static_cast<double>(t), before);
+    EXPECT_LE(static_cast<double>(t), after);
   }
 
   alignas(PlayerOptions) unsigned char storage_[sizeof(PlayerOptions)];
