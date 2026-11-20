@@ -35,7 +35,7 @@ const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
  * If this is incremented, FILE_CACHE_VERSION must also be incremented so that
  * existing cache files are regenerated.
  */
-const int CURRENT_GROOVE_STATS_HASH_VERSION = 3;
+const int CURRENT_GROOVE_STATS_HASH_VERSION = 4;
 
 /** @brief The different ways of displaying the BPM. */
 enum DisplayBPM {
