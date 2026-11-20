@@ -313,7 +313,7 @@ void DancingBot::SetSecond(float second) {
     footprint->SetHeight(height * (1 - 0.2f * stepAnimation));
     /* Keep the step flash in the footprint's own (possibly themed) color. */
     RageColor stepColor = footprint->GetDiffuse();
-    stepColor.a *= 0.5f * stepAnimation;
+    stepColor.a_ *= 0.5f * stepAnimation;
     footprint->SetGlow(stepColor);
   }
   /* A released foot can still overlap the new contact during a footswitch.

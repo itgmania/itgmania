@@ -2150,8 +2150,7 @@ void ScreenEdit::Init() {
   player_manager_.AddPlayers(note_data_edit_);
   player_manager_.AddPlayersToActorFrame(*this);
   m_DancingBot.SetName("DancingBot");
-  m_iDancingBotPosition =
-      THEME->GetMetricI(m_sName, "DancingBotDefaultPosition");
+  m_iDancingBotPosition = THEME->GetMetricI(name_, "DancingBotDefaultPosition");
   LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_DancingBot);
   this->AddChild(&m_DancingBot);
   TransitionEditState(STATE_EDITING);
@@ -2466,12 +2465,12 @@ void ScreenEdit::InvalidateDancingBot() {
 
 void ScreenEdit::PositionDancingBot(bool playing) {
   const int count =
-      std::max(1, THEME->GetMetricI(m_sName, "DancingBotPositionCount"));
+      std::max(1, THEME->GetMetricI(name_, "DancingBotPositionCount"));
   m_iDancingBotPosition = std::max(1, std::min(count, m_iDancingBotPosition));
   Message params("Position");
   params.SetParam("Position", m_iDancingBotPosition);
   params.SetParam("Playing", playing);
-  params.SetParam("Screen", m_sName);
+  params.SetParam("Screen", name_);
   m_DancingBot.PlayCommandNoRecurse(params);
 }
 
@@ -3011,10 +3010,10 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
     edit_b = MenuButtonToEditButton(input.menu_i_);
   }
 
-  if (EditB == EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION) {
+  if (edit_b == EDIT_BUTTON_CYCLE_DANCING_BOT_POSITION) {
     if (input.type_ == IET_FIRST_PRESS) {
       const int count =
-          std::max(1, THEME->GetMetricI(m_sName, "DancingBotPositionCount"));
+          std::max(1, THEME->GetMetricI(name_, "DancingBotPositionCount"));
       m_iDancingBotPosition = m_iDancingBotPosition % count + 1;
       PositionDancingBot(edit_state_ == STATE_PLAYING);
     }
