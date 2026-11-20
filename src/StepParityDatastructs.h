@@ -154,6 +154,9 @@ struct StageLayout {
       unsigned int, StepParity::FootPlacement columns, unsigned long column);
 };
 
+// Shared by chart analysis and editor visualization.
+const StageLayout* GetStageLayout(StepsType type);
+
 /// @brief Represents a specific possible state of the player's position
 /// for a given row of the step chart.
 struct State {

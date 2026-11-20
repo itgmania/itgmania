@@ -2602,6 +2602,28 @@ Def.BitmapText{
 		Returns <code>true</code> if this CourseEntry is secret.
 	</Function>
 </Class>
+<Class name='DancingBot' grouping='Actor'>
+	<Description>
+		Displays a chart's suggested footwork, created with <code>Def.DancingBot</code>.<br />
+		Supports dance single/double and the selected player's part of couple/routine charts.<br />
+		Call <Link function='SetSteps' /> when the chart changes and <Link function='SetSecond' /> to update the feet and panel highlights.
+	</Description>
+	<Function name='GetMotionSeconds' return='float' arguments=''>
+		Returns how early the feet can start moving toward the next step, in song seconds.
+	</Function>
+	<Function name='IsSupported' return='bool' arguments=''>
+		Returns <code>true</code> if the loaded chart can be displayed.
+	</Function>
+	<Function name='SetMotionSeconds' return='void' arguments='float seconds'>
+		Sets how early the feet can start moving toward the next step, in song seconds, clamped to 0 through 1. Set to 0 to move the feet immediately when each step occurs.
+	</Function>
+	<Function name='SetSecond' return='void' arguments='float seconds'>
+		Updates the feet and panel highlights for the specified song time, in seconds. Supports seeking backwards and looping.
+	</Function>
+	<Function name='SetSteps' return='void' arguments='Steps steps, PlayerNumber player'>
+		Sets the chart to display and which player's footwork to use. Pass <code>nil</code> for <code>steps</code> to clear the bot. Defaults to the master player if <code>player</code> is omitted.
+	</Function>
+</Class>
 <Class name='CryptManager'>
 	<Description>
 		This singleton is accessible to Lua via <code>CRYPTMAN</code>.
