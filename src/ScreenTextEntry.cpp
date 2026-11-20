@@ -398,22 +398,23 @@ void ScreenTextEntry::TextEntrySettings::FromStack(lua_State* L) {
   password_ = !!lua_toboolean(L, -1);
   lua_settop(L, iTab);
 
-#define SET_FUNCTION_MEMBER(memname)                            \
-  lua_getfield(L, iTab, #memname);                              \
-  if (lua_isfunction(L, -1)) {                                  \
-    memname.SetFromStack(L);                                    \
-  } else if (!lua_isnil(L, -1)) {                               \
-    LuaHelpers::ReportScriptError(                              \
-        "ScreenTextEntry \"" #memname "\" is not a function."); \
-  }                                                             \
-  lua_settop(L, iTab);
+  auto set_function_member = [L, iTab](
+                                 LuaReference& member, const char* lua_name) {
+    lua_getfield(L, iTab, lua_name);
+    if (lua_isfunction(L, -1)) {
+      member.SetFromStack(L);
+    } else if (!lua_isnil(L, -1)) {
+      LuaHelpers::ReportScriptErrorFmt(
+          "ScreenTextEntry \"%s\" is not a function.", lua_name);
+    }
+    lua_settop(L, iTab);
+  };
 
-  SET_FUNCTION_MEMBER(validate_);
-  SET_FUNCTION_MEMBER(on_ok_);
-  SET_FUNCTION_MEMBER(on_cancel_);
-  SET_FUNCTION_MEMBER(validate_append_);
-  SET_FUNCTION_MEMBER(format_answer_for_display_);
-#undef SET_FUNCTION_MEMBER
+  set_function_member(validate_, "Validate");
+  set_function_member(on_ok_, "OnOK");
+  set_function_member(on_cancel_, "OnCancel");
+  set_function_member(validate_append_, "ValidateAppend");
+  set_function_member(format_answer_for_display_, "FormatAnswerForDisplay");
 }
 
 // Lua bridges
