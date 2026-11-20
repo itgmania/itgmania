@@ -1923,11 +1923,12 @@ float Song::GetStepsSeconds() const {
 }
 
 bool Song::IsLong() const {
-  return !IsMarathon() && music_length_seconds_ >= g_fLongVerSongSeconds;
+  return !IsMarathon() && GetLastSecondNoOffset() >= g_fLongVerSongSeconds;
 }
 
 bool Song::IsMarathon() const {
-  return music_length_seconds_ >= g_fMarathonVerSongSeconds;
+  // Use the playable ending (respecting LASTSECONDHINT)
+  return GetLastSecondNoOffset() >= g_fMarathonVerSongSeconds;
 }
 
 // lua start
