@@ -2,12 +2,23 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <string>
 
 #include "GameInput.h"
 #include "LightsManager.h"
+#include "RageUtil.h"
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
+
+// check for the device by checking the existance of light 0's file.
+bool LightsDriver_Linux_ITGIO::ShouldAutoLoad() {
+  const std::string path = ssprintf(kGameControllerLightFile, 0);
+  return access(path.c_str(), F_OK) == 0;
+}
 
 namespace {
 const int coin_counter_index = 14;

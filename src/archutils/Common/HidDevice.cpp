@@ -50,19 +50,21 @@ HidDevice::~HidDevice() {
 }
 
 void HidDevice::Close() {
-  hid_close(handle_);
+  if (handle_ != nullptr) {
+    hid_close(handle_);
+  }
   handle_ = nullptr;
 
   found_device_info_.vid_ = 0;
   found_device_info_.pid_ = 0;
   found_device_info_.interface_num_ = 0;
-  found_device_info_.path_ = nullptr;
+  found_device_info_.path_.clear();
 }
 
 bool HidDevice::Open(const char* path) {
   handle_ = hid_open_path(path);
 
-  if (non_blocking_read_) {
+  if (handle_ != nullptr && non_blocking_read_) {
     hid_set_nonblocking(handle_, 1);
   }
 
@@ -70,26 +72,24 @@ bool HidDevice::Open(const char* path) {
     LOG->Info(
         "HidDevice 0x%04x:0x%04x %d opened by path %s", found_device_info_.vid_,
         found_device_info_.pid_, found_device_info_.interface_num_,
-        found_device_info_.path_);
+        found_device_info_.path_.c_str());
   } else {
     LOG->Warn(
         "HidDevice 0x%04x:0x%04x %d could not be opened by path %s. Are "
         "permissions correct?",
         found_device_info_.vid_, found_device_info_.pid_,
-        found_device_info_.interface_num_, found_device_info_.path_);
+        found_device_info_.interface_num_, found_device_info_.path_.c_str());
   }
 
   return handle_ != nullptr;
 }
 
 bool HidDevice::TryConnect() {
-  GetDeviceInfo(vid_, pids_, interface_num_, &found_device_info_);
-
-  if (found_device_info_.path_ == nullptr) {
+  if (!GetDeviceInfo(vid_, pids_, interface_num_, &found_device_info_)) {
     return false;
   }
 
-  return Open(found_device_info_.path_);
+  return Open(found_device_info_.path_.c_str());
 }
 
 bool HidDevice::CheckConnection() {
@@ -127,7 +127,7 @@ const std::string HidDevice::GetPidsString(const std::vector<int> pids) {
   return pids_string;
 }
 
-void HidDevice::GetDeviceInfo(
+bool HidDevice::GetDeviceInfo(
     int vid, const std::vector<int> pids, int interface_number,
     HidDeviceInfo* device_info) {
   bool found{false};
@@ -160,8 +160,6 @@ void HidDevice::GetDeviceInfo(
 
       cur_dev = cur_dev->next;
     }
-  } else {
-    LOG->Warn("HidDevice with vid 0x%04x not found, is it plugged in?", vid);
   }
 
   if (found && cur_dev != nullptr) {
@@ -170,6 +168,19 @@ void HidDevice::GetDeviceInfo(
     device_info->interface_num_ = cur_dev->interface_number;
     device_info->path_ = cur_dev->path;
   }
+
+  hid_free_enumeration(devs);
+  return found;
+}
+
+bool HidDevice::IsDevicePresent(
+    int vid, const std::vector<int> pids, int interface_number) {
+  HidDeviceInfo device_info;
+  return GetDeviceInfo(vid, pids, interface_number, &device_info);
+}
+
+bool HidDevice::IsDevicePresent(int vid, int pid, int interface_number) {
+  return IsDevicePresent(vid, make_pids(pid, 1), interface_number);
 }
 
 int HidDevice::Read(unsigned char* data, size_t length) {

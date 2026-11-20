@@ -12,6 +12,11 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(fusion);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(fusion);
+
+bool LightsDriver_fusion::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(FUSION_VID, FUSION_PID);
+}
 
 LightsDriver_fusion::LightsDriver_fusion()
     : dev_{FUSION_VID, FUSION_PID}, output_buffer_{0} {}

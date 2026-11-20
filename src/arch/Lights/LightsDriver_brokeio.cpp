@@ -12,6 +12,11 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(brokeio);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(brokeio);
+
+bool LightsDriver_brokeio::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(BROKEIO_VID, BROKEIO_PID);
+}
 
 LightsDriver_brokeio::LightsDriver_brokeio()
     : dev_{BROKEIO_VID, BROKEIO_PID}, output_buffer_{0} {}

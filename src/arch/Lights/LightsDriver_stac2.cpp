@@ -12,6 +12,12 @@
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(stac2);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(stac2);
+
+bool LightsDriver_stac2::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      STAC2_VID, {STAC2_PID_P1, STAC2_PID_P2}, STAC2_LIGHTING_INTERFACE);
+}
 
 LightsDriver_stac2::LightsDriver_stac2()
     : devs_{{STAC2_VID, STAC2_PID_P1, STAC2_LIGHTING_INTERFACE}, {STAC2_VID, STAC2_PID_P2, STAC2_LIGHTING_INTERFACE}},

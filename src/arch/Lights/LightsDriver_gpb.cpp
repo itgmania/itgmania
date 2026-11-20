@@ -6,6 +6,12 @@
 #include "global.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(gpb);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS(gpb);
+
+bool LightsDriver_gpb::ShouldAutoLoad() {
+  return HidDevice::IsDevicePresent(
+      GPB_VID, GPB_PID, GPB_LIGHTING_INTERFACENUM);
+}
 
 LightsDriver_gpb::LightsDriver_gpb()
     : dev_{GPB_VID, GPB_PID, GPB_LIGHTING_INTERFACENUM}, output_buffer_{0} {}

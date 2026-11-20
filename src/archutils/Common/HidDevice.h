@@ -16,7 +16,7 @@ enum HidResults {
 std::vector<int> make_pids(int base_pid, int size);
 
 struct HidDeviceInfo {
-  char* path_{nullptr};
+  std::string path_;
   int pid_;
   int vid_;
   int interface_num_;
@@ -47,9 +47,12 @@ class HidDevice {
   const wchar_t* GetError();
 
  public:
-  static void GetDeviceInfo(
+  static bool GetDeviceInfo(
       int vid, const std::vector<int> pids, int interface_number,
       HidDeviceInfo* device_info);
+  static bool IsDevicePresent(
+      int vid, const std::vector<int> pids, int interface_number = -1);
+  static bool IsDevicePresent(int vid, int pid, int interface_number = -1);
 
   HidDevice(
       int vid, const std::vector<int> pids, int interface_num = -1,

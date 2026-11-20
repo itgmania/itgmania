@@ -2,15 +2,27 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <string>
 
 #include "GameInput.h"
 #include "LightsManager.h"
+#include "RageUtil.h"
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
+
+// check for the device by checking the existance of light 0's file.
+bool LightsDriver_Linux_PIUIO_Leds::ShouldAutoLoad() {
+  const std::string path = ssprintf(kGameControllerLightFile, 0);
+  return access(path.c_str(), F_OK) == 0;
+}
 
 // NOTE: front usb ports are off by default, index 27 enables them.
 // It is currently unmapped.
+// the LED on the side of the device is 14 as well.
 
 namespace {
 const int coin_counter_index = 28;
