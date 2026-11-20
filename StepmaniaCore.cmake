@@ -105,10 +105,10 @@ if(WIN32)
   get_filename_component(LIB_AVUTIL ${LIB_AVUTIL} NAME)
 
   set(SM_FFMPEG_WIN32_DLLS
-    "avcodec-59.dll"
-    "avformat-59.dll"
-    "avutil-57.dll"
-    "swscale-6.dll"
+    "avcodec-61.dll"
+    "avformat-61.dll"
+    "avutil-59.dll"
+    "swscale-8.dll"
   )
   list(TRANSFORM SM_FFMPEG_WIN32_DLLS PREPEND
        "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}/"

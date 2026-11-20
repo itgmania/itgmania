@@ -279,9 +279,9 @@ float MovieDecoder_FFMpeg::CalculatePTS(avcodec::AVFrame* frame) {
 
 float MovieDecoder_FFMpeg::CalculateDuration(avcodec::AVFrame* frame) {
   float duration = 0.0f;
-  if (frame->pkt_duration > 0 && av_stream_ && av_stream_->time_base.den > 0) {
+  if (frame->duration > 0 && av_stream_ && av_stream_->time_base.den > 0) {
     duration =
-        static_cast<float>(frame->pkt_duration * av_q2d(av_stream_->time_base));
+        static_cast<float>(frame->duration * av_q2d(av_stream_->time_base));
   } else if (
       av_stream_ && av_stream_->avg_frame_rate.num > 0 &&
       av_stream_->avg_frame_rate.den > 0) {
@@ -580,15 +580,6 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
     return "Couldn't find any video streams";
   }
   av_stream_ = av_format_context_->streams[stream_idx];
-  av_stream_codec_ = avcodec::avcodec_alloc_context3(nullptr);
-  if (avcodec::avcodec_parameters_to_context(
-          av_stream_codec_, av_stream_->codecpar) < 0) {
-    return ssprintf("Could not get context from parameters");
-  }
-
-  if (av_stream_codec_->codec_id == avcodec::AV_CODEC_ID_NONE) {
-    return ssprintf("Unsupported codec %08x", av_stream_codec_->codec_tag);
-  }
 
   std::string s_error = OpenCodec();
   if (!s_error.empty()) {
@@ -605,8 +596,19 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
 
 std::string MovieDecoder_FFMpeg::OpenCodec() {
   ASSERT(av_stream_ != nullptr);
-  if (av_stream_codec_->codec) {
-    avcodec::avcodec_close(av_stream_codec_);
+
+  // FFmpeg 6.0+ does not support reopening an AVCodecContext that was closed,
+  // so always build a fresh context from the stream parameters.
+  avcodec::avcodec_free_context(&av_stream_codec_);
+  av_stream_codec_ = avcodec::avcodec_alloc_context3(nullptr);
+  if (av_stream_codec_ == nullptr ||
+      avcodec::avcodec_parameters_to_context(
+          av_stream_codec_, av_stream_->codecpar) < 0) {
+    return std::string("Could not get context from parameters");
+  }
+
+  if (av_stream_codec_->codec_id == avcodec::AV_CODEC_ID_NONE) {
+    return ssprintf("Unsupported codec %08x", av_stream_codec_->codec_tag);
   }
 
   const avcodec::AVCodec* codec =
