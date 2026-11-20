@@ -279,9 +279,9 @@ float MovieDecoder_FFMpeg::CalculatePTS(avcodec::AVFrame* frame) {
 
 float MovieDecoder_FFMpeg::CalculateDuration(avcodec::AVFrame* frame) {
   float duration = 0.0f;
-  if (frame->pkt_duration > 0 && av_stream_ && av_stream_->time_base.den > 0) {
+  if (frame->duration > 0 && av_stream_ && av_stream_->time_base.den > 0) {
     duration =
-        static_cast<float>(frame->pkt_duration * av_q2d(av_stream_->time_base));
+        static_cast<float>(frame->duration * av_q2d(av_stream_->time_base));
   } else if (
       av_stream_ && av_stream_->avg_frame_rate.num > 0 &&
       av_stream_->avg_frame_rate.den > 0) {
@@ -606,7 +606,8 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
 std::string MovieDecoder_FFMpeg::OpenCodec() {
   ASSERT(av_stream_ != nullptr);
   if (av_stream_codec_->codec) {
-    avcodec::avcodec_close(av_stream_codec_);
+    avcodec::avcodec_flush_buffers(av_stream_codec_);
+    return std::string();
   }
 
   const avcodec::AVCodec* codec =
