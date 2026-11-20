@@ -135,11 +135,6 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   int64_t timestamp_origin_ = AV_NOPTS_VALUE;
   float last_pts_ = 0.0f;
   float last_duration_ = 0.0f;
-  // Seek retains its lookahead image for the worker without converting any
-  // discarded images or losing the next image in the stream.
-  avcodec::AVFrame* pending_frame_ = nullptr;
-  float pending_pts_ = 0.0f;
-  float pending_duration_ = 0.0f;
 
   std::atomic<bool> cancel_{false};
   std::atomic<bool> looping_{false};

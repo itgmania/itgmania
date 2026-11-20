@@ -477,7 +477,7 @@ void MovieTexture_Generic::SetPosition(float seconds) {
   if (decoding_thread_ && decoding_thread_->joinable()) {
     decoding_thread_->join();
   }
-  clock_ = decoder_->Seek(std::max(seconds, 0.0f), loop_);
+  clock_ = decoder_->Seek(seconds, loop_);
   finished_ = false;
   first_frame_displayed_ = false;
   if (clock_ < 0) {

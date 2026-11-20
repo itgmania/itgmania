@@ -242,7 +242,6 @@ bool MovieDecoder_FFMpeg::SeekInput(float seconds) {
     return false;
   }
   avcodec::avcodec_flush_buffers(av_stream_codec_);
-  avcodec::av_frame_free(&pending_frame_);
   last_pts_ = 0;
   last_duration_ = 0;
   return true;
@@ -432,17 +431,7 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
       frame_buf = std::make_unique<ConvertedFrame>();
     }
 
-    const bool had_pending = pending_frame_ != nullptr;
-    float frame_pts = pending_pts_;
-    float frame_duration = pending_duration_;
-    int ret = 0;
-    if (had_pending) {
-      avcodec::av_frame_unref(raw_frame);
-      avcodec::av_frame_move_ref(raw_frame, pending_frame_);
-      avcodec::av_frame_free(&pending_frame_);
-    } else {
-      ret = ReadAndDecodeNextFrame(packet, raw_frame);
-    }
+    int ret = ReadAndDecodeNextFrame(packet, raw_frame);
     if (ret < 0) {
       if (ret == -3) {
         // The next iteration handles the requested rewind on this worker.
@@ -485,10 +474,8 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
       break;
     }
 
-    if (!had_pending) {
-      frame_pts = CalculatePTS(raw_frame);
-      frame_duration = CalculateDuration(raw_frame);
-    }
+    float frame_pts = CalculatePTS(raw_frame);
+    float frame_duration = CalculateDuration(raw_frame);
 
     ConvertFrame(raw_frame, *frame_buf);
     frame_buf->pts_ = frame_pts;
@@ -684,7 +671,6 @@ std::string MovieDecoder_FFMpeg::OpenCodec() {
 // double-free issues. av_format_context_->pb is nulled before
 // avformat_close_input to prevent premature buffer deallocation.
 void MovieDecoder_FFMpeg::Close() {
-  avcodec::av_frame_free(&pending_frame_);
   if (av_sws_context_) {
     avcodec::sws_freeContext(av_sws_context_);
     av_sws_context_ = nullptr;
@@ -721,8 +707,8 @@ void MovieDecoder_FFMpeg::Close() {
 }
 
 float MovieDecoder_FFMpeg::Seek(float seconds, bool loop) {
-  // Generic has stopped and joined the worker. Discarded images are decoded
-  // without color conversion; only the selected image enters beta's pool.
+  // Generic has stopped and joined the worker. Skip color conversion for
+  // discarded images, then queue the target and its following image together.
   cancel_ = false;
   reset_ = false;
   if (!std::isfinite(seconds)) {
@@ -805,23 +791,18 @@ float MovieDecoder_FFMpeg::Seek(float seconds, bool loop) {
       selected->pts_ = pts;
       selected->duration_ = frame_duration;
       selected->is_last_frame_ = last;
+      std::unique_ptr<ConvertedFrame> following;
       if (!last) {
-        pending_frame_ = avcodec::av_frame_clone(next.get());
-        if (!pending_frame_) {
-          return -1;
-        }
-        pending_pts_ = next_pts;
-        pending_duration_ = next_duration;
-      }
-      // A pending packet is only possible with a decoder violating FFmpeg's
-      // send/receive contract; do not silently lose it across the worker
-      // restart.
-      if (packet->size > 0) {
-        avcodec::av_frame_free(&pending_frame_);
-        return -1;
+        following = std::make_unique<ConvertedFrame>();
+        ConvertFrame(next.get(), *following);
+        following->pts_ = next_pts;
+        following->duration_ = next_duration;
       }
       std::lock_guard<std::mutex> lock(queue_mutex_);
       ready_queue_.push_back(std::move(selected));
+      if (following) {
+        ready_queue_.push_back(std::move(following));
+      }
       return last ? std::min(seconds, next_pts) : seconds;
     }
     avcodec::av_frame_unref(current.get());
