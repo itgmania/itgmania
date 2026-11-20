@@ -70,6 +70,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
 
   void Rewind() override;
   void Rollover() override;
+  float Seek(float seconds, bool loop) override;
 
   int GetFrame(RageSurface* surface_out) override;
 
@@ -90,7 +91,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   float GetTimestamp() const override;
 
   void Cancel() override;
-  void SetLooping(bool loop) override { looping_ = loop; }
+  void SetLooping(bool loop) override;
   bool EndOfMovie() override;
 
  private:
@@ -102,8 +103,9 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   float CalculatePTS(avcodec::AVFrame* frame);
   float CalculateDuration(avcodec::AVFrame* frame);
   void ConvertFrame(avcodec::AVFrame* raw_frame, ConvertedFrame& out_frame);
-  void SeekToStart();
-  void HandleReset();
+  bool SeekInput(float seconds);
+  bool SeekToStart();
+  bool HandleReset();
 
   avcodec::AVStream* av_stream_ = nullptr;
   avcodec::AVPixelFormat av_pixel_format_ = avcodec::AV_PIX_FMT_NONE;
@@ -130,10 +132,9 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   // constant memory reallocation.
   std::vector<std::unique_ptr<ConvertedFrame>> frame_pool_;
 
-  float timestamp_offset_ = 0.0f;
+  int64_t timestamp_origin_ = AV_NOPTS_VALUE;
   float last_pts_ = 0.0f;
   float last_duration_ = 0.0f;
-  bool first_pts_seen_ = false;
 
   std::atomic<bool> cancel_{false};
   std::atomic<bool> looping_{false};
