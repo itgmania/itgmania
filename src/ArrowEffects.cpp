@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <string>
@@ -17,7 +18,6 @@
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageMath.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
 #include "Song.h"
@@ -150,28 +150,27 @@ float ArrowEffects::GetTime() {
   double mult = 1.0 + static_cast<double>(curr_options->mod_timer_mult_);
   double offset = static_cast<double>(curr_options->mod_timer_offset_);
   ModTimerType modtimer = curr_options->mod_timer_type_;
-  double returned_time = 0;
-  switch (modtimer) {
-    case ModTimerType_Default:
-    case ModTimerType_Game:
-      returned_time = (RageTimer::GetTimeSinceStart() + offset) * mult;
-      break;
-    case ModTimerType_Beat:
-      returned_time =
-          (static_cast<double>(GAMESTATE->position_.song_beat_visible_) +
-           offset) *
-          mult;
-      break;
-    case ModTimerType_Song:
-      returned_time =
-          (static_cast<double>(GAMESTATE->position_.music_seconds_) + offset) *
-          mult;
-      break;
-    default:
-      returned_time = RageTimer::GetTimeSinceStart() + offset;
-      break;
+
+  if (modtimer == ModTimerType_Default || ModTimerType_Game) {
+    return (std::chrono::duration<double>(
+                std::chrono::steady_clock::now().time_since_epoch())
+                .count() +
+            offset) *
+           mult;
   }
-  return static_cast<float>(returned_time);
+  if (modtimer == ModTimerType_Beat) {
+    return (static_cast<double>(GAMESTATE->position_.song_beat_visible_) +
+            offset) *
+           mult;
+  }
+  if (modtimer == ModTimerType_Song) {
+    return (static_cast<double>(GAMESTATE->position_.music_seconds_) + offset) *
+           mult;
+  }
+  return (std::chrono::duration<double>(
+              std::chrono::steady_clock::now().time_since_epoch())
+              .count()) +
+         offset;
 }
 
 namespace {
@@ -390,9 +389,12 @@ void ArrowEffects::Init(PlayerNumber pn) {
   }
 }
 
+static auto last_time = std::chrono::steady_clock::now();
 void ArrowEffects::Update() {
-  static double last_time = 0.0;
-  double time = RageTimer::GetTimeSinceStart();
+  const auto time = std::chrono::steady_clock::now();
+  const auto diff = time - last_time;
+  const float diff_as_seconds =
+      std::chrono::duration<double>(time - last_time).count();
 
   FOREACH_EnabledPlayer(pn) {
     const Style* style = GAMESTATE->GetCurrentStyle(pn);
@@ -413,11 +415,11 @@ void ArrowEffects::Update() {
     }
 
     if (!position.freeze_ || !position.delay_) {
-      data.expand_seconds_ += static_cast<float>(time - last_time);
+      data.expand_seconds_ += diff_as_seconds;
       data.expand_seconds_ = std::fmod(
           data.expand_seconds_,
           (PI * 2) / (accels[PlayerOptions::ACCEL_EXPAND_PERIOD] + 1));
-      data.tan_expand_seconds_ += static_cast<float>(time - last_time);
+      data.tan_expand_seconds_ += diff_as_seconds;
       data.tan_expand_seconds_ = std::fmod(
           data.tan_expand_seconds_,
           (PI * 2) / (accels[PlayerOptions::ACCEL_TAN_EXPAND_PERIOD] + 1));
