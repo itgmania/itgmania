@@ -170,9 +170,20 @@ void MovieDecoder_FFMpeg::Cancel() {
 }
 
 void MovieDecoder_FFMpeg::Rewind() {
-  reset_ = true;
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    reset_ = true;
+  }
   can_produce_cv_.notify_all();
   can_consume_cv_.notify_all();
+}
+
+void MovieDecoder_FFMpeg::SetLooping(bool loop) {
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    looping_ = loop;
+  }
+  can_produce_cv_.notify_all();
 }
 
 void MovieDecoder_FFMpeg::Rollover() {
@@ -189,12 +200,12 @@ float MovieDecoder_FFMpeg::GetTimestamp() const {
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
   std::lock_guard<std::mutex> lock(queue_mutex_);
-  return !ready_queue_.empty();
+  return !reset_ && !ready_queue_.empty();
 }
 
 bool MovieDecoder_FFMpeg::EndOfMovie() {
   std::lock_guard<std::mutex> lock(queue_mutex_);
-  return end_of_movie_ && ready_queue_.empty();
+  return !reset_ && end_of_movie_ && ready_queue_.empty();
 }
 
 // Called by the worker or with the worker joined. Seek timestamps remain
@@ -242,9 +253,10 @@ bool MovieDecoder_FFMpeg::SeekToStart() {
   return SeekInput(0);
 }
 
-void MovieDecoder_FFMpeg::HandleReset() {
-  reset_ = false;
-  SeekToStart();
+bool MovieDecoder_FFMpeg::HandleReset() {
+  if (!SeekToStart()) {
+    return false;
+  }
   std::lock_guard<std::mutex> lock(queue_mutex_);
   while (!ready_queue_.empty()) {
     if (frame_pool_.size() < kMaxPoolFrames) {
@@ -253,7 +265,9 @@ void MovieDecoder_FFMpeg::HandleReset() {
     ready_queue_.pop_front();
   }
   end_of_movie_ = false;
+  reset_ = false;
   can_produce_cv_.notify_all();
+  return true;
 }
 
 // Computes the presentation timestamp (PTS) in seconds.
@@ -384,9 +398,14 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
   avcodec::AVPacket* packet = avcodec::av_packet_alloc();
   avcodec::AVFrame* raw_frame = avcodec::av_frame_alloc();
 
+  int outcome = 0;
   while (!cancel_) {
     if (reset_) {
-      HandleReset();
+      avcodec::av_packet_unref(packet);
+      if (!HandleReset()) {
+        outcome = -1;
+        break;
+      }
     }
 
     std::unique_ptr<ConvertedFrame> frame_buf;
@@ -426,7 +445,7 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
     }
     if (ret < 0) {
       if (ret == -3) {
-        HandleReset();
+        // The next iteration handles the requested rewind on this worker.
         continue;
       }
       if (ret == AVERROR_EOF) {
@@ -440,14 +459,24 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
         }
         can_consume_cv_.notify_all();
 
-        if (looping_) {
-          SeekToStart();
-          continue;
-        } else {
+        {
           std::unique_lock<std::mutex> lock(queue_mutex_);
-          end_of_movie_ = true;
+          // Stay available for asynchronous rewinds after non-looping EOF.
+          can_produce_cv_.wait(
+              lock, [this]() { return cancel_ || reset_ || looping_; });
+        }
+        if (cancel_) {
           break;
         }
+        if (reset_) {
+          continue;
+        }
+        avcodec::av_packet_unref(packet);
+        if (!SeekToStart()) {
+          outcome = -1;
+          break;
+        }
+        continue;
       }
       if (ret == -2 || cancel_) {
         break;
@@ -475,7 +504,7 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
 
   avcodec::av_frame_free(&raw_frame);
   avcodec::av_packet_free(&packet);
-  return cancel_ ? -2 : 0;
+  return cancel_ ? -2 : outcome;
 }
 
 int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out) {

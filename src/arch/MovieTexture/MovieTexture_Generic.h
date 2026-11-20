@@ -1,6 +1,7 @@
 #ifndef RAGE_MOVIE_TEXTURE_GENERIC_H
 #define RAGE_MOVIE_TEXTURE_GENERIC_H
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -127,7 +128,7 @@ class MovieTexture_Generic : public RageMovieTexture {
   bool first_frame_displayed_ = false;
 
   // If true, halts all decoding and display due to a fatal decode error.
-  bool failure_ = false;
+  std::atomic<bool> failure_{false};
 
   uintptr_t texture_handle_;
   std::unique_ptr<RageTextureRenderTarget> render_target_;

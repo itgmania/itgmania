@@ -337,8 +337,6 @@ void MovieTexture_Generic::UpdateMovie(float seconds) {
 
   if (finished_) {
     if (loop_) {
-      // Non-looping EOF may have terminated the worker. Seeking also restarts
-      // it, so enabling looping after EOF cannot leave a frozen texture.
       SetPosition(0);
     } else {
       return;
@@ -465,6 +463,14 @@ void MovieTexture_Generic::Reload() {}
 
 void MovieTexture_Generic::SetPosition(float seconds) {
   if (failure_ || !std::isfinite(seconds)) {
+    return;
+  }
+  if (seconds <= 0) {
+    // Rewinds stay on the decoding worker, including restarts after EOF.
+    clock_ = 0;
+    finished_ = false;
+    first_frame_displayed_ = false;
+    decoder_->Rewind();
     return;
   }
   decoder_->Cancel();

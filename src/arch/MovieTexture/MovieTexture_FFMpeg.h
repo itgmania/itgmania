@@ -91,7 +91,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   float GetTimestamp() const override;
 
   void Cancel() override;
-  void SetLooping(bool loop) override { looping_ = loop; }
+  void SetLooping(bool loop) override;
   bool EndOfMovie() override;
 
  private:
@@ -105,7 +105,7 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
   void ConvertFrame(avcodec::AVFrame* raw_frame, ConvertedFrame& out_frame);
   bool SeekInput(float seconds);
   bool SeekToStart();
-  void HandleReset();
+  bool HandleReset();
 
   avcodec::AVStream* av_stream_ = nullptr;
   avcodec::AVPixelFormat av_pixel_format_ = avcodec::AV_PIX_FMT_NONE;
