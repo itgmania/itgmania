@@ -35,23 +35,13 @@ jobs:
         sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 \
           g++-mingw-w64-x86-64 nasm pkg-config make wget tar
         
-        # We need to custom build zlib and bzip2 for mingw.
-        # Build zlib
+        # We need to custom build zlib for mingw.
         wget https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz
         tar -xzf zlib-1.3.2.tar.gz
         cd zlib-1.3.2
         make -f win32/Makefile.gcc PREFIX=x86_64-w64-mingw32- SHARED_MODE=1
         sudo make -f win32/Makefile.gcc install DESTDIR=/usr/x86_64-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
         cd ..
-        
-        # Build bzip2
-        wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
-        tar -xzf bzip2-1.0.8.tar.gz
-        cd bzip2-1.0.8
-        make CC=x86_64-w64-mingw32-gcc AR=x86_64-w64-mingw32-ar RANLIB=x86_64-w64-mingw32-ranlib libbz2.a
-        sudo cp libbz2.a /usr/x86_64-w64-mingw32/lib/
-        sudo cp bzlib.h /usr/x86_64-w64-mingw32/include/
-        make clean
 
     - name: Build FFmpeg for Windows using MinGW-w64
       run: |
@@ -65,26 +55,32 @@ jobs:
         # extensions so they should be explicitly disabled.
         COMMON_FLAGS_FFMPEG="--cpu=x86-64 \
           --disable-runtime-cpudetect \
-          --disable-autodetect \
           --disable-asm \
+          --disable-autodetect \
           --disable-avdevice \
           --disable-avfilter \
           --disable-debug \
           --disable-devices \
           --disable-doc \
+          --disable-dwt \
+          --disable-encoders \
+          --disable-faan \
           --disable-filters \
-          --disable-lzma \
+          --disable-hwaccels \
+          --disable-iamf \
+          --disable-iconv \
+          --disable-lsp \
+          --disable-muxers \
           --disable-network \
-          --disable-postproc \
+          --disable-pixelutils \
           --disable-programs \
+          --disable-protocols \
           --disable-static \
           --disable-swresample \
-          --enable-bzlib \
-          --enable-d3d11va \
-          --enable-dxva2 \
+          --disable-unstable \
           --enable-gpl \
-          --enable-version3 \
           --enable-shared \
+          --enable-version3 \
           --enable-w32threads \
           --enable-zlib \
           --extra-cflags=-w \

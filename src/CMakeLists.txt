@@ -457,10 +457,7 @@ elseif(APPLE)
               "${SM_FFMPEG_LIB}/libavformat.a"
               "${SM_FFMPEG_LIB}/libavcodec.a"
               "${SM_FFMPEG_LIB}/libswscale.a"
-              "${SM_FFMPEG_LIB}/libavutil.a"
-              "${MAC_FRAME_COREMEDIA}"
-              "${MAC_FRAME_COREVIDEO}"
-              "${MAC_FRAME_VIDEOTOOLBOX}")
+              "${SM_FFMPEG_LIB}/libavutil.a")
 else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   list(APPEND SMDATA_LINK_LIB
               "${SM_FFMPEG_LIB}/libavformat.a"

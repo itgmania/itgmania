@@ -6,20 +6,28 @@ list(APPEND FFMPEG_CONFIGURE
             "--disable-autodetect"
             "--disable-avdevice"
             "--disable-avfilter"
+            "--disable-debug"
             "--disable-devices"
             "--disable-doc"
+            "--disable-dwt"
+            "--disable-encoders"
+            "--disable-faan"
             "--disable-filters"
-            "--disable-lzma"
+            "--disable-hwaccels"
+            "--disable-iamf"
+            "--disable-iconv"
+            "--disable-lsp"
+            "--disable-muxers"
             "--disable-network"
-            "--disable-postproc"
+            "--disable-pixelutils"
             "--disable-programs"
+            "--disable-protocols"
             "--disable-swresample"
-            "--disable-vaapi"
-            "--disable-bzlib"
+            "--disable-unstable"
             "--enable-gpl"
-            "--enable-version3"
             "--enable-pthreads"
             "--enable-static"
+            "--enable-version3"
             "--enable-zlib"
             "--prefix=/")
 
@@ -41,6 +49,9 @@ endif()
 if(CMAKE_CXX_FLAGS)
   list(APPEND FFMPEG_CONFIGURE "--extra-cxxflags=${CMAKE_CXX_FLAGS}")
 endif()
+if(CMAKE_EXE_LINKER_FLAGS)
+  list(APPEND FFMPEG_CONFIGURE "--extra-ldflags=${CMAKE_EXE_LINKER_FLAGS}")
+endif()
 
 if(CMAKE_POSITION_INDEPENDENT_CODE)
   list(APPEND FFMPEG_CONFIGURE "--enable-pic")
@@ -48,7 +59,6 @@ endif()
 
 if(MACOSX)
   list(APPEND FFMPEG_CONFIGURE "--enable-cross-compile")
-  list(APPEND FFMPEG_CONFIGURE "--enable-videotoolbox")
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-mmacosx-version-min=11")
   if(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
     list(APPEND FFMPEG_CONFIGURE "--arch=arm64" "--extra-cflags=-arch arm64" "--extra-ldflags=-arch arm64")
