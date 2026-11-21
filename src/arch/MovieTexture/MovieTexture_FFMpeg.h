@@ -28,7 +28,7 @@ extern "C" {
 // Size of buffer for custom FFmpeg AVIO context (128 KB minimizes I/O
 // overhead).
 constexpr size_t kFFMpegBufferSize = 131072;
-constexpr int kSwsFlags = SWS_BILINEAR;
+constexpr int kSwsFlags = avcodec::SWS_BILINEAR;
 
 // Holds a decoded, color-converted, and scaled video frame ready for OpenGL
 // presentation. Frames are pre-allocated and recycled via frame_pool_ to avoid
