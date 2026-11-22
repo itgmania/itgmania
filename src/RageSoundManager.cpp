@@ -10,9 +10,11 @@
 
 #include "RageSoundManager.h"
 
+#include <chrono>
 #include <cstdint>
 #include <map>
 #include <string>
+#include <thread>
 #include <utility>
 
 #include "LocalizedString.h"
@@ -46,7 +48,9 @@ static Preference<std::string> g_sSoundDrivers(
 RageSoundManager* SOUNDMAN = nullptr;
 
 RageSoundManager::RageSoundManager()
-    : driver_(nullptr), volume_of_non_critical_sounds_(1.0f) {}
+    : driver_(nullptr),
+      stop_update_thread_(false),
+      volume_of_non_critical_sounds_(1.0f) {}
 
 static LocalizedString COULDNT_FIND_SOUND_DRIVER(
     "RageSoundManager", "Couldn't find a sound driver that works");
@@ -55,9 +59,14 @@ void RageSoundManager::Init() {
   if (driver_ == nullptr) {
     RageException::Throw("%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str());
   }
+
+  stop_update_thread_.store(false);
+  update_thread_ = std::thread(&RageSoundManager::RunUpdateThread, this);
 }
 
 RageSoundManager::~RageSoundManager() {
+  StopUpdateThread();
+
   /* Don't lock while deleting the driver (the decoder thread might deadlock).
    */
   delete driver_;
@@ -75,7 +84,32 @@ RageSoundManager::~RageSoundManager() {
  * sounds.  We don't want to delete SOUNDMAN early, since those threads are
  * still using it; just shut down the driver.
  */
-void RageSoundManager::Shutdown() { RageUtil::SafeDelete(driver_); }
+void RageSoundManager::Shutdown() {
+  StopUpdateThread();
+  RageUtil::SafeDelete(driver_);
+}
+
+void RageSoundManager::RunUpdateThread() {
+  const auto tick = std::chrono::milliseconds(1);
+  auto next_tick = std::chrono::steady_clock::now();
+  while (!stop_update_thread_.load(std::memory_order_relaxed)) {
+    Update();
+
+    next_tick += tick;
+    const auto now = std::chrono::steady_clock::now();
+    if (next_tick < now) {
+      next_tick = now;
+    }
+    std::this_thread::sleep_until(next_tick);
+  }
+}
+
+void RageSoundManager::StopUpdateThread() {
+  stop_update_thread_.store(true);
+  if (update_thread_.joinable()) {
+    update_thread_.join();
+  }
+}
 
 void RageSoundManager::StartMixing(RageSoundBase* sound) {
   if (driver_ != nullptr) {
