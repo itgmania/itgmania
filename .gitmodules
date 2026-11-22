@@ -54,3 +54,7 @@
 	path = extern/googletest
 	url = https://github.com/google/googletest.git
 	shallow = true
+[submodule "extern/libsamplerate"]
+	path = extern/libsamplerate
+	url = https://github.com/libsndfile/libsamplerate
+	shallow = true
