@@ -249,7 +249,8 @@ const std::string& Song::GetSongFilePath() const {
 }
 
 void Song::SetSongDirAndGroup(
-    const std::string& dir, ProfileSlot from_profile) {
+    const std::string& dir, ProfileSlot from_profile,
+    const std::string& profile_group) {
   ASSERT_M(Right(dir, 1) == "/", dir);
   song_dir_ = dir;
 
@@ -264,15 +265,8 @@ void Song::SetSongDirAndGroup(
         directory_parts[directory_parts.size() - 3];  // second from last item
     ASSERT(group_name_ != "");
   } else {
-    LOG->Trace("Loading song from profile2.");
-    group_name_ =
-        PROFILEMAN->GetProfile(from_profile)->GetCustomSongsGroupNamePrefix();
-
-    bool is_sub_folder = directory_parts.size() > 6;
-    if (is_sub_folder) {
-      std::string sub_folder_name = directory_parts[directory_parts.size() - 3];
-      group_name_ += (" - " + sub_folder_name);
-    }
+    group_name_ = profile_group;
+    ASSERT(group_name_ != "");
   }
   loaded_from_profile_ = from_profile;
 }
@@ -284,7 +278,8 @@ void Song::SetSongDirAndGroup(
  * changed.
  */
 bool Song::LoadFromSongDir(
-    std::string dir, bool load_autosave, ProfileSlot from_profile) {
+    std::string dir, bool load_autosave, ProfileSlot from_profile,
+    const std::string& profile_group) {
   ASSERT_M(dir != "", "Songs can't be loaded from an empty directory!");
   ASSERT_M(
       steps_.empty() && unknown_style_steps_.empty(),
@@ -295,7 +290,7 @@ bool Song::LoadFromSongDir(
     dir += "/";
   }
 
-  SetSongDirAndGroup(dir, from_profile);
+  SetSongDirAndGroup(dir, from_profile, profile_group);
 
   bool use_cache = loaded_from_profile_ == ProfileSlot_Invalid;
 
@@ -327,7 +322,7 @@ bool Song::LoadFromSongDir(
       // Read() can fail after partially filling the song, so discard it and
       // rebuild the location fields from the inputs before parsing source.
       Reset();
-      SetSongDirAndGroup(dir, from_profile);
+      SetSongDirAndGroup(dir, from_profile, profile_group);
       use_cache = false;
     }
 
