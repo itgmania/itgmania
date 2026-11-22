@@ -755,6 +755,13 @@
 			<Function name='IsFixedSong'/>
 			<Function name='IsSecret'/>
 		</Class>
+		<Class base='ActorFrame' name='DancingBot'>
+			<Function name='GetMotionSeconds'/>
+			<Function name='IsSupported'/>
+			<Function name='SetMotionSeconds'/>
+			<Function name='SetSecond'/>
+			<Function name='SetSteps'/>
+		</Class>
 		<Class name='CryptManager'>
 			<Function name='GenerateRandomUUID'/>
 			<Function name='MD5File'/>
