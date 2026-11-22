@@ -1,6 +1,7 @@
 #ifndef SCREEN_EDIT_H
 #define SCREEN_EDIT_H
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -443,8 +444,8 @@ class ScreenEdit : public ScreenWithMenuElements {
   void CopyFromLastSave();
   void RevertFromDisk();
 
-  Song song_last_save_;
-  std::vector<Steps> steps_last_save_;
+  SongData song_last_save_;
+  std::vector<std::unique_ptr<Steps>> steps_last_save_;
 
   // for MODE_RECORD
   NoteField note_field_record_;

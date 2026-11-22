@@ -9,6 +9,7 @@
 #include <cstring>
 #include <ctime>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -81,7 +82,7 @@ static std::vector<std::string> GetImageCacheDirs() {
   return image_dirs;
 }
 
-Song::Song() {
+SongData::SongData() {
   FOREACH_BackgroundLayer(i) background_changes_[i] =
       AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
   foreground_changes_ =
@@ -106,25 +107,15 @@ Song::Song() {
   loaded_from_autosave_ = false;
 }
 
-Song::~Song() {
-  for (Steps* s : steps_) {
-    RageUtil::SafeDelete(s);
-  }
-  steps_.clear();
-  for (Steps* s : unknown_style_steps_) {
-    RageUtil::SafeDelete(s);
-  }
-  unknown_style_steps_.clear();
+Song::Song() = default;
 
+Song::~Song() {
   // It's the responsibility of the owner of this Song to make sure
   // that all pointers to this Song and its Steps are invalidated.
 }
 
-void Song::DetachSteps() {
-  steps_.clear();
-  FOREACH_ENUM(StepsType, st)
-  steps_by_type_[st].clear();
-  unknown_style_steps_.clear();
+void Song::CopyMetadataFrom(const SongData& other) {
+  SongData::operator=(other);
 }
 
 float Song::GetFirstSecond() const {
@@ -170,19 +161,13 @@ void Song::SetSpecifiedLastSecond(const float f) {
 
 // Reset to an empty song.
 void Song::Reset() {
-  for (Steps* s : steps_) {
-    RageUtil::SafeDelete(s);
-  }
+  owned_steps_.clear();
   steps_.clear();
   FOREACH_ENUM(StepsType, st)
   steps_by_type_[st].clear();
-  for (Steps* s : unknown_style_steps_) {
-    RageUtil::SafeDelete(s);
-  }
   unknown_style_steps_.clear();
 
-  Song empty;
-  *this = empty;
+  CopyMetadataFrom(SongData());
 
   // It's the responsibility of the owner of this Song to make sure
   // that all pointers to this Song and its Steps are invalidated.
@@ -209,17 +194,17 @@ void Song::AddForegroundChange(BackgroundChange seg) {
 
 void Song::AddLyricSegment(LyricSegment seg) { lyric_segments_.push_back(seg); }
 
-Steps* Song::CreateSteps() {
-  Steps* steps = new Steps(this);
-  InitSteps(steps);
+std::unique_ptr<Steps> Song::CreateSteps() {
+  std::unique_ptr<Steps> steps = std::make_unique<Steps>(this);
+  InitSteps(*steps);
   return steps;
 }
 
-void Song::InitSteps(Steps* steps) {
+void Song::InitSteps(Steps& steps) {
   // TimingData is initially empty (i.e. defaults to song timing)
-  steps->SetDisplayBPM(this->display_bpm_type_);
-  steps->SetMinBPM(this->specified_bpm_min_);
-  steps->SetMaxBPM(this->specified_bpm_max_);
+  steps.SetDisplayBPM(this->display_bpm_type_);
+  steps.SetMinBPM(this->specified_bpm_min_);
+  steps.SetMaxBPM(this->specified_bpm_max_);
 }
 
 void Song::GetDisplayBpms(DisplayBpms& add_to) const {
@@ -464,15 +449,25 @@ bool Song::ReloadFromSongDir(std::string dir) {
   // Also invalidate the cache entry so the next load sees the previous removal.
   FILEMAN->FlushDirCache(Dirname(GetCacheFilePath()));
 
-  RemoveAutoGenNotes();
-  std::vector<Steps*> v_old_steps = steps_;
-
   Song copy;
   if (!copy.LoadFromSongDir(dir)) {
     return false;
   }
   copy.RemoveAutoGenNotes();
-  *this = copy;
+  RemoveAutoGenNotes();
+
+  std::vector<std::unique_ptr<Steps>> v_old_steps = std::move(owned_steps_);
+  owned_steps_.clear();
+  steps_.clear();
+  FOREACH_ENUM(StepsType, i)
+  steps_by_type_[i].clear();
+
+  unknown_style_steps_ = std::move(copy.unknown_style_steps_);
+  for (const auto& s : unknown_style_steps_) {
+    s->song_ = this;
+  }
+
+  CopyMetadataFrom(copy);
 
   if (SONGMAN->GetGroup(this) != nullptr) {
     song_timing_.beat0_group_offset_in_seconds_ =
@@ -488,35 +483,27 @@ bool Song::ReloadFromSongDir(std::string dir) {
   /* Go through the steps, first setting their Song pointer to this song
    * (instead of the copy used above), and constructing a map to let us
    * easily find the new steps. */
-  std::map<StepsID, Steps*> m_new_steps;
-  for (std::vector<Steps*>::const_iterator it = steps_.begin();
-       it != steps_.end(); ++it) {
-    (*it)->song_ = this;
+  std::map<StepsID, std::unique_ptr<Steps>> m_new_steps;
+  for (std::unique_ptr<Steps>& s : copy.owned_steps_) {
+    s->song_ = this;
     StepsID id;
-    id.FromSteps(*it);
-    m_new_steps[id] = *it;
+    id.FromSteps(s.get());
 
     // Reapply the Group Offset if the steps have their own timing data.
-    if (m_new_steps[id]->timing_.empty()) {
-      continue;
+    if (!s->timing_.empty()) {
+      if (SONGMAN->GetGroup(this) != nullptr) {
+        s->timing_.beat0_group_offset_in_seconds_ =
+            SONGMAN->GetGroup(this)->GetSyncOffset();
+      } else {
+        s->timing_.beat0_group_offset_in_seconds_ =
+            PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
+        LOG->Warn(
+            "Song %s has no group, using default sync offset.",
+            main_title_.c_str());
+      }
     }
-    if (SONGMAN->GetGroup(this) != nullptr) {
-      m_new_steps[id]->timing_.beat0_group_offset_in_seconds_ =
-          SONGMAN->GetGroup(this)->GetSyncOffset();
-    } else {
-      m_new_steps[id]->timing_.beat0_group_offset_in_seconds_ =
-          PREFSMAN->default_sync_offset_ == SyncOffset_NULL ? 0 : -0.009;
-      LOG->Warn(
-          "Song %s has no group, using default sync offset.",
-          main_title_.c_str());
-    }
+    m_new_steps[id] = std::move(s);
   }
-
-  // Now we wipe out the new pointers, which were shallow copied and not deep
-  // copied...
-  steps_.clear();
-  FOREACH_ENUM(StepsType, i)
-  steps_by_type_[i].clear();
 
   /* Then we copy as many Steps as possible on top of the old pointers.
    * The only pointers that change are pointers to Steps that are not in the
@@ -525,27 +512,19 @@ bool Song::ReloadFromSongDir(std::string dir) {
    * We have to go through these hoops because many places assume the Steps
    * pointers don't change - even though there are other ways they can change,
    * such as deleting a Steps via the editor. */
-  for (std::vector<Steps*>::const_iterator it_old = v_old_steps.begin();
-       it_old != v_old_steps.end(); ++it_old) {
+  for (std::unique_ptr<Steps>& old_steps : v_old_steps) {
     StepsID id;
-    id.FromSteps(*it_old);
-    std::map<StepsID, Steps*>::iterator it_new = m_new_steps.find(id);
-    if (it_new == m_new_steps.end()) {
-      // This stepchart didn't exist in the file we reverted from
-      delete *it_old;
-    } else {
-      Steps* old_steps = *it_old;
-      *old_steps = *(it_new->second);
-      AddSteps(old_steps);
+    id.FromSteps(old_steps.get());
+    auto it_new = m_new_steps.find(id);
+    if (it_new != m_new_steps.end()) {
+      old_steps->CopyDataFrom(*(it_new->second));
+      AddSteps(std::move(old_steps));
       m_new_steps.erase(it_new);
     }
   }
   // The leftovers in the map are steps that didn't exist before we reverted
-  for (std::map<StepsID, Steps*>::const_iterator it = m_new_steps.begin();
-       it != m_new_steps.end(); ++it) {
-    Steps* new_steps = new Steps(this);
-    *new_steps = *(it->second);
-    AddSteps(new_steps);
+  for (auto& [id, new_steps] : m_new_steps) {
+    AddSteps(std::move(new_steps));
   }
 
   AddAutoGenNotes();
@@ -1300,8 +1279,8 @@ bool Song::SaveToSMFile() {
 
     steps_to_save.push_back(steps);
   }
-  for (Steps* s : unknown_style_steps_) {
-    steps_to_save.push_back(s);
+  for (const auto& s : unknown_style_steps_) {
+    steps_to_save.push_back(s.get());
   }
 
   return NotesWriterSM::Write(path, *this, steps_to_save);
@@ -1334,8 +1313,8 @@ bool Song::SaveToSSCFile(std::string s_path, bool autosave) {
     steps->SetFilename(path);
     steps_to_save.push_back(steps);
   }
-  for (Steps* s : unknown_style_steps_) {
-    steps_to_save.push_back(s);
+  for (const auto& s : unknown_style_steps_) {
+    steps_to_save.push_back(s.get());
   }
 
   if (autosave) {
@@ -1463,29 +1442,31 @@ void Song::AutoGen(StepsType to, StepsType from) {
   for (unsigned int j = 0; j < steps_.size(); j++) {
     const Steps* original_notes = steps_[j];
     if (original_notes->steps_type_ == from) {
-      Steps* new_notes = new Steps(this);
+      std::unique_ptr<Steps> new_notes = std::make_unique<Steps>(this);
       new_notes->AutogenFrom(original_notes, to);
-      this->AddSteps(new_notes);
+      this->AddSteps(std::move(new_notes));
     }
   }
 }
 
 void Song::RemoveAutoGenNotes() {
   FOREACH_ENUM(StepsType, st) {
-    for (int j = steps_by_type_[st].size() - 1; j >= 0; j--) {
-      if (steps_by_type_[st][j]->IsAutogen()) {
-        // delete m_vpSteps[j]; // delete below
-        steps_by_type_[st].erase(steps_by_type_[st].begin() + j);
-      }
-    }
+    auto& v = steps_by_type_[st];
+    v.erase(
+        std::remove_if(
+            v.begin(), v.end(), [](const Steps* s) { return s->IsAutogen(); }),
+        v.end());
   }
-
-  for (int j = steps_.size() - 1; j >= 0; j--) {
-    if (steps_[j]->IsAutogen()) {
-      delete steps_[j];
-      steps_.erase(steps_.begin() + j);
-    }
-  }
+  steps_.erase(
+      std::remove_if(
+          steps_.begin(), steps_.end(),
+          [](const Steps* s) { return s->IsAutogen(); }),
+      steps_.end());
+  owned_steps_.erase(
+      std::remove_if(
+          owned_steps_.begin(), owned_steps_.end(),
+          [](const std::unique_ptr<Steps>& s) { return s->IsAutogen(); }),
+      owned_steps_.end());
 }
 
 bool Song::IsEasy(StepsType st) const {
@@ -1755,17 +1736,18 @@ std::string Song::GetTranslitFullTitle() const {
   return title;
 }
 
-void Song::AddSteps(Steps* steps) {
+void Song::AddSteps(std::unique_ptr<Steps> steps) {
   // Songs of unknown stepstype are saved as a forwards compatibility feature
   // so that editing a simfile made by a future version that has a new style
   // won't delete those steps. -Kyz
   if (steps->steps_type_ != StepsType_Invalid) {
-    steps_.push_back(steps);
     ASSERT_M(
         steps->steps_type_ < NUM_StepsType, ssprintf("%i", steps->steps_type_));
-    steps_by_type_[steps->steps_type_].push_back(steps);
+    steps_.push_back(steps.get());
+    steps_by_type_[steps->steps_type_].push_back(steps.get());
+    owned_steps_.push_back(std::move(steps));
   } else {
-    unknown_style_steps_.push_back(steps);
+    unknown_style_steps_.push_back(std::move(steps));
   }
 }
 
@@ -1779,22 +1761,16 @@ void Song::DeleteSteps(const Steps* p_steps, bool re_auto_gen) {
     RemoveAutoGenNotes();
   }
 
-  std::vector<Steps*>& vp_steps = steps_by_type_[p_steps->steps_type_];
-  for (int j = vp_steps.size() - 1; j >= 0; j--) {
-    if (vp_steps[j] == p_steps) {
-      // delete vpSteps[j]; // delete below
-      vp_steps.erase(vp_steps.begin() + j);
-      break;
-    }
-  }
-
-  for (int j = steps_.size() - 1; j >= 0; j--) {
-    if (steps_[j] == p_steps) {
-      delete steps_[j];
-      steps_.erase(steps_.begin() + j);
-      break;
-    }
-  }
+  auto& vp_steps = steps_by_type_[p_steps->steps_type_];
+  vp_steps.erase(
+      std::remove(vp_steps.begin(), vp_steps.end(), p_steps), vp_steps.end());
+  steps_.erase(
+      std::remove(steps_.begin(), steps_.end(), p_steps), steps_.end());
+  owned_steps_.erase(
+      std::remove_if(
+          owned_steps_.begin(), owned_steps_.end(),
+          [&](const std::unique_ptr<Steps>& s) { return s.get() == p_steps; }),
+      owned_steps_.end());
 
   if (re_auto_gen) {
     AddAutoGenNotes();
@@ -1865,20 +1841,20 @@ int Song::GetNumStepsLoadedFromProfile(ProfileSlot slot) const {
   return count;
 }
 
-bool Song::IsEditAlreadyLoaded(Steps* steps) const {
+bool Song::IsEditAlreadyLoaded(const Steps& steps) const {
   ASSERT_M(
-      steps->GetDifficulty() == Difficulty_Edit,
+      steps.GetDifficulty() == Difficulty_Edit,
       ssprintf(
           "The %s chart for %s is no edit, thus it can't be checked for "
           "loading.",
-          DifficultyToString(steps->GetDifficulty()).c_str(),
+          DifficultyToString(steps.GetDifficulty()).c_str(),
           this->main_title_.c_str()));
 
   for (unsigned i = 0; i < steps_.size(); i++) {
     Steps* other = steps_[i];
     if (other->GetDifficulty() == Difficulty_Edit &&
-        other->steps_type_ == steps->steps_type_ &&
-        other->GetHash() == steps->GetHash()) {
+        other->steps_type_ == steps.steps_type_ &&
+        other->GetHash() == steps.GetHash()) {
       return true;
     }
   }

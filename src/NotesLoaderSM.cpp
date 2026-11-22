@@ -1088,13 +1088,13 @@ bool SMLoader::LoadFromSimfile(const std::string& path, Song& out) {
         continue;
       }
 
-      Steps* new_notes = out.CreateSteps();
+      std::unique_ptr<Steps> new_notes = out.CreateSteps();
       LoadFromTokens(
           params[1], params[2], params[3], params[4], params[5], params[6],
           *new_notes);
 
       new_notes->SetFilename(path);
-      out.AddSteps(new_notes);
+      out.AddSteps(std::move(new_notes));
     } else {
       LOG->UserLog(
           "Song file", path, "has an unexpected value named \"%s\".",
@@ -1202,7 +1202,7 @@ bool SMLoader::LoadEditFromMsd(
         return true;
       }
 
-      Steps* new_notes = song->CreateSteps();
+      std::unique_ptr<Steps> new_notes = song->CreateSteps();
       LoadFromTokens(
           params[1], params[2], params[3], params[4], params[5], params[6],
           *new_notes);
@@ -1211,15 +1211,14 @@ bool SMLoader::LoadEditFromMsd(
       new_notes->SetDifficulty(Difficulty_Edit);
       new_notes->SetFilename(edit_file_path);
 
-      if (song->IsEditAlreadyLoaded(new_notes)) {
+      if (song->IsEditAlreadyLoaded(*new_notes)) {
         LOG->UserLog(
             "Edit file", edit_file_path,
             "is a duplicate of another edit that was already loaded.");
-        RageUtil::SafeDelete(new_notes);
         return false;
       }
 
-      song->AddSteps(new_notes);
+      song->AddSteps(std::move(new_notes));
       return true;  // Only allow one Steps per edit file!
     } else {
       LOG->UserLog(

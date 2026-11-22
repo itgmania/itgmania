@@ -280,7 +280,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
     case EditMenuAction_Create:
       ASSERT(!steps);
       {
-        steps = song->CreateSteps();
+        std::unique_ptr<Steps> new_steps = song->CreateSteps();
 
         EditMode mode = selector_.EDIT_MODE;
         switch (mode) {
@@ -289,7 +289,7 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
           case EditMode_Full:
             break;
           case EditMode_Home:
-            steps->SetLoadedFromProfile(ProfileSlot_Machine);
+            new_steps->SetLoadedFromProfile(ProfileSlot_Machine);
             break;
           case EditMode_Practice:
             FAIL_M("Cannot create steps in EditMode_Practice");
@@ -297,18 +297,20 @@ bool ScreenEditMenu::MenuStart(const InputEventPlus&) {
 
         std::string edit_name;
         if (source_steps) {
-          steps->CopyFrom(source_steps, st, song->music_length_seconds_);
+          new_steps->CopyFrom(source_steps, st, song->music_length_seconds_);
           edit_name = GetCopyDescription(source_steps);
         } else {
-          steps->CreateBlank(st);
-          steps->SetMeter(1);
+          new_steps->CreateBlank(st);
+          new_steps->SetMeter(1);
           edit_name = "";
         }
 
-        steps->SetDifficulty(dc);  // override difficulty with the user's choice
+        new_steps->SetDifficulty(
+            dc);  // override difficulty with the user's choice
         SongUtil::MakeUniqueEditDescription(song, st, edit_name);
-        steps->SetDescription(edit_name);
-        song->AddSteps(steps);
+        new_steps->SetDescription(edit_name);
+        steps = new_steps.get();
+        song->AddSteps(std::move(new_steps));
 
         SCREENMAN->PlayStartSound();
 

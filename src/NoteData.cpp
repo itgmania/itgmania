@@ -17,11 +17,8 @@
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "XmlFile.h"
 #include "global.h"
-
-REGISTER_CLASS_TRAITS(NoteData, new NoteData(*pCopy))
 
 void NoteData::Init() {
   tap_notes_ = std::vector<TrackMap>();  // ensure that the memory is freed

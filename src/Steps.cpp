@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -137,7 +138,7 @@ Steps::Steps(Song* song)
     : steps_type_(StepsType_Invalid),
       song_(song),
       parent_(nullptr),
-      note_data_(new NoteData),
+      note_data_(),
       note_data_is_filled_(false),
       note_data_compressed_(""),
       filename_(""),
@@ -156,6 +157,16 @@ Steps::Steps(Song* song)
       specified_bpm_max_(0) {}
 
 Steps::~Steps() {}
+
+std::unique_ptr<Steps> Steps::Clone() const {
+  return std::unique_ptr<Steps>(new Steps(*this));
+}
+
+void Steps::CopyDataFrom(const Steps& other) {
+  Song* song = song_;
+  *this = other;
+  song_ = song;
+}
 
 void Steps::GetDisplayBpms(DisplayBpms& add_to) const {
   if (this->GetDisplayBPM() == DISPLAY_BPM_SPECIFIED) {
@@ -195,7 +206,7 @@ unsigned Steps::GetHash() const {
       return 0;  // No data, no hash.
     }
     NoteDataUtil::GetSMNoteDataString(
-        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
+        note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
   hash_ = GetHashForString(note_data_compressed_);
   return hash_;
@@ -262,7 +273,7 @@ void Steps::SetNoteData(const NoteData& note_data_new) {
 
   DeAutogen(false);
 
-  *note_data_ = note_data_new;
+  note_data_ = note_data_new;
   note_data_is_filled_ = true;
 
   note_data_compressed_ = std::string();
@@ -273,7 +284,7 @@ void Steps::GetNoteData(NoteData& note_data_out) const {
   Decompress();
 
   if (note_data_is_filled_) {
-    note_data_out = *note_data_;
+    note_data_out = note_data_;
   } else {
     note_data_out.ClearAll();
     note_data_out.SetNumTracks(
@@ -288,7 +299,7 @@ NoteData Steps::GetNoteData() const {
 }
 
 void Steps::SetSMNoteData(const std::string& notes_comp) {
-  note_data_->Init();
+  note_data_.Init();
   note_data_is_filled_ = false;
 
   note_data_compressed_ = notes_comp;
@@ -305,7 +316,7 @@ void Steps::GetSMNoteData(std::string& notes_comp_out) const {
     }
 
     NoteDataUtil::GetSMNoteDataString(
-        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
+        note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
 
   notes_comp_out = note_data_compressed_;
@@ -511,7 +522,7 @@ void Steps::Decompress() {
   }
 
   if (parent_) {
-    // get autogen m_pNoteData
+    // get autogen note_data_
     NoteData notedata;
     parent_->GetNoteData(notedata);
 
@@ -520,9 +531,9 @@ void Steps::Decompress() {
     int new_tracks = GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_;
 
     NoteDataUtil::LoadTransformedSlidingWindow(
-        notedata, *note_data_, new_tracks);
+        notedata, note_data_, new_tracks);
 
-    NoteDataUtil::RemoveStretch(*note_data_, steps_type_);
+    NoteDataUtil::RemoveStretch(note_data_, steps_type_);
     return;
   }
 
@@ -546,11 +557,10 @@ void Steps::Decompress() {
         GAMEMAN->GetStepsTypeInfo(steps_type_).steps_type_category_ ==
         StepsTypeCategory_Routine;
     note_data_is_filled_ = true;
-    note_data_->SetNumTracks(
-        GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_);
+    note_data_.SetNumTracks(GAMEMAN->GetStepsTypeInfo(steps_type_).num_tracks_);
 
     NoteDataUtil::LoadFromSMNoteDataString(
-        *note_data_, note_data_compressed_, composite);
+        note_data_, note_data_compressed_, composite);
   }
 }
 
@@ -576,7 +586,7 @@ void Steps::Compress() const {
      * the device), and when we start a game and load edits, we want to be
      * sure that it'll be available if the user picks it and pulls the device.
      * Also, Decompress() doesn't know how to load .edits. */
-    note_data_->Init();
+    note_data_.Init();
     note_data_is_filled_ = false;
 
     /* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and
@@ -592,10 +602,10 @@ void Steps::Compress() const {
       return; /* no data is no data */
     }
     NoteDataUtil::GetSMNoteDataString(
-        *note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
+        note_data_, note_data_compressed_, /*bIncludeMeasureComments=*/true);
   }
 
-  note_data_->Init();
+  note_data_.Init();
   note_data_is_filled_ = false;
 }
 
@@ -607,7 +617,7 @@ void Steps::DeAutogen(bool copy_note_data) {
   }
 
   if (copy_note_data) {
-    Decompress();  // fills in m_pNoteData with sliding window transform
+    Decompress();  // fills in note_data_ with sliding window transform
   }
 
   description_ = Real()->description_;

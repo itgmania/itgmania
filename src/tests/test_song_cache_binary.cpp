@@ -105,10 +105,10 @@ void AddTimingSegments(TimingData& timing) {
   timing.AddSegment(FakeSegment(BeatToNoteRow(36.0f), 1.5f));
 }
 
-Steps* MakeBasicSteps(
+std::unique_ptr<Steps> MakeBasicSteps(
     Song& song, StepsType type, Difficulty difficulty,
     const std::string& chart_name) {
-  Steps* steps = song.CreateSteps();
+  std::unique_ptr<Steps> steps = song.CreateSteps();
   steps->steps_type_ = type;
   steps->steps_type_str_ = "dance-single";
   steps->SetChartName(chart_name);
@@ -122,8 +122,8 @@ Steps* MakeBasicSteps(
   return steps;
 }
 
-Steps* MakeFullSteps(Song& song) {
-  Steps* steps =
+std::unique_ptr<Steps> MakeFullSteps(Song& song) {
+  std::unique_ptr<Steps> steps =
       MakeBasicSteps(song, StepsType_dance_single, Difficulty_Hard, "Full");
   steps->SetDescription("Full chart");
   steps->SetChartStyle("Full style");
@@ -249,14 +249,14 @@ void PopulateFullSong(Song& song) {
 
   song.AddSteps(MakeFullSteps(song));
 
-  Steps* unknown = MakeBasicSteps(
+  std::unique_ptr<Steps> unknown = MakeBasicSteps(
       song, StepsType_Invalid, Difficulty_Medium, "Unknown style");
   unknown->steps_type_str_ = "future-single";
   unknown->SetDescription("Unknown description");
   unknown->SetChartStyle("Unknown style");
   unknown->SetMeter(7);
   unknown->SetCredit("Unknown credit");
-  song.AddSteps(unknown);
+  song.AddSteps(std::move(unknown));
 }
 
 void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
@@ -428,18 +428,19 @@ TEST_F(SongCacheBinaryTest, DefaultSongRoundTrip) {
 
 TEST_F(SongCacheBinaryTest, SkipsAutogenAndProfileSteps) {
   Song expected;
-  Steps* normal = MakeBasicSteps(
+  std::unique_ptr<Steps> normal = MakeBasicSteps(
       expected, StepsType_dance_single, Difficulty_Easy, "Normal");
-  expected.AddSteps(normal);
+  const Steps* normal_ptr = normal.get();
+  expected.AddSteps(std::move(normal));
 
-  Steps* autogen = expected.CreateSteps();
-  autogen->AutogenFrom(normal, StepsType_dance_double);
-  expected.AddSteps(autogen);
+  std::unique_ptr<Steps> autogen = expected.CreateSteps();
+  autogen->AutogenFrom(normal_ptr, StepsType_dance_double);
+  expected.AddSteps(std::move(autogen));
 
-  Steps* fromProfile = MakeBasicSteps(
+  std::unique_ptr<Steps> fromProfile = MakeBasicSteps(
       expected, StepsType_dance_single, Difficulty_Hard, "Profile");
   fromProfile->SetLoadedFromProfile(ProfileSlot_Machine);
-  expected.AddSteps(fromProfile);
+  expected.AddSteps(std::move(fromProfile));
 
   const std::string path = CachePath("filtered.bin");
 
