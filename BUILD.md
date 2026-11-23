@@ -65,7 +65,7 @@ For the first setup, you will want to run this command:
 
 Replace {YourGeneratorHere} with one of the generator choices from `cmake --help`.
 
-If you are building on Windows and expecting your final executable to be able to run on Windows XP, append an additional parameter `-T "v140_xp"` (or `-T "v120_xp"`, depending on which version of Visual Studio you have installed) to your command line.
+For Windows 7 compatibility, the MSVC v143 toolset (VS 2022 C++ build tools component) is required. Add `-T v143` to the initial CMake configure command (for example, `cmake -G "Visual Studio 18 2026" -T v143 ..`). If you are using VS2026 or later, Visual Studio will offer to install MSVC v143 for you. If you don't want or need Windows 7 API support, you can build without the `-T v143` flag.
 
 If any cmake project file changes, you can just run `cmake .. && cmake ..` to get up to date.
 If this by itself doesn't work, you may have to clean the cmake cache.
