@@ -16,6 +16,7 @@ include(CMakeProject-ixwebsocket.cmake)
 include(CMakeProject-miniz.cmake)
 include(CMakeProject-aubio.cmake)
 include(CMakeProject-gtest.cmake)
+include(CMakeProject-libsamplerate.cmake)
 
 # External projects
 include(CMakeProject-libusb.cmake)

@@ -1,4 +1,4 @@
-/* RageSoundReader_Resample_Good - fast audio resampling. */
+/* RageSoundReader_Resample_Good - libsamplerate wrapper. */
 
 #ifndef RAGE_SOUND_READER_RESAMPLE_GOOD_H
 #define RAGE_SOUND_READER_RESAMPLE_GOOD_H
@@ -9,14 +9,17 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 
-class RageSoundResampler_Polyphase;
+// Forward declaration of libsamplerate's opaque state, so that including this
+// header does not require samplerate.h.
+struct SRC_STATE_tag;
 
-/** @brief This class changes the sampling rate of a sound. */
 class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
  public:
   /* We own source. */
   RageSoundReader_Resample_Good(RageSoundReader* source, int sample_rate);
   RageSoundReader_Resample_Good(const RageSoundReader_Resample_Good& cpy);
+  RageSoundReader_Resample_Good& operator=(
+      const RageSoundReader_Resample_Good&) = delete;
   int SetPosition(int frame);
   int Read(float* buf, int frames);
   virtual ~RageSoundReader_Resample_Good();
@@ -27,7 +30,7 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
 
   /**
    * @brief Change the rate of a sound without changing the sample rate.
-   * @param fRatio the ratio for changing. */
+   * @param ratio the ratio for changing. */
   void SetRate(float ratio);
 
   /**
@@ -38,14 +41,27 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
   int GetSampleRate() const { return sample_rate_; }
 
  private:
+  // Call if the input position is changed or reset.
   void Reset();
-  void ReopenResampler();
-  void GetFactors(int& down_factor, int& up_factor) const;
+  // Output frames per input frame, including any rate change.
+  double GetConversionRatio() const;
+  bool IsPristine() const;
 
-  std::vector<RageSoundResampler_Polyphase*> resamplers_; /* one per channel */
-
+  SRC_STATE_tag* state_;  // libsamplerate converter (all channels interleaved)
+  int channels_;
   int sample_rate_;
-  float rate_;
+  float rate_;  // -1 when SetRate() has never been called
+
+  // Input frames read from the source but not yet taken by libsamplerate.
+  std::vector<float> pending_;
+  bool source_eof_;
+
+  // Bookkeeping used to report the stream position: how many input frames
+  // libsamplerate has taken, versus how much input time its output covers. The
+  // difference is what it is holding internally (its filter lookahead).
+  double consumed_input_frames_;
+  double emitted_input_time_;
+  double last_ratio_;
 };
 
 #endif

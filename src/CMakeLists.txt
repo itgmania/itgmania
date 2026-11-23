@@ -403,7 +403,7 @@ endif()
 set_property(TARGET itgmania_core PROPERTY FOLDER "Internal Libraries")
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
-list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz" "aubio")
+list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz" "aubio" "libsamplerate")
 
 list(APPEND SMDATA_LINK_LIB "mad"
                             "pcre"
