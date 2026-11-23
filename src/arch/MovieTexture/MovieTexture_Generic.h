@@ -1,6 +1,7 @@
 #ifndef RAGE_MOVIE_TEXTURE_GENERIC_H
 #define RAGE_MOVIE_TEXTURE_GENERIC_H
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -31,6 +32,8 @@ class MovieDecoder {
   virtual void Close() = 0;
   virtual void Rewind() = 0;
   virtual void Rollover() = 0;
+  // Called with the worker joined; leaves the requested image ready to display.
+  virtual float Seek(float seconds, bool loop) = 0;
 
   virtual int DecodeMovie() = 0;
 
@@ -96,9 +99,7 @@ class MovieTexture_Generic : public RageMovieTexture {
 
   void SetPosition(float seconds) override;
 
-  // UpdateMovie tells the MovieTexture to update the displayed frame based
-  // on fSeconds passed in. (e.g., 5.9 input means show the frame that should
-  // be displayed 5.9 seconds into the movie).
+  // Advance movie playback by the supplied delta in seconds.
   void UpdateMovie(float seconds) override;
   void SetPlaybackRate(float rate) override { rate_ = rate; }
   void SetLooping(bool looping = true) override {
@@ -127,7 +128,7 @@ class MovieTexture_Generic : public RageMovieTexture {
   bool first_frame_displayed_ = false;
 
   // If true, halts all decoding and display due to a fatal decode error.
-  bool failure_ = false;
+  std::atomic<bool> failure_{false};
 
   uintptr_t texture_handle_;
   std::unique_ptr<RageTextureRenderTarget> render_target_;
@@ -142,6 +143,7 @@ class MovieTexture_Generic : public RageMovieTexture {
   float clock_;
 
   void UpdateFrame();
+  void StartDecoding();
 
   void CreateTexture();
   void DestroyTexture();
