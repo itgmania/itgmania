@@ -397,6 +397,11 @@ void MusicWheelItem::LoadFromWheelItemData(
     msg.SetParam("ParentSection", wid->parent_section_);
     msg.SetParam(
         "IsParentSection", wid->type_ == WheelItemDataType_ParentSection);
+    if (wid->song_ != nullptr && wid->IsPinned()) {
+      std::vector<Steps*> pinned_steps;
+      wid->GetPinnedStepsList(pinned_steps);
+      msg.SetParam("PinnedSteps", pinned_steps);
+    }
 
     this->HandleMessage(msg);
   }
@@ -584,6 +589,11 @@ void MusicWheelItem::HandleMessage(const Message& msg) {
     set_msg.SetParam("ParentSection", wid->parent_section_);
     set_msg.SetParam(
         "IsParentSection", wid->type_ == WheelItemDataType_ParentSection);
+    if (wid->song_ != nullptr && wid->IsPinned()) {
+      std::vector<Steps*> pinned_steps;
+      wid->GetPinnedStepsList(pinned_steps);
+      set_msg.SetParam("PinnedSteps", pinned_steps);
+    }
     this->HandleMessage(set_msg);
 
     RefreshGrades();
