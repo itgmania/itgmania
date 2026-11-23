@@ -71,7 +71,13 @@ class InputHandler_Win32_ddrio : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& devices_out);
 
+  static bool ShouldAutoLoad();
+
  private:
+  inline static constexpr const char* kDllFilename = "ddrio.dll";
+
+  static std::string GetDllPath();
+
   RageThread input_thread_;
   bool shutdown_;
 

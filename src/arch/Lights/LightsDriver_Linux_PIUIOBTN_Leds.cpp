@@ -2,12 +2,23 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <string>
 
 #include "GameInput.h"
 #include "LightsManager.h"
+#include "RageUtil.h"
 #include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIOBTN_Leds, Linux_PIUIOBTN_Leds);
+REGISTER_AUTODETECT_LIGHTS_DRIVER_CLASS2(PIUIOBTN_Leds, Linux_PIUIOBTN_Leds);
+
+// check for the device by checking the existance of light 0's file.
+bool LightsDriver_Linux_PIUIOBTN_Leds::ShouldAutoLoad() {
+  const std::string path = ssprintf(kGameControllerLightFile, 0);
+  return access(path.c_str(), F_OK) == 0;
+}
 
 namespace {
 const int player1_lights[] = {

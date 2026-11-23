@@ -78,6 +78,8 @@ class LightsDriver_brokeio : public LightsDriver {
   LightsDriver_brokeio();
   virtual ~LightsDriver_brokeio();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

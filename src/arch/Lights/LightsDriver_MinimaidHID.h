@@ -123,6 +123,8 @@ class LightsDriver_MinimaidHID : public LightsDriver {
   LightsDriver_MinimaidHID();
   virtual ~LightsDriver_MinimaidHID();
 
+  static bool ShouldAutoLoad();
+
   virtual void Set(const LightsState* ls);
 };
 

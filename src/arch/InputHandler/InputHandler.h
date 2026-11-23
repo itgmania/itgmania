@@ -26,8 +26,16 @@
 /** @brief A class designed to handle special input devices. */
 class InputHandler : public RageDriver {
  public:
+  // A startup-only predicate indicating whether an optional input handler
+  // should be loaded automatically. The predicate may use any inexpensive,
+  // side-effect-free check appropriate for the driver, such as HID
+  // enumeration, device-node discovery, or the presence of a required DLL.
+  using AutoDetectFunction = bool (*)();
+
   static void Create(
       const std::string& drivers, std::vector<InputHandler*>& add);
+  static void RegisterAutoDetectDriver(
+      const std::string& name, AutoDetectFunction is_present);
   static DriverList driver_list_;
 
   InputHandler() : last_update_(), inputs_since_update_(0) {}
@@ -76,12 +84,27 @@ class InputHandler : public RageDriver {
   int inputs_since_update_;
 };
 
+class RegisterAutoDetectInputHandler {
+ public:
+  RegisterAutoDetectInputHandler(
+      const std::string& name, InputHandler::AutoDetectFunction is_present) {
+    InputHandler::RegisterAutoDetectDriver(name, is_present);
+  }
+};
+
 #define REGISTER_INPUT_HANDLER_CLASS2(name, x) \
   static RegisterRageDriver register_##name(   \
       &InputHandler::driver_list_, #name,      \
       CreateClass<InputHandler_##x, RageDriver>)
 #define REGISTER_INPUT_HANDLER_CLASS(name) \
   REGISTER_INPUT_HANDLER_CLASS2(name, name)
+// Opts an input handler into startup auto-detection. InputHandler_<name> must
+// provide a static ShouldAutoLoad() predicate.
+#define REGISTER_AUTODETECT_INPUT_HANDLER_CLASS2(name, class_name)  \
+  static RegisterAutoDetectInputHandler register_autodetect_##name( \
+      #name, &InputHandler_##class_name::ShouldAutoLoad)
+#define REGISTER_AUTODETECT_INPUT_HANDLER_CLASS(name) \
+  REGISTER_AUTODETECT_INPUT_HANDLER_CLASS2(name, name)
 
 #endif
 
