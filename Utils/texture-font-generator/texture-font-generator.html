@@ -1,0 +1,725 @@
+<!-- JavaScript / HTML port of the SSC Texture Font Generator (TextureFont.cpp / Utils.cpp).
+
+   * Creates byte-identical ini's and visually identical png's to the original exe, which
+     was Windows-only.
+	 
+   * A note about this port as compared to the original GDI implementation: antialiasing is
+     off by default (same as the original), but in this port, we have to fake the antialiased
+	 effect by thresholding the canvas at 50%. -->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Texture Font Generator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px system-ui, sans-serif; color: #222; background-color: #ddd; background-repeat: repeat; }
+    main { max-width: 900px; min-height: calc(100vh - 48px); margin: 24px auto; padding: 16px; background: #fff; }
+    h1 { margin: 0 0 16px; font-size: 1.3rem; }
+    .layout { display: grid; grid-template-columns: minmax(240px, 1fr) 1.4fr; gap: 20px; }
+    section { margin-bottom: 18px; }
+    h2 { margin: 0 0 10px; font-size: 1rem; }
+    label { display: block; margin: 8px 0; }
+    input[type="number"], input[type="text"], select { max-width: 100%; padding: 5px; }
+    .options { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    .options label { margin: 4px 0; }
+    button { padding: 7px 12px; }
+    .actions { display: flex; gap: 8px; }
+    .preview { min-height: 360px; display: grid; place-items: center; overflow: auto; background: #111; }
+    canvas { display: block; width: min(100%, 288px); height: auto; background: #000; }
+    .metrics { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-top: 12px; }
+    .metrics label { margin: 0; }
+    #closeup { width: auto; height: auto; max-width: none; image-rendering: pixelated; background: #000; }
+    /* Top/Baseline use custom reversed spinners (see script), so hide the native ones */
+    #top, #baseline { appearance: textfield; -moz-appearance: textfield; width: 5em; }
+    #top::-webkit-inner-spin-button, #top::-webkit-outer-spin-button,
+    #baseline::-webkit-inner-spin-button, #baseline::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .spin { display: inline-flex; flex-direction: column; vertical-align: middle; margin-left: 2px; }
+    .spin button { padding: 0 6px; font-size: 9px; line-height: 12px; }
+    #error { color: #a00; }
+    @media (max-width: 640px) { main { min-height: 100vh; margin: 0 auto; } .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Texture Font Generator for ITGmania</h1>
+    <div class="layout">
+      <div>
+        <section>
+          <h2>Font (.ttf, .otf, .woff, .ttc supported)</h2>
+          <label>Font file <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.ttc"></label>
+          <div id="fontName">No file selected</div>
+          <div id="error" aria-live="polite"></div>
+        </section>
+
+        <section>
+          <h2>Options</h2>
+          <label>Font Size (px) <input id="size" type="number" value="20" min="1"></label>
+          <label>Padding <input id="padding" type="number" value="2" min="0"></label>
+          <label>Page <select id="page"></select></label>
+          <div class="options">
+            <label><input id="bold" type="checkbox"> Bold</label>
+            <label><input id="italic" type="checkbox"> Italic</label>
+            <label><input id="aa" type="checkbox" checked> Antialiased</label>
+            <label><input id="numbersOnly" type="checkbox"> Numbers only</label>
+            <label><input id="doubleRes" type="checkbox"> Double resolution</label>
+            <label><input id="stroke" type="checkbox"> Stroke templates</label>
+          </div>
+        </section>
+
+        <section>
+          <h2>Save</h2>
+          <label>File base name <input id="baseName" type="text" placeholder="myfont"></label>
+          <div class="actions">
+            <button id="save" disabled>Save (.zip)</button>
+            <button id="reset">Reset</button>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section>
+          <h2>Preview</h2>
+          <div class="preview"><canvas id="pageCanvas" width="512" height="1024"></canvas></div>
+          <div class="metrics">
+            <label>Top <input id="top" type="number" value="0" min="0"></label>
+            <label>Baseline <input id="baseline" type="number" value="0" min="0"></label>
+            <canvas id="closeup" width="120" height="120"></canvas>
+          </div>
+          <div id="info" style="white-space: pre; font-family: monospace;"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script>
+    const fontFile = document.querySelector('#fontFile');
+    const fontName = document.querySelector('#fontName');
+    const baseName = document.querySelector('#baseName');
+    const save = document.querySelector('#save');
+
+    function updateSave() {
+      save.disabled = !fontFile.files.length || !baseName.value.trim();
+    }
+
+    fontFile.addEventListener('change', () => {
+      fontName.textContent = fontFile.files[0]?.name || 'No file selected';
+      updateSave();
+    });
+    baseName.addEventListener('input', updateSave);
+
+    document.querySelector('#reset').addEventListener('click', () => {
+      document.querySelectorAll('input').forEach(input => {
+        if (input.type === 'checkbox') input.checked = input.id === 'aa';
+        else input.value = '';
+      });
+      document.querySelector('#size').value = 20;
+      document.querySelector('#padding').value = 2;
+      document.querySelector('#top').value = 0;
+      document.querySelector('#baseline').value = 0;
+      fontName.textContent = 'No file selected';
+      updateSave();
+    });
+  </script>
+</body>
+</html>
+
+<!-- CHARACTER MAPPINGS -->
+
+<script>
+const CHARMAPS = {"main": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 8364, 8218, 402, 8222, 8230, 8224, 8225, 710, 8240, 352, 8249, 338, 381, 8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 382, 376, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255], "alt": [160, 260, 728, 321, 164, 317, 346, 167, 168, 352, 350, 356, 377, 173, 381, 379, 176, 261, 731, 322, 180, 318, 347, 711, 184, 353, 351, 357, 378, 733, 382, 380, 340, 193, 194, 258, 196, 313, 262, 199, 268, 201, 280, 203, 282, 205, 206, 270, 272, 323, 327, 211, 212, 336, 214, 215, 344, 366, 218, 368, 220, 221, 354, 223, 341, 225, 226, 259, 228, 314, 263, 231, 269, 233, 281, 235, 283, 237, 238, 271, 273, 324, 328, 243, 244, 337, 246, 247, 345, 367, 250, 369, 252, 253, 355, 729], "numbers": [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 37, 46, 32, 58, 120, 44]};
+</script>
+<script>
+'use strict';
+
+/* JAVASCRIPT STARTS HERE! */
+
+/* +++++++++++++++++++++++++ utils +++++++++++++++++++++++++ */
+
+/* C style, rounds half to even. */
+function lrint(x) {
+  const f = Math.floor(x), d = x - f;
+  if (d < 0.5) return f;
+  if (d > 0.5) return f + 1;
+  return f % 2 === 0 ? f : f + 1;
+}
+
+async function inflate(u8) {
+  const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+/* +++++++++++++++++++++++++ sfnt font parse +++++++++++++++++++++++++ */
+
+async function parseFont(buf) {
+  const dv = new DataView(buf);
+  const tag = (o) => String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
+  const sig = dv.getUint32(0);
+  const tables = {};
+
+  if (sig === 0x774f4646) { /* 'wOFF' */
+    const n = dv.getUint16(12);
+    for (let i = 0; i < n; i++) {
+      const o = 44 + i * 20;
+      const off = dv.getUint32(o + 4), comp = dv.getUint32(o + 8), orig = dv.getUint32(o + 12);
+      let data = new Uint8Array(buf, off, comp);
+      if (comp < orig) data = await inflate(data);
+      tables[tag(o)] = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    }
+  } else if (sig === 0x774f4632) { /* 'wOF2' */
+    throw new Error('WOFF2 is not supported; use a .ttf, .otf or .woff file.');
+  } else {
+    let base = 0;
+    if (sig === 0x74746366) base = dv.getUint32(12); /* 'ttcf': first font in collection */
+    const n = dv.getUint16(base + 4);
+    for (let i = 0; i < n; i++) {
+      const o = base + 12 + i * 16;
+      tables[tag(o)] = new DataView(buf, dv.getUint32(o + 8), dv.getUint32(o + 12));
+    }
+  }
+
+  if (!tables.head || !tables.hhea || !tables.cmap) throw new Error('Not a valid TrueType/OpenType font (missing head/hhea/cmap).');
+
+  const unitsPerEm = tables.head.getUint16(18);
+  const hheaAsc = tables.hhea.getInt16(4);
+  const hheaDesc = tables.hhea.getInt16(6);
+  const lineGap = tables.hhea.getInt16(8);
+  let winAsc = hheaAsc, winDesc = -hheaDesc;
+  const os2 = tables['OS/2'];
+  if (os2 && os2.byteLength >= 78) {
+    const a = os2.getUint16(74), d = os2.getUint16(76);
+    if (a + d > 0) { winAsc = a; winDesc = d; }
+  }
+
+  const glyphIndex = buildCmap(tables.cmap);
+
+  /* Exact per-glyph advance + bounding box straight from hmtx/loca/glyf (TrueType outlines only).
+   * This is what makes the ABC widths deterministic instead of depending on the browser's
+   * canvas measureText(). Returns null for CFF fonts (caller falls back to canvas). */
+  let glyphMetrics = null;
+  if (tables.glyf && tables.loca && tables.hmtx && tables.maxp) {
+    const longLoca = tables.head.getInt16(50) === 1;
+    const numGlyphs = tables.maxp.getUint16(4);
+    const nHM = tables.hhea.getUint16(34);
+    const loca = (i) => (longLoca ? tables.loca.getUint32(i * 4) : tables.loca.getUint16(i * 2) * 2);
+    glyphMetrics = (g) => {
+      if (g >= numGlyphs) return null;
+      const adv = tables.hmtx.getUint16(Math.min(g, nHM - 1) * 4);
+      const o = loca(g), e = loca(g + 1);
+      if (e <= o) return { adv, empty: true };
+      const gl = tables.glyf;
+      return { adv, empty: false, xMin: gl.getInt16(o + 2), yMin: gl.getInt16(o + 4), xMax: gl.getInt16(o + 6), yMax: gl.getInt16(o + 8) };
+    };
+  }
+
+  return { unitsPerEm, hheaAsc, hheaDesc, lineGap, winAsc, winDesc, glyphIndex, glyphMetrics,
+           hasGlyph: (cp) => glyphIndex(cp) !== 0 };
+}
+
+function buildCmap(cm) {
+  const n = cm.getUint16(2);
+  let best = null, bestScore = -1;
+  for (let i = 0; i < n; i++) {
+    const plat = cm.getUint16(4 + i * 8), enc = cm.getUint16(6 + i * 8), off = cm.getUint32(8 + i * 8);
+    const fmt = cm.getUint16(off);
+    let score = -1;
+    if (plat === 3 && enc === 10 && fmt === 12) score = 5;
+    else if (plat === 0 && fmt === 12) score = 4;
+    else if (plat === 3 && enc === 1 && fmt === 4) score = 3;
+    else if (plat === 0 && fmt === 4) score = 2;
+    else if (plat === 3 && enc === 0 && fmt === 4) score = 1;
+    if (score > bestScore) { bestScore = score; best = { off, fmt, symbol: plat === 3 && enc === 0 }; }
+  }
+  if (!best) throw new Error('Font has no supported Unicode cmap subtable.');
+
+  const lookup4 = (cp) => {
+    if (cp > 0xffff) return 0;
+    const o = best.off, segX2 = cm.getUint16(o + 6);
+    const endO = o + 14, startO = endO + segX2 + 2, deltaO = startO + segX2, rangeO = deltaO + segX2;
+    for (let i = 0; i < segX2 / 2; i++) {
+      if (cp > cm.getUint16(endO + 2 * i)) continue;
+      const start = cm.getUint16(startO + 2 * i);
+      if (cp < start) return 0;
+      const ro = cm.getUint16(rangeO + 2 * i), delta = cm.getInt16(deltaO + 2 * i);
+      if (ro === 0) return (cp + delta) & 0xffff;
+      const addr = rangeO + 2 * i + ro + 2 * (cp - start);
+      if (addr + 2 > cm.byteLength) return 0;
+      const g = cm.getUint16(addr);
+      return g === 0 ? 0 : (g + delta) & 0xffff;
+    }
+    return 0;
+  };
+  const lookup12 = (cp) => {
+    const o = best.off, ng = cm.getUint32(o + 12);
+    for (let i = 0; i < ng; i++) {
+      const g = o + 16 + i * 12;
+      const s = cm.getUint32(g), e = cm.getUint32(g + 4);
+      if (cp >= s && cp <= e) return cm.getUint32(g + 8) + (cp - s);
+    }
+    return 0;
+  };
+  const raw = best.fmt === 12 ? lookup12 : lookup4;
+  return (cp) => {
+    let g = raw(cp);
+    if (!g && best.symbol) g = raw(0xf000 + cp);
+    return g;
+  };
+}
+
+/* +++++++++++++++++++++++++ texture font generate core +++++++++++++++++++++++++ */
+
+const CHAR_BITMAP_HEIGHT = 128; /* matches the original's oversized scratch bitmap */
+
+/*
+ * opts: { size, padding, bold, italic, antiAlias, numbersOnly }
+ * env:  { fontInfo, fontFamily, makeCanvas }
+ */
+function generateTextureFont(opts, env) {
+  const fi = env.fontInfo;
+  const tf = {
+    opts,
+    pages: [],
+    chars: new Map(),   /* codepoint -> {w, data:Uint8Array(w*128)} */
+    abc: new Map(),
+    realBottom: new Map(),
+    boundW: 0, boundH: 0,
+    charLeftOverlap: 0, charRightOverlap: 0,
+  };
+
+  /* lfHeight = (LONG)-size */
+  const emPx = Math.max(1, Math.trunc(opts.size));
+  const scale = emPx / fi.unitsPerEm;
+  
+  const ascent = Math.round(fi.winAsc * scale);
+  const descent = Math.round(fi.winDesc * scale);
+  const height = ascent + descent;
+  const extLeading = Math.max(0, lrint((fi.lineGap - ((fi.winAsc + fi.winDesc) - (fi.hheaAsc - fi.hheaDesc))) * scale));
+
+  tf.charBaseline = ascent;
+  tf.charDescent = descent;
+  tf.charVertSpacing = height + extLeading;
+  tf.charTop = height - emPx; /* tmInternalLeading */
+  tf.topPadding = Math.floor(opts.padding / 2);
+
+  const fontStr = `${opts.italic ? 'italic ' : ''}${opts.bold ? 'bold ' : ''}${emPx}px "${env.fontFamily}"`;
+  const canvas = env.makeCanvas(16, CHAR_BITMAP_HEIGHT);
+  const setup = (ctx) => {
+    ctx.font = fontStr;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    if ('textRendering' in ctx) ctx.textRendering = 'geometricPrecision';
+    if ('fontKerning' in ctx) ctx.fontKerning = 'none';
+    ctx.fillStyle = '#fff';
+  };
+
+  function formatCharacter(c) {
+    if (tf.chars.has(c)) return;
+    if (!fi.hasGlyph(c)) return;
+
+    const str = String.fromCodePoint(c);
+    let ctx = canvas.getContext('2d', { willReadFrequently: true });
+    setup(ctx);
+
+    /* Table-derived metrics (deterministic). Outward-rounded ink box, half-up advance; this
+     * reproduces the real GDI tool's widths/overlap/max-size on the reference font.
+     * Synthetic bold/italic change the outline, so those (and CFF fonts) use canvas measuring. */
+    const gm = (fi.glyphMetrics && !opts.bold && !opts.italic) ? fi.glyphMetrics(fi.glyphIndex(c)) : null;
+    const E = 1e-9, em = fi.unitsPerEm;
+    let abc, tblTop = null, tblBottom = null;
+    if (gm) {
+      const adv = Math.floor((gm.adv * emPx) / em + 0.5 + E);
+      if (gm.empty) {
+        abc = { a: 0, b: 0, c: adv };
+        tblTop = tblBottom = 0;
+      } else {
+        const l = Math.floor((gm.xMin * emPx) / em + E), r = Math.ceil((gm.xMax * emPx) / em - E);
+        abc = { a: l, b: r - l, c: adv - r };
+        tblTop = Math.floor(ascent - (gm.yMax * emPx) / em + E);
+        tblBottom = Math.ceil(ascent - (gm.yMin * emPx) / em - E);
+      }
+    } else {
+      const m = ctx.measureText(str);
+      const xMin = -m.actualBoundingBoxLeft, xMax = m.actualBoundingBoxRight, adv = m.width;
+      abc = { a: lrint(xMin), b: lrint(xMax - xMin), c: lrint(adv - xMax) };
+    }
+    if (Object.is(abc.a, -0)) abc.a = 0;
+
+    /* Positive A/C are just extra space; fold into B (see original comments). */
+    if (abc.a > 0) { abc.b += abc.a; abc.a = 0; }
+    if (abc.c > 0) { abc.b += abc.c; abc.c = 0; }
+    tf.abc.set(c, abc);
+
+    if (abc.b > 0) {
+      canvas.width = abc.b;            /* also clears */
+      canvas.height = CHAR_BITMAP_HEIGHT;
+      ctx = canvas.getContext('2d', { willReadFrequently: true });
+      setup(ctx);
+      ctx.clearRect(0, 0, abc.b, CHAR_BITMAP_HEIGHT);
+      ctx.fillText(str, -abc.a, ascent);
+
+      const img = ctx.getImageData(0, 0, abc.b, CHAR_BITMAP_HEIGHT).data;
+      const data = new Uint8Array(abc.b * CHAR_BITMAP_HEIGHT);
+      let firstRow = 9999, lastRow = 0;
+      for (let y = 0; y < CHAR_BITMAP_HEIGHT; y++) {
+        for (let x = 0; x < abc.b; x++) {
+          let v = img[(y * abc.b + x) * 4 + 3];
+          if (!opts.antiAlias) v = v >= 128 ? 255 : 0;
+          data[y * abc.b + x] = v;
+          if (v) { if (y < firstRow) firstRow = y; if (y > lastRow) lastRow = y; }
+        }
+      }
+      let top = firstRow === 9999 ? 0 : firstRow;
+      let bottom = firstRow === 9999 ? 0 : lastRow + 1;
+      if (tblBottom !== null) { top = tblTop; bottom = Math.min(tblBottom, CHAR_BITMAP_HEIGHT); }
+      tf.chars.set(c, { w: abc.b, data });
+      tf.realBottom.set(c, bottom);
+
+      /* realbounds.left = 0, right = B; BoundingRect.top/left stay 0 */
+      if (abc.b !== 0 && top !== bottom) {
+        tf.boundW = Math.max(tf.boundW, abc.b);
+        tf.boundH = Math.max(tf.boundH, bottom);
+      }
+    }
+
+    tf.charLeftOverlap = Math.max(tf.charLeftOverlap, -abc.a);
+    tf.charRightOverlap = Math.max(tf.charRightOverlap, abc.c - abc.b);
+  }
+
+  function formatFontPage(desc) {
+    for (const c of desc.chars) formatCharacter(c);
+
+    const page = { name: desc.name, chars: desc.chars };
+    const mult = 4;
+    page.frameW = Math.ceil((tf.boundW + opts.padding) / mult) * mult;
+    page.frameH = Math.ceil((tf.boundH + opts.padding) / mult) * mult;
+    page.nx = Math.ceil(Math.sqrt(desc.chars.length));
+    page.ny = Math.ceil(desc.chars.length / page.nx);
+    page.w = page.nx * page.frameW;
+    page.h = page.ny * page.frameH;
+    page.data = new Uint8Array(page.w * page.h); /* grayscale intensity */
+
+    let row = 0, col = 0;
+    for (const c of desc.chars) {
+      const abc = tf.abc.get(c) || { a: 0, b: 0, c: 0 };
+      let offX = page.frameW * col + page.frameW / 2 - (abc.a + abc.b + abc.c) / 2 + abc.a;
+      offX = Math.trunc(offX);
+      const offY = Math.trunc(page.frameH * row + tf.topPadding);
+
+      const ch = tf.chars.get(c);
+      if (ch) {
+        const rows = tf.realBottom.get(c);
+        for (let y = 0; y < rows; y++) {
+          const dy = offY + y;
+          if (dy < 0 || dy >= page.h) continue;
+          for (let x = 0; x < ch.w; x++) {
+            const dx = offX + x;
+            if (dx < 0 || dx >= page.w) continue;
+            page.data[dy * page.w + dx] = ch.data[y * ch.w + x];
+          }
+        }
+      }
+      if (++col === page.nx) { col = 0; row++; }
+    }
+    return page;
+  }
+
+  const descs = opts.numbersOnly
+    ? [{ name: 'numbers', chars: CHARMAPS.numbers }]
+    : [{ name: 'main', chars: CHARMAPS.main }, { name: 'alt', chars: CHARMAPS.alt }];
+  for (const d of descs) tf.pages.push(formatFontPage(d));
+  return tf;
+}
+
+/* tf.charTop / tf.charBaseline may be overridden by the user before calling. */
+function buildIni(tf) {
+  const L = [];
+  L.push('[common]');
+  L.push('Baseline=' + (tf.charBaseline + tf.topPadding));
+  L.push('Top=' + (tf.charTop + tf.topPadding));
+  L.push('LineSpacing=' + tf.charVertSpacing);
+  L.push('DrawExtraPixelsLeft=' + tf.charLeftOverlap);
+  L.push('DrawExtraPixelsRight=' + tf.charRightOverlap);
+  L.push('AdvanceExtraPixels=0');
+
+  for (const page of tf.pages) {
+    L.push('');
+    L.push('[' + page.name + ']');
+    const n = page.chars.length;
+    const iWidth = Math.floor(n / page.nx) > 10 ? 2 : 1;
+    for (let i = 0, line = 0; i < n; line++) {
+      let s = 'Line ' + String(line).padStart(iWidth, ' ') + '=';
+      for (let x = 0; x < page.nx && i < n; x++, i++) s += String.fromCodePoint(page.chars[i]);
+      L.push(s);
+    }
+    L.push('');
+
+    const isNum = (c) => c >= 0x30 && c <= 0x39;
+    const widths = page.chars.map((c) => {
+      const a = tf.abc.get(c) || { a: 0, b: 0, c: 0 };
+      return a.a + a.b + a.c;
+    });
+    let maxNum = 0;
+    page.chars.forEach((c, j) => { if (isNum(c)) maxNum = Math.max(maxNum, widths[j]); });
+    page.chars.forEach((c, j) => {
+      let w = widths[j];
+      if (page.name === 'numbers' && isNum(c)) w = maxNum;
+      L.push(j + '=' + w);
+    });
+  }
+  return L.join('\r\n') + '\r\n';
+}
+
+/* --------------------------------------------------------- PNG + ZIP out -- */
+
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8, crc = 0) {
+  crc = ~crc >>> 0;
+  for (let i = 0; i < u8.length; i++) crc = CRC_TABLE[(crc ^ u8[i]) & 0xff] ^ (crc >>> 8);
+  return ~crc >>> 0;
+}
+
+/* White RGBA PNG whose alpha is the glyph intensity (GrayScaleToAlpha + SavePNG). */
+async function encodePNG(width, height, intensity) {
+  const raw = new Uint8Array((width * 4 + 1) * height);
+  for (let y = 0; y < height; y++) {
+    const ro = y * (width * 4 + 1);
+    raw[ro] = 0;
+    for (let x = 0; x < width; x++) {
+      const o = ro + 1 + x * 4;
+      raw[o] = raw[o + 1] = raw[o + 2] = 255;
+      raw[o + 3] = intensity[y * width + x];
+    }
+  }
+  const z = new Uint8Array(await new Response(
+    new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer());
+
+  const chunk = (type, data) => {
+    const out = new Uint8Array(12 + data.length);
+    const dv = new DataView(out.buffer);
+    dv.setUint32(0, data.length);
+    for (let i = 0; i < 4; i++) out[4 + i] = type.charCodeAt(i);
+    out.set(data, 8);
+    dv.setUint32(8 + data.length, crc32(out.subarray(4, 8 + data.length)));
+    return out;
+  };
+  const ihdr = new Uint8Array(13);
+  const hv = new DataView(ihdr.buffer);
+  hv.setUint32(0, width); hv.setUint32(4, height);
+  ihdr[8] = 8; ihdr[9] = 6; /* 8-bit RGBA */
+  const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  return new Blob([sig, chunk('IHDR', ihdr), chunk('IDAT', z), chunk('IEND', new Uint8Array(0))], { type: 'image/png' });
+}
+
+/* Store-only ZIP. files: [{name, data:Uint8Array}] */
+function makeZip(files) {
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), crc = crc32(f.data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, f.data.length, true); lh.setUint32(22, f.data.length, true);
+    lh.setUint16(26, name.length, true);
+    parts.push(lh.buffer, name, f.data);
+
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, f.data.length, true); ch.setUint32(24, f.data.length, true);
+    ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+    central.push(ch.buffer, name);
+    offset += 30 + name.length + f.data.length;
+  }
+  let csize = 0;
+  for (const p of central) csize += p.byteLength;
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, csize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { parseFont, generateTextureFont, buildIni, encodePNG, makeZip, lrint, setCharmaps: (m) => { globalThis.CHARMAPS = m; } };
+}
+</script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+let fontInfo = null, fontFamily = null, fontLabel = '', fontCounter = 0, tf = null, regenTimer = 0;
+
+const makeCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+const readOpts = () => ({
+  size: parseFloat($('size').value) || 1,
+  padding: Math.max(0, parseInt($('padding').value, 10) || 0),
+  bold: $('bold').checked,
+  italic: $('italic').checked,
+  antiAlias: $('aa').checked,
+  numbersOnly: $('numbersOnly').checked,
+});
+
+function defaultBaseName() {
+  const o = readOpts();
+  return `_${fontLabel.toLowerCase()}${o.bold ? ' Bold' : ''} ${o.size}px`;
+}
+
+$('fontFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  $('error').textContent = '';
+  try {
+    const buf = await file.arrayBuffer();
+    fontInfo = await parseFont(buf.slice(0));
+    fontFamily = 'TFGFont' + (++fontCounter);
+    const face = new FontFace(fontFamily, buf);
+    await face.load();
+    document.fonts.add(face);
+    fontLabel = file.name.replace(/\.[^.]+$/, '');
+    $('fontName').textContent = file.name;
+    regenerate();
+  } catch (err) {
+    fontInfo = null; tf = null;
+    $('save').disabled = true;
+    $('error').textContent = 'Error: ' + err.message;
+  }
+});
+
+function regenerate() {
+  if (!fontInfo) return;
+  const oldPage = $('page').value;
+  tf = generateTextureFont(readOpts(), { fontInfo, fontFamily, makeCanvas });
+
+  $('top').value = Math.max(0, tf.charTop);
+  $('baseline').value = Math.max(0, tf.charBaseline);
+
+  const sel = $('page');
+  sel.innerHTML = '';
+  tf.pages.forEach((p, i) => sel.add(new Option(p.name, i)));
+  const idx = tf.pages.findIndex((p) => p.name === oldPage);
+  sel.selectedIndex = idx < 0 ? 0 : idx;
+  /* the option values are indices; remember by name instead */
+  sel.dataset.names = tf.pages.map((p) => p.name).join(',');
+  $('baseName').placeholder = defaultBaseName();
+  $('save').disabled = false;
+  redraw();
+}
+
+/* The original reads the Top/Baseline spinners back into the font on every redraw. */
+function redraw() {
+  if (!tf) return;
+  tf.charTop = parseInt($('top').value, 10) || 0;
+  tf.charBaseline = parseInt($('baseline').value, 10) || 0;
+
+  const page = tf.pages[$('page').selectedIndex];
+  const pc = $('pageCanvas');
+  pc.width = page.w; pc.height = page.h;
+  const ctx = pc.getContext('2d');
+  const id = ctx.createImageData(page.w, page.h);
+  for (let i = 0; i < page.data.length; i++) {
+    const v = page.data[i];
+    id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v;
+    id.data[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(id, 0, 0);
+
+  drawCloseUp();
+  $('info').textContent = `Overlap: ${tf.charLeftOverlap}, ${tf.charRightOverlap}\nMaximum size: ${tf.boundW}x${tf.boundH}`;
+}
+
+function drawCloseUp() {
+  const Z = 4, cv = $('closeup'), A = tf.chars.get(0x41);
+  if (!A) { cv.width = cv.height = 1; return; }
+  const h = Math.max(1, tf.boundH * Z), w = A.w * Z;
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d');
+  const id = ctx.createImageData(w, h);
+  for (let y = 0; y < h; y++) {
+    const sy = y >> 2;
+    for (let x = 0; x < w; x++) {
+      const v = sy < 128 ? A.data[sy * A.w + (x >> 2)] : 0;
+      const o = (y * w + x) * 4;
+      id.data[o] = id.data[o + 1] = id.data[o + 2] = v; id.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(id, 0, 0);
+  ctx.fillStyle = 'rgb(0,255,255)';  ctx.fillRect(0, Z * tf.charBaseline - 1, w, 1);
+  ctx.fillStyle = 'rgb(255,255,50)'; ctx.fillRect(0, Z * tf.charTop - 1, w, 1);
+}
+
+function schedule() { clearTimeout(regenTimer); regenTimer = setTimeout(regenerate, 100); }
+for (const id of ['size', 'padding', 'bold', 'italic', 'aa', 'numbersOnly']) {
+  $(id).addEventListener('input', schedule);
+  $(id).addEventListener('change', schedule);
+}
+for (const id of ['top', 'baseline', 'page']) $(id).addEventListener('input', redraw);
+
+$('save').addEventListener('click', async () => {
+  if (!tf) return;
+  $('save').disabled = true;
+  try {
+    const o = readOpts();
+    const base = $('baseName').value.trim() || defaultBaseName();
+    const enc = new TextEncoder();
+    const files = [];
+    const wantStroke = $('stroke').checked;
+
+    redraw(); /* pick up spinner values */
+    files.push({ name: base + '.ini', data: enc.encode(buildIni(tf)) });
+
+    let src = tf, suffix = '';
+    if ($('doubleRes').checked) {
+      src = generateTextureFont({ ...o, size: o.size * 2, padding: o.padding * 2 }, { fontInfo, fontFamily, makeCanvas });
+      suffix = ' (doubleres)';
+    }
+    for (const p of src.pages) {
+      const png = new Uint8Array(await (await encodePNG(p.w, p.h, p.data)).arrayBuffer());
+      const names = [p.name].concat(wantStroke ? [p.name + '-stroke'] : []);
+      for (const n of names) files.push({ name: `${base} [${n}] ${p.nx}x${p.ny}${suffix}.png`, data: png });
+    }
+
+    const url = URL.createObjectURL(makeZip(files));
+    const a = document.createElement('a');
+    a.href = url; a.download = base + '.zip';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (err) {
+    $('error').textContent = 'Error: ' + err.message;
+  } finally {
+    $('save').disabled = false;
+  }
+});
+
+/* The original dialog's Top/Baseline up-down controls have a reversed range (64..0):
+ * clicking "up" moves the guide line up, i.e. decreases the value. */
+for (const id of ['top', 'baseline']) {
+  const input = $(id);
+  const step = (up) => {
+    const v = (parseInt(input.value, 10) || 0) + (up ? -1 : 1);
+    input.value = Math.max(parseInt(input.min, 10) || 0, v);
+    redraw();
+  };
+  const box = document.createElement('span');
+  box.className = 'spin';
+  for (const [label, up] of [['\u25B2', true], ['\u25BC', false]]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.tabIndex = -1;
+    b.addEventListener('click', () => step(up));
+    box.appendChild(b);
+  }
+  input.after(box);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); step(e.key === 'ArrowUp'); }
+  });
+}
+</script>
+</body>
+</html>
