@@ -31,13 +31,13 @@ void ArchHooks::SetToggleWindowed() {
 }
 
 void ArchHooks::SetHasFocus(bool has_focus) {
+  LockMut(g_Mutex);
   if (has_focus == has_focus_) {
     return;
   }
   has_focus_ = has_focus;
 
   LOG->Trace("App %s focus", has_focus ? "has" : "doesn't have");
-  LockMut(g_Mutex);
   focus_changed_ = true;
 }
 
