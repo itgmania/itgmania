@@ -150,8 +150,8 @@ bool StartChild(HANDLE& process, HANDLE& to_stdin, HANDLE& from_stdout) {
     sa.bInheritHandle = true;
     sa.lpSecurityDescriptor = nullptr;
 
-    CreatePipe(&si.hStdInput, &to_stdin, &sa, 0);
-    CreatePipe(&from_stdout, &si.hStdOutput, &sa, 0);
+    CreatePipe(&si.hStdInput, &to_stdin, &sa, 1024 * 64);
+    CreatePipe(&from_stdout, &si.hStdOutput, &sa, 1024 * 64);
     SetHandleInformation(to_stdin, HANDLE_FLAG_INHERIT, 0);
     SetHandleInformation(from_stdout, HANDLE_FLAG_INHERIT, 0);
   }
