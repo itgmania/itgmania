@@ -53,5 +53,8 @@ if(LINUX)
   option(WITH_ALSA "Build with ALSA support" ON)
   option(WITH_PULSEAUDIO "Build with PulseAudio support" ON)
   option(WITH_JACK "Build with JACK support" OFF)
+  option(WITH_XRANDR "Build with Xrandr support" ON)
+  option(WITH_X11 "Build with X11 support" ON)
+  option(WITH_SDL2 "Build with SDL windowing support (X11, Wayland, KMS)" ON)
 endif()
 

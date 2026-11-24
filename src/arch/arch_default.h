@@ -52,7 +52,12 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 
 #elif defined(UNIX)
 #include "ArchHooks/ArchHooks_Unix.h"
+
+#if defined(HAVE_SDL)
+#include "LowLevelWindow/LowLevelWindow_SDL.h"
+#else
 #include "LowLevelWindow/LowLevelWindow_X11.h"
+#endif
 
 #if defined(LINUX)
 #include "MemoryCard/MemoryCardDriverThreaded_Linux.h"
@@ -64,14 +69,23 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 
 #if defined(LINUX)
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> kInputDriverList = {
+#if defined(HAVE_SDL)
+  static const std::vector<std::string> inputDriverList = {
+      "SDL", "LinuxEvent", "LinuxJoystick"};
+#else
+  static const std::vector<std::string> inputDriverList = {
       "X11", "LinuxEvent", "LinuxJoystick"};
-  return kInputDriverList;
+#endif
+  return inputDriverList;
 }
 #else
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> kInputDriverList = {"X11"};
-  return kInputDriverList;
+#if defined(HAVE_SDL)
+  static const std::vector<std::string> inputDriverList = {"SDL"};
+#else
+  static const std::vector<std::string> inputDriverList = {"X11"};
+#endif
+  return inputDriverList;
 }
 #endif
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
