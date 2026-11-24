@@ -147,6 +147,8 @@ GameState::GameState()
       preferred_course_difficulty_(Message_PreferredCourseDifficultyP1Changed),
       sort_order_(Message_SortOrderChanged),
       cur_song_(Message_CurrentSongChanged),
+      preferred_song_(nullptr),
+      pinned_steps_(),
       cur_steps_(Message_CurrentStepsP1Changed),
       cur_course_(Message_CurrentCourseChanged),
       cur_trail_(Message_CurrentTrailP1Changed),
@@ -328,6 +330,7 @@ void GameState::Reset() {
 
   cur_song_.Set(GetDefaultSong());
   preferred_song_ = nullptr;
+  pinned_steps_.clear();
   cur_course_.Set(nullptr);
   preferred_course_ = nullptr;
   premium_free_active_ = false;
@@ -2726,12 +2729,21 @@ class LunaGameState : public Luna<GameState> {
   }
   static int SetCurrentSong(T* p, lua_State* L) {
     if (lua_isnil(L, 1)) {
+      p->pinned_steps_.clear();
       p->cur_song_.Set(nullptr);
     } else {
       Song* s = Luna<Song>::check(L, 1, true);
       p->cur_song_.Set(s);
     }
     COMMON_RETURN_SELF;
+  }
+  static int GetPinnedSteps(T* p, lua_State* L) {
+    LuaHelpers::CreateTableFromArray<Steps*>(p->pinned_steps_, L);
+    return 1;
+  }
+  static int HasPinnedSteps(T* p, lua_State* L) {
+    lua_pushboolean(L, p->HasPinnedSteps());
+    return 1;
   }
   static int CanSafelyEnterGameplay(T* p, lua_State* L) {
     std::string reason;
@@ -2848,7 +2860,9 @@ class LunaGameState : public Luna<GameState> {
   static int SetPreferredDifficulty(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
     Difficulty dc = Enum::Check<Difficulty>(L, 2);
-    p->preferred_difficulty_[pn].Set(dc);
+    if (!p->HasPinnedSteps()) {
+      p->preferred_difficulty_[pn].Set(dc);
+    }
     COMMON_RETURN_SELF;
   }
   DEFINE_METHOD(
@@ -3362,6 +3376,8 @@ class LunaGameState : public Luna<GameState> {
     ADD_METHOD(CanSafelyEnterGameplay);
     ADD_METHOD(GetCurrentSong);
     ADD_METHOD(SetCurrentSong);
+    ADD_METHOD(GetPinnedSteps);
+    ADD_METHOD(HasPinnedSteps);
     ADD_METHOD(GetCurrentSteps);
     ADD_METHOD(SetCurrentSteps);
     ADD_METHOD(GetCurrentCourse);

@@ -1059,6 +1059,9 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
   ASSERT(GAMESTATE->IsHumanPlayer(pn));
 
   if (GAMESTATE->cur_song_) {
+    if (steps_.size() <= 1) {
+      return;
+    }
     selection_[pn] += dir;
     if (WRAP_CHANGE_STEPS) {
       wrap(selection_[pn], steps_.size());
@@ -1068,11 +1071,13 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
       }
     }
 
-    // the user explicity switched difficulties. Update the preferred Difficulty
-    // and StepsType
-    Steps* steps = steps_[selection_[pn]];
-    GAMESTATE->ChangePreferredDifficultyAndStepsType(
-        pn, steps->GetDifficulty(), steps->steps_type_);
+    if (!GAMESTATE->HasPinnedSteps()) {
+      // the user explicity switched difficulties. Update the preferred
+      // Difficulty and StepsType
+      Steps* steps = steps_[selection_[pn]];
+      GAMESTATE->ChangePreferredDifficultyAndStepsType(
+          pn, steps->GetDifficulty(), steps->steps_type_);
+    }
   } else if (GAMESTATE->cur_course_) {
     selection_[pn] += dir;
     if (WRAP_CHANGE_STEPS) {
@@ -1094,7 +1099,9 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
     // selected. Changing the preferred Difficulty and StepsType by
     // direction is complicated when multiple StepsTypes are being shown,
     // so we don't support it.
-    if (CommonMetrics::AUTO_SET_STYLE) {
+    if (CommonMetrics::AUTO_SET_STYLE ||
+        (GAMESTATE->sort_order_ == SORT_METER &&
+         PREFSMAN->pin_steps_in_meter_sort_)) {
       return;
     }
     if (!GAMESTATE->ChangePreferredDifficulty(pn, dir)) {
@@ -1821,6 +1828,21 @@ void ScreenSelectMusic::AfterMusicChange() {
     menu_timer_->Stall();
   }
 
+  bool had_pinned_steps = GAMESTATE->HasPinnedSteps();
+  WheelItemDataType wtype = music_wheel_.GetSelectedType();
+  std::vector<Steps*> new_pinned_steps;
+  if (wtype == WheelItemDataType_Song &&
+      (GAMESTATE->sort_order_ == SORT_PREFERRED ||
+       (GAMESTATE->sort_order_ == SORT_METER &&
+        PREFSMAN->pin_steps_in_meter_sort_))) {
+    const MusicWheelItemData* wid =
+        music_wheel_.GetCurWheelItemData(music_wheel_.GetCurrentIndex());
+    if (wid != nullptr && wid->IsPinned()) {
+      wid->GetPinnedStepsList(new_pinned_steps);
+    }
+  }
+  GAMESTATE->pinned_steps_ = std::move(new_pinned_steps);
+
   Song* song = music_wheel_.GetSelectedSong();
   GAMESTATE->cur_song_.Set(song);
   if (song) {
@@ -1853,7 +1875,6 @@ void ScreenSelectMusic::AfterMusicChange() {
     last_sort_order = GAMESTATE->sort_order_;
   }
 
-  WheelItemDataType wtype = music_wheel_.GetSelectedType();
   SampleMusicPreviewMode pmode;
   switch (wtype) {
     case WheelItemDataType_Section:
@@ -1978,7 +1999,11 @@ void ScreenSelectMusic::AfterMusicChange() {
           FAIL_M(ssprintf("Invalid preview mode: %i", pmode));
       }
 
-      SongUtil::GetPlayableSteps(song, steps_);
+      if (GAMESTATE->HasPinnedSteps()) {
+        steps_ = GAMESTATE->pinned_steps_;
+      } else {
+        SongUtil::GetPlayableSteps(song, steps_);
+      }
       if (steps_.empty()) {
         // LuaHelpers::ReportScriptError("GetPlayableSteps returned nothing.");
       }
@@ -1990,16 +2015,32 @@ void ScreenSelectMusic::AfterMusicChange() {
       g_sCDTitlePath = song->GetCDTitlePath();
       g_bWantFallbackCdTitle = true;
 
-      if (GAMESTATE->sort_order_ == SORT_METER) {
-        for (int i = steps_.size() - 1; i >= 0; i--) {
-          if (steps_[i]->GetMeter() ==
-              StringToInt(GAMESTATE->last_open_section_)) {
-            SwitchToDifficulty(steps_[i]->GetDifficulty());
-            break;
+      if (GAMESTATE->HasPinnedSteps()) {
+        if (steps_.size() == 1) {
+          FOREACH_HumanPlayer(pn) { selection_[pn] = 0; }
+        } else {
+          FOREACH_HumanPlayer(pn) {
+            GAMESTATE->cur_steps_[pn].SetWithoutBroadcast(nullptr);
           }
+          SwitchToPreferredDifficulty();
         }
       } else {
-        SwitchToPreferredDifficulty();
+        if (had_pinned_steps) {
+          FOREACH_HumanPlayer(pn) {
+            GAMESTATE->cur_steps_[pn].SetWithoutBroadcast(nullptr);
+          }
+        }
+        if (GAMESTATE->sort_order_ == SORT_METER) {
+          for (int i = steps_.size() - 1; i >= 0; i--) {
+            if (steps_[i]->GetMeter() ==
+                StringToInt(GAMESTATE->last_open_section_)) {
+              SwitchToDifficulty(steps_[i]->GetDifficulty());
+              break;
+            }
+          }
+        } else {
+          SwitchToPreferredDifficulty();
+        }
       }
       break;
 

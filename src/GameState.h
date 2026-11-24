@@ -276,6 +276,10 @@ class GameState {
   BroadcastOnChangePtr<Song> cur_song_;
   // The last Song that the user manually changed to.
   Song* preferred_song_;
+  // Non-empty when the currently selected wheel item in SORT_PREFERRED or
+  // SORT_METER (with PinStepsInMeterSort) pins specific chart(s).
+  std::vector<Steps*> pinned_steps_;
+  bool HasPinnedSteps() const { return !pinned_steps_.empty(); }
   BroadcastOnChangePtr1D<Steps, NUM_PLAYERS> cur_steps_;
 
   // nullptr on ScreenSelectMusic if the currently selected wheel item isn't a

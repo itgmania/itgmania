@@ -14,6 +14,7 @@ class PlayerOptions;
 struct lua_State;
 
 #include <cstddef>
+#include <functional>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -141,10 +142,24 @@ class SongManager {
   std::map<int, std::vector<Song*>> GetMeterToSongsMap() const {
     return map_songs_by_difficulty_;
   }
-  void GetPreferredSortSongs(std::vector<Song*>& add_to) const;
-  std::map<std::string, std::vector<Song*>> GetPreferredSortSongsMap() const {
-    return map_preferred_section_to_songs_;
+  struct PreferredSongEntry {
+    Song* song_ = nullptr;
+    Difficulty pinned_difficulty_ = Difficulty_Invalid;
+    std::string pinned_edit_description_ = "";
+    bool IsPinned() const { return pinned_difficulty_ != Difficulty_Invalid; }
   };
+
+  void GetPreferredSortSongs(std::vector<Song*>& add_to) const;
+  const std::map<std::string, std::vector<PreferredSongEntry>>&
+  GetPreferredSortEntriesMap() const {
+    return map_preferred_section_to_entries_;
+  }
+  static Difficulty ParsePreferredDifficulty(const std::string& str);
+  static bool ParsePreferredSongLine(
+      const std::string& line,
+      const std::function<bool(const std::string&)>& target_exists_fn,
+      std::string& song_or_group_out, Difficulty& difficulty_out,
+      std::string& edit_description_out);
   std::string SongToPreferredSortSectionName(const Song* song) const;
   struct Series {
     std::string name_;
@@ -260,10 +275,11 @@ class SongManager {
 
   struct PreferredSortSection {
     std::string name_;
-    std::vector<Song*> songs_;
+    std::vector<PreferredSongEntry> entries_;
   };
   /** @brief All preferred songs, keyed by section */
-  std::map<std::string, std::vector<Song*>> map_preferred_section_to_songs_;
+  std::map<std::string, std::vector<PreferredSongEntry>>
+      map_preferred_section_to_entries_;
   std::vector<PreferredSortSection> preferred_song_sort_;
   std::vector<std::string> song_group_names_;
   std::vector<std::string>

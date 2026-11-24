@@ -1445,8 +1445,19 @@ bool SongID::IsValid() const { return ToSong() != nullptr; }
 namespace {
 int GetPlayableSteps(lua_State* L) {
   const Song* song = Luna<Song>::check(L, 1, true);
+  bool ignore_pinned = lua_toboolean(L, 2) != 0;
   std::vector<Steps*> steps;
-  SongUtil::GetPlayableSteps(song, steps);
+  bool is_pinned_sort =
+      GAMESTATE != nullptr &&
+      (GAMESTATE->sort_order_ == SORT_PREFERRED ||
+       (GAMESTATE->sort_order_ == SORT_METER && PREFSMAN != nullptr &&
+        PREFSMAN->pin_steps_in_meter_sort_));
+  if (!ignore_pinned && is_pinned_sort && GAMESTATE->HasPinnedSteps() &&
+      song == GAMESTATE->cur_song_) {
+    steps = GAMESTATE->pinned_steps_;
+  } else {
+    SongUtil::GetPlayableSteps(song, steps);
+  }
   LuaHelpers::CreateTableFromArray<Steps*>(steps, L);
   return 1;
 }

@@ -393,8 +393,26 @@ bool MusicWheel::SelectSong(const Song* p) {
   }
 
   for (i = 0; i < cur_wheel_item_data_.size(); i++) {
-    if (GetCurWheelItemData(i)->song_ == p) {
-      selection_ = i;  // select it
+    const MusicWheelItemData* wid = GetCurWheelItemData(i);
+    if (wid->song_ != p) {
+      continue;
+    }
+    selection_ = i;  // select it (fallback if no exact pin match is found)
+
+    // We check for matching pinned steps for the scenario where the same
+    // song is listed multiple times in the wheel, each pinned to different
+    // difficulties - we want to select the entry that matches our current
+    // pinned steps
+    bool pin_matches = false;
+    if (GAMESTATE->HasPinnedSteps()) {
+      std::vector<Steps*> wid_pinned;
+      wid->GetPinnedStepsList(wid_pinned);
+      pin_matches = (wid_pinned == GAMESTATE->pinned_steps_);
+    } else {
+      pin_matches = !wid->IsPinned();
+    }
+    if (pin_matches) {
+      break;
     }
   }
   return true;
@@ -830,8 +848,8 @@ void MusicWheel::BuildWheelItemDatas(
           // If the sort order is Preferred handle it differently because we
           // already know the sections
           if (use_sections) {
-            for (const auto& [section_name, songs] :
-                 SONGMAN->GetPreferredSortSongsMap()) {
+            for (const auto& [section_name, entries] :
+                 SONGMAN->GetPreferredSortEntriesMap()) {
               // todo: preferred sort section color handling? -aj
               RageColor color_section =
                   SECTION_COLORS.GetValue(section_color_index);
@@ -840,12 +858,15 @@ void MusicWheel::BuildWheelItemDatas(
               // Add the section item
               array_wheel_item_datas.push_back(new MusicWheelItemData(
                   WheelItemDataType_Section, nullptr, section_name, nullptr,
-                  nullptr, color_section, songs.size()));
+                  nullptr, color_section, entries.size()));
               // Add all the songs in this section
-              for (const auto& song : songs) {
-                array_wheel_item_datas.push_back(new MusicWheelItemData(
-                    WheelItemDataType_Song, song, section_name, nullptr,
-                    nullptr, SONGMAN->GetSongColor(song), 0));
+              for (const auto& entry : entries) {
+                MusicWheelItemData* wid = new MusicWheelItemData(
+                    WheelItemDataType_Song, entry.song_, section_name, nullptr,
+                    nullptr, SONGMAN->GetSongColor(entry.song_), 0);
+                wid->pinned_difficulty_ = entry.pinned_difficulty_;
+                wid->pinned_edit_description_ = entry.pinned_edit_description_;
+                array_wheel_item_datas.push_back(wid);
               }
             }
           }
@@ -866,9 +887,11 @@ void MusicWheel::BuildWheelItemDatas(
                   songs.size()));
               // Add all the songs in this section
               for (const auto& song : songs) {
-                array_wheel_item_datas.push_back(new MusicWheelItemData(
+                MusicWheelItemData* wid = new MusicWheelItemData(
                     WheelItemDataType_Song, song, ssprintf("%d", section_name),
-                    nullptr, nullptr, SONGMAN->GetSongColor(song), 0));
+                    nullptr, nullptr, SONGMAN->GetSongColor(song), 0);
+                wid->pinned_meter_ = section_name;
+                array_wheel_item_datas.push_back(wid);
               }
             }
           }
@@ -1400,6 +1423,15 @@ void MusicWheel::FilterWheelItemDatas(
         remove[i] = true;
         continue;
       }
+
+      if (wid.IsPinned()) {
+        std::vector<Steps*> pinned_steps;
+        wid.GetPinnedStepsList(pinned_steps);
+        if (pinned_steps.empty()) {
+          remove[i] = true;
+          continue;
+        }
+      }
     }
 
     if (wid.type_ == WheelItemDataType_Course) {
@@ -1631,6 +1663,9 @@ bool MusicWheel::ChangeSort(
   // Save the new preference.
   if (IsSongSort(new_so)) {
     GAMESTATE->preferred_sort_order_ = new_so;
+  }
+  if (GAMESTATE->sort_order_ != new_so) {
+    GAMESTATE->pinned_steps_.clear();
   }
   GAMESTATE->sort_order_.Set(new_so);
 
@@ -2022,6 +2057,22 @@ void MusicWheel::GetCurrentSections(std::vector<std::string>& sections) {
   }
 }
 
+void MusicWheel::GetSectionEntries(
+    const std::string& section, std::vector<const MusicWheelItemData*>& out) {
+  std::vector<MusicWheelItemData*>& wheel_items =
+      getWheelItemsData(GAMESTATE->sort_order_);
+  for (const MusicWheelItemData* wid : wheel_items) {
+    if (wid->type_ != WheelItemDataType_Song || wid->song_ == nullptr) {
+      continue;
+    }
+    if (wid->text_ != section &&
+        (section.empty() || wid->parent_section_ != section)) {
+      continue;
+    }
+    out.push_back(wid);
+  }
+}
+
 // sm-ssc additions: jump to group
 std::string MusicWheel::JumpToNextGroup() {
   // Thanks to Juanelote for this logic:
@@ -2261,6 +2312,26 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     LuaHelpers::CreateTableFromArray<std::string>(v, L);
     return 1;
   }
+  static int GetSectionEntries(T* p, lua_State* L) {
+    std::string section = SArg(1);
+    std::vector<const MusicWheelItemData*> items;
+    p->GetSectionEntries(section, items);
+    lua_newtable(L);
+    int idx = 1;
+    for (const MusicWheelItemData* wid : items) {
+      lua_newtable(L);
+      wid->song_->PushSelf(L);
+      lua_setfield(L, -2, "Song");
+      if (wid->IsPinned()) {
+        std::vector<Steps*> pinned_steps;
+        wid->GetPinnedStepsList(pinned_steps);
+        LuaHelpers::CreateTableFromArray<Steps*>(pinned_steps, L);
+        lua_setfield(L, -2, "PinnedSteps");
+      }
+      lua_rawseti(L, -2, idx++);
+    }
+    return 1;
+  }
   static int IsRouletting(T* p, lua_State* L) {
     lua_pushboolean(L, p->IsRouletting());
     return 1;
@@ -2311,6 +2382,7 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     ADD_METHOD(SelectCourse);
     ADD_METHOD(Move);
     ADD_METHOD(GetCurrentSections);
+    ADD_METHOD(GetSectionEntries);
   }
 };
 

@@ -2,9 +2,11 @@
 #define MUSIC_WHEEL_ITEM_H
 
 #include <string>
+#include <vector>
 
 #include "AutoActor.h"
 #include "BitmapText.h"
+#include "Difficulty.h"
 #include "GameCommand.h"
 #include "Group.h"
 #include "MessageManager.h"
@@ -73,6 +75,9 @@ struct MusicWheelItemData : public WheelItemBaseData {
         song_(nullptr),
         group_(nullptr),
         flags_(),
+        pinned_difficulty_(Difficulty_Invalid),
+        pinned_edit_description_(""),
+        pinned_meter_(-1),
         section_count_(0),
         parent_section_(""),
         label_(""),
@@ -82,10 +87,18 @@ struct MusicWheelItemData : public WheelItemBaseData {
       Course* course, Group* group, RageColor color, int section_count,
       std::string parent_section = "");
 
+  bool IsPinned() const;
+  void GetPinnedStepsList(std::vector<Steps*>& out) const;
+
   Course* course_;
   Song* song_;
   Group* group_;
   WheelNotifyIcon::Flags flags_;
+
+  // for pinned entries in SORT_PREFERRED or SORT_METER
+  Difficulty pinned_difficulty_;
+  std::string pinned_edit_description_;
+  int pinned_meter_;
 
   // for TYPE_SECTION
   int section_count_;

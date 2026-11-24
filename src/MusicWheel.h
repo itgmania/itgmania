@@ -70,6 +70,8 @@ class MusicWheel : public WheelBase {
   virtual void ReloadSongList();
 
   void GetCurrentSections(std::vector<std::string>& sections);
+  void GetSectionEntries(
+      const std::string& section, std::vector<const MusicWheelItemData*>& out);
   // Lua
   void PushSelf(lua_State* L);
 
