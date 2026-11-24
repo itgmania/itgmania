@@ -8,6 +8,26 @@
 RageSoundMixBuffer::RageSoundMixBuffer() : offset_(0) {}
 RageSoundMixBuffer::~RageSoundMixBuffer() {}
 
+namespace {
+// Prevent clipping without adding distortion.
+// With threshold t:
+// |x| <= t: output = x (bit-transparent)
+// |x| > t: output = sign(x) * (t + (1 - t) * tanh((|x| - t) / (1 - t)))
+inline float SoftKneeAudioLimiter(float x) {
+  const float ax = std::fabs(x);
+  constexpr float knee_threshold = 0.9f;
+  if (ax <= knee_threshold) {
+    return x;
+  }
+  constexpr float range = 1.0f - knee_threshold;
+  const float y =
+      knee_threshold + range * std::tanh((ax - knee_threshold) / range);
+
+  // Return the original sign of x so negative values are handled correctly.
+  return std::copysign(y, x);
+}
+}  // namespace
+
 /* write() will start mixing iOffset samples into the buffer.  Be careful; this
  * is measured in samples, not frames, so if the data is stereo, multiply by
  * two. */
@@ -44,29 +64,25 @@ void RageSoundMixBuffer::write(
 }
 
 void RageSoundMixBuffer::read(int16_t* buf) {
-  for (unsigned pos = 0; pos < mixbuf_.size(); ++pos) {
-    // do the read
-    float out = mixbuf_[pos];
-    // ensure volume is within expected levels to prevent clipping
-    out = std::clamp(out, -1.0f, +1.0f);
-    // round rather than truncate to minimize distortion
-    buf[pos] = static_cast<int16_t>(std::round(out * INT16_MAX));
+  for (size_t pos = 0; pos < mixbuf_.size(); ++pos) {
+    const int16_t prepared_sample =
+        std::lround(SoftKneeAudioLimiter(mixbuf_[pos]) * INT16_MAX);
+    buf[pos] = prepared_sample;
   }
   mixbuf_.clear();
 }
 
 void RageSoundMixBuffer::read(float* buf) {
-  // ensure volume is within expected levels to prevent clipping
-  std::transform(mixbuf_.begin(), mixbuf_.end(), buf, [](float s) {
-    return std::clamp(s, -1.0f, +1.0f);
-  });
+  std::transform(mixbuf_.begin(), mixbuf_.end(), buf, SoftKneeAudioLimiter);
   mixbuf_.clear();
 }
 
 void RageSoundMixBuffer::read_deinterlace(float** bufs, int channels) {
   for (unsigned i = 0; i < mixbuf_.size() / channels; ++i) {
     for (int ch = 0; ch < channels; ++ch) {
-      bufs[ch][i] = mixbuf_[channels * i + ch];
+      const unsigned pos = channels * i + ch;  // prevent int overflow
+      const float prepared_sample = SoftKneeAudioLimiter(mixbuf_[pos]);
+      bufs[ch][i] = prepared_sample;
     }
   }
   mixbuf_.clear();
