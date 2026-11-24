@@ -2057,6 +2057,22 @@ void MusicWheel::GetCurrentSections(std::vector<std::string>& sections) {
   }
 }
 
+void MusicWheel::GetSectionEntries(
+    const std::string& section, std::vector<const MusicWheelItemData*>& out) {
+  std::vector<MusicWheelItemData*>& wheel_items =
+      getWheelItemsData(GAMESTATE->sort_order_);
+  for (const MusicWheelItemData* wid : wheel_items) {
+    if (wid->type_ != WheelItemDataType_Song || wid->song_ == nullptr) {
+      continue;
+    }
+    if (wid->text_ != section &&
+        (section.empty() || wid->parent_section_ != section)) {
+      continue;
+    }
+    out.push_back(wid);
+  }
+}
+
 // sm-ssc additions: jump to group
 std::string MusicWheel::JumpToNextGroup() {
   // Thanks to Juanelote for this logic:
@@ -2296,6 +2312,26 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     LuaHelpers::CreateTableFromArray<std::string>(v, L);
     return 1;
   }
+  static int GetSectionEntries(T* p, lua_State* L) {
+    std::string section = SArg(1);
+    std::vector<const MusicWheelItemData*> items;
+    p->GetSectionEntries(section, items);
+    lua_newtable(L);
+    int idx = 1;
+    for (const MusicWheelItemData* wid : items) {
+      lua_newtable(L);
+      wid->song_->PushSelf(L);
+      lua_setfield(L, -2, "Song");
+      if (wid->IsPinned()) {
+        std::vector<Steps*> pinned_steps;
+        wid->GetPinnedStepsList(pinned_steps);
+        LuaHelpers::CreateTableFromArray<Steps*>(pinned_steps, L);
+        lua_setfield(L, -2, "PinnedSteps");
+      }
+      lua_rawseti(L, -2, idx++);
+    }
+    return 1;
+  }
   static int IsRouletting(T* p, lua_State* L) {
     lua_pushboolean(L, p->IsRouletting());
     return 1;
@@ -2346,6 +2382,7 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     ADD_METHOD(SelectCourse);
     ADD_METHOD(Move);
     ADD_METHOD(GetCurrentSections);
+    ADD_METHOD(GetSectionEntries);
   }
 };
 
