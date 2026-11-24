@@ -184,6 +184,9 @@ PrefsManager::PrefsManager()
       delayed_texture_delete_("DelayedTextureDelete", false),
       delayed_model_delete_("DelayedModelDelete", false),
       image_cache_("ImageCache", IMGCACHE_LOW_RES_PRELOAD),
+      image_cache_ondemand_memory_cap_(
+          "ImageCacheOnDemandMemoryLimitMB",
+          64),  // only used in IMGCACHE_LOW_RES_LOAD_ON_DEMAND
       fast_load_("FastLoad", true),
       never_cache_list_("NeverCacheList", ""),
 
