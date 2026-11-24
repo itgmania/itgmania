@@ -312,7 +312,7 @@ void RunChild() {
 
   WaitForSingleObject(
       process, INFINITE);  // wait for CrashHandlerChild to complete to avoid
-                            // leaving behind a zombie process
+                           // leaving behind a zombie process
 
   CloseHandle(process);
   CloseHandle(to_stdin);
