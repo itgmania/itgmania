@@ -91,37 +91,6 @@ std::string ImageCache::GetImageCachePath(
   return SongCacheIndex::GetCacheFilePath(image_dir, image_path);
 }
 
-/* If in on-demand mode, load all cached images.  This must be fast, so
- * cache files will not be created if they don't exist; that should be done
- * by CacheImage or LoadImage on startup. */
-void ImageCache::Demand(std::string image_dir) {
-  ++g_iDemandRefcount;
-  if (g_iDemandRefcount > 1) {
-    return;
-  }
-
-  if (PREFSMAN->image_cache_ != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
-    return;
-  }
-
-  LockMut(g_ImageCacheMutex);
-  FOREACH_CONST_Child(&image_data_, p) {
-    std::string image_path = p->GetName();
-
-    if (g_ImagePathToImage.find(image_path) != g_ImagePathToImage.end()) {
-      continue; /* already loaded */
-    }
-
-    const std::string cache_path = GetImageCachePath(image_dir, image_path);
-    RageSurface* image = RageSurfaceUtils::LoadSurface(cache_path);
-    if (image == nullptr) {
-      continue; /* doesn't exist */
-    }
-
-    g_ImagePathToImage[image_path] = image;
-  }
-}
-
 // Helpers for IMGCACHE_LOW_RES_LOAD_ON_DEMAND (FIFO with a memory limit).
 namespace {
 struct OnDemandUse {
@@ -138,14 +107,14 @@ bool IsOnDemandMode() {
 }
 
 size_t SurfaceBytes(const RageSurface* pImage) {
-  return static_cast<size_t>(pImage->pitch) * pImage->h;
+  return static_cast<size_t>(pImage->pitch_) * pImage->h_;
 }
 
 // Reads the cache file into g_ImagePathToImage. Returns false if not in
 // on-demand mode or if the cache file couldn't be loaded.
 // The caller must hold g_ImageCacheMutex.
 bool LoadOnDemandImage(
-    const std::string& sCachePath, const std::string& sImagePath) {
+    const std::string& sCachePath, const std::string& image_path) {
   if (!IsOnDemandMode()) {
     return false;
   }
@@ -155,14 +124,14 @@ bool LoadOnDemandImage(
     return false;
   }
 
-  g_ImagePathToImage[sImagePath] = pImage;
+  g_ImagePathToImage[image_path] = pImage;
   return true;
 }
 
 void TouchOnDemandImage(
-    const std::string& sImagePath, const RageTextureID& id) {
+    const std::string& image_path, const RageTextureID& id) {
   if (IsOnDemandMode()) {
-    g_OnDemandUse[sImagePath] = {id, ++g_iOnDemandUseSequence};
+    g_OnDemandUse[image_path] = {id, ++g_iOnDemandUseSequence};
   }
 }
 
@@ -174,7 +143,7 @@ void TrimOnDemandImages() {
 
   const uint64_t maxMemory =
       static_cast<uint64_t>(
-          std::max(0, PREFSMAN->m_iMaxOnDemandImageMemoryMB.Get())) *
+          std::max(0, PREFSMAN->image_cache_ondemand_memory_cap_.Get())) *
       1024 * 1024;
   size_t totalSize = 0;
   for (auto it = g_OnDemandUse.begin(); it != g_OnDemandUse.end();) {
@@ -208,18 +177,12 @@ void TrimOnDemandImages() {
     delete image->second;
     g_ImagePathToImage.erase(image);
     g_OnDemandUse.erase(oldest);
-
   }
 }
 }  // namespace
 
-std::string ImageCache::GetImageCachePath(
-    std::string sImageDir, std::string sImagePath) {
-  return SongCacheIndex::GetCacheFilePath(sImageDir, sImagePath);
-}
-
 // LoadCachedImage lazy loads images when we're in on-demand mode
-void ImageCache::Demand(std::string sImageDir) { ++g_iDemandRefcount; }
+void ImageCache::Demand(std::string image_dir) { ++g_iDemandRefcount; }
 
 /* Release images loaded on demand. */
 void ImageCache::Undemand(std::string image_dir) {
@@ -251,9 +214,9 @@ void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
     return;
   }
 
-  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
-    if (!DoesFileExist(GetImageCachePath(sImageDir, sImagePath))) {
-      CacheImageInternal(sImageDir, sImagePath);
+  if (PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    if (!DoesFileExist(GetImageCachePath(image_dir, image_path))) {
+      CacheImageInternal(image_dir, image_path);
     }
     return;
   }
@@ -277,7 +240,7 @@ void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
          * missing, so try to create it.  Don't do this first, for efficiency.
          */
         // LOG->Trace( "Cached image load of '%s' ('%s') failed, trying to cache
-        // ...", sImagePath.c_str(), sCachePath.c_str() );
+        // ...", image_path.c_str(), sCachePath.c_str() );
 
         /* Skip the up-to-date check; it failed to load, so it can't be up
          * to date. */
@@ -285,7 +248,7 @@ void ImageCache::LoadImage(std::string image_dir, std::string image_path) {
         continue;
       } else {
         // LOG->Trace( "Cached image load of '%s' ('%s') failed",
-        // sImagePath.c_str(), sCachePath.c_str() );
+        // image_path.c_str(), sCachePath.c_str() );
         return;
       }
     }
@@ -447,7 +410,7 @@ RageTextureID ImageCache::LoadCachedImage(
     return id;
   }
 
-  // LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", sImagePath.c_str(),
+  // LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", image_path.c_str(),
   // ID.filename.c_str() );
 
   LockMut(g_ImageCacheMutex);
@@ -459,9 +422,9 @@ RageTextureID ImageCache::LoadCachedImage(
   }
 
   /* It's not in a texture.  Do we have it loaded? */
-if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
+  if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
       !LoadOnDemandImage(
-          GetImageCachePath(sImageDir, image_path), image_path)) {
+          GetImageCachePath(image_dir, image_path), image_path)) {
     /* Oops, the image is missing.  Warn and continue. */
     if (PREFSMAN->image_cache_ != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", image_path.c_str());
@@ -469,7 +432,7 @@ if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
     return id;
   }
 
-  TouchOnDemandImage(sImagePath, ID);
+  TouchOnDemandImage(image_path, id);
 
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
