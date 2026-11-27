@@ -135,7 +135,8 @@ void NoteAnnotation::FromString(
   }
 }
 
-std::string NoteAnnotation::ToString(std::vector<NoteAnnotation>& annotations) {
+std::string NoteAnnotation::ToString(
+    const std::vector<NoteAnnotation>& annotations) {
   std::vector<uint8_t> raw;
   raw.reserve(annotations.size() * 11);
   for (const auto& ann : annotations) {
@@ -151,25 +152,4 @@ std::string NoteAnnotation::ToString(std::vector<NoteAnnotation>& annotations) {
 
   MakeUrlSafe(output);
   return output;
-}
-
-const std::string& NoteAnnotationCache::GetCompressed() const {
-  return compressed_;
-}
-
-const std::vector<NoteAnnotation>& NoteAnnotationCache::GetNoteAnnotations()
-    const {
-  if (decompressed_.empty() && !compressed_.empty()) {
-    NoteAnnotation::FromString(compressed_, decompressed_);
-  }
-  return decompressed_;
-}
-
-void NoteAnnotationCache::Compress() {
-  if (decompressed_.size() > 0) {
-    compressed_ = NoteAnnotation::ToString(decompressed_);
-  } else {
-    compressed_ = "";
-  }
-  decompressed_.clear();
 }

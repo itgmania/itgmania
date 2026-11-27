@@ -8,7 +8,6 @@
 #include "BackgroundUtil.h"
 #include "GameManager.h"
 #include "LuaManager.h"
-#include "NoteAnnotation.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 #include "RageFile.h"
@@ -159,10 +158,7 @@ Steps* MakeFullSteps(Song& song) {
   breakdowns[1].total_break_measures_ = 6;
   steps->SetStreamBreakdown(breakdowns);
 
-  std::vector<NoteAnnotationCache> annotations(2);
-  annotations[0].compressed_ = "annotation-one";
-  annotations[1].compressed_ = "";
-  steps->SetNoteAnnotations(annotations);
+  steps->SetNoteAnnotations({"annotation-one", ""});
 
   steps->SetGrooveStatsHash("groove-hash");
   steps->SetGrooveStatsHashVersion(3);
@@ -295,16 +291,8 @@ void ExpectStepsEqual(const Steps& expected, const Steps& actual) {
         actual_breakdowns[i].total_break_measures_);
   }
 
-  const std::vector<NoteAnnotationCache>& expected_annotations =
-      expected.GetNoteAnnotationCaches();
-  const std::vector<NoteAnnotationCache>& actual_annotations =
-      actual.GetNoteAnnotationCaches();
-  ASSERT_EQ(expected_annotations.size(), actual_annotations.size());
-  for (size_t i = 0; i < expected_annotations.size(); ++i) {
-    EXPECT_EQ(
-        expected_annotations[i].GetCompressed(),
-        actual_annotations[i].GetCompressed());
-  }
+  EXPECT_EQ(
+      expected.GetNoteAnnotationStrings(), actual.GetNoteAnnotationStrings());
 
   EXPECT_EQ(expected.GetGrooveStatsHash(), actual.GetGrooveStatsHash());
   EXPECT_EQ(

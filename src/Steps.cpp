@@ -421,6 +421,7 @@ void Steps::CalculateTechCounts(const NoteData& temp_note_data) {
   }
 
   FOREACH_PlayerNumber(pn) tech_counts_[pn].Zero();
+  note_annotations_.clear();
 
   const StepParity::StageLayout* layout = getLayout(this->steps_type_);
   // If we don't have a valid layout for this StepsType, then don't even
@@ -441,10 +442,10 @@ void Steps::CalculateTechCounts(const NoteData& temp_note_data) {
       TechCounts::CalculateTechCountsFromRows(
           gen.rows_, layout, tech_counts_[pn], temp_note_annotations);
 
-      NoteAnnotationCache cached_annotations;
-      cached_annotations.decompressed_ = temp_note_annotations;
-      cached_annotations.Compress();
-      note_annotations_.push_back(cached_annotations);
+      note_annotations_.push_back(
+          temp_note_annotations.empty()
+              ? std::string()
+              : NoteAnnotation::ToString(temp_note_annotations));
     }
   } else {
     StepParity::StepParityGenerator gen{layout, timing};
@@ -455,10 +456,10 @@ void Steps::CalculateTechCounts(const NoteData& temp_note_data) {
         gen.rows_, layout, tech_counts_[0], temp_note_annotations);
     std::fill_n(tech_counts_ + 1, NUM_PLAYERS - 1, tech_counts_[0]);
 
-    NoteAnnotationCache cached_annotations;
-    cached_annotations.decompressed_ = temp_note_annotations;
-    cached_annotations.Compress();
-    note_annotations_.push_back(cached_annotations);
+    note_annotations_.push_back(
+        temp_note_annotations.empty()
+            ? std::string()
+            : NoteAnnotation::ToString(temp_note_annotations));
   }
 }
 
@@ -564,10 +565,6 @@ void Steps::Compress() const {
   // Don't compress data in the editor: it's still in use.
   if (GAMESTATE->in_step_editor_) {
     return;
-  }
-
-  for (NoteAnnotationCache annotation_cache : note_annotations_) {
-    annotation_cache.Compress();
   }
 
   if (!filename_.empty() && loaded_from_profile_ == ProfileSlot_Invalid) {
@@ -750,9 +747,9 @@ void Steps::SetTechCounts(const TechCounts ts[NUM_PLAYERS]) {
 }
 
 void Steps::SetNoteAnnotations(
-    std::vector<NoteAnnotationCache>& note_annotations) {
+    const std::vector<std::string>& note_annotations) {
   DeAutogen();
-  note_annotations_.assign(note_annotations.begin(), note_annotations.end());
+  note_annotations_ = note_annotations;
 }
 
 void Steps::SetNpsPerMeasure(std::vector<std::vector<float>>& nps_per_measure) {
@@ -947,23 +944,26 @@ const StreamBreakdown& Steps::GetStreamBreakdown(PlayerNumber pn) const {
   }
 }
 
-const std::vector<NoteAnnotation>& Steps::GetNoteAnnotations(
-    PlayerNumber pn) const {
+std::vector<NoteAnnotation> Steps::GetNoteAnnotations(PlayerNumber pn) const {
   // For couples/routine charts, this functions the same as GetNotesPerMeasure
   // and GetNpsPerMeasure.
-
-  static const std::vector<NoteAnnotation> kEmptyVector;
-  if (Real()->note_annotations_.size() == 0) {
-    return kEmptyVector;
-  } else if (Real()->note_annotations_.size() <= pn) {
-    return Real()->note_annotations_[PLAYER_1].GetNoteAnnotations();
-  } else {
-    return Real()->note_annotations_[pn].GetNoteAnnotations();
+  std::vector<NoteAnnotation> out;
+  const std::vector<std::string>& encoded = Real()->note_annotations_;
+  if (encoded.empty()) {
+    return out;
   }
+  const std::string& str =
+      (pn >= 0 && static_cast<size_t>(pn) < encoded.size())
+          ? encoded[pn]
+          : encoded[PLAYER_1];
+  if (!str.empty()) {
+    NoteAnnotation::FromString(str, out);
+  }
+  return out;
 }
 
-const std::vector<NoteAnnotationCache>& Steps::GetNoteAnnotationCaches() const {
-  return note_annotations_;
+const std::vector<std::string>& Steps::GetNoteAnnotationStrings() const {
+  return Real()->note_annotations_;
 }
 
 float Steps::GetPeakNps(PlayerNumber pn) const {
