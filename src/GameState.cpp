@@ -319,7 +319,9 @@ void GameState::Reset() {
   num_stages_of_this_song_ = 0;
   loading_next_song_ = false;
 
-  NOTESKIN->RefreshNoteSkinData(cur_game_);
+  if (NOTESKIN->GetCurrentGame() != cur_game_) {
+    NOTESKIN->RefreshNoteSkinData(cur_game_);
+  }
 
   game_seed_ = rand();
   stage_seed_ = rand();
