@@ -42,7 +42,6 @@ using namespace RageDisplay_Legacy_Helpers;
 
 #if defined(_MSC_VER)
 #pragma comment(lib, "opengl32.lib")
-#pragma comment(lib, "glu32.lib")
 #endif
 
 #ifdef NO_GL_FLUSH
@@ -61,9 +60,6 @@ static bool g_bColorIndexTableWorks = true;
 /* Range and granularity of points and lines: */
 static float g_line_range[2];
 static float g_point_range[2];
-
-/* GLU version * 10: */
-static int g_gluVersion;
 
 static int g_iMaxTextureUnits = 0;
 
@@ -708,10 +704,6 @@ static void CheckReversePackedPixels() {
 }
 
 void SetupExtensions() {
-  const float glu_version =
-      StringToFloat((const char*)gluGetString(GLU_VERSION));
-  g_gluVersion = std::lrint(glu_version * 10);
-
   glewInit();
 
   g_iMaxTextureUnits = 1;
@@ -2176,28 +2168,6 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
    * set up glPixelMap. */
   SetPixelMapForSurface(
       gl_image_format, gl_tex_format, img->format_->palette_.get());
-
-  // HACK:  OpenGL 1.2 types aren't available in GLU 1.3.  Don't call GLU for
-  // mip mapping if we're using an OGL 1.2 type and don't have >= GLU 1.3.
-  // http://pyopengl.sourceforge.net/documentation/manual/gluBuild2DMipmaps.3G.html
-  if (generate_mip_maps && g_gluVersion < 13) {
-    switch (pixfmt) {
-      // OpenGL 1.1 types
-      case RagePixelFormat_RGBA8:
-      case RagePixelFormat_RGB8:
-      case RagePixelFormat_PAL:
-      case RagePixelFormat_BGR8:
-        break;
-      // OpenGL 1.2 types
-      default:
-        LOG->Trace(
-            "Can't generate mipmaps for type %s because GLU version %.1f is "
-            "too old.",
-            GLToString(gl_image_type).c_str(), g_gluVersion / 10.f);
-        generate_mip_maps = false;
-        break;
-    }
-  }
 
   SetTextureUnit(TextureUnit_1);
 
