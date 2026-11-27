@@ -10,7 +10,6 @@
 #include "BackgroundUtil.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
-#include "NoteAnnotation.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 #include "RageFile.h"
@@ -509,11 +508,11 @@ void WriteSteps(Writer& w, const Steps& steps) {
     w.I32(breakdown.total_break_measures_);
   }
 
-  const std::vector<NoteAnnotationCache>& annotations =
-      steps.GetNoteAnnotationCaches();
+  const std::vector<std::string>& annotations =
+      steps.GetNoteAnnotationStrings();
   w.U32(static_cast<uint32_t>(annotations.size()));
-  for (const NoteAnnotationCache& a : annotations) {
-    w.Str(a.GetCompressed());
+  for (const std::string& a : annotations) {
+    w.Str(a);
   }
 
   w.Str(steps.GetGrooveStatsHash());
@@ -603,12 +602,10 @@ void ReadSteps(Reader& r, Song& song) {
   steps->SetStreamBreakdown(breakdowns);
 
   const uint32_t annotation_count = r.Count();
-  std::vector<NoteAnnotationCache> annotations;
+  std::vector<std::string> annotations;
   annotations.reserve(annotation_count);
   for (uint32_t i = 0; i < annotation_count && r.Ok(); ++i) {
-    NoteAnnotationCache cache;
-    cache.compressed_ = r.Str();
-    annotations.push_back(cache);
+    annotations.push_back(r.Str());
   }
   steps->SetNoteAnnotations(annotations);
 

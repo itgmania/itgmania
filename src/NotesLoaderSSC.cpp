@@ -14,7 +14,6 @@
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "MsdFile.h"  // No JSON here.
-#include "NoteAnnotation.h"
 #include "NoteTypes.h"
 #include "NotesLoaderSM.h"  // For programming shortcuts.
 #include "PlayerNumber.h"
@@ -357,17 +356,9 @@ void SetNoteAnnotations(StepsTagInfo& info) {
           "#NOTEANNOTATIONS has more sections (%zu) than possible number of "
           "players (%d)!",
           values_per_player.size(), NUM_PlayerNumber);
+      values_per_player.resize(NUM_PlayerNumber);
     }
-
-    std::vector<NoteAnnotationCache> annotations_per_player;
-
-    for (std::size_t pn = 0;
-         pn < values_per_player.size() && pn < NUM_PlayerNumber; pn++) {
-      NoteAnnotationCache annotation_cache;
-      annotation_cache.compressed_ = values_per_player[pn];
-      annotations_per_player.push_back(annotation_cache);
-    }
-    info.steps_->SetNoteAnnotations(annotations_per_player);
+    info.steps_->SetNoteAnnotations(values_per_player);
   }
   info.ssc_format_ = true;
 }

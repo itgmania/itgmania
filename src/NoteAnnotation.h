@@ -14,15 +14,7 @@ struct NoteAnnotation {
 
   static void FromString(
       const std::string& input, std::vector<NoteAnnotation>& out);
-  static std::string ToString(std::vector<NoteAnnotation>& annotations);
-};
-
-struct NoteAnnotationCache {
-  std::string compressed_;
-  mutable std::vector<NoteAnnotation> decompressed_;
-  const std::string& GetCompressed() const;
-  const std::vector<NoteAnnotation>& GetNoteAnnotations() const;
-  void Compress();
+  static std::string ToString(const std::vector<NoteAnnotation>& annotations);
 };
 
 #endif

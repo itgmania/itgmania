@@ -167,7 +167,7 @@ class Steps {
   void SetNpsPerMeasure(std::vector<std::vector<float>>& nps_per_measure);
   void SetNotesPerMeasure(std::vector<std::vector<int>>& notes_per_measure);
   void SetStreamBreakdown(std::vector<StreamBreakdown>& stream_breakdown);
-  void SetNoteAnnotations(std::vector<NoteAnnotationCache>& note_annotations);
+  void SetNoteAnnotations(const std::vector<std::string>& note_annotations);
   void SetPeakNps(std::vector<float>& peak_nps);
   void SetGrooveStatsHash(const std::string& key);
   void SetGrooveStatsHashVersion(int version);
@@ -207,8 +207,8 @@ class Steps {
   }
 
   void CalculateMeasureInfo(const NoteData& note_data);
-  const std::vector<NoteAnnotation>& GetNoteAnnotations(PlayerNumber pn) const;
-  const std::vector<NoteAnnotationCache>& GetNoteAnnotationCaches() const;
+  std::vector<NoteAnnotation> GetNoteAnnotations(PlayerNumber pn) const;
+  const std::vector<std::string>& GetNoteAnnotationStrings() const;
 
   const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
     return Real()->nps_per_measure_;
@@ -350,7 +350,7 @@ class Steps {
   std::vector<std::vector<int>> notes_per_measure_;
   std::vector<StreamBreakdown> stream_breakdown_;
 
-  std::vector<NoteAnnotationCache> note_annotations_;
+  std::vector<std::string> note_annotations_;
   std::vector<float> peak_nps_;
 
   std::string groove_stats_hash_;
